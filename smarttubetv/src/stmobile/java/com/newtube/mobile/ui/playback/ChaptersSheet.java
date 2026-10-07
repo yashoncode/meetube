@@ -20,6 +20,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.Haptics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ final class ChaptersSheet {
      */
     static BottomSheetDialog create(@NonNull Activity activity, @NonNull List<Video> chapters, int currentIndex,
                                     int maxHeightPx, @NonNull Listener listener) {
-        BottomSheetDialog dialog = new BottomSheetDialog(activity);
+        BottomSheetDialog dialog = Haptics.watch(new BottomSheetDialog(activity));
         View content = LayoutInflater.from(activity).inflate(R.layout.sheet_mobile_chapters, null);
         dialog.setContentView(content);
 

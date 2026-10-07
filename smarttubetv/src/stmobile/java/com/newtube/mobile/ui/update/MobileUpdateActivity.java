@@ -34,6 +34,7 @@ import com.liskovsoft.appupdatechecker2.ReleaseNotes;
 import com.liskovsoft.appupdatechecker2.UpdateInfo;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.common.MobileActivity;
 import com.newtube.mobile.update.AppUpdates;
 import com.newtube.mobile.update.UpdateDownloadService;
@@ -172,7 +173,7 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
         mScroll = content.findViewById(R.id.update_sheet_scroll);
         mScroll.setMaxHeight(Math.round(screenHeightPx() * NOTES_MAX_HEIGHT_FRACTION));
 
-        mSheet = new BottomSheetDialog(this);
+        mSheet = Haptics.watch(new BottomSheetDialog(this));
         mSheet.setContentView(content);
         mSheet.setOnDismissListener(dialog -> finish());
         // The whole sheet or nothing: a half-open peek hid the buttons under a long list of notes

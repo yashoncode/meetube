@@ -18,6 +18,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.YTSignInPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AccountSelectionPresenter;
 import com.liskovsoft.smartyoutubetv2.common.misc.MediaServiceManager;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.Haptics;
 import com.liskovsoft.youtubeapi.service.YouTubeServiceManager;
 
 import java.util.List;
@@ -64,7 +65,7 @@ public final class AccountsSheet {
     }
 
     private static void buildAndShow(Activity activity, List<Account> accounts, Runnable onAccountsChanged) {
-        BottomSheetDialog sheet = new BottomSheetDialog(activity);
+        BottomSheetDialog sheet = Haptics.watch(new BottomSheetDialog(activity));
         View content = LayoutInflater.from(activity).inflate(R.layout.sheet_mobile_accounts, null);
         LinearLayout list = content.findViewById(R.id.accounts_sheet_list);
         LinearLayout actions = content.findViewById(R.id.accounts_sheet_actions);
@@ -173,7 +174,7 @@ public final class AccountsSheet {
         String who = account.getEmail() != null ? account.getEmail() :
                 account.getName() != null ? account.getName() : "";
 
-        new MaterialAlertDialogBuilder(activity, R.style.MobileAlertDialog)
+        Haptics.watch(new MaterialAlertDialogBuilder(activity, R.style.MobileAlertDialog)
                 .setTitle(R.string.mobile_accounts_sign_out_title)
                 .setMessage(activity.getString(R.string.mobile_accounts_sign_out_confirm, who))
                 .setPositiveButton(R.string.mobile_accounts_sign_out, (dialog, which) -> {
@@ -184,6 +185,6 @@ public final class AccountsSheet {
                     onAccountsChanged.run();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
-                .show();
+                .show());
     }
 }

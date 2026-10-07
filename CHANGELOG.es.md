@@ -1,5 +1,19 @@
 # Registro de cambios de MeTube
 
+## 2.0.1 — 2026-10-07 — Tacto
+
+### Novedades
+
+- **Vibración en cada toque.** Botones, tarjetas, interruptores, menús y hojas responden con un clic suave, y también cada salto con doble toque. Sigue el ajuste de vibración del teléfono.
+- **Negro puro para AMOLED.** En modo oscuro las páginas son negro puro y ahorran batería.
+- **Shorts que se deslizan como en YouTube.** La imagen del siguiente short entra bajo tu dedo y se queda hasta que empieza el vídeo.
+- **Barra de progreso arrastrable en Shorts**, botón de más opciones, disco giratorio y título que se expande al tocarlo.
+
+### Cambios
+
+- Los Shorts vistos se recuerdan 7 días, también tras reiniciar.
+- La línea de progreso de los Shorts ya avanza.
+
 ## 2.0.0 — 2026-10-07 — Liquid Glass
 
 ### Novedades

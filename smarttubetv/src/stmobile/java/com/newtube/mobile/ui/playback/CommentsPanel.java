@@ -1035,6 +1035,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         menu.setAnimationStyle(0);
         menu.setOutsideTouchable(true);
         menu.setElevation(8 * mDensity);
+        com.newtube.mobile.ui.common.Haptics.watch(menu); // METUBE(haptics)
         menu.setOnDismissListener(() -> {
             if (mSortMenu == menu) {
                 mSortMenu = null;
@@ -1892,6 +1893,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         menu.setAnimationStyle(0);
         menu.setOutsideTouchable(true);
         menu.setElevation(8 * mDensity);
+        com.newtube.mobile.ui.common.Haptics.watch(menu); // METUBE(haptics)
         menu.setOnDismissListener(() -> {
             if (mCommentMenu == menu) {
                 mCommentMenu = null;
@@ -1956,7 +1958,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         // A reply belongs to the thread it was deleted from (its id is "parentId.replyId").
         String parentId = !entry.isReply ? null : mThreadParent != null ? mThreadParent.item.getId()
                 : commentId.contains(".") ? commentId.substring(0, commentId.indexOf('.')) : null;
-        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(mActivity, R.style.MobileAlertDialog)
+        androidx.appcompat.app.AlertDialog dialog = com.newtube.mobile.ui.common.Haptics.watch(new MaterialAlertDialogBuilder(mActivity, R.style.MobileAlertDialog)
                 .setTitle(entry.isReply ? R.string.mobile_comments_delete_reply_title
                         : R.string.mobile_comments_delete_title)
                 .setMessage(R.string.mobile_comments_delete_message)
@@ -1977,7 +1979,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
                     }
                     delete(entry, videoId, commentId, parentId, generation);
                 })
-                .create();
+                .create());
         dialog.setOnDismissListener(d -> {
             if (mDeleteDialog == d) {
                 mDeleteDialog = null;

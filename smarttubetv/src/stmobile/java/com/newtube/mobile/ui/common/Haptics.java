@@ -1,5 +1,6 @@
 package com.newtube.mobile.ui.common;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.os.Build;
 import android.os.SystemClock;
@@ -9,17 +10,32 @@ import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.provider.Settings;
 import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
+import android.widget.PopupWindow;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 
 /**
  * NEWTUBE(haptics): the app's haptic vocabulary, taken from what the YouTube app plays (read from
  * the vibrator service's history while using YouTube 21.18): a light tick when the seek bar crosses
  * a chapter boundary, a click when it snaps back to where the drag started ("Release to cancel")
  * and on a like, and a firm buzz when press-and-hold turns on 2x speed. Taps, double-tap seeks,
- * swipes and play/pause stay silent there, and here too: haptics mark a boundary, a snap or a
- * confirmed action, never an ordinary touch.
+ * swipes and play/pause stay silent there.
+ *
+ * <p>METUBE(haptics): MeTube answers every tap too - a button, a card, a chip, a switch, a menu
+ * row: {@link #onTouch} gives one click to whatever clickable view a tap lands on, for every
+ * screen (MobileActivity) and every sheet, dialog and popup ({@link #watch}). The player's own
+ * surface opts out (hapticFeedbackEnabled=false) - its taps are the double-tap seek's, which
+ * click per seek instead.</p>
  *
  * <p>Drags that commit on release (swipe the player down, swipe the mini card away, pull to
  * refresh) speak the Pixel's own drag language instead, read the same way from a Pixel 9 on
@@ -51,7 +67,16 @@ public final class Haptics {
      */
     private static final long CLICK_GUARD_MS = 100;
 
+    /** A click right after a tap's is the same press (a like clicks itself as it lands). */
+    private static final long TAP_GUARD_MS = 80;
+
     private static long sLastTensionAt;
+    private static long sLastTapAt;
+    @Nullable
+    private static View sTapTarget;
+    private static float sDownX;
+    private static float sDownY;
+    private static final int[] sLocation = new int[2];
     private static long sLastThresholdAt;
     private static boolean sProbed;
     @Nullable
@@ -72,7 +97,7 @@ public final class Haptics {
 
     /** A snap into a resting place, or an action taking effect (like, dislike). */
     public static void click(@Nullable View view) {
-        if (view != null) {
+        if (view != null && SystemClock.uptimeMillis() - sLastTapAt > TAP_GUARD_MS) {
             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
         }
     }
@@ -131,6 +156,96 @@ public final class Haptics {
             grain.addPrimitive(VibrationEffect.Composition.PRIMITIVE_LOW_TICK, scale);
         }
         vibrate(composer, grain.compose());
+    }
+
+    /**
+     * METUBE(haptics): feed a window's touches here; a tap (no drag, no long press) on an enabled
+     * clickable view clicks. The view is found the way the touch is dispatched - topmost visible
+     * child first, the deepest clickable one under the finger.
+     */
+    public static void onTouch(@Nullable View root, @NonNull MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                sDownX = event.getX();
+                sDownY = event.getY();
+                sTapTarget = root != null ? touchTarget(root, (int) sDownX, (int) sDownY) : null;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (sTapTarget != null && Math.hypot(event.getX() - sDownX, event.getY() - sDownY)
+                        > ViewConfiguration.get(sTapTarget.getContext()).getScaledTouchSlop()) {
+                    sTapTarget = null; // a scroll or a drag, not a tap
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                View target = sTapTarget;
+                sTapTarget = null;
+                boolean held = event.getEventTime() - event.getDownTime() >= ViewConfiguration.getLongPressTimeout();
+                if (target != null && target.isEnabled() && target.isClickable() && target.isHapticFeedbackEnabled()
+                        && !(target instanceof EditText) && !(held && target.isLongClickable())) {
+                    sLastTapAt = SystemClock.uptimeMillis();
+                    target.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                }
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+            case MotionEvent.ACTION_CANCEL:
+                sTapTarget = null;
+                break;
+            default:
+                break;
+        }
+    }
+
+    /** METUBE(haptics): a dialog's or sheet's taps click like the screens' do. Returns the dialog. */
+    @NonNull
+    public static <T extends Dialog> T watch(@NonNull T dialog) {
+        Window window = dialog.getWindow();
+        if (window == null) {
+            return dialog;
+        }
+        Window.Callback callback = window.getCallback();
+        window.setCallback((Window.Callback) Proxy.newProxyInstance(Window.Callback.class.getClassLoader(),
+                new Class<?>[]{Window.Callback.class}, (proxy, method, args) -> {
+                    if ("dispatchTouchEvent".equals(method.getName())) {
+                        onTouch(window.peekDecorView(), (MotionEvent) args[0]);
+                    }
+                    try {
+                        return method.invoke(callback, args);
+                    } catch (InvocationTargetException e) {
+                        throw e.getCause();
+                    }
+                }));
+        return dialog;
+    }
+
+    /** METUBE(haptics): a popup menu's taps click too. */
+    public static void watch(@NonNull PopupWindow popup) {
+        popup.setTouchInterceptor((v, event) -> {
+            onTouch(v, event);
+            return false;
+        });
+    }
+
+    @Nullable
+    private static View touchTarget(View view, int x, int y) {
+        if (view.getVisibility() != View.VISIBLE) {
+            return null;
+        }
+        view.getLocationInWindow(sLocation);
+        if (x < sLocation[0] || y < sLocation[1]
+                || x >= sLocation[0] + view.getWidth() || y >= sLocation[1] + view.getHeight()) {
+            return null;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = group.getChildCount() - 1; i >= 0; i--) {
+                View hit = touchTarget(group.getChildAt(i), x, y);
+                if (hit != null) {
+                    return hit;
+                }
+            }
+        }
+        // A disabled clickable view still takes the touch (and stays silent).
+        return view.isClickable() || view.isLongClickable() ? view : null;
     }
 
     /** The vibrator when it can compose primitives and touch feedback is on, else null. */

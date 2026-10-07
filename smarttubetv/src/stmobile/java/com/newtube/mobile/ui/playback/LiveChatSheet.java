@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.liskovsoft.mediaserviceinterfaces.data.ChatItem;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.common.MobileSheets;
 
 import java.util.List;
@@ -42,6 +43,12 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
 
     public interface Observer {
         void onChatItem(ChatItem item);
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        return Haptics.watch(super.onCreateDialog(savedInstanceState)); // METUBE(haptics)
     }
 
     private LiveChatAdapter mAdapter;

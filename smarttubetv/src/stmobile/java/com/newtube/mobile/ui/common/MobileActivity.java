@@ -3,6 +3,7 @@ package com.newtube.mobile.ui.common;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowInsets;
@@ -55,6 +56,12 @@ public abstract class MobileActivity extends MotherActivity {
         MobileSnackbar.install(getApplication()); // NEWTUBE(snackbar): tracks the screen in front
         mThemedNight = ThemeMode.currentNight(this);
         ThemeMode.register(this);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        Haptics.onTouch(getWindow().peekDecorView(), event); // METUBE(haptics): every tap clicks
+        return super.dispatchTouchEvent(event);
     }
 
     @Override

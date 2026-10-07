@@ -261,8 +261,9 @@ public class GlassView extends FrameLayout {
             mTintPaint.setColor((mTint & 0x00FFFFFF) | (FALLBACK_ALPHA << 24));
         }
         canvas.drawRect(0, 0, getWidth(), getHeight(), mTintPaint);
-        canvas.drawRect(0, 0, getWidth(), getHeight(), mNoisePaint);
         if (mLiquid) {
+            // METUBE(amoled): only the floating glass is grainy - the flat top bar stays true black.
+            canvas.drawRect(0, 0, getWidth(), getHeight(), mNoisePaint);
             float r = radius(getWidth(), getHeight());
             canvas.drawRoundRect(mRimRect, r, r, mRimPaint);
         }

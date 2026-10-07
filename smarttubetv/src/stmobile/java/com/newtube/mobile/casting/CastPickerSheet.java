@@ -23,6 +23,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.liskovsoft.mediaserviceinterfaces.CastSenderService;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.casting.castv2.CastV2Discovery;
 
 import java.util.Collections;
@@ -74,7 +75,7 @@ public class CastPickerSheet {
     }
 
     public void show(SheetPresenter presenter) {
-        mDialog = new BottomSheetDialog(mActivity);
+        mDialog = Haptics.watch(new BottomSheetDialog(mActivity));
         View content = LayoutInflater.from(mActivity).inflate(R.layout.sheet_mobile_cast, null);
         mDialog.setContentView(content);
         mListSection = content.findViewById(R.id.cast_sheet_list);
@@ -220,7 +221,7 @@ public class CastPickerSheet {
     }
 
     private void showIdentifyDialog(CastTarget target) {
-        new MaterialAlertDialogBuilder(mActivity)
+        Haptics.watch(new MaterialAlertDialogBuilder(mActivity)
                 .setTitle(R.string.mobile_cast_identify_app)
                 .setItems(new String[]{mActivity.getString(R.string.mobile_cast_smarttube_title),
                         mActivity.getString(R.string.mobile_cast_youtube_title)}, (dialog, which) -> {
@@ -229,7 +230,7 @@ public class CastPickerSheet {
                     CastPrefs.addPairedScreen(mActivity, typed.getScreen(), typed.getReceiverApp());
                     mDevices.add(typed);
                     renderDevices();
-                }).show();
+                }).show());
     }
 
     private void showDeviceList() {

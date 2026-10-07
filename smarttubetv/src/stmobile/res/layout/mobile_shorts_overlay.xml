@@ -3,14 +3,64 @@
      channel row (avatar, name, Subscribe), title and views bottom-left; like / dislike / comments /
      share bottom-right; a thin progress line at the very bottom; the play/pause flash and the
      double-tap heart in the middle. Text and icons carry shadows over a light scrim. The actions
-     forward to the watch page's own buttons. -->
+     forward to the watch page's own buttons. The peek is the next (or previous) short's portrait
+     thumbnail that follows a swipe in from the edge, outside this box (clipChildren off). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_shorts_overlay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipChildren="false"
     android:visibility="gone"
     tools:visibility="visible">
+
+    <ImageView
+        android:id="@+id/mobile_shorts_peek"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_gravity="top"
+        android:alpha="0.6"
+        android:background="@drawable/mobile_player_top_scrim"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_marginTop="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/mobile_shorts_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/mobile_back"
+            android:padding="12dp"
+            android:src="@drawable/ic_mobile_back_arrow"
+            android:tint="@android:color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:shadowColor="#B3000000"
+            android:shadowRadius="4"
+            android:text="@string/header_shorts"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"
@@ -43,6 +93,7 @@
         android:tint="@color/mobile_color_primary" />
 
     <LinearLayout
+        android:id="@+id/mobile_shorts_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -125,6 +176,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/mobile_shorts_actions"
         android:layout_width="64dp"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -178,16 +230,57 @@
             style="@style/MeTubeShortsActionLabel"
             android:text="@string/mobile_watch_share" />
 
+        <ImageButton
+            android:id="@+id/mobile_shorts_more"
+            style="@style/MeTubeShortsAction"
+            android:layout_marginTop="14dp"
+            android:contentDescription="@string/mobile_menu_more"
+            android:src="@drawable/ic_mobile_more_vert" />
+
+        <!-- YouTube's spinning disc: the channel's picture, turning while the short plays. -->
+        <ImageView
+            android:id="@+id/mobile_shorts_disc"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_shorts_disc"
+            android:importantForAccessibility="no"
+            android:padding="2dp"
+            android:scaleType="centerCrop" />
+
     </LinearLayout>
 
-    <ProgressBar
+    <!-- The time while scrubbing, big, like YouTube's. -->
+    <TextView
+        android:id="@+id/mobile_shorts_seek_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="120dp"
+        android:fontFamily="sans-serif-medium"
+        android:shadowColor="#B3000000"
+        android:shadowRadius="6"
+        android:textColor="@android:color/white"
+        android:textSize="28sp"
+        android:visibility="gone"
+        tools:text="0:12 / 0:45"
+        tools:visibility="visible" />
+
+    <!-- A thin line that scrubs: the thumb shows while a finger holds it, the seek lands on release. -->
+    <SeekBar
         android:id="@+id/mobile_shorts_progress"
-        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="2dp"
+        android:layout_height="24dp"
         android:layout_gravity="bottom"
+        android:background="@null"
         android:max="1000"
-        android:progressBackgroundTint="#40FFFFFF"
-        android:progressTint="@android:color/white" />
+        android:maxHeight="3dp"
+        android:minHeight="3dp"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"
+        android:progressDrawable="@drawable/metube_shorts_seek"
+        android:splitTrack="false"
+        android:thumb="@drawable/metube_shorts_seek_thumb"
+        android:thumbOffset="0dp" />
 
 </FrameLayout>

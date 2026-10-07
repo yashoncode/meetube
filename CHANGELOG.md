@@ -2,6 +2,21 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.0.1 — 2026-10-07 — Feel
+
+### New
+
+- **Haptics everywhere.** Every button, card, chip, switch, menu row and bottom-sheet option answers your tap with a light click, and each double-tap seek forward or back clicks too. It follows your phone's touch-vibration setting.
+- **True black for AMOLED.** In dark mode the pages, top bar and navigation area are pure black, so an AMOLED screen switches those pixels off and saves battery.
+- **Shorts swipe like YouTube.** The next (or previous) short's picture slides in under your finger as you swipe, and stays on screen until the video starts, with no black flash. When nothing is queued yet, the swipe just springs back.
+- **Scrub Shorts.** Drag the line at the bottom to jump around a short. A big time readout shows where you are, and the text gets out of the way while you drag.
+- **More on Shorts.** A Shorts header with a back arrow; a "more" button for quality, captions and speed; and YouTube's spinning disc with the channel picture. Tap a title to read all of it.
+
+### Changed
+
+- **Shorts you've seen stay seen.** MeTube remembers the last 3,000 shorts for 7 days, across restarts, so the Shorts tab keeps serving new ones. If a feed has nothing new for three pages, it plays what it has instead of loading forever.
+- **The Shorts progress line moves now.** In 2.0.0 it stayed empty while a short played.
+
 ## 2.0.0 — 2026-10-07 — Liquid Glass
 
 ### New

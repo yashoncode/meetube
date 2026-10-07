@@ -785,6 +785,23 @@ public class MobilePlaybackActivity extends MobileActivity
                 applyShortsLayout();
                 onCommentsEntryClicked();
             }
+
+            @Override
+            public void openShortsMore() {
+                openPlayerMenu(); // quality, speed, captions... the gear sheet
+            }
+
+            @Override
+            public void seekShortTo(long positionMs) {
+                if (mExoPlayerController != null) {
+                    mExoPlayerController.setPositionMs(positionMs);
+                }
+            }
+
+            @Override
+            public void exitShorts() {
+                getOnBackPressedDispatcher().onBackPressed();
+            }
         }, shortsWatchViews());
         mWatchCommentsCount = findViewById(R.id.mobile_watch_comments_count);
         mWatchChatEntry = findViewById(R.id.mobile_watch_chat_entry);
@@ -883,6 +900,9 @@ public class MobilePlaybackActivity extends MobileActivity
         // a seek puts the controls away (the seek ripple takes the screen), anything else undoes
         // the first tap's toggle.
         mPlayerView.setInstantSingleTap(true);
+        // METUBE(haptics): the video's own taps stay silent (a tap shows the controls); its
+        // double-tap seeks click per seek (YouTubeOverlay), its hold buzzes (beginHoldSpeed).
+        mPlayerView.setHapticFeedbackEnabled(false);
         // NEWTUBE(hold-speed): press and hold the video = 2x for as long as the finger stays,
         // YouTube's gesture, with its firm buzz and a "2x" pill; letting go returns to the speed
         // that was chosen. Never saved as a speed.
@@ -912,6 +932,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         // Tap on empty overlay space hides the controls (buttons/seek bar consume their own taps).
         mControlsRoot.setOnClickListener(v -> hideControls());
+        mControlsRoot.setHapticFeedbackEnabled(false); // METUBE(haptics): empty overlay space is the video's
         // NEWTUBE(motion): empty overlay space passes its touches to the player's tap detector (the
         // two views cover the same box), so the first tap's controls do not swallow the second tap
         // of a double tap, and a double tap seeks with the controls up too. A single tap still
@@ -1602,6 +1623,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mAmbient != null) {
             mAmbient.stop();
         }
+        if (mShorts != null) {
+            mShorts.setPlaying(false); // no disc turning behind another screen
+        }
         updateOrientationHandBackListener();
 
         super.onPause();
@@ -2241,7 +2265,8 @@ public class MobilePlaybackActivity extends MobileActivity
         Video video = getVideo();
         boolean casting = mCastOverlay != null && mCastOverlay.getVisibility() == View.VISIBLE;
         boolean line = !isLandscape() && !mIsInPip && !mPipEnterPending && !casting
-                && (video == null || !video.isLive);
+                && (video == null || !video.isLive)
+                && !isShortsMode(); // METUBE(shorts): the overlay draws its own scrub line
         if (line != mTimeBar.isLineWhenHidden()) {
             mTimeBar.setLineWhenHidden(line);
             if (!mControlsVisible) {
@@ -3229,7 +3254,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
 
-        BottomSheetDialog sheet = new BottomSheetDialog(this);
+        BottomSheetDialog sheet = Haptics.watch(new BottomSheetDialog(this));
         LinearLayout content = createSheetContent();
         addCastSheetHeader(content, R.string.mobile_cast_controls_title,
                 mCastSessionManager.isDirectRoute()
@@ -3288,7 +3313,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
 
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        BottomSheetDialog dialog = Haptics.watch(new BottomSheetDialog(this));
         View content = getLayoutInflater().inflate(R.layout.sheet_mobile_quality, null);
         dialog.setContentView(content);
         LinearLayout qualityList = content.findViewById(R.id.quality_sheet_quality_list);
@@ -3336,7 +3361,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
 
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        BottomSheetDialog dialog = Haptics.watch(new BottomSheetDialog(this));
         View content = getLayoutInflater().inflate(R.layout.sheet_mobile_captions, null);
         dialog.setContentView(content);
         content.findViewById(R.id.captions_sheet_style_divider).setVisibility(View.GONE);
@@ -3407,14 +3432,14 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void confirmSwitchDirectCastForSubtitles() {
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+        Haptics.watch(new com.google.android.material.dialog.MaterialAlertDialogBuilder(
                 this, R.style.MobileAlertDialog)
                 .setTitle(R.string.mobile_cast_switch_subtitles_title)
                 .setMessage(R.string.mobile_cast_switch_subtitles_message)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.mobile_cast_switch_subtitles_positive,
                         (dialog, which) -> switchDirectCastToTvApp())
-                .show();
+                .show());
     }
 
     private void switchDirectCastToTvApp() {
@@ -3794,7 +3819,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         cancelAutoHide();
 
-        BottomSheetDialog sheet = new BottomSheetDialog(this);
+        BottomSheetDialog sheet = Haptics.watch(new BottomSheetDialog(this));
         LinearLayout content = createSheetContent();
 
         // Mirrors the official app's gear sheet: no title, a handful of everyday rows, icon +
@@ -3837,7 +3862,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         cancelAutoHide();
 
-        BottomSheetDialog sheet = new BottomSheetDialog(this);
+        BottomSheetDialog sheet = Haptics.watch(new BottomSheetDialog(this));
         LinearLayout content = createSheetContent();
 
         // Effective, not stored: a Shuffle started from the playlist page is scoped to that queue
@@ -4134,7 +4159,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mControlsVisible) {
             Utils.postDelayed(mProgressUpdateRunnable, 0);
-        } else if (mTimeBar != null && mTimeBar.isLineShownWhenHidden()) {
+        } else if (mTimeBar != null && (mTimeBar.isLineShownWhenHidden() || isShortsMode())) {
             Utils.postDelayed(mLineUpdateRunnable, 0);
         }
     }
@@ -4162,14 +4187,20 @@ public class MobilePlaybackActivity extends MobileActivity
      * while playing (a short video's line glides instead of stepping), once a second otherwise.
      */
     private void onLineTick() {
+        boolean shorts = isShortsMode();
         if (mIsStopped || mControlsVisible || mPlayer == null || mExoPlayerController == null
-                || !mTimeBar.isLineShownWhenHidden()) {
+                || (!mTimeBar.isLineShownWhenHidden() && !shorts)) {
             return;
         }
         long duration = getDurationMs();
+        long position = Math.max(mExoPlayerController.getPositionMs(), 0);
         mTimeBar.setDuration(Math.max(duration, 0));
-        mTimeBar.setPosition(Math.max(mExoPlayerController.getPositionMs(), 0));
-        Utils.postDelayed(mLineUpdateRunnable, isPlaying() ? barUpdateDelayMs(100, 1_000) : 1_000);
+        mTimeBar.setPosition(position);
+        if (shorts) {
+            mShorts.setProgress(position, Math.max(duration, 0)); // METUBE(shorts): its own scrub line
+        }
+        Utils.postDelayed(mLineUpdateRunnable, shorts && isPlaying() ? 100
+                : isPlaying() ? barUpdateDelayMs(100, 1_000) : 1_000);
     }
 
     private static void setTextIfChanged(@Nullable TextView view, CharSequence text) {
@@ -4282,6 +4313,9 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         private void handleUiStateChange(boolean playWhenReady, int playbackState) {
+            if (mShorts != null) {
+                mShorts.setPlaying(playWhenReady && playbackState == Player.STATE_READY);
+            }
             switch (playbackState) {
                 case Player.STATE_BUFFERING:
                     showProgressBar(true);
@@ -4701,6 +4735,13 @@ public class MobilePlaybackActivity extends MobileActivity
         // while a related row now draws a narrow one - so asking for one fixed size would put a
         // fresh ~114 KB download in the critical path for half of all opens. Ask for the wide one
         // FROM CACHE ONLY and let the narrow one (also cached, by the related row) serve the miss.
+        // METUBE(shorts): a short fills the screen - its portrait still, from the network if need be
+        // (the Shorts overlay has usually preloaded it into memory for its swipe peek already).
+        mVideoStill.setScaleType(item.belongsToShorts() ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_XY);
+        if (item.belongsToShorts() && !isFinishing() && !isDestroyed()) {
+            ShortsOverlay.portrait(this, item.videoId).placeholder(seed).error(seed).into(mVideoStill);
+            return;
+        }
         String thumb = ClickbaitRemover.updateThumbnail(item, MainUIData.instance(this).getThumbQuality());
         if (thumb != null && !isFinishing() && !isDestroyed()) {
             ensureStillSize();
@@ -4945,6 +4986,10 @@ public class MobilePlaybackActivity extends MobileActivity
         setResizeMode(PlayerData.instance(this).getResizeMode());
         if (mWatchRoot != null) {
             updateInlineViewport(mWatchRoot.getWidth());
+        }
+        updateSeekBarLine();
+        if (!mControlsVisible) {
+            startProgressUpdates(); // the Shorts line is fed by the line loop
         }
     }
     /**
@@ -6724,7 +6769,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return false;
         }
         mExoPlayerController.beginHoldSpeed(HOLD_SPEED);
-        Haptics.longPress(mPlayerView);
+        Haptics.longPress(mVideoArea); // the player view opts out of tap haptics
         hideControls();
         showTopPill(getString(R.string.mobile_player_hold_speed), R.drawable.ic_player_hold_speed);
         return true;
@@ -6950,7 +6995,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         cancelAutoHide();
 
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        BottomSheetDialog dialog = Haptics.watch(new BottomSheetDialog(this));
         View content = getLayoutInflater().inflate(R.layout.sheet_mobile_quality, null);
         dialog.setContentView(content);
         ((TextView) content.findViewById(R.id.quality_sheet_quality_title))

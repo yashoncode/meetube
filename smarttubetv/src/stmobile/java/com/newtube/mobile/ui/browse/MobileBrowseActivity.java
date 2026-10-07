@@ -228,6 +228,7 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        com.newtube.mobile.ui.common.ShortsSeen.load(this); // METUBE(shorts): before the feed is filtered
 
         // Transitions: same task as the player now (singleTop + reorder, see the manifest note).
         // During interactive minimize this already-rendered Activity remains visible through the
@@ -959,17 +960,25 @@ public class MobileBrowseActivity extends MobileActivity
                 || !getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
             return;
         }
+        // Three pages of nothing new: play what there is rather than spin forever (the YT client's
+        // last pass of its freshness filter does the same).
+        boolean anyShort = mShortsLaunchPages >= 3;
         for (Video video : mCurrentVideos) {
-            if (isFreshShort(video)) {
+            if (isFreshShort(video) || (anyShort && video.belongsToShorts() && video.hasVideo())) {
                 mShortsLaunchPending = false;
+                mShortsLaunchPages = 0;
                 onVideoClicked(video);
                 return;
             }
         }
         if (!mCurrentVideos.isEmpty() && mPresenter != null) {
+            mShortsLaunchPages++;
             mPresenter.onScrollEnd(mCurrentVideos.get(mCurrentVideos.size() - 1)); // all seen: next page
         }
     }
+
+    /** Pages asked for while the Shorts tab looked for an unseen short. */
+    private int mShortsLaunchPages;
 
     /** A short to queue: playable, not played this session, not mostly watched before. */
     private static boolean isFreshShort(Video video) {

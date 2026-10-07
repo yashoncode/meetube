@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 
 import java.util.List;
@@ -267,7 +268,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
             }
         };
 
-        mDialog = new MaterialAlertDialogBuilder(requireContext(), R.style.MobileAlertDialog)
+        mDialog = Haptics.watch(new MaterialAlertDialogBuilder(requireContext(), R.style.MobileAlertDialog)
                 .setTitle(row.title)
                 .setAdapter(adapter, (dialog, which) -> {
                     if (which != current) {
@@ -276,7 +277,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)
-                .show();
+                .show());
         if (current > 0 && mDialog.getListView() != null) {
             // A long list (UI scale, quality) opens on the current option, not its first row.
             mDialog.getListView().setSelection(Math.max(0, current - 2));
@@ -288,6 +289,6 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
         }
-        mDialog = dialog;
+        mDialog = Haptics.watch(dialog);
     }
 }
