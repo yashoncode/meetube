@@ -93,7 +93,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     app:cardBackgroundColor="@color/mobile_color_placeholder"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="20dp"
                     app:cardElevation="0dp">
 
                     <TextView

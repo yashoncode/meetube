@@ -137,7 +137,7 @@
                 android:textSize="14sp"
                 android:textStyle="normal"
                 app:backgroundTint="@color/mobile_color_on_surface"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="22dp" />
 
         </LinearLayout>
 

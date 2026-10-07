@@ -73,7 +73,9 @@ public class VideoStateController extends BasePlayerController {
     @Override
     public boolean onPreviousClicked() {
         // Seek to the start on prev
-        if (getPlayer() != null && getPlayer().getPositionMs() > BEGIN_THRESHOLD_MS) {
+        // METUBE(shorts): a swipe down in the Shorts player always means the previous short.
+        boolean shorts = getVideo() != null && getVideo().belongsToShorts();
+        if (!shorts && getPlayer() != null && getPlayer().getPositionMs() > BEGIN_THRESHOLD_MS) {
             saveState(); // in case the user wants to go to previous video
             getPlayer().setPositionMs(100);
             return true;

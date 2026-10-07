@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  NewTube adaptive-icon background (stmobile flavor).
-
-  Full-bleed 108x108 layer; the launcher applies its own mask (circle / rounded
-  square / squircle) on top. Deep ink-blue base with a slightly darker
-  lower-right wedge for depth without a gradient tag (keeps aapt happy on the
-  pinned toolchain). Palette is deliberately far from YouTube's red/white.
--->
+<!-- METUBE: launcher background - coral (#FF453A, the app accent) to magenta, corner to corner.
+     Full-bleed 108x108; the launcher masks it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#1E2A78"
-        android:pathData="M0,0h108v108h-108z" />
-    <path
-        android:fillColor="#16205E"
-        android:pathData="M108,0 L108,108 L0,108 Z" />
+    <path android:pathData="M0,0h108v108h-108z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="108"
+                android:endY="0"
+                android:startX="0"
+                android:startY="108"
+                android:type="linear">
+                <item android:color="#FF453A" android:offset="0" />
+                <item android:color="#FF2D6F" android:offset="0.55" />
+                <item android:color="#C42BFF" android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>

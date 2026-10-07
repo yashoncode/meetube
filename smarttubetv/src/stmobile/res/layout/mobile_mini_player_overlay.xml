@@ -15,8 +15,10 @@
     android:focusable="true"
     android:visibility="gone"
     app:cardBackgroundColor="@android:color/black"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="18dp"
     app:cardElevation="8dp"
+    app:strokeColor="@color/metube_glass_stroke"
+    app:strokeWidth="1dp"
     tools:visibility="visible">
 
     <FrameLayout

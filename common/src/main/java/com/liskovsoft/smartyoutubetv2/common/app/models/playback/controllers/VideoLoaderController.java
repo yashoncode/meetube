@@ -1061,9 +1061,12 @@ public class VideoLoaderController extends BasePlayerController {
         }
 
         int playbackMode = getPlaybackMode();
+        // METUBE(shorts): a looping short still warms the next one - the next swipe is coming.
+        boolean shortsSwipe = playbackMode == PlayerConstants.PLAYBACK_MODE_ONE && getVideo().belongsToShorts();
         if (playbackMode != PlayerConstants.PLAYBACK_MODE_ALL
                 && playbackMode != PlayerConstants.PLAYBACK_MODE_SHUFFLE
-                && playbackMode != PlayerConstants.PLAYBACK_MODE_LIST) {
+                && playbackMode != PlayerConstants.PLAYBACK_MODE_LIST
+                && !shortsSwipe) {
             return; // autoplay-next is off for this mode
         }
 

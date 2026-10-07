@@ -255,7 +255,10 @@ public class MobilePlaybackActivity extends MobileActivity
     private TextView mWatchTitle;
     private TextView mWatchMeta;
     private View mWatchMetaRow;
-    private ImageView mWatchExpand;
+    /** METUBE(ambient): the YouTube-style glow behind the watch page. */
+    private AmbientGlow mAmbient;
+    /** METUBE(shorts): the vertical player mode for videos from the Shorts tab. */
+    private ShortsOverlay mShorts;
     private TextView mWatchDescription;
     private View mWatchLike;
     private ImageView mWatchLikeIcon;
@@ -720,7 +723,6 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchTitle = findViewById(R.id.mobile_watch_title);
         mWatchMeta = findViewById(R.id.mobile_watch_meta);
         mWatchMetaRow = findViewById(R.id.mobile_watch_meta_row);
-        mWatchExpand = findViewById(R.id.mobile_watch_expand);
         mWatchDescription = findViewById(R.id.mobile_watch_description);
         mWatchLike = findViewById(R.id.mobile_watch_like);
         mWatchLikeIcon = findViewById(R.id.mobile_watch_like_icon);
@@ -749,6 +751,30 @@ public class MobilePlaybackActivity extends MobileActivity
         mQueueChevron = findViewById(R.id.mobile_watch_queue_chevron);
         mQueueList = findViewById(R.id.mobile_watch_queue_list);
         mWatchCommentsEntry = findViewById(R.id.mobile_watch_comments_entry);
+        mShorts = new ShortsOverlay(getWindow().getDecorView(), mVideoArea, new ShortsOverlay.Host() {
+            @Override
+            public void onShortsModeChanged(boolean on) {
+                applyWatchLayoutForOrientation(getResources().getConfiguration().orientation);
+                setResizeMode(PlayerData.instance(MobilePlaybackActivity.this).getResizeMode());
+                if (on) {
+                    hideControls();
+                }
+            }
+
+            @Override
+            public void playNextShort() {
+                if (mPresenter != null) {
+                    mPresenter.onNextClicked();
+                }
+            }
+
+            @Override
+            public void playPreviousShort() {
+                if (mPresenter != null) {
+                    mPresenter.onPreviousClicked();
+                }
+            }
+        }, mWatchLike, mWatchDislike, mWatchShare, mWatchLikeCount);
         mWatchCommentsCount = findViewById(R.id.mobile_watch_comments_count);
         mWatchChatEntry = findViewById(R.id.mobile_watch_chat_entry);
         mScrubChapterView = findViewById(R.id.mobile_player_scrub_chapter);
@@ -1006,8 +1032,9 @@ public class MobilePlaybackActivity extends MobileActivity
         mQueueList.setMaxHeight(Math.round(getResources().getDisplayMetrics().heightPixels * 0.5f));
         mQueueHeader.setOnClickListener(v -> toggleQueueExpanded());
 
-        // Expandable description (tap the views/date row or chevron).
+        // Expandable description: tap the title or the views/date row (METUBE: no chevron).
         mWatchMetaRow.setOnClickListener(v -> toggleDescription());
+        mWatchTitle.setOnClickListener(v -> toggleDescription());
 
         // Actions row. Like/Dislike/Subscribe go through the presenter's onButtonClicked vocabulary
         // (R.id.action_*); the controller flips the visual state back via setButtonState. Share fires
@@ -1117,15 +1144,16 @@ public class MobilePlaybackActivity extends MobileActivity
             int width = Math.round(config.screenWidthDp
                     * getResources().getDisplayMetrics().density);
             if (width > 0) {
-                lp.height = Math.round(width * 9f / 16f);
+                // METUBE(shorts): a short fills the portrait screen; the watch page steps aside.
+                lp.height = isShortsMode() ? LinearLayout.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
                 lp.weight = 0;
                 mVideoArea.setLayoutParams(lp);
             }
             if (mWatchScroll != null) {
-                mWatchScroll.setVisibility(View.VISIBLE);
+                mWatchScroll.setVisibility(isShortsMode() ? View.GONE : View.VISIBLE);
             }
             if (mCommentsPanel != null) {
-                mCommentsPanel.setSuspended(false);
+                mCommentsPanel.setSuspended(isShortsMode());
             }
             // Portrait already presents the complete title immediately below the video. Repeating
             // it in the overlay squeezes five useful controls into half the top bar and makes the
@@ -1408,6 +1436,13 @@ public class MobilePlaybackActivity extends MobileActivity
         PlayerTransitionBridge.LaunchSnapshot launch = PlayerTransitionBridge.take();
 
         mIsResumed = true;
+        if (mAmbient == null && mVideoTexture != null && mWatchContent != null) {
+            mAmbient = new AmbientGlow(mWatchContent, mVideoTexture,
+                    androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background));
+        }
+        if (mAmbient != null) {
+            mAmbient.start();
+        }
         // In the foreground again: auto-PiP behaves normally from here on.
         mSuppressAutoPip = false;
         mDismissDragActive = false;
@@ -1543,6 +1578,9 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         mIsResumed = false;
+        if (mAmbient != null) {
+            mAmbient.stop();
+        }
         updateOrientationHandBackListener();
 
         super.onPause();
@@ -2367,7 +2405,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
-        int height = Math.round(width * 9f / 16f);
+        int height = isShortsMode() ? LinearLayout.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
         if (lp.height != height || lp.weight != 0) {
             lp.height = height;
             lp.weight = 0;
@@ -2392,6 +2430,10 @@ public class MobilePlaybackActivity extends MobileActivity
     private void updateInlineViewport(int boxWidth) {
         if (mExoPlayerController == null || boxWidth <= 0 || mIsInPip || mPipEnterPending
                 || isLandscape()) {
+            return;
+        }
+        if (isShortsMode()) {
+            mExoPlayerController.clearInlineViewport("shorts"); // full screen, not a 16:9 box
             return;
         }
         mExoPlayerController.setInlineViewport(boxWidth, Math.round(boxWidth * 9f / 16f),
@@ -4818,6 +4860,12 @@ public class MobilePlaybackActivity extends MobileActivity
     private static final int SWIPE_BRIGHTNESS = 4;
     private static final int SWIPE_VOLUME = 5;
     private static final int SWIPE_SEEK = 6;
+    /** METUBE(shorts): a vertical drag that pages to the next / previous short. */
+    private static final int SWIPE_SHORTS = 7;
+
+    private boolean isShortsMode() {
+        return mShorts != null && mShorts.isActive() && !isLandscape();
+    }
     /**
      * Fullscreen: this share of the screen on the left (brightness) and the right (volume) - the
      * zones of ReVanced's swipe controls, which most people who swipe on YouTube learned them from.
@@ -4858,6 +4906,10 @@ public class MobilePlaybackActivity extends MobileActivity
         if (!vertical) {
             return beginSeekSwipe(downRawX + dx);
         }
+        if (isShortsMode()) {
+            hideControls();
+            return SWIPE_SHORTS;
+        }
         if (!isLandscape()) {
             if (direction == PlayerContainerLayout.DOWN) {
                 return canStartDismissDrag() ? SWIPE_MINIMIZE : PlayerContainerLayout.SWIPE_NONE;
@@ -4879,6 +4931,9 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     public void onSwipeMove(int swipe, float dx, float dy) {
         switch (swipe) {
+            case SWIPE_SHORTS:
+                mShorts.drag(dy);
+                break;
             case SWIPE_MINIMIZE:
                 onDismissDrag(Math.max(0f, dy));
                 break;
@@ -4903,6 +4958,9 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     public void onSwipeReleased(int swipe, float dx, float dy, float xVelocity, float yVelocity) {
         switch (swipe) {
+            case SWIPE_SHORTS:
+                mShorts.release(dy, yVelocity);
+                break;
             case SWIPE_MINIMIZE:
                 onDismissDragReleased(Math.max(0f, dy), yVelocity);
                 break;
@@ -4931,6 +4989,9 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     public void onSwipeCancelled(int swipe) {
         switch (swipe) {
+            case SWIPE_SHORTS:
+                mShorts.release(0f, 0f);
+                break;
             case SWIPE_MINIMIZE:
                 onDismissDragCancelled();
                 break;
@@ -7248,6 +7309,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (item == null || mWatchTitle == null) {
             return;
         }
+        if (mShorts != null) {
+            mShorts.bind(item);
+        }
 
         mWatchVideo = item;
         boolean isNewVideo = !Helpers.equals(item.videoId, mWatchVideoId);
@@ -7319,6 +7383,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private void resetWatchHeader() {
         mDescriptionExpanded = false;
+        mWatchTitle.setMaxLines(3);
         mWatchDescription.setVisibility(View.GONE);
         mWatchDescription.setText(null);
         mWatchMeta.setText(null);
@@ -7547,7 +7612,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // Expanded: let the views/date line wrap so long localized dates (e.g. "29 de des. 2019"
         // behind a wordy label) are fully readable instead of ellipsized.
         mWatchMeta.setMaxLines(mDescriptionExpanded ? Integer.MAX_VALUE : 1);
-        mWatchExpand.animate().rotation(mDescriptionExpanded ? 180f : 0f).setDuration(180).start();
+        // METUBE: no chevron - the title opens to its full length instead.
+        mWatchTitle.setMaxLines(mDescriptionExpanded ? Integer.MAX_VALUE : 3);
     }
 
     /** Route Like / Dislike / Subscribe through the presenter's onButtonClicked vocabulary. */
@@ -8398,6 +8464,9 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void setResizeMode(int mode) {
+        if (isShortsMode()) {
+            mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM; // shorts fill the screen
+        }
         if (mPlayerView != null) {
             mPlayerView.setResizeMode(mode);
         }

@@ -233,7 +233,19 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             bindBadge(context, video);
             bindProgress(video);
             bindReadiness(video);
+            bindShape(video);
             bindThumbnail(context, video);
+        }
+
+        /** METUBE(shorts): Shorts-tab cards are tall (9:16), everything else 16:9. */
+        private void bindShape(Video video) {
+            androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
+                    (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) mThumbnailFrame.getLayoutParams();
+            String ratio = video.belongsToShorts() ? "9:16" : "16:9";
+            if (!ratio.equals(lp.dimensionRatio)) {
+                lp.dimensionRatio = ratio;
+                mThumbnailFrame.setLayoutParams(lp);
+            }
         }
 
         /**
@@ -266,7 +278,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 badgeText = context.getString(R.string.badge_new_content);
             } else if (video.isLive) {
                 badgeText = context.getString(R.string.badge_live);
-            } else if (video.isShorts) {
+            } else if (video.isShorts && !video.belongsToShorts()) { // the Shorts tab needs no label
                 badgeText = context.getString(R.string.header_shorts).toUpperCase();
             } else {
                 badgeText = video.badge;
@@ -276,8 +288,14 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 mBadge.setVisibility(View.GONE);
             } else {
                 mBadge.setText(badgeText);
-                mBadge.setBackgroundColor(ContextCompat.getColor(context,
-                        video.isLive || video.isUpcoming ? R.color.mobile_color_badge_live_bg : R.color.mobile_color_badge_bg));
+                int badgeColor = ContextCompat.getColor(context,
+                        video.isLive || video.isUpcoming ? R.color.mobile_color_badge_live_bg : R.color.mobile_color_badge_bg);
+                // METUBE: recolour the rounded glass badge, not replace it with a square fill.
+                if (mBadge.getBackground() instanceof android.graphics.drawable.GradientDrawable) {
+                    ((android.graphics.drawable.GradientDrawable) mBadge.getBackground().mutate()).setColor(badgeColor);
+                } else {
+                    mBadge.setBackgroundColor(badgeColor);
+                }
                 mBadge.setVisibility(View.VISIBLE);
             }
         }

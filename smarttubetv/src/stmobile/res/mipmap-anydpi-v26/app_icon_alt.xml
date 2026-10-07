@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- NewTube adaptive launcher icon (alt/activity-alias variant), overrides
-     @mipmap/app_icon_alt for stmobile. Same NewTube mark as app_icon. -->
+<!-- MeTube adaptive launcher icon (alt/activity-alias variant), overrides
+     @mipmap/app_icon_alt for stmobile. Same MeTube mark as app_icon. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@drawable/ic_launcher_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />

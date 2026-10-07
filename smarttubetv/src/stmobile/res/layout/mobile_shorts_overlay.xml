@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- METUBE(shorts): the vertical player's overlay (ShortsOverlay) - channel and title bottom-left,
+     a glass action column bottom-right. Drawn under the regular player controls, which still
+     appear on tap; the actions forward to the watch page's own buttons. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_shorts_overlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/mobile_player_bottom_scrim"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="88dp"
+        android:layout_marginBottom="72dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/mobile_shorts_channel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:shadowColor="#99000000"
+            android:shadowRadius="6"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            tools:text="\@channel" />
+
+        <TextView
+            android:id="@+id/mobile_shorts_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:shadowColor="#99000000"
+            android:shadowRadius="6"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            tools:text="A short's title that may run onto a second line" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="72dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/mobile_shorts_like"
+            style="@style/MeTubeShortsAction"
+            android:contentDescription="@string/mobile_watch_like"
+            android:src="@drawable/ic_watch_thumb_up_outline" />
+
+        <TextView
+            android:id="@+id/mobile_shorts_like_count"
+            style="@style/MeTubeShortsActionLabel"
+            tools:text="12K" />
+
+        <ImageButton
+            android:id="@+id/mobile_shorts_dislike"
+            style="@style/MeTubeShortsAction"
+            android:layout_marginTop="14dp"
+            android:contentDescription="@string/mobile_watch_dislike"
+            android:src="@drawable/ic_watch_thumb_down_outline" />
+
+        <ImageButton
+            android:id="@+id/mobile_shorts_share"
+            style="@style/MeTubeShortsAction"
+            android:layout_marginTop="18dp"
+            android:contentDescription="@string/mobile_watch_share"
+            android:src="@drawable/ic_watch_share" />
+
+    </LinearLayout>
+
+</FrameLayout>

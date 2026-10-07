@@ -1,15 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- METUBE: the in-app mark (brand row): the launcher icon as a 22dp squircle. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="22dp"
     android:height="22dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <path android:pathData="M28,0h52a28,28 0,0 1,28 28v52a28,28 0,0 1,-28 28h-52a28,28 0,0 1,-28 -28v-52a28,28 0,0 1,28 -28z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="108"
+                android:endY="0"
+                android:startX="0"
+                android:startY="108"
+                android:type="linear">
+                <item android:color="#FF453A" android:offset="0" />
+                <item android:color="#FF2D6F" android:offset="0.55" />
+                <item android:color="#C42BFF" android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
     <path
-        android:fillColor="#1E2A78"
-        android:pathData="M26,0h56a26,26 0,0 1,26 26v56a26,26 0,0 1,-26 26h-56a26,26 0,0 1,-26 -26v-56a26,26 0,0 1,26 -26z" />
-    <path
-        android:pathData="M30,71V49a12,12 0,0 1,24 0v22M54,49a12,12 0,0 1,24 0v22"
-        android:strokeWidth="11"
+        android:pathData="M26,78V34L54,62L82,34V78"
+        android:strokeWidth="15"
         android:strokeColor="#FFFFFF"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />

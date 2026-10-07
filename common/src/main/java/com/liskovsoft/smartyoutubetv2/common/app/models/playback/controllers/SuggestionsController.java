@@ -728,6 +728,12 @@ public class SuggestionsController extends BasePlayerController {
             return null;
         }
 
+        // METUBE(shorts): in the Shorts player next/previous walk the Shorts tab's queue in order,
+        // by position (not the playlist's own cursor), and never fall back to a regular video.
+        if (getVideo().belongsToShorts()) {
+            return getShortNeighbour(getVideo(), 1);
+        }
+
         Video result = null;
         Video next = Playlist.instance().getNext();
 
@@ -748,6 +754,10 @@ public class SuggestionsController extends BasePlayerController {
             return null;
         }
 
+        if (getVideo().belongsToShorts()) {
+            return getShortNeighbour(getVideo(), -1);
+        }
+
         Video result = getPreviousFromGroup(getVideo());
 
         if (result == null) {
@@ -760,6 +770,18 @@ public class SuggestionsController extends BasePlayerController {
         }
 
         return result;
+    }
+
+    private static Video getShortNeighbour(Video current, int step) {
+        java.util.List<Video> queue = Playlist.instance().getAll();
+        int at = queue.indexOf(current);
+        int to = at + step;
+        if (at < 0 || to < 0 || to >= queue.size()) {
+            return null;
+        }
+        Video neighbour = queue.get(to);
+        neighbour.fromQueue = true;
+        return neighbour;
     }
 
     private Video getPreviousFromGroup(Video current) {

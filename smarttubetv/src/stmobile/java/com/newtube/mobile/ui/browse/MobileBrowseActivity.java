@@ -131,14 +131,15 @@ public class MobileBrowseActivity extends MobileActivity
      */
     private static final int[] PREFERRED_SECTION_IDS = {
             MediaGroup.TYPE_HOME,
+            // METUBE(shorts): Shorts takes History's tab (History lives on in the You panel).
+            MediaGroup.TYPE_SHORTS,
             MediaGroup.TYPE_SUBSCRIPTIONS,
-            MediaGroup.TYPE_HISTORY,
             VideoDownloads.SECTION_ID,
     };
     private static final int[] PREFERRED_SECTION_TITLE_RES = {
             R.string.header_home,
+            R.string.header_shorts,
             R.string.header_subscriptions,
-            R.string.header_history,
             R.string.header_downloads,
     };
 
@@ -1226,6 +1227,7 @@ public class MobileBrowseActivity extends MobileActivity
         paintCachedSnapshot(sectionId, switched);
         syncNavHighlight(sectionId);
         onYouPanelToggled(); // METUBE: the large title names the tab on screen
+        updateGridSpanCount(computeSpanCount());
 
         if (mPresenter != null) {
             mPresenter.onSectionFocused(sectionId);
@@ -1335,6 +1337,12 @@ public class MobileBrowseActivity extends MobileActivity
 
         mPresenter.onVideoItemSelected(video);
 
+        // METUBE(shorts): a short opens the vertical player with the tab's shorts as its queue,
+        // so a swipe up plays the next one (and down the previous) - see ShortsOverlay.
+        if (video.belongsToShorts() && video.hasVideo()) {
+            queueShorts(video);
+        }
+
         // Cards without a videoId (playlists, mixes, channels) don't open the player - they kick
         // an async channel-rows fetch (VideoActionPresenter -> chooseChannelPresenter) that can
         // take seconds before any screen change, and this screen's showProgressBar deliberately
@@ -1352,6 +1360,29 @@ public class MobileBrowseActivity extends MobileActivity
         // videos (now mapped to MobilePlaybackActivity - see MobileMainApplication); channel/
         // playlist items are routed elsewhere by the same presenter, which is fine here too.
         mPresenter.onVideoItemClicked(video);
+    }
+
+    /** METUBE(shorts): the Shorts tab's cards around {@code tapped} become the playback queue. */
+    private void queueShorts(Video tapped) {
+        List<Video> shorts = new ArrayList<>();
+        for (Video video : mCurrentVideos) {
+            if (video.belongsToShorts() && video.hasVideo()) {
+                shorts.add(video);
+            }
+        }
+        int at = shorts.indexOf(tapped);
+        if (at < 0) {
+            return;
+        }
+        // ponytail: the queue is what the tab has loaded (Playlist caps it at 50); paging more in
+        // while swiping needs the presenter's continuation - add when people swipe that far.
+        List<Video> window = shorts.subList(Math.max(0, at - 10), Math.min(shorts.size(), at + 40));
+        com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist playlist =
+                com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance();
+        playlist.clear();
+        playlist.addAll(new ArrayList<>(window));
+        playlist.setCurrent(tapped);
+        tapped.fromQueue = true;
     }
 
     /**
@@ -1436,7 +1467,9 @@ public class MobileBrowseActivity extends MobileActivity
     };
 
     private int computeSpanCount() {
-        return com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this);
+        int span = com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this);
+        // METUBE(shorts): the Shorts tab is a grid of tall 9:16 cards, two to a phone row.
+        return mCurrentSectionId == MediaGroup.TYPE_SHORTS ? span * 2 : span;
     }
 
     private static int toMenuItemId(int sectionId) {
@@ -1685,6 +1718,8 @@ public class MobileBrowseActivity extends MobileActivity
                 return R.drawable.ic_nav_subscriptions;
             case MediaGroup.TYPE_HISTORY:
                 return R.drawable.ic_nav_history;
+            case MediaGroup.TYPE_SHORTS:
+                return R.drawable.ic_nav_shorts;
             case VideoDownloads.SECTION_ID:
                 return R.drawable.ic_nav_downloads;
             default:
@@ -2393,7 +2428,8 @@ public class MobileBrowseActivity extends MobileActivity
 
     private static boolean isVisibleFeedItem(Video video) {
         return video != null
-                && !ShortsFilter.isShort(video)
+                // METUBE(shorts): Shorts still stay out of every feed but their own tab.
+                && (!ShortsFilter.isShort(video) || video.belongsToShorts())
                 && (!video.isChannel() || video.isPlaylistAsChannel())
                 && !isSearchQueryTile(video);
     }

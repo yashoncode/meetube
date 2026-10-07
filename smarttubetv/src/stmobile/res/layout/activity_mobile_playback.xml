@@ -73,6 +73,9 @@
                 app:yt_animationDuration="500"
                 app:yt_seekSeconds="10" />
 
+            <!-- METUBE(shorts): vertical-player overlay, under the controls. -->
+            <include layout="@layout/mobile_shorts_overlay" />
+
             <!-- Custom controls overlay. clickable so taps on empty space hide it. -->
             <FrameLayout
                 android:id="@+id/mobile_controls_root"
@@ -651,6 +654,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@null"
                     android:paddingHorizontal="@dimen/mobile_watch_content_padding"
                     android:ellipsize="end"
                     android:fontFamily="sans-serif-medium"
@@ -681,13 +686,6 @@
                         android:textColor="@color/mobile_color_on_surface_secondary"
                         android:textSize="14sp"
                         tools:text="1,234,567 views • Jan 1, 2026" />
-
-                    <ImageView
-                        android:id="@+id/mobile_watch_expand"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@string/mobile_watch_description"
-                        android:src="@drawable/ic_watch_expand" />
 
                 </LinearLayout>
 

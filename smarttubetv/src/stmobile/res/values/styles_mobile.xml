@@ -80,6 +80,17 @@
              light one) in the app's ink, not red - "Sign in" / "Undo" / "View" are choices,
              not alarms. -->
         <item name="snackbarButtonStyle">@style/Widget.NewTube.Snackbar.Action</item>
+        <!-- METUBE: no sharp corners - snackbars are rounded like the rest of the glass UI. -->
+        <item name="snackbarStyle">@style/Widget.MeTube.Snackbar</item>
+    </style>
+
+    <style name="Widget.MeTube.Snackbar" parent="Widget.MaterialComponents.Snackbar">
+        <item name="shapeAppearance">@style/ShapeAppearance.MeTube.Round</item>
+    </style>
+
+    <style name="ShapeAppearance.MeTube.Round" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
     </style>
 
     <style name="Widget.NewTube.Snackbar.Action" parent="Widget.MaterialComponents.Button.TextButton.Snackbar">
@@ -135,14 +146,16 @@
     <style name="Widget.NewTube.BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
         <item name="backgroundTint">@color/mobile_color_surface</item>
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.NewTube.BottomSheet</item>
+        <!-- METUBE: Material squares the top corners off once a sheet is expanded; keep them round. -->
+        <item name="shouldRemoveExpandedCorners">false</item>
     </style>
 
     <style name="ShapeAppearance.NewTube.BottomSheet" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSizeTopLeft">28dp</item>
         <item name="cornerSizeTopRight">28dp</item>
-        <item name="cornerSizeBottomLeft">0dp</item>
-        <item name="cornerSizeBottomRight">0dp</item>
+        <item name="cornerSizeBottomLeft">28dp</item>
+        <item name="cornerSizeBottomRight">28dp</item>
     </style>
 
     <!--
@@ -265,7 +278,7 @@
     </style>
 
     <style name="MobileAlertDialogShape" parent="ShapeAppearance.MaterialComponents.MediumComponent">
-        <item name="cornerSize">16dp</item>
+        <item name="cornerSize">28dp</item>
     </style>
 
     <style name="MobileAlertDialogBody" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
@@ -335,7 +348,7 @@
         <item name="android:stateListAnimator">@null</item>
         <item name="android:textColor">@color/mobile_cast_button_text</item>
         <item name="backgroundTint">@color/mobile_cast_button_background</item>
-        <item name="cornerRadius">16dp</item>
+        <item name="cornerRadius">22dp</item>
     </style>
 
     <!-- Regular weight at 11sp tracks the YouTube bar labels (medium/bold read heavier than
@@ -492,5 +505,25 @@
         <item name="android:layout_height">12dp</item>
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:background">@drawable/bg_skeleton_block</item>
+    </style>
+
+    <!-- METUBE(shorts): the vertical player's action column (mobile_shorts_overlay). -->
+    <style name="MeTubeShortsAction">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:background">@drawable/bg_shorts_action</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:tint">@android:color/white</item>
+    </style>
+    <style name="MeTubeShortsActionLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:shadowColor">#99000000</item>
+        <item name="android:shadowRadius">6</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">12sp</item>
     </style>
 </resources>
