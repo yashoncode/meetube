@@ -1,5 +1,15 @@
 # Registro de cambios de MeTube
 
+## 2.0.0 — 2026-10-07 — Liquid Glass
+
+### Novedades
+
+- **Shorts como en YouTube.** La pestaña Shorts abre directamente el reproductor a pantalla completa. Toca para pausar, toca dos veces para dar me gusta, mantén pulsado para 2x.
+- **Shorts sin fin y sin repetir.** La siguiente página se carga antes de llegar al final y nunca se repite un short que ya viste.
+- **Comentarios en Shorts.** Los comentarios se abren debajo del short, que se encoge arriba.
+- **Cristal líquido.** La barra flotante curva lo que hay debajo como una lente; la barra superior también es de cristal.
+- **Un icono nuevo**, minimalista, al estilo Material 3.
+
 ## 1.5.0 — 2026-10-07 — Shorts
 
 ### Novedades

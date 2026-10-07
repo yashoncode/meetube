@@ -363,6 +363,10 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             // NEWTUBE(ux): entries saved without an image (local history, link opens) get the
             // i.ytimg.com fallback here, so the preloader and the bind ask for the same URL.
             com.newtube.mobile.ui.common.LocalThumbnails.fill(video);
+            // METUBE(shorts): the feed's own Shorts images are tiny; oar2 is the 720x1280 portrait.
+            if (video.belongsToShorts() && video.videoId != null) {
+                return "https://i.ytimg.com/vi/" + video.videoId + "/oar2.jpg";
+            }
             return ClickbaitRemover.updateThumbnail(video, MainUIData.instance(context).getThumbQuality());
         }
 
@@ -385,7 +389,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
 
             // At the default thumb quality the primary URL IS the card URL, so a fallback request
             // would be identical - only pay the second RequestBuilder when it can actually differ.
-            String fallbackUrl = video.getCardImageUrl();
+            String fallbackUrl = video.belongsToShorts() && video.videoId != null
+                    ? "https://i.ytimg.com/vi/" + video.videoId + "/hq720.jpg" // no portrait image
+                    : video.getCardImageUrl();
             if (fallbackUrl != null && !fallbackUrl.equals(thumbnailUrl)) {
                 request = request.error(Glide.with(context)
                         .load(fallbackUrl)

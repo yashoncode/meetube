@@ -39,7 +39,7 @@ import java.util.function.Supplier;
  * is removed only after foreground tracks arrive, not between setMediaSource and preparation.
  */
 final class Media3NextPreloader {
-    static final long TARGET_DURATION_MS = 2_000;
+    static final long TARGET_DURATION_MS = 4_000; // METUBE: a 4s head start (was 2s) - swipes land playing
     static final long MIN_FOREGROUND_BUFFER_MS = 10_000;
     static final long MAX_LOAD_TIME_MS = 15_000;
     static final long MAX_STASH_AGE_MS = 90_000;

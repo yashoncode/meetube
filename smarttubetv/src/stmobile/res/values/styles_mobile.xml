@@ -82,6 +82,8 @@
         <item name="snackbarButtonStyle">@style/Widget.NewTube.Snackbar.Action</item>
         <!-- METUBE: no sharp corners - snackbars are rounded like the rest of the glass UI. -->
         <item name="snackbarStyle">@style/Widget.MeTube.Snackbar</item>
+        <!-- METUBE: modern capsule switches everywhere (Settings rows, dialog rows). -->
+        <item name="switchStyle">@style/Widget.MeTube.Switch</item>
     </style>
 
     <style name="Widget.MeTube.Snackbar" parent="Widget.MaterialComponents.Snackbar">
@@ -519,11 +521,21 @@
     <style name="MeTubeShortsActionLabel">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginTop">2dp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:shadowColor">#99000000</item>
-        <item name="android:shadowRadius">6</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:shadowColor">#B3000000</item>
+        <item name="android:shadowRadius">4</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Widget.MeTube.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">
+        <item name="useMaterialThemeColors">false</item>
+        <item name="android:thumb">@drawable/metube_switch_thumb</item>
+        <item name="track">@drawable/metube_switch_track</item>
+        <item name="thumbTint">@null</item>
+        <item name="trackTint">@null</item>
+        <item name="android:background">@null</item>
     </style>
 </resources>

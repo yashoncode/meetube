@@ -772,10 +772,22 @@ public class SuggestionsController extends BasePlayerController {
         return result;
     }
 
-    private static Video getShortNeighbour(Video current, int step) {
+    /** METUBE(shorts): queue size when the Shorts tab was last asked for its next page. */
+    private static int sShortsMoreAt = -1;
+    private static final int SHORTS_AHEAD = 6;
+
+    private Video getShortNeighbour(Video current, int step) {
         java.util.List<Video> queue = Playlist.instance().getAll();
         int at = queue.indexOf(current);
         int to = at + step;
+        // Swiping toward the end of what the tab has loaded: ask it for the next page, which
+        // MobileBrowseActivity appends to this queue (ACTION_APPEND), so the swipe never runs dry.
+        if (at >= 0 && step > 0 && queue.size() - to <= SHORTS_AHEAD && queue.size() != sShortsMoreAt
+                && getContext() != null) {
+            sShortsMoreAt = queue.size();
+            com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter.instance(getContext())
+                    .onScrollEnd(queue.get(queue.size() - 1));
+        }
         if (at < 0 || to < 0 || to >= queue.size()) {
             return null;
         }

@@ -754,8 +754,9 @@ public class MobilePlaybackActivity extends MobileActivity
         mShorts = new ShortsOverlay(getWindow().getDecorView(), mVideoArea, new ShortsOverlay.Host() {
             @Override
             public void onShortsModeChanged(boolean on) {
-                applyWatchLayoutForOrientation(getResources().getConfiguration().orientation);
-                setResizeMode(PlayerData.instance(MobilePlaybackActivity.this).getResizeMode());
+                // No double-tap seek ripple over a short: double tap likes it instead.
+                mPlayerView.controller(on ? null : mYouTubeOverlay);
+                applyShortsLayout();
                 if (on) {
                     hideControls();
                 }
@@ -774,7 +775,17 @@ public class MobilePlaybackActivity extends MobileActivity
                     mPresenter.onPreviousClicked();
                 }
             }
-        }, mWatchLike, mWatchDislike, mWatchShare, mWatchLikeCount);
+
+            @Override
+            public void openShortsComments() {
+                if (mCommentsKey == null || mCommentsPanel == null) {
+                    return; // comments still loading (or off for this short)
+                }
+                mShorts.setCommentsOpen(true);
+                applyShortsLayout();
+                onCommentsEntryClicked();
+            }
+        }, shortsWatchViews());
         mWatchCommentsCount = findViewById(R.id.mobile_watch_comments_count);
         mWatchChatEntry = findViewById(R.id.mobile_watch_chat_entry);
         mScrubChapterView = findViewById(R.id.mobile_player_scrub_chapter);
@@ -858,6 +869,11 @@ public class MobilePlaybackActivity extends MobileActivity
         // single (non-double) tap to performClick() on the view captured at construction (itself,
         // since it isn't attached yet), so an OnClickListener here is exactly that single tap.
         mPlayerView.setOnClickListener(v -> {
+            if (isShortsMode()) {
+                mVideoArea.removeCallbacks(mShortsSingleTap);
+                mVideoArea.postDelayed(mShortsSingleTap, 260);
+                return;
+            }
             boolean reveal = !mControlsVisible;
             toggleControls();
             mInstantRevealAt = reveal ? android.os.SystemClock.uptimeMillis() : 0L;
@@ -882,6 +898,11 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         });
         mPlayerView.setDoubleTapBeganListener(posX -> {
+            if (isShortsMode()) {
+                mVideoArea.removeCallbacks(mShortsSingleTap);
+                likeShort();
+                return;
+            }
             if (mPlayer != null && doubleTapSeekForward(mPlayer, posX) != null) {
                 hideControls();
             } else {
@@ -1908,6 +1929,21 @@ public class MobilePlaybackActivity extends MobileActivity
             toggleFullscreen();
             return;
         }
+        if (mShorts != null && mShorts.isActive()) {
+            if (mShorts.isCommentsOpen() && mCommentsPanel != null) {
+                mCommentsPanel.close();
+                return;
+            }
+            if (canAnimateClose()) {
+                animateCloseThenFinish();
+                return;
+            }
+            if (mPresenter != null) {
+                mPresenter.onFinish();
+            }
+            finish();
+            return;
+        }
         if (mBackPreview || canMinimizeByBack()) {
             minimizeByBack();
             return;
@@ -1948,7 +1984,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private void onBackGestureStarted() {
         mBackPreview = false;
-        if (mClosing || !canMinimizeByBack()) {
+        if (mClosing || !canMinimizeByBack() || (mShorts != null && mShorts.isActive())) { // Back closes Shorts
             return;
         }
         beginMinimizeMorph();
@@ -3446,6 +3482,9 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void showControlsInternal(boolean animate) {
+        if (isShortsMode()) {
+            return; // METUBE(shorts): the overlay is the chrome
+        }
         mControlsVisible = true;
         mControlsRoot.setVisibility(View.VISIBLE);
         mControlsRoot.animate().cancel();
@@ -4159,6 +4198,9 @@ public class MobilePlaybackActivity extends MobileActivity
             mTimeBar.setDuration(duration);
             mTimeBar.setPosition(position);
             mTimeBar.setBufferedPosition(buffered);
+            if (mShorts != null) {
+                mShorts.setProgress(position, duration);
+            }
             setTextIfChanged(mPositionView, formatTime(position));
             setTextIfChanged(mDurationView, getString(R.string.mobile_player_duration, formatTime(duration)));
             updateLiveChip(position, duration);
@@ -4863,8 +4905,47 @@ public class MobilePlaybackActivity extends MobileActivity
     /** METUBE(shorts): a vertical drag that pages to the next / previous short. */
     private static final int SWIPE_SHORTS = 7;
 
+    private ShortsOverlay.Watch shortsWatchViews() {
+        ShortsOverlay.Watch watch = new ShortsOverlay.Watch();
+        watch.like = mWatchLike;
+        watch.dislike = mWatchDislike;
+        watch.share = mWatchShare;
+        watch.subscribe = mWatchSubscribe;
+        watch.subscribeLabel = mWatchSubscribe;
+        watch.likeCount = mWatchLikeCount;
+        watch.commentsCount = findViewById(R.id.mobile_watch_comments_count);
+        watch.meta = mWatchMeta;
+        watch.avatar = mWatchAvatar;
+        return watch;
+    }
+
+    /** METUBE(shorts): a tap waits out a possible second tap - one pauses, two like. */
+    private final Runnable mShortsSingleTap = () -> {
+        togglePlayPause();
+        if (mShorts != null && mPlayer != null) {
+            mShorts.flashPlayState(mPlayer.getPlayWhenReady());
+        }
+    };
+
+    private void likeShort() {
+        if (getButtonState(R.id.action_thumbs_up) != BUTTON_ON && mWatchLike != null) {
+            mWatchLike.performClick();
+        }
+        mShorts.popHeart();
+    }
+
+    /** Shorts filling the portrait screen (not while its comments are open, nor in landscape). */
     private boolean isShortsMode() {
-        return mShorts != null && mShorts.isActive() && !isLandscape();
+        return mShorts != null && mShorts.isFullscreen() && !isLandscape();
+    }
+
+    /** Re-lays the video box and its fill for the current shorts state. */
+    private void applyShortsLayout() {
+        applyWatchLayoutForOrientation(getResources().getConfiguration().orientation);
+        setResizeMode(PlayerData.instance(this).getResizeMode());
+        if (mWatchRoot != null) {
+            updateInlineViewport(mWatchRoot.getWidth());
+        }
     }
     /**
      * Fullscreen: this share of the screen on the left (brightness) and the right (volume) - the
@@ -5281,7 +5362,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mMorphOverOwnBackdrop;
     /** NEWTUBE(motion): an open/expand morph is posted but has not placed its first frame yet. */
     private boolean mMorphStartPending;
-    private static final int MINI_CARD_WIDTH_DP = 180;
+    private static final int MINI_CARD_WIDTH_DP = 216; // METUBE: = @dimen/metube_mini_width
     /** NEWTUBE(motion): see the mini expansion in onResume. */
     private static final long HOST_CARD_FOLD_WAIT_MS = 50;
     private static final int MINI_CARD_HEIGHT_DP = 102;
@@ -7221,6 +7302,11 @@ public class MobilePlaybackActivity extends MobileActivity
 
         @Override
         public void onCommentsPanelShown(boolean shown) {
+            // METUBE(shorts): the comments of a short closed - it fills the screen again.
+            if (!shown && mShorts != null && mShorts.isCommentsOpen()) {
+                mShorts.setCommentsOpen(false);
+                applyShortsLayout();
+            }
             // The page under the panel is covered: keep TalkBack off it (the video stays reachable).
             if (mWatchScroll != null) {
                 mWatchScroll.setImportantForAccessibility(shown
@@ -7722,6 +7808,9 @@ public class MobilePlaybackActivity extends MobileActivity
             mWatchLikeIcon.setImageResource(on ? R.drawable.ic_watch_thumb_up : R.drawable.ic_watch_thumb_up_outline);
             if (mWatchLike != null) {
                 mWatchLike.setSelected(on);
+                if (mShorts != null) {
+                    mShorts.setLiked(on);
+                }
             }
         } else if (buttonId == R.id.action_thumbs_down && mWatchDislikeIcon != null) {
             mWatchDislikeIcon.setImageResource(on ? R.drawable.ic_watch_thumb_down : R.drawable.ic_watch_thumb_down_outline);
@@ -7739,6 +7828,9 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         } else if (buttonId == R.id.action_subscribe && mWatchSubscribe != null) {
             mWatchSubscribe.setText(on ? R.string.mobile_watch_subscribed : R.string.mobile_watch_subscribe);
+            if (mShorts != null) {
+                mShorts.setSubscribed(on);
+            }
             // NEWTUBE(theme): the main-action pill while not subscribed (white on the dark page,
             // near-black on the light one), the quiet grey once subscribed.
             mWatchSubscribe.setBackgroundTintList(android.content.res.ColorStateList.valueOf(

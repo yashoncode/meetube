@@ -1070,8 +1070,8 @@ public class VideoLoaderController extends BasePlayerController {
             return; // autoplay-next is off for this mode
         }
 
-        if (NextPrefetchPolicy.isDue(getPlayer().getDurationMs(), getPlayer().getPositionMs(),
-                getPlayer().getSpeed(), playedWallMs())) {
+        if ((shortsSwipe && playedWallMs() > 1_000) || NextPrefetchPolicy.isDue(getPlayer().getDurationMs(),
+                getPlayer().getPositionMs(), getPlayer().getSpeed(), playedWallMs())) {
             // NEWTUBE(prepare-stash): once the next video's info lands, also pre-build its
             // MediaSource (the MPD XML gen+parse the open path would otherwise pay) - but ONLY
             // when the open dispatch below (processFormatInfo) would take the plain

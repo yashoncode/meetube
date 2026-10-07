@@ -47,6 +47,13 @@ separately from their code, and NewTube uses it under those terms:
     v1.0**) and **Apache Commons IO** (**Apache-2.0**); their notices are
     preserved inside those directories.
 
+## MeTube
+
+- **Kyant backdrop** (github.com/Kyant0/backdrop v2.0.0) — © 2025 Kyant,
+  **Apache-2.0**. The rounded-rect refraction-with-dispersion and highlight AGSL
+  shaders in `smarttubetv/src/stmobile/java/com/newtube/mobile/ui/common/GlassView.java`
+  are ported from it (as vendored by BitChord, github.com/kushagrasinghx/BitChord).
+
 ## Upstream
 
 NewTube is an independent, unofficial fork of **SmartTube** (© yuliskov, MIT —

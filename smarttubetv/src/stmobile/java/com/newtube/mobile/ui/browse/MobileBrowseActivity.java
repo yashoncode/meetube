@@ -301,6 +301,14 @@ public class MobileBrowseActivity extends MobileActivity
         // The pill floats above the system bar (content is already inset), so the bar must not
         // pad itself by that inset too - Material does, whatever paddingBottomSystemWindowInsets says.
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(mBottomNav, (v, insets) -> insets);
+        // The top bar is glass over the page: the page's lists start under it, padded by its height.
+        View topGlass = findViewById(R.id.mobile_top_glass);
+        com.newtube.mobile.ui.common.Glass.blur(topGlass, findViewById(R.id.mobile_blur_target));
+        topGlass.addOnLayoutChangeListener((v, l, t, r, bottom, ol, ot, or, oldBottom) -> {
+            if (bottom - t != oldBottom - ot) {
+                padUnderTopBar(bottom - t);
+            }
+        });
 
         mMiniPlayerBar = findViewById(R.id.mobile_mini_player);
         mMiniPlayerFrame = findViewById(R.id.mobile_mini_player_frame);
@@ -310,6 +318,20 @@ public class MobileBrowseActivity extends MobileActivity
         setupMiniPlayerBar();
         // NEWTUBE(mini-inset): the last card can scroll clear of the docked mini-player.
         com.newtube.mobile.ui.playback.MiniPlayerListInset.attach(mMiniPlayerBar, mContentGrid);
+    }
+
+    /** METUBE(glass): everything on the page starts below the frosted top bar but scrolls under it. */
+    private void padUnderTopBar(int barPx) {
+        for (View page : new View[] {mContentGrid, mYouPanel, mFeedSkeleton, mErrorContainer}) {
+            if (page != null) {
+                page.setPadding(page.getPaddingLeft(), barPx, page.getPaddingRight(), page.getPaddingBottom());
+            }
+        }
+        if (mYouPanel instanceof ViewGroup) {
+            ((ViewGroup) mYouPanel).setClipToPadding(false);
+        }
+        int spinner = Math.round(40 * getResources().getDisplayMetrics().density);
+        mContentSwipe.setProgressViewOffset(false, barPx - spinner, barPx + spinner / 2);
     }
 
     private void setupSwipeRefresh() {
@@ -512,8 +534,12 @@ public class MobileBrowseActivity extends MobileActivity
 
     @Override
     public int getMiniCardBottomOffsetPx() {
-        // The card floats above the 56dp Material bottom-nav row (see activity_mobile_browse.xml).
-        return Math.round(56 * getResources().getDisplayMetrics().density);
+        // METUBE(glass): the card sits 10dp above the floating nav pill, which floats 12dp up; the
+        // morph adds its own 12dp margin, so: pill + 12 + 10 - 12.
+        float density = getResources().getDisplayMetrics().density;
+        View pill = findViewById(R.id.mobile_nav_glass);
+        int pillPx = pill != null && pill.getHeight() > 0 ? pill.getHeight() : Math.round(68 * density);
+        return pillPx + Math.round(10 * density);
     }
 
     /**
@@ -905,12 +931,60 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void onNavItemChosen(int itemId) {
+        // METUBE(shorts): like YouTube, the Shorts tab IS the vertical player - no grid. The tab
+        // loads the feed (spinner only) and opens its first unseen short; leaving the player comes
+        // back to the tab you were on (onResume).
+        boolean shorts = itemId == toMenuItemId(MediaGroup.TYPE_SHORTS);
+        mShortsLaunchPending = shorts;
+        if (!shorts) {
+            mLastNonShortsNavItem = itemId;
+        }
         if (itemId == YOU_ITEM_ID) {
             showYouPanel();
         } else {
             mSectionFromYou = false;
             hideYouPanel();
             onSectionChosen(itemId - ITEM_ID_OFFSET);
+        }
+        maybeLaunchShorts();
+    }
+
+    /** METUBE(shorts): the Shorts tab is waiting to open the player. */
+    private boolean mShortsLaunchPending;
+    /** METUBE(shorts): the tab to come back to when the Shorts player closes. */
+    private int mLastNonShortsNavItem = MediaGroup.TYPE_HOME + ITEM_ID_OFFSET;
+
+    private void maybeLaunchShorts() {
+        if (!mShortsLaunchPending || mCurrentSectionId != MediaGroup.TYPE_SHORTS || mYouShowing
+                || !getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+            return;
+        }
+        for (Video video : mCurrentVideos) {
+            if (isFreshShort(video)) {
+                mShortsLaunchPending = false;
+                onVideoClicked(video);
+                return;
+            }
+        }
+        if (!mCurrentVideos.isEmpty() && mPresenter != null) {
+            mPresenter.onScrollEnd(mCurrentVideos.get(mCurrentVideos.size() - 1)); // all seen: next page
+        }
+    }
+
+    /** A short to queue: playable, not played this session, not mostly watched before. */
+    private static boolean isFreshShort(Video video) {
+        return video.belongsToShorts() && video.hasVideo()
+                && !com.newtube.mobile.ui.common.ShortsSeen.contains(video.videoId)
+                && video.percentWatched < 90;
+    }
+
+    /** METUBE(shorts): the grid never shows on the Shorts tab - a spinner until the player opens. */
+    private void showShortsTab(boolean shorts) {
+        mContentSwipe.setAlpha(shorts ? 0f : 1f);
+        mFeedSkeleton.setAlpha(shorts ? 0f : 1f);
+        View loading = findViewById(R.id.mobile_shorts_loading);
+        if (loading != null) {
+            loading.setVisibility(shorts ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -1228,6 +1302,7 @@ public class MobileBrowseActivity extends MobileActivity
         syncNavHighlight(sectionId);
         onYouPanelToggled(); // METUBE: the large title names the tab on screen
         updateGridSpanCount(computeSpanCount());
+        showShortsTab(sectionId == MediaGroup.TYPE_SHORTS);
 
         if (mPresenter != null) {
             mPresenter.onSectionFocused(sectionId);
@@ -1362,20 +1437,43 @@ public class MobileBrowseActivity extends MobileActivity
         mPresenter.onVideoItemClicked(video);
     }
 
-    /** METUBE(shorts): the Shorts tab's cards around {@code tapped} become the playback queue. */
-    private void queueShorts(Video tapped) {
-        List<Video> shorts = new ArrayList<>();
-        for (Video video : mCurrentVideos) {
-            if (video.belongsToShorts() && video.hasVideo()) {
-                shorts.add(video);
+    /** METUBE(shorts): a new Shorts page joins the end of a Shorts queue that is playing. */
+    private void extendShortsQueue(List<Video> page) {
+        com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist playlist =
+                com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance();
+        List<Video> queue = playlist.getAll();
+        if (page == null || queue.isEmpty() || !queue.get(queue.size() - 1).belongsToShorts()) {
+            return;
+        }
+        java.util.Set<String> queued = new java.util.HashSet<>();
+        for (Video video : queue) {
+            queued.add(video.videoId);
+        }
+        List<Video> more = new ArrayList<>();
+        for (Video video : visibleFeedItems(page)) {
+            if (isFreshShort(video) && queued.add(video.videoId)) { // the reel feed repeats itself
+                more.add(video);
             }
         }
+        if (!more.isEmpty()) {
+            playlist.addAll(more);
+        }
+    }
+
+    /** METUBE(shorts): the Shorts tab's cards around {@code tapped} become the playback queue. */
+    private void queueShorts(Video tapped) {
+        java.util.LinkedHashMap<String, Video> unique = new java.util.LinkedHashMap<>();
+        for (Video video : mCurrentVideos) {
+            if (video.videoId != null && (video == tapped || isFreshShort(video))) {
+                unique.putIfAbsent(video.videoId, video);
+            }
+        }
+        List<Video> shorts = new ArrayList<>(unique.values());
         int at = shorts.indexOf(tapped);
         if (at < 0) {
             return;
         }
-        // ponytail: the queue is what the tab has loaded (Playlist caps it at 50); paging more in
-        // while swiping needs the presenter's continuation - add when people swipe that far.
+        // Playlist keeps 50 (300 on roomy phones); later pages join as the swipe nears the end.
         List<Video> window = shorts.subList(Math.max(0, at - 10), Math.min(shorts.size(), at + 40));
         com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist playlist =
                 com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance();
@@ -1787,6 +1885,14 @@ public class MobileBrowseActivity extends MobileActivity
             mPresenter.onViewResumed();
         }
 
+        // METUBE(shorts): back from the Shorts player - return to the tab before Shorts.
+        if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && !mShortsLaunchPending && !mYouShowing
+                && mBottomNav.getMenu().findItem(mLastNonShortsNavItem) != null) {
+            mBottomNav.setSelectedItemId(mLastNonShortsNavItem);
+        } else {
+            maybeLaunchShorts();
+        }
+
         updateAccountRow();
         getWindow().getDecorView().postDelayed(mUpdateCheckIfDue, UPDATE_CHECK_DELAY_MS);
         // Cheap re-sync; listener callbacks already cover changes while resumed.
@@ -2167,6 +2273,7 @@ public class MobileBrowseActivity extends MobileActivity
                         staleSwap = true;
                     }
                     appendNew(group.getVideos());
+                    extendShortsQueue(group.getVideos());
                     break;
             }
 
@@ -2178,6 +2285,7 @@ public class MobileBrowseActivity extends MobileActivity
                     + " size=" + mCurrentVideos.size());
             submitFeed(staleSwap);
             checkFeedRunway();
+            maybeLaunchShorts();
 
             if (isDownloadsSectionShowing()) {
                 // Local cards carry their file and registry entry - not something a persisted

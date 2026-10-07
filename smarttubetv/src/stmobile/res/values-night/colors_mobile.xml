@@ -43,4 +43,7 @@
     <color name="metube_glass_stroke">#24FFFFFF</color>
     <color name="metube_glass_selected">#24FFFFFF</color>
     <color name="metube_nav_inactive">#ADFFFFFF</color>
+    <!-- METUBE(glass): the frosted top bar - the page colour at ~75%. -->
+    <color name="metube_bar_tint">#B80B0B0E</color>
+    <color name="metube_switch_off">#3A3A3F</color>
 </resources>

@@ -1,28 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE: the in-app mark (brand row): the launcher icon as a 22dp squircle. -->
+<!-- METUBE: the in-app mark (brand row) - the launcher cookie and M. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="22dp"
     android:height="22dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M28,0h52a28,28 0,0 1,28 28v52a28,28 0,0 1,-28 28h-52a28,28 0,0 1,-28 -28v-52a28,28 0,0 1,28 -28z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="108"
-                android:endY="0"
-                android:startX="0"
-                android:startY="108"
-                android:type="linear">
-                <item android:color="#FF453A" android:offset="0" />
-                <item android:color="#FF2D6F" android:offset="0.55" />
-                <item android:color="#C42BFF" android:offset="1" />
-            </gradient>
-        </aapt:attr>
-    </path>
     <path
-        android:pathData="M26,78V34L54,62L82,34V78"
-        android:strokeWidth="15"
+        android:fillColor="#FF453A"
+        android:pathData="M54.00,0.90 L56.31,1.19 L58.55,2.01 L60.68,3.25 L62.68,4.76 L64.57,6.34 L66.37,7.82 L68.17,9.05 L70.04,9.93 L72.04,10.45 L74.20,10.67 L76.54,10.70 L79.00,10.70 L81.50,10.83 L83.94,11.25 L86.18,12.06 L88.13,13.32 L89.71,15.02 L90.91,17.09 L91.74,19.42 L92.30,21.86 L92.73,24.28 L93.16,26.58 L93.75,28.67 L94.62,30.55 L95.81,32.24 L97.33,33.80 L99.10,35.32 L100.98,36.90 L102.82,38.61 L104.41,40.49 L105.61,42.56 L106.29,44.78 L106.41,47.10 L105.99,49.45 L105.14,51.77 L104.00,54.00 L102.77,56.13 L101.63,58.17 L100.73,60.15 L100.19,62.14 L100.02,64.20 L100.18,66.37 L100.55,68.68 L100.98,71.10 L101.29,73.59 L101.30,76.06 L100.89,78.41 L99.99,80.55 L98.59,82.40 L96.75,83.94 L94.61,85.16 L92.30,86.14 L89.99,86.98 L87.81,87.81 L85.84,88.75 L84.15,89.93 L82.69,91.40 L81.42,93.16 L80.23,95.17 L79.00,97.30 L77.64,99.40 L76.06,101.30 L74.23,102.84 L72.16,103.90 L69.90,104.42 L67.51,104.41 L65.08,103.97 L62.68,103.24 L60.37,102.40 L58.17,101.63 L56.06,101.09 L54.00,100.90 L51.94,101.09 L49.83,101.63 L47.63,102.40 L45.32,103.24 L42.92,103.97 L40.49,104.41 L38.10,104.42 L35.84,103.90 L33.77,102.84 L31.94,101.30 L30.36,99.40 L29.00,97.30 L27.77,95.17 L26.58,93.16 L25.31,91.40 L23.85,89.93 L22.16,88.75 L20.19,87.81 L18.01,86.98 L15.70,86.14 L13.39,85.16 L11.25,83.94 L9.41,82.40 L8.01,80.55 L7.11,78.41 L6.70,76.06 L6.71,73.59 L7.02,71.10 L7.45,68.68 L7.82,66.37 L7.98,64.20 L7.81,62.14 L7.27,60.15 L6.37,58.17 L5.23,56.13 L4.00,54.00 L2.86,51.77 L2.01,49.45 L1.59,47.10 L1.71,44.78 L2.39,42.56 L3.59,40.49 L5.18,38.61 L7.02,36.90 L8.90,35.32 L10.67,33.80 L12.19,32.24 L13.38,30.55 L14.25,28.67 L14.84,26.58 L15.27,24.28 L15.70,21.86 L16.26,19.42 L17.09,17.09 L18.29,15.02 L19.87,13.32 L21.82,12.06 L24.06,11.25 L26.50,10.83 L29.00,10.70 L31.46,10.70 L33.80,10.67 L35.96,10.45 L37.96,9.93 L39.83,9.05 L41.63,7.82 L43.43,6.34 L45.32,4.76 L47.32,3.25 L49.45,2.01 L51.69,1.19Z" />
+    <path
+        android:pathData="M34,70V40L54,60L74,40V70"
+        android:strokeWidth="11"
         android:strokeColor="#FFFFFF"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
