@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- METUBE(glass): GlassView's shape and tint. -->
+    <declare-styleable name="GlassView">
+        <attr name="glassCornerRadius" format="dimension" />
+        <attr name="glassTint" format="color" />
+    </declare-styleable>
+</resources>

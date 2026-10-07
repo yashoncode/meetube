@@ -1,0 +1,32 @@
+📞 NEWTUBE 1.10.2 — EDICIÓN TIP Y COLL
+
+Hoy vamos a aprender a mandar un registro de diagnóstico.
+
+Se coge el móvil.
+Se abre NewTube.
+Se va a Ajustes. Se baja hasta «Acerca de».
+Se toca «Enviar registro de diagnóstico».
+Se elige WhatsApp. Se elige este grupo. Y se envía.
+
+Y ya está. Sin ordenador, sin cables y sin llamar al sobrino que sabe de informática.
+
+🩺 ¿PARA QUÉ?
+A alguno le sale «Unknown source error» en todos los vídeos al rato de estar viéndolos. En el emulador no pasa, en mi Pixel tampoco, y así no hay manera de encontrarlo. El registro dice qué petición ha fallado y por qué. Si te pasa, mándalo justo después. Vale también si acabas de cerrar y abrir la app.
+
+🔒 ¿QUÉ LLEVA?
+La versión de la app, el modelo del móvil, la versión de Android, si tienes la sesión iniciada, el tipo de red, el idioma de los subtítulos y los vídeos y canales que has abierto. Antes de guardarlo, la app quita contraseñas, tokens de sesión, cookies, correos y tu IP. No sale nada del móvil hasta que tú lo compartes.
+
+🧹 DE PASO
+La app ya no escribe secretos de la sesión en el registro del sistema: ni el token de la cuenta, ni el código de la tele cuando falla el inicio de sesión, ni los mensajes del chat en directo.
+
+🥃 LA LETRA PEQUEÑA
+El «Unknown source error» todavía no está arreglado: esta versión es para encontrarlo. Si a ti te va todo bien, instálala igual, que así el día que falle ya tienes el botón.
+
+Adjunto el APK firmado para ARM64, como siempre. Android 7 o superior. Instálalo encima del anterior, sin desinstalar ni borrar datos.
+
+Novedades completas:
+https://github.com/aleixrodriala/newtube/blob/main/CHANGELOG.es.md
+
+Y la semana que viene… hablaremos del Gobierno.
+
+Parodia y homenaje no oficial a Tip y Coll.

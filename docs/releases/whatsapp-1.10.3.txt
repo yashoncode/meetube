@@ -1,0 +1,34 @@
+📻 NEWTUBE 1.10.3 — EDICIÓN MARTES Y TRECE
+
+—¿Hola? ¿Es el programa? Llamaba por lo de los ajustes… Que yo bajo, bajo, bajo, marco una casilla y, ¡zas!, otra vez arriba del todo. Y vuelta a bajar.
+—Pues ya no, señora. Ahora se queda donde lo dejó.
+—¿Y si entro en una subpágina y vuelvo?
+—Donde estaba. Ni un centímetro más arriba.
+
+📍 LOS AJUSTES NO PIERDEN EL SITIO
+Marcar una casilla o elegir una opción a media página ya no te devuelve arriba. Y al volver de una subpágina, regresas justo a donde estabas.
+
+👎 EL «NO ME GUSTA», OPCIONAL
+El contador de «no me gusta» sale de Return YouTube Dislike, un servicio de fuera que se entera de qué vídeos abres. Ahora viene apagado: verás los «me gusta» de YouTube y el botón de «no me gusta» sin número. Si lo quieres, está en Ajustes → Configuración del reproductor → Contador de no me gusta.
+
+📺 ENVIAR A LA TV
+Las opciones de enviar a la tele ya no hablan de anuncios: dicen lo que cambia de verdad (dónde eliges la calidad y los subtítulos, y qué app de la tele lo reproduce).
+
+🏗️ HECHO EN GITHUB
+Los APK ya no salen de mi ordenador: se compilan en los servidores de GitHub a partir del código publicado, y cualquiera puede comprobarlo. De paso pesan unos 20 MB menos.
+
+🔧 Y ADEMÁS
+Un arreglo de SmartTube para móviles con Android anterior al 10, donde a veces ningún vídeo cargaba («Can't get video info»). Y si la comprobación antibots de YouTube tarda en arrancar, la app ya no se queda a medias.
+
+🥃 LA LETRA PEQUEÑA
+El «Unknown source error» de algunos Xiaomi sigue sin arreglar. Si te pasa, Ajustes → Acerca de → Enviar registro de diagnóstico, y lo mandas aquí.
+
+Adjunto el APK firmado para ARM64, como siempre. Android 7 o superior. Instálalo encima del anterior, sin desinstalar ni borrar datos.
+
+Novedades completas:
+https://github.com/aleixrodriala/newtube/blob/main/CHANGELOG.es.md
+
+—¿Y por dónde íbamos?
+—Por la 1.10.3, señora. Por la 1.10.3.
+
+Parodia y homenaje no oficial a Martes y Trece.

@@ -1,0 +1,23 @@
+🎭 NEWTUBE 1.10.4 — EDICIÓN LINA MORGAN
+
+(Se levanta el telón. Aplausos. La vedette baja la escalera con el móvil en la mano.)
+—Ay, que me habéis escrito… ¡Que me habéis escrito en GitHub! Y yo aquí, agradecida y actualizada.
+
+🔠 LA LETRA, A TU TAMAÑO
+Si en el móvil tienes la letra grande (o la pantalla ampliada), NewTube ahora te hace caso en toda la app: barra de arriba, pestañas, menús y ajustes, no solo el feed. Con los ajustes por defecto, algunas cosas salen un poco más grandes que antes, igual que en las demás apps. Si habías subido la escala de interfaz para leer mejor, prueba a bajarla: ahora también amplía el feed.
+
+🔄 «BUSCAR ACTUALIZACIONES» FUNCIONA
+Ajustes → Acerca de → Buscar actualizaciones daba un error rarísimo. Ya no: cada versión publica lo que la app busca, y si algún día falla, lo dice con palabras normales. Desde la 1.10.2 y la 1.10.3 también podéis actualizar desde ahí.
+
+🥃 LA LETRA PEQUEÑA
+Algunos vídeos para niños siguen parando con «Unknown source error». Ya sabemos por qué y cómo reproducirlos, y lo estamos probando en móviles de verdad, con wifi y con datos, antes de publicarlo. En la próxima.
+
+Adjunto el APK firmado para ARM64, como siempre. Android 7 o superior. Instálalo encima del anterior, sin desinstalar ni borrar datos.
+
+Novedades completas:
+https://github.com/aleixrodriala/newtube/blob/main/CHANGELOG.es.md
+
+(Reverencia. Telón.)
+—¡Gracias por escribir!
+
+Parodia y homenaje no oficial a Lina Morgan.

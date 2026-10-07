@@ -1,0 +1,12 @@
+Nova versió: NewTube 1.12.0 (Paco Martínez Soria Edition) 🎬
+
+• Tema clar: Configuració → Interfície d'usuari → Tema
+• Els comentaris s'obren en un panell sota el vídeo, i el vídeo continua
+• «No m'interessa» i «No recomanis el canal» al menú dels vídeos d'Inici (amb sessió iniciada)
+• Enrere minimitza el reproductor, com a YouTube. Per tancar el minireproductor, llisca'l cap al costat
+• L'Inici ja no s'acaba: va carregant mentre baixes
+• Adéu als Shorts, a tot arreu
+• Pista d'àudio a part de la Qualitat, als vídeos doblats
+• «Només àudio» ja no posa el vídeo en finestreta quan surts a l'Inici
+
+I a partir d'aquesta, l'app avisa sola a la pestanya You quan surt una versió nova. Instal·leu-la per sobre de l'anterior, sense desinstal·lar. Si veieu res estrany, digueu-ho aquí 🙏

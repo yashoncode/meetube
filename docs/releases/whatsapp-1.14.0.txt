@@ -1,0 +1,8 @@
+Nova versió: NewTube 1.14.0 (Cruz y Raya Edition) 🎬
+
+• Arrossegaments que es noten: minimitzar el vídeo, treure el mini reproductor i estirar per actualitzar fan un clic quan passen el punt de no retorn, i aterren amb un petit rebot
+• La barra de progrés segueix el dit: ja no salta sota el dit i arriba a 0:00 des de la vora
+• Els noms llargs de les pestanyes d'un canal ja caben en una línia
+• A Settings → About: donar una estrella a NewTube a GitHub i compartir-lo
+
+La 1.12.0 o més nova us avisa sola a la pestanya You. Instal·leu-la per sobre de l'anterior, sense desinstal·lar. Novetats també al Discord: discord.gg/xu3v6euSHq

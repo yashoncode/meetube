@@ -1,0 +1,7 @@
+Nova versió: NewTube 1.15.0 (Los Morancos Edition) 🎬
+
+• Gestos al reproductor: llisca el vídeo amunt per posar-lo a pantalla completa i avall pel mig per sortir. A pantalla completa, amunt i avall a l'esquerra per la brillantor i a la dreta pel volum, i de costat per avançar o tirar enrere
+• Settings nous: 16 pàgines curtes en lloc de les mil files de la tele, i un cercador a dalt de tot
+• Arreglat: la pantalla completa amb un idioma o país triat a l'app ja no surt retallada
+
+La 1.12.0 o més nova us avisa sola a la pestanya You. Instal·leu-la per sobre de l'anterior, sense desinstal·lar. Novetats també al Discord: discord.gg/xu3v6euSHq

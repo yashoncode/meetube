@@ -1,0 +1,45 @@
+☎️ NEWTUBE 1.10.1 — EDICIÓN GILA
+
+—¿Oiga? ¿Es YouTube? Que se ponga el vídeo.
+—…
+—No, no, que se ponga YA. Que antes le pedía un vídeo y me tenía un segundo mirando la ruedecita, como si fuera el cartero.
+
+Pues ya se pone antes. Y cuando la red va mal, también.
+
+⚡ ARRANCA ANTES
+Medido en un Pixel 9, la versión de antes contra esta:
+• Abrir la app: de 0,4 s a 0,24 s.
+• Tocar un vídeo relacionado: en Wi-Fi de 0,55 s a 0,5 s; con datos, de 1 s a medio segundo.
+• Abrir un enlace que te han pasado: en Wi-Fi de casi 1 s a 0,66 s. Con datos, un día malo de Movistar, de 9 segundos a alrededor de 1.
+• Volver a un vídeo que dejaste a medias: de hasta 1,4 s a 0,4 s. El audio ya no se lee todo lo que se salta, que era como leerse la guía telefónica para llamar a la vecina.
+
+🏠 EL INICIO, SIN PARPADEOS
+La app abre antes, el Inicio se llena antes y ya no hace ese pantallazo en blanco al cambiar las tarjetas viejas por las nuevas. Y Android la deja optimizada al instalar, no a la noche siguiente.
+
+📶 CUANDO LA RED VA MAL
+Hay redes móviles que se atascan con algunos servidores de vídeo de YouTube. Antes te tocaba esperar, vídeo tras vídeo. Ahora NewTube cambia de camino en la misma petición, se apunta qué operador hace eso (aunque cierres la app) y los siguientes vídeos van directos por donde funciona. Cuando vuelve a ir bien, se le olvida. Como a mi cuñado lo que me debe.
+Sin conexión, el reproductor espera a que vuelva la red y lo intenta una vez, en vez de insistir como un vendedor de enciclopedias.
+
+🤖 «CONFIRMA QUE NO ERES UN BOT»
+Cuando YouTube se pone así, si tienes la sesión iniciada NewTube tira por una ruta de tele con tu cuenta y reproduce. Y se acuerda del bloqueo, en vez de preguntar a todo el mundo en cada vídeo. Los vídeos con restricción de edad, igual, si tu cuenta puede verlos.
+
+🎨 REPASO DE LA INTERFAZ
+• Avisos propios de la app, con «Deshacer» o «Ver», que no tapan el minirreproductor.
+• Me gusta / No me gusta: pulgar relleno o hueco, sin ponerse rojo, y con Deshacer. Si no se guarda, te lo dice y lo deja como estaba.
+• La página del vídeo ya no baila mientras carga, pone «hace 4 días» y nombra los audios doblados.
+• Cambiar a modo claro u oscuro ya no para el vídeo.
+• La búsqueda distingue «sin conexión», «error» y «no hay nada».
+• Atrás desde cualquier pestaña vuelve al Inicio. Botones más grandes, menús que caben en horizontal.
+• Fuera de Ajustes: Frecuencia de fotogramas automática y Control remoto, que son cosas de tele.
+
+🥃 LA LETRA PEQUEÑA
+La primera vez que tu operador se atasca, ese vídeo aún tarda unos 7-8 s mientras NewTube lo aprende. Si eliges la misma descarga dos veces mientras baja, se pone dos veces en cola. Y YouTube sigue diciendo que no a algunos vídeos y cuentas; eso no lo arregla ni una llamada al enemigo.
+
+Adjunto el APK firmado para ARM64, como siempre. Android 7 o superior. Instálalo encima del anterior, sin desinstalar ni borrar datos.
+
+Novedades completas:
+https://github.com/aleixrodriala/newtube/blob/main/CHANGELOG.es.md
+
+—¿Oiga? ¿Sigue ahí? Pues nada, que ya está. Que lo instalen.
+
+Parodia y homenaje no oficial a Miguel Gila.
