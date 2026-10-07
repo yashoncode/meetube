@@ -77,3 +77,4 @@ tools/ui-audit/
 # release signing (never commit)
 keystore.properties
 *.jks
+dist/

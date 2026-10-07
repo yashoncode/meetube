@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write newtube.json, the manifest the in-app updater reads (Settings -> About -> Check for updates).
+"""Write metube.json, the manifest the in-app updater reads (Settings -> About -> Check for updates).
 
 Format (SharedModules appupdatechecker2, UpdateManifest): a "package" object with the download
 links, one list per ABI ("downloadUrlList_<Build.SUPPORTED_ABIS[0]>") plus "downloadUrlList" for any
@@ -12,7 +12,7 @@ top-level key but "package" is read as a version, so new fields must go inside "
 The changelog lines are the bold lead of each bullet of CHANGELOG.md / CHANGELOG.es.md, from the
 newest few versions. Usage (release.yml runs it on the built APKs):
 
-    tools/update_manifest.py --tag v1.10.3 --dist dist --out dist/newtube.json
+    tools/update_manifest.py --tag v1.10.3 --dist dist --out dist/metube.json
 """
 import argparse
 import json
@@ -21,7 +21,7 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-REPO = "aleixrodriala/newtube"
+REPO = "yashoncode/metube"
 # x86_64 and anything else get the universal APK (arm64-v8a + armeabi-v7a), the README's "not sure"
 # file: x86_64 devices run it through ARM translation. One without translation had no release APK
 # to install in the first place (the x86 one runs only where 32-bit x86 is also supported).
@@ -107,11 +107,11 @@ def main():
     base = f"https://github.com/{REPO}/releases/download/{args.tag}"
     package = {}
     for abi in ABIS:
-        apk = f"NewTube_{name}_{abi}.apk"
+        apk = f"MeTube_{name}_{abi}.apk"
         if (dist / apk).is_file():
             package[f"downloadUrlList_{abi}"] = [f"{base}/{apk}"]
             package[f"downloadSize_{abi}"] = (dist / apk).stat().st_size
-    universal = f"NewTube_{name}_universal.apk"
+    universal = f"MeTube_{name}_universal.apk"
     if not (dist / universal).is_file():
         sys.exit(f"{universal} is missing from {dist}")
     package["downloadUrlList"] = [f"{base}/{universal}"]
