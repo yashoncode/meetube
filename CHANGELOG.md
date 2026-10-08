@@ -2,6 +2,23 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.0.2 — 2026-10-08 — Vertical fullscreen
+
+### New
+
+- **Vertical fullscreen.** Pull the watch page down from its title and the video fills the upright screen, like YouTube's. The whole picture stays in view, the system bars hide, and the seek bar sits higher, within reach of your thumb. Swipe down on the video or press Back to leave it, or turn the phone sideways for landscape.
+- **Ambient colours in vertical fullscreen.** The black bands above and below the video glow with its colours. Ambient mode is on by default; turn it off in Settings → Player → Watch page, or from the player's settings sheet.
+- **A floating glass fullscreen button** at the bottom right of the watch page.
+- **A new loading animation.** The coral cookie from the icon turns as it morphs into a four-leaf clover and back. It replaces the spinner app-wide.
+
+### Changed
+
+- **Shorts start faster.** While you watch a short, MeTube now preloads the first seconds of the next one: it asks for the next short 0.3 seconds in (it used to wait 5 seconds) and loads it once the current one has 3 seconds buffered. In testing, a short you swipe to after about 3 seconds started in about half a second.
+- **A fatter seek bar while you drag it**, with a bigger dot, like YouTube's.
+- **The minimize button in fullscreen** is a small round button, easy to spot over any picture.
+- **No page titles in the top bar.** Just the MeTube logo, cast and search.
+- **Shorts comments:** dragging them down no longer shows the short as an ordinary video underneath, and the short grows back to full screen as the comments slide away.
+
 ## 2.0.1 — 2026-10-07 — Feel
 
 ### New

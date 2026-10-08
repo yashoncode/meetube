@@ -185,6 +185,8 @@
     <string name="mobile_settings_resume_live">Resume live streams</string>
     <string name="mobile_settings_resume_live_summary">Pick up a live stream where you left it, not at the live point</string>
     <string name="mobile_settings_watch_page">Under the video</string>
+    <string name="mobile_settings_ambient">Ambient mode</string>
+    <string name="mobile_settings_ambient_summary">The video\'s colours glow under the player and fill the black bands in vertical fullscreen</string>
     <string name="mobile_settings_hide_related">Hide Up next</string>
     <string name="mobile_settings_hide_related_summary">Leaves out the related videos under the player</string>
     <string name="mobile_settings_dislikes">Show dislike counts</string>

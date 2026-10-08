@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- METUBE(fullscreen): the player's minimize button as a small round button in fullscreen and
+     the vertical fullscreen - a dark disc with a hairline rim, easy to find over any frame. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#33FFFFFF">
+    <item>
+        <inset android:inset="6dp">
+            <shape android:shape="oval">
+                <solid android:color="#8C000000" />
+                <stroke
+                    android:width="1dp"
+                    android:color="#40FFFFFF" />
+            </shape>
+        </inset>
+    </item>
+</ripple>

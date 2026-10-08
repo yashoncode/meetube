@@ -719,6 +719,15 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchRoot = findViewById(R.id.mobile_watch_root);
         mWatchRoot.addOnLayoutChangeListener(mWatchRootLayoutListener);
         mWatchScroll = findViewById(R.id.mobile_watch_scroll);
+        mWatchFab = findViewById(R.id.mobile_watch_fullscreen_fab);
+        if (mWatchFab != null) {
+            com.newtube.mobile.ui.common.Glass.blur(mWatchFab, findViewById(R.id.mobile_watch_glass));
+            mWatchFab.setOnClickListener(v -> {
+                if (v.getAlpha() > 0.5f) {
+                    toggleFullscreen();
+                }
+            });
+        }
         mWatchContent = findViewById(R.id.mobile_watch_content);
         mWatchTitle = findViewById(R.id.mobile_watch_title);
         mWatchMeta = findViewById(R.id.mobile_watch_meta);
@@ -1158,6 +1167,13 @@ public class MobilePlaybackActivity extends MobileActivity
         mVideoArea.setPinchEnabled(orientation == Configuration.ORIENTATION_LANDSCAPE);
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (mPortraitFull) { // the landscape fullscreen takes over; upright again is the page
+                mPortraitFull = false;
+                setResizeMode(PlayerData.instance(this).getResizeMode()); // the pinch's choice again
+            }
+            if (mAmbient != null) {
+                mAmbient.setFill(null);
+            }
             lp.height = LinearLayout.LayoutParams.MATCH_PARENT;
             lp.weight = 0;
             mVideoArea.setLayoutParams(lp);
@@ -1187,15 +1203,22 @@ public class MobilePlaybackActivity extends MobileActivity
                     * getResources().getDisplayMetrics().density);
             if (width > 0) {
                 // METUBE(shorts): a short fills the portrait screen; the watch page steps aside.
-                lp.height = isShortsMode() ? LinearLayout.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
+                // So does any video in the vertical fullscreen (setPortraitFull).
+                lp.height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
                 lp.weight = 0;
                 mVideoArea.setLayoutParams(lp);
             }
+            // METUBE(shorts): a short's comments sit over a black page, not the watch page - so
+            // sliding them down never shows the short as an ordinary video.
+            boolean shorts = mShorts != null && mShorts.isActive();
             if (mWatchScroll != null) {
-                mWatchScroll.setVisibility(isShortsMode() ? View.GONE : View.VISIBLE);
+                mWatchScroll.setVisibility(isTallMode() || shorts ? View.GONE : View.VISIBLE);
+            }
+            if (mWatchFab != null) {
+                mWatchFab.setVisibility(shorts ? View.GONE : View.VISIBLE);
             }
             if (mCommentsPanel != null) {
-                mCommentsPanel.setSuspended(isShortsMode());
+                mCommentsPanel.setSuspended(isTallMode());
             }
             // Portrait already presents the complete title immediately below the video. Repeating
             // it in the overlay squeezes five useful controls into half the top bar and makes the
@@ -1478,13 +1501,7 @@ public class MobilePlaybackActivity extends MobileActivity
         PlayerTransitionBridge.LaunchSnapshot launch = PlayerTransitionBridge.take();
 
         mIsResumed = true;
-        if (mAmbient == null && mVideoTexture != null && mWatchContent != null) {
-            mAmbient = new AmbientGlow(mWatchContent, mVideoTexture,
-                    androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background));
-        }
-        if (mAmbient != null) {
-            mAmbient.start();
-        }
+        applyAmbientSetting(); // METUBE(ambient): the Settings switch, read on every resume
         // In the foreground again: auto-PiP behaves normally from here on.
         mSuppressAutoPip = false;
         mDismissDragActive = false;
@@ -1946,6 +1963,10 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mClosing) {
             return;
         }
+        if (mPortraitFull && !isLandscape()) {
+            setPortraitFull(false);
+            return;
+        }
         // NEWTUBE(motion): like YouTube - Back leaves fullscreen first, then minimizes.
         if (!mIsInPip && !mPipEnterPending
                 && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -2109,6 +2130,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mTimeBar != null) {
             mTimeBar.setAlpha(content);
         }
+        if (mWatchFab != null) {
+            mWatchFab.setAlpha(content); // METUBE(fullscreen): the floating button goes with the page
+        }
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(content);
         }
@@ -2225,6 +2249,29 @@ public class MobilePlaybackActivity extends MobileActivity
         bleedScrim(mTopScrim, left, top, right, 0);
         bleedScrim(mBottomScrim, left, 0, right, bottom);
         applySeekBarLayout(left, top, right, bottom);
+        styleBackButton();
+    }
+
+    @Nullable
+    private android.graphics.drawable.Drawable mBackButtonInlineBg;
+
+    /** METUBE(fullscreen): in fullscreen (either way up) minimize is a small round button. */
+    private void styleBackButton() {
+        if (mBackButton == null) {
+            return;
+        }
+        boolean full = isLandscape() || mPortraitFull;
+        if (mBackButtonInlineBg == null) {
+            mBackButtonInlineBg = mBackButton.getBackground();
+        }
+        android.graphics.drawable.Drawable bg = full
+                ? androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_player_back_round)
+                : mBackButtonInlineBg;
+        if (full != (mBackButton.getBackground() != mBackButtonInlineBg)) {
+            mBackButton.setBackground(bg);
+            int pad = dp(full ? 15 : 12);
+            mBackButton.setPadding(pad, pad, pad, pad);
+        }
     }
 
     /**
@@ -2238,9 +2285,12 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mTimeBar == null) {
             return;
         }
-        boolean inline = !isLandscape();
+        // METUBE(fullscreen): the vertical fullscreen floats the bar like landscape does, and well
+        // above the bottom edge - where a thumb reaches it, clear of the gesture bar.
+        boolean inline = !isLandscape() && !mPortraitFull;
         int side = inline ? 0 : dp(12);
-        int lift = inline ? 0 : dp(8);
+        int lift = inline ? 0 : dp(8) + (mPortraitFull && !isLandscape()
+                ? Math.round(getResources().getDisplayMetrics().heightPixels * PORTRAIT_FULL_BAR_LIFT) : 0);
         setMargins(mTimeBar, left + side, 0, right + side, bottom + lift);
         mTimeBar.setTrackAtBottom(inline);
         updateSeekBarLine();
@@ -2466,7 +2516,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
-        int height = isShortsMode() ? LinearLayout.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
+        int height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
         if (lp.height != height || lp.weight != 0) {
             lp.height = height;
             lp.weight = 0;
@@ -2493,7 +2543,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 || isLandscape()) {
             return;
         }
-        if (isShortsMode()) {
+        if (isTallMode()) {
             mExoPlayerController.clearInlineViewport("shorts"); // full screen, not a 16:9 box
             return;
         }
@@ -3846,12 +3896,41 @@ public class MobilePlaybackActivity extends MobileActivity
             addMenuRow(content, sheet, R.drawable.ic_player_pip, R.string.mobile_player_pip,
                     null, false, this::enterPipFromMenu);
         }
+        // METUBE(ambient): the video's colours around it - on unless turned off here or in Settings.
+        addMenuRow(content, sheet, R.drawable.ic_player_brightness_high, R.string.mobile_settings_ambient,
+                stateLabel(AmbientGlow.isOn(this)), false, this::toggleAmbient);
         addMenuRow(content, sheet, R.drawable.ic_mobile_settings, R.string.mobile_menu_more,
                 null, true, this::openPlayerMoreMenu);
 
         sheet.setContentView(content);
         sheet.setOnDismissListener(d -> armAutoHide());
         showPlayerSheet(sheet);
+    }
+
+    /**
+     * METUBE(ambient): start or drop the glow (and the vertical fullscreen's fill) as the Ambient
+     * mode switch says - Settings, or the gear sheet's own row.
+     */
+    private void applyAmbientSetting() {
+        boolean ambient = AmbientGlow.isOn(this);
+        if (ambient && mAmbient == null && mVideoTexture != null && mWatchContent != null) {
+            mAmbient = new AmbientGlow(mWatchContent, mVideoTexture,
+                    androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background));
+        } else if (!ambient && mAmbient != null) {
+            mAmbient.stop();
+            mAmbient.setFill(null);
+            mAmbient = null;
+            mWatchContent.setBackground(null);
+        }
+        if (mAmbient != null) {
+            mAmbient.start();
+            mAmbient.setFill(mPortraitFull && !isLandscape() ? mVideoArea : null);
+        }
+    }
+
+    private void toggleAmbient() {
+        AmbientGlow.setOn(this, !AmbientGlow.isOn(this));
+        applyAmbientSetting();
     }
 
     /** The gear sheet's "More" level: the long tail of SmartTube player actions. */
@@ -4960,6 +5039,34 @@ public class MobilePlaybackActivity extends MobileActivity
         return watch;
     }
 
+    /**
+     * METUBE(shorts): leave the comments - the box takes the full screen at once and is scaled
+     * down to where the short was, then grows into place (top-centre pivot), so the short swells
+     * back instead of jumping.
+     */
+    private void growShortBack(long durationMs) {
+        int from = mVideoArea != null ? mVideoArea.getHeight() : 0;
+        mShorts.setCommentsOpen(false);
+        applyShortsLayout();
+        if (mVideoArea == null || from <= 0) {
+            return;
+        }
+        OneShotPreDrawListener.add(mVideoArea, () -> {
+            int to = mVideoArea.getHeight();
+            if (to <= from) {
+                return;
+            }
+            float start = (float) from / to;
+            mVideoArea.animate().cancel();
+            mVideoArea.setPivotX(mVideoArea.getWidth() / 2f);
+            mVideoArea.setPivotY(0f);
+            mVideoArea.setScaleX(start);
+            mVideoArea.setScaleY(start);
+            mVideoArea.animate().scaleX(1f).scaleY(1f).setDuration(Math.max(220, durationMs + 80))
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator(1.5f)).start();
+        });
+    }
+
     /** METUBE(shorts): a tap waits out a possible second tap - one pauses, two like. */
     private final Runnable mShortsSingleTap = () -> {
         togglePlayPause();
@@ -4976,6 +5083,118 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /** Shorts filling the portrait screen (not while its comments are open, nor in landscape). */
+    /**
+     * METUBE(fullscreen): YouTube's vertical fullscreen - the video fills the upright screen and
+     * the page steps aside, with the system bars hidden. Entered by pulling the page down from its
+     * top (the title); left by Back, a swipe down on the video, or turning the phone sideways.
+     */
+    private boolean mPortraitFull;
+    @Nullable
+    private View mWatchFab;
+    /** How far the page must be pulled down from its top to enter the vertical fullscreen. */
+    private static final float PORTRAIT_FULL_PULL_DP = 72f;
+    /** The vertical fullscreen's seek bar sits this share of the screen above the bottom. */
+    private static final float PORTRAIT_FULL_BAR_LIFT = 0.16f;
+    private float mPullDownX;
+    private float mPullDownY = -1f;
+    private boolean mPullConsumed;
+
+    /** The video fills the portrait screen: a short, or the vertical fullscreen. */
+    private boolean isTallMode() {
+        return isShortsMode() || (mPortraitFull && !isLandscape());
+    }
+
+    private void setPortraitFull(boolean on) {
+        if (on == mPortraitFull || (on && (isLandscape() || isShortsMode() || mIsInPip || mPipEnterPending))) {
+            return;
+        }
+        mPortraitFull = on;
+        if (mWatchRoot != null) {
+            android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
+                    new android.transition.ChangeBounds().setDuration(240));
+        }
+        applyWatchLayoutForOrientation(Configuration.ORIENTATION_PORTRAIT);
+        if (mWatchRoot != null) {
+            updateInlineViewport(mWatchRoot.getWidth());
+        }
+        setResizeMode(PlayerData.instance(this).getResizeMode()); // fit while upright-full; also re-lays the controls
+        if (mAmbient != null) {
+            mAmbient.setFill(on ? mVideoArea : null); // the black bands glow with the video
+        }
+        if (on) {
+            applyDisplayCutoutMode(true); // the picture may use the camera's band too
+            androidx.core.view.WindowInsetsControllerCompat bars =
+                    androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+            bars.setSystemBarsBehavior(
+                    androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            bars.hide(WindowInsetsCompat.Type.systemBars());
+        } else {
+            applySystemBarsForOrientation(Configuration.ORIENTATION_PORTRAIT);
+        }
+        Haptics.threshold(mContainer, on);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent event) {
+        return pullToPortraitFull(event) || super.dispatchTouchEvent(event);
+    }
+
+    /** True while the gesture is the pull that entered the vertical fullscreen (it is swallowed). */
+    private boolean pullToPortraitFull(android.view.MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case android.view.MotionEvent.ACTION_DOWN:
+                mPullConsumed = false;
+                mPullDownX = event.getRawX();
+                mPullDownY = canPullToPortraitFull(event) ? event.getRawY() : -1f;
+                return false;
+            case android.view.MotionEvent.ACTION_MOVE:
+                if (mPullConsumed) {
+                    return true;
+                }
+                if (mPullDownY >= 0f) {
+                    float dy = event.getRawY() - mPullDownY;
+                    float dx = Math.abs(event.getRawX() - mPullDownX);
+                    float density = getResources().getDisplayMetrics().density;
+                    if (dy < -8 * density || dx > Math.max(16 * density, Math.abs(dy))) {
+                        mPullDownY = -1f; // scrolling the page, or a sideways drag
+                    } else if (dy > PORTRAIT_FULL_PULL_DP * density) {
+                        mPullDownY = -1f;
+                        mPullConsumed = true;
+                        android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
+                        cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
+                        super.dispatchTouchEvent(cancel);
+                        cancel.recycle();
+                        setPortraitFull(true);
+                        return true;
+                    }
+                }
+                return false;
+            case android.view.MotionEvent.ACTION_UP:
+            case android.view.MotionEvent.ACTION_CANCEL:
+                mPullDownY = -1f;
+                boolean consumed = mPullConsumed;
+                mPullConsumed = false;
+                return consumed;
+            default:
+                return mPullConsumed;
+        }
+    }
+
+    /** A touch on the watch page while it rests at its top (the title row is in view). */
+    private boolean canPullToPortraitFull(android.view.MotionEvent event) {
+        if (mWatchScroll == null || mWatchScroll.getVisibility() != View.VISIBLE || mWatchScroll.getScrollY() != 0
+                || isLandscape() || isTallMode() || mIsInPip || mClosing || mMorphFraction != 0f
+                || (mCommentsPanel != null && mCommentsPanel.isOpen())) {
+            return false;
+        }
+        int[] at = new int[2];
+        mWatchScroll.getLocationOnScreen(at);
+        float x = event.getRawX();
+        float y = event.getRawY();
+        return x >= at[0] && x < at[0] + mWatchScroll.getWidth()
+                && y >= at[1] && y < at[1] + mWatchScroll.getHeight();
+    }
+
     private boolean isShortsMode() {
         return mShorts != null && mShorts.isFullscreen() && !isLandscape();
     }
@@ -5037,6 +5256,10 @@ public class MobilePlaybackActivity extends MobileActivity
             return SWIPE_SHORTS;
         }
         if (!isLandscape()) {
+            if (mPortraitFull) {
+                return beginFullscreenSwipe(direction == PlayerContainerLayout.DOWN
+                        ? SWIPE_EXIT_FULLSCREEN : SWIPE_ENTER_FULLSCREEN);
+            }
             if (direction == PlayerContainerLayout.DOWN) {
                 return canStartDismissDrag() ? SWIPE_MINIMIZE : PlayerContainerLayout.SWIPE_NONE;
             }
@@ -5261,6 +5484,11 @@ public class MobilePlaybackActivity extends MobileActivity
         if (BuildConfig.DEBUG) {
             NetPath.log("gesture fullscreen " + (mFullscreenSwipe == SWIPE_ENTER_FULLSCREEN ? "enter" : "exit")
                     + " detached=" + detached);
+        }
+        if (mPortraitFull && !isLandscape() && mFullscreenSwipe == SWIPE_EXIT_FULLSCREEN) {
+            settleFullscreenPull();
+            setPortraitFull(false); // the vertical fullscreen leaves without a rotation
+            return;
         }
         boolean landscapeNow = isLandscape();
         toggleFullscreen();
@@ -5542,6 +5770,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mTimeBar != null) {
             mTimeBar.setAlpha(contentAlpha); // outside the controls since NEWTUBE(seek bar): fade it too
         }
+        if (mWatchFab != null) {
+            mWatchFab.setAlpha(contentAlpha); // METUBE(fullscreen): the floating button goes with the page
+        }
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(contentAlpha);
         }
@@ -5633,6 +5864,9 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mTimeBar != null) {
             mTimeBar.setAlpha(1f);
+        }
+        if (mWatchFab != null) {
+            mWatchFab.setAlpha(1f); // METUBE(fullscreen): the floating button goes with the page
         }
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(1f);
@@ -7346,11 +7580,19 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         @Override
+        public void onCommentsPanelClosing(long durationMs) {
+            // METUBE(shorts): as the comments slide away the short grows back to the full screen
+            // with them, like YouTube's, instead of waiting at the top over black.
+            if (mShorts != null && mShorts.isCommentsOpen()) {
+                growShortBack(durationMs);
+            }
+        }
+
+        @Override
         public void onCommentsPanelShown(boolean shown) {
             // METUBE(shorts): the comments of a short closed - it fills the screen again.
             if (!shown && mShorts != null && mShorts.isCommentsOpen()) {
-                mShorts.setCommentsOpen(false);
-                applyShortsLayout();
+                growShortBack(220);
             }
             // The page under the panel is covered: keep TalkBack off it (the video stays reachable).
             if (mWatchScroll != null) {
@@ -8351,7 +8593,12 @@ public class MobilePlaybackActivity extends MobileActivity
     public void prebuildNextSource(MediaItemFormatInfo formatInfo) {
         // NEWTUBE(prepare-stash): pre-build + stash the likely next video's MediaSource so the
         // auto-advance open skips the MPD gen+parse (TV keeps the no-op PlayerEngine default).
-        mExoPlayerController.prebuildNextSource(formatInfo);
+        mExoPlayerController.prebuildNextSource(formatInfo, false);
+    }
+
+    @Override
+    public void prebuildNextSource(MediaItemFormatInfo formatInfo, boolean preloadMedia) {
+        mExoPlayerController.prebuildNextSource(formatInfo, preloadMedia);
     }
 
     @Override
@@ -8603,6 +8850,10 @@ public class MobilePlaybackActivity extends MobileActivity
     public void setResizeMode(int mode) {
         if (isShortsMode()) {
             mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM; // shorts fill the screen
+        } else if (mPortraitFull && !isLandscape()) {
+            // METUBE(fullscreen): the whole picture, upright; ambient mode fills the bands. A pinch's
+            // "fill" (landscape) would crop a 16:9 video to a sliver of its middle here.
+            mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
         }
         if (mPlayerView != null) {
             mPlayerView.setResizeMode(mode);

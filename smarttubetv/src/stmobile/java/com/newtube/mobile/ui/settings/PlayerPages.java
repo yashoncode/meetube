@@ -161,6 +161,11 @@ final class PlayerPages {
                 on -> PlayerGesturePrefs.setSeekSwipeOn(context, on)));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_watch_page)));
+        // METUBE(ambient): on by default.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_ambient),
+                context.getString(R.string.mobile_settings_ambient_summary),
+                () -> com.newtube.mobile.ui.playback.AmbientGlow.isOn(context),
+                on -> com.newtube.mobile.ui.playback.AmbientGlow.setOn(context, on)));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_hide_related),
                 context.getString(R.string.mobile_settings_hide_related_summary),
                 tweaks::isSuggestionsDisabled, tweaks::setSuggestionsDisabled));

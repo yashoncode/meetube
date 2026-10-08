@@ -321,7 +321,7 @@ public class Media3PlayerController implements Player.Listener {
      * skipped (their manifest must stay URL-loaded so it can refresh); an id-less info can't be
      * matched at open time. Failures leave no entry - the real open just builds normally.
      */
-    public void prebuildNextSource(MediaItemFormatInfo formatInfo) {
+    public void prebuildNextSource(MediaItemFormatInfo formatInfo, boolean preloadMedia) {
         // Prebuilding a DASH source is wasted only when SABR is going to displace it anyway.
         if (SabrSourcePreference.isPreferred(mContext)) return;
         if (formatInfo == null || formatInfo.getVideoId() == null || formatInfo.isLive()) {
@@ -353,7 +353,10 @@ public class Media3PlayerController implements Player.Listener {
                         () -> mSourceStash.offerIfAbsent(videoId, result));
                 // Manager/player interactions belong to main. Recorded live/OTF keeps only the
                 // existing XML prebuild; its normalized manifest must not start speculative loads.
-                if (!formatInfo.isLiveContent() && !formatInfo.isUnplayable()) {
+                // METUBE(shorts): media itself only for a swiped-to short (or with the debug prop);
+                // ordinary autoplay keeps NewTube's source-only stash.
+                if ((preloadMedia || Media3PlayerInitializer.preloadEveryNextMedia())
+                        && !formatInfo.isLiveContent() && !formatInfo.isUnplayable()) {
                     // NEWTUBE(readiness): an answer that announced pre-roll ads may have its media
                     // held back until its ready time; the sample preload starts then, rather than
                     // spending its load deadline asleep in the gate.

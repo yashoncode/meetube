@@ -47,6 +47,10 @@ public class CommentsPanelLayout extends FrameLayout implements NestedScrollingP
 
         /** The sheet has left the screen: a drag, the close button or back finished closing it. */
         void onPanelClosed();
+
+        /** METUBE(shorts): the sheet has started leaving (it is gone {@code durationMs} from now). */
+        default void onPanelClosing(long durationMs) {
+        }
     }
 
     static final Interpolator EMPHASIZED = new PathInterpolator(0.2f, 0f, 0f, 1f);
@@ -197,6 +201,9 @@ public class CommentsPanelLayout extends FrameLayout implements NestedScrollingP
     private void closeFrom(long durationMs) {
         if (!mOpen) {
             return;
+        }
+        if (mCallback != null) {
+            mCallback.onPanelClosing(durationMs);
         }
         mOpen = false;
         cancelSheetAnimation();

@@ -313,10 +313,17 @@ public class Media3PlayerInitializer {
     }
 
     public ExoPlayer createPlayer(DefaultTrackSelector trackSelector, BandwidthMeter bandwidthMeter) {
-        boolean enablePreloading = (com.liskovsoft.smartyoutubetv2.tv.BuildConfig.DEBUG
+        // METUBE(shorts): the preloader always exists - a swiped-to short starts from preloaded
+        // samples (Media3PlayerController.prebuildNextSource). Ordinary autoplay-next media stays
+        // the debug experiment it was (preloadEveryNextMedia).
+        return createPlayer(trackSelector, bandwidthMeter, true);
+    }
+
+    /** NewTube's opt-in: every autoplay-next source preloads its media, not only shorts. */
+    static boolean preloadEveryNextMedia() {
+        return (com.liskovsoft.smartyoutubetv2.tv.BuildConfig.DEBUG
                 || com.liskovsoft.smartyoutubetv2.tv.BuildConfig.BENCHMARK)
                 && "1".equals(DebugMediaShaper.prop("debug.arc.next_media_preload"));
-        return createPlayer(trackSelector, bandwidthMeter, enablePreloading);
     }
 
     /** The debug-only offline fixture opts in explicitly without altering any global property. */

@@ -632,6 +632,12 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
+        <!-- METUBE(glass): the page the floating fullscreen button frosts. -->
+        <com.newtube.mobile.ui.common.GlassSource
+            android:id="@+id/mobile_watch_glass"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
         <!-- Scrollable watch content (portrait only). -->
         <androidx.core.widget.NestedScrollView
             android:id="@+id/mobile_watch_scroll"
@@ -1189,6 +1195,34 @@
             </LinearLayout>
 
         </androidx.core.widget.NestedScrollView>
+
+        </com.newtube.mobile.ui.common.GlassSource>
+
+        <!-- METUBE(fullscreen): a floating glass button, bottom-right over the page, that takes the
+             playing video fullscreen. Under the comments panel, which covers it when open; the
+             page (and with it this button) has no height in fullscreen and Shorts. -->
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/mobile_watch_fullscreen_fab"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:clickable="true"
+            android:contentDescription="@string/mobile_player_fullscreen"
+            android:elevation="6dp"
+            android:focusable="true"
+            app:glassCornerRadius="26dp"
+            app:glassTint="@color/metube_glass_tint">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_player_fullscreen"
+                app:tint="@color/mobile_color_on_surface" />
+
+        </com.newtube.mobile.ui.common.GlassView>
 
         <include layout="@layout/mobile_comments_panel" />
 

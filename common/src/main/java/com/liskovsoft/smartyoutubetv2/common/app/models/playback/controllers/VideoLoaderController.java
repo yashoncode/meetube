@@ -368,7 +368,10 @@ public class VideoLoaderController extends BasePlayerController {
         if (player == null || getVideo() == null || getVideo().isLive || !player.isPlaying()) {
             return;
         }
-        long delayMs = NextPrefetchPolicy.delayUntilDueMs(player.getDurationMs(),
+        // METUBE(shorts): the next swipe can come any second - warm the next short as soon as this
+        // one is playing (its own first media is in by then), not five seconds in.
+        long delayMs = isShortsSwipe() ? Math.max(0, SHORTS_PREFETCH_AFTER_MS - playedWallMs())
+                : NextPrefetchPolicy.delayUntilDueMs(player.getDurationMs(),
                 player.getPositionMs(), player.getSpeed(), playedWallMs());
         if (delayMs == NextPrefetchPolicy.NEVER) {
             return;
@@ -386,8 +389,8 @@ public class VideoLoaderController extends BasePlayerController {
             return;
         }
         // A rebuffer or a slow playhead makes the timer early; re-arm from the real position.
-        if (NextPrefetchPolicy.isDue(player.getDurationMs(), player.getPositionMs(), player.getSpeed(),
-                playedWallMs())) {
+        if (isShortsSwipe() || NextPrefetchPolicy.isDue(player.getDurationMs(), player.getPositionMs(),
+                player.getSpeed(), playedWallMs())) {
             preloadNextVideoIfNeeded();
         } else {
             scheduleNextPrefetch();
@@ -1051,6 +1054,14 @@ public class VideoLoaderController extends BasePlayerController {
      * Skipped while paused (user browsing) and when the playback mode
      * won't auto-advance.
      */
+    /** METUBE(shorts): a short looping in the swipe player (its next one is a swipe away). */
+    private static final long SHORTS_PREFETCH_AFTER_MS = 300;
+
+    private boolean isShortsSwipe() {
+        return getVideo() != null && getVideo().belongsToShorts()
+                && getPlaybackMode() == PlayerConstants.PLAYBACK_MODE_ONE;
+    }
+
     private void preloadNextVideoIfNeeded() {
         if (isEmbedPlayer() || getPlayer() == null || getVideo() == null || getVideo().isLive) {
             return;
@@ -1070,7 +1081,7 @@ public class VideoLoaderController extends BasePlayerController {
             return; // autoplay-next is off for this mode
         }
 
-        if ((shortsSwipe && playedWallMs() > 1_000) || NextPrefetchPolicy.isDue(getPlayer().getDurationMs(),
+        if ((shortsSwipe && playedWallMs() >= SHORTS_PREFETCH_AFTER_MS) || NextPrefetchPolicy.isDue(getPlayer().getDurationMs(),
                 getPlayer().getPositionMs(), getPlayer().getSpeed(), playedWallMs())) {
             // NEWTUBE(prepare-stash): once the next video's info lands, also pre-build its
             // MediaSource (the MPD XML gen+parse the open path would otherwise pay) - but ONLY
@@ -1105,7 +1116,7 @@ public class VideoLoaderController extends BasePlayerController {
                 }
                 PlaybackView player = getPlayer();
                 if (player != null && formatInfo != null && wouldOpenPlainDash(formatInfo)) {
-                    player.prebuildNextSource(formatInfo);
+                    player.prebuildNextSource(formatInfo, shortsSwipe);
                 }
             }, error -> {
                 // Error or no answer: the ledger allows one retry, which the running recheck

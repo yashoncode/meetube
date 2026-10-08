@@ -74,11 +74,11 @@ public class PlayerTimeBar extends View implements TimeBar {
     static final int UNPLAYED_COLOR = 0x33FFFFFF;
 
     private static final float TRACK_DP = 2f;
-    private static final float TRACK_DRAGGING_DP = 3f;
+    private static final float TRACK_DRAGGING_DP = 8f; // METUBE: a fat bar under the finger, like YouTube's
     private static final float GAP_DP = 2f;
     private static final float GAP_DRAGGING_DP = 3f;
     private static final float SCRUBBER_DP = 12f;
-    private static final float SCRUBBER_DRAGGING_DP = 18f;
+    private static final float SCRUBBER_DRAGGING_DP = 28f;
     /** The pink tail of the played track, ending at the dot. */
     private static final float TAIL_DP = 40f;
     /*

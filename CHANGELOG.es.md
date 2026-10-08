@@ -1,5 +1,19 @@
 # Registro de cambios de MeTube
 
+## 2.0.2 — 2026-10-08 — Pantalla completa vertical
+
+### Novedades
+
+- **Pantalla completa vertical:** desliza la página hacia abajo desde el título y el vídeo ocupa toda la pantalla en vertical, con colores ambiente en las franjas negras.
+- **Botón flotante de pantalla completa** de cristal, abajo a la derecha.
+- **Nueva animación de carga** con la galleta del icono.
+
+### Cambios
+
+- **Los Shorts empiezan antes:** se precargan los primeros segundos del siguiente short mientras ves el actual.
+- Barra de progreso más gruesa al arrastrarla; botón de minimizar redondo en pantalla completa; sin títulos de página en la barra superior.
+- Los comentarios de los Shorts ya no muestran el vídeo como uno normal al deslizarlos hacia abajo.
+
 ## 2.0.1 — 2026-10-07 — Tacto
 
 ### Novedades

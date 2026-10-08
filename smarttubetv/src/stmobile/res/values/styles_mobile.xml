@@ -24,6 +24,10 @@
       stays dark in both, like YouTube's: its chrome uses the fixed mobile_player_* colours.
     -->
     <style name="Theme.NewTube" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- METUBE(loader): every circular spinner is the morphing cookie (metube_loader). -->
+        <item name="android:progressBarStyle">@style/Widget.MeTube.Loader</item>
+        <item name="android:progressBarStyleLarge">@style/Widget.MeTube.Loader.Large</item>
+        <item name="android:progressBarStyleSmall">@style/Widget.MeTube.Loader.Small</item>
         <item name="colorPrimary">@color/mobile_color_primary</item>
         <item name="colorPrimaryDark">@color/mobile_color_primary_dark</item>
         <!-- Selection controls (checkbox, radio, switch, text caret) and any untinted
@@ -528,6 +532,16 @@
         <item name="android:shadowRadius">4</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Widget.MeTube.Loader" parent="android:Widget.Material.ProgressBar">
+        <item name="android:indeterminateDrawable">@drawable/metube_loader</item>
+    </style>
+    <style name="Widget.MeTube.Loader.Large" parent="android:Widget.Material.ProgressBar.Large">
+        <item name="android:indeterminateDrawable">@drawable/metube_loader</item>
+    </style>
+    <style name="Widget.MeTube.Loader.Small" parent="android:Widget.Material.ProgressBar.Small">
+        <item name="android:indeterminateDrawable">@drawable/metube_loader</item>
     </style>
 
     <style name="Widget.MeTube.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">

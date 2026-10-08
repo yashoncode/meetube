@@ -41,6 +41,12 @@ import java.util.function.Supplier;
 final class Media3NextPreloader {
     static final long TARGET_DURATION_MS = 4_000; // METUBE: a 4s head start (was 2s) - swipes land playing
     static final long MIN_FOREGROUND_BUFFER_MS = 10_000;
+    /**
+     * METUBE(shorts): a short (at most this long) is swiped away within seconds, so its next one
+     * preloads once it holds {@link #SHORT_CLIP_MIN_BUFFER_MS} - even while it still loads.
+     */
+    static final long SHORT_CLIP_MAX_MS = 3 * 60_000;
+    static final long SHORT_CLIP_MIN_BUFFER_MS = 3_000;
     static final long MAX_LOAD_TIME_MS = 15_000;
     static final long MAX_STASH_AGE_MS = 90_000;
     private static final long CHECK_INTERVAL_MS = 500;
@@ -287,8 +293,13 @@ final class Media3NextPreloader {
     }
 
     static boolean canLoad(@Nullable ExoPlayer player, DefaultTrackSelector selector) {
-        if (player == null || player.getPlayerError() != null || !player.getPlayWhenReady()
-                || player.getPlaybackState() != Player.STATE_READY || player.isLoading()
+        if (player == null) {
+            return false;
+        }
+        long duration = player.getDuration();
+        boolean shortClip = duration != C.TIME_UNSET && duration > 0 && duration <= SHORT_CLIP_MAX_MS;
+        if (player.getPlayerError() != null || !player.getPlayWhenReady()
+                || player.getPlaybackState() != Player.STATE_READY || (player.isLoading() && !shortClip)
                 || player.isCurrentMediaItemLive()) {
             return false;
         }
@@ -302,7 +313,8 @@ final class Media3NextPreloader {
             }
         }
         return hasHealthyBuffer(player.getTotalBufferedDuration(), player.getDuration(),
-                player.getCurrentPosition(), player.getPlaybackParameters().speed);
+                player.getCurrentPosition(), player.getPlaybackParameters().speed)
+                || (shortClip && player.getTotalBufferedDuration() >= SHORT_CLIP_MIN_BUFFER_MS);
     }
 
     static void copyTrackParameters(DefaultTrackSelector foregroundSelector,

@@ -89,6 +89,10 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
 
         /** The panel now covers (true) or uncovers the watch page. */
         void onCommentsPanelShown(boolean shown);
+
+        /** METUBE(shorts): the panel has started closing; it is gone in {@code durationMs}. */
+        default void onCommentsPanelClosing(long durationMs) {
+        }
     }
 
     private static final int NO_FAILURE = -1;
@@ -666,6 +670,11 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         mLayout.setCallback(null);
         mLayout.closeImmediately();
         mBackCallback.remove();
+    }
+
+    @Override
+    public void onPanelClosing(long durationMs) {
+        mHost.onCommentsPanelClosing(durationMs);
     }
 
     @Override

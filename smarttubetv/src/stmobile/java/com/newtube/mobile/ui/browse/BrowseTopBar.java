@@ -37,6 +37,9 @@ final class BrowseTopBar {
      */
     void show(boolean subScreen, CharSequence title) {
         mBack.setVisibility(subScreen ? View.VISIBLE : View.GONE);
+        // METUBE: tabs carry no page title (the owner wants just the brand row and the nav bar);
+        // a sub-screen keeps its back arrow and name, the only way to tell where back goes.
+        ((View) mTitle.getParent()).setVisibility(subScreen ? View.VISIBLE : View.GONE);
         // METUBE: an iOS-style large title naming the tab (the brand sits in the row above).
         mTitle.setText(title != null && title.length() > 0
                 ? title : mTitle.getContext().getString(R.string.app_name));

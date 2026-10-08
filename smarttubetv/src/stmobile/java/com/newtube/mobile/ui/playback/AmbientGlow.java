@@ -1,8 +1,10 @@
 package com.newtube.mobile.ui.playback;
 
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
@@ -23,8 +25,12 @@ import androidx.annotation.Nullable;
  * playing video, box-blurred, saturated, and painted as the watch page's background behind the
  * title - a soft glow that spreads down from the player and fades into the page colour. New frames
  * cross-fade in so the glow drifts with the scene instead of jumping.
+ *
+ * <p>In the vertical fullscreen the same frames also fill the black bands above and below the
+ * video ({@link #setFill}): the frame blown up to the whole screen, dimmed, behind the picture.
+ * Both follow the Ambient mode setting (on unless turned off, {@link #isOn}).</p>
  */
-final class AmbientGlow implements Runnable {
+public final class AmbientGlow implements Runnable {
     private static final int FRAME_W = 48;
     private static final int FRAME_H = 27;
     private static final int BLUR_RADIUS = 3;
@@ -32,10 +38,24 @@ final class AmbientGlow implements Runnable {
     private static final long FADE_MS = 1200;
     private static final int GLOW_ALPHA = 210; // ~0.8: YouTube's glow reads strong right under the video
 
+    private static final String PREFS = "metube_player";
+    private static final String KEY_ON = "ambient_mode";
+
     private final View mHost;
     private final TextureView mVideo;
     private final GlowDrawable mDrawable;
+    private final FillDrawable mFill = new FillDrawable();
+    @Nullable
+    private View mFillHost;
     private boolean mRunning;
+
+    public static boolean isOn(Context context) {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ON, true);
+    }
+
+    public static void setOn(Context context, boolean on) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_ON, on).apply();
+    }
 
     AmbientGlow(@NonNull View host, @NonNull TextureView video, int pageColor) {
         mHost = host;
@@ -56,16 +76,36 @@ final class AmbientGlow implements Runnable {
         mHost.removeCallbacks(this);
     }
 
+    /** {@code area} (the video box) gets the ambient fill as its background; null gives it back black. */
+    void setFill(@Nullable View area) {
+        if (area == mFillHost) {
+            return;
+        }
+        if (mFillHost != null) {
+            mFillHost.setBackgroundColor(Color.BLACK);
+        }
+        mFillHost = area;
+        if (area != null) {
+            area.setBackground(mFill);
+            if (mRunning) {
+                mHost.removeCallbacks(this);
+                mHost.post(this); // a frame now, not in up to two seconds
+            }
+        }
+    }
+
     @Override
     public void run() {
         if (!mRunning) {
             return;
         }
-        if (mHost.isShown() && mVideo.isAvailable()) {
+        boolean fill = mFillHost != null && mFillHost.isShown();
+        if ((mHost.isShown() || fill) && mVideo.isAvailable()) {
             Bitmap frame = mVideo.getBitmap(FRAME_W, FRAME_H);
             if (frame != null) {
                 blur(frame);
                 mDrawable.push(frame);
+                mFill.push(frame);
             }
         }
         mHost.postDelayed(this, INTERVAL_MS);
@@ -100,6 +140,65 @@ final class AmbientGlow implements Runnable {
                 }
                 dst[base + i * step] = 0xFF000000 | (r / n << 16) | (g / n << 8) | (b / n);
             }
+        }
+    }
+
+    /** The fill: the frame stretched over the whole video box, dimmed, under the picture. */
+    private static final class FillDrawable extends Drawable {
+        private final Paint mFrame = new Paint(Paint.FILTER_BITMAP_FLAG);
+        @Nullable private Bitmap mCurrent;
+        @Nullable private Bitmap mPrevious;
+        private float mMix = 1f;
+        private ValueAnimator mFadeIn;
+
+        FillDrawable() {
+            ColorMatrix look = new ColorMatrix();
+            look.setSaturation(1.5f);
+            ColorMatrix dim = new ColorMatrix();
+            dim.setScale(0.6f, 0.6f, 0.6f, 1f);
+            look.postConcat(dim);
+            mFrame.setColorFilter(new ColorMatrixColorFilter(look));
+        }
+
+        void push(Bitmap frame) {
+            mPrevious = mCurrent;
+            mCurrent = frame;
+            if (mFadeIn != null) {
+                mFadeIn.cancel();
+            }
+            mFadeIn = ValueAnimator.ofFloat(0f, 1f).setDuration(FADE_MS);
+            mFadeIn.addUpdateListener(a -> {
+                mMix = (float) a.getAnimatedValue();
+                invalidateSelf();
+            });
+            mFadeIn.start();
+        }
+
+        @Override
+        public void draw(@NonNull Canvas canvas) {
+            canvas.drawColor(Color.BLACK);
+            if (mCurrent == null) {
+                return;
+            }
+            if (mPrevious != null && mMix < 1f) {
+                mFrame.setAlpha(Math.round(255 * (1f - mMix)));
+                canvas.drawBitmap(mPrevious, null, getBounds(), mFrame);
+            }
+            mFrame.setAlpha(Math.round(255 * mMix));
+            canvas.drawBitmap(mCurrent, null, getBounds(), mFrame);
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+        }
+
+        @Override
+        public void setColorFilter(@Nullable ColorFilter colorFilter) {
+        }
+
+        @Override
+        public int getOpacity() {
+            return PixelFormat.OPAQUE;
         }
     }
 
