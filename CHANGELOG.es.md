@@ -1,5 +1,18 @@
 # Registro de cambios de MeTube
 
+## 2.5.1 — 2026-10-09 — Solo audio, nuevo icono y correcciones
+
+### Novedades
+
+- **Solo audio:** toca los auriculares arriba a la izquierda del reproductor para escuchar sin vídeo. No se descarga el vídeo y, al pulsar Inicio, el sonido sigue sin abrir una ventana flotante.
+- **Nuevo icono:** un corazón rojo con un botón de reproducir, sobre negro.
+
+### Correcciones
+
+- **Sin cierres al volver de la imagen en imagen en alta calidad:** la memoria de vídeo ahora tiene un límite.
+- **Ajustes en pantalla completa:** los menús ya no muestran las barras del sistema ni un segundo panel.
+- **Los registros de diagnóstico se llaman metube-diagnostics.**
+
 ## 2.5.0 — 2026-10-09 — Cristal y Shorts más rápidos
 
 ### Novedades

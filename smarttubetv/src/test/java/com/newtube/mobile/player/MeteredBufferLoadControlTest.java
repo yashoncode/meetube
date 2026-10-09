@@ -333,7 +333,7 @@ public class MeteredBufferLoadControlTest {
             assertTrue(wrapped.shouldStartPlayback(params(PLAYER, 500_000, true, false)));
             assertFalse(wrapped.shouldStartPlayback(params(PLAYER, 1_499_000, true, true)));
             assertTrue(wrapped.shouldStartPlayback(params(PLAYER, 1_500_000, true, true)));
-            assertEquals(120 * S, wrapped.getBackBufferDurationUs(PLAYER));
+            assertEquals(20 * S, wrapped.getBackBufferDurationUs(PLAYER));
             assertTrue(wrapped.retainBackBufferFromKeyframe(PLAYER));
         } finally {
             wrapped.onReleased(PLAYER);
@@ -373,7 +373,34 @@ public class MeteredBufferLoadControlTest {
 
         assertEquals(Arrays.asList("onPrepared", "onTracksSelected", "getAllocator",
                 "getBackBufferDurationUs", "retainBackBufferFromKeyframe", "shouldStartPlayback",
-                "shouldContinuePreloading", "shouldContinueLoading", "onStopped", "onReleased"), calls);
+                "shouldContinuePreloading", "shouldContinueLoading",
+                "getAllocator", // METUBE(oom): the heap ceiling reads the allocator's total
+                "onStopped", "onReleased"), calls);
+    }
+
+    @Test
+    public void loadingHoldsOnceTheAllocatorOwnsHalfTheHeap() {
+        DefaultAllocator allocator = new DefaultAllocator(true, 65_536);
+        LoadControl full = (LoadControl) Proxy.newProxyInstance(LoadControl.class.getClassLoader(),
+                new Class<?>[] {LoadControl.class}, (proxy, method, args) -> {
+                    switch (method.getName()) {
+                        case "getAllocator": return new Allocator() {
+                            @Override public androidx.media3.exoplayer.upstream.Allocation allocate() {
+                                return allocator.allocate();
+                            }
+                            @Override public void release(androidx.media3.exoplayer.upstream.Allocation a) { }
+                            @Override public void release(AllocationNode node) { }
+                            @Override public void trim() { }
+                            @Override public int getTotalBytesAllocated() {
+                                return (int) Math.min(Integer.MAX_VALUE, MeteredBufferLoadControl.HEAP_CEILING_BYTES);
+                            }
+                            @Override public int getIndividualAllocationLength() { return 65_536; }
+                        };
+                        case "shouldContinueLoading": return true;
+                        default: return null;
+                    }
+                });
+        assertFalse(wrap(full).shouldContinueLoading(params(PLAYER, 5 * S, true, false)));
     }
 
     @Test

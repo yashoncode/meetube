@@ -2,6 +2,19 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.5.1 — 2026-10-09 — Audio only, new icon and fixes
+
+### New
+
+- **Audio only.** Tap the headphones at the top left of the player to listen without the video: no video is downloaded, the thumbnail stays on screen, and pressing Home keeps the sound playing instead of opening a picture-in-picture window. Tap again for the video.
+- **A new icon.** A red heart with a play button, on black, on the launcher and in the top bar.
+
+### Fixed
+
+- **No more crash after picture-in-picture at high quality.** At 1440p and above, MeTube kept up to two minutes of already-watched video in memory, and coming back from picture-in-picture could run out of memory. Video memory now has a hard limit tied to what the app may use; seeking back more than 20 seconds reloads from the disk cache.
+- **Settings in fullscreen.** The settings and More menus no longer bring back the status and navigation bars, and no longer show a second plain panel beside the frosted one.
+- **Diagnostic logs are named metube-diagnostics.**
+
 ## 2.5.0 — 2026-10-09 — Glass and quicker Shorts
 
 ### New

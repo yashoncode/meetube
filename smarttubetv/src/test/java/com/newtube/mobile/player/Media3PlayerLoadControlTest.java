@@ -102,9 +102,9 @@ public class Media3PlayerLoadControlTest {
     }
 
     @Test
-    public void backwardSeekBufferStillRetainsTwoMinutesFromKeyframe() {
+    public void backwardSeekBufferRetainsTwentySecondsFromKeyframe() {
         DefaultLoadControl control = initializer.createLoadControl();
-        assertEquals(120_000_000, control.getBackBufferDurationUs(PLAYER));
+        assertEquals(20_000_000, control.getBackBufferDurationUs(PLAYER));
         assertTrue(control.retainBackBufferFromKeyframe(PLAYER));
     }
 

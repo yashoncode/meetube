@@ -100,12 +100,23 @@ public final class SheetGlass {
         View frame = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
         Activity activity = activityOf(dialog.getContext());
         if (frame instanceof ViewGroup && ((ViewGroup) frame).getChildCount() > 0 && activity != null) {
-            frost(((ViewGroup) frame).getChildAt(0), activity.getWindow());
+            // The frame pads its content for the system bars (the sides in landscape, the top once
+            // expanded to full height): the glass covers the whole frame, padding included, so the
+            // frame's plain tint never shows beside it.
+            ViewGroup sheet = (ViewGroup) frame;
+            sheet.setClipToPadding(false);
+            sheet.setClipChildren(false);
+            frost(sheet.getChildAt(0), activity.getWindow(), sheet);
         }
     }
 
     /** Paints {@code target}'s background with {@code page}, blurred, behind the sheet's tint. */
     public static void frost(@NonNull View target, @Nullable Window page) {
+        frost(target, page, target);
+    }
+
+    /** As above, filling {@code cover} - {@code target} itself or its direct parent. */
+    private static void frost(@NonNull View target, @Nullable Window page, @NonNull View cover) {
         View decor = page != null ? page.peekDecorView() : null;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || decor == null
                 || decor.getWidth() == 0 || decor.getHeight() == 0) {
@@ -121,7 +132,7 @@ public final class SheetGlass {
             PixelCopy.request(page, copy, result -> {
                 if (result == PixelCopy.SUCCESS && target.isAttachedToWindow()) {
                     blur(copy, BLUR_RADIUS);
-                    target.setBackground(new Backdrop(target, copy, origin, pageW, pageH));
+                    target.setBackground(new Backdrop(target, cover, copy, origin, pageW, pageH));
                 }
             }, new Handler(Looper.getMainLooper()));
         } catch (IllegalArgumentException e) {
@@ -182,6 +193,7 @@ public final class SheetGlass {
     /** The blurred page under a sheet, screen-aligned, saturated a little like {@link GlassView}, then tinted. */
     private static final class Backdrop extends Drawable {
         private final View mTarget;
+        private final View mCover;
         private final int[] mOrigin;
         private final float mScaleX;
         private final float mScaleY;
@@ -195,8 +207,9 @@ public final class SheetGlass {
         private int mDrawnX = Integer.MIN_VALUE;
         private int mDrawnY = Integer.MIN_VALUE;
 
-        Backdrop(View target, Bitmap page, int[] origin, int pageW, int pageH) {
+        Backdrop(View target, View cover, Bitmap page, int[] origin, int pageW, int pageH) {
             mTarget = target;
+            mCover = cover;
             mOrigin = origin;
             mScaleX = pageW / (float) page.getWidth();
             mScaleY = pageH / (float) page.getHeight();
@@ -232,7 +245,12 @@ public final class SheetGlass {
             mMatrix.setScale(mScaleX, mScaleY);
             mMatrix.postTranslate(mOrigin[0] - mLoc[0], mOrigin[1] - mLoc[1]);
             mShader.setLocalMatrix(mMatrix);
-            mRect.set(getBounds());
+            if (mCover == mTarget) {
+                mRect.set(getBounds());
+            } else { // the parent's box, in the target's coordinates
+                mRect.set(-mTarget.getLeft(), -mTarget.getTop(),
+                        mCover.getWidth() - mTarget.getLeft(), mCover.getHeight() - mTarget.getTop());
+            }
             canvas.drawRoundRect(mRect, mCorner, mCorner, mPage);
             canvas.drawRoundRect(mRect, mCorner, mCorner, mTint);
         }

@@ -426,6 +426,12 @@ public class MobilePlaybackActivity extends MobileActivity
     private final Runnable mOrientationSettleCheck = () -> onPhoneOrientation(mLastPhoneDegrees);
     /** True while in true background audio-only playback (video renderer dropped); see setBackgroundAudioMode. */
     private boolean mBackgroundAudioMode;
+    /** METUBE(audio-only): the headphones button is on - the video track stays dropped on screen too. */
+    private boolean mAudioOnly;
+    private ImageButton mAudioButton;
+    /** The thumbnail shown in the video's place while {@link #mAudioOnly}; built on first use. */
+    @Nullable private View mAudioCover;
+    @Nullable private ImageView mAudioCoverArt;
 
     // Background-playback foreground service (reuses THIS Activity's player; see MobilePlaybackService).
     private MobilePlaybackService mPlaybackService;
@@ -682,6 +688,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mBottomScrim = findViewById(R.id.mobile_player_bottom_scrim);
         mTitleView = findViewById(R.id.mobile_player_title);
         mBackButton = findViewById(R.id.mobile_player_back);
+        mAudioButton = findViewById(R.id.mobile_player_audio);
         mPlayPauseButton = findViewById(R.id.mobile_player_play_pause);
         mFullscreenButton = findViewById(R.id.mobile_player_fullscreen);
         mPositionView = findViewById(R.id.mobile_player_position);
@@ -973,6 +980,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         mBackButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        mAudioButton.setOnClickListener(v -> setAudioOnly(!mAudioOnly));
         mPlayPauseButton.setOnClickListener(v -> togglePlayPause());
         mFullscreenButton.setOnClickListener(v -> toggleFullscreen());
 
@@ -1314,7 +1322,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         // An engine restart (error fix, network flap) while backgrounded builds a FRESH selector
         // with video re-enabled; re-apply the audio-only drop so the restart doesn't resume video.
-        if (mBackgroundAudioMode) {
+        if (mBackgroundAudioMode || mAudioOnly) {
             mExoPlayerController.setVideoTrackDisabled(true);
         }
 
@@ -1711,7 +1719,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private void setBackgroundAudioMode(boolean enabled) {
         mBackgroundAudioMode = enabled;
         if (mExoPlayerController != null) {
-            mExoPlayerController.setVideoTrackDisabled(enabled);
+            mExoPlayerController.setVideoTrackDisabled(enabled || mAudioOnly);
             // NEWTUBE(keep-codec): no decoder kept for the next open while nothing is on screen.
             mExoPlayerController.onBackgroundAudio(enabled);
         }
@@ -1758,6 +1766,9 @@ public class MobilePlaybackActivity extends MobileActivity
         // pending request keeps this activity's ImageView alive.
         if (mVideoStill != null) {
             Glide.with(getApplicationContext()).clear(mVideoStill);
+        }
+        if (mAudioCoverArt != null) {
+            Glide.with(getApplicationContext()).clear(mAudioCoverArt);
         }
 
         // Casting: stop observing the session. The session itself (manager + foreground service)
@@ -1863,7 +1874,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         // NEWTUBE(background-mode): "Only audio" leaves without PiP; onStop keeps the audio going.
-        if (BackgroundModePolicy.onLeave(getBackgroundMode()) != BackgroundModePolicy.Action.PIP) {
+        if (mAudioOnly || BackgroundModePolicy.onLeave(getBackgroundMode()) != BackgroundModePolicy.Action.PIP) {
             logPip("leave-skip reason=audio-mode");
             return;
         }
@@ -2257,6 +2268,8 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Nullable
     private android.graphics.drawable.Drawable mBackButtonInlineBg;
+    @Nullable
+    private android.graphics.drawable.Drawable mAudioButtonInlineBg;
 
     /** METUBE(fullscreen): in fullscreen (either way up) minimize is a small round button. */
     private void styleBackButton() {
@@ -2266,6 +2279,7 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean full = isLandscape() || mPortraitFull;
         if (mBackButtonInlineBg == null) {
             mBackButtonInlineBg = mBackButton.getBackground();
+            mAudioButtonInlineBg = mAudioButton.getBackground();
         }
         android.graphics.drawable.Drawable bg = full
                 ? androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_player_back_round)
@@ -2274,6 +2288,9 @@ public class MobilePlaybackActivity extends MobileActivity
             mBackButton.setBackground(bg);
             int pad = dp(full ? 15 : 12);
             mBackButton.setPadding(pad, pad, pad, pad);
+            mAudioButton.setBackground(full ? androidx.core.content.ContextCompat.getDrawable(this,
+                    R.drawable.bg_player_back_round) : mAudioButtonInlineBg);
+            mAudioButton.setPadding(pad, pad, pad, pad);
         }
     }
 
@@ -2720,7 +2737,66 @@ public class MobilePlaybackActivity extends MobileActivity
                 && mExoPlayerController != null
                 && mExoPlayerController.getPlayWhenReady()
                 // NEWTUBE(background-mode): never armed while the user's choice is "Only audio".
+                && !mAudioOnly // METUBE(audio-only): Home keeps the sound going, no PiP window
                 && BackgroundModePolicy.autoEnterPip(getBackgroundMode());
+    }
+
+    /**
+     * METUBE(audio-only): the headphones button. On: the video track is dropped (no video
+     * downloaded or decoded, as in background audio), the thumbnail takes the video's place, and
+     * Home keeps the sound playing with the media notification instead of opening a PiP window.
+     * Lasts for this player session, so the next video plays as audio too.
+     * ponytail: the in-app mini card shows the frozen frame meanwhile; draw the cover there if asked.
+     */
+    private void setAudioOnly(boolean audioOnly) {
+        mAudioOnly = audioOnly;
+        mAudioButton.setSelected(audioOnly);
+        if (mExoPlayerController != null && !mBackgroundAudioMode) {
+            mExoPlayerController.setVideoTrackDisabled(audioOnly);
+        }
+        showAudioCover(getVideo());
+        updatePipActions();
+        android.widget.Toast.makeText(this, audioOnly ? R.string.mobile_player_audio_only
+                : R.string.mobile_player_audio_off, android.widget.Toast.LENGTH_SHORT).show();
+    }
+
+    /** The audio-only cover: {@code video}'s thumbnail, dimmed, with the headphones over it. */
+    private void showAudioCover(@Nullable Video video) {
+        if (!mAudioOnly || video == null || mPlayerView == null) {
+            if (mAudioCover != null) {
+                mAudioCover.setVisibility(View.GONE);
+            }
+            return;
+        }
+        if (mAudioCover == null) {
+            FrameLayout cover = new FrameLayout(this);
+            cover.setBackgroundColor(Color.BLACK);
+            mAudioCoverArt = new ImageView(this);
+            mAudioCoverArt.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            mAudioCoverArt.setAlpha(0.45f);
+            cover.addView(mAudioCoverArt, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            ImageView glyph = new ImageView(this);
+            glyph.setImageResource(R.drawable.ic_player_headphones);
+            cover.addView(glyph, new FrameLayout.LayoutParams(dp(44), dp(44), Gravity.CENTER));
+            mPlayerView.getContentFrame().addView(cover, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            mAudioCover = cover;
+        }
+        mAudioCover.setVisibility(View.VISIBLE);
+        String thumb = ClickbaitRemover.updateThumbnail(video, MainUIData.instance(this).getThumbQuality());
+        if (thumb == null && video.videoId != null) { // opened from a link: no card image yet
+            thumb = "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg";
+        }
+        if (thumb != null && !isDestroyed()) {
+            // The application request manager: the activity's is held while a video opens, and
+            // with the video track dropped that open never shows a frame to release it.
+            Glide.with(getApplicationContext())
+                    .load(thumb)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .format(DecodeFormat.PREFER_RGB_565)
+                    .into(mAudioCoverArt);
+        }
     }
 
     /**
@@ -4052,12 +4128,20 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mShownSheets.add(new java.lang.ref.WeakReference<>(dialog));
         Window window = dialog.getWindow();
-        boolean immersive = isLandscape();
+        // METUBE(fullscreen): landscape and vertical fullscreen both hide the bars; copying the
+        // old visibility flags no longer kept them hidden for the sheet's own window.
+        androidx.core.view.WindowInsetsCompat pageInsets =
+                androidx.core.view.ViewCompat.getRootWindowInsets(getWindow().getDecorView());
+        boolean immersive = isLandscape() || (pageInsets != null
+                && !pageInsets.isVisible(androidx.core.view.WindowInsetsCompat.Type.statusBars()));
         if (immersive && window != null) {
             window.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-            window.getDecorView().setSystemUiVisibility(
-                    getWindow().getDecorView().getSystemUiVisibility());
+            androidx.core.view.WindowInsetsControllerCompat bars =
+                    androidx.core.view.WindowCompat.getInsetsController(window, window.getDecorView());
+            bars.setSystemBarsBehavior(
+                    androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            bars.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());
         }
 
         dialog.setOnShowListener(d -> {
@@ -6976,7 +7060,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mScrubChromeHidden = scrubbing;
         float alpha = scrubbing ? 0f : 1f;
         long duration = scrubbing ? Motion.FADE_OUT_MS : Motion.FADE_IN_MS;
-        for (View view : new View[] {mBackButton, mTitleView, mOptionsRow, mTransport, mBottomRow, mTopScrim}) {
+        for (View view : new View[] {mBackButton, mAudioButton, mTitleView, mOptionsRow, mTransport, mBottomRow, mTopScrim}) {
             if (view != null) {
                 view.animate().cancel();
                 view.animate().alpha(alpha).setDuration(duration).setInterpolator(Motion.STANDARD).start();
@@ -8966,7 +9050,10 @@ public class MobilePlaybackActivity extends MobileActivity
         // shows the previous video's last frame and the new audio starts as soon as it buffers,
         // so cover the stale frame with the new video's thumbnail until ITS first frame renders
         // (YouTube does exactly this). Also gives the very first open a thumbnail instead of black.
-        runOnUiThread(() -> maybeShowLoadingStill(item));
+        runOnUiThread(() -> {
+            maybeShowLoadingStill(item);
+            showAudioCover(item); // METUBE(audio-only): the next video's thumbnail
+        });
 
         // LOADING SKELETON: a new video is being set on the view and its related feed hasn't landed
         // yet. Covers the FIRST open too (clearSuggestions only fires on subsequent loads).

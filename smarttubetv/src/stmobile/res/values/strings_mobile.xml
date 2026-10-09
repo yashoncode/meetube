@@ -4,6 +4,8 @@
     <string name="app_name" translatable="false">MeTube</string>
     <string name="mobile_player_back">Back</string>
     <string name="mobile_player_minimize">Minimize</string>
+    <string name="mobile_player_audio_only">Audio only</string>
+    <string name="mobile_player_audio_off">Video on</string>
     <string name="mobile_player_play">Play</string>
     <string name="mobile_player_pause">Pause</string>
     <string name="mobile_player_replay">Replay</string>

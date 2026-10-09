@@ -70,7 +70,11 @@ public class Media3PlayerInitializer {
     // Pixel 9 (pinned 1080p vp9, 800->2400kbps shaping): median stall 3.21s -> 1.71s. The gain
     // tracks the theoretical refill time of the removed 1000ms of media, so it generalizes.
     private static final int START_BUFFER_AFTER_REBUFFER_MS = 1_500;
-    private static final int BACK_BUFFER_MS = 120_000;
+    /**
+     * METUBE(oom): 20 s (was 120 s) - two double-tap seeks back stay instant. Further back reads
+     * from the 512 MB disk cache. At 1440p60 (~2.5 MB/s) 120 s alone was ~300 MB of Java heap.
+     */
+    private static final int BACK_BUFFER_MS = 20_000;
     private static final int MB = 1024 * 1024;
     private static final int TARGET_BUFFER_BYTES = 192 * MB;
     private static final int LOW_TARGET_BUFFER_BYTES = 48 * MB;
@@ -106,9 +110,19 @@ public class Media3PlayerInitializer {
 
         long deviceRam = DeviceHelpers.getDeviceRam(mContext);
         // Same RAM clamp as the legacy initializer (and its negative-overflow guard).
-        mMaxBufferBytes = deviceRam <= 0 ? 196_000_000 : (int) (deviceRam / 18);
+        long ramCap = deviceRam <= 0 ? 196_000_000 : deviceRam / 18;
+        // METUBE(oom): media samples live on the JAVA heap (the allocator's byte[]), and that heap
+        // is the app's limit - 512 MB with largeHeap - not the device's RAM: RAM/18 on a 12 GB
+        // phone is 660 MB, which never bound anything, and a 1440p session filled the heap until
+        // the next allocation (returning from PiP) crashed. A third of the heap is the budget.
+        mMaxBufferBytes = (int) Math.min(ramCap, heapBudgetBytes());
 
         alignBufferDefaultOnce();
+    }
+
+    /** METUBE(oom): what the media buffers may hold - a third of the Java heap the app may grow to. */
+    static long heapBudgetBytes() {
+        return Runtime.getRuntime().maxMemory() / 3;
     }
 
     private void alignBufferDefaultOnce() {

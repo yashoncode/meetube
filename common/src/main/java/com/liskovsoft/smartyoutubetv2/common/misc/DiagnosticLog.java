@@ -231,7 +231,7 @@ public final class DiagnosticLog {
             }
         }
         String stamp = new SimpleDateFormat("yyyyMMdd-HHmmss-SSS", Locale.US).format(new Date(now));
-        File report = new File(dir, "newtube-diagnostics-" + stamp + ".txt");
+        File report = new File(dir, "metube-diagnostics-" + stamp + ".txt");
 
         List<String> lines = sRing.snapshot();
         String source = "recorder";

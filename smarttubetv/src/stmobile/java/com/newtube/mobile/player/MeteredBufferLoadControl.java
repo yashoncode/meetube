@@ -46,6 +46,9 @@ import java.util.function.LongSupplier;
  * the delegate still sees every call so its own min/max hysteresis state stays exactly what it
  * would have been without the wrapper.</p>
  *
+ * <p>METUBE(oom): one exception on every network - loading holds while the allocator owns half
+ * the Java heap ({@link #HEAP_CEILING_BYTES}), so a high-bitrate session cannot crash the app.</p>
+ *
  * <p>"Played time" is media time the playhead actually advanced while playWhenReady, credited
  * between consecutive loading decisions and bounded by the wall clock that elapsed at the playback
  * speed - so a forward seek is not "watching", and a long pause is not either. It resets whenever
@@ -58,6 +61,9 @@ final class MeteredBufferLoadControl implements LoadControl {
     static final long PAUSED_TARGET_US = 20_000_000L;
     /** A decision line is logged again only when the target moved by at least this much. */
     private static final long LOG_TARGET_STEP_US = 10_000_000L;
+
+    /** METUBE(oom): see shouldContinueLoading - a hard stop at half the Java heap. */
+    static final long HEAP_CEILING_BYTES = Math.min(Integer.MAX_VALUE, Runtime.getRuntime().maxMemory() / 2);
 
     private final LoadControl mDelegate;
     private final long mPresetMaxUs;
@@ -115,6 +121,13 @@ final class MeteredBufferLoadControl implements LoadControl {
         boolean delegateContinues = mDelegate.shouldContinueLoading(parameters);
         if (parameters.playerId == PlayerId.PRELOAD) {
             return delegateContinues; // the preload sample target is 2 s; not this policy's business
+        }
+        // METUBE(oom): the one rule above the preset - the preset's time-over-size flag lets the
+        // minimum buffer grow past the byte target, and at 1440p/4K that ran the Java heap out.
+        // Never load while the allocator holds more than half the heap; playback drains it.
+        if (delegateContinues && mDelegate.getAllocator(parameters.playerId).getTotalBytesAllocated()
+                >= HEAP_CEILING_BYTES) {
+            return false;
         }
 
         PlaybackTally tally = tallyFor(parameters.playerId);

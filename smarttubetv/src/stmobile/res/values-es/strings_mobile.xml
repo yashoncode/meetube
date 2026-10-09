@@ -95,6 +95,8 @@
     <!-- Player controls (most are content descriptions read out by TalkBack) -->
     <string name="mobile_player_back">Atrás</string>
     <string name="mobile_player_minimize">Minimizar</string>
+    <string name="mobile_player_audio_only">Solo audio</string>
+    <string name="mobile_player_audio_off">Vídeo activado</string>
     <string name="mobile_player_play">Reproducir</string>
     <string name="mobile_player_pause">Pausar</string>
     <string name="mobile_player_replay">Volver a reproducir</string>
