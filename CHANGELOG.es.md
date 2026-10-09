@@ -1,5 +1,17 @@
 # Registro de cambios de MeTube
 
+## 2.5.6 — 2026-10-09 — Imagen en imagen siempre y botón de Música
+
+### Novedades
+
+- **Imagen en imagen siempre que salgas de un vídeo:** al ir a Inicio o cambiar de app, el vídeo pasa a una ventana flotante. El ajuste "Reproducir en segundo plano" desaparece; para solo audio, usa los auriculares.
+- **Auriculares en la ventana flotante:** toca la ventana y luego los auriculares; la ventana se cierra y el sonido sigue.
+- **Botón de Música:** en canciones y videoclips, abre el vídeo en YouTube Music. Solo aparece si YouTube Music lo tiene.
+
+### Correcciones
+
+- **Imagen en imagen más fluida:** MeTube ya no reenvía los botones de la ventana cada vez que el vídeo carga.
+
 ## 2.5.1 — 2026-10-09 — Solo audio, nuevo icono y correcciones
 
 ### Novedades

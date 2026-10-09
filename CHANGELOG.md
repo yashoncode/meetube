@@ -2,6 +2,18 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.5.6 — 2026-10-09 — Picture-in-picture every time, and a Music button
+
+### New
+
+- **Picture-in-picture whenever you leave a playing video.** Going home or switching apps now always shrinks the video into a floating window. The old "Play in background" setting is gone; the headphones button is how you ask for audio only.
+- **Headphones in the picture-in-picture window.** Tap the window, then the headphones: the window closes and the sound keeps playing.
+- **Music button.** For songs and music videos, a Music button next to Share opens the video in YouTube Music. It only shows for videos that YouTube Music has.
+
+### Fixed
+
+- **Smoother picture-in-picture.** MeTube no longer resends the window's buttons every time the video buffers, which stalled the window's animation.
+
 ## 2.5.1 — 2026-10-09 — Audio only, new icon and fixes
 
 ### New

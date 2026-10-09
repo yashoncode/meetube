@@ -82,6 +82,8 @@
     <string name="mobile_watch_like">Me gusta</string>
     <string name="mobile_watch_dislike">No me gusta</string>
     <string name="mobile_watch_share">Compartir</string>
+    <string name="mobile_watch_music">Música</string>
+    <string name="mobile_watch_music_missing">No hay ninguna app de música vinculada</string>
     <string name="mobile_watch_share_subject">Mira este vídeo</string>
     <string name="mobile_watch_subscribe">Suscribirse</string>
     <string name="mobile_watch_subscribed">Suscrito</string>

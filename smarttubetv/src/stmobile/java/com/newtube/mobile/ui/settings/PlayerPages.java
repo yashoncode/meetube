@@ -9,14 +9,12 @@ import android.text.style.ForegroundColorSpan;
 
 import androidx.core.content.ContextCompat;
 
-import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.okhttp.OkHttpManager;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
 import com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.FormatItem;
 import com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.FormatItem.VideoPreset;
 import com.liskovsoft.smartyoutubetv2.common.misc.AppDataSourceManager;
-import com.liskovsoft.smartyoutubetv2.common.misc.PhoneBackgroundMode;
 import com.liskovsoft.smartyoutubetv2.common.prefs.AppPrefs;
 import com.liskovsoft.smartyoutubetv2.common.prefs.DeArrowData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
@@ -60,7 +58,6 @@ final class PlayerPages {
         List<SettingsRow> rows = new ArrayList<>();
         PlayerData playerData = PlayerData.instance(context);
         PlayerTweaksData tweaks = PlayerTweaksData.instance(context);
-        GeneralData generalData = GeneralData.instance(context);
 
         rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_video_ends))
                 .option(context.getString(R.string.mobile_settings_video_ends_next), PlayerConstants.PLAYBACK_MODE_ALL)
@@ -71,22 +68,6 @@ final class PlayerPages {
                 .option(context.getString(R.string.mobile_settings_video_ends_pause), PlayerConstants.PLAYBACK_MODE_PAUSE)
                 .option(context.getString(R.string.mobile_settings_video_ends_close), PlayerConstants.PLAYBACK_MODE_CLOSE)
                 .bind(playerData::getPlaybackMode, playerData::setPlaybackMode));
-
-        boolean pip = Helpers.isPictureInPictureSupported(context);
-        SettingsRow.Choice<Integer> background = SettingsRow.choice(context.getString(R.string.mobile_settings_background));
-        if (pip) {
-            background.option(context.getString(R.string.option_background_playback_pip),
-                    context.getString(R.string.mobile_settings_background_pip_desc), PlayerConstants.BACKGROUND_MODE_PIP);
-        }
-        background.option(context.getString(R.string.option_background_playback_only_audio),
-                context.getString(R.string.mobile_settings_background_audio_desc), PlayerConstants.BACKGROUND_MODE_SOUND);
-        rows.add(background.bind(
-                () -> !pip || PhoneBackgroundMode.isOnlyAudio(playerData.getBackgroundMode())
-                        ? PlayerConstants.BACKGROUND_MODE_SOUND : PlayerConstants.BACKGROUND_MODE_PIP,
-                mode -> {
-                    playerData.setBackgroundMode(mode);
-                    generalData.setBackgroundPlaybackShortcut(GeneralData.BACKGROUND_PLAYBACK_SHORTCUT_HOME);
-                }));
 
         rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_remember_speed))
                 .option(context.getString(R.string.mobile_settings_remember_speed_channel), SPEED_PER_CHANNEL)

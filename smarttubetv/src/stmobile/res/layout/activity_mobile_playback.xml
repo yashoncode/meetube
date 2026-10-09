@@ -868,6 +868,37 @@
 
                     </LinearLayout>
 
+                    <!-- METUBE(music): this video in the YouTube Music app; shown only for videos it has. -->
+                    <LinearLayout
+                        android:id="@+id/mobile_watch_music"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:visibility="gone"
+                        android:background="@drawable/mobile_watch_pill_bg_touch"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="14dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="@string/mobile_watch_music"
+                            android:src="@drawable/ic_watch_music" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="@string/mobile_watch_music"
+                            android:textColor="@color/mobile_color_on_surface"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
                     <!-- Download. Opens the quality picker; once the video is on the device the
                          pill reads "Downloaded" and opens the download's own menu. -->
                     <LinearLayout

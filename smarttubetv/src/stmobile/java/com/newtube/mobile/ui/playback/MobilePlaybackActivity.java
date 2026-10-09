@@ -268,6 +268,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private ImageView mWatchDislikeIcon;
     private TextView mWatchDislikeCount;
     private View mWatchShare;
+    /** METUBE(music): shown only once {@link MusicLink} says the video is in YouTube Music. */
+    private View mWatchMusic;
+    @Nullable private String mMusicPillVideoId;
     private View mWatchSave;
     private ImageView mWatchSaveIcon;
     private TextView mWatchSaveLabel;
@@ -428,6 +431,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mBackgroundAudioMode;
     /** METUBE(audio-only): the headphones button is on - the video track stays dropped on screen too. */
     private boolean mAudioOnly;
+    /** The PiP headphones closed the window: its exit is not a dismiss, the audio plays on. */
+    private boolean mPipToAudio;
     private ImageButton mAudioButton;
     /** The thumbnail shown in the video's place while {@link #mAudioOnly}; built on first use. */
     @Nullable private View mAudioCover;
@@ -439,7 +444,12 @@ public class MobilePlaybackActivity extends MobileActivity
 
     // Picture-in-Picture play/pause RemoteAction wiring.
     private static final String ACTION_PIP_TOGGLE = "com.newtube.mobile.action.PIP_TOGGLE";
+    /** METUBE(audio-only): the PiP window's headphones - close the window, keep the sound. */
+    private static final String ACTION_PIP_AUDIO = "com.newtube.mobile.action.PIP_AUDIO";
     private static final int PIP_REQUEST_TOGGLE = 700;
+    private static final int PIP_REQUEST_AUDIO = 701;
+    /** What the PiP window was last given (play state + aspect); null outside PiP. */
+    @Nullable private String mPipParamsShown;
     /** Sentinel for {@link #mPrePipOrientation}: no orientation was captured. */
     private static final int ORIENTATION_NONE = Integer.MIN_VALUE;
     private BroadcastReceiver mPipReceiver;
@@ -751,6 +761,8 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchDislikeIcon = findViewById(R.id.mobile_watch_dislike_icon);
         mWatchDislikeCount = findViewById(R.id.mobile_watch_dislike_count);
         mWatchShare = findViewById(R.id.mobile_watch_share);
+        mWatchMusic = findViewById(R.id.mobile_watch_music);
+        mWatchMusic.setOnClickListener(v -> openInYouTubeMusic());
         mWatchSave = findViewById(R.id.mobile_watch_save);
         mWatchSaveIcon = findViewById(R.id.mobile_watch_save_icon);
         mWatchSaveLabel = findViewById(R.id.mobile_watch_save_label);
@@ -1542,6 +1554,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         // The PiP exit ended in the fullscreen UI, so it was an expand, not a dismiss.
         mPipDismissPending = false;
+        mPipToAudio = false;
         mRoutedInWhileLeaving = false; // NEWTUBE(link-while-playing): the routed-in open is in front
         // Re-enable the video track BEFORE any texture reattach below, so the first frame comes
         // back promptly (true background audio-only mode dropped the whole video renderer).
@@ -1873,8 +1886,9 @@ public class MobilePlaybackActivity extends MobileActivity
             logPip("leave-skip reason=internal-navigation");
             return;
         }
-        // NEWTUBE(background-mode): "Only audio" leaves without PiP; onStop keeps the audio going.
-        if (mAudioOnly || BackgroundModePolicy.onLeave(getBackgroundMode()) != BackgroundModePolicy.Action.PIP) {
+        // METUBE(audio-only): leaving a playing video always opens PiP, unless the headphones are
+        // on - then onStop keeps the audio going.
+        if (mAudioOnly) {
             logPip("leave-skip reason=audio-mode");
             return;
         }
@@ -2700,7 +2714,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
 
-        builder.setActions(java.util.Collections.singletonList(buildPlayPauseAction()));
+        builder.setActions(java.util.Arrays.asList(buildAudioOnlyAction(), buildPlayPauseAction()));
 
         // Android 12+ gesture navigation does NOT deliver onUserLeaveHint in time for the home
         // gesture, so the manual enterPipMode() path never fires there (observed on the emulator:
@@ -2736,9 +2750,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 && !mIsEnded
                 && mExoPlayerController != null
                 && mExoPlayerController.getPlayWhenReady()
-                // NEWTUBE(background-mode): never armed while the user's choice is "Only audio".
-                && !mAudioOnly // METUBE(audio-only): Home keeps the sound going, no PiP window
-                && BackgroundModePolicy.autoEnterPip(getBackgroundMode());
+                && !mAudioOnly; // METUBE(audio-only): Home keeps the sound going, no PiP window
     }
 
     /**
@@ -2799,14 +2811,6 @@ public class MobilePlaybackActivity extends MobileActivity
         }
     }
 
-    /**
-     * The user's "Play in background" choice, read fresh: the dialog that changes it is a separate
-     * activity, and the resume after it closes re-pushes the auto-enter flag (onResume).
-     */
-    private int getBackgroundMode() {
-        return PlayerData.instance(this).getBackgroundMode();
-    }
-
     /** Video aspect ratio for the PiP window, clamped to the range Android accepts (~0.42..2.39). */
     private Rational getVideoAspectRatio() {
         int width = 16;
@@ -2847,6 +2851,16 @@ public class MobilePlaybackActivity extends MobileActivity
         return new RemoteAction(icon, getString(labelRes), getString(labelRes), intent);
     }
 
+    /** METUBE(audio-only): headphones in the PiP window - the window closes, the sound plays on. */
+    @RequiresApi(Build.VERSION_CODES.O)
+    private RemoteAction buildAudioOnlyAction() {
+        PendingIntent intent = PendingIntent.getBroadcast(this, PIP_REQUEST_AUDIO,
+                new Intent(ACTION_PIP_AUDIO).setPackage(getPackageName()),
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        String label = getString(R.string.mobile_player_audio_only);
+        return new RemoteAction(Icon.createWithResource(this, R.drawable.ic_player_headphones), label, label, intent);
+    }
+
     /**
      * Push fresh PiP params to the system. In PiP this updates the play/pause action icon; OUTSIDE
      * PiP it keeps the standing auto-enter flag + aspect ratio + source rect current, which is what
@@ -2862,6 +2876,19 @@ public class MobilePlaybackActivity extends MobileActivity
         // left to arm.
         if (isFinishing() || isDestroyed()) {
             return;
+        }
+        // METUBE(pip-smooth): in PiP every push makes SystemUI reload the action icons on the thread
+        // that moves the PiP window (137 ms stalls logged on wmshell.main), and buffering flips
+        // pushed twice each. Only a new play/pause icon or shape is worth a push there.
+        if (mIsInPip) {
+            String shown = (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady() && !mIsEnded)
+                    + "/" + getVideoAspectRatio();
+            if (shown.equals(mPipParamsShown)) {
+                return;
+            }
+            mPipParamsShown = shown;
+        } else {
+            mPipParamsShown = null;
         }
         try {
             if (BuildConfig.DEBUG) {
@@ -2889,13 +2916,21 @@ public class MobilePlaybackActivity extends MobileActivity
                 if (intent != null && ACTION_PIP_TOGGLE.equals(intent.getAction())) {
                     togglePlayPause();
                     updatePipActions();
+                } else if (intent != null && ACTION_PIP_AUDIO.equals(intent.getAction()) && mIsInPip) {
+                    // Sent behind Home like a dismissed window; the exit below keeps the player.
+                    mPipToAudio = true;
+                    if (!mAudioOnly) {
+                        setAudioOnly(true);
+                    }
+                    moveTaskToBack(true);
                 }
             }
         };
 
         // Internal-only broadcast; must be flagged not-exported on API 34+.
-        ContextCompat.registerReceiver(this, mPipReceiver,
-                new IntentFilter(ACTION_PIP_TOGGLE), ContextCompat.RECEIVER_NOT_EXPORTED);
+        IntentFilter filter = new IntentFilter(ACTION_PIP_TOGGLE);
+        filter.addAction(ACTION_PIP_AUDIO);
+        ContextCompat.registerReceiver(this, mPipReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     private void unregisterPipReceiver() {
@@ -2967,12 +3002,18 @@ public class MobilePlaybackActivity extends MobileActivity
             // Dismiss vs expand: an expand always ends with onResume (which clears the flag); a
             // dismiss ends with onStop. On the older PiP shell the dismissal onStop ran BEFORE this
             // callback, so if we're already stopped this exit can only be a dismissal - finish now.
-            if (mIsStopped) {
+            if (mPipToAudio) {
+                // METUBE(audio-only): the PiP headphones, not a dismiss. Already stopped: onStop ran
+                // while still pinned and skipped the background-audio switch, so make it here.
+                if (mIsStopped) {
+                    setBackgroundAudioMode(true);
+                }
+            } else if (mIsStopped) {
                 mPrePipOrientation = ORIENTATION_NONE; // dismissed; nothing left to restore onto
                 finishFromPipDismiss();
                 return;
             }
-            mPipDismissPending = true;
+            mPipDismissPending = !mPipToAudio;
             restoreOrientationLockAfterPip();
 
             // Mirror of the setBackgroundAudioMode(false) revive: the sheet fragment survives the
@@ -4039,9 +4080,6 @@ public class MobilePlaybackActivity extends MobileActivity
         // Video zoom: how the picture fills the player (PlayerUIController.onVideoZoom).
         addMenuRow(content, sheet, R.drawable.ic_player_zoom, R.string.mobile_menu_zoom,
                 null, true, () -> openPlayerOption(R.id.action_video_zoom, false));
-        // Play as audio / background mode (PiP-on-home etc.).
-        addMenuRow(content, sheet, R.drawable.ic_player_background, R.string.mobile_menu_background,
-                null, true, this::openBackgroundModeDialog);
         // (No screen-off/dimming row: the TV screensaver doesn't exist on mobile - power button +
         // background playback cover that use case.)
         // Add to playlist.
@@ -4246,16 +4284,6 @@ public class MobilePlaybackActivity extends MobileActivity
         PlayerData.instance(this).setPlaybackMode(mode);
         // Reflect on the (hidden) repeat button state so the menu shows the right On/Off next time.
         setButtonState(R.id.action_repeat, mode);
-    }
-
-    /** Open the Play-in-background / audio-mode option dialog via the reused AppDialog path. */
-    private void openBackgroundModeDialog() {
-        cancelAutoHide();
-        AppDialogPresenter dialog = AppDialogPresenter.instance(this);
-        OptionCategory category = AppDialogUtil.createBackgroundPlaybackCategory(
-                this, PlayerData.instance(this), GeneralData.instance(this));
-        dialog.appendRadioCategory(category.title, category.options);
-        dialog.showDialog(getString(R.string.mobile_menu_background));
     }
 
     private void updateFullscreenIcon(int orientation) {
@@ -8336,6 +8364,52 @@ public class MobilePlaybackActivity extends MobileActivity
         startActivity(Intent.createChooser(intent, getString(R.string.mobile_watch_share)));
     }
 
+    /** METUBE(music): the Music pill shows for videos YouTube Music has, and only those. */
+    private void updateMusicPill(@Nullable Video video) {
+        String videoId = video != null ? video.videoId : null;
+        if (mWatchMusic == null || Helpers.equals(videoId, mMusicPillVideoId)) {
+            return;
+        }
+        mMusicPillVideoId = videoId;
+        mWatchMusic.setVisibility(View.GONE);
+        if (TextUtils.isEmpty(videoId)) {
+            return;
+        }
+        MusicLink.check(videoId, music -> {
+            if (music && Helpers.equals(videoId, mMusicPillVideoId) && !isDestroyed()) {
+                mWatchMusic.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    /**
+     * METUBE(music): the Music pill - this video in the YouTube Music app. Our player pauses first,
+     * so leaving for Music does not open a PiP window over it.
+     */
+    private void openInYouTubeMusic() {
+        Video video = getVideo();
+        if (video == null || TextUtils.isEmpty(video.videoId)) {
+            return;
+        }
+        Intent intent = new Intent(Intent.ACTION_VIEW,
+                android.net.Uri.parse("https://music.youtube.com/watch?v=" + video.videoId))
+                .setPackage("com.google.android.apps.youtube.music");
+        try {
+            startActivity(intent);
+        } catch (android.content.ActivityNotFoundException e) {
+            android.widget.Toast.makeText(this, R.string.mobile_watch_music_missing,
+                    android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
+            mExoPlayerController.setPlayWhenReady(false);
+            if (mPresenter != null) {
+                mPresenter.onPauseClicked();
+            }
+        }
+        updatePipActions();
+    }
+
     /** Video id + elapsedRealtime of the last touch-prefetch, to report whether the tap used it. */
     private String mTouchPrefetchVideoId;
     private long mTouchPrefetchAtMs;
@@ -9053,6 +9127,7 @@ public class MobilePlaybackActivity extends MobileActivity
         runOnUiThread(() -> {
             maybeShowLoadingStill(item);
             showAudioCover(item); // METUBE(audio-only): the next video's thumbnail
+            updateMusicPill(item);
         });
 
         // LOADING SKELETON: a new video is being set on the view and its related feed hasn't landed
