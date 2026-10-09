@@ -1,6 +1,14 @@
 # MeTube
 
-A YouTube client for Android phones with a "floating glass" interface: frosted, iOS-style glass bars over a dark page, large titles and rounded cards.
+An ad-free YouTube client for Android phones with a "floating glass" interface: frosted, iOS-style liquid glass bars over a dark page, large titles and rounded cards. Background play, picture-in-picture, downloads, Shorts and SponsorBlock built in.
+
+<p align="center">
+  <img src=".github/assets/metube/home.webp" width="160" alt="MeTube home feed with frosted glass top bar and floating glass navigation">
+  <img src=".github/assets/metube/watch.webp" width="160" alt="MeTube watch page with ambient glow and glass action pills">
+  <img src=".github/assets/metube/sheet.webp" width="160" alt="MeTube frosted glass bottom sheet over the feed">
+  <img src=".github/assets/metube/mini.webp" width="160" alt="MeTube mini player over the home feed">
+  <img src=".github/assets/metube/shorts.webp" width="160" alt="MeTube Shorts player">
+</p>
 
 MeTube is a fork of [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala), which is built on [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov). Under the hood it is NewTube unchanged: the same YouTube engine, account sign-in with a code, background playback, picture-in-picture, offline downloads, SponsorBlock, DeArrow, Return YouTube Dislike and casting. MeTube is an independent project and is not endorsed by either upstream developer.
 
