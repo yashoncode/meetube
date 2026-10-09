@@ -2,6 +2,12 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.5.7 — 2026-10-09 — Music button opens your music app
+
+### Fixed
+
+- **Music button opens whichever app you chose for YouTube Music links.** It used to open only the YouTube Music app. Now it follows Android's "Open by default" setting, so apps like BitChord work, and without a music app it opens in the browser.
+
 ## 2.5.6 — 2026-10-09 — Picture-in-picture every time, and a Music button
 
 ### New

@@ -8383,8 +8383,9 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(music): the Music pill - this video in the YouTube Music app. Our player pauses first,
-     * so leaving for Music does not open a PiP window over it.
+     * METUBE(music): the Music pill - this video's music.youtube.com link, opened by whatever app
+     * the system picks for that host (YouTube Music, or one the user set under "Open by default",
+     * else the browser). Our player pauses first, so leaving does not open a PiP window over it.
      */
     private void openInYouTubeMusic() {
         Video video = getVideo();
@@ -8392,8 +8393,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         Intent intent = new Intent(Intent.ACTION_VIEW,
-                android.net.Uri.parse("https://music.youtube.com/watch?v=" + video.videoId))
-                .setPackage("com.google.android.apps.youtube.music");
+                android.net.Uri.parse("https://music.youtube.com/watch?v=" + video.videoId));
         try {
             startActivity(intent);
         } catch (android.content.ActivityNotFoundException e) {

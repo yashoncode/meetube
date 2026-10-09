@@ -1,5 +1,11 @@
 # Registro de cambios de MeTube
 
+## 2.5.7 — 2026-10-09 — El botón de Música abre tu app de música
+
+### Correcciones
+
+- **El botón de Música abre la app que elegiste para los enlaces de YouTube Music.** Antes solo abría YouTube Music. Ahora sigue el ajuste "Abrir de forma predeterminada" de Android, así que funcionan apps como BitChord; sin app de música, se abre en el navegador.
+
 ## 2.5.6 — 2026-10-09 — Imagen en imagen siempre y botón de Música
 
 ### Novedades
