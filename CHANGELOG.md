@@ -2,6 +2,26 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.5.0 — 2026-10-09 — Glass and quicker Shorts
+
+### New
+
+- **Up next countdown.** When a video ends, a small card in the player counts down ten seconds to the next one. Tap Play now to go at once, Replay to watch it again, or Cancel to stay put. Seeking back cancels it too.
+- **A splash when you like or subscribe.** A ring and a burst of colour come off the button.
+- **Floating glass top bar.** The full-width bar is gone: the MeTube logo and the cast and search buttons float as two liquid glass pills, like the navigation bar.
+- **A quote when you tap the MeTube logo.** It shows for three seconds, and every tap brings a new one: no quote comes back until you have seen them all.
+- **Frosted menus.** The player's settings, More and card menus are frosted glass over a blurred copy of what's behind them, while the page around them stays sharp.
+- **Liquid glass setting.** Turn it off in Settings → General for a plain frosted blur that is easier on the battery.
+- **Counts in K and M.** Views and likes read 250K and 12M even when your phone is set to English (India). Prefer lakh and crore? Turn on Lakh and crore counts in Settings → General.
+
+### Changed
+
+- **Shorts swipe faster.** MeTube now looks up the short after the next one in advance, and a short that was still preloading when you swiped to it plays from what it already has instead of starting over. Neighbouring thumbnails load at once.
+- **Subscribed is a glass pill**, like the buttons above it.
+- **The title and view count of a video are one button** that opens the description.
+- **A small bounce on the navigation bar** when you switch tabs.
+- **Downloads go to Movies/MeTube and Music/MeTube.** Earlier downloads stay where they are.
+
 ## 2.0.2 — 2026-10-08 — Vertical fullscreen
 
 ### New

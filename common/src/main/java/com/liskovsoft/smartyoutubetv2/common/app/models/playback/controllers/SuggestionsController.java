@@ -749,6 +749,14 @@ public class SuggestionsController extends BasePlayerController {
         return result;
     }
 
+    /** METUBE(shorts): the short two swipes ahead in the Shorts queue, or null outside Shorts. */
+    public Video getShortAfterNext() {
+        if (getPlayer() == null || getVideo() == null || !getVideo().belongsToShorts()) {
+            return null;
+        }
+        return getShortNeighbour(getVideo(), 2);
+    }
+
     public Video getPrevious() {
         if (getPlayer() == null || getVideo() == null) {
             return null;

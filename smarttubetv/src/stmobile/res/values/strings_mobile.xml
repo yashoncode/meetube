@@ -465,4 +465,8 @@
     <!-- Experimental SABR playback (was strings_sabr.xml) -->
     <string name="sabr_vod_option">Prefer SABR even when links work (experimental; next VOD)</string>
     <string name="sabr_vod_stopped">Experimental SABR playback stopped. Tap play to retry, or disable SABR in Settings.</string>
+    <!-- METUBE(up-next): the countdown card over an ended video. %1$d = seconds left. -->
+    <string name="mobile_next_in">Up next in %1$d</string>
+    <string name="mobile_next_play">Play now</string>
+    <string name="mobile_next_cancel">Cancel</string>
 </resources>

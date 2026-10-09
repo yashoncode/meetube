@@ -844,7 +844,7 @@ public class VideoLoaderController extends BasePlayerController {
                 }
             case PlayerConstants.PLAYBACK_MODE_ALL:
             case PlayerConstants.PLAYBACK_MODE_SHUFFLE:
-                loadNext();
+                autoNext();
                 break;
             case PlayerConstants.PLAYBACK_MODE_ONE:
                 if (VERSION.SDK_INT <= 19) {
@@ -858,7 +858,7 @@ public class VideoLoaderController extends BasePlayerController {
                 // Close player if suggestions not shown
                 // Except when playing from queue
                 if (mPlaylist.getNext() != null && !getPlayerTweaksData().isQueueRespectsPlaybackMode()) {
-                    loadNext();
+                    autoNext();
                 } else {
                     AppDialogPresenter dialog = getAppDialogPresenter();
                     if (!getPlayer().isSuggestionsShown() && (!dialog.isDialogShown() || dialog.isOverlay())) {
@@ -871,7 +871,7 @@ public class VideoLoaderController extends BasePlayerController {
                 // Stop player after each video.
                 // Except when playing from queue
                 if (mPlaylist.getNext() != null && !getPlayerTweaksData().isQueueRespectsPlaybackMode()) {
-                    loadNext();
+                    autoNext();
                 } else {
                     stopPlayback();
                 }
@@ -879,7 +879,7 @@ public class VideoLoaderController extends BasePlayerController {
             case PlayerConstants.PLAYBACK_MODE_LIST:
                 // if video has a playlist load next or restart playlist
                 if (video.hasNextPlaylist() || mPlaylist.getNext() != null) {
-                    loadNext();
+                    autoNext();
                 } else {
                     //restartPlaylistIfNeeded();
                     stopPlayback();
@@ -889,6 +889,16 @@ public class VideoLoaderController extends BasePlayerController {
                 Log.e(TAG, "Undetected repeat mode " + playbackMode);
                 break;
         }
+    }
+
+    /** METUBE(up-next): the end-of-video advance, which the view may hold behind its countdown. */
+    private void autoNext() {
+        Video video = getVideo();
+        if (video != null && !video.belongsToShorts()
+                && getPlayer().showNextCountdown(mSuggestionsController.getNext(), mLoadNext)) {
+            return;
+        }
+        loadNext();
     }
 
     private void stopPlayback() {
@@ -1056,6 +1066,8 @@ public class VideoLoaderController extends BasePlayerController {
      */
     /** METUBE(shorts): a short looping in the swipe player (its next one is a swipe away). */
     private static final long SHORTS_PREFETCH_AFTER_MS = 300;
+    /** METUBE(shorts): the last short-after-next whose /player was asked for (see prefetchShortAfterNext). */
+    private String mShortAheadId;
 
     private boolean isShortsSwipe() {
         return getVideo() != null && getVideo().belongsToShorts()
@@ -1118,6 +1130,9 @@ public class VideoLoaderController extends BasePlayerController {
                 if (player != null && formatInfo != null && wouldOpenPlainDash(formatInfo)) {
                     player.prebuildNextSource(formatInfo, shortsSwipe);
                 }
+                if (currentVideo.belongsToShorts()) {
+                    prefetchShortAfterNext();
+                }
             }, error -> {
                 // Error or no answer: the ledger allows one retry, which the running recheck
                 // timer picks up after NextPrefetchLedger.RETRY_AFTER_MS.
@@ -1129,6 +1144,24 @@ public class VideoLoaderController extends BasePlayerController {
     }
 
     /** The autoplay-next resolution itself; a seam so the deadline logic is testable offline. */
+    /**
+     * METUBE(shorts): once the next short is resolved, the one after it gets its /player answer
+     * too - MediaServiceCore keeps four (the previous, this, next and that one), so a quick second
+     * swipe skips the round trip, and that short's own next-prefetch finds its info cached and
+     * goes straight to building and preloading the source. One request per target; a failure is
+     * left to the ordinary open.
+     */
+    private void prefetchShortAfterNext() {
+        Video ahead = mSuggestionsController.getShortAfterNext();
+        if (ahead == null || ahead.videoId == null || ahead.videoId.equals(mShortAheadId)) {
+            return;
+        }
+        mShortAheadId = ahead.videoId;
+        NetPath.log(NetPath.context() + " next-prefetch ahead video=" + ahead.videoId);
+        loadNextFormatInfo(ahead, formatInfo -> { }, error -> NetPath.log(NetPath.context()
+                + " next-prefetch ahead failed video=" + ahead.videoId));
+    }
+
     protected void loadNextFormatInfo(Video next, MediaServiceManager.OnFormatInfo onFormatInfo,
             MediaServiceManager.OnError onError) {
         MediaServiceManager.instance().loadFormatInfo(next, onFormatInfo, onError);

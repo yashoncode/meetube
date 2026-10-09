@@ -62,6 +62,10 @@
     <string name="mobile_settings_voice_search_summary">Opening Search starts listening</string>
     <string name="mobile_settings_24_hour">Use 24-hour time</string>
     <string name="mobile_settings_24_hour_summary">For the start times of premieres and live streams</string>
+    <string name="mobile_settings_liquid_glass">Liquid glass</string>
+    <string name="mobile_settings_liquid_glass_summary">Lens, light and grain on the glass bars. Off: a plain frosted blur that is easier on the battery</string>
+    <string name="mobile_settings_indian_counts">Lakh and crore counts</string>
+    <string name="mobile_settings_indian_counts_summary">Views and likes as 2.5 lakh and 1.2 crore instead of 250K and 12M</string>
 
     <!-- Tabs and feeds -->
     <string name="mobile_settings_tabs">Tabs</string>

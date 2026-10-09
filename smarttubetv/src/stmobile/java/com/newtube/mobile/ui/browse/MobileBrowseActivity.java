@@ -302,9 +302,12 @@ public class MobileBrowseActivity extends MobileActivity
         // The pill floats above the system bar (content is already inset), so the bar must not
         // pad itself by that inset too - Material does, whatever paddingBottomSystemWindowInsets says.
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(mBottomNav, (v, insets) -> insets);
-        // The top bar is glass over the page: the page's lists start under it, padded by its height.
+        // The top pills are glass over the page: the page's lists start under their row, padded by
+        // its height.
         View topGlass = findViewById(R.id.mobile_top_glass);
-        com.newtube.mobile.ui.common.Glass.blur(topGlass, findViewById(R.id.mobile_blur_target));
+        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_brand_glass), findViewById(R.id.mobile_blur_target));
+        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_actions_glass), findViewById(R.id.mobile_blur_target));
+        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_quote_card), findViewById(R.id.mobile_blur_target));
         topGlass.addOnLayoutChangeListener((v, l, t, r, bottom, ol, ot, or, oldBottom) -> {
             if (bottom - t != oldBottom - ot) {
                 padUnderTopBar(bottom - t);
@@ -912,6 +915,7 @@ public class MobileBrowseActivity extends MobileActivity
     private void setupBottomNav() {
         mBottomNav.setOnItemSelectedListener(item -> {
             if (!mSuppressNavCallback) {
+                Motion.nudge(findViewById(R.id.mobile_nav_glass)); // METUBE(motion): the bar acknowledges the switch
                 onNavItemChosen(item.getItemId());
             }
             return true;

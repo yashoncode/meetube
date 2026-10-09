@@ -60,6 +60,10 @@
     <string name="mobile_settings_voice_search_summary">Al abrir Buscar empieza a escuchar</string>
     <string name="mobile_settings_24_hour">Usar formato de 24 horas</string>
     <string name="mobile_settings_24_hour_summary">Para la hora de inicio de estrenos y directos</string>
+    <string name="mobile_settings_liquid_glass">Cristal líquido</string>
+    <string name="mobile_settings_liquid_glass_summary">Lente, brillo y grano en las barras de cristal. Desactivado: un desenfoque esmerilado simple que gasta menos batería</string>
+    <string name="mobile_settings_indian_counts">Cifras en lakh y crore</string>
+    <string name="mobile_settings_indian_counts_summary">Vistas y me gusta como 2.5 lakh y 1.2 crore en vez de 250K y 12M</string>
 
     <!-- Tabs and feeds -->
     <string name="mobile_settings_tabs">Pestañas</string>

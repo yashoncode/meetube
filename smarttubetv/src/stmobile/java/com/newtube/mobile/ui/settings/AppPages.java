@@ -23,6 +23,7 @@ import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.newtube.mobile.CardMenuMigration;
+import com.newtube.mobile.ui.common.CountStyle;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 import com.newtube.mobile.ui.common.ThemeMode;
 
@@ -59,6 +60,12 @@ final class AppPages {
                 .option(context.getString(R.string.mobile_theme_dark), ThemeMode.DARK)
                 .bind(ThemeMode::get, mode -> ThemeMode.set(context, mode)));
 
+        // METUBE(glass): the lens shader runs every frame something scrolls under the glass.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_liquid_glass),
+                context.getString(R.string.mobile_settings_liquid_glass_summary),
+                () -> com.newtube.mobile.ui.common.Glass.isLiquid(context),
+                on -> com.newtube.mobile.ui.common.Glass.setLiquid(context, on)).needsRestart());
+
         LanguageSettingsPresenter language = LanguageSettingsPresenter.instance(context);
         rows.add(SettingsRow.fromRadio(language.createLanguageCategory(),
                 context.getString(R.string.mobile_settings_language)).needsRestart());
@@ -76,6 +83,11 @@ final class AppPages {
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_24_hour),
                 context.getString(R.string.mobile_settings_24_hour_summary),
                 generalData::is24HourLocaleEnabled, generalData::set24HourLocaleEnabled).needsRestart());
+
+        // METUBE(counts): K and M by default; lakh and crore, as YouTube writes them for India, here.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_indian_counts),
+                context.getString(R.string.mobile_settings_indian_counts_summary),
+                () -> CountStyle.isIndian(context), on -> CountStyle.setIndian(context, on)).needsRestart());
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_general), rows);
     }

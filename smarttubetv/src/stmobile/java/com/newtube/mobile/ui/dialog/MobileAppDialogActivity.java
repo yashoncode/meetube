@@ -377,7 +377,12 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
     private void configureSheet() {
         mScrim.setVisibility(View.VISIBLE);
         mHandle.setVisibility(View.VISIBLE);
-        mContent.setBackgroundResource(R.drawable.bg_mobile_sheet);
+        mContent.setBackgroundResource(R.drawable.bg_glass_sheet);
+        // METUBE(glass): frosted with the screen under this one, once laid out.
+        mContent.post(() -> {
+            android.app.Activity page = com.newtube.mobile.ui.common.SheetGlass.backdrop();
+            com.newtube.mobile.ui.common.SheetGlass.frost(mContent, page != null ? page.getWindow() : null);
+        });
         // NEWTUBE(theme): in the light theme the sheet window draws edge to edge, so the scrim also
         // dims the status-bar band (a fitted window left it as an undimmed white strip over the
         // dimmed page, or over the player's black video band) and its icons are light over it; the

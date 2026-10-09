@@ -420,4 +420,7 @@
     <string name="mobile_about_share_text">MeTube, un cliente de YouTube para móviles basado en SmartTube: %1$s</string>
     <string name="sabr_vod_option">Preferir SABR aunque haya enlaces (experimental; próximo vídeo)</string>
     <string name="sabr_vod_stopped">Se ha detenido la reproducción SABR experimental. Pulsa reproducir para reintentar o desactiva SABR en Ajustes.</string>
+    <string name="mobile_next_in">A continuación en %1$d</string>
+    <string name="mobile_next_play">Reproducir</string>
+    <string name="mobile_next_cancel">Cancelar</string>
 </resources>

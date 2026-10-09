@@ -276,7 +276,7 @@ public final class MobileDownloadService extends Service {
         try {
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             if (pm != null && mWakeLock == null) {
-                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NewTube:downloads");
+                mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MeTube:downloads");
                 mWakeLock.setReferenceCounted(false);
                 mWakeLock.acquire(6 * 60 * 60 * 1000L);
             }

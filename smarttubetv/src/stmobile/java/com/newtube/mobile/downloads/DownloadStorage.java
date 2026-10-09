@@ -21,16 +21,16 @@ import java.io.IOException;
 /**
  * Where finished downloads live, and how they are opened, shared and deleted.
  *
- * <p>Android 10+: the public media collections ({@code Movies/NewTube}, {@code Music/NewTube})
+ * <p>Android 10+: the public media collections ({@code Movies/MeTube}, {@code Music/MeTube})
  * through MediaStore - no storage permission, the files show up in the gallery and any file
  * manager, and the app keeps write access to what it created. The muxer writes straight into
  * the collection's file descriptor, so a finished file is never copied.
  *
- * <p>Android 7-9: {@code Android/media/<package>/NewTube} - the one public location an app can
+ * <p>Android 7-9: {@code Android/media/<package>/MeTube} - the one public location an app can
  * write without a runtime permission there; a media scan makes it visible.
  */
 final class DownloadStorage {
-    private static final String FOLDER = "NewTube";
+    private static final String FOLDER = "MeTube";
 
     /** An output the muxer can write to, plus what is needed to finish or abandon it. */
     static final class Target {

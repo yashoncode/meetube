@@ -314,8 +314,8 @@ android {
             // fork-point 31.97/2387). versionCode starts at 10000 - above upstream's code so
             // existing test installs upgrade in place - and encodes the version:
             // 1.0.0 -> 10000, 1.0.1 -> 10001, 1.1.0 -> 10100, 2.0.0 -> 20000.
-            versionCode 20002
-            versionName "2.0.2"
+            versionCode 20500
+            versionName "2.5.0"
         }
     }
 }
@@ -461,7 +461,11 @@ configurations {
     sabrProofProtoc
 }
 dependencies {
-    sabrProofProtoc 'com.google.protobuf:protoc:3.22.3:linux-x86_64@exe'
+    // METUBE: the compiler for the machine running the build (it was pinned to Linux only).
+    def os = System.getProperty('os.name').toLowerCase()
+    def arch = System.getProperty('os.arch') in ['aarch64', 'arm64'] ? 'aarch_64' : 'x86_64'
+    def protocTarget = os.contains('win') ? 'windows-x86_64' : (os.contains('mac') ? 'osx-' + arch : 'linux-' + arch)
+    sabrProofProtoc "com.google.protobuf:protoc:3.22.3:${protocTarget}@exe"
 }
 def sabrProofProtoRoot = file('src/androidTest/proto')
 def sabrProofGeneratedJava = layout.buildDirectory.dir('generated/sabrProof/java')

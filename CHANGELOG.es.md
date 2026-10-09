@@ -1,5 +1,23 @@
 # Registro de cambios de MeTube
 
+## 2.5.0 — 2026-10-09 — Cristal y Shorts más rápidos
+
+### Novedades
+
+- **Cuenta atrás para el siguiente vídeo:** al terminar un vídeo, una tarjeta cuenta diez segundos. Reproducir ya, Volver a reproducir o Cancelar.
+- **Un destello al dar me gusta o suscribirte.**
+- **Barra superior de cristal flotante:** el logo y los botones de enviar y buscar flotan como dos píldoras de cristal líquido.
+- **Una cita al tocar el logo de MeTube,** distinta en cada toque.
+- **Menús esmerilados:** los menús del reproductor y de las tarjetas muestran un cristal esmerilado sin desenfocar la página.
+- **Ajuste Cristal líquido:** desactívalo en Ajustes → General para un desenfoque simple que gasta menos batería.
+- **Cifras en K y M,** también con el teléfono en inglés (India). Ajuste Cifras en lakh y crore para volver al formato indio.
+
+### Cambios
+
+- **Los Shorts pasan más rápido:** se adelanta el short siguiente al siguiente y una precarga a medias ya no se descarta.
+- **Suscrito es una píldora de cristal;** el título y las visualizaciones son un solo botón; la barra de navegación rebota al cambiar de pestaña.
+- **Las descargas van a Movies/MeTube y Music/MeTube.**
+
 ## 2.0.2 — 2026-10-08 — Pantalla completa vertical
 
 ### Novedades

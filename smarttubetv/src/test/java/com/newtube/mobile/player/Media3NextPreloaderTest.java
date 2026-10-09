@@ -124,8 +124,10 @@ public class Media3NextPreloaderTest {
         MediaSource replacement = source("different");
         preloader.offer("different", replacement);
         oldEvents.onCompleted();
-        assertNull(preloader.take("different", replacement));
-        assertEquals(2, engine.removed.size());
+        assertFalse(preloader.isReady("different"));
+        // Still loading: handed over as it is (its own wrapper, never the cancelled one).
+        assertSame(engine.wrapped, preloader.take("different", replacement));
+        assertEquals(1, engine.removed.size());
     }
 
     @Test
@@ -151,7 +153,8 @@ public class Media3NextPreloaderTest {
         oldEvents.onError();
         oldEvents.onCompleted();
         assertEquals(1, engine.removed.size());
-        assertNull(preloader.take("next", replacement));
+        assertFalse(preloader.isReady("next"));
+        assertSame(engine.wrapped, preloader.take("next", replacement));
     }
 
     @Test
@@ -171,11 +174,11 @@ public class Media3NextPreloaderTest {
     }
 
     @Test
-    public void incompleteSourceIsNeverHandedToForeground() {
+    public void incompleteSourceIsHandedToForegroundAsItIs() {
         preloader.offer("next", source);
-        assertNull(preloader.take("next", source));
-        assertEquals(1, engine.removed.size());
-        assertSame(source, discarded.get(0));
+        assertSame(engine.wrapped, preloader.take("next", source));
+        assertTrue(engine.removed.isEmpty());
+        assertTrue(discarded.isEmpty());
     }
 
     @Test
@@ -198,11 +201,13 @@ public class Media3NextPreloaderTest {
     }
 
     @Test
-    public void matchingResetCancelsAnIncompleteLoadBeforeNewPlaybackStarts() {
+    public void matchingResetKeepsAnIncompleteLoadForItsOwnOpen() {
         preloader.offer("next", source);
         preloader.onReset("next");
-        assertEquals(1, engine.removed.size());
-        assertSame(source, discarded.get(0));
+        preloader.update(); // the transition's own check must not cancel the target's load
+        assertTrue(engine.removed.isEmpty());
+        assertSame(engine.wrapped, preloader.take("next", source));
+        assertTrue(discarded.isEmpty());
     }
 
     @Test

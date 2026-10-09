@@ -63,7 +63,6 @@ import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.button.MaterialButton;
 import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
 import com.liskovsoft.mediaserviceinterfaces.LiveChatService;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
@@ -127,6 +126,7 @@ import com.newtube.mobile.downloads.DownloadMenu;
 import com.newtube.mobile.downloads.DownloadOption;
 import com.newtube.mobile.downloads.DownloadRegistry;
 import com.newtube.mobile.SessionWarmup;
+import com.newtube.mobile.ui.common.Burst;
 import com.newtube.mobile.ui.common.FrameGate;
 import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.common.MagneticDrag;
@@ -217,6 +217,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private TextView mSetupHint;
     /** Persistent "why playback stopped" line (see {@link #showPlaybackNotice}). */
     private TextView mNoticeView;
+    /** METUBE(up-next): the "Up next in N" card over an ended video. */
+    private NextCountdown mNextCountdown;
     private ImageButton mSubtitlesButton;
     private ImageButton mMoreButton;
     private ImageButton mPrevButton;
@@ -254,7 +256,6 @@ public class MobilePlaybackActivity extends MobileActivity
     private View mWatchContent;
     private TextView mWatchTitle;
     private TextView mWatchMeta;
-    private View mWatchMetaRow;
     /** METUBE(ambient): the YouTube-style glow behind the watch page. */
     private AmbientGlow mAmbient;
     /** METUBE(shorts): the vertical player mode for videos from the Shorts tab. */
@@ -276,7 +277,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private ImageView mWatchAvatar;
     private TextView mWatchChannelName;
     private TextView mWatchSubs;
-    private MaterialButton mWatchSubscribe;
+    private TextView mWatchSubscribe;
     private TextView mWatchRelatedLabel;
     private View mRelatedSkeleton;
     private RecyclerView mWatchRelated;
@@ -700,6 +701,10 @@ public class MobilePlaybackActivity extends MobileActivity
         syncPlayPauseWithSpinner();
         mSetupHint = findViewById(R.id.mobile_player_setup_hint);
         mNoticeView = findViewById(R.id.mobile_player_notice);
+        mNextCountdown = new NextCountdown(findViewById(R.id.mobile_next_countdown), this::isPlaying, () -> {
+            setPositionMs(0);
+            setPlayWhenReady(true);
+        }, () -> showControls(true));
         mCastButton = findViewById(R.id.mobile_player_cast);
         mCastOverlay = findViewById(R.id.mobile_cast_overlay);
         mCastOverlayTitle = findViewById(R.id.mobile_cast_overlay_title);
@@ -731,7 +736,6 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchContent = findViewById(R.id.mobile_watch_content);
         mWatchTitle = findViewById(R.id.mobile_watch_title);
         mWatchMeta = findViewById(R.id.mobile_watch_meta);
-        mWatchMetaRow = findViewById(R.id.mobile_watch_meta_row);
         mWatchDescription = findViewById(R.id.mobile_watch_description);
         mWatchLike = findViewById(R.id.mobile_watch_like);
         mWatchLikeIcon = findViewById(R.id.mobile_watch_like_icon);
@@ -1084,8 +1088,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mQueueHeader.setOnClickListener(v -> toggleQueueExpanded());
 
         // Expandable description: tap the title or the views/date row (METUBE: no chevron).
-        mWatchMetaRow.setOnClickListener(v -> toggleDescription());
-        mWatchTitle.setOnClickListener(v -> toggleDescription());
+        findViewById(R.id.mobile_watch_header).setOnClickListener(v -> toggleDescription());
 
         // Actions row. Like/Dislike/Subscribe go through the presenter's onButtonClicked vocabulary
         // (R.id.action_*); the controller flips the visual state back via setButtonState. Share fires
@@ -6308,6 +6311,21 @@ public class MobilePlaybackActivity extends MobileActivity
         }
     }
 
+    /**
+     * METUBE(up-next): hold autoplay behind the countdown card - only while someone is looking at
+     * this player (resumed, not PiP, not Shorts); otherwise the next video opens at once.
+     */
+    @Override
+    public boolean showNextCountdown(Video next, Runnable playNext) {
+        if (mNextCountdown == null || isInPictureInPictureMode() || (mShorts != null && mShorts.isActive())
+                || !getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+            return false;
+        }
+        showControls(false);
+        mNextCountdown.show(next != null ? next.getTitle() : null, playNext);
+        return true;
+    }
+
     /** NEWTUBE(motion): the buffering spinner's state, see showProgressBar. */
     private boolean mSpinnerShown;
 
@@ -8022,7 +8040,12 @@ public class MobilePlaybackActivity extends MobileActivity
         // NEWTUBE(haptics): the tap took effect - a click and a pop of the thumb, like YouTube's.
         boolean like = actionId == R.id.action_thumbs_up;
         Haptics.click(like ? mWatchLike : mWatchDislike);
-        Motion.pop(like ? mWatchLikeIcon : mWatchDislikeIcon);
+        // METUBE(burst): a like splashes - on the Shorts thumb when the tap came from there.
+        View likeIcon = mShorts != null && mShorts.isActive() ? mShorts.likeIcon() : mWatchLikeIcon;
+        if (like && stateAfter == BUTTON_ON) {
+            Burst.play(likeIcon, getColorInt(R.color.mobile_color_primary));
+        }
+        Motion.pop(like ? likeIcon : mWatchDislikeIcon);
         WatchActionFeedback.confirmRating(this, like, stateAfter == BUTTON_ON,
                 undoRating(ratingBefore, ratingAfter));
     }
@@ -8079,6 +8102,11 @@ public class MobilePlaybackActivity extends MobileActivity
         int after = getButtonState(R.id.action_subscribe); // set synchronously by the controller
         if (after != before) {
             Haptics.click(mWatchSubscribe);
+            if (after == BUTTON_ON) {
+                View button = mShorts != null && mShorts.isActive() ? mShorts.subscribeButton() : mWatchSubscribe;
+                Burst.play(button, getColorInt(R.color.mobile_color_on_surface));
+                Motion.pop(button);
+            }
             Video video = getVideo();
             WatchActionFeedback.confirmSubscription(this, after == BUTTON_ON,
                     video != null ? video.getAuthor() : null,
@@ -8119,9 +8147,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 mShorts.setSubscribed(on);
             }
             // NEWTUBE(theme): the main-action pill while not subscribed (white on the dark page,
-            // near-black on the light one), the quiet grey once subscribed.
-            mWatchSubscribe.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
-                    getColorInt(on ? R.color.mobile_color_subscribed_button : R.color.mobile_color_inverse_surface)));
+            // near-black on the light one). METUBE(glass): once subscribed, a glass pill like the
+            // action row's - bg_watch_subscribe's selected state.
+            mWatchSubscribe.setSelected(on);
             mWatchSubscribe.setTextColor(getColorInt(on
                     ? R.color.mobile_color_on_surface : R.color.mobile_color_on_inverse_surface));
         }
@@ -8919,6 +8947,9 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean sameVideo = item != null && Helpers.equals(item.videoId, mWatchVideoId);
         if (!sameVideo) {
             showPlaybackNotice(null);
+            if (mNextCountdown != null) {
+                mNextCountdown.hide();
+            }
             cancelHoldSpeed();
             // NEWTUBE(gestures): a drag held across an autoplay would have seeked the new video to
             // the old one's spot (the bar's and a swipe's alike): it ends here, seeking nothing.

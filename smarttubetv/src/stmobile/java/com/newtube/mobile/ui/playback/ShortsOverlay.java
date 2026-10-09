@@ -80,8 +80,11 @@ final class ShortsOverlay {
     private static final float FLING_PX_PER_S = 1200f;
     /** No neighbour to page to: the drag gives a quarter of the finger's travel. */
     private static final float RUBBER_BAND = 0.25f;
-    /** After a short opens - out of the way of its first media chunks. */
-    private static final long NEIGHBOUR_PRELOAD_DELAY_MS = 1200;
+    /**
+     * METUBE(shorts): at once - a swipe inside the old 1.2 s found no neighbour warmed. The
+     * thumbnails are small next to the short's first media chunks.
+     */
+    private static final long NEIGHBOUR_PRELOAD_DELAY_MS = 0;
     /** The peek stays over a paged-to short until it is bound, or this long at most. */
     private static final long PEEK_COVER_MAX_MS = 2500;
     private static final int PORTRAIT_W = 720;
@@ -270,6 +273,15 @@ final class ShortsOverlay {
         mSubscribe.setSelected(subscribed);
     }
 
+    /** METUBE(burst): where a like or a subscribe made in Shorts splashes. */
+    View likeIcon() {
+        return mLikeIcon;
+    }
+
+    View subscribeButton() {
+        return mSubscribe;
+    }
+
     void setProgress(long positionMs, long durationMs) {
         if (mActive && !mScrubbing) {
             mDurationMs = durationMs;
@@ -401,7 +413,7 @@ final class ShortsOverlay {
         if (!mActive) {
             return;
         }
-        for (int step : new int[] {1, -1, 2}) {
+        for (int step : new int[] {1, -1, 2, 3}) {
             Video video = neighbour(step);
             if (video != null && video.videoId != null) {
                 portrait(mOverlay.getContext(), video.videoId).preload();

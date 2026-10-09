@@ -235,15 +235,136 @@
 
     </com.newtube.mobile.ui.common.GlassSource>
 
-    <!-- METUBE(glass): the top bar is frosted glass too - the feed scrolls up under it
-         (MobileBrowseActivity pads the lists by its height). A flat bar: no lens, no rim. -->
-    <com.newtube.mobile.ui.common.GlassView
+    <!-- METUBE(glass): no top bar - two floating liquid-glass pills, the same glass as the nav
+         capsule (Glass.blur): the brand on the left (a You sub-screen swaps it for a back arrow and
+         the section's name - BrowseTopBar), cast and search on the right. The page scrolls under
+         both; MobileBrowseActivity pads the lists by this row's height. -->
+    <LinearLayout
         android:id="@+id/mobile_top_glass"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:glassCornerRadius="0dp"
-        app:glassLiquid="false"
-        app:glassTint="@color/metube_bar_tint"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/mobile_brand_glass"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginEnd="12dp"
+            android:elevation="6dp"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/metube_glass_tint">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="16dp">
+
+                <!-- NEWTUBE(you-subscreen): only on a section opened from a You row - BrowseTopBar. -->
+                <ImageButton
+                    android:id="@+id/mobile_title_back"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="-6dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/mobile_dialog_back"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_mobile_back_arrow"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/mobile_brand_mark"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_marginEnd="8dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_metube_mark" />
+
+                <TextView
+                    android:id="@+id/mobile_title_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:maxWidth="200dp"
+                    android:text="@string/app_name"
+                    android:textColor="@color/mobile_color_on_surface"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+
+        </com.newtube.mobile.ui.common.GlassView>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/mobile_actions_glass"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:elevation="6dp"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/metube_glass_tint">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:paddingHorizontal="2dp">
+
+                <!-- Cast picker entry on the home feed, like the official app's top bar. Tinted with the
+                     accent while a session is connected (MobileBrowseActivity.updateCastIconTint). -->
+                <ImageButton
+                    android:id="@+id/mobile_cast_button"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/mobile_cast_button"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_mobile_cast" />
+
+                <ImageButton
+                    android:id="@+id/mobile_search_button"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/mobile_search_button"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_mobile_search" />
+
+            </LinearLayout>
+
+        </com.newtube.mobile.ui.common.GlassView>
+
+    </LinearLayout>
+
+    <!-- METUBE(quotes): the quote a tap on the brand pill shows for three seconds (QuoteCard),
+         on the same liquid glass as the pills. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/mobile_quote_card"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="28dp"
+        android:clickable="true"
+        android:elevation="10dp"
+        android:focusable="true"
+        android:visibility="gone"
+        app:glassCornerRadius="28dp"
+        app:glassTint="@color/metube_glass_tint"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -251,107 +372,29 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="22dp">
 
-            <!-- METUBE(glass): brand row - the mark and a quiet wordmark, the actions in a glass pill. -->
-            <LinearLayout
-                android:id="@+id/mobile_header_row"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="4dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="12dp">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_metube_mark" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:alpha="0.72"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="@string/app_name"
-                    android:textColor="@color/mobile_color_on_surface"
-                    android:textSize="15sp" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:background="@drawable/bg_glass_pill"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="2dp">
-
-                    <!-- Cast picker entry on the home feed, like the official app's top bar. Tinted with the
-                         accent while a session is connected (MobileBrowseActivity.updateCastIconTint). -->
-                    <ImageButton
-                        android:id="@+id/mobile_cast_button"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/mobile_cast_button"
-                        android:padding="11dp"
-                        android:src="@drawable/ic_mobile_cast" />
-
-                    <ImageButton
-                        android:id="@+id/mobile_search_button"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/mobile_search_button"
-                        android:padding="11dp"
-                        android:src="@drawable/ic_mobile_search" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/mobile_quote_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:fontFamily="serif"
+                android:lineSpacingMultiplier="1.15"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textSize="20sp"
+                android:textStyle="italic" />
 
-                <!-- NEWTUBE(you-subscreen): back arrow shown (with the section's name in the title bar) only
-                     while a section opened from a You row is on screen - BrowseTopBar. GONE otherwise, and a
-                     GONE view collapses to a point at the start, so the title keeps its 16dp inset. -->
-                <ImageButton
-                    android:id="@+id/mobile_title_back"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginStart="4dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/mobile_dialog_back"
-                    android:padding="12dp"
-                    android:src="@drawable/ic_mobile_back_arrow"
-                    android:visibility="gone" />
-
-                <!-- METUBE(glass): iOS-style large title naming the tab (BrowseTopBar). -->
-                <TextView
-                    android:id="@+id/mobile_title_bar"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:ellipsize="end"
-                    android:fontFamily="sans-serif"
-                    android:letterSpacing="-0.02"
-                    android:maxLines="1"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp"
-                    android:text="@string/app_name"
-                    android:textColor="@color/mobile_color_on_surface"
-                    android:textSize="34sp"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/mobile_quote_author"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="end"
+                android:textColor="@color/mobile_color_on_surface_secondary"
+                android:textSize="13sp" />
 
         </LinearLayout>
 

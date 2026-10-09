@@ -622,6 +622,8 @@
                 tools:text="@string/mobile_player_zoom_fill"
                 tools:visibility="visible" />
 
+            <include layout="@layout/mobile_next_countdown" />
+
         </com.newtube.mobile.ui.playback.PinchZoomLayout>
 
         <!-- Everything under the video: the watch content, and the comments panel that slides
@@ -654,13 +656,24 @@
                 android:orientation="vertical"
                 android:paddingBottom="24dp">
 
+                <!-- METUBE: title and meta are one target - both open the description, so one
+                     press feedback covers the pair instead of two separate highlights. -->
+                <LinearLayout
+                    android:id="@+id/mobile_watch_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:orientation="vertical"
+                    android:paddingTop="8dp">
+
                 <!-- Title -->
                 <TextView
                     android:id="@+id/mobile_watch_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:background="?attr/selectableItemBackground"
                     android:contentDescription="@null"
                     android:paddingHorizontal="@dimen/mobile_watch_content_padding"
                     android:ellipsize="end"
@@ -676,7 +689,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="0dp"
-                    android:background="?attr/selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingHorizontal="@dimen/mobile_watch_content_padding"
@@ -692,6 +704,8 @@
                         android:textColor="@color/mobile_color_on_surface_secondary"
                         android:textSize="14sp"
                         tools:text="1,234,567 views • Jan 1, 2026" />
+
+                </LinearLayout>
 
                 </LinearLayout>
 
@@ -962,25 +976,25 @@
 
                     </LinearLayout>
 
-                    <com.google.android.material.button.MaterialButton
+                    <!-- METUBE(glass): a TextView, not a MaterialButton - Material re-tints its own
+                         background, so the glass "Subscribed" pill (bg_watch_subscribe, selected =
+                         subscribed) would never show. -->
+                    <TextView
                         android:id="@+id/mobile_watch_subscribe"
-                        style="@style/Widget.MaterialComponents.Button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:backgroundTint="@color/mobile_color_inverse_surface"
+                        android:background="@drawable/bg_watch_subscribe"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:fontFamily="sans-serif-medium"
-                        android:insetTop="4dp"
-                        android:insetBottom="4dp"
-                        android:letterSpacing="0"
+                        android:gravity="center"
+                        android:maxLines="1"
                         android:minHeight="48dp"
                         android:paddingHorizontal="16dp"
-                        android:paddingVertical="0dp"
                         android:text="@string/mobile_watch_subscribe"
-                        android:textAllCaps="false"
                         android:textColor="@color/mobile_color_on_inverse_surface"
-                        android:textSize="14sp"
-                        app:cornerRadius="22dp" />
+                        android:textSize="14sp" />
 
                 </LinearLayout>
 

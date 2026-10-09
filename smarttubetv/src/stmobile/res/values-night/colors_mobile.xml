@@ -40,6 +40,7 @@
     <!-- METUBE(glass): BitChord's glass tint (#121212 at 40%), 14% white hairline, 14% white lit tab. -->
     <color name="metube_glass_tint">#66000000</color>
     <!-- Static glass (no live blur behind it): a 9% white lift so it reads on the flat page. -->
+    <color name="metube_sheet_glass">#C71C1C21</color>
     <color name="metube_glass_fill">#17FFFFFF</color>
     <color name="metube_glass_stroke">#24FFFFFF</color>
     <color name="metube_glass_selected">#24FFFFFF</color>

@@ -214,7 +214,7 @@ public class CastSessionService extends Service implements CastSessionManager.Li
         try {
             WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if (wifi != null) {
-                mWifiLock = wifi.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "NewTube:CastWifi");
+                mWifiLock = wifi.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "MeTube:CastWifi");
                 mWifiLock.setReferenceCounted(false);
                 mWifiLock.acquire();
             }
@@ -224,7 +224,7 @@ public class CastSessionService extends Service implements CastSessionManager.Li
         try {
             PowerManager power = (PowerManager) getSystemService(Context.POWER_SERVICE);
             if (power != null) {
-                mWakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "NewTube:CastSession");
+                mWakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MeTube:CastSession");
                 mWakeLock.setReferenceCounted(false);
                 mWakeLock.acquire();
             }

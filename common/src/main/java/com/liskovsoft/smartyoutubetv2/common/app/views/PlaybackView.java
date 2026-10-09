@@ -24,4 +24,14 @@ public interface PlaybackView extends PlayerManager {
      * it genuinely resumes or the user moves on - it deliberately stays up across retries.
      */
     default void showPlaybackNotice(String message) {}
+
+    /**
+     * METUBE(up-next): the video ended and autoplay is about to open {@code next} (null while the
+     * suggestions are still loading). Return true to hold the advance behind the view's own
+     * countdown, which runs {@code playNext} when it is done (or the user taps Play now); false
+     * (the default, or a player nobody is looking at) advances at once.
+     */
+    default boolean showNextCountdown(com.liskovsoft.smartyoutubetv2.common.app.models.data.Video next, Runnable playNext) {
+        return false;
+    }
 }

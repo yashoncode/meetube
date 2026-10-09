@@ -191,7 +191,7 @@ public class GlassView extends FrameLayout {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.GlassView);
         mCorner = a.getDimension(R.styleable.GlassView_glassCornerRadius, 24 * mDensity);
         mTint = a.getColor(R.styleable.GlassView_glassTint, 0x66121212);
-        mLiquid = a.getBoolean(R.styleable.GlassView_glassLiquid, true);
+        mLiquid = a.getBoolean(R.styleable.GlassView_glassLiquid, true) && Glass.isLiquid(context);
         a.recycle();
 
         setWillNotDraw(false);

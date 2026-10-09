@@ -41,12 +41,21 @@ public final class Motion {
      * that just took effect under the finger (a like, a dislike).
      */
     public static void pop(android.view.View view) {
+        pop(view, 0.78f, 1.12f);
+    }
+
+    /** METUBE(motion): the same pop, barely there - for a whole bar acknowledging a change. */
+    public static void nudge(android.view.View view) {
+        pop(view, 0.965f, 1.015f);
+    }
+
+    private static void pop(android.view.View view, float in, float over) {
         if (view == null) {
             return;
         }
         android.animation.Keyframe k0 = android.animation.Keyframe.ofFloat(0f, 1f);
-        android.animation.Keyframe k1 = android.animation.Keyframe.ofFloat(0.35f, 0.78f);
-        android.animation.Keyframe k2 = android.animation.Keyframe.ofFloat(0.75f, 1.12f);
+        android.animation.Keyframe k1 = android.animation.Keyframe.ofFloat(0.35f, in);
+        android.animation.Keyframe k2 = android.animation.Keyframe.ofFloat(0.75f, over);
         android.animation.Keyframe k3 = android.animation.Keyframe.ofFloat(1f, 1f);
         android.animation.ObjectAnimator pop = android.animation.ObjectAnimator.ofPropertyValuesHolder(view,
                 android.animation.PropertyValuesHolder.ofKeyframe(android.view.View.SCALE_X, k0, k1, k2, k3),

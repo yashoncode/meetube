@@ -79,6 +79,8 @@ final class Media3NextPreloader {
     @Nullable private Slot mPending;
     @Nullable private Slot mAdopting;
     private boolean mTransitioning;
+    /** METUBE(shorts): the video a reset is opening; its own in-flight preload keeps loading. */
+    @Nullable private String mOpeningVideoId;
     private boolean mReleased;
 
     Media3NextPreloader(DefaultPreloadManager.Builder builder, DefaultTrackSelector foregroundSelector,
@@ -131,7 +133,8 @@ final class Media3NextPreloader {
             return;
         }
         if (!slot.complete && slot.wrapped != null) {
-            if (mTransitioning || !mCanLoad.get()) {
+            boolean opening = mTransitioning && slot.videoId.equals(mOpeningVideoId);
+            if (!opening && (mTransitioning || !mCanLoad.get())) {
                 cancelPending("foreground");
                 return;
             }
@@ -173,8 +176,11 @@ final class Media3NextPreloader {
     }
 
     /**
-     * Never return a half-loaded or failed source to the foreground. The original unprepared
-     * stash remains useful when no network attempt started; otherwise a miss builds normally.
+     * Never return a failed source to the foreground. METUBE(shorts): a half-loaded one is handed
+     * over as it is - media3's PreloadMediaSource lets the player take it at any stage and go on
+     * from the samples it already holds (the short-form pattern of the media3 demo). Throwing it
+     * away cost a swipe inside the preload's first seconds a fresh source build and fetch.
+     * The original unprepared stash remains useful when no network attempt started.
      */
     @Nullable
     MediaSource take(String videoId, MediaSource source) {
@@ -192,27 +198,23 @@ final class Media3NextPreloader {
             mHandler.removeCallbacks(mCheck);
             return source;
         }
-        if (!slot.complete) {
-            cancelPending("opened-before-ready");
-            return null;
-        }
         releaseAdopting();
         mPending = null;
         mAdopting = slot;
         mHandler.removeCallbacks(mCheck);
-        NetPath.log("next-preload hit video=" + slot.videoId);
+        NetPath.log("next-preload hit video=" + slot.videoId + (slot.complete ? "" : " partial=y"));
         return slot.wrapped;
     }
 
     /** loadVideo resets before openDash can consume its matching stash. */
     void onReset(@Nullable String targetVideoId) {
         mTransitioning = true;
+        mOpeningVideoId = targetVideoId;
         mAttemptedVideoIds.clear();
         if (mAdopting != null && !mAdopting.videoId.equals(targetVideoId)) {
             releaseAdopting();
         }
-        if (mPending != null && (!mPending.videoId.equals(targetVideoId)
-                || (mPending.wrapped != null && !mPending.complete))) {
+        if (mPending != null && !mPending.videoId.equals(targetVideoId)) {
             cancelPending("new-open");
         }
         update();
@@ -220,6 +222,7 @@ final class Media3NextPreloader {
 
     void onSourceOpened(MediaSource source) {
         mTransitioning = false;
+        mOpeningVideoId = null;
         // A matching video routed through HLS/merged/etc. must not leave a prepared DASH behind.
         cancelPending("other-source");
         if (mAdopting != null && mAdopting.wrapped != source) {

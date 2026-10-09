@@ -166,6 +166,9 @@ public class MobileMainApplication extends MainApplication {
         // Keep ALL existing TV init: Conscrypt, GlobalPreferences, multidex, the
         // global exception handler and every other View->Activity mapping.
         super.onCreate();
+        // METUBE(glass): which screen a sheet in its own activity frosts.
+        com.newtube.mobile.ui.common.SheetGlass.track(this, com.newtube.mobile.ui.dialog.MobileAppDialogActivity.class);
+        com.newtube.mobile.ui.common.CountStyle.install(this); // METUBE(counts): K/M or lakh/crore
 
         // Release-visible launch milestones + the "first frame drawn" hook used below.
         LaunchMilestones.install(this);

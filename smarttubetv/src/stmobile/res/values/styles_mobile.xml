@@ -150,7 +150,7 @@
       the colour runs under the gesture bar to the display edge.
     -->
     <style name="Widget.NewTube.BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
-        <item name="backgroundTint">@color/mobile_color_surface</item>
+        <item name="backgroundTint">@color/metube_sheet_glass</item>
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.NewTube.BottomSheet</item>
         <!-- METUBE: Material squares the top corners off once a sheet is expanded; keep them round. -->
         <item name="shouldRemoveExpandedCorners">false</item>
@@ -552,4 +552,16 @@
         <item name="trackTint">@null</item>
         <item name="android:background">@null</item>
     </style>
+    <!-- METUBE(up-next): the countdown card's three pills. -->
+    <style name="MeTubeNextButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingHorizontal">12dp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
 </resources>
