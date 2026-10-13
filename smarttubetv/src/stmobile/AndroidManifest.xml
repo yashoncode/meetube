@@ -99,12 +99,13 @@
             android:name="com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity"
             android:launchMode="singleTop"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|uiMode"
-            android:theme="@style/Theme.NewTube"
+            android:theme="@style/Theme.MeTube.Splash"
             tools:replace="android:launchMode,android:configChanges" />
 
         <activity
             android:name="com.newtube.mobile.ui.browse.MobileBrowseActivity"
             android:exported="false"
+            android:supportsPictureInPicture="true"
             android:launchMode="singleTop"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|keyboardHidden|uiMode"
             android:screenOrientation="unspecified"

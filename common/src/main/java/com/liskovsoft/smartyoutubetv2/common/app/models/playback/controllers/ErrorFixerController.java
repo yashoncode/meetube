@@ -1324,10 +1324,15 @@ public class ErrorFixerController extends BasePlayerController implements OnLong
         return temp != null ? temp : getPlayerData().getFormat(FormatItem.TYPE_VIDEO);
     }
 
-    /** The audio format that {@code restoreAudioFormat} would apply: per-session pin, else persisted. */
+    /** The audio format that {@code restoreAudioFormat} would apply: per-session pin, this video's pick, else the stored preference. */
     private FormatItem getEffectiveAudioFormat() {
         FormatItem temp = getPlayerData().getTempAudioFormat();
-        return temp != null ? temp : getPlayerData().getFormat(FormatItem.TYPE_AUDIO);
+        if (temp != null) {
+            return temp;
+        }
+        FormatItem videoPick = getPlayerData().getVideoAudioFormat(
+                getVideo() != null ? getVideo().videoId : null);
+        return videoPick != null ? videoPick : getPlayerData().getStoredAudioPreference();
     }
 
     /**

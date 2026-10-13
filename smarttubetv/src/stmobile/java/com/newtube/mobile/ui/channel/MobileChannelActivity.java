@@ -547,6 +547,9 @@ public class MobileChannelActivity extends MobileActivity
                     if (section != null) {
                         syncVideos(section, group.getVideos());
                     }
+                    // NEWTUBE(#45): a SYNC item was mutated in place (Original titles, DeArrow),
+                    // so submitList() sees the same objects and never rebinds - rebind it here.
+                    mAdapter.refreshItems(group.getVideos());
                     break;
                 case VideoGroup.ACTION_PREPEND:
                     if (section == null) {

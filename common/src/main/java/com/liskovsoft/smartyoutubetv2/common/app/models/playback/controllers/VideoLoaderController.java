@@ -448,6 +448,10 @@ public class VideoLoaderController extends BasePlayerController {
             return;
         }
 
+        if (current.belongsToShorts()) {
+            return; // METUBE(shorts): past the loaded shorts - never the watch page's next (a normal video)
+        }
+
         if (current.nextMediaItem != null) {
             openVideoInt(Video.from(current.nextMediaItem));
         } else if (!current.isSynced) { // Maybe there's nothing left. E.g. when casting from phone

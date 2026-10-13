@@ -782,6 +782,9 @@ public class SuggestionsController extends BasePlayerController {
 
     /** METUBE(shorts): queue size when the Shorts tab was last asked for its next page. */
     private static int sShortsMoreAt = -1;
+    /** METUBE(shorts): a page that added nothing (all seen) may be asked again after this. */
+    private static long sShortsMoreAtMs;
+    private static final long SHORTS_MORE_RETRY_MS = 3_000;
     private static final int SHORTS_AHEAD = 6;
 
     private Video getShortNeighbour(Video current, int step) {
@@ -790,9 +793,12 @@ public class SuggestionsController extends BasePlayerController {
         int to = at + step;
         // Swiping toward the end of what the tab has loaded: ask it for the next page, which
         // MobileBrowseActivity appends to this queue (ACTION_APPEND), so the swipe never runs dry.
-        if (at >= 0 && step > 0 && queue.size() - to <= SHORTS_AHEAD && queue.size() != sShortsMoreAt
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (at >= 0 && step > 0 && queue.size() - to <= SHORTS_AHEAD
+                && (queue.size() != sShortsMoreAt || now - sShortsMoreAtMs > SHORTS_MORE_RETRY_MS)
                 && getContext() != null) {
             sShortsMoreAt = queue.size();
+            sShortsMoreAtMs = now;
             com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter.instance(getContext())
                     .onScrollEnd(queue.get(queue.size() - 1));
         }

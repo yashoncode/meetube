@@ -151,6 +151,17 @@ public class MobileSearchActivity extends MobileActivity
 
         mBackButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
         mMicButton.setOnClickListener(v -> startVoiceRecognition());
+        // METUBE(search filters): the presenter's own filter dialog (date, duration, type, features,
+        // sort) - built for the TV screen and never given a button on the phone.
+        findViewById(R.id.mobile_search_filters).setOnClickListener(v -> {
+            SearchFilterParams.fillTable();
+            mPresenter.onSearchSettingsClicked();
+        });
+        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_search_glass),
+                findViewById(R.id.mobile_search_glass_source));
+        if (savedInstanceState == null) {
+            getWindow().getDecorView().post(() -> SiriGlow.play(this)); // METUBE(search glow)
+        }
         // Clear the query, keep editing: focus stays, history rows replace the suggestions.
         mClearButton.setOnClickListener(v -> {
             setQueryText("");
@@ -721,6 +732,9 @@ public class MobileSearchActivity extends MobileActivity
                     break;
                 case VideoGroup.ACTION_SYNC:
                     syncVideos(group.getVideos());
+                    // NEWTUBE(#45): a SYNC item was mutated in place (Original titles, DeArrow),
+                    // so submitList() sees the same objects and never rebinds - rebind it here.
+                    mAdapter.refreshItems(group.getVideos());
                     break;
                 case VideoGroup.ACTION_APPEND:
                 default:

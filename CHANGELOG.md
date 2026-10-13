@@ -2,6 +2,35 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.8.0 — 2026-10-13 — Search tab and filters, Shorts edge to edge, floating mini player
+
+### New
+
+- **Search has its own tab.** Search now sits in the bottom bar where Subscriptions was (Subscriptions is in the You panel), and the search icon left the top bar.
+- **Search filters are back.** The button next to the search bar narrows results by upload date (last hour to this year), length, type (videos, channels, playlists, movies) and features (live, 4K, HDR), and sorts them by date, views or rating.
+- **The mini player floats when you leave the app.** Going home while the mini player plays on Home now opens a picture-in-picture window. Expanding it brings you back; closing it stops the video.
+- **Shorts fill the screen, edge to edge.** Ambient blur takes the strips under the status and navigation bars, and the video's edges fade into it.
+- **A frosted glass search bar that glows as you type.** Results scroll under a frosted search bar with clear and voice search inside it. What you type glows in Siri's colours, and opening Search lights up the screen's edges.
+- **A beating heart on launch.** The heart beats once on the start screen (Android 12 and later) and in the top bar.
+
+### Changed
+
+- **Shorts pause when you leave the app.** Shorts no longer open picture-in-picture, play in the background or shrink to the mini player; coming back plays them again.
+
+### Fixed
+
+- **Shorts no longer turn into normal videos at random.** A Short could lose track of the Shorts feed and open on the watch page, and the end of the loaded Shorts fell back to an ordinary next video.
+- **Picture-in-picture fills its window for vertical and square videos.** It showed the video in the top half over black, with the fullscreen button below.
+- **The screen sleeps when a video ends or is paused.** It used to stay on until the battery ran out.
+- **An audio track you pick applies to that video only.** A dub chosen once no longer follows you to every dubbed video, and "en" no longer matches "ben".
+- **Downloads of dubbed videos keep the original audio,** also after a retry.
+- **Original titles work, with or without DeArrow.**
+- **Backups leave your sign-in tokens out.** Android's backup and the app's backup file restore signed out.
+- **Fullscreen works on tablets,** where Android 16 ignores rotation requests.
+- **No blank Shorts tile on channel pages, and no channel actions on playlist cards.**
+
+The last seven fixes come from NewTube 1.15.1.
+
 ## 2.5.7 — 2026-10-09 — Music button opens your music app
 
 ### Fixed

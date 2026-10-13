@@ -1,9 +1,16 @@
 package com.newtube.mobile.ui.playback;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
@@ -46,6 +53,16 @@ public class PinchZoomLayout extends FrameLayout {
     /** Direction fired last in this gesture: 0 none, 1 zoom-in, -1 zoom-out. */
     private int mLastDirection;
 
+    /** METUBE(shorts): the child whose top and bottom edges fade into this box's background. */
+    @Nullable
+    private View mFadeChild;
+    private int mFadePx;
+    private final Paint mFadePaint = new Paint();
+    private int mFadeTop = -1;
+    private int mFadeBottom = -1;
+    private LinearGradient mFadeTopShader;
+    private LinearGradient mFadeBottomShader;
+
     public PinchZoomLayout(Context context) {
         this(context, null);
     }
@@ -56,6 +73,7 @@ public class PinchZoomLayout extends FrameLayout {
 
     public PinchZoomLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        mFadePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
         mScaleDetector = new ScaleGestureDetector(context,
                 new ScaleGestureDetector.SimpleOnScaleGestureListener() {
                     @Override
@@ -154,5 +172,44 @@ public class PinchZoomLayout extends FrameLayout {
         }
         mScaleDetector.onTouchEvent(ev);
         return true;
+    }
+    /**
+     * METUBE(shorts): fade {@code child}'s top and bottom {@code px} into this box's background
+     * (the ambient fill), like Instagram's reels - no hard line where the video meets the blur.
+     * Null switches it off. Only that child fades; the overlays above it stay sharp.
+     */
+    public void setEdgeFade(@Nullable View child, int px) {
+        if (child != mFadeChild || px != mFadePx) {
+            mFadeChild = child;
+            mFadePx = px;
+            mFadeTop = -1;
+            invalidate();
+        }
+    }
+
+    @Override
+    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        if (child != mFadeChild || mFadePx <= 0 || child.getHeight() <= 0) {
+            return super.drawChild(canvas, child, drawingTime);
+        }
+        int left = child.getLeft();
+        int top = child.getTop();
+        int right = child.getRight();
+        int bottom = child.getBottom();
+        int fade = Math.min(mFadePx, (bottom - top) / 4);
+        if (top != mFadeTop || bottom != mFadeBottom) {
+            mFadeTop = top;
+            mFadeBottom = bottom;
+            mFadeTopShader = new LinearGradient(0, top, 0, top + fade, 0xFF000000, 0, Shader.TileMode.CLAMP);
+            mFadeBottomShader = new LinearGradient(0, bottom - fade, 0, bottom, 0, 0xFF000000, Shader.TileMode.CLAMP);
+        }
+        int save = canvas.saveLayer(left, top, right, bottom, null);
+        boolean more = super.drawChild(canvas, child, drawingTime);
+        mFadePaint.setShader(mFadeTopShader);
+        canvas.drawRect(left, top, right, top + fade, mFadePaint);
+        mFadePaint.setShader(mFadeBottomShader);
+        canvas.drawRect(left, bottom - fade, right, bottom, mFadePaint);
+        canvas.restoreToCount(save);
+        return more;
     }
 }

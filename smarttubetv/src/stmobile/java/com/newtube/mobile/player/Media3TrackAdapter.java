@@ -398,8 +398,11 @@ class Media3TrackAdapter {
      * language variant first, the itag last, because every variant repeats the same itags.
      * <ol>
      *   <li>the same variant and itag (exact);</li>
-     *   <li>the same variant in the same codec family, then in any codec (a stored Spanish Opus
-     *       251 plays Spanish AAC where the video has no Spanish Opus - not English 251);</li>
+     *   <li>the same variant (identical label) in the same codec family, then in any codec (a
+     *       Spanish Opus 251 pick plays Spanish AAC where the video has no Spanish Opus - not
+     *       English 251);</li>
+     *   <li>the same language (primary subtag: "en" = "en-US", never "en" = "ben") with
+     *       another variant tag, same codec family first;</li>
      *   <li>otherwise the original: its track with the same itag, then the same codec family,
      *       then its best one (a stored untagged 251 plays an AAC-only original - not a dub's
      *       251);</li>
@@ -414,6 +417,9 @@ class Media3TrackAdapter {
         String language = item.getLanguage();
         String codec = codecOf(item);
 
+        TrackLocation exactSameCodec = null;
+        TrackLocation exactBest = null;
+        int exactBitrate = Integer.MIN_VALUE;
         TrackLocation sameLanguageSameCodec = null;
         TrackLocation sameLanguage = null;
         int sameLanguageBitrate = Integer.MIN_VALUE;
@@ -433,11 +439,23 @@ class Media3TrackAdapter {
                 }
                 androidx.media3.common.Format format = group.getTrackFormat(i);
                 boolean idEquals = targetId != null && targetId.equals(format.id);
+                String trackLanguage = Media3FormatConverter.pickLanguage(format);
 
-                if (languageEquals(language, Media3FormatConverter.pickLanguage(format))) {
+                if (sameVariant(language, trackLanguage)) {
                     if (idEquals) {
                         return new TrackLocation(group, i);
                     }
+                    if (exactSameCodec == null && codecFamilyEquals(codec, format.codecs)) {
+                        exactSameCodec = new TrackLocation(group, i);
+                    }
+                    if (format.bitrate > exactBitrate) {
+                        exactBitrate = format.bitrate;
+                        exactBest = new TrackLocation(group, i);
+                    }
+                    continue;
+                }
+
+                if (audioLanguageEquals(language, trackLanguage)) {
                     if (sameLanguageSameCodec == null && codecFamilyEquals(codec, format.codecs)) {
                         sameLanguageSameCodec = new TrackLocation(group, i);
                     }
@@ -466,7 +484,7 @@ class Media3TrackAdapter {
             }
         }
 
-        TrackLocation[] ranked = {sameLanguageSameCodec, sameLanguage,
+        TrackLocation[] ranked = {exactSameCodec, exactBest, sameLanguageSameCodec, sameLanguage,
                 originalSameId, originalSameCodec, originalBest, sameId};
         for (TrackLocation location : ranked) {
             if (location != null) {
@@ -489,7 +507,7 @@ class Media3TrackAdapter {
                         && Math.abs(item.getFrameRate() - format.frameRate) <= 2
                         && codecFamilyEquals(codecOf(item), format.codecs);
             case TrackSelectorManager.RENDERER_INDEX_AUDIO:
-                return languageEquals(item.getLanguage(), Media3FormatConverter.pickLanguage(format))
+                return audioLanguageEquals(item.getLanguage(), Media3FormatConverter.pickLanguage(format))
                         && codecFamilyEquals(codecOf(item), format.codecs);
             case TrackSelectorManager.RENDERER_INDEX_SUBTITLE:
                 return languageEquals(item.getLanguage(), Media3FormatConverter.pickLanguage(format));
@@ -511,6 +529,38 @@ class Media3TrackAdapter {
         return Helpers.equals(TrackSelectorUtil.codecNameShort(codecs1), TrackSelectorUtil.codecNameShort(codecs2));
     }
 
+    /** The same audio variant: the identical label ("es (dubbed)"), or both untagged. */
+    private static boolean sameVariant(@Nullable String language1, @Nullable String language2) {
+        if (language1 == null || language2 == null) {
+            return language1 == null && language2 == null;
+        }
+        return language1.equalsIgnoreCase(language2);
+    }
+
+    /**
+     * NEWTUBE(issues #52/#53): audio languages are equal when their primary language subtags are
+     * ("en" = "en-US" = "en (original)", "es" = "es-419"; never "en" = "ben").
+     * The old substring test matched "en" inside "ben (dubbed)" or "de" inside "(dubbed)".
+     */
+    static boolean audioLanguageEquals(@Nullable String language1, @Nullable String language2) {
+        if (language1 == null || language2 == null) {
+            return language1 == null && language2 == null;
+        }
+        String primary1 = primaryLanguage(language1);
+        return !primary1.isEmpty() && primary1.equals(primaryLanguage(language2));
+    }
+
+    /** "en-US (original)" -> "en": the leading letters, lower-cased. */
+    static String primaryLanguage(String language) {
+        int end = 0;
+        String trimmed = language.trim();
+        while (end < trimmed.length() && Character.isLetter(trimmed.charAt(end))) {
+            end++;
+        }
+        return trimmed.substring(0, end).toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /** Subtitles keep the legacy loose comparison (stored names vs codes; not part of #52). */
     private static boolean languageEquals(@Nullable String language1, @Nullable String language2) {
         if (language1 == null || language2 == null) {
             return language1 == null && language2 == null;

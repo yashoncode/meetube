@@ -119,6 +119,10 @@ public class MobileBrowseActivity extends MobileActivity
      * {@link #ITEM_ID_OFFSET} + any real section id, so it can never collide with one.
      */
     private static final int YOU_ITEM_ID = 2_000_000;
+    /** METUBE(search): the Search tab - opens the search screen, never stays selected. */
+    private static final int SEARCH_ITEM_ID = 2_000_001;
+    /** METUBE(search): the Search tab sits where Subscriptions was, third. */
+    private static final int SEARCH_ITEM_ORDER = 2;
     private static final int REQUEST_POST_NOTIFICATIONS = 1;
     /** Intent action (download notifications) that lands on the Downloads tab. */
     public static final String ACTION_OPEN_DOWNLOADS = "com.newtube.mobile.OPEN_DOWNLOADS";
@@ -133,13 +137,12 @@ public class MobileBrowseActivity extends MobileActivity
             MediaGroup.TYPE_HOME,
             // METUBE(shorts): Shorts takes History's tab (History lives on in the You panel).
             MediaGroup.TYPE_SHORTS,
-            MediaGroup.TYPE_SUBSCRIPTIONS,
+            // METUBE(search): Search takes Subscriptions' tab (Subscriptions lives on in the You panel).
             VideoDownloads.SECTION_ID,
     };
     private static final int[] PREFERRED_SECTION_TITLE_RES = {
             R.string.header_home,
             R.string.header_shorts,
-            R.string.header_subscriptions,
             R.string.header_downloads,
     };
 
@@ -240,6 +243,9 @@ public class MobileBrowseActivity extends MobileActivity
         registerBackHandler(this::handleBack);
 
         bindViews();
+        if (savedInstanceState == null) {
+            beatBrandMark();
+        }
         setupContentGrid();
         setupBottomNav();
         setupYouPanel();
@@ -320,6 +326,13 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayPause = findViewById(R.id.mobile_mini_play_pause);
         mMiniProgress = findViewById(R.id.mobile_mini_progress);
         setupMiniPlayerBar();
+        mMiniPip = new com.newtube.mobile.ui.playback.MiniPip(this, mMiniPlayerBar, () -> {
+            hideMiniPlayer();
+            MiniPlayerBridge.close(); // the PiP window was closed - so is the video
+            // This screen floated in a task of its own; the app's task gets a fresh Home when
+            // the player finishes, so this copy goes with its window.
+            finishAndRemoveTask();
+        }, mMiniPlayPause, findViewById(R.id.mobile_mini_close), mMiniProgress);
         // NEWTUBE(mini-inset): the last card can scroll clear of the docked mini-player.
         com.newtube.mobile.ui.playback.MiniPlayerListInset.attach(mMiniPlayerBar, mContentGrid);
     }
@@ -434,6 +447,26 @@ public class MobileBrowseActivity extends MobileActivity
                 }, mMiniPlayerFrame, mMiniPlayerBar);
     }
 
+    /** METUBE(launch): the heart in the brand pill beats once as Home first shows, like the splash's. */
+    private void beatBrandMark() {
+        View mark = findViewById(R.id.mobile_brand_mark);
+        if (mark == null) {
+            return;
+        }
+        android.animation.Keyframe[] frames = {
+                android.animation.Keyframe.ofFloat(0f, 1f),
+                android.animation.Keyframe.ofFloat(0.18f, 1.2f),
+                android.animation.Keyframe.ofFloat(0.38f, 1f),
+                android.animation.Keyframe.ofFloat(0.54f, 1.1f),
+                android.animation.Keyframe.ofFloat(1f, 1f)};
+        android.animation.ObjectAnimator beat = android.animation.ObjectAnimator.ofPropertyValuesHolder(mark,
+                android.animation.PropertyValuesHolder.ofKeyframe(View.SCALE_X, frames),
+                android.animation.PropertyValuesHolder.ofKeyframe(View.SCALE_Y, frames));
+        beat.setDuration(700);
+        beat.setStartDelay(250);
+        beat.start();
+    }
+
     /**
      * NEWTUBE(motion): X - the sound stops at once and the card, frozen on its last frame, shrinks
      * and fades away instead of vanishing in one frame. The session itself closes when the card is
@@ -444,6 +477,8 @@ public class MobileBrowseActivity extends MobileActivity
     private float mMiniVolumeBeforeClose = 1f;
     @androidx.annotation.Nullable
     private com.newtube.mobile.ui.playback.MiniCardSwipe mMiniSwipe;
+    /** METUBE(mini-pip): Home with the card playing floats it in a PiP window. */
+    private com.newtube.mobile.ui.playback.MiniPip mMiniPip;
 
     private void closeMiniPlayer() {
         closeMiniPlayer(null, 0);
@@ -714,12 +749,16 @@ public class MobileBrowseActivity extends MobileActivity
         stopMiniSwipe();
         mMiniPlayerBar.animate().cancel();
         mMiniPlayerBar.setVisibility(View.GONE);
+        setMiniKeepScreenOn(false); // no card, no video on this screen
         mMiniPlayerBar.setAlpha(1f);
         mMiniPlayerBar.setScaleX(1f);
         mMiniPlayerBar.setScaleY(1f);
         mMiniPlayerBar.setTranslationX(0f);
         mMiniButtonsFadePending = false;
         setMiniButtonsAlpha(1f);
+        if (mMiniPip != null) {
+            mMiniPip.update(); // no card, nothing to float
+        }
     }
 
     private void setMiniButtonsAlpha(float alpha) {
@@ -766,6 +805,22 @@ public class MobileBrowseActivity extends MobileActivity
                 && player.getPlaybackState() != Player.STATE_ENDED
                 && player.getPlaybackState() != Player.STATE_IDLE;
         mMiniPlayPause.setImageResource(playing ? R.drawable.ic_player_pause : R.drawable.ic_player_play);
+        // SCREEN-ON (#50): the docked card is a visible video; this window holds the screen while it
+        // plays (the stopped player Activity no longer does) and lets go when it pauses.
+        setMiniKeepScreenOn(player.getPlayWhenReady()
+                && (player.getPlaybackState() == Player.STATE_READY
+                    || player.getPlaybackState() == Player.STATE_BUFFERING));
+        if (mMiniPip != null) {
+            mMiniPip.update();
+        }
+    }
+
+    private void setMiniKeepScreenOn(boolean on) {
+        if (on) {
+            getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
     private void setupContentGrid() {
@@ -914,6 +969,12 @@ public class MobileBrowseActivity extends MobileActivity
 
     private void setupBottomNav() {
         mBottomNav.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == SEARCH_ITEM_ID) {
+                if (!mSuppressNavCallback) {
+                    SearchPresenter.instance(this).startSearch(null);
+                }
+                return false; // a button, not a place: the tab you were on stays lit
+            }
             if (!mSuppressNavCallback) {
                 Motion.nudge(findViewById(R.id.mobile_nav_glass)); // METUBE(motion): the bar acknowledges the switch
                 onNavItemChosen(item.getItemId());
@@ -1755,7 +1816,8 @@ public class MobileBrowseActivity extends MobileActivity
         for (int i = 0; i < navSections.size(); i++) {
             BrowseSection section = navSections.get(i);
 
-            android.view.MenuItem item = menu.add(Menu.NONE, toMenuItemId(section.getId()), i, section.getTitle());
+            int order = i < SEARCH_ITEM_ORDER ? i : i + 1;
+            android.view.MenuItem item = menu.add(Menu.NONE, toMenuItemId(section.getId()), order, section.getTitle());
 
             int icon = navIconOrResFor(section);
             if (icon > 0) {
@@ -1763,8 +1825,10 @@ public class MobileBrowseActivity extends MobileActivity
             }
         }
 
+        menu.add(Menu.NONE, SEARCH_ITEM_ID, Math.min(SEARCH_ITEM_ORDER, navSections.size()),
+                R.string.mobile_search_button).setIcon(R.drawable.ic_mobile_search);
         // The synthetic You tab always sits last (account + extra sections + settings).
-        menu.add(Menu.NONE, YOU_ITEM_ID, navSections.size(), R.string.mobile_nav_you)
+        menu.add(Menu.NONE, YOU_ITEM_ID, navSections.size() + 1, R.string.mobile_nav_you)
                 .setIcon(R.drawable.ic_nav_you);
 
         // Re-assert the highlight after clear()/add() wiped it, so the current tab stays lit.
@@ -1893,6 +1957,9 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onResume() {
         super.onResume();
+        if (mMiniPip != null) {
+            mMiniPip.onResume();
+        }
 
         if (mPresenter != null) {
             mPresenter.onViewResumed();
@@ -1999,12 +2066,16 @@ public class MobileBrowseActivity extends MobileActivity
         // Browse must never hold a stale TextureView on the live player. Audio is unaffected.
         // NEWTUBE(motion): a docked card stays up, frozen on that last frame, until the player
         // covers it (see MiniPlayerBridge.setPendingCardFold) - hiding it here was a blink.
-        finishMiniClose();
-        detachMiniTexture();
-        if (mMiniPlayerBar.getVisibility() == View.VISIBLE && MiniPlayerBridge.isActive()) {
-            MiniPlayerBridge.setPendingCardFold(mMiniCardFold);
+        if (mMiniPip != null && mMiniPip.isPinned()) {
+            // METUBE(mini-pip): paused into PiP - the card IS the window now, keep it live.
         } else {
-            hideMiniPlayer();
+            finishMiniClose();
+            detachMiniTexture();
+            if (mMiniPlayerBar.getVisibility() == View.VISIBLE && MiniPlayerBridge.isActive()) {
+                MiniPlayerBridge.setPendingCardFold(mMiniCardFold);
+            } else {
+                hideMiniPlayer();
+            }
         }
 
         // Tap-feedback spinner (see onVideoClicked): the destination screen is opening (or the
@@ -2013,8 +2084,28 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        if (mMiniPip != null && !getViewManager().isNewViewPending()) {
+            mMiniPip.onUserLeaveHint();
+        }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode,
+            android.content.res.Configuration newConfig) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+        if (mMiniPip != null) {
+            mMiniPip.onModeChanged(isInPictureInPictureMode);
+        }
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
+        if (mMiniPip != null) {
+            mMiniPip.onStop();
+        }
         // Covered: a card still waiting for the player to fold it can go now.
         if (mMiniTexture == null) {
             hideMiniPlayer();

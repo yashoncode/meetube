@@ -1,5 +1,34 @@
 # Registro de cambios de MeTube
 
+## 2.8.0 — 2026-10-13 — Pestaña y filtros de búsqueda, Shorts a pantalla completa, minirreproductor flotante
+
+### Novedades
+
+- **La búsqueda tiene su propia pestaña.** La búsqueda está ahora en la barra inferior, donde estaba Suscripciones (Suscripciones sigue en el panel Tú), y el icono de búsqueda deja la barra superior.
+- **Vuelven los filtros de búsqueda.** El botón junto a la barra de búsqueda filtra los resultados por fecha de subida (de la última hora a este año), duración, tipo (vídeos, canales, listas, películas) y características (en directo, 4K, HDR), y los ordena por fecha, visualizaciones o valoración.
+- **El minirreproductor flota al salir de la app.** Si vas a Inicio mientras el minirreproductor suena en Inicio, se abre una ventana flotante. Al ampliarla vuelves a la app; al cerrarla se detiene el vídeo.
+- **Los Shorts llenan la pantalla de borde a borde.** Un desenfoque ambiental ocupa las franjas bajo las barras de estado y de navegación, y los bordes del vídeo se funden con él.
+- **Una barra de búsqueda de cristal que brilla al escribir.** Los resultados pasan bajo una barra esmerilada con borrar y búsqueda por voz dentro. Lo que escribes brilla con los colores de Siri, y al abrir la búsqueda se iluminan los bordes de la pantalla.
+- **Un corazón que late al abrir.** El corazón late una vez en la pantalla de inicio (Android 12 o posterior) y en la barra superior.
+
+### Cambios
+
+- **Los Shorts se pausan al salir de la app.** Los Shorts ya no abren la ventana flotante, no suenan en segundo plano ni pasan al minirreproductor; al volver siguen reproduciéndose.
+
+### Correcciones
+
+- **Los Shorts ya no se convierten en vídeos normales al azar.** Un Short podía perder la pista del feed de Shorts y abrirse en la página del vídeo, y el final de los Shorts cargados pasaba a un vídeo siguiente normal.
+- **La ventana flotante se llena con vídeos verticales y cuadrados.** Mostraba el vídeo en la mitad superior sobre negro, con el botón de pantalla completa debajo.
+- **La pantalla se apaga cuando un vídeo termina o se pausa.** Antes seguía encendida hasta agotar la batería.
+- **La pista de audio que eliges vale solo para ese vídeo.** Un doblaje elegido una vez ya no te sigue a todos los vídeos doblados, y "en" ya no coincide con "ben".
+- **Las descargas de vídeos doblados conservan el audio original,** también tras reintentar.
+- **Los títulos originales funcionan, con o sin DeArrow.**
+- **Las copias de seguridad dejan fuera tus credenciales.** La copia de Android y el archivo de copia de la app se restauran sin sesión iniciada.
+- **La pantalla completa funciona en tabletas,** donde Android 16 ignora las peticiones de giro.
+- **Sin mosaico de Shorts vacío en los canales ni acciones de canal en las tarjetas de listas.**
+
+Las siete últimas correcciones vienen de NewTube 1.15.1.
+
 ## 2.5.7 — 2026-10-09 — El botón de Música abre tu app de música
 
 ### Correcciones

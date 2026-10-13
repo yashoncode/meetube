@@ -824,7 +824,7 @@ public class Media3PlayerController implements Player.Listener {
         com.liskovsoft.smartyoutubetv2.common.prefs.PlayerData playerData =
                 com.liskovsoft.smartyoutubetv2.common.prefs.PlayerData.instance(mContext);
         selectFormat(playerData.getFormat(FormatItem.TYPE_VIDEO));
-        selectFormat(playerData.getFormat(FormatItem.TYPE_AUDIO));
+        selectFormat(playerData.getStoredAudioPreference()); // never a stored language pick (#52)
         selectFormat(playerData.getFormat(FormatItem.TYPE_SUBTITLE));
     }
 

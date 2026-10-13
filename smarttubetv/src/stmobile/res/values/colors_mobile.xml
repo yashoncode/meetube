@@ -73,6 +73,8 @@
 
     <!-- METUBE(glass): the floating-glass surfaces (light side; dark in values-night). -->
     <color name="metube_glass_tint">#66FAFAFA</color>
+    <!-- METUBE(search): the search pill stays visible over a plain page, frosted over results. -->
+    <color name="metube_search_glass_tint">#14000000</color>
     <!-- METUBE(glass): sheet surfaces - the surface, a little see-through over the blurred page. -->
     <color name="metube_sheet_glass">#D6FFFFFF</color>
     <color name="metube_glass_fill">#0D000000</color>

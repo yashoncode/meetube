@@ -64,6 +64,91 @@ public class DownloadOptionsTest {
         assertNull(DownloadOptions.pickAudio(Collections.singletonList(FakeMediaFormat.opus("251", 1, 1))));
     }
 
+    /** Issue #29: every variant is itag 140; the URL xtags (acont=) name the original. */
+    @Test
+    public void picksTheXtagsOriginalAmongSameItagDubs() {
+        FakeMediaFormat autoDub = FakeMediaFormat.audio("140", 130_000, 5_000_000).track("de-DE.10").lang("de (dubbed-auto)");
+        FakeMediaFormat dub = FakeMediaFormat.audio("140", 131_000, 5_000_000).track("es-US.3").lang("es‐us (dubbed)");
+        FakeMediaFormat original = FakeMediaFormat.audio("140", 129_000, 5_000_000).track("en.4").lang("en (original)");
+        FakeMediaFormat originalDrc = FakeMediaFormat.audio("140", 129_000, 5_000_000).track("en.4").lang("en (original)").drc();
+        List<MediaFormat> formats = Arrays.asList(autoDub, dub, originalDrc, original);
+
+        assertSame(original, DownloadOptions.pickAudio(formats));
+        assertSame(original, DownloadOptions.pickAudio(formats, "140", null));
+        assertSame(original, DownloadOptions.build(formats, null).get(0).audio);
+        assertEquals("en (original)|en.4", DownloadOptions.audioTrackKey(original));
+    }
+
+    /** A dub's id may carry .4 too: an explicit acont tag outranks the id heuristic. */
+    @Test
+    public void xtagsVariantOutranksTheTrackIdHeuristic() {
+        FakeMediaFormat dubWithFour = FakeMediaFormat.audio("140", 140_000, 5_000_000).track("fr.4").lang("fr (dubbed-auto)");
+        FakeMediaFormat original = FakeMediaFormat.audio("140", 129_000, 5_000_000).track("en.3").lang("en (original)");
+
+        assertSame(original, DownloadOptions.pickAudio(Arrays.asList(dubWithFour, original)));
+    }
+
+    /** The re-resolve after a refused link keeps the item's language, not the first itag hit. */
+    @Test
+    public void reResolveKeepsTheChosenTrackAndFallsBackToTheOriginal() {
+        FakeMediaFormat dub = FakeMediaFormat.audio("140", 131_000, 5_000_000).track("es-US.3").lang("es‐us (dubbed)");
+        FakeMediaFormat original = FakeMediaFormat.audio("140", 129_000, 5_000_000).track("en.4").lang("en (original)");
+        FakeMediaFormat opus = FakeMediaFormat.opus("251", 160_000, 5_000_000).track("en.4").lang("en (original)");
+        List<MediaFormat> formats = Arrays.asList(dub, opus, original);
+
+        assertSame(dub, DownloadOptions.pickAudio(formats, "140", DownloadOptions.audioTrackKey(dub)));
+        assertSame(original, DownloadOptions.pickAudio(formats, "140", DownloadOptions.audioTrackKey(original)));
+        // Another client renumbered the track id: the language tag still matches.
+        assertSame(dub, DownloadOptions.pickAudio(formats, "140", "es‐us (dubbed)|es-US.9"));
+        // The wanted track is gone (or the item predates the field): the original, never a dub.
+        assertSame(original, DownloadOptions.pickAudio(formats, "140", "pt (dubbed)|pt.3"));
+        assertSame(original, DownloadOptions.pickAudio(formats, "140", null));
+        assertNull(DownloadOptions.pickAudio(formats, "139", null));
+    }
+
+    @Test
+    public void singleUntaggedAudioStillResolves() {
+        assertEquals(DownloadOptions.UNTAGGED_TRACK, DownloadOptions.audioTrackKey(AAC));
+        assertSame(AAC, DownloadOptions.pickAudio(Collections.singletonList(AAC), "140", null));
+        assertSame(AAC, DownloadOptions.pickAudio(Collections.singletonList(AAC), "140", DownloadOptions.UNTAGGED_TRACK));
+    }
+
+    /** An item saved before the track was recorded may hold a dub's bytes: never resume it. */
+    @Test
+    public void oldItemWithAPartFileRestartsTheAudioPart() {
+        String original = "en (original)|en.4";
+        assertTrue(DownloadOptions.mustRestartAudioPart(null, original, 3_000_000, 5_000_000));
+        // Sol's repro: a 6 MB dub prefix against a 5 MB original would skip the fetch entirely.
+        assertTrue(DownloadOptions.mustRestartAudioPart(null, original, 6_000_000, 5_000_000));
+        // Nothing kept, nothing to reset.
+        assertFalse(DownloadOptions.mustRestartAudioPart(null, original, 0, 5_000_000));
+    }
+
+    @Test
+    public void sameVariantKeepsTheResume() {
+        String original = "en (original)|en.4";
+        assertFalse(DownloadOptions.mustRestartAudioPart(original, original, 3_000_000, 5_000_000));
+        assertFalse(DownloadOptions.mustRestartAudioPart(original, original, 5_000_000, 5_000_000));
+        assertFalse(DownloadOptions.mustRestartAudioPart(DownloadOptions.UNTAGGED_TRACK,
+                DownloadOptions.UNTAGGED_TRACK, 3_000_000, -1));
+        // Same track, but the part outgrew the stream: it cannot be a prefix of it.
+        assertTrue(DownloadOptions.mustRestartAudioPart(original, original, 6_000_000, 5_000_000));
+    }
+
+    @Test
+    public void changedVariantRestartsTheAudioPart() {
+        assertTrue(DownloadOptions.mustRestartAudioPart("pt (dubbed)|pt.3", "en (original)|en.4", 3_000_000, 5_000_000));
+        assertTrue(DownloadOptions.mustRestartAudioPart("en (original)|en.4", "en (original)|en.9", 3_000_000, 5_000_000));
+    }
+
+    @Test
+    public void videoPartRestartsOnlyWhenLongerThanTheStream() {
+        assertFalse(DownloadOptions.mustRestartPart(0, 100));
+        assertFalse(DownloadOptions.mustRestartPart(50, 100));
+        assertFalse(DownloadOptions.mustRestartPart(50, -1));
+        assertTrue(DownloadOptions.mustRestartPart(150, 100));
+    }
+
     @Test
     public void fallsBackToProgressiveStreamsWhenNoSeparateAvcTrack() {
         List<MediaFormat> adaptive = Arrays.asList(FakeMediaFormat.vp9("248", 1080, 2_000_000, 1), AAC);

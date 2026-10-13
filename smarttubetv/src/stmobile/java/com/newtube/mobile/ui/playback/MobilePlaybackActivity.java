@@ -365,8 +365,12 @@ public class MobilePlaybackActivity extends MobileActivity
     private final View.OnLayoutChangeListener mWatchRootLayoutListener =
             (view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                 int width = right - left;
-                if (width > 0
-                        && getResources().getConfiguration().orientation
+                // Not in PiP: a portrait layout override (a landscape tablet that left
+                // fullscreen in place) outlives the PiP window, which must stay video-only.
+                // METUBE(pip): a square or vertical video's PiP window is itself "portrait";
+                // the 16:9 box here left it half black, the fullscreen FAB in the black.
+                if (width > 0 && !this.mIsInPip && !this.mPipEnterPending
+                        && layoutOrientation()
                         == Configuration.ORIENTATION_PORTRAIT) {
                     applyPortraitVideoHeight(width);
                     updateInlineViewport(width);
@@ -431,6 +435,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mBackgroundAudioMode;
     /** METUBE(audio-only): the headphones button is on - the video track stays dropped on screen too. */
     private boolean mAudioOnly;
+    /** METUBE(shorts): onStop paused the short (no background play); onStart plays it again. */
+    private boolean mShortPausedByLeave;
     /** The PiP headphones closed the window: its exit is not a dismiss, the audio plays on. */
     private boolean mPipToAudio;
     private ImageButton mAudioButton;
@@ -443,7 +449,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mServiceBound;
 
     // Picture-in-Picture play/pause RemoteAction wiring.
-    private static final String ACTION_PIP_TOGGLE = "com.newtube.mobile.action.PIP_TOGGLE";
+    static final String ACTION_PIP_TOGGLE = "com.newtube.mobile.action.PIP_TOGGLE";
     /** METUBE(audio-only): the PiP window's headphones - close the window, keep the sound. */
     private static final String ACTION_PIP_AUDIO = "com.newtube.mobile.action.PIP_AUDIO";
     private static final int PIP_REQUEST_TOGGLE = 700;
@@ -514,7 +520,7 @@ public class MobilePlaybackActivity extends MobileActivity
         setupControls();
         setupWatchContent();
 
-        int orientation = getResources().getConfiguration().orientation;
+        int orientation = layoutOrientation();
         applyWatchLayoutForOrientation(orientation);
         applySystemBarsForOrientation(orientation);
         updateFullscreenIcon(orientation);
@@ -783,6 +789,23 @@ public class MobilePlaybackActivity extends MobileActivity
         mQueueChevron = findViewById(R.id.mobile_watch_queue_chevron);
         mQueueList = findViewById(R.id.mobile_watch_queue_list);
         mWatchCommentsEntry = findViewById(R.id.mobile_watch_comments_entry);
+        View shortsOverlay = findViewById(R.id.mobile_shorts_overlay);
+        ViewCompat.setOnApplyWindowInsetsListener(shortsOverlay, (v, insets) -> {
+            // METUBE(shorts): the content is edge to edge only while a short fills the screen.
+            Insets bars = isShortsMode() ? insets.getInsets(WindowInsetsCompat.Type.systemBars()
+                    | WindowInsetsCompat.Type.displayCutout()) : Insets.NONE;
+            insetShortsOverlay((ViewGroup) v, bars.top, bars.bottom);
+            // The short fills the screen between the bars (cropped, as before); the ambient fill
+            // takes the bars' strips and the video's edges fade into it.
+            FrameLayout.LayoutParams video = (FrameLayout.LayoutParams) mPlayerView.getLayoutParams();
+            if (video.topMargin != bars.top || video.bottomMargin != bars.bottom) {
+                video.topMargin = bars.top;
+                video.bottomMargin = bars.bottom;
+                mPlayerView.setLayoutParams(video);
+            }
+            mVideoArea.setEdgeFade(isShortsMode() ? mPlayerView : null, dp(48));
+            return insets;
+        });
         mShorts = new ShortsOverlay(getWindow().getDecorView(), mVideoArea, new ShortsOverlay.Host() {
             @Override
             public void onShortsModeChanged(boolean on) {
@@ -1227,7 +1250,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (width > 0) {
                 // METUBE(shorts): a short fills the portrait screen; the watch page steps aside.
                 // So does any video in the vertical fullscreen (setPortraitFull).
-                lp.height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
+                lp.height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : inlineBoxHeight(width);
                 lp.weight = 0;
                 mVideoArea.setLayoutParams(lp);
             }
@@ -1507,10 +1530,46 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayer = null;
     }
 
+    private boolean isActivelyPlaying() {
+        if (mPlayer == null || !mPlayer.getPlayWhenReady()) {
+            return false;
+        }
+        int state = mPlayer.getPlaybackState();
+        return state == Player.STATE_READY || state == Player.STATE_BUFFERING;
+    }
+
+    /**
+     * SCREEN-ON (#50): drives the WINDOW flag directly. It used to be {@code View#setKeepScreenOn}
+     * on the PlayerView, which the window only reads back when a view-attribute recompute runs;
+     * after a minimize/restore the window kept KEEP_SCREEN_ON through every later pause. The window
+     * flag has no such indirection: on while playing/buffering, off otherwise and while stopped.
+     */
+    private void applyKeepScreenOn(boolean on) {
+        Window window = getWindow();
+        if (window == null) {
+            return;
+        }
+        if (on && !mIsStopped) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+        if (mPlayerView != null && mPlayerView.getKeepScreenOn()) {
+            mPlayerView.setKeepScreenOn(false); // never a second, view-level holder
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
         mIsStopped = false;
+        if (mShortPausedByLeave) { // METUBE(shorts): back in the app - the short plays on
+            mShortPausedByLeave = false;
+            if (mShorts != null && mShorts.isActive() && mExoPlayerController != null) {
+                mExoPlayerController.setPlayWhenReady(true);
+            }
+        }
+        applyKeepScreenOn(isActivelyPlaying());
         startProgressUpdates();
         if (mControlsVisible) {
             armAutoHide();
@@ -1538,7 +1597,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // over a black page with no controls.
             logPip("enter-aborted-restored inPip=" + (isInPipModeNow() ? "y" : "n"));
             mPipStateStale = isInPipModeNow();
-            int orientation = getResources().getConfiguration().orientation;
+            int orientation = layoutOrientation();
             applyWatchLayoutForOrientation(orientation);
             applySystemBarsForOrientation(orientation);
             showControlsInternal(false);
@@ -1555,6 +1614,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // The PiP exit ended in the fullscreen UI, so it was an expand, not a dismiss.
         mPipDismissPending = false;
         mPipToAudio = false;
+        mPipLayoutHold = mIsInPip || mPipEnterPending; // the real window's config is in now
         mRoutedInWhileLeaving = false; // NEWTUBE(link-while-playing): the routed-in open is in front
         // Re-enable the video track BEFORE any texture reattach below, so the first frame comes
         // back promptly (true background audio-only mode dropped the whole video renderer).
@@ -1637,7 +1697,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mPlaybackService.ensureForeground();
         }
 
-        applySystemBarsForOrientation(getResources().getConfiguration().orientation);
+        applySystemBarsForOrientation(layoutOrientation());
         if (mMorphStartPending) {
             // NEWTUBE(motion): the morph's first step runs after the window's first frame(s), and
             // the line above just painted the backdrop solid again: the page stays clear until
@@ -1677,6 +1737,7 @@ public class MobilePlaybackActivity extends MobileActivity
         super.onStop();
 
         mIsStopped = true;
+        applyKeepScreenOn(false); // a hidden window must not hold the screen; onStart re-applies
         stopProgressUpdates();
         cancelAutoHide();
         if (mExoPlayerController != null && mExoPlayerController.isHoldSpeedOn()) {
@@ -1704,7 +1765,13 @@ public class MobilePlaybackActivity extends MobileActivity
         // and decoding - onStop is not delivered while a PiP window stays visible, so reaching here
         // uninhibited means a real background (home without PiP, screen off, another screen on top).
         // Re-enabled at the top of onResume, before the texture reattach.
-        if (mPlayer != null && !mIsInPip && !mSuppressAutoPip && !isFinishing()) {
+        if (mShorts != null && mShorts.isActive() && !isFinishing()) {
+            // METUBE(shorts): no background play for Shorts - leaving pauses, coming back plays.
+            if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
+                mExoPlayerController.setPlayWhenReady(false);
+                mShortPausedByLeave = true;
+            }
+        } else if (mPlayer != null && !mIsInPip && !mSuppressAutoPip && !isFinishing()) {
             setBackgroundAudioMode(true);
         }
 
@@ -1892,6 +1959,10 @@ public class MobilePlaybackActivity extends MobileActivity
             logPip("leave-skip reason=audio-mode");
             return;
         }
+        if (mShorts != null && mShorts.isActive()) {
+            logPip("leave-skip reason=shorts"); // METUBE(shorts): a short pauses instead (onStop)
+            return;
+        }
 
         logPip("leave-enter");
         enterPipMode();
@@ -1914,9 +1985,10 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         refreshContentInsets();
-        applyWatchLayoutForOrientation(newConfig.orientation);
-        applySystemBarsForOrientation(newConfig.orientation);
-        updateFullscreenIcon(newConfig.orientation);
+        int orientation = layoutOrientation(newConfig.orientation);
+        applyWatchLayoutForOrientation(orientation);
+        applySystemBarsForOrientation(orientation);
+        updateFullscreenIcon(orientation);
         onFullscreenSwipeConfigured();
         // The standing auto-enter params carry a sourceRectHint captured from the video box; after
         // a rotation that rect is stale (portrait box vs fullscreen), which degrades the
@@ -1978,7 +2050,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         updateDownloadPill();
         if (!mIsInPip) {
-            applySystemBarsForOrientation(getResources().getConfiguration().orientation);
+            applySystemBarsForOrientation(layoutOrientation());
         }
         if (mWatchScroll != null && scrollY > 0) {
             mWatchScroll.post(() -> mWatchScroll.scrollTo(0, scrollY));
@@ -1997,7 +2069,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         // NEWTUBE(motion): like YouTube - Back leaves fullscreen first, then minimizes.
         if (!mIsInPip && !mPipEnterPending
-                && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                && layoutOrientation() == Configuration.ORIENTATION_LANDSCAPE) {
             mBackPreview = false;
             toggleFullscreen();
             return;
@@ -2052,7 +2124,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean canMinimizeByBack() {
         return mPlayer != null && mContainer != null && mVideoArea != null && !mIsInPip && !mPipEnterPending
                 && !mScrubbing && mMorphAnimator == null && mMorphFraction == 0f
-                && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+                && layoutOrientation() == Configuration.ORIENTATION_PORTRAIT;
     }
 
     private void onBackGestureStarted() {
@@ -2100,7 +2172,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean canAnimateClose() {
         return mContainer != null && mVideoArea != null && !mIsInPip && !mPipEnterPending
                 && mMorphAnimator == null && mMorphFraction == 0f
-                && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
+                && layoutOrientation() == Configuration.ORIENTATION_PORTRAIT
                 && !isTaskRoot() && getViewManager().hasParentView(this)
                 && !MiniPlayerBridge.isActive();
     }
@@ -2225,12 +2297,14 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     @Override
     protected void applyFullscreenModeIfNeeded() {
-        applySystemBarsForOrientation(getResources().getConfiguration().orientation);
+        applySystemBarsForOrientation(layoutOrientation());
     }
 
     @Override
     protected boolean shouldInsetContentForSystemBars() {
-        return getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE;
+        // METUBE(shorts): a short runs under the status and navigation bars, edge to edge; its
+        // overlay keeps clear of them itself (the listener on it in bindViews).
+        return layoutOrientation() != Configuration.ORIENTATION_LANDSCAPE && !isShortsMode();
     }
 
     /**
@@ -2550,7 +2624,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
-        int height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
+        int height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : inlineBoxHeight(width);
         if (lp.height != height || lp.weight != 0) {
             lp.height = height;
             lp.weight = 0;
@@ -2558,8 +2632,27 @@ public class MobilePlaybackActivity extends MobileActivity
         }
     }
 
+    /**
+     * The inline video box: 16:9 of the window's width, except in a landscape-shaped window (a
+     * tablet that left fullscreen without rotating), where a full-width 16:9 box would be taller
+     * than the screen and bury the watch page - there it stops at 60% of the window height.
+     */
+    private int inlineBoxHeight(int width) {
+        int height = Math.round(width * 9f / 16f);
+        Configuration config = getResources().getConfiguration();
+        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE && config.screenHeightDp > 0) {
+            // screenHeightDp is in system dp while this activity's density carries the UI scale
+            // override: convert with the system density (VideoViewportCap.windowPixels).
+            float systemDensity = getApplicationContext().getResources().getConfiguration()
+                    .densityDpi / 160f;
+            int cap = Math.round(config.screenHeightDp * systemDensity * 0.6f);
+            height = Math.min(height, cap);
+        }
+        return height;
+    }
+
     private boolean isLandscape() {
-        return getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        return layoutOrientation() == Configuration.ORIENTATION_LANDSCAPE;
     }
 
     /**
@@ -2581,7 +2674,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mExoPlayerController.clearInlineViewport("shorts"); // full screen, not a 16:9 box
             return;
         }
-        mExoPlayerController.setInlineViewport(boxWidth, Math.round(boxWidth * 9f / 16f),
+        mExoPlayerController.setInlineViewport(boxWidth, inlineBoxHeight(boxWidth),
                 getResizeMode() != RESIZE_MODE_DEFAULT);
     }
 
@@ -2632,7 +2725,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (!entered) {
             // Refused: undo the pre-stripped layout so the watch page comes back.
-            int orientation = getResources().getConfiguration().orientation;
+            int orientation = layoutOrientation();
             applyWatchLayoutForOrientation(orientation);
             applySystemBarsForOrientation(orientation);
             if (mTimeBar != null) {
@@ -2645,6 +2738,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // mIsInPip is still false and the minimize guards would wave a hand-off through into
             // what is already becoming a pinned task. Treat "accepted" as "in PiP" from here.
             mPipEnterPending = true;
+            mPipLayoutHold = true;
             logPip("enter-accepted");
         }
     }
@@ -2750,7 +2844,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 && !mIsEnded
                 && mExoPlayerController != null
                 && mExoPlayerController.getPlayWhenReady()
-                && !mAudioOnly; // METUBE(audio-only): Home keeps the sound going, no PiP window
+                && !mAudioOnly // METUBE(audio-only): Home keeps the sound going, no PiP window
+                && !(mShorts != null && mShorts.isActive()); // METUBE(shorts): no PiP for Shorts
     }
 
     /**
@@ -2950,6 +3045,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         mIsInPip = isInPictureInPictureMode;
         mPipStateStale = false;
+        mPipLayoutHold = true; // entering, or on the way out until onResume
         mPipEnterPending = false;
         logPip("mode-changed inPip=" + (isInPictureInPictureMode ? "y" : "n")
                 + " stopped=" + (mIsStopped ? "y" : "n"));
@@ -3030,10 +3126,10 @@ public class MobilePlaybackActivity extends MobileActivity
             // GONE/alpha state left by PiP; on some task-reparent exits the first PlayerView tap
             // is swallowed by the system transition, otherwise leaving the restored player with
             // no apparent controls.
-            int orientation = newConfig != null ? newConfig.orientation
-                    : getResources().getConfiguration().orientation;
+            int orientation = newConfig != null ? layoutOrientation(newConfig.orientation)
+                    : layoutOrientation();
             logPip("exit-layout newConfig=" + (newConfig != null ? newConfig.orientation : -1)
-                    + " resources=" + getResources().getConfiguration().orientation
+                    + " resources=" + layoutOrientation()
                     + " chosen=" + orientation);
             applyWatchLayoutForOrientation(orientation);
             applySystemBarsForOrientation(orientation);
@@ -3848,14 +3944,153 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void toggleFullscreen() {
+        int windowOrientation = getResources().getConfiguration().orientation;
         boolean toLandscape =
-                getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE;
+                layoutOrientation() != Configuration.ORIENTATION_LANDSCAPE;
+        int target = toLandscape
+                ? Configuration.ORIENTATION_LANDSCAPE : Configuration.ORIENTATION_PORTRAIT;
+        if (mContainer != null) {
+            mContainer.removeCallbacks(mRotationFallback);
+        }
+        if (target == windowOrientation) {
+            // The window already has that shape: only a layout override kept the other layout
+            // (fullscreen/inline without a rotation), so dropping it is the whole toggle - and
+            // the request that toggle may have left (a rotation slower than the fallback, a
+            // request split screen held back) goes too, or it would rotate the player back.
+            releaseFullscreenRequest();
+            setLayoutOverride(Configuration.ORIENTATION_UNDEFINED);
+            armAutoHide();
+            return;
+        }
+        if (areOrientationRequestsIgnored()) {
+            // NEWTUBE(tablet): Android 16 ignores orientation requests on large screens (sw >=
+            // 600dp, targetSdk 36+), and every Android ignores them in multi-window. Asking for
+            // PORTRAIT there was a silent no-op, so a landscape tablet could never leave
+            // fullscreen - neither the button nor Back (#44, #60). Fullscreen becomes a layout
+            // of the current window instead.
+            releaseFullscreenRequest();
+            setLayoutOverride(target);
+            armAutoHide();
+            return;
+        }
         setRequestedOrientation(toLandscape
                 ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                 : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        armOrientationHandBack(toLandscape
-                ? Configuration.ORIENTATION_LANDSCAPE : Configuration.ORIENTATION_PORTRAIT);
+        armOrientationHandBack(target);
+        // Any other policy that drops the request (an OEM's large-screen setting, a freeform
+        // window) leaves no rotation behind it: flip the layout in place instead.
+        mRotationFallbackTarget = target;
+        mRotationFallbackFrom = windowOrientation;
+        if (mContainer != null) {
+            mContainer.postDelayed(mRotationFallback, FULLSCREEN_ROTATION_WAIT_MS);
+        }
         armAutoHide();
+    }
+
+    /**
+     * Drop a rotation the fullscreen button asked for and its pending hand-back, when the toggle
+     * is reversed in place before (or instead of) that rotation happening.
+     */
+    private void releaseFullscreenRequest() {
+        mOrientationHandBack.disarm();
+        updateOrientationHandBackListener();
+        if (mIsInPip || mPipEnterPending) {
+            return; // PiP owns the request meanwhile (releaseOrientationLockForPip)
+        }
+        int requested = getRequestedOrientation();
+        if (requested == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                || requested == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            setRequestedOrientation(FREE_ORIENTATION);
+        }
+    }
+
+    private int mRotationFallbackTarget;
+    private int mRotationFallbackFrom;
+    private final Runnable mRotationFallback = () -> {
+        if (isFinishing() || mIsInPip || mPipEnterPending
+                || getResources().getConfiguration().orientation != mRotationFallbackFrom
+                || layoutOrientation() == mRotationFallbackTarget) {
+            return;
+        }
+        if (BuildConfig.DEBUG) {
+            NetPath.log("fullscreen rotation-ignored target=" + mRotationFallbackTarget);
+        }
+        setLayoutOverride(mRotationFallbackTarget);
+    };
+
+    /**
+     * NEWTUBE(tablet): the watch layout ("portrait" = inline, "landscape" = fullscreen) normally
+     * IS the window's orientation. Where the window cannot rotate on request, the fullscreen
+     * toggle overrides it: {@link #mLayoutOverride} is the layout shown while the window keeps
+     * the orientation it had when the override was set; a real rotation drops the override.
+     */
+    private int mLayoutOverride = Configuration.ORIENTATION_UNDEFINED;
+    private int mLayoutOverrideBase = Configuration.ORIENTATION_UNDEFINED;
+    /**
+     * From a PiP entry until the player resumes after it: the configurations seen meanwhile
+     * describe the PiP window (and, right after the exit callback, may still), not a rotation.
+     */
+    private boolean mPipLayoutHold;
+
+    private int layoutOrientation() {
+        return layoutOrientation(getResources().getConfiguration().orientation);
+    }
+
+    private int layoutOrientation(int windowOrientation) {
+        if (mLayoutOverride != Configuration.ORIENTATION_UNDEFINED) {
+            // A PiP stint (entering, pinned, and until the expanded player resumes) reports the
+            // PiP window's shape, not a rotation: keep the override through it, so a portrait
+            // tablet's in-place fullscreen comes back as fullscreen.
+            if (windowOrientation == mLayoutOverrideBase
+                    || mIsInPip || mPipEnterPending || mPipLayoutHold) {
+                return mLayoutOverride;
+            }
+            if (BuildConfig.DEBUG) {
+                NetPath.log("fullscreen override-dropped window=" + windowOrientation
+                        + " base=" + mLayoutOverrideBase + " override=" + mLayoutOverride);
+            }
+            mLayoutOverride = Configuration.ORIENTATION_UNDEFINED; // the window rotated
+            mLayoutOverrideBase = Configuration.ORIENTATION_UNDEFINED;
+        }
+        return windowOrientation;
+    }
+
+    private void setLayoutOverride(int orientation) {
+        int window = getResources().getConfiguration().orientation;
+        if (orientation == window) {
+            orientation = Configuration.ORIENTATION_UNDEFINED;
+        }
+        mLayoutOverride = orientation;
+        mLayoutOverrideBase = orientation == Configuration.ORIENTATION_UNDEFINED
+                ? Configuration.ORIENTATION_UNDEFINED : window;
+        if (mIsInPip || mPipEnterPending) {
+            return;
+        }
+        int layout = layoutOrientation();
+        refreshContentInsets();
+        applyWatchLayoutForOrientation(layout);
+        applySystemBarsForOrientation(layout);
+        updateFullscreenIcon(layout);
+        onFullscreenSwipeConfigured();
+        if (mVideoArea != null) {
+            mVideoArea.post(this::updatePipActions);
+        }
+    }
+
+    /**
+     * Whether fullscreen is a layout of the current window rather than a rotation. On a large
+     * screen (sw >= 600dp) it always is: Android 16 ignores the request there (targetSdk 36+), and
+     * older tablets that honour it either letterbox the app into a portrait strip of the landscape
+     * display or rotate it - and {@link OrientationHandBack}'s angles assume a portrait-natural
+     * phone, so on a landscape-natural tablet the hand-back read "held upright" at 0 degrees and
+     * flipped the player straight back into fullscreen (API 35 Pixel Tablet emulator).
+     */
+    private boolean areOrientationRequestsIgnored() {
+        if (Build.VERSION.SDK_INT >= 24 && isInMultiWindowMode()) {
+            return true;
+        }
+        return getApplicationContext().getResources().getConfiguration()
+                .smallestScreenWidthDp >= 600;
     }
 
     /**
@@ -4044,7 +4279,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mAmbient != null) {
             mAmbient.start();
-            mAmbient.setFill(mPortraitFull && !isLandscape() ? mVideoArea : null);
+            mAmbient.setFill(isTallMode() ? mVideoArea : null);
         }
     }
 
@@ -4569,10 +4804,8 @@ public class MobilePlaybackActivity extends MobileActivity
             // SCREEN-ON: hold the screen awake while actively playing/buffering (like the YouTube
             // app); paused or ended releases it so the system's own display timeout applies. This
             // replaces the TV ScreensaverManager dim, which is disabled on mobile.
-            if (mPlayerView != null) {
-                mPlayerView.setKeepScreenOn(playWhenReady
-                        && (playbackState == Player.STATE_READY || playbackState == Player.STATE_BUFFERING));
-            }
+            applyKeepScreenOn(playWhenReady
+                    && (playbackState == Player.STATE_READY || playbackState == Player.STATE_BUFFERING));
         }
 
         @Override
@@ -5314,10 +5547,43 @@ public class MobilePlaybackActivity extends MobileActivity
         return mShorts != null && mShorts.isFullscreen() && !isLandscape();
     }
 
+    /**
+     * METUBE(shorts): keep the overlay's buttons and text clear of the system bars while its
+     * scrims run on under them - padding the whole overlay cut each scrim off in a hard line at
+     * the status bar and the navigation bar. The XML values are kept in each child's tag.
+     */
+    private static void insetShortsOverlay(ViewGroup overlay, int top, int bottom) {
+        for (int i = 0; i < overlay.getChildCount(); i++) {
+            View child = overlay.getChildAt(i);
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
+            int vertical = lp.gravity & Gravity.VERTICAL_GRAVITY_MASK;
+            if (vertical != Gravity.TOP && vertical != Gravity.BOTTOM) {
+                continue; // the peek fills the box; the flash and the heart sit in its middle
+            }
+            if (!(child.getTag() instanceof int[])) {
+                child.setTag(new int[] {lp.height, lp.topMargin, lp.bottomMargin});
+            }
+            int[] base = (int[]) child.getTag();
+            int inset = vertical == Gravity.TOP ? top : bottom;
+            if (child.getClass() == View.class) { // a scrim: taller by the bar it runs under
+                lp.height = base[0] + inset;
+            } else if (vertical == Gravity.TOP) {
+                lp.topMargin = base[1] + inset;
+            } else {
+                lp.bottomMargin = base[2] + inset;
+            }
+            child.setLayoutParams(lp);
+        }
+    }
+
     /** Re-lays the video box and its fill for the current shorts state. */
     private void applyShortsLayout() {
-        applyWatchLayoutForOrientation(getResources().getConfiguration().orientation);
+        refreshContentInsets(); // edge to edge while a short fills the screen
+        applyWatchLayoutForOrientation(layoutOrientation());
         setResizeMode(PlayerData.instance(this).getResizeMode());
+        if (mAmbient != null) {
+            mAmbient.setFill(isTallMode() ? mVideoArea : null); // the bands around a short glow
+        }
         if (mWatchRoot != null) {
             updateInlineViewport(mWatchRoot.getWidth());
         }
@@ -6029,7 +6295,8 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private boolean canStartDismissDrag() {
-        return !mScrubbing && mPlayer != null && mMorphAnimator == null;
+        return !mScrubbing && mPlayer != null && mMorphAnimator == null
+                && !(mShorts != null && mShorts.isActive()); // METUBE(shorts): no mini card
     }
 
     private void onDismissDrag(float dy) {
@@ -7346,10 +7613,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /**
      * The Audio track picker (gear sheet -> Audio track), same anatomy as the Quality sheet: one
-     * row per language, the check on the one playing. A pick applies at once and is the stored
-     * audio preference from then on (PlayerData), exactly what the old Audio section of the
-     * Quality sheet did: the next video plays the same language variant when it has one, and its
-     * original track when it does not (Media3TrackAdapter.findTrack / applyOriginalAudioDefault).
+     * row per language, the check on the one playing. A pick applies at once to THIS video only
+     * (PlayerData.setVideoAudioFormat, kept across its reloads, never persisted): the next video
+     * starts on its original track again (Media3TrackAdapter.applyOriginalAudioDefault), like
+     * YouTube. Issues #52/#53: a stored pick used to drag every later dubbed video onto it.
      */
     private void showAudioTrackSheet() {
         List<AudioTrackChoices.Choice> choices = audioTrackChoices();
@@ -7377,7 +7644,9 @@ public class MobilePlaybackActivity extends MobileActivity
                     return; // autoplay moved on under the open sheet: these rows are another video's
                 }
                 setFormat(choice.item);
-                playerData.setFormat(choice.item);
+                // Issues #52/#53: this video only. Never PlayerData.setFormat - a stored pick used
+                // to carry the language to every later video. Reloads of this video keep it.
+                playerData.setVideoAudioFormat(openedForId, choice.item);
                 // An explicit pick outranks the error fixer's per-video audio fallback, which
                 // restoreAudioFormat would otherwise re-apply on a reload of this video.
                 playerData.setTempAudioFormat(null);

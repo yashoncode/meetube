@@ -420,10 +420,16 @@ public class VideoStateController extends BasePlayerController {
 
         // NEWTUBE(pin-rescue): the session override wins, like restoreVideoFormat above - this is
         // how the error fixer's audio rescue survives the reload's format restore.
+        // NEWTUBE(issues #52/#53): then a manual pick made on THIS video (survives its reloads),
+        // else only the stored codec preference - never another video's language pick.
+        FormatItem videoPick = getPlayerData().getVideoAudioFormat(
+                getVideo() != null ? getVideo().videoId : null);
         if (getPlayerData().getTempAudioFormat() != null) {
             getPlayer().setFormat(getPlayerData().getTempAudioFormat());
+        } else if (videoPick != null) {
+            getPlayer().setFormat(videoPick);
         } else {
-            getPlayer().setFormat(getPlayerData().getFormat(FormatItem.TYPE_AUDIO));
+            getPlayer().setFormat(getPlayerData().getStoredAudioPreference());
         }
     }
 

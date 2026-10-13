@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- METUBE(launch): the routing screen's theme; Android 12+ gives it the beating heart
+         (values-v31). -->
+    <style name="Theme.MeTube.Splash" parent="Theme.NewTube" />
+</resources>

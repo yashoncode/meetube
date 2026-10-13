@@ -562,7 +562,8 @@ public class VideoMenuPresenter extends BaseMenuPresenter {
     }
 
     private void appendBlockChannelButton() {
-        if (mVideo == null || mVideo.isChapter || !mIsBlockChannelEnabled) {
+        // NEWTUBE(#56): not on a playlist card - it would block the playlist owner's channel.
+        if (mVideo == null || mVideo.isChapter || mVideo.isPlaylistCard() || !mIsBlockChannelEnabled) {
             return;
         }
 

@@ -325,6 +325,7 @@ public final class MobileMiniPlayerController {
         resetTransform();
         mBar.setAlpha(1f);
         mBar.setVisibility(View.GONE);
+        setKeepScreenOn(false); // no card, no video on this screen
     }
 
     private void fadeInControls() {
@@ -476,5 +477,22 @@ public final class MobileMiniPlayerController {
                 && player.getPlaybackState() != Player.STATE_ENDED
                 && player.getPlaybackState() != Player.STATE_IDLE;
         mPlayPause.setImageResource(playing ? R.drawable.ic_player_pause : R.drawable.ic_player_play);
+        // SCREEN-ON (#50): the docked card is a visible video, so this host window holds the screen
+        // while it plays (the stopped player Activity no longer does), and lets go when it pauses.
+        setKeepScreenOn(player.getPlayWhenReady()
+                && (player.getPlaybackState() == Player.STATE_READY
+                    || player.getPlaybackState() == Player.STATE_BUFFERING));
+    }
+
+    private void setKeepScreenOn(boolean on) {
+        android.view.Window window = mActivity.getWindow();
+        if (window == null) {
+            return;
+        }
+        if (on) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 }

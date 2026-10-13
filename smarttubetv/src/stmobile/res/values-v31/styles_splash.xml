@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- METUBE(launch): the system splash shows the mark beating once instead of a still icon. -->
+    <style name="Theme.MeTube.Splash" parent="Theme.NewTube">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/metube_splash_heart</item>
+        <item name="android:windowSplashScreenAnimationDuration">700</item>
+    </style>
+</resources>

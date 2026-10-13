@@ -601,6 +601,9 @@ public class MobileChannelUploadsActivity extends MobileActivity
                     break;
                 case VideoGroup.ACTION_SYNC:
                     syncVideos(group.getVideos());
+                    // NEWTUBE(#45): a SYNC item was mutated in place (Original titles, DeArrow),
+                    // so submitList() sees the same objects and never rebinds - rebind it here.
+                    mAdapter.refreshItems(group.getVideos());
                     break;
                 case VideoGroup.ACTION_APPEND:
                 default:
