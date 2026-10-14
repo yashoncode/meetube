@@ -559,7 +559,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 itemView.setBackgroundColor(ground);
                 itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(),
                         itemView.getPaddingRight(), itemView.getPaddingBottom() + dp(context, 6));
-                mMessage.setGroundColor(ground);
                 mMessage.setFoldable(false);
             }
             mMessage.setListener(this);

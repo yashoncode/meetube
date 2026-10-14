@@ -5,5 +5,8 @@
         <attr name="glassCornerRadius" format="dimension" />
         <attr name="glassTint" format="color" />
         <attr name="glassLiquid" format="boolean" />
+        <!-- On a surface that is already glass (a frosted sheet): no backdrop of its own, and the
+             tint stays see-through instead of the near-opaque no-backdrop fallback. -->
+        <attr name="glassOnGlass" format="boolean" />
     </declare-styleable>
 </resources>

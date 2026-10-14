@@ -32,7 +32,7 @@
          disappear into a white button on-device. -->
     <color name="mobile_color_subscribed_button">#F2F2F2</color>
     <!-- NEWTUBE(comments-panel): the comment a replies page is about, set apart from its replies. -->
-    <color name="mobile_color_comment_parent">#F2F2F2</color>
+    <color name="mobile_color_comment_parent">#0D000000</color>
     <!-- The creator's handle on their own comments, and the panel's Top / Newest menu. -->
     <color name="mobile_color_comment_creator_pill">#14000000</color>
     <color name="mobile_color_menu_surface">#FFFFFF</color>
@@ -75,6 +75,8 @@
     <color name="metube_glass_tint">#66FAFAFA</color>
     <!-- METUBE(search): the search pill stays visible over a plain page, frosted over results. -->
     <color name="metube_search_glass_tint">#14000000</color>
+    <!-- METUBE(glass): a pill on a frosted sheet ("Add a comment"): a see-through lift. -->
+    <color name="metube_glass_pill_tint">#14000000</color>
     <!-- METUBE(glass): sheet surfaces - the surface, a little see-through over the blurred page. -->
     <color name="metube_sheet_glass">#D6FFFFFF</color>
     <color name="metube_glass_fill">#0D000000</color>

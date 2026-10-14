@@ -106,17 +106,22 @@ public final class SheetGlass {
             ViewGroup sheet = (ViewGroup) frame;
             sheet.setClipToPadding(false);
             sheet.setClipChildren(false);
-            frost(sheet.getChildAt(0), activity.getWindow(), sheet);
+            frost(sheet.getChildAt(0), activity.getWindow(), sheet, CORNER_DP * sheet.getResources().getDisplayMetrics().density);
         }
     }
 
     /** Paints {@code target}'s background with {@code page}, blurred, behind the sheet's tint. */
     public static void frost(@NonNull View target, @Nullable Window page) {
-        frost(target, page, target);
+        frost(target, page, CORNER_DP * target.getResources().getDisplayMetrics().density);
+    }
+
+    /** As above, rounded to {@code cornerPx} (a popup menu's corners, not a sheet's). */
+    public static void frost(@NonNull View target, @Nullable Window page, float cornerPx) {
+        frost(target, page, target, cornerPx);
     }
 
     /** As above, filling {@code cover} - {@code target} itself or its direct parent. */
-    private static void frost(@NonNull View target, @Nullable Window page, @NonNull View cover) {
+    private static void frost(@NonNull View target, @Nullable Window page, @NonNull View cover, float cornerPx) {
         View decor = page != null ? page.peekDecorView() : null;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || decor == null
                 || decor.getWidth() == 0 || decor.getHeight() == 0) {
@@ -132,7 +137,7 @@ public final class SheetGlass {
             PixelCopy.request(page, copy, result -> {
                 if (result == PixelCopy.SUCCESS && target.isAttachedToWindow()) {
                     blur(copy, BLUR_RADIUS);
-                    target.setBackground(new Backdrop(target, cover, copy, origin, pageW, pageH));
+                    target.setBackground(new Backdrop(target, cover, copy, origin, pageW, pageH, cornerPx));
                 }
             }, new Handler(Looper.getMainLooper()));
         } catch (IllegalArgumentException e) {
@@ -207,7 +212,7 @@ public final class SheetGlass {
         private int mDrawnX = Integer.MIN_VALUE;
         private int mDrawnY = Integer.MIN_VALUE;
 
-        Backdrop(View target, View cover, Bitmap page, int[] origin, int pageW, int pageH) {
+        Backdrop(View target, View cover, Bitmap page, int[] origin, int pageW, int pageH, float corner) {
             mTarget = target;
             mCover = cover;
             mOrigin = origin;
@@ -219,7 +224,7 @@ public final class SheetGlass {
             saturate.setSaturation(1.4f);
             mPage.setColorFilter(new ColorMatrixColorFilter(saturate));
             mTint.setColor(ContextCompat.getColor(target.getContext(), R.color.metube_sheet_glass));
-            mCorner = CORNER_DP * target.getResources().getDisplayMetrics().density;
+            mCorner = corner;
             // A drag moves the sheet without redrawing it: redraw so the page stays put underneath.
             target.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                 @Override

@@ -172,6 +172,8 @@ public class GlassView extends FrameLayout {
     private int mEffectH;
 
     @Nullable private GlassSource mSource;
+    /** Sits on glass already (glassOnGlass): its tint is drawn as given, see-through. */
+    private final boolean mOnGlass;
     @Nullable private RenderNode mNode;
 
     private final ViewTreeObserver.OnPreDrawListener mTrackPosition = () -> {
@@ -192,6 +194,7 @@ public class GlassView extends FrameLayout {
         mCorner = a.getDimension(R.styleable.GlassView_glassCornerRadius, 24 * mDensity);
         mTint = a.getColor(R.styleable.GlassView_glassTint, 0x66121212);
         mLiquid = a.getBoolean(R.styleable.GlassView_glassLiquid, true) && Glass.isLiquid(context);
+        mOnGlass = a.getBoolean(R.styleable.GlassView_glassOnGlass, false);
         a.recycle();
 
         setWillNotDraw(false);
@@ -256,6 +259,8 @@ public class GlassView extends FrameLayout {
                 && mSource.node != null && canvas.isHardwareAccelerated() && getWidth() > 0 && getHeight() > 0;
         if (live) {
             drawBackdrop(canvas);
+            mTintPaint.setColor(mTint);
+        } else if (mOnGlass) {
             mTintPaint.setColor(mTint);
         } else {
             mTintPaint.setColor((mTint & 0x00FFFFFF) | (FALLBACK_ALPHA << 24));

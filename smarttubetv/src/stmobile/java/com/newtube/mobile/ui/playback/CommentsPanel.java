@@ -582,6 +582,11 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
             showListPage();
             bindFeedToList(feed, false);
         }
+        if (!mLayout.isOpen()) {
+            // METUBE(glass): the sheet is the frosted page under it, as the Description sheet is -
+            // copied now, before the sheet comes up over it.
+            com.newtube.mobile.ui.common.SheetGlass.frost(mLayout.getSheet(), mActivity.getWindow());
+        }
         mLayout.open();
         mLayout.getSheet().post(() -> maybeLoadMore(activePage()));
     }
@@ -1020,6 +1025,21 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         mCountView.setVisibility(TextUtils.isEmpty(mCount) ? View.GONE : View.VISIBLE);
     }
 
+    /**
+     * METUBE(glass): a comments popup (Top / Newest, a comment's menu) is frosted glass like the
+     * panel under it - the page copied as it opens, blurred, inside the menu's 18dp corners.
+     */
+    private void frostMenu(View content) {
+        float corner = 18 * mDensity;
+        content.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, android.graphics.Outline outline) {
+                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), corner); // the shadow's shape
+            }
+        });
+        com.newtube.mobile.ui.common.SheetGlass.frost(content, mActivity.getWindow(), corner);
+    }
+
     private void showSortMenu() {
         if (mSortMenu != null || mNewest == null || mThreadParent != null || mPageTransition
                 || mListSwapping || mReleased) {
@@ -1038,6 +1058,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
             setSort(true);
         });
         content.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        frostMenu(content);
 
         PopupWindow menu = new PopupWindow(content, ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, true);
@@ -1897,6 +1918,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
             onDeleteClicked(entry);
         });
         content.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        frostMenu(content);
         PopupWindow menu = new PopupWindow(content, ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, true);
         menu.setAnimationStyle(0);

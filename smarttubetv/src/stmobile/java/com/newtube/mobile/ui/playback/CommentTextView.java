@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Shader;
 import android.text.Layout;
 import android.text.Spanned;
@@ -56,7 +58,6 @@ public class CommentTextView extends AppCompatTextView {
     private final int mReadMoreGap;
     private final String mReadMore;
     private final int mReadMoreColor;
-    private int mGroundColor;
     /** Where "Read more" and its fade were last drawn (the part of the text it covers). */
     private final android.graphics.RectF mReadMoreArea = new android.graphics.RectF();
 
@@ -84,8 +85,8 @@ public class CommentTextView extends AppCompatTextView {
         mFadeWidth = Math.round(26 * density);
         mReadMoreGap = Math.round(28 * density) - mFadeWidth;
         mReadMore = context.getString(R.string.mobile_comments_read_more);
-        mGroundColor = ContextCompat.getColor(context, R.color.mobile_color_background);
         mReadMoreColor = ContextCompat.getColor(context, R.color.mobile_color_on_surface_secondary);
+        mFadePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
         mReadMorePaint.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         mGestures = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -128,14 +129,6 @@ public class CommentTextView extends AppCompatTextView {
 
     public void setListener(@Nullable Listener listener) {
         mListener = listener;
-    }
-
-    /** The colour behind the text, which "Read more"'s fade blends into. */
-    public void setGroundColor(int color) {
-        if (mGroundColor != color) {
-            mGroundColor = color;
-            invalidate();
-        }
     }
 
     /** False for text that always shows in full (the comment at the top of a replies page). */
@@ -248,12 +241,15 @@ public class CommentTextView extends AppCompatTextView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
         if (mReadMoreAlpha <= 0f || !canFold()) {
+            super.onDraw(canvas);
             return;
         }
-        // "Read more" sits at the end of the last folded line, over a fade that blends the text
-        // into the ground (end side; mirrored for right-to-left text).
+        // "Read more" sits at the end of the last folded line, where the text fades out (end side;
+        // mirrored for right-to-left text). METUBE(glass): the text itself is faded - erased in a
+        // layer - not covered with a page-coloured patch, which showed as a block on the glass.
+        int layer = canvas.saveLayer(0, 0, getWidth(), getHeight(), null);
+        super.onDraw(canvas);
         Layout layout = getLayout();
         int line = FOLD_LINES - 1;
         int top = getCompoundPaddingTop();
@@ -269,10 +265,8 @@ public class CommentTextView extends AppCompatTextView {
         float fadeEnd = rtl ? textStart + textWidth + mReadMoreGap : textStart - mReadMoreGap;
         float fadeStart = rtl ? fadeEnd + mFadeWidth : fadeEnd - mFadeWidth;
 
-        int solid = ColorUtils.setAlphaComponent(mGroundColor,
-                Math.round(Color.alpha(mGroundColor) * mReadMoreAlpha));
-        int clear = ColorUtils.setAlphaComponent(mGroundColor, 0);
-        mFadePaint.setShader(new LinearGradient(fadeStart, 0, fadeEnd, 0, clear, solid, Shader.TileMode.CLAMP));
+        int solid = Color.argb(Math.round(255 * mReadMoreAlpha), 0, 0, 0);
+        mFadePaint.setShader(new LinearGradient(fadeStart, 0, fadeEnd, 0, Color.TRANSPARENT, solid, Shader.TileMode.CLAMP));
         if (rtl) {
             canvas.drawRect(left, lineTop, fadeStart, lineBottom, mFadePaint);
             mReadMoreArea.set(left, lineTop, fadeStart, lineBottom);
@@ -280,6 +274,7 @@ public class CommentTextView extends AppCompatTextView {
             canvas.drawRect(fadeStart, lineTop, right, lineBottom, mFadePaint);
             mReadMoreArea.set(fadeStart, lineTop, right, lineBottom);
         }
+        canvas.restoreToCount(layer);
         mReadMorePaint.setColor(ColorUtils.setAlphaComponent(mReadMoreColor,
                 Math.round(Color.alpha(mReadMoreColor) * mReadMoreAlpha)));
         canvas.drawText(mReadMore, textStart, baseline, mReadMorePaint);
