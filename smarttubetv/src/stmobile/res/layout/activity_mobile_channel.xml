@@ -96,6 +96,19 @@
 
         </com.newtube.mobile.ui.common.HapticSwipeRefreshLayout>
 
+        <!-- Sideways swipe: the neighbouring tab's cards, slid in beside the grid (opaque, so it
+             also covers the grid while the grid swaps to that tab). -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/mobile_channel_peek"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/mobile_color_background"
+            android:clipToPadding="false"
+            android:importantForAccessibility="noHideDescendants"
+            android:paddingHorizontal="@dimen/mobile_card_spacing"
+            android:paddingBottom="@dimen/mobile_card_spacing"
+            android:visibility="gone" />
+
         <!-- First page failed / came back empty: message + Try again (PageLoadState). -->
         <include layout="@layout/mobile_page_load_state" />
 

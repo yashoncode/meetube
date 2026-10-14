@@ -1,8 +1,14 @@
 package com.newtube.mobile.ui.channel;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -26,7 +32,9 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.browse.VideoCardAdapter;
 import com.newtube.mobile.ui.common.FilteredPageTopUp;
 import com.newtube.mobile.ui.common.MobileActivity;
+import com.newtube.mobile.ui.common.Motion;
 import com.newtube.mobile.ui.common.ShortsFilter;
+import com.newtube.mobile.ui.common.SkeletonReveal;
 import com.newtube.mobile.ui.playback.MiniPlayerBridge;
 import com.newtube.mobile.ui.playback.MobileMiniPlayerController;
 
@@ -107,6 +115,14 @@ public class MobileChannelActivity extends MobileActivity
     private boolean mSuppressTabCallback;
     /** NEWTUBE(shorts): onDestroy has begun - the presenter's teardown must not page on. */
     private boolean mTornDown;
+    /** The neighbouring tab's cards, slid in beside the grid during a sideways swipe. */
+    private RecyclerView mPeek;
+    private VideoCardAdapter mPeekAdapter;
+    /** Tab index {@link #mPeek} shows, -1 = none yet this swipe. */
+    private int mPeekTab = -1;
+    /** A swipe just selected a tab: {@link #mPeek} covers the grid until its cards are drawn. */
+    private boolean mPeekSwapPending;
+    private ValueAnimator mSwipeAnim;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -149,6 +165,7 @@ public class MobileChannelActivity extends MobileActivity
         // NEWTUBE(mini-inset): the last row can scroll clear of the docked mini-player card.
         com.newtube.mobile.ui.playback.MiniPlayerListInset.attach(findViewById(R.id.mobile_mini_player), mGrid);
         mTabs = findViewById(R.id.mobile_channel_tabs);
+        mPeek = findViewById(R.id.mobile_channel_peek);
         mProgressBar = findViewById(R.id.mobile_channel_progress);
         mTitleView = findViewById(R.id.mobile_channel_title);
         mBackButton = findViewById(R.id.mobile_channel_back);
@@ -213,6 +230,145 @@ public class MobileChannelActivity extends MobileActivity
                 mGrid.scrollToPosition(0);
             }
         });
+        setupTabSwipe();
+    }
+
+    /**
+     * Sideways swipe on the feed moves to the neighbouring tab, like YouTube's channel page: the
+     * grid follows the finger with the next tab's cards ({@link #mPeek}) beside it and the tab
+     * indicator in step. Past a quarter of the width (or on a fling) it settles on the next tab,
+     * otherwise it springs back. A claimed swipe cancels the card's press, so it never plays.
+     */
+    private void setupTabSwipe() {
+        mPeekAdapter = new VideoCardAdapter(video -> { });
+        GridLayoutManager peekLayout = new GridLayoutManager(this, computeSpanCount());
+        peekLayout.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                return mPeekAdapter.isFullSpan(position) ? peekLayout.getSpanCount() : 1;
+            }
+        });
+        mPeek.setLayoutManager(peekLayout);
+        mPeek.setAdapter(mPeekAdapter);
+
+        ViewConfiguration config = ViewConfiguration.get(this);
+        int slop = config.getScaledTouchSlop();
+        int minFling = config.getScaledMinimumFlingVelocity() * 8;
+        mGrid.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+            private float mDownX;
+            private float mDownY;
+            private boolean mSwiping;
+            private VelocityTracker mVelocity;
+
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    mDownX = e.getX();
+                    mDownY = e.getY();
+                    mSwiping = false;
+                    if (mVelocity != null) {
+                        mVelocity.recycle();
+                    }
+                    mVelocity = VelocityTracker.obtain();
+                }
+                if (mVelocity != null) {
+                    mVelocity.addMovement(e);
+                }
+                if (e.getActionMasked() == MotionEvent.ACTION_MOVE && mTabs.getTabCount() > 1
+                        && rv.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
+                    float dx = Math.abs(e.getX() - mDownX);
+                    if (dx > slop && dx > 2 * Math.abs(e.getY() - mDownY)) {
+                        mSwiping = true;
+                        if (mSwipeAnim != null) {
+                            mSwipeAnim.end(); // a settle still running: finish it first
+                        }
+                        mDownX = e.getX(); // start the grid from the finger, no jump of one slop
+                        rv.getParent().requestDisallowInterceptTouchEvent(true); // no pull-to-refresh
+                    }
+                }
+                return mSwiping;
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                mVelocity.addMovement(e);
+                float dx = e.getX() - mDownX;
+                switch (e.getActionMasked()) {
+                    case MotionEvent.ACTION_MOVE:
+                        setSwipeOffset(dx);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        mVelocity.computeCurrentVelocity(1000);
+                        float vx = e.getActionMasked() == MotionEvent.ACTION_UP ? mVelocity.getXVelocity() : 0;
+                        int target = mTabs.getSelectedTabPosition() + (dx < 0 ? 1 : -1);
+                        boolean fling = Math.abs(vx) > minFling && (vx < 0) == (dx < 0);
+                        boolean commit = dx != 0 && target >= 0 && target < mTabs.getTabCount()
+                                && (fling || Math.abs(dx) > rv.getWidth() / 4f);
+                        settleSwipe(dx, commit ? Math.copySign(rv.getWidth(), dx) : 0, commit ? target : -1, vx);
+                        mSwiping = false;
+                        break;
+                }
+            }
+        });
+    }
+
+    /** Grid at {@code dx}, the neighbouring tab's cards beside it, the tab indicator in step. */
+    private void setSwipeOffset(float dx) {
+        int width = mGrid.getWidth();
+        int current = mTabs.getSelectedTabPosition();
+        int target = current + (dx < 0 ? 1 : -1);
+        if (dx == 0 || width == 0 || target < 0 || target >= mTabs.getTabCount()) {
+            mGrid.setTranslationX(dx / 4); // rubber band at the ends
+            mPeek.setVisibility(View.GONE);
+            mTabs.setScrollPosition(current, 0, false);
+            return;
+        }
+
+        if (mPeekTab != target) {
+            TabLayout.Tab tab = mTabs.getTabAt(target);
+            Section section = tab != null && tab.getTag() instanceof Integer ? mSections.get((Integer) tab.getTag()) : null;
+            mPeek.animate().cancel(); // a hand-over fade from the last swipe
+            mPeek.setAlpha(1f);
+            mPeekAdapter.submitList(null); // null first: the next list lands at once, no async diff
+            mPeekAdapter.submitList(section != null ? new ArrayList<>(section.videos) : new ArrayList<>());
+            mPeek.scrollToPosition(0);
+            mPeekTab = target;
+        }
+        mPeek.setVisibility(View.VISIBLE);
+        mGrid.setTranslationX(dx);
+        mPeek.setTranslationX(dx < 0 ? dx + width : dx - width);
+        float fraction = Math.abs(dx) / width;
+        mTabs.setScrollPosition(dx < 0 ? current : target, dx < 0 ? fraction : 1 - fraction, false);
+    }
+
+    /**
+     * Glide from {@code from} to {@code to} at the finger's speed. On a new tab, mPeek (already
+     * showing it, in place) covers the grid until the grid has drawn the same cards under it.
+     */
+    private void settleSwipe(float from, float to, int targetTab, float velocity) {
+        float distance = Math.abs(to - from);
+        long duration = (long) Math.min(Motion.ENTER_MS, Math.max(120, distance * 1000 / Math.max(Math.abs(velocity), 2000)));
+        mSwipeAnim = ValueAnimator.ofFloat(from, to);
+        mSwipeAnim.setDuration(duration);
+        mSwipeAnim.setInterpolator(Motion.STANDARD_DECELERATE);
+        mSwipeAnim.addUpdateListener(animation -> setSwipeOffset((float) animation.getAnimatedValue()));
+        mSwipeAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mSwipeAnim = null;
+                mPeekTab = -1;
+                mGrid.setTranslationX(0);
+                TabLayout.Tab tab = targetTab >= 0 ? mTabs.getTabAt(targetTab) : null;
+                if (tab != null) {
+                    mPeekSwapPending = true;
+                    tab.select(); // -> showActiveSection, which hands over from mPeek
+                } else {
+                    mPeek.setVisibility(View.GONE);
+                }
+            }
+        });
+        mSwipeAnim.start();
     }
 
     private void onVideoClicked(Video video) {
@@ -403,7 +559,15 @@ public class MobileChannelActivity extends MobileActivity
         Section active = mSections.get(mActiveSectionId);
         mLastPaginationTriggerCount = -1;
         syncLoadMoreFooter();
-        mAdapter.submitList(active != null ? new ArrayList<>(active.videos) : new ArrayList<>());
+        mAdapter.submitList(active != null ? new ArrayList<>(active.videos) : new ArrayList<>(), () -> {
+            if (mPeekSwapPending) {
+                mPeekSwapPending = false;
+                SkeletonReveal.fadeOverCards(mPeek, mGrid, () -> true, () -> {
+                    mPeek.setVisibility(View.GONE);
+                    mPeek.setAlpha(1f);
+                });
+            }
+        });
         if (scrollToTop) {
             mGrid.scrollToPosition(0);
         }
@@ -497,8 +661,9 @@ public class MobileChannelActivity extends MobileActivity
         super.onConfigurationChanged(newConfig);
 
         if (mLayoutManager != null) {
-            mLayoutManager.setSpanCount(
-                    com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig));
+            int spans = com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig);
+            mLayoutManager.setSpanCount(spans);
+            ((GridLayoutManager) mPeek.getLayoutManager()).setSpanCount(spans);
         }
     }
 
