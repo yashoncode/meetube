@@ -348,7 +348,7 @@ public class GlassView extends FrameLayout {
         return mLoc[0] - mSourceLoc[0] != mRecordedX || mLoc[1] - mSourceLoc[1] != mRecordedY;
     }
 
-    private static Bitmap noise() {
+    static Bitmap noise() {
         if (sNoise == null) {
             int size = 96;
             int[] px = new int[size * size];

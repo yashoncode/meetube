@@ -745,6 +745,15 @@ public class MobilePlaybackActivity extends MobileActivity
         mMoreButton = findViewById(R.id.mobile_player_more);
         mPrevButton = findViewById(R.id.mobile_player_previous);
         mNextButton = findViewById(R.id.mobile_player_next);
+        // METUBE(glass): every control over the video sits on a frosted disc of it (time: a pill).
+        com.newtube.mobile.ui.common.GlassSource videoGlass = findViewById(R.id.mobile_player_glass);
+        for (View control : new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
+                mPrevButton, mNextButton, mFullscreenButton}) {
+            com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, dp(4));
+        }
+        for (View control : new View[] {mPlayPauseButton, findViewById(R.id.mobile_player_time)}) {
+            com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, 0);
+        }
         mDebugViewGroup = findViewById(R.id.mobile_player_debug);
 
         // Watch page content column.
@@ -801,13 +810,14 @@ public class MobilePlaybackActivity extends MobileActivity
             insetShortsOverlay((ViewGroup) v, bars.top, bars.bottom);
             // The short fills the screen between the bars (cropped, as before); the ambient fill
             // takes the bars' strips and the video's edges fade into it.
-            FrameLayout.LayoutParams video = (FrameLayout.LayoutParams) mPlayerView.getLayoutParams();
+            View glass = findViewById(R.id.mobile_player_glass); // the video's box (METUBE(glass))
+            FrameLayout.LayoutParams video = (FrameLayout.LayoutParams) glass.getLayoutParams();
             if (video.topMargin != bars.top || video.bottomMargin != bars.bottom) {
                 video.topMargin = bars.top;
                 video.bottomMargin = bars.bottom;
-                mPlayerView.setLayoutParams(video);
+                glass.setLayoutParams(video);
             }
-            mVideoArea.setEdgeFade(isShortsMode() ? mPlayerView : null, dp(48));
+            mVideoArea.setEdgeFade(isShortsMode() ? glass : null, dp(48));
             return insets;
         });
         mShorts = new ShortsOverlay(getWindow().getDecorView(), mVideoArea, new ShortsOverlay.Host() {
@@ -2355,35 +2365,6 @@ public class MobilePlaybackActivity extends MobileActivity
         bleedScrim(mTopScrim, left, top, right, 0);
         bleedScrim(mBottomScrim, left, 0, right, bottom);
         applySeekBarLayout(left, top, right, bottom);
-        styleBackButton();
-    }
-
-    @Nullable
-    private android.graphics.drawable.Drawable mBackButtonInlineBg;
-    @Nullable
-    private android.graphics.drawable.Drawable mAudioButtonInlineBg;
-
-    /** METUBE(fullscreen): in fullscreen (either way up) minimize is a small round button. */
-    private void styleBackButton() {
-        if (mBackButton == null) {
-            return;
-        }
-        boolean full = isLandscape() || mPortraitFull;
-        if (mBackButtonInlineBg == null) {
-            mBackButtonInlineBg = mBackButton.getBackground();
-            mAudioButtonInlineBg = mAudioButton.getBackground();
-        }
-        android.graphics.drawable.Drawable bg = full
-                ? androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_player_back_round)
-                : mBackButtonInlineBg;
-        if (full != (mBackButton.getBackground() != mBackButtonInlineBg)) {
-            mBackButton.setBackground(bg);
-            int pad = dp(full ? 15 : 12);
-            mBackButton.setPadding(pad, pad, pad, pad);
-            mAudioButton.setBackground(full ? androidx.core.content.ContextCompat.getDrawable(this,
-                    R.drawable.bg_player_back_round) : mAudioButtonInlineBg);
-            mAudioButton.setPadding(pad, pad, pad, pad);
-        }
     }
 
     /**

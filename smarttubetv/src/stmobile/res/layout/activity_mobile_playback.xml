@@ -61,11 +61,20 @@
                  the texture is simply re-parented between this view and the Browse mini card
                  (same technique as the YouTube app). PlayerView still does aspect-ratio,
                  subtitles and the double-tap layer. -->
-            <com.github.vkay94.dtpv3.DoubleTapPlayerViewImpl
-                android:id="@+id/mobile_player_view"
+            <!-- METUBE(glass): the video, recorded so the player's glass buttons (GlassDrawable)
+                 frost it. Shorts margins and the edge fade apply to this box (applyShortsLayout). -->
+            <com.newtube.mobile.ui.common.GlassSource
+                android:id="@+id/mobile_player_glass"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center" />
+                android:layout_height="match_parent">
+
+                <com.github.vkay94.dtpv3.DoubleTapPlayerViewImpl
+                    android:id="@+id/mobile_player_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center" />
+
+            </com.newtube.mobile.ui.common.GlassSource>
 
             <com.github.vkay94.dtpv3.youtube.YouTubeOverlay
                 android:id="@+id/mobile_player_yt_overlay"
@@ -237,7 +246,6 @@
                         android:id="@+id/mobile_player_play_pause"
                         android:layout_width="@dimen/mobile_player_center_button"
                         android:layout_height="@dimen/mobile_player_center_button"
-                        android:background="@drawable/mobile_player_center_button_bg"
                         android:contentDescription="@string/mobile_player_pause"
                         android:scaleType="fitCenter"
                         android:src="@drawable/ic_player_pause" />
@@ -268,8 +276,18 @@
                     android:layout_marginBottom="@dimen/mobile_player_bottom_row_margin"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingStart="12dp"
+                    android:paddingStart="8dp"
                     android:paddingEnd="4dp">
+
+                    <!-- METUBE(glass): position / duration on one glass pill. -->
+                    <LinearLayout
+                        android:id="@+id/mobile_player_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="7dp">
 
                     <TextView
                         android:id="@+id/mobile_player_position"
@@ -292,6 +310,8 @@
                         android:textColor="@android:color/white"
                         android:textSize="@dimen/mobile_player_time_text"
                         tools:text=" / 4:26:52" />
+
+                    </LinearLayout>
 
                     <!-- Live streams only (toggled from onProgressTick): red at the live edge,
                          dimmed while rewound into the DVR window; tap = jump back to the edge. -->
