@@ -890,7 +890,7 @@
 
                     </LinearLayout>
 
-                    <!-- METUBE(music): this video in the YouTube Music app; shown only for videos it has. -->
+                    <!-- METUBE(lyrics): the song's lyrics (LyricsSheet); shown only for videos YouTube Music has. -->
                     <LinearLayout
                         android:id="@+id/mobile_watch_music"
                         android:layout_width="wrap_content"
@@ -908,14 +908,14 @@
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
-                            android:contentDescription="@string/mobile_watch_music"
-                            android:src="@drawable/ic_watch_music" />
+                            android:contentDescription="@string/mobile_lyrics"
+                            android:src="@drawable/ic_watch_lyrics" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="@string/mobile_watch_music"
+                            android:text="@string/mobile_lyrics"
                             android:textColor="@color/mobile_color_on_surface"
                             android:textSize="14sp" />
 

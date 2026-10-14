@@ -32,7 +32,10 @@ import okhttp3.ResponseBody;
  */
 final class MusicLink {
     private static final String URL = "https://www.youtube.com/youtubei/v1/player?prettyPrint=false";
-    private static final MediaType JSON = MediaType.get("application/json");
+    static final MediaType JSON = MediaType.get("application/json");
+    /** The InnerTube context of YouTube Music's web client, shared with {@link Lyrics}. */
+    static final String WEB_REMIX = "{\"client\":{\"clientName\":\"WEB_REMIX\","
+            + "\"clientVersion\":\"1.20250922.03.00\",\"hl\":\"en\"}}";
     private static final Pattern MUSIC_TYPE = Pattern.compile("\"musicVideoType\"\\s*:\\s*\"MUSIC_VIDEO_TYPE_");
     /** Answers by video id; a video's catalog entry does not change while the app runs. */
     private static final Map<String, Boolean> sKnown = Collections.synchronizedMap(
@@ -54,8 +57,7 @@ final class MusicLink {
             result.accept(known);
             return;
         }
-        String body = "{\"context\":{\"client\":{\"clientName\":\"WEB_REMIX\","
-                + "\"clientVersion\":\"1.20250922.03.00\",\"hl\":\"en\"}},\"videoId\":\"" + videoId + "\"}";
+        String body = "{\"context\":" + WEB_REMIX + ",\"videoId\":\"" + videoId + "\"}";
         Request request = new Request.Builder()
                 .url(URL)
                 .header("X-Goog-FieldMask", "videoDetails.musicVideoType")
@@ -94,7 +96,7 @@ final class MusicLink {
      * The shared client's connections and HTTP/2, without its interceptors: those dress requests as
      * the app's own InnerTube client (and its sign-in), which YouTube Music's client would not match.
      */
-    private static synchronized OkHttpClient client() {
+    static synchronized OkHttpClient client() {
         if (sClient == null) {
             OkHttpClient.Builder builder = OkHttpManager.instance().getClient().newBuilder();
             builder.interceptors().clear();

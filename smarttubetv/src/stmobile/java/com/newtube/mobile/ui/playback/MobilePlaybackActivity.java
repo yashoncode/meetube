@@ -270,6 +270,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private View mWatchShare;
     /** METUBE(music): shown only once {@link MusicLink} says the video is in YouTube Music. */
     private View mWatchMusic;
+    /** METUBE(lyrics): the open lyrics panel, closed when another video starts (its lines are the last song's). */
+    @Nullable
+    private BottomSheetDialog mLyricsSheet;
     @Nullable private String mMusicPillVideoId;
     private View mWatchSave;
     private ImageView mWatchSaveIcon;
@@ -781,7 +784,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchDislikeCount = findViewById(R.id.mobile_watch_dislike_count);
         mWatchShare = findViewById(R.id.mobile_watch_share);
         mWatchMusic = findViewById(R.id.mobile_watch_music);
-        mWatchMusic.setOnClickListener(v -> openInYouTubeMusic());
+        mWatchMusic.setOnClickListener(v -> showLyricsSheet());
         mWatchSave = findViewById(R.id.mobile_watch_save);
         mWatchSaveIcon = findViewById(R.id.mobile_watch_save_icon);
         mWatchSaveLabel = findViewById(R.id.mobile_watch_save_label);
@@ -8642,6 +8645,10 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mMusicPillVideoId = videoId;
         mWatchMusic.setVisibility(View.GONE);
+        if (mLyricsSheet != null) {
+            mLyricsSheet.dismiss();
+            mLyricsSheet = null;
+        }
         if (TextUtils.isEmpty(videoId)) {
             return;
         }
@@ -8652,32 +8659,16 @@ public class MobilePlaybackActivity extends MobileActivity
         });
     }
 
-    /**
-     * METUBE(music): the Music pill - this video's music.youtube.com link, opened by whatever app
-     * the system picks for that host (YouTube Music, or one the user set under "Open by default",
-     * else the browser). Our player pauses first, so leaving does not open a PiP window over it.
-     */
-    private void openInYouTubeMusic() {
+    /** METUBE(lyrics): the Music pill opens the song's lyrics (LyricsSheet) under the video. */
+    private void showLyricsSheet() {
         Video video = getVideo();
-        if (video == null || TextUtils.isEmpty(video.videoId)) {
+        if (video == null || TextUtils.isEmpty(video.videoId) || isFinishing()) {
             return;
         }
-        Intent intent = new Intent(Intent.ACTION_VIEW,
-                android.net.Uri.parse("https://music.youtube.com/watch?v=" + video.videoId));
-        try {
-            startActivity(intent);
-        } catch (android.content.ActivityNotFoundException e) {
-            android.widget.Toast.makeText(this, R.string.mobile_watch_music_missing,
-                    android.widget.Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
-            mExoPlayerController.setPlayWhenReady(false);
-            if (mPresenter != null) {
-                mPresenter.onPauseClicked();
-            }
-        }
-        updatePipActions();
+        mLyricsSheet = LyricsSheet.create(this, video.videoId, video.getTitle(), video.getAuthor(),
+                isLandscape() ? null : mVideoArea,
+                () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1);
+        showPlayerSheet(mLyricsSheet);
     }
 
     /** Video id + elapsedRealtime of the last touch-prefetch, to report whether the tap used it. */
