@@ -2,6 +2,24 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.9.2 — 2026-10-14 — Lyrics, liquid glass player, Description panel
+
+### New
+
+- **Lyrics for every song.** The Music button is now Lyrics: a panel under the video with the song's words, found across BitChord's lyrics sources (lrc.red, LyricsPlus, KuGou, LRCLIB, YouTube Music, Genius and more). Timed lyrics light up line by line with the song; tapping the video still works the player.
+- **Liquid glass player buttons.** Every button over the video sits on frosted glass that blurs the picture behind it, in portrait, landscape and the vertical fullscreen.
+- **A YouTube-style Description panel.** Tapping the title opens the description in a frosted panel under the video, with likes, views and the date, and text you can copy. The video keeps playing, undimmed.
+- **Swipe between a channel's tabs.** Slide left or right on a channel's videos to change tabs.
+- **Frosted comments.** The comments panel, the "Add a comment" pill and the sort and comment menus are frosted glass.
+
+### Changed
+
+- **Swipe up to leave the vertical fullscreen,** as well as down, and it settles smoothly.
+
+### Fixed
+
+- **Comments by people with Arabic or Hebrew names read properly.** The name line no longer jumbles the date ("days ago 4 •"), and replies that are just a timestamp line up with the rest.
+
 ## 2.8.0 — 2026-10-13 — Search tab and filters, Shorts edge to edge, floating mini player
 
 ### New

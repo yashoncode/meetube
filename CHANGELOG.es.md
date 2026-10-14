@@ -1,5 +1,23 @@
 # Registro de cambios de MeTube
 
+## 2.9.2 — 2026-10-14 — Letras, reproductor de cristal líquido, panel de descripción
+
+### Novedades
+
+- **Letras para cada canción.** El botón Música ahora es Letra: un panel bajo el vídeo con la letra de la canción, buscada en las fuentes de letras de BitChord (lrc.red, LyricsPlus, KuGou, LRCLIB, YouTube Music, Genius y más). Las letras sincronizadas se iluminan línea a línea con la canción; tocar el vídeo sigue controlando el reproductor.
+- **Botones de cristal líquido en el reproductor.** Cada botón sobre el vídeo está sobre un cristal esmerilado que difumina la imagen de detrás, en vertical, horizontal y pantalla completa vertical.
+- **Un panel de descripción como el de YouTube.** Al tocar el título se abre la descripción en un panel esmerilado bajo el vídeo, con Me gusta, visualizaciones y fecha, y texto que se puede copiar. El vídeo sigue reproduciéndose, sin oscurecerse.
+- **Desliza entre las pestañas de un canal.** Desliza a izquierda o derecha sobre los vídeos de un canal para cambiar de pestaña.
+- **Comentarios esmerilados.** El panel de comentarios, la píldora "Añade un comentario" y los menús de orden y de comentario son de cristal esmerilado.
+
+### Cambios
+
+- **Desliza hacia arriba para salir de la pantalla completa vertical,** además de hacia abajo, y se asienta con suavidad.
+
+### Correcciones
+
+- **Los comentarios de personas con nombres en árabe o hebreo se leen bien.** La línea del nombre ya no desordena la fecha ("days ago 4 •"), y las respuestas que solo son una marca de tiempo se alinean con las demás.
+
 ## 2.8.0 — 2026-10-13 — Pestaña y filtros de búsqueda, Shorts a pantalla completa, minirreproductor flotante
 
 ### Novedades
