@@ -5434,13 +5434,15 @@ public class MobilePlaybackActivity extends MobileActivity
     /**
      * METUBE(fullscreen): YouTube's vertical fullscreen - the video fills the upright screen and
      * the page steps aside, with the system bars hidden. Entered by pulling the page down from its
-     * top (the title); left by Back, a swipe down on the video, or turning the phone sideways.
+     * top (the title); left by Back, a swipe up or down on the video, or turning the phone sideways.
      */
     private boolean mPortraitFull;
     @Nullable
     private View mWatchFab;
     /** How far the page must be pulled down from its top to enter the vertical fullscreen. */
     private static final float PORTRAIT_FULL_PULL_DP = 72f;
+    /** The box's move into and out of the vertical fullscreen. */
+    private static final long PORTRAIT_FULL_MS = 240;
     /** The vertical fullscreen's seek bar sits this share of the screen above the bottom. */
     private static final float PORTRAIT_FULL_BAR_LIFT = 0.16f;
     private float mPullDownX;
@@ -5459,7 +5461,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mPortraitFull = on;
         if (mWatchRoot != null) {
             android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
-                    new android.transition.ChangeBounds().setDuration(240));
+                    new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.STANDARD));
         }
         applyWatchLayoutForOrientation(Configuration.ORIENTATION_PORTRAIT);
         if (mWatchRoot != null) {
@@ -5617,6 +5619,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private MagneticDrag mFullscreenMagnet;
     /** SWIPE_ENTER_FULLSCREEN / SWIPE_EXIT_FULLSCREEN while one is under the finger or settling. */
     private int mFullscreenSwipe;
+    /** METUBE(fullscreen): the vertical fullscreen is being left by a swipe UP - its pull goes up. */
+    private boolean mFullscreenSwipeUp;
     @Nullable
     private ValueAnimator mFullscreenSettle;
 
@@ -5638,8 +5642,10 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (!isLandscape()) {
             if (mPortraitFull) {
-                return beginFullscreenSwipe(direction == PlayerContainerLayout.DOWN
-                        ? SWIPE_EXIT_FULLSCREEN : SWIPE_ENTER_FULLSCREEN);
+                // METUBE(fullscreen): up or down, a swipe on the vertical fullscreen goes back to the page.
+                int swipe = beginFullscreenSwipe(SWIPE_EXIT_FULLSCREEN);
+                mFullscreenSwipeUp = direction == PlayerContainerLayout.UP;
+                return swipe;
             }
             if (direction == PlayerContainerLayout.DOWN) {
                 return canStartDismissDrag() ? SWIPE_MINIMIZE : PlayerContainerLayout.SWIPE_NONE;
@@ -5670,7 +5676,7 @@ public class MobilePlaybackActivity extends MobileActivity
             case SWIPE_ENTER_FULLSCREEN:
             case SWIPE_EXIT_FULLSCREEN:
                 if (mFullscreenSwipe == swipe) { // else a configuration change ended it under the finger
-                    fullscreenMagnet().move(Math.max(0f, swipe == SWIPE_ENTER_FULLSCREEN ? -dy : dy));
+                    fullscreenMagnet().move(Math.max(0f, swipe == SWIPE_ENTER_FULLSCREEN || mFullscreenSwipeUp ? -dy : dy));
                 }
                 break;
             case SWIPE_BRIGHTNESS:
@@ -5697,7 +5703,7 @@ public class MobilePlaybackActivity extends MobileActivity
             case SWIPE_ENTER_FULLSCREEN:
             case SWIPE_EXIT_FULLSCREEN:
                 if (mFullscreenSwipe == swipe) {
-                    boolean up = swipe == SWIPE_ENTER_FULLSCREEN;
+                    boolean up = swipe == SWIPE_ENTER_FULLSCREEN || mFullscreenSwipeUp;
                     fullscreenMagnet().move(Math.max(0f, up ? -dy : dy));
                     endFullscreenSwipe(up ? -yVelocity : yVelocity);
                 }
@@ -5807,6 +5813,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mFullscreenSettle = null;
         }
         mFullscreenSwipe = swipe;
+        mFullscreenSwipeUp = false;
         hideControls();
         fullscreenMagnet().start();
         return swipe;
@@ -5836,10 +5843,10 @@ public class MobilePlaybackActivity extends MobileActivity
         float shrink = Math.min(1f, pulled / (FULLSCREEN_PULL_SCALE_DP * getResources().getDisplayMetrics().density));
         float scale = 1f - (1f - FULLSCREEN_PULL_SCALE) * shrink;
         mVideoArea.setPivotX(mVideoArea.getWidth() / 2f);
-        mVideoArea.setPivotY(0f);
+        mVideoArea.setPivotY(mFullscreenSwipeUp ? mVideoArea.getHeight() : 0f);
         mVideoArea.setScaleX(scale);
         mVideoArea.setScaleY(scale);
-        mVideoArea.setTranslationY(pulled);
+        mVideoArea.setTranslationY(mFullscreenSwipeUp ? -pulled : pulled);
     }
 
     /** {@code velocity}: px/s toward the swipe's goal (negative = flicked back). */
@@ -5867,7 +5874,9 @@ public class MobilePlaybackActivity extends MobileActivity
                     + " detached=" + detached);
         }
         if (mPortraitFull && !isLandscape() && mFullscreenSwipe == SWIPE_EXIT_FULLSCREEN) {
-            settleFullscreenPull();
+            // METUBE(fullscreen): the pull comes off in step with the box's shrink (same time, same
+            // curve), so the video moves one way only - an up swipe's pull used to dip down first.
+            settleFullscreenPull(PORTRAIT_FULL_MS, Motion.STANDARD);
             setPortraitFull(false); // the vertical fullscreen leaves without a rotation
             return;
         }
@@ -5884,6 +5893,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** Back to rest, at the decelerating pace a released minimize drag returns with. */
     private void settleFullscreenPull() {
+        settleFullscreenPull(180, new android.view.animation.DecelerateInterpolator());
+    }
+
+    private void settleFullscreenPull(long durationMs, android.animation.TimeInterpolator interpolator) {
         if (mVideoArea == null) {
             mFullscreenSwipe = 0;
             return;
@@ -5893,8 +5906,8 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         float from = fullscreenMagnet().position();
         ValueAnimator settle = ValueAnimator.ofFloat(from, 0f);
-        settle.setDuration(180);
-        settle.setInterpolator(new android.view.animation.DecelerateInterpolator());
+        settle.setDuration(durationMs);
+        settle.setInterpolator(interpolator);
         settle.addUpdateListener(a -> applyFullscreenPull((float) a.getAnimatedValue()));
         settle.addListener(new AnimatorListenerAdapter() {
             private boolean mCancelled;
