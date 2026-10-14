@@ -476,6 +476,34 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    /** METUBE(bidi): Unicode first-strong isolate and its end. */
+    private static final String FSI = "⁨";
+    private static final String PDI = "⁩";
+
+    /**
+     * METUBE(bidi): a comment reads in the direction of its first letter. Invisible direction marks
+     * (LRM/RLM/ALM) are skipped: an "RLM 0:16" reply right-aligned itself though it has no letters.
+     * No letter at all: the app language's direction.
+     */
+    static int textDirection(@Nullable CharSequence text) {
+        int length = text != null ? text.length() : 0;
+        for (int i = 0; i < length; ) {
+            int cp = Character.codePointAt(text, i);
+            i += Character.charCount(cp);
+            if (cp == 0x200E || cp == 0x200F || cp == 0x061C) {
+                continue;
+            }
+            byte dir = Character.getDirectionality(cp);
+            if (dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT) {
+                return View.TEXT_DIRECTION_LTR;
+            }
+            if (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT || dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC) {
+                return View.TEXT_DIRECTION_RTL;
+            }
+        }
+        return View.TEXT_DIRECTION_LOCALE;
+    }
+
     /** A round avatar near its drawn size, or the placeholder. */
     static void loadAvatar(ImageView view, @Nullable String url, int sizePx) {
         Context context = view.getContext();
@@ -615,6 +643,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 entry.mText = buildText(item, mListener, mLinkColor);
             }
             mMessage.setText(entry.mText);
+            mMessage.setTextDirection(textDirection(entry.mText));
             mMessage.setVisibility(TextUtils.isEmpty(entry.mText) ? View.GONE : View.VISIBLE);
             mMessage.setExpanded(mIsParent || entry.expanded, false);
 
@@ -754,18 +783,25 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             }
         }
 
-        /** "@handle • 2 days ago"; the video's creator gets their handle on a quiet pill. */
+        /**
+         * "@handle • 2 days ago"; the video's creator gets their handle on a quiet pill.
+         * METUBE(bidi): the handle is a Unicode isolate (FSI...PDI), so a right-to-left name keeps to
+         * itself - it no longer drags the date's number across it ("days ago 4 •").
+         */
         private CharSequence buildMeta(CommentItem item, @Nullable String creatorHandle) {
             String handle = item.getAuthorName() != null ? item.getAuthorName() : "";
             String date = item.getPublishedDate();
-            SpannableStringBuilder meta = new SpannableStringBuilder(handle);
+            SpannableStringBuilder meta = new SpannableStringBuilder();
             if (!handle.isEmpty()) {
+                meta.append(FSI).append(handle).append(PDI);
+                int start = FSI.length();
+                int end = start + handle.length();
                 if (handle.equals(creatorHandle)) {
-                    meta.setSpan(new CreatorPillSpan(itemView.getContext(), mCreatorPill), 0, handle.length(),
+                    meta.setSpan(new CreatorPillSpan(itemView.getContext(), mCreatorPill), start, end,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 } else {
-                    meta.setSpan(new ForegroundColorSpan(mHandleColor), 0, handle.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    meta.setSpan(new TypefaceSpan("sans-serif-medium"), 0, handle.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    meta.setSpan(new ForegroundColorSpan(mHandleColor), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    meta.setSpan(new TypefaceSpan("sans-serif-medium"), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
             if (!TextUtils.isEmpty(date)) {

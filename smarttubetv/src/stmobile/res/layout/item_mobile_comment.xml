@@ -70,6 +70,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
+            android:textDirection="locale"
             android:textColor="@color/mobile_color_on_surface_secondary"
             android:textSize="12sp"
             android:lineHeight="16sp"
