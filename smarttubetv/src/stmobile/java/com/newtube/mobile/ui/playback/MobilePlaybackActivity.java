@@ -355,7 +355,11 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private Video mWatchVideo;
     private String mWatchVideoId;
-    private boolean mDescriptionExpanded;
+    /** METUBE(description): the Description sheet's views and calendar date, from the metadata. */
+    @Nullable
+    private String mDescriptionViews;
+    @Nullable
+    private String mDescriptionDate;
 
     /**
      * Keep the portrait video box tied to the width the watch page actually receives. Display
@@ -1131,7 +1135,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mQueueHeader.setOnClickListener(v -> toggleQueueExpanded());
 
         // Expandable description: tap the title or the views/date row (METUBE: no chevron).
-        findViewById(R.id.mobile_watch_header).setOnClickListener(v -> toggleDescription());
+        findViewById(R.id.mobile_watch_header).setOnClickListener(v -> showDescriptionSheet());
 
         // Actions row. Like/Dislike/Subscribe go through the presenter's onButtonClicked vocabulary
         // (R.id.action_*); the controller flips the visual state back via setButtonState. Share fires
@@ -7458,6 +7462,17 @@ public class MobilePlaybackActivity extends MobileActivity
         }
     }
 
+    /** In portrait, a sheet's cap that stops it at the bottom of the video; 0 (no cap) otherwise. */
+    private int sheetHeightBelowVideo() {
+        if (isLandscape() || mVideoArea == null) {
+            return 0;
+        }
+        int[] location = new int[2];
+        mVideoArea.getLocationInWindow(location);
+        int belowVideo = getWindow().getDecorView().getHeight() - (location[1] + mVideoArea.getHeight());
+        return belowVideo >= dp(240) ? belowVideo : 0;
+    }
+
     /**
      * The Chapters list over the player. In portrait it stops at the bottom of the video, like the
      * comments panel, so the chapter being picked stays in view; fullscreen gets the usual sheet.
@@ -7468,20 +7483,10 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         cancelAutoHide();
 
-        int maxHeightPx = 0;
-        if (!isLandscape() && mVideoArea != null) {
-            int[] location = new int[2];
-            mVideoArea.getLocationInWindow(location);
-            int belowVideo = getWindow().getDecorView().getHeight() - (location[1] + mVideoArea.getHeight());
-            if (belowVideo >= dp(240)) {
-                maxHeightPx = belowVideo;
-            }
-        }
-
         releaseImageRequests("chapters-sheet"); // like the chat sheet: its frames are what's on screen now
         long positionMs = mExoPlayerController != null ? mExoPlayerController.getPositionMs() : 0;
         BottomSheetDialog dialog = ChaptersSheet.create(this, mChapterVideos, chapterIndexAt(positionMs),
-                maxHeightPx, chapter -> seekFromList(chapter.startTimeMs, CHAPTER_SEEK_PARAMETERS));
+                sheetHeightBelowVideo(), chapter -> seekFromList(chapter.startTimeMs, CHAPTER_SEEK_PARAMETERS));
         dialog.setOnDismissListener(d -> {
             if (mChaptersSheet == d) {
                 mChaptersSheet = null;
@@ -8167,12 +8172,10 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void resetWatchHeader() {
-        mDescriptionExpanded = false;
-        mWatchTitle.setMaxLines(3);
-        mWatchDescription.setVisibility(View.GONE);
         mWatchDescription.setText(null);
+        mDescriptionViews = null;
+        mDescriptionDate = null;
         mWatchMeta.setText(null);
-        mWatchMeta.setMaxLines(1);
         mWatchLikeCount.setText(R.string.mobile_watch_count_placeholder);
         mWatchDislikeCount.setText(R.string.mobile_watch_count_placeholder);
         mWatchSubs.setText(null);
@@ -8239,6 +8242,20 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable
     private Runnable mReleaseRelatedRender;
 
+    /** "Published on Jan 14, 2024" / "Fecha de publicación: ..." -> just the date. */
+    @Nullable
+    private static String cleanPublishedDate(@Nullable String date) {
+        if (date == null) {
+            return null;
+        }
+        date = date.replaceFirst("(?i)^(published|premiered|streamed live) on ", "");
+        // Non-English locales label the date "Data de publicació: 29 de des. 2019" /
+        // "Fecha de publicación: ..." - drop the leading "Label:" too. Publish dates
+        // never contain a colon themselves, so this can't clip the date.
+        String unlabeled = date.replaceFirst("^[^:]{1,40}:\\s*", "");
+        return unlabeled.isEmpty() ? date : unlabeled;
+    }
+
     private void bindWatchMetadata(MediaItemMetadata metadata) {
         if (metadata == null) {
             return;
@@ -8261,16 +8278,14 @@ public class MobilePlaybackActivity extends MobileActivity
             // NEWTUBE(watch-meta): prefer the relative date ("4 days ago") - the shape the card's own
             // line has, so the swap below doesn't jump. The absolute date is the fallback.
             String relativeDate = metadata.getRelativePublishedDate();
-            String date = !TextUtils.isEmpty(relativeDate) ? relativeDate : metadata.getPublishedDate();
-            if (date != null) {
-                date = date.replaceFirst("(?i)^(published|premiered|streamed live) on ", "");
-                // Non-English locales label the date "Data de publicació: 29 de des. 2019" /
-                // "Fecha de publicación: ..." - drop the leading "Label:" too. Publish dates
-                // never contain a colon themselves, so this can't clip the date.
-                String unlabeled = date.replaceFirst("^[^:]{1,40}:\\s*", "");
-                if (!unlabeled.isEmpty()) {
-                    date = unlabeled;
-                }
+            String date = cleanPublishedDate(!TextUtils.isEmpty(relativeDate) ? relativeDate : metadata.getPublishedDate());
+            // METUBE(description): the Description sheet's row shows the calendar date, as YouTube's does.
+            if (!TextUtils.isEmpty(views)) {
+                mDescriptionViews = views;
+            }
+            String calendarDate = cleanPublishedDate(metadata.getPublishedDate());
+            if (!TextUtils.isEmpty(calendarDate) || TextUtils.isEmpty(mDescriptionDate)) {
+                mDescriptionDate = !TextUtils.isEmpty(calendarDate) ? calendarDate : date;
             }
             String meta;
             if (!TextUtils.isEmpty(views) && !TextUtils.isEmpty(date)) {
@@ -8380,25 +8395,17 @@ public class MobilePlaybackActivity extends MobileActivity
         return TextUtils.isEmpty(text) || getString(R.string.mobile_watch_count_placeholder).contentEquals(text);
     }
 
-    private void toggleDescription() {
-        if (TextUtils.isEmpty(mWatchDescription.getText())) {
+    /**
+     * METUBE(description): the title opens YouTube's Description panel (DescriptionSheet) under the
+     * video, instead of unfolding the description into the page.
+     */
+    private void showDescriptionSheet() {
+        if (TextUtils.isEmpty(mWatchTitle.getText()) || isFinishing()) {
             return;
         }
-
-        mDescriptionExpanded = !mDescriptionExpanded;
-        // Smooth expand/collapse: animate the content column's layout change and spin the
-        // chevron, instead of the block just popping in.
-        ViewGroup content = (ViewGroup) mWatchDescription.getParent();
-        if (content != null) {
-            androidx.transition.TransitionManager.beginDelayedTransition(content,
-                    new androidx.transition.AutoTransition().setDuration(180));
-        }
-        mWatchDescription.setVisibility(mDescriptionExpanded ? View.VISIBLE : View.GONE);
-        // Expanded: let the views/date line wrap so long localized dates (e.g. "29 de des. 2019"
-        // behind a wordy label) are fully readable instead of ellipsized.
-        mWatchMeta.setMaxLines(mDescriptionExpanded ? Integer.MAX_VALUE : 1);
-        // METUBE: no chevron - the title opens to its full length instead.
-        mWatchTitle.setMaxLines(mDescriptionExpanded ? Integer.MAX_VALUE : 3);
+        CharSequence likes = isCountUnset(mWatchLikeCount) ? null : mWatchLikeCount.getText();
+        showPlayerSheet(DescriptionSheet.create(this, mWatchTitle.getText(), likes, mDescriptionViews,
+                mDescriptionDate, mWatchDescription.getText(), isLandscape() ? null : mVideoArea));
     }
 
     /** Route Like / Dislike / Subscribe through the presenter's onButtonClicked vocabulary. */
