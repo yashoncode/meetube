@@ -29,7 +29,7 @@
 - 👎 **Dislikes are back.** Return YouTube Dislike shows the real count. DeArrow swaps clickbait titles and thumbnails.
 - 🔐 **Your account, your subscriptions.** Sign in with a code, or use it without an account. Cast to your TV.
 
-MeTube is a fork of [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala), which is built on [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov). MeTube is an independent project and is not endorsed by either upstream developer.
+MeTube is a heavily tweaked fork of [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala), reworked for performance, smoothness and a polished UI. NewTube is built on [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov). MeTube is an independent project and is not endorsed by either upstream developer.
 
 ## Download
 

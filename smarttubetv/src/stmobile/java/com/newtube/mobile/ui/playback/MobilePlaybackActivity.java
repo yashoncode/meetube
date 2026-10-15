@@ -2084,6 +2084,13 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mClosing) {
             return;
         }
+        if (!mBackPreview && mMorphAnimator == null && !mMorphStartPending && !mMagnetDragging
+                && mMorphFraction != 0f) {
+            // METUBE(fullscreen): a morph left half-way with nothing moving it locks out Back, the
+            // drags and the controls; Back puts the page back instead of closing the player.
+            resetMorph();
+            return;
+        }
         if (mPortraitFull && !isLandscape()) {
             setPortraitFull(false);
             return;
@@ -2151,6 +2158,11 @@ public class MobilePlaybackActivity extends MobileActivity
     private void onBackGestureStarted() {
         mBackPreview = false;
         if (mClosing || !canMinimizeByBack() || (mShorts != null && mShorts.isActive())) { // Back closes Shorts
+            return;
+        }
+        if (mPortraitFull && !isLandscape()) {
+            // METUBE(fullscreen): Back here only leaves the vertical fullscreen (handleBack), so no
+            // minimize preview - it was left mid-shrink with every gesture locked out.
             return;
         }
         beginMinimizeMorph();

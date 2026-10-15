@@ -1,5 +1,11 @@
 # Registro de cambios de MeTube
 
+## 2.9.6 — 2026-10-15 — Corrección
+
+### Corregido
+
+- **El reproductor podía quedarse congelado a medio encoger.** Deslizar para volver en la pantalla completa vertical dejaba el vídeo atascado de camino al minirreproductor, con la página atenuada y sin que funcionara ningún botón ni gesto. Ahora Atrás solo sale de la pantalla completa vertical, y si el reproductor se queda a medias, Atrás lo arregla.
+
 ## 2.9.5 — 2026-10-15 — Auriculares en el minirreproductor, interruptores al estilo iOS
 
 ### Novedades

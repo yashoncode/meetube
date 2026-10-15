@@ -2,6 +2,12 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.9.6 — 2026-10-15 — Hotfix
+
+### Fixed
+
+- **The player could freeze half-shrunk.** A back swipe in the vertical fullscreen left the video stuck part-way to the mini player, with the page dimmed and no button or gesture working. Back now just leaves the vertical fullscreen, and if the player is ever caught half-way, Back puts it right.
+
 ## 2.9.5 — 2026-10-15 — Headphones on the mini player, iOS-style switches
 
 ### New
