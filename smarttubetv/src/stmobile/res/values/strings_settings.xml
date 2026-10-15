@@ -52,6 +52,11 @@
     <string name="mobile_settings_advanced">Advanced</string>
     <string name="mobile_settings_advanced_summary">Streaming, network and fixes</string>
     <string name="mobile_settings_about">About</string>
+    <string name="mobile_settings_coffee">Buy me a coffee</string>
+    <string name="mobile_settings_coffee_summary">If you love MeTube and want to support it</string>
+    <string name="mobile_about_thanks">Thanks for using MeTube</string>
+    <string name="mobile_about_thanks_support">Keep supporting · Buy me a coffee</string>
+    <string name="mobile_settings_coffee_url" translatable="false">https://buymeacoffee.com/yashwynth</string>
 
     <!-- General -->
     <string name="mobile_settings_language">Language</string>

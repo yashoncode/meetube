@@ -115,6 +115,10 @@ public final class SettingsPages {
                 () -> signedIn ? (account.getEmail() != null ? account.getEmail() : context.getString(R.string.mobile_settings_account_switch))
                         : context.getString(R.string.mobile_settings_account_signed_out),
                 page -> AccountsSheet.show(page.requireActivity(), page::rebuild)));
+        // METUBE(support): near the top, where people see it.
+        rows.add(SettingsRow.action(R.drawable.ic_settings_coffee, context.getString(R.string.mobile_settings_coffee),
+                () -> context.getString(R.string.mobile_settings_coffee_summary),
+                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.mobile_settings_coffee_url))));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_app)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_general, context.getString(R.string.mobile_settings_general),
@@ -188,6 +192,11 @@ public final class SettingsPages {
         rows.add(SettingsRow.action(context.getString(R.string.about_license),
                 context.getString(R.string.about_license_name),
                 page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_license_url))));
+        // METUBE(support): a quiet thank-you at the foot of About, not another row.
+        rows.add(SettingsRow.footer(R.drawable.ic_settings_coffee,
+                context.getString(R.string.mobile_about_thanks),
+                context.getString(R.string.mobile_about_thanks_support),
+                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.mobile_settings_coffee_url))));
 
         return new Page(context.getString(R.string.about_app, context.getString(R.string.app_name)), rows);
     }

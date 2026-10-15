@@ -52,7 +52,7 @@
 
     </LinearLayout>
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
+    <com.newtube.mobile.ui.common.GlassSwitch
         android:id="@+id/settings_row_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -51,4 +51,5 @@
     <!-- METUBE(glass): the frosted top bar - the page colour at ~75%. -->
     <color name="metube_bar_tint">#B8000000</color>
     <color name="metube_switch_off">#3A3A3F</color>
+    <color name="metube_switch_on">#30D158</color>
 </resources>

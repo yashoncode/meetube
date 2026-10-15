@@ -114,6 +114,12 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
         if (SettingsPages.ROOT.equals(mPageId)) {
             View search = view.findViewById(R.id.settings_search_field);
             search.setVisibility(View.VISIBLE);
+            // METUBE(glass): frosted over the page; the rows start below it and scroll under it.
+            com.newtube.mobile.ui.common.Glass.blur(search, view.findViewById(R.id.settings_blur_target));
+            ((ViewGroup.MarginLayoutParams) search.getLayoutParams()).topMargin += Math.round(4 * getResources().getDisplayMetrics().density);
+            mList.setPadding(mList.getPaddingLeft(),
+                    getResources().getDimensionPixelSize(R.dimen.mobile_settings_search_room),
+                    mList.getPaddingRight(), mList.getPaddingBottom());
             search.setOnClickListener(v -> {
                 if (getActivity() instanceof MobileSettingsActivity) {
                     ((MobileSettingsActivity) getActivity()).openSearch(this);
@@ -191,6 +197,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
     public void onRowClicked(@NonNull SettingsRow row) {
         switch (row.kind) {
             case SettingsRow.KIND_LINK:
+            case SettingsRow.KIND_FOOTER:
                 if (row.page != null) {
                     openPage(row.page);
                 } else if (row.action != null) {

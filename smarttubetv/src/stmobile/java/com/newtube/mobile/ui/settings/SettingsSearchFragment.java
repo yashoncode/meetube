@@ -64,6 +64,8 @@ public final class SettingsSearchFragment extends Fragment {
         mClear = view.findViewById(R.id.settings_search_clear);
         mResults = view.findViewById(R.id.settings_search_results);
         mEmpty = view.findViewById(R.id.settings_search_empty);
+        com.newtube.mobile.ui.common.Glass.blur(view.findViewById(R.id.settings_search_glass),
+                view.findViewById(R.id.settings_search_blur_target)); // METUBE(glass)
 
         view.findViewById(R.id.settings_search_back).setOnClickListener(v -> {
             hideKeyboard();
