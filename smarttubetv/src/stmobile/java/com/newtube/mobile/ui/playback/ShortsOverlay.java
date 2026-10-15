@@ -26,6 +26,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.GlassDrawable;
+import com.newtube.mobile.ui.common.GlassSource;
 import com.newtube.mobile.ui.common.ShortsSeen;
 
 import java.util.List;
@@ -150,6 +152,15 @@ final class ShortsOverlay {
         mOverlay.findViewById(R.id.mobile_shorts_comments).setOnClickListener(v -> mHost.openShortsComments());
         mOverlay.findViewById(R.id.mobile_shorts_more).setOnClickListener(v -> mHost.openShortsMore());
         mOverlay.findViewById(R.id.mobile_shorts_back).setOnClickListener(v -> mHost.exitShorts());
+        // METUBE(glass): as on the player, the buttons over the short (and the play / pause flash)
+        // sit on frosted discs of it; the actions keep their 48dp discs, the labels their shadows.
+        GlassSource glass = root.findViewById(R.id.mobile_player_glass);
+        for (int id : new int[] {R.id.mobile_shorts_like, R.id.mobile_shorts_dislike, R.id.mobile_shorts_comments,
+                R.id.mobile_shorts_share, R.id.mobile_shorts_more, R.id.mobile_shorts_flash}) {
+            GlassDrawable.apply(mOverlay.findViewById(id), glass, 0);
+        }
+        GlassDrawable.apply(mOverlay.findViewById(R.id.mobile_shorts_back), glass,
+                Math.round(4 * root.getResources().getDisplayMetrics().density)); // the player's minimize disc
         // Tap the title for the rest of it (and tap again to fold it).
         mTitle.setOnClickListener(v -> mTitle.setMaxLines(mTitle.getMaxLines() == 2 ? 8 : 2));
 

@@ -2,7 +2,8 @@
 <!-- METUBE(shorts): the vertical player's overlay (ShortsOverlay), laid out like YouTube's Shorts:
      channel row (avatar, name, Subscribe), title and views bottom-left; like / dislike / comments /
      share bottom-right; a thin progress line at the very bottom; the play/pause flash and the
-     double-tap heart in the middle. Text and icons carry shadows over a light scrim. The actions
+     double-tap heart in the middle. Text carries shadows over a light scrim; the buttons and the
+     flash are frosted discs of the video (METUBE(glass), set in ShortsOverlay). The actions
      forward to the watch page's own buttons. The peek is the next (or previous) short's portrait
      thumbnail that follows a swipe in from the edge, outside this box (clipChildren off). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -76,7 +77,6 @@
         android:layout_height="72dp"
         android:layout_gravity="center"
         android:alpha="0"
-        android:background="@drawable/bg_shorts_flash"
         android:importantForAccessibility="no"
         android:padding="16dp"
         android:src="@drawable/ic_player_play"
