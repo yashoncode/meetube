@@ -1,5 +1,27 @@
 # Registro de cambios de MeTube
 
+## 2.9.3 — 2026-10-15 — Proveedores de letras, comentarios y pantalla completa más fluidos
+
+### Novedades
+
+- **Elige el proveedor de letras.** Como en BitChord, el panel de letras muestra cada fuente que tiene la letra de la canción, y puedes cambiar entre ellas.
+- **Botones de cristal en los Shorts.** Me gusta, comentarios, compartir y los demás botones están sobre el mismo cristal líquido esmerilado que los botones del reproductor.
+- **Quitar de la lista y Ver más tarde, desde el menú de la tarjeta,** en tus propias listas (de NewTube).
+- **Los enlaces de canales se abren,** también los de @usuario, y la página del canal muestra su nombre (de NewTube).
+
+### Cambios
+
+- **Al deslizar para actualizar Inicio verás vídeos que no has visto.** Los vídeos que ya estaban en pantalla dejan sitio al resto de las propuestas de YouTube, sin esperar más.
+- **Al escribir un comentario se ve una sola barra,** con tu foto y una píldora de cristal redondeada, y sube con suavidad junto al teclado.
+- **La pantalla completa vertical se abre y se cierra con suavidad,** sin que la página desaparezca ni el vídeo salte.
+- **El ajuste Cristal líquido se aplica a todo el cristal,** también a los botones del reproductor y de los Shorts.
+
+### Correcciones
+
+- **El panel de letras se desvanece con el reproductor** al deslizar el vídeo hacia el minirreproductor, como los comentarios y la descripción.
+- **Se acabaron los mosaicos de Shorts sueltos en la fila de navegación de un canal,** y la fila de pestañas sin título se llama "Más" (de NewTube).
+- **La pantalla puede apagarse con el minirreproductor en pausa bajo un menú,** y la descarga de un vídeo doblado conserva el audio correcto si la app se cierra a medias (de NewTube).
+
 ## 2.9.2 — 2026-10-14 — Letras, reproductor de cristal líquido, panel de descripción
 
 ### Novedades

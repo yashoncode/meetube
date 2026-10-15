@@ -2,6 +2,28 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.9.3 — 2026-10-15 — Lyrics providers, smoother comments and fullscreen
+
+### New
+
+- **Choose your lyrics provider.** Like BitChord, the lyrics panel lists every source that has the song's words, and you can switch between them.
+- **Glass buttons on Shorts.** Like, comments, share and the other buttons sit on the same frosted liquid glass as the player's buttons.
+- **Remove from playlist and Watch later, from the card menu,** on your own playlists (from NewTube).
+- **Channel links open,** including @handle links, and the channel page shows its name (from NewTube).
+
+### Changed
+
+- **Pulling Home to refresh shows videos you haven't seen.** The videos already on screen make room for the rest of YouTube's picks, with no extra wait.
+- **Writing a comment shows a single bar,** with your picture and a rounded glass pill, and it rises smoothly with the keyboard.
+- **The vertical fullscreen opens and closes smoothly,** without the page vanishing or the video jumping.
+- **The Liquid glass setting covers every glass surface,** the player's and Shorts' buttons included.
+
+### Fixed
+
+- **The lyrics panel fades away with the player** when you swipe the video down to the mini player, like comments and the description.
+- **No more stray Shorts tiles in a channel's navigation row,** and the untitled row of channel tabs is called "More" (from NewTube).
+- **The screen can sleep when the mini player is paused under a menu,** and a dubbed video's download keeps the right audio if the app closes mid-download (from NewTube).
+
 ## 2.9.2 — 2026-10-14 — Lyrics, liquid glass player, Description panel
 
 ### New
