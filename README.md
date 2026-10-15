@@ -4,7 +4,7 @@
 
 <p align="center"><img src=".github/assets/metube/poster.png" alt="MeTube: All of YouTube, none of the ads"></p>
 
-**YouTube, the way it should feel.** No ads. No interruptions. A gorgeous liquid glass interface, synced lyrics, background play and one-tap downloads — all free and open source.
+**YouTube, the way it should feel.** No ads. No interruptions. A gorgeous liquid glass interface, synced lyrics, background play and one-tap downloads.
 
 <p align="center">
   <img src=".github/assets/metube/home.jpg" width="160" alt="MeTube home feed with floating liquid glass navigation">
@@ -19,9 +19,9 @@
 ## Features
 
 - 🚫 **Zero ads, zero sponsor segments.** Ads are gone, and SponsorBlock skips in-video sponsors, intros and "like and subscribe" reminders for you.
-- 💎 **Liquid glass everywhere.** Frosted, lens-bending glass on the navigation bar, player buttons and Shorts — iOS 26 style, on Android.
+- 💎 **Liquid glass everywhere.** Frosted, lens-bending glass on the navigation bar, player buttons and Shorts, iOS 26 style, on Android.
 - 🎤 **Synced lyrics.** Music videos get live, line-by-line lyrics that follow the song. Pick your favourite lyrics provider in one tap.
-- 🎧 **Background play & picture-in-picture.** Lock your screen or switch apps — the music keeps going.
+- 🎧 **Background play & picture-in-picture.** Lock your screen or switch apps, the music keeps going.
 - ⬇️ **Offline downloads up to 1080p.** Save videos to watch on a flight, a train or with no data.
 - 📱 **Shorts done right.** A clean, full-screen Shorts player with glass like, comment and share buttons.
 - 🔄 **Always something new.** Pull Home to refresh and get videos you haven't seen yet.
