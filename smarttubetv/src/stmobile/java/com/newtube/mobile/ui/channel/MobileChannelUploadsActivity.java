@@ -95,6 +95,8 @@ public class MobileChannelUploadsActivity extends MobileActivity
     private final FilteredPageTopUp mTopUp = new FilteredPageTopUp();
     /** The group the last page came in (the anchor to continue when every card was a Short). */
     private VideoGroup mLastGroup;
+    /** NEWTUBE(shorts): pages arrived but the Shorts filter left nothing of them (#63). */
+    private boolean mShortsEmptied;
     /** NEWTUBE(shorts): onDestroy has begun - the presenter's teardown must not page on. */
     private boolean mTornDown;
 
@@ -585,8 +587,10 @@ public class MobileChannelUploadsActivity extends MobileActivity
             List<Video> shown = ShortsFilter.withoutShorts(group.getVideos()); // NEWTUBE(shorts)
             if (group.getAction() != VideoGroup.ACTION_REMOVE && group.getAction() != VideoGroup.ACTION_SYNC) {
                 mLastGroup = group;
-                mTopUp.onPageLanded((group.getVideos() != null ? group.getVideos().size() : 0)
-                        - (shown != null ? shown.size() : 0));
+                int dropped = (group.getVideos() != null ? group.getVideos().size() : 0)
+                        - (shown != null ? shown.size() : 0);
+                mTopUp.onPageLanded(dropped);
+                mShortsEmptied |= dropped > 0;
             }
             switch (group.getAction()) {
                 case VideoGroup.ACTION_REPLACE:
@@ -645,6 +649,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
             mLastPaginationTriggerCount = -1;
             mTopUp.clear();
             mLastGroup = null;
+            mShortsEmptied = false;
             mLoadMoreFooter.setFailed(false);
             mAdapter.submitList(new ArrayList<>());
             updatePlayAllVisibility();
@@ -662,8 +667,22 @@ public class MobileChannelUploadsActivity extends MobileActivity
             mProgressBar.setVisibility(show && !mSwipe.isRefreshing() ? View.VISIBLE : View.GONE);
             if (!show) {
                 mSwipe.setRefreshing(false);
+                showEmptyIfShortsLeftNothing();
             }
         });
+    }
+
+    /**
+     * NEWTUBE(shorts): the list loaded, but every card was a Short and no more pages are coming -
+     * the Home-style empty state, never a blank page (#63). A list of only Shorts should not be
+     * reachable at all (ShortsFilter drops the tiles that lead here); this is the safety net.
+     */
+    private void showEmptyIfShortsLeftNothing() {
+        if (mShortsEmptied && mVideos.isEmpty() && !mLoadState.isShowing()) {
+            mGrid.setVisibility(View.GONE);
+            mLoadState.show(LoadFailure.EMPTY);
+            applyToolbarTitleAlpha();
+        }
     }
 
     /**

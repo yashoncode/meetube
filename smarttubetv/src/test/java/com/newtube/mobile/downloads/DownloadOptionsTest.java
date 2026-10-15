@@ -8,8 +8,13 @@ import static org.junit.Assert.assertTrue;
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -139,6 +144,62 @@ public class DownloadOptionsTest {
     public void changedVariantRestartsTheAudioPart() {
         assertTrue(DownloadOptions.mustRestartAudioPart("pt (dubbed)|pt.3", "en (original)|en.4", 3_000_000, 5_000_000));
         assertTrue(DownloadOptions.mustRestartAudioPart("en (original)|en.4", "en (original)|en.9", 3_000_000, 5_000_000));
+    }
+
+    @Rule
+    public TemporaryFolder mTmp = new TemporaryFolder();
+
+    private File audioPart(int bytes) throws IOException {
+        File part = new File(mTmp.getRoot(), "item.audio");
+        try (FileOutputStream out = new FileOutputStream(part)) {
+            out.write(new byte[bytes]);
+        }
+        return part;
+    }
+
+    /** The identity beside the part, not the async registry, decides the resume. */
+    @Test
+    public void sidecarMatchingTheResolvedTrackResumes() throws IOException {
+        String original = "en (original)|en.4";
+        File part = audioPart(300);
+        DownloadOptions.writeAudioPartTrack(part, original);
+        assertEquals(original, DownloadOptions.readAudioPartTrack(part));
+        assertFalse(DownloadOptions.mustRestartAudioPart(part, original, 500));
+    }
+
+    /** Stored A fell back to B, B's bytes landed, the registry still says A: the sidecar says B. */
+    @Test
+    public void sidecarNamingAnotherTrackResets() throws IOException {
+        File part = audioPart(300);
+        DownloadOptions.writeAudioPartTrack(part, "en (original)|en.4");
+        assertTrue(DownloadOptions.mustRestartAudioPart(part, "pt (dubbed)|pt.3", 500));
+    }
+
+    /** A 1.15.0 part has no sidecar: unknown bytes, never resumed. */
+    @Test
+    public void missingSidecarResets() throws IOException {
+        File part = audioPart(300);
+        assertNull(DownloadOptions.readAudioPartTrack(part));
+        assertTrue(DownloadOptions.mustRestartAudioPart(part, "en (original)|en.4", 500));
+        // No part at all: nothing to reset.
+        assertFalse(DownloadOptions.mustRestartAudioPart(new File(mTmp.getRoot(), "none.audio"),
+                "en (original)|en.4", 500));
+    }
+
+    @Test
+    public void sidecarMatchingButPartLongerThanTheStreamResets() throws IOException {
+        String original = "en (original)|en.4";
+        File part = audioPart(600);
+        DownloadOptions.writeAudioPartTrack(part, original);
+        assertTrue(DownloadOptions.mustRestartAudioPart(part, original, 500));
+    }
+
+    @Test
+    public void writingNullClearsTheSidecar() throws IOException {
+        File part = audioPart(300);
+        DownloadOptions.writeAudioPartTrack(part, "en (original)|en.4");
+        DownloadOptions.writeAudioPartTrack(part, null);
+        assertFalse(DownloadOptions.audioIdFile(part).exists());
     }
 
     @Test

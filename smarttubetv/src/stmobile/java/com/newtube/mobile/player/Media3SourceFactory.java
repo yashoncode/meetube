@@ -21,7 +21,7 @@ import androidx.media3.datasource.ResolvingDataSource;
 import androidx.media3.datasource.TransferListener;
 import androidx.media3.datasource.cache.Cache;
 import androidx.media3.datasource.cache.CacheDataSource;
-import androidx.media3.datasource.cronet.CronetDataSource;
+import com.newtube.mobile.player.cronet.CronetDataSource;
 import androidx.media3.datasource.okhttp.OkHttpDataSource;
 import androidx.media3.exoplayer.dash.DashMediaSource;
 import androidx.media3.exoplayer.dash.DefaultDashChunkSource;

@@ -191,6 +191,21 @@ public class MobileBrowseActivity extends MobileActivity
     private ProgressBar mMiniProgress;
     /** 500ms UI ticker while the bar is visible: progress line, play/pause icon, liveness check. */
     private final Runnable mMiniPlayerTick = this::onMiniPlayerTick;
+    /**
+     * SCREEN-ON (#50): the card's screen-on hold follows the player's own events, not the 500 ms
+     * tick. onPause stops the tick but keeps the card up (frozen, audio playing) while a translucent
+     * window such as the card menu sits on top and this Activity never reaches onStop - a pause or
+     * end there must still let the screen go, and playing there must still hold it.
+     */
+    private final Player.Listener mMiniScreenOnListener = new Player.Listener() {
+        @Override
+        public void onEvents(Player player, Player.Events events) {
+            if (events.containsAny(Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED)) {
+                setMiniKeepScreenOn(isMiniActivelyPlaying(player));
+            }
+        }
+    };
+    private Player mMiniScreenOnPlayer;
     private static final long MINI_TICK_MS = 500;
     /** NEWTUBE(motion): the longest the expanding player waits for this card to fold. */
     private static final long MINI_FOLD_WAIT_MS = 50;
@@ -205,6 +220,12 @@ public class MobileBrowseActivity extends MobileActivity
 
     private final List<BrowseSection> mSections = new ArrayList<>();
     private final List<Video> mCurrentVideos = new ArrayList<>();
+    /**
+     * METUBE(refresh): Home cards already on screen when Home was pulled to refresh. YouTube answers
+     * a refresh with the same Home, so the refreshed list leaves these out and its top fills with
+     * the rest of the page, unseen - no extra request. For this run of the app.
+     */
+    private final java.util.Set<Video> mSeenOnRefresh = new java.util.HashSet<>();
     private int mCurrentSectionId = -1;
     private boolean mProgressShowing;
     private boolean mSuppressNavCallback;
@@ -220,12 +241,6 @@ public class MobileBrowseActivity extends MobileActivity
     /**
      * NEWTUBE(feed-swap): the stale -> fresh swap in flight while the fresh first screen's pictures
      * warm up (see {@link #submitFeed}). While it is pending, grid submissions wait for it - it
-    /**
-     * METUBE(refresh): Home cards already on screen when Home was pulled to refresh. YouTube answers
-     * a refresh with the same Home, so the refreshed list leaves these out and its top fills with
-     * the rest of the page, unseen - no extra request. For this run of the app.
-     */
-    private final java.util.Set<Video> mSeenOnRefresh = new java.util.HashSet<>();
      * submits the newest {@link #mCurrentVideos} when it lands.
      */
     private FeedSwapWarmup mFeedSwap;
@@ -361,6 +376,9 @@ public class MobileBrowseActivity extends MobileActivity
         mContentSwipe.setColorSchemeColors(getColorInt(R.color.mobile_color_on_surface));
         mContentSwipe.setProgressBackgroundColorSchemeColor(getColorInt(R.color.mobile_color_surface));
         mContentSwipe.setOnRefreshListener(() -> {
+            if (mCurrentSectionId == MediaGroup.TYPE_HOME) {
+                rememberSeenHome();
+            }
             if (mPresenter != null) {
                 mPresenter.refresh(false);
             } else {
@@ -369,24 +387,6 @@ public class MobileBrowseActivity extends MobileActivity
         });
     }
 
-    private int getColorInt(int colorRes) {
-        return getResources().getColor(colorRes);
-    }
-
-    /**
-     * Loading skeleton: card ghosts under a sweeping shimmer (ShimmerLinearLayout) instead of a
-     * naked spinner. Only ever shown over an EMPTY grid - a section repainted from
-            if (mCurrentSectionId == MediaGroup.TYPE_HOME) {
-                rememberSeenHome();
-            }
-     * {@link FeedCache} keeps its content visible while refreshing. NEWTUBE(motion): it leaves by
-     * fading out over the cards that replace it (a cut used to swap one for the other), and at
-     * once when nothing replaces it (an error, an empty section).
-     */
-    private void setSkeletonVisible(boolean visible) {
-        if (visible) {
-            mSkeletonShows++;
-            mFeedSkeleton.animate().cancel();
     /** METUBE(refresh): every Home card down to the last one on screen counts as seen. */
     private void rememberSeenHome() {
         if (mSeenOnRefresh.size() > 300) {
@@ -399,6 +399,21 @@ public class MobileBrowseActivity extends MobileActivity
         }
     }
 
+    private int getColorInt(int colorRes) {
+        return getResources().getColor(colorRes);
+    }
+
+    /**
+     * Loading skeleton: card ghosts under a sweeping shimmer (ShimmerLinearLayout) instead of a
+     * naked spinner. Only ever shown over an EMPTY grid - a section repainted from
+     * {@link FeedCache} keeps its content visible while refreshing. NEWTUBE(motion): it leaves by
+     * fading out over the cards that replace it (a cut used to swap one for the other), and at
+     * once when nothing replaces it (an error, an empty section).
+     */
+    private void setSkeletonVisible(boolean visible) {
+        if (visible) {
+            mSkeletonShows++;
+            mFeedSkeleton.animate().cancel();
             mFeedSkeleton.setAlpha(1f);
             mFeedSkeleton.setVisibility(View.VISIBLE);
             return;
@@ -770,6 +785,7 @@ public class MobileBrowseActivity extends MobileActivity
         stopMiniSwipe();
         mMiniPlayerBar.animate().cancel();
         mMiniPlayerBar.setVisibility(View.GONE);
+        unwatchMiniScreenOn();
         setMiniKeepScreenOn(false); // no card, no video on this screen
         mMiniPlayerBar.setAlpha(1f);
         mMiniPlayerBar.setScaleX(1f);
@@ -828,11 +844,33 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayPause.setImageResource(playing ? R.drawable.ic_player_pause : R.drawable.ic_player_play);
         // SCREEN-ON (#50): the docked card is a visible video; this window holds the screen while it
         // plays (the stopped player Activity no longer does) and lets go when it pauses.
-        setMiniKeepScreenOn(player.getPlayWhenReady()
-                && (player.getPlaybackState() == Player.STATE_READY
-                    || player.getPlaybackState() == Player.STATE_BUFFERING));
+        watchMiniScreenOn(player);
+        setMiniKeepScreenOn(isMiniActivelyPlaying(player));
         if (mMiniPip != null) {
             mMiniPip.update();
+        }
+    }
+
+    private static boolean isMiniActivelyPlaying(Player player) {
+        return player.getPlayWhenReady()
+                && (player.getPlaybackState() == Player.STATE_READY
+                    || player.getPlaybackState() == Player.STATE_BUFFERING);
+    }
+
+    /** Listen while the card is up (see mMiniScreenOnListener); foldMiniCard() stops it. */
+    private void watchMiniScreenOn(Player player) {
+        if (mMiniScreenOnPlayer == player) {
+            return;
+        }
+        unwatchMiniScreenOn();
+        player.addListener(mMiniScreenOnListener);
+        mMiniScreenOnPlayer = player;
+    }
+
+    private void unwatchMiniScreenOn() {
+        if (mMiniScreenOnPlayer != null) {
+            mMiniScreenOnPlayer.removeListener(mMiniScreenOnListener);
+            mMiniScreenOnPlayer = null;
         }
     }
 
@@ -2146,6 +2184,7 @@ public class MobileBrowseActivity extends MobileActivity
 
     @Override
     protected void onDestroy() {
+        unwatchMiniScreenOn(); // the shared player outlives this Activity
         mNavHandler.removeCallbacks(mNavRebuild);
         mNavHandler.removeCallbacks(mRunwayCheck);
         cancelFeedSwap(); // NEWTUBE(feed-swap)
@@ -2632,6 +2671,7 @@ public class MobileBrowseActivity extends MobileActivity
         // recomputes both hashCodes per comparison). Same answer: Video.equals is "same hashCode
         // and same isMix()", so equal videos always share a bucket.
         java.util.Set<Video> present = new java.util.HashSet<>(mCurrentVideos);
+        boolean home = mCurrentSectionId == MediaGroup.TYPE_HOME;
         for (Video video : videos) {
             if (isVisibleFeedItem(video) && !(home && mSeenOnRefresh.contains(video)) && present.add(video)) {
                 mCurrentVideos.add(video);
@@ -2671,7 +2711,6 @@ public class MobileBrowseActivity extends MobileActivity
      * NEWTUBE(feed): the TV Home feed mixes in search-suggestion tiles - a thumbnail plus a query
      * ("Rivian owner experience"), no video, playlist or channel behind it. On the phone they
      * rendered as video cards whose meta line repeated the title, and tapping one opened Search
-        boolean home = mCurrentSectionId == MediaGroup.TYPE_HOME;
      * instead of playing: a card that lies about what it is. Dropped from the grids.
      */
     private static boolean isSearchQueryTile(Video video) {

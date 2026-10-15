@@ -4,6 +4,13 @@ import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -226,6 +233,55 @@ public final class DownloadOptions {
             return true;
         }
         return mustRestartPart(partBytes, resolvedLength);
+    }
+
+    /**
+     * The identity of an audio part lives next to the part itself ({@code <part>.id}), written
+     * and synced before any byte is fetched: the registry's JSON is written asynchronously, so a
+     * process death right after a fallback could leave it naming the old track while the part
+     * already holds the new one's bytes. A missing sidecar (a 1.15.0 part) reads as unknown.
+     */
+    static File audioIdFile(File part) {
+        return new File(part.getParentFile(), part.getName() + ".id");
+    }
+
+    @Nullable
+    static String readAudioPartTrack(File part) {
+        File id = audioIdFile(part);
+        if (!id.isFile()) {
+            return null;
+        }
+        try (InputStream in = new FileInputStream(id)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buf = new byte[256];
+            int n;
+            while ((n = in.read(buf)) > 0) {
+                out.write(buf, 0, n);
+            }
+            return new String(out.toByteArray(), StandardCharsets.UTF_8);
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Records, synced to disk, the track the part is about to receive; null clears it. */
+    static void writeAudioPartTrack(File part, @Nullable String track) throws IOException {
+        File id = audioIdFile(part);
+        if (track == null) {
+            //noinspection ResultOfMethodCallIgnored
+            id.delete();
+            return;
+        }
+        try (FileOutputStream out = new FileOutputStream(id)) {
+            out.write(track.getBytes(StandardCharsets.UTF_8));
+            out.getFD().sync();
+        }
+    }
+
+    /** {@link #mustRestartAudioPart} against the identity recorded beside the part file. */
+    static boolean mustRestartAudioPart(File part, @Nullable String resolvedTrack, long resolvedLength) {
+        long bytes = part.exists() ? part.length() : 0;
+        return mustRestartAudioPart(readAudioPartTrack(part), resolvedTrack, bytes, resolvedLength);
     }
 
     /** A kept part longer than the stream it is resumed against cannot be a prefix of it. */

@@ -164,6 +164,9 @@
     <string name="mobile_search_error">Couldn\'t load results.</string>
     <!-- Fallback tab label for a channel section the API delivered without a title. -->
     <string name="mobile_channel_tab_videos">Videos</string>
+    <!-- Tab label for the channel's untitled shortcut row (cards opening its own Videos / Live /
+         Releases / Playlists tabs), so it does not read "Videos" twice. -->
+    <string name="mobile_channel_tab_more">More</string>
 
     <!-- Bottom-nav "You" tab (account + extra sections + settings) -->
     <string name="mobile_nav_you">You</string>

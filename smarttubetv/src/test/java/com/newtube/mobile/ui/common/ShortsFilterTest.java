@@ -104,12 +104,58 @@ public class ShortsFilterTest {
     }
 
     @Test
+    public void theChannelNavigationRowLosesOnlyItsShortsTile() {
+        // #63, as served for MrBeast 2 (1.15.1): the channel page's untitled last section is a row of
+        // channel cards for the channel itself, one per tab, told apart only by their browse params.
+        Video videos = tabLink("Videos", "8gYHEgVqAIABAg%3D%3D");
+        Video shorts = tabLink("Shorts", "8gYHEgVyAIABAg%3D%3D");
+        Video live = tabLink("Live", "8gYHEgVKAIABAg%3D%3D");
+        Video playlists = tabLink("Playlists", "8gYLEgliBAoCEGiAAQI%3D");
+
+        assertEquals(Arrays.asList(videos, live, playlists),
+                ShortsFilter.withoutShorts(Arrays.asList(videos, shorts, live, playlists)));
+    }
+
+    @Test
+    public void theShortsTabIsKnownByItsParamsInAnyLanguage() {
+        assertTrue("TV client, any title", ShortsFilter.isShort(tabLink("Cortos", "8gYHEgVyAIABAg%3D%3D")));
+        assertTrue("not URL-encoded", ShortsFilter.isShort(tabLink("Kurzvideos", "8gYHEgVyAIABAg==")));
+        assertTrue("web client", ShortsFilter.isShortsTabParams("EgZzaG9ydHPyBgUKA5oBAA%3D%3D"));
+
+        assertFalse("web Videos", ShortsFilter.isShortsTabParams("EgZ2aWRlb3PyBgQKAjoA"));
+        assertFalse("web Live", ShortsFilter.isShortsTabParams("EgdzdHJlYW1z8gYECgJ6AA%3D%3D"));
+        assertFalse("TV Videos", ShortsFilter.isShortsTabParams("8gYHEgVqAIABAg%3D%3D"));
+        assertFalse("TV Playlists", ShortsFilter.isShortsTabParams("8gYLEgliBAoCEGiAAQI%3D"));
+        assertFalse(ShortsFilter.isShortsTabParams(null));
+        assertFalse(ShortsFilter.isShortsTabParams(""));
+        assertFalse("garbage", ShortsFilter.isShortsTabParams("%%%not base64"));
+        assertFalse("truncated", ShortsFilter.isShortsTabParams("8gYH"));
+    }
+
+    @Test
+    public void aShortsTitleOnATabLinkIsTheFallback() {
+        // Unknown params (a future encoding) still go when the tile is a tab link titled Shorts.
+        assertTrue(ShortsFilter.isShort(tabLink("Shorts", "CgJ6eg%3D%3D")));
+        assertFalse(ShortsFilter.isShort(tabLink("Videos", "CgJ6eg%3D%3D")));
+    }
+
+    @Test
     public void aVideoTitledShortsIsNotATile() {
         Video named = video("v1", false);
         named.title = "Shorts";
         assertFalse(ShortsFilter.isShort(named));
 
         assertFalse(ShortsFilter.isShort(tile("Shorts and more", null, null)));
+    }
+
+    /** A channel card that opens one of the channel's own tabs (channel id + browse params). */
+    private static Video tabLink(String title, String params) {
+        Video video = new Video();
+        video.title = title;
+        video.channelId = "UC4-79UOlP48-QNGgCko5p2g";
+        video.playlistParams = params;
+        video.itemType = MediaItem.TYPE_CHANNEL;
+        return video;
     }
 
     /** A card backed by a MediaItem with nested uploads (a tab / guide tile). */
@@ -147,5 +193,13 @@ public class ShortsFilterTest {
         video.title = id;
         video.isShorts = isShorts;
         return video;
+    }
+    @Test(timeout = 2000)
+    public void malformedParamsNeitherHangNorThrow() {
+        // Oversized lengths that used to overflow the bounds check (gpt-6.1-sol review).
+        for (String b64 : new String[] {"Cvb/////////fw==", "8gb//////////38=", "8gY=", ""}) {
+            byte[] data = java.util.Base64.getDecoder().decode(b64);
+            assertNull(ShortsFilter.ProtoReader.field(data, 110));
+        }
     }
 }

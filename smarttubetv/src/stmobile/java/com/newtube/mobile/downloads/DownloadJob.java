@@ -167,6 +167,8 @@ final class DownloadJob {
             if (mItem.audioUrl == null) {
                 throw new IOException("no audio link");
             }
+            // Synced before any byte: what the part holds must survive a process death.
+            DownloadOptions.writeAudioPartTrack(audioPart, mItem.audioTrack);
             mFetcher.fetch(mItem.audioUrl, audioPart, audioLen, (fileBytes, streamTotal) -> {
                 done[1] = fileBytes;
                 return report(done[0] + done[1]);
@@ -233,14 +235,15 @@ final class DownloadJob {
             NetPath.log("download part-reset video=" + mItem.videoId + " part=video bytes=" + videoPart.length());
             deletePart(videoPart);
         }
-        if (audioPart != null && audio != null && DownloadOptions.mustRestartAudioPart(
-                mItem.audioTrack, resolvedTrack, lengthOfPart(audioPart), audioLength)) {
+        // The part's identity is its sidecar (written by fetchPartsOnce), not mItem.audioTrack:
+        // the registry write is async and may not land before a process death.
+        if (audioPart != null && audio != null
+                && DownloadOptions.mustRestartAudioPart(audioPart, resolvedTrack, audioLength)) {
             NetPath.log("download part-reset video=" + mItem.videoId + " part=audio bytes=" + audioPart.length()
-                    + " stored=" + mItem.audioTrack + " resolved=" + resolvedTrack);
+                    + " stored=" + DownloadOptions.readAudioPartTrack(audioPart) + " resolved=" + resolvedTrack);
             deletePart(audioPart);
         }
         if (resolvedTrack != null && !resolvedTrack.equals(mItem.audioTrack)) {
-            // Persist what the part file is about to hold before any byte of it is fetched.
             mItem.audioTrack = resolvedTrack;
             mRegistry.notifyChanged();
         }
@@ -262,6 +265,8 @@ final class DownloadJob {
     private static void deletePart(File part) {
         //noinspection ResultOfMethodCallIgnored
         part.delete();
+        //noinspection ResultOfMethodCallIgnored
+        DownloadOptions.audioIdFile(part).delete();
     }
 
     @Nullable
@@ -341,6 +346,8 @@ final class DownloadJob {
         if (audioPart != null) {
             //noinspection ResultOfMethodCallIgnored
             audioPart.delete();
+            //noinspection ResultOfMethodCallIgnored
+            DownloadOptions.audioIdFile(audioPart).delete();
         }
     }
 }
