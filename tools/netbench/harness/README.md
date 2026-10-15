@@ -1,7 +1,7 @@
 # netbench harness
 
 Host-side benchmark of **which InnerTube `/player` request shapes yield media that googlevideo
-actually serves**, per video category and per network, for NewTube. Every request shape is a
+actually serves**, per video category and per network, for MeTube. Every request shape is a
 declarative *variant* (YAML/JSON), so new ideas are added as data, not code.
 
 **PLAY means "media bytes were served"**: HTTP 200/206 with a body for every resource a delivery
@@ -13,7 +13,7 @@ is the phone stage.
 harness/
   netbench                  entry point (python3)
   nb/                       the harness (net, identity, playerjs, innertube, media, classify, runner, report)
-  variants/newtube.yaml     nt-*    NewTube's current request per AppClient (+ supportXhr/IOS/GEO siblings)
+  variants/newtube.yaml     nt-*    MeTube's current request per AppClient (+ supportXhr/IOS/GEO siblings)
   variants/ytdlp.yaml       ytdlp-* GENERATED from the yt-dlp checkout (tools/gen_ytdlp_variants.py)
   variants/examples.yaml    x-*     README examples and single-change experiments
   variants/astra.yaml       x-*     compatibility arms from ../novel/astra.md (cookie-free control)
@@ -128,7 +128,7 @@ A variant file is `{defaults: {...}, variants: [...], axes: {...}}` (all optiona
 
 | field | meaning |
 |---|---|
-| `id` | unique; prefixes: `nt-` NewTube, `ytdlp-` generated from yt-dlp, `x-` experiments. `_`-prefixed ids are abstract bases |
+| `id` | unique; prefixes: `nt-` MeTube, `ytdlp-` generated from yt-dlp, `x-` experiments. `_`-prefixed ids are abstract bases |
 | `extends` | another variant id (any file); inheritance is a JSON merge patch - a `null` deletes the parent's key |
 | `description`, `tags` | free text; tags drive `--only-tags` and report grouping. Taxonomy: `client`, `identity`, `capability`, `context`, `transport` (+ `cookies`, `ring`, anything) |
 | `client` | the `context.client` object (clientName, clientVersion, userAgent, deviceMake/Model, osName/osVersion, androidSdkVersion, clientScreen, hl/gl or acceptLanguage/acceptRegion ...) |
@@ -142,7 +142,7 @@ A variant file is `{defaults: {...}, variants: [...], axes: {...}}` (all optiona
 | `body` | merge patch onto the body `{context, videoId, [playbackContext.contentPlaybackContext.signatureTimestamp / encryptedHostFlags]}`; any path, e.g. `playbackContext.devicePlaybackCapabilities.supportXhr: false`, `racyCheckOk`, `params`, `context.thirdParty.embedUrl`, `serviceIntegrityDimensions` ... Dotted keys are expanded |
 | `headers` | merge patch on `Content-Type, User-Agent, X-YouTube-Client-Name, X-YouTube-Client-Version, Origin, X-Goog-Visitor-Id, Accept-Encoding` (`null` removes one) |
 | `transport` | `impersonate` (curl_cffi target: `chrome`, `safari184`, `firefox147`, `chrome131_android`, ... or `null` for plain curl TLS), `http_version` (`v1`/`v2`), `browser_headers`, `ja3`, `akamai` |
-| `media` | googlevideo probes: `headers`, `range_mode` (`query` = `&range=`, yt-dlp; `header` = `Range:`, NewTube), `impersonate`, `http_version`, `targets` |
+| `media` | googlevideo probes: `headers`, `range_mode` (`query` = `&range=`, yt-dlp; `header` = `Range:`, MeTube), `impersonate`, `http_version`, `targets` |
 
 Placeholders, expanded after merging (a string that is exactly one placeholder keeps the value's
 type; a `null` value deletes the key): `${video_id}`, `${sts}`, `${visitor_data}`,
@@ -150,7 +150,7 @@ type; a `null` value deletes the key): `${video_id}`, `${sts}`, `${visitor_data}
 `${client_name}`, `${client_version}`, `${client_name_id}`, `${embed_url}`. Unknown placeholders fail
 `--dry-run`.
 
-JSON key order may differ from the app's string template (NewTube concatenates text); the server parses
+JSON key order may differ from the app's string template (MeTube concatenates text); the server parses
 JSON objects, and `--dry-run` shows exactly what is sent.
 
 ### Worked example 1: WEB_EMBED with the embed identity
@@ -184,7 +184,7 @@ pre-fix mismatch (`nt-WEB_EMBED_HEAD`, expect `152-18`); `sts: none` drops the t
 variants:
   - id: x-MWEB-xhr-false
     extends: nt-MWEB
-    description: NewTube's MWEB request with devicePlaybackCapabilities.supportXhr=false
+    description: MeTube's MWEB request with devicePlaybackCapabilities.supportXhr=false
     tags: {capability: supportXhr=false}
     body:
       playbackContext.devicePlaybackCapabilities.supportXhr: false

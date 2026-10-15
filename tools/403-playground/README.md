@@ -13,7 +13,7 @@ short-lived credentials anyway; clear logcat after an investigation.
 ## Fresh control matrix
 
 `gvs-matrix.sh` asks the installed yt-dlp for one client response, then probes initialization and
-deep content ranges with the same mobile User-Agent as NewTube:
+deep content ranges with the same mobile User-Agent as MeTube:
 
 ```sh
 tools/403-playground/gvs-matrix.sh
@@ -94,24 +94,24 @@ range translated into the query; yt-dlp's tokenless Android VR URL returned 206 
 ranges. This ruled out Cronet, QUIC reuse, range syntax, host egress, and cross-platform PO-token
 attachment.
 
-The differentiator was `/player` visitor identity. NewTube supplied visitor data obtained from
+The differentiator was `/player` visitor identity. MeTube supplied visitor data obtained from
 `/tv` under a Fire TV user agent. Using the already-minted Web-session visitor consistently in the
 Android VR JSON and `X-Goog-Visitor-Id` changed the forced-client result from a 403/cap in about
 three seconds to two clean 90-second deep-position soaks with first frame. Android Reel also passed
 its control soak. iOS still reproduced the deep-range 403 and remains a late fallback rather than
 borrowing a Web platform token.
 
-## NewTube versus yt-dlp Android VR request
+## MeTube versus yt-dlp Android VR request
 
 Compared against yt-dlp `d9813a3` (2026-07-12). Current yt-dlp defaults to `android_vr` followed by
 `web_safari` for anonymous extraction, marks Android VR as not requiring the JS player, and uses the
-same client version, Quest identity, SDK, user agent, and Android 12L context as NewTube.
+same client version, Quest identity, SDK, user agent, and Android 12L context as MeTube.
 
-| Request property | NewTube during failure | yt-dlp | Result of isolation |
+| Request property | MeTube during failure | yt-dlp | Result of isolation |
 |---|---|---|---|
 | `X-Goog-Visitor-Id` and JSON `visitorData` | Visitor extracted from `/tv` with Fire TV identity | Visitor inherited from the Web page/session | Decisive: the old source failed; the Web-session source passed |
 | PO token on Android VR GVS URL | Web token had previously been cross-attached | None | Removing it did not fix the old URL; keep VR tokenless |
-| Innertube API key | Web key injected | No key by default | Keyless NewTube request still failed before visitor fix |
+| Innertube API key | Web key injected | No key by default | Keyless MeTube request still failed before visitor fix |
 | Origin/referrer | TV referrer, no explicit Origin | `Origin: https://www.youtube.com` | Adding Origin still failed before visitor fix |
 | Anonymous cookies | No matching Web cookie jar | Matching Web visitor cookies | TV cookies did not help; no matching Web cookie jar was needed after the visitor fix |
 | Android context | Body said `12`, user agent said `12L` | Both say `12L` | Corrected for consistency; correction alone did not fix 403 |

@@ -9,7 +9,7 @@ User approved a small proof before a production Media3 SABR port. This adds only
 test sources and test-only protobuf generation/dependencies. It does not enable
 SABR in the production player or change its session/recovery policies.
 
-The instrumentation probe uses NewTube's selected account on the Pixel 9
+The instrumentation probe uses MeTube's selected account on the Pixel 9
 (`4A120DLAQ0049N`) and the single authenticated TV metadata entry point.
 It requires raw `OK`, server-confirmed authentication, matching video identity,
 ordinary VOD (excluding current and completed live content), and unambiguous
@@ -51,7 +51,7 @@ Local artifacts: `/tmp/newtube-sabr-proof-20260907-tsuoW9`.
 - Main installed APK SHA-256 remained
   `5eb8e3dcbbb25c0f975311ed7f6ca5bd65fbaedb22ca13f4e5f374401b07cf41`.
 - The Pixel was initially showing a call; device execution was deferred until
-  the user confirmed it was free. Only NewTube was force-stopped to clear its
+  the user confirmed it was free. Only MeTube was force-stopped to clear its
   existing PiP/background playback before instrumentation. Other apps were not
   controlled.
 
@@ -90,6 +90,6 @@ account data were retained. Cleanup and opt-out verification are recorded below.
   before setup/requests (`pixel-opt-out.log`, assumption status `-4`).
 - Temporary `io.github.aleixrodriala.arc.test` was uninstalled after testing;
   its rebuildable local APK/source remain. The main package is still installed,
-  its checksum is unchanged, and no PiP task remains. NewTube was left stopped
+  its checksum is unchanged, and no PiP task remains. MeTube was left stopped
   so this failed probe cannot leave background playback/recovery running.
 - Root and MediaServiceCore whitespace checks passed. No commits or pushes.

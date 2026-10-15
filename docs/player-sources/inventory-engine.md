@@ -1,6 +1,6 @@
 > Copied from a private working folder on 2026-09-28: the tools it names (harness, appbench, recap, proxy, corpus) now live in `tools/netbench/`; the raw results and logs it cites are not in the repo.
 
-# NewTube /player engine inventory (ground truth for the source benchmark)
+# MeTube /player engine inventory (ground truth for the source benchmark)
 
 Written 2026-09-28 by reading the code, READ-ONLY. Nothing was built or run in the repo.
 
@@ -441,7 +441,7 @@ Commits are from `git log --author=Aleix` in MSC and the `MobileMainApplication`
 
 **ANDROID_REEL**
 - In the upstream ring ("doesn't require pot and cipher"). Upstream now comments it out ("hangs on all engines").
-- No NewTube-specific evidence found. Pixel 2026-09-28: `OK usableAdaptive=0 sabr=y`.
+- No MeTube-specific evidence found. Pixel 2026-09-28: `OK usableAdaptive=0 sabr=y`.
 
 **ANDROID, ANDROID_SDK_LESS, WEB_CREATOR, WEB_MUSIC, TV_KIDS, INITIAL**
 - Never on the phone ring.
@@ -503,7 +503,7 @@ Status key: "stands" = no contradicting evidence found; "re-test" = measured wit
 - `common/helpers/QueryBuilderTimestampTest.java` has a `ShadowAppService` that supplies sts, visitor and cpn with no network.
 - `VideoInfoBotWallTest.java:770-835` has `ShadowTokenGate` (it disables `PoTokenGate`'s static WebView init) and `ShadowWalk`.
 - `VideoInfoVisitorScopeTest.java` seeds the persisted app info via `MediaServiceData.setAppInfo(AppInfoCached.fromString(...))`.
-- `videoinfo/bench/PlayerOpenCpuBenchTest.java` is an env-gated opt-in test (`NEWTUBE_BENCH_DIR`).
+- `videoinfo/bench/PlayerOpenCpuBenchTest.java` is an env-gated opt-in test (`METUBE_BENCH_DIR`).
 
 **What the dumper must do:**
 1. Set the phone gates it depends on:

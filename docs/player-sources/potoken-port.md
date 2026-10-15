@@ -1,6 +1,6 @@
 > Copied from a private working folder on 2026-09-28: the tools it names (harness, appbench, recap, proxy, corpus) now live in `tools/netbench/`; the raw results and logs it cites are not in the repo.
 
-# PO-token (BotGuard) minting: state of NewTube's fork, what changed upstream, and a port plan (2026-09-28)
+# PO-token (BotGuard) minting: state of MeTube's fork, what changed upstream, and a port plan (2026-09-28)
 
 Read-only research. Nothing in `smarttube-port` was edited, built, staged or committed. Inside
 `MediaServiceCore` I only ran `git fetch upstream` and read remote refs. The cherry-pick trials in
@@ -63,13 +63,13 @@ Line numbers are for `16e67076` (fork) or `476357b4` (upstream).
    - Every other commit that touches `PoTokenWebView4` also carries unrelated hunks (`VIDEO_INFO_TYPE_LIST`, `QueryBuilder`, `InitialResponseService`, client constants).
    - Taking the upstream file plus 3 small hunks applies cleanly, then needs 4 compile adaptations: OkHttp 4, RxJava 3, and a missing `OkHttpManager.doRequest`.
 8. **Five fixes belong in the port itself.**
-   - (a) Re-apply our NEWTUBE(pot-init-timeout) ordering; upstream reads `potWv` before checking `completed`.
+   - (a) Re-apply our METUBE(pot-init-timeout) ordering; upstream reads `potWv` before checking `completed`.
    - (b) A mint timeout that fails with an exception instead of `UninitializedPropertyAccessException`. Our current `PoTokenWebView` has no mint timeout at all.
    - (c) Catch errors in the homepage path, as bgutil does. Upstream's `getChallengeFromHomepage` has no try/catch, and a network error there escapes a `@JavascriptInterface` method. [inferred] That skips `/att/get` and lands on the old generator.
    - (d) A consent cookie and browser-like headers on the homepage GET. [inferred] An EU cookieless load may get a consent response instead of the homepage, which silently means `/att/get`.
    - (e) NetPath fields that say which challenge actually minted: `challenge=`, `ytcfg=`, `eventId=`, `contentFlag=`, `potLen=`.
 9. **The user-visible gain is capped until a route carries URL formats with a token.**
-   - WEB, WEB_SAFARI and MWEB, as NewTube requests them today (`supportXhr=true`), answered SABR-only on the Pixel on 2026-09-28 (`OK usableAdaptive=0 sabr=y`, one kids video, `inventory-engine.md` §3). `sabr-media3` sends no `po_token`.
+   - WEB, WEB_SAFARI and MWEB, as MeTube requests them today (`supportXhr=true`), answered SABR-only on the Pixel on 2026-09-28 (`OK usableAdaptive=0 sabr=y`, one kids video, `inventory-engine.md` §3). `sabr-media3` sends no `po_token`.
    - This is one build, one profile and one session, not a property of the phone. The official MWEB watch page and WEB_REMIX got URL formats (`observed-official.md` §3).
    - Routes that would carry a token: MWEB with `supportXhr=false`/absent (URL formats in the netbench sweep), WEB_SAFARI HLS, live DASH/HLS `/pot/`, and later SABR with `streamer_context.po_token`.
    - TV_SIMPLY and WEB_MUSIC (URL formats; refused at media ~55–60 s in one sustain run each) need a token *policy* and a minted token.
@@ -99,7 +99,7 @@ Line numbers are for `16e67076` (fork) or `476357b4` (upstream).
   - JS interface name `PoTokenWebView`.
   - A console "Uncaught" is treated as a broken WebView (`:58-77`).
 - **Page** (`:96-113`): `loadDataWithBaseURL("https://www.youtube.com", assets/potokennp2/po_token.html + "PoTokenWebView.downloadAndRunBotguard()")`. The page contains Promise/Symbol polyfills, `loadBotGuard`, `snapshot`, `runBotGuard` and `obtainPoToken`.
-- **Construction** runs on the main thread. The caller waits on a latch for 20 s; NEWTUBE(pot-init-timeout) checks `completed` before touching `potWv` (`:395-421`).
+- **Construction** runs on the main thread. The caller waits on a latch for 20 s; METUBE(pot-init-timeout) checks `completed` before touching `potWv` (`:395-421`).
 
 ### 1.3 Challenge fetch (WAA "Create")
 
@@ -137,7 +137,7 @@ Line numbers are for `16e67076` (fork) or `476357b4` (upstream).
   - **The caller waits with `latch.await()` and no timeout (`:228`).** A WebView that lost its content can block the /player thread indefinitely [code; the `player-mint-failed` retry only covers thrown errors].
 - **Session level** (`app/potokennp2/PoTokenProviderImpl.kt:102-243`, under `WebPoTokenGenLock`):
   - **When it rebuilds:** there is no generator, the state was cleared, a rebuild was forced, or the generator expired (`:108-109`).
-  - **Visitor:** `AppService.visitorData`, the persistent `/tv` visitor. NEWTUBE(anonymous-recs) (`:125-149`) falls back to `VisitorService` (`POST /youtubei/v1/visitor_id`, Firefox UA, `SOCS=CAE=`). Rotation is dormant.
+  - **Visitor:** `AppService.visitorData`, the persistent `/tv` visitor. METUBE(anonymous-recs) (`:125-149`) falls back to `VisitorService` (`POST /youtubei/v1/visitor_id`, Firefox UA, `SOCS=CAE=`). Rotation is dormant.
   - **Generator:** built from `poTokenFactory`. If it throws `BadWebViewException` or `PoTokenException` and is not already `PoTokenWebView`, the code falls back to `PoTokenWebView` (`:172-191`).
   - **Session ("streaming") token** = `generatePoToken(visitorData)`, minted once per session **before** any content token (`:193-196`).
   - **Content ("player") token** = `generatePoToken(videoId)`, minted outside the lock (`:215-234`). On failure it retries once with a forced rebuild and logs `NetPath web-pot-session player-mint-failed error=… action=recreate`.
@@ -233,7 +233,7 @@ WV4 is upstream's `PoTokenWebView3` (itself V2 plus the `www.youtube.com` Genera
 | integrity token | `www.youtube.com/api/jnn/v1/GenerateIT`, `[O43z…, bgResponse]` | same endpoint, key and body (`:274-277`); the `jnn-pa.googleapis.com/$rpc/google.internal.waa.v1.Waa/GenerateIT` alternative is commented out (hangs) |
 | empty-output check | none | `webPoSignalOutput.length == 0` → init error; `mintCallback` undefined → init error |
 | mint wait | `latch.await()` (unbounded) | `latch.await(10, SECONDS)`, then `return pot`: on a timeout `pot` is an uninitialized `lateinit` → `UninitializedPropertyAccessException` (a RuntimeException, so the provider's retry path catches it, but for the wrong reason) |
-| init wait | 20 s; NEWTUBE checks `completed` first | 20 s; checks `potWv.initError` **before** `completed` (`:530-534`), so a timeout before `potWv` is assigned throws `UninitializedPropertyAccessException`: the exact bug our `795091f7` fixed in `PoTokenWebView` |
+| init wait | 20 s; METUBE checks `completed` first | 20 s; checks `potWv.initError` **before** `completed` (`:530-534`), so a timeout before `potWv` is assigned throws `UninitializedPropertyAccessException`: the exact bug our `795091f7` fixed in `PoTokenWebView` |
 | HTTP helper | `OkHttpManager.doPostRequest`, `response.code`/`.body` (OkHttp 4) | `OkHttpManager.doRequest(url, headers, data?, null)` (SharedModules `a224870`), `response.code()`/`.body()` (OkHttp 3), `import io.reactivex.SingleEmitter` (RxJava 2; doc-only use) |
 | token size | 204–460 chars observed (content) [log] | "120 chars instead of regular 124" with `ytcfg` (upstream comment `:137`) |
 
@@ -260,11 +260,11 @@ WV4 is upstream's `PoTokenWebView3` (itself V2 plus the `www.youtube.com` Genera
   - content tokens from the **video id**.
 - **The homepage visitor does not match the visitor on `/player`.**
   - bgutil does the same: its homepage fetch carries none of yt-dlp's cookies, and yt-dlp binds GVS to its own visitor or the video id. That scored 22/24.
-  - [inferred] So the page-session binding is a property of the challenge/`EVENT_ID` pair, not of the `/player` visitor. It has not been shown for NewTube's persistent-visitor scheme; §5.5 arm C tests it.
+  - [inferred] So the page-session binding is a property of the challenge/`EVENT_ID` pair, not of the `/player` visitor. It has not been shown for MeTube's persistent-visitor scheme; §5.5 arm C tests it.
 
 ### 2.5 Upstream's own `PoTokenGate` binding (unchanged)
 
-Upstream `PoTokenGate.getPoToken(client, videoId)` gives web-pot clients the content token, or the session token when there is no videoId. It feeds `/player` (`VideoInfoApiHelper.java:21` upstream) and `pot=` (`VideoInfoServiceBase.java:78,137`). Same as ours, minus our live `/pot/` and NEWTUBE selection.
+Upstream `PoTokenGate.getPoToken(client, videoId)` gives web-pot clients the content token, or the session token when there is no videoId. It feeds `/player` (`VideoInfoApiHelper.java:21` upstream) and `pot=` (`VideoInfoServiceBase.java:78,137`). Same as ours, minus our live `/pot/` and METUBE selection.
 
 ---
 
@@ -426,12 +426,12 @@ yt-dlp delegates minting to provider plugins (bgutil).
    1. Drop `import io.reactivex.SingleEmitter` (`:30`; doc-only) or use `io.reactivex.rxjava3.core.SingleEmitter`.
    2. OkHttp 4: `response.code`, `response.body` (`:449,455,459`).
    3. Replace `OkHttpManager.doRequest(url, headers, data, null)` (`:435`): our SharedModules lacks the 4-argument overload. Use `if (data == null) doGetRequest(url, headers) else doPostRequest(url, headers, data, null)`, or cherry-pick SharedModules `a224870` (a 12-line helper) and bump the pointer. Inline is less churn.
-   4. **Re-apply NEWTUBE(pot-init-timeout):** check `completed` before touching `potWv` (`:530-534`).
+   4. **Re-apply METUBE(pot-init-timeout):** check `completed` before touching `potWv` (`:530-534`).
    5. **Mint timeout:** `if (!latch.await(10, SECONDS)) throw PoTokenException("mint timeout")` instead of reading an unset `lateinit` (`:344-348`). Give the fallback `PoTokenWebView.generatePoToken` the same bound (today `:228` has none).
    6. **Homepage request hygiene:**
       - Send only browser-like headers: no `x-goog-api-key`, `x-user-agent` or `Content-Type` on a GET. Upstream merges its gRPC defaults in, and sends both `Accept` and `accept`.
       - Add **`Cookie: SOCS=CAI`**, yt-dlp's consent cookie; our `VisitorApi` already sends `SOCS=CAE=`.
-      - [inferred, a hypothesis] An EU cookieless homepage load may come back as a consent response with no `ytAtN`. For NewTube's mostly-Spanish users that would silently mean `challenge=att-get`.
+      - [inferred, a hypothesis] An EU cookieless homepage load may come back as a consent response with no `ytAtN`. For MeTube's mostly-Spanish users that would silently mean `challenge=att-get`.
       - `pageHost`, `challenge` and a with/without-`SOCS` comparison on the first device run will show whether it happens. A consent host alone does not prove the cookie is the cause.
    7. **`/att/get` fallback:** strict JSON body with the current WEB clientVersion. Upstream's has unquoted keys; bgutil sends proper JSON.
    8. **Catch errors on the homepage path, like bgutil** (`try { … } catch → undefined`).
@@ -450,7 +450,7 @@ yt-dlp delegates minting to provider plugins (bgutil).
 3. `PoTokenSelector.kt`: `selectFactory() = PoTokenWebView4` (`3d9521ff` applies cleanly). Add a debug override `debug.arc.pot_generator=1|4`: `MMA` → a static `PoTokenGate.setGeneratorOverride(...)` before `warmUp()`, following the existing gate pattern. That makes the A/B in §5.5 possible.
 4. `PoTokenProviderImpl.kt`:
    - Port the `catch (e: LinkageError)` hunk of `96cfe447` (applies cleanly).
-   - Keep all NEWTUBE visitor logic.
+   - Keep all METUBE visitor logic.
    - Keep the `PoTokenWebView` fallback: it still yields tokens [doc: WAA "YouTube Music"-grade]. Log it as `fallbackFrom=PoTokenWebView4`.
 5. Optional: the doc comments from `12b7957e`, and `ef7dbd34` (applies cleanly; unused generators).
 
@@ -491,10 +491,10 @@ yt-dlp delegates minting to provider plugins (bgutil).
 
 Path-limited set on `16e67076`: `PoTokenWebView4.kt` (new), plus the hunks for `JavaScriptUtil.kt`, `PoTokenSelector.kt`, `PoTokenProviderImpl.kt` (LinkageError) and androidTest `PoTokenProviderImplTest.kt`. All apply cleanly (`git apply --3way`). The compile adaptations of §5.1 step 1 come on top; they were identified by reading the code, and nothing was compiled.
 
-### 5.3 Conflicts with NEWTUBE changes
+### 5.3 Conflicts with METUBE changes
 
 - **Files the port touches and what they carry:**
-  - `PoTokenProviderImpl.kt`: NEWTUBE `visitor-rotation` `:36`, `ttff` `:57`, `visitor` `:112`/`:246`/`:282`, `anonymous-recs` `:125`.
+  - `PoTokenProviderImpl.kt`: METUBE `visitor-rotation` `:36`, `ttff` `:57`, `visitor` `:112`/`:246`/`:282`, `anonymous-recs` `:125`.
   - `PoTokenGate.kt`: `ttff` `:197`, `web-embed-identity` `:223`, `visitor` `:244`.
   - `PoTokenSelection.kt`: `web-embed-identity` `:53`.
   - `PoTokenWebView.kt`: `pot-init-timeout` `:414`.
@@ -575,12 +575,12 @@ player-http[S] rid=… client=2 … pot=y …
    - It also changes the WebView UA from Windows Chrome 131 to the BgUtils Mac string.
 5. **A/B variance:** enforcement is bucketed. bgutil's 92 % is not 100 %, and #242 saw another MWEB blip in mid-September. One-sample device results must not enable defaults.
 6. **Markup drift:** `ytcfg.set(`/`ytAtN(` regexes on HTML. The fallback chain keeps playback going, but the telemetry must page us (`challenge=` ≠ homepage).
-7. **Old WebViews:** `po_token2.html` + a large injected `ytcfg` literal on Android 7–9 WebViews [inferred OK; same polyfills as today; NewTube has never selected WV2/3/4].
+7. **Old WebViews:** `po_token2.html` + a large injected `ytcfg` literal on Android 7–9 WebViews [inferred OK; same polyfills as today; MeTube has never selected WV2/3/4].
 8. **Testing hazard:** the home IP is walled; the emulator shares it. Budget LTE sessions.
 9. **Upstream merge hazard:** the unrelated change scope is smaller than cherry-picking, but it does not go away.
-   - `PoTokenWebView4.kt` becomes a locally adapted copy: OkHttp 4, RxJava 3, the NEWTUBE fixes.
-   - Every future upstream edit to it needs a manual reconcile. Mark the local changes `NEWTUBE(pot-wv4)` so the next diff is readable.
-   - A later full upstream merge still has to keep `PoTokenSelection` and the NEWTUBE visitor logic.
+   - `PoTokenWebView4.kt` becomes a locally adapted copy: OkHttp 4, RxJava 3, the METUBE fixes.
+   - Every future upstream edit to it needs a manual reconcile. Mark the local changes `METUBE(pot-wv4)` so the next diff is readable.
+   - A later full upstream merge still has to keep `PoTokenSelection` and the METUBE visitor logic.
 
 ### 5.7 Effort
 

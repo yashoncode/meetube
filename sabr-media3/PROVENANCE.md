@@ -1,7 +1,7 @@
 # Optional Media3 SABR VOD source
 
 This is an experimental production library, not the older debug delivery proof.
-NewTube's preference defaults off. It uses stock Media3 1.10.1; it does not restore
+MeTube's preference defaults off. It uses stock Media3 1.10.1; it does not restore
 the vendored ExoPlayer fork or introduce a different decoder/client.
 
 ## Retained protocol definitions

@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest something NewTube should do
+description: Suggest something MeTube should do
 title: "[Feature]: "
 labels: [enhancement]
 
@@ -7,7 +7,7 @@ body:
   - type: textarea
     id: what
     attributes:
-      label: What would you like NewTube to do?
+      label: What would you like MeTube to do?
       placeholder: "Add 'Not interested' to the menu on a video in Home"
     validations:
       required: true

@@ -11,8 +11,8 @@ The separate `macrobenchmark` APK is the measuring process, not the app under te
 The test requires both a decoded first frame and `STATE_READY`, then at least 800ms position advance and 20 decoded output buffers without intervening buffering. It records:
 
 - `StartupTimingMetric`: process/activity initial draw and fully drawn playback. `reportFullyDrawn()` occurs only after both frame and READY.
-- `NewTubeFixture.firstFrame`: activity `onCreate` to first decoded frame.
-- `NewTubeFixture.ready`: activity `onCreate` to READY.
+- `MeTubeFixture.firstFrame`: activity `onCreate` to first decoded frame.
+- `MeTubeFixture.ready`: activity `onCreate` to READY.
 
 These are local decoder/startup measurements, not tap-to-network-picture measurements. The fixture does not exercise the real watch UI, service extraction, live networking, or next-item preloading. Use the separate playback/network rig for those and report its APK, network, selected track, frame, READY and sustained-playback evidence. A [non-debuggable, profileable target and an external measuring process](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-overview) remove debug-build measurement overhead but do not themselves establish a performance improvement.
 

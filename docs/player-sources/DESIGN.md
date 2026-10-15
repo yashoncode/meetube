@@ -82,7 +82,7 @@ Every /player outcome and every playback failure gets one class, and each class 
 | readiness | media refused at startup of an ad-bearing (or unknown-ad) answer | wait/retry the same answer (§3.3) before any source blame |
 | media-expired / mid-play 403 | 403 after playback started | bounded refresh from the same source first, then the next source |
 
-### 3.1 Source catalog (`PlayerSourceCatalog`, NEWTUBE, new file in MSC `videoinfo/V2/sources/`)
+### 3.1 Source catalog (`PlayerSourceCatalog`, METUBE, new file in MSC `videoinfo/V2/sources/`)
 
 One entry per *source* = an `AppClient` plus its request profile and measured properties:
 
@@ -212,7 +212,7 @@ and request counts. Single-sample results never enable a default.
 - Signed-in kids playback: unmeasured (no test account); the plan's fallbacks apply after the
   account routes.
 - 0.8 x factor from two official samples; if wrong, the retry-same-URL path still recovers.
-- Upstream merges: the planner lives in new NEWTUBE files; `VIDEO_INFO_TYPE_LIST` untouched.
+- Upstream merges: the planner lives in new METUBE files; `VIDEO_INFO_TYPE_LIST` untouched.
 
 ## 6. Progress log
 

@@ -1,6 +1,6 @@
 # netbench: which /player sources serve which videos
 
-NewTube asks YouTube's `/player` endpoint for a video's streams through one of several client
+MeTube asks YouTube's `/player` endpoint for a video's streams through one of several client
 identities ("sources": VISIONOS, TV_TIZEN, WEB_EMBED, ...). Which ones answer, and which answers
 googlevideo then actually serves, depends on the video (ordinary, made for kids, age-restricted,
 live, ...) and on the network (home Wi-Fi vs LTE). These tools measure that, signed out, so the
@@ -47,7 +47,7 @@ dated RECAP snapshot).
   googlevideo requests, and stops at a request cap (default 400 YouTube / 1500 googlevideo). Keep runs small and spread them over
   sessions and days.
 - **Device guard.** Before every intent or Wi-Fi toggle, `device/guard.sh` requires: the check app
-  in focus (`start` mode also accepts the Pixel launcher or an idle NewTube), no notification shade or
+  in focus (`start` mode also accepts the Pixel launcher or an idle MeTube), no notification shade or
   expanded status bar, no active call, and the phone awake. While a cell plays, appbench checks the
   focus (from 6 s after the intent, as a slow phone shows the launcher while it starts); if anything else takes it (the owner picks the phone up, an emergency alert, a
   call), the cell is aborted and the whole run stops. The tools never press BACK or HOME and never

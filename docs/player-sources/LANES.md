@@ -20,7 +20,7 @@ It replaces PLANNER.md §3, which covered only the signed-out lane, and the sign
 - The v14/v15 LTE runs on the Pixel.
 - `ttff-analysis.md`.
 
-**Scope.** NewTube's phone walk. Every rule in it is NEWTUBE-only (`sPreferNoPotClient`). Upstream's code paths and `VIDEO_INFO_TYPE_LIST` stay as they are.
+**Scope.** MeTube's phone walk. Every rule in it is METUBE-only (`sPreferNoPotClient`). Upstream's code paths and `VIDEO_INFO_TYPE_LIST` stay as they are.
 
 ## 0. Why a third design
 

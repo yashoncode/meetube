@@ -1,4 +1,4 @@
-# NewTube playback benchmark — video corpus
+# MeTube playback benchmark — video corpus
 
 42 videos, verified signed out on 2026-09-28 between 16:05 and 16:26 UTC from the owner's
 home connection in Spain (country ES). The machine-readable version is `corpus.json` in this
@@ -125,7 +125,7 @@ streams it is the stream's whole runtime.
    same. So issue #5 affects all MFK content signed out, not just Cip-Cirip.
 2. **Some `web_embedded` answers are ciphered only.** CoComelon `e_04ZrNroTo` (39) and Baby Shark
    `XqZsoesa55w` (23) returned only `signatureCipher` formats. The other kids videos returned plain
-   `url`s. A revived WEB_EMBED path in NewTube has to decipher (sts + sig), or those two stay broken.
+   `url`s. A revived WEB_EMBED path in MeTube has to decipher (sts + sig), or those two stay broken.
 3. **Two of the three age-restricted videos play signed out.** `WaOKSUlf4TM` and `HtVdAasjOgU`
    (`playable_in_embed` true) work only through `web_embedded`; `visionos` and WEB say LOGIN_REQUIRED. `qkO6iBwcoe4`, the
    HANDOFF age-gate test video, fails everywhere (`web_embedded`: "Sorry, this content is
@@ -162,7 +162,7 @@ streams it is the stream's whole runtime.
 
 ## Videos with a history of trouble (from our docs)
 
-- `_WB5hh7WOb4` (made_for_kids): GitHub issue #5 "Unknown source error" (newtube-launch/issue5/findings.md): NewTube ring of 9 clients all fail signed out. yt-dlp plays it ONLY through web_embedded.
+- `_WB5hh7WOb4` (made_for_kids): GitHub issue #5 "Unknown source error" (newtube-launch/issue5/findings.md): MeTube ring of 9 clients all fail signed out. yt-dlp plays it ONLY through web_embedded.
 - `wGltuo1B1sM` (made_for_kids): issue #5 check on the Pixel over LTE (issue5/pixel/b-kids2-lte.log): VISIONOS..IOS (9 clients) all unusable, the 10th, WEB_EMBED, played with 24 usable formats. Small/independent kids channel.
 - `Fc5aA77Nlf0` (made_for_kids): issue #5 emulator repro (issue5/emu_signedout.log, emu_webembed.log): failed like _WB5hh7WOb4.
 - `qkO6iBwcoe4` (age_restricted): HANDOFF.md section 6: "Age-gated test video used across rounds" (Rammstein, [FIXED AUDIO] re-upload). web_embedded answers "Sorry, this content is age-restricted".

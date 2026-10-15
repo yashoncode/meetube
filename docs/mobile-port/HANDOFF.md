@@ -1,4 +1,4 @@
-# NewTube — Deep handoff (engine, network, verification)
+# MeTube — Deep handoff (engine, network, verification)
 
 Written 2026-07-12 after the live-DVR round + a 4-iteration improvement loop.
 Audience: a future working session (any device) picking this codebase up cold.
@@ -6,7 +6,7 @@ Companion: `STATUS.md` (current state + backlog), root `CLAUDE.md` (hard rules).
 
 ## 1. Repo topology
 
-- `origin` = github.com/aleixrodriala/newtube (`main`).
+- `origin` = github.com/yashoncode/metube (`main`).
 - Submodules `MediaServiceCore`, `SharedModules` = our forks; remote name
   `fork`, branch `master`. Commit inside the submodule → push `fork master` →
   commit the pointer bump in main. Upstream (yuliskov) fixes for YouTube
@@ -425,7 +425,7 @@ automatic resume with `first-frame +4047` at the exact position it died
 `recovery-auto-retry trigger=timer|network`, `recovery-auto-retry-exhausted`,
 `recovery-recovered`, `recovery-retry-now user=`.
 
-## 12. Bad-network round (2026-08-06, emulator `NewTube_Network_Test`)
+## 12. Bad-network round (2026-08-06, emulator `MeTube_Network_Test`)
 
 Field report: on LTE with poor signal the app is slow and fragile. Five parallel
 read-only audits were run (InnerTube/OkHttp path, media3 byte path, recovery
@@ -667,7 +667,7 @@ OkHttp `result=ok` means transport completion; inspect HTTP status for 403.
 [`BOT-CHECK-2026-09-07.md`](BOT-CHECK-2026-09-07.md) records the preserved Pixel
 screen and HTTP200/LOGIN_REQUIRED response for Rusowsky. No media preparation
 occurred. The owner confirmed the video plays in the official YouTube app;
-that does not establish the cause of NewTube's denial. The existing challenge
+that does not establish the cause of MeTube's denial. The existing challenge
 cooldown stays intact. No fingerprint/client-identity changes or external-player
 flow were added.
 
@@ -939,7 +939,7 @@ describes a multi-MB parse, but treat that as unconfirmed.
 On this device (11.8 GB) it is invisible and self-correcting. It matters only
 on a low-RAM phone, where a 471 MB peak at second five of every cold start -
 before the user has touched anything - lands exactly when the LMK is most
-willing to kill a young process. If NewTube ever targets 3-4 GB devices, gating
+willing to kill a young process. If MeTube ever targets 3-4 GB devices, gating
 the warmup on `ActivityManager.isLowRamDevice()` is the cheap mitigation. Not
 done: no low-RAM device to measure on, and guessing at the threshold is how you
 ship a regression to the machines you cannot test.
@@ -1039,7 +1039,7 @@ about a second of first-play latency on this Pixel.
 The apparent second PiP belonged to ReVanced, opened by an incorrectly quoted
 ad-hoc adb URL; the owner dismissed it. The harness now quotes and verifies the
 target package, refuses existing PiP, and tests the quoting regression. The
-later NewTube PiP → different video test left one activity and no pinned task.
+later MeTube PiP → different video test left one activity and no pinned task.
 Further rapid-card/lifecycle and normal sustained validation is pending server
 playback availability, not a license to change credentials or client behavior.
 
@@ -1321,7 +1321,7 @@ return zero formats with URLs — they are SABR-only today. `VISIONOS` and
 keeps playback possible when VISIONOS follows them.
 
 **Shipped as a second source in 1.8.1** (versionCode 10801, signed with the
-NewTube release key, `releases/1.8.1/`). DASH stays the default and the toggle
+MeTube release key, `releases/1.8.1/`). DASH stays the default and the toggle
 stays off until the user turns it on; the SABR module's runtime classes are in
 the release DEX and its proof/fixture code is not. This supersedes the 1.8.0
 `sabr-experimental` candidate under `releases/experimental-sabr-2026-09-08/`,
@@ -1540,9 +1540,9 @@ the method, the traps, and the NetPath lines to grep.
   by up to ~400 ms in activity bring-up alone.
 - The AVD clock ran ~32 s behind WSL's. When correlating netshape actions with
   logcat, poll the device log for the trigger line instead of comparing clocks.
-- `NewTube_Network_Test` (emulator-5558) had an unvalidated Wi-Fi where every
+- `MeTube_Network_Test` (emulator-5558) had an unvalidated Wi-Fi where every
   app request hung; it was shut down. `emulator-5554` (Medium_Phone) and
-  `emulator-5556` (NewTube_Verify) were used. Scratch harnesses (card taps, cold
+  `emulator-5556` (MeTube_Verify) were used. Scratch harnesses (card taps, cold
   deep links, fresh-data Home paint, per-UID bytes) are session-local; the
   logic is simple enough to rebuild from the NetPath lines below.
 
@@ -2021,11 +2021,11 @@ With `botwall anon` a signed-in walk has one anonymous hit (VISIONOS -> TV_TIZEN
 - **The link router has its own task** (`IntentRouterActivity`, `taskAffinity ":router"`): starting
   it leaves a playing player with auto-enter PiP armed, so the system enters PiP first.
 - **Harness incidents on the owner's phone (three).** A heads-up can reach y~650, so a scripted tap there opens
-  WhatsApp through SystemUI and later taps land inside it; BACK at NewTube's task root hands the
-  screen to the previous app. The harness now checks before every tap, swipe or key that NewTube
+  WhatsApp through SystemUI and later taps land inside it; BACK at MeTube's task root hands the
+  screen to the previous app. The harness now checks before every tap, swipe or key that MeTube
   has focus and no `StatusBar`/`NotificationShade` input window reaches below y=180 (`dumpsys
   input`), waits otherwise, never sends BACK at our root or HOME (launcher by intent), collapses an
-  idle shade, checks `mCallState` before each open, and only dumps/screenshots with NewTube in front.
+  idle shade, checks `mCallState` before each open, and only dumps/screenshots with MeTube in front.
   Third, 20:13 (r3e): an incoming call arrived mid-run; the guard checked focus and banners only,
   so once the call banner left it tapped the mini X and turned **mobile data and Wi-Fi off for ~30 s
   during the call** (the call held; it ended normally at 20:32). Every input, intent and network
@@ -2081,7 +2081,7 @@ python3 psum.py runs/base runs/candA
 whole APK in silence (69 MB for 1.10.4), then pinned a TV-style "Update" section that the phone put
 under You -> Explore and rendered as a blank page. Settings -> About -> Check for updates gave no
 feedback at all while it downloaded the APK (`LoadingManager` has no case for the settings screen),
-then opened a settings level titled "NewTube 1.10.4" with the changelog as checkbox rows. Android's
+then opened a settings level titled "MeTube 1.10.4" with the changelog as checkbox rows. Android's
 "Install unknown apps" detour returned to that page without installing, and after the update nothing
 said it had happened.
 
@@ -2101,7 +2101,7 @@ said it had happened.
   is in the background it posts "Update ready to install", which opens the installer.
 - A known update puts a dot on the You tab (until its sheet is opened) and a row at the top of You;
   both persist across launches (prefs `newtube_app_updates`) while automatic checks are on.
-- The first launch at the version handed to the installer shows "Updated to NewTube X · What's new".
+- The first launch at the version handed to the installer shows "Updated to MeTube X · What's new".
 - The manifest now carries `downloadSize_<abi>` / `downloadSize` inside `package`
   (`tools/update_manifest.py`); the sheet shows the size when present. Every top-level key but
   `package` is read as a version by 1.10.3 and older, so new fields must stay inside `package`.

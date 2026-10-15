@@ -1,8 +1,7 @@
-# NewTube — Claude Code context
+# MeTube — Claude Code context
 
-NewTube is a **phone-only fork of SmartTube** ("SmartTube for phones"): package
-`io.github.aleixrodriala.arc` (brand-neutral so a rename never touches the
-package; "arc" = the arch-"n" launcher mark), single product flavor `stmobile`,
+MeTube is a **phone-only fork of SmartTube** ("SmartTube for phones"): package
+`io.github.yashoncode.metube` (Java sources still live under `com.newtube.*`), single product flavor `stmobile`,
 touch UI in
 `smarttubetv/src/stmobile/`, playback on **androidx.media3 1.10.1** (Cronet media
 path). The TV flavors and the vendored ExoPlayer fork were deleted in the
@@ -15,10 +14,10 @@ and **`docs/mobile-port/HANDOFF.md`** (read HANDOFF before touching the player
 or network stack). `docs/mobile-port/{ARCHITECTURE,ROADMAP}.md` predate the
 phone-only slice — treat as historical. Settings (issue #2) have their own phone
 screen in `ui/settings/`: a new setting is a row there (design and per-row audits:
-`docs/settings/`), never a row in the TV `*SettingsPresenter`s, which Settings no longer opens. GTM: `docs/gtm/` is the archived July plan (its copy breaks the current rules); the live launch plan lives outside the repo.
+`docs/settings/`), never a row in the TV `*SettingsPresenter`s, which Settings no longer opens.
 
 ## Repos & commit order
-- Main: `origin` = github.com/aleixrodriala/newtube, branch `main`.
+- Main: `origin` = github.com/yashoncode/metube, branch `main` (pushed from local `metube-root`).
 - Submodules `MediaServiceCore` and `SharedModules` are **our forks**:
   `origin` = aleixrodriala/<name> (HTTPS — SSH keys are not set up on this
   Mac), `upstream` = yuliskov/<name>, branch `master`. Commit INSIDE the
@@ -31,7 +30,7 @@ screen in `ui/settings/`: a new setting is a row there (design and per-row audit
 ```
 ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileDebug   # verification builds
 ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileRelease # distribution
-# -> smarttubetv/build/outputs/apk/stmobile/<type>/NewTube_<ver>_<abi>.apk
+# -> smarttubetv/build/outputs/apk/stmobile/<type>/MeTube_<ver>_<abi>.apk
 ```
 On an x86_64 emulator add `-PemulatorAbi` (native Cronet/J2V8; without it every
 CPU-bound timing runs through ARM translation — see HANDOFF §29).

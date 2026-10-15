@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in NewTube doesn't work
+description: Something in MeTube doesn't work
 title: "[Bug]: "
 labels: [bug]
 
@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting a NewTube bug. This tracker is for the NewTube phone app only.
+        Thanks for reporting a MeTube bug. This tracker is for the MeTube phone app only.
         Bugs in SmartTube on a TV belong in [SmartTube's tracker](https://github.com/yuliskov/SmartTube/issues).
 
   - type: checkboxes
@@ -15,7 +15,7 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: "I searched the [open and closed issues](https://github.com/aleixrodriala/newtube/issues?q=is%3Aissue) and this isn't there yet."
+        - label: "I searched the [open and closed issues](https://github.com/yashoncode/metube/issues?q=is%3Aissue) and this isn't there yet."
           required: true
         - label: "This issue is about one bug."
           required: true
@@ -23,7 +23,7 @@ body:
   - type: input
     id: app-version
     attributes:
-      label: NewTube version
+      label: MeTube version
       description: Settings → About.
       placeholder: "1.10.2"
     validations:

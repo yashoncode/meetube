@@ -6,7 +6,7 @@ Draft 1, 2026-09-28 night. Input: `recap/RECAP.md` (every source x category x ne
 `recap/build_recap.py` from the harness and in-app results), `DESIGN.md` (sections 3.0-3.3), the
 engine code at MediaServiceCore c4de5a00 + the uncommitted phase 5 / walk-role work. Scope: the
 phone's /player walk (`sPreferNoPotClient` on). TV / upstream behaviour stays byte-identical: the
-planner is a NEWTUBE file and a switch, `VIDEO_INFO_TYPE_LIST` is untouched.
+planner is a METUBE file and a switch, `VIDEO_INFO_TYPE_LIST` is untouched.
 
 ## 1. Recap: how the phone chooses a source today
 
@@ -77,7 +77,7 @@ Draft 2, after a Codex astra adversarial review (`review/codex-planner-astra.md`
 TV_TIZEN only after a refusal, recovery order fixed, an auth-flag misclassification corrected in
 planned walks.
 
-`PhoneSourcePlanner` (NEWTUBE, `videoinfo/V2/sources/`), pure and unit-tested, computes the order of a
+`PhoneSourcePlanner` (METUBE, `videoinfo/V2/sources/`), pure and unit-tested, computes the order of a
 signed-out phone walk (`sPreferNoPotClient`, no forced client, not walled) behind
 `VideoInfoService.setPlannerEnabled` / `debug.arc.planner=1`. The walk loop, BotWallBook, the
 TV_TIZEN refusal rule, live-DASH skipping, consensus, the bot check, budgets and transport rules stay

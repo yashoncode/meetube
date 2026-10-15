@@ -41,7 +41,7 @@ cost about one second of first-play latency. Dynamic scheduling stays disabled.
 
 ## Real Pixel test without server playback requests
 
-YouTube continued rejecting NewTube playback, while the owner confirmed that
+YouTube continued rejecting MeTube playback, while the owner confirmed that
 the same video plays in the official YouTube app on the same Pixel/connection.
 To validate the media policy independently, a **debug-only, non-exported**
 fixture Activity now uses the actual `Media3PlayerInitializer`, hardware decoder,
@@ -120,11 +120,11 @@ Further live playback retries were stopped.
 
 ### Existing SmartTube/yt-dlp integration audit
 
-The follow-up uses the existing implementation and credentials only. NewTube
+The follow-up uses the existing implementation and credentials only. MeTube
 does execute bundled yt-dlp/EJS-derived JavaScript through its Kotlin/J2V8
 provider; it does **not** invoke the host yt-dlp downloader or inherit its
 session implementation. Player requests and account authorization remain in
-NewTube's own services. The installed host CLI reports 2026.08.19; its YouTube
+MeTube's own services. The installed host CLI reports 2026.08.19; its YouTube
 extractor files match the later local clone revision inspected in this audit.
 Neither the CLI's presence nor shared processing code establishes another
 currently working playback session.

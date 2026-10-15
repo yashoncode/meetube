@@ -131,7 +131,7 @@ is **unvalidated**, and the production default remains 1000 ms.
 ## PiP and final device state
 
 The floating video reported during the first exploratory run belonged to
-`app.revanced.android.youtube`, not a second NewTube player. An incorrectly
+`app.revanced.android.youtube`, not a second MeTube player. An incorrectly
 quoted ad-hoc adb URL let Android resolve the link in that other app. The user
 dismissed its PiP. That contaminated exploratory run was discarded.
 
@@ -139,8 +139,8 @@ The reusable harness quotes Android's second shell, verifies the activity's
 package, and refuses to start while any pinned task is present. Regression
 tests cover the URL ampersand retaining the package restriction.
 
-Later, NewTube's own HOME → PiP → open another video flow passed: one pinned
-NewTube activity expanded into the selected video, decoded first frame 621 ms,
+Later, MeTube's own HOME → PiP → open another video flow passed: one pinned
+MeTube activity expanded into the selected video, decoded first frame 621 ms,
 one playback activity, and no remaining pinned task. Screenshots confirmed the
 selected video's header and picture. No duplicate-player PiP bug was reproduced.
 
@@ -203,4 +203,4 @@ uncommitted on `main`; submodules were not changed.
 
 Final rebuilt APK SHA-256 (installed with data preserved and verified on-device):
 `671bdddd172980ba33406b62ce6715defdc96334e266ef469e059682870ede80`.
-Handoff leaves NewTube's browse activity foreground with no pinned task.
+Handoff leaves MeTube's browse activity foreground with no pinned task.

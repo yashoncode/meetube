@@ -1,6 +1,6 @@
 # MeTube Changelog
 
-All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
+All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases](https://github.com/aleixrodriala/newtube/releases).
 
 ## 2.9.6 — 2026-10-15 — Hotfix
 

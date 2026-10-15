@@ -1,8 +1,6 @@
-# NewTube — Status
+# MeTube — Status
 
-**v1.14.0 (versionCode 11400), Cruz y Raya Edition, 2026-10-01.** Release
-scope, validation and distribution are in [the release record](../releases/1.14.0.md).
-1.10.1 to 1.13.0 are in their own records under `docs/releases/`. Older dated
+**v1.14.0 (versionCode 11400), Cruz y Raya Edition, 2026-10-01.** Older dated
 sections below remain historical evidence, not the current release verdict.
 
 Phone-only: the TV flavors, vendored ExoPlayer fork and Leanback modules were
@@ -45,7 +43,7 @@ choice is one row showing its value that opens a radio dialog.
   start is reachable from the edge).
 - **Drag haptics:** minimize, mini swipe-away and pull to refresh click at the commit point and
   land on a spring.
-- **About:** "Star NewTube on GitHub" and "Share NewTube" rows. **Channel tabs** keep long names
+- **About:** "Star MeTube on GitHub" and "Share MeTube" rows. **Channel tabs** keep long names
   on one line.
 - Not user-facing: phone strings ready for Weblate (`TRANSLATING.md`, translation lint), F-Droid
   build switch (`-Pfdroid`), the 1.13 screenshot set, site and README demo clip.
@@ -102,7 +100,7 @@ related list under a video ends too; Notifications is empty. Details: HANDOFF §
 
 ## Player routes and time to first frame (2026-09-28/29, 1.11.0)
 
-The way NewTube picks a YouTube source for a video was redesigned from
+The way MeTube picks a YouTube source for a video was redesigned from
 benchmarks: one planner for signed-out and signed-in playback, stop rules for
 videos that cannot play, account-route health instead of phone-only gates
 (HANDOFF §33). Measured on a Pixel 9 (LTE and Wi-Fi, signed out and in), a
@@ -119,7 +117,7 @@ Xiaomi Mi 8 (Snapdragon 845) and an emulator:
 
 The one-minute wall (the video plays a minute, then "Unknown source error") is
 fixed in the same release: googlevideo refuses media past 60 s for some anonymous
-identities; NewTube now remembers the refusal, recovers through sources that keep
+identities; MeTube now remembers the refusal, recovers through sources that keep
 serving and rolls a fresh playback identity (HANDOFF §34, LANES §2.3). Verified
 on real walled identities (emulators) and with a synthetic wall on the Pixel and
 the Mi 8: recovery in about a second, no reload cap. Left: the ~6 s rewind at the
@@ -135,7 +133,7 @@ release notes per version and the size first, the download only when the user ta
 progress and Cancel), then Android's installer on its own - also after the one-time "Install
 unknown apps" permission, and from a notification when the download finished in the background.
 A known update shows as a dot on the You tab and a row at the top of You; after the update the app
-says "Updated to NewTube X" with What's new. Replaces a flow that downloaded the APK silently,
+says "Updated to MeTube X" with What's new. Replaces a flow that downloaded the APK silently,
 showed nothing while doing it, and pinned a blank "Update" page. Details and the test recipe:
 [HANDOFF §32](HANDOFF.md#32-in-app-update-flow-2026-09-28-emulator). Not yet on the Pixel.
 
@@ -331,9 +329,9 @@ archived" banner: worth checking WhatsApp > Settings > Chats).
 20:13: a phone call arrived mid-run and the guard did not check the call state: it tapped the mini
 X and turned **mobile data and Wi-Fi off for ~30 s during the call** (the call held and ended
 normally). Everything now waits while a call is up. 14:59: a tap opened the chat list;
-the new focus guard stopped further input, then two BACK presses at NewTube's task root returned to
+the new focus guard stopped further input, then two BACK presses at MeTube's task root returned to
 WhatsApp (no input went in); one text dump of the chat list was read (not saved), a screenshot taken
-and deleted. Input now needs NewTube focused and no heads-up or shade on screen; BACK is never sent
+and deleted. Input now needs MeTube focused and no heads-up or shade on screen; BACK is never sent
 at our root, HOME never pressed; captures showing other apps were deleted.
 
 **Tests:** 620 smarttubetv and 229 common unit tests pass on the final tree (0 failures, 1
@@ -544,7 +542,7 @@ and JSON-mapping ideas (tens of ms each).
 
 ## Downloads: a fifth tab, files that play like any other video (2026-09-11)
 
-NewTube can now keep videos on the phone. The ask was NewPipe-shaped ("an option
+MeTube can now keep videos on the phone. The ask was NewPipe-shaped ("an option
 to download videos together with a downloads section"), then sharpened mid-way:
 the section is **a tab on the bottom bar**, not a You-page row, and downloading
 plus replaying "should feel part of the whole app". So there is no separate
@@ -567,9 +565,9 @@ video download fetches the H.264 track and the AAC track and joins them on the
 device with `MediaExtractor` → `MediaMuxer` (no re-encoding; the fragmented MP4
 parts parse natively on the Pixel 9). VP9/AV1 rungs above 1080p are not offered:
 there is no platform WebM muxer worth trusting. Audio-only writes a clean `.m4a`.
-Files go to the public collections through MediaStore (`Movies/NewTube`,
-`Music/NewTube`; the muxer writes straight into the collection's descriptor, so
-nothing is copied) on Android 10+, and to `Android/media/<pkg>/NewTube` on 7-9.
+Files go to the public collections through MediaStore (`Movies/MeTube`,
+`Music/MeTube`; the muxer writes straight into the collection's descriptor, so
+nothing is copied) on Android 10+, and to `Android/media/<pkg>/MeTube` on 7-9.
 A foreground service of type `dataSync` drains the queue one item at a time with a
 progress notification; the registry is one JSON file under `files/downloads/`.
 
@@ -597,9 +595,9 @@ screen. Cards are the same `Video` instances mutated in place and pushed through
 user noted that "Terminando…" read as already playable.
 
 **Pixel 9 verified (Android 17, debug build):** 47-minute video at 144p fetched
-in ~6 s, muxed to a 67 MB `Hall of Legends Caps.mp4` in `Movies/NewTube`
+in ~6 s, muxed to a 67 MB `Hall of Legends Caps.mp4` in `Movies/MeTube`
 (`is_pending=0`, duration 47:18); the card showed `75%` + the red bar mid-way;
-audio-only of a 1:06 video published as a 1.1 MB `.m4a` in `Music/NewTube`;
+audio-only of a 1:06 video published as a 1.1 MB `.m4a` in `Music/MeTube`;
 tapping a finished card prepared `type=progressive` with first frame at +984 ms
 and no /player call. With airplane mode on and a cold start: Downloads tab lists
 both, the audio file plays, and the video opened from the Home snapshot falls
@@ -874,7 +872,7 @@ HANDOFF §27.
 Build a phone APK:
 ```
 ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileDebug
-# -> smarttubetv/build/outputs/renamed_apks/stmobileDebug/NewTube_<ver>_universal.apk
+# -> smarttubetv/build/outputs/renamed_apks/stmobileDebug/MeTube_<ver>_universal.apk
 ```
 
 ## Startup bandwidth, real preload, and release profiling (2026-09-08)
@@ -965,7 +963,7 @@ still disappears without its 120 ms fade. Local Pixel ABBA reached READY at a
 median 693 ms vs 1091 ms, with four clean 45 s soaks plus seek/pause/switch checks.
 These are decoder/readiness results, not newly measured YouTube TTFF.
 
-The server bot check still blocks NewTube while the owner reports official
+The server bot check still blocks MeTube while the owner reports official
 YouTube works. Play-to-retry after pre-media denial is repaired and honors
 existing cooldown/cache; the benchmark now aborts at an unavailable phase.
 110 Android + 13 offline tests pass. Details and limitations:
@@ -1015,7 +1013,7 @@ gate reduced visible dense-resume latency in short shaped runs, but its longer
 test and the final normal-settings soak were blocked by an explicit server
 bot check before media preparation. Keep the 1000 ms default; all experimental
 device overrides were restored. The reported external PiP was traced to an
-adb quoting mistake; the subsequent NewTube PiP-to-next-video test passed.
+adb quoting mistake; the subsequent MeTube PiP-to-next-video test passed.
 
 Full protocol, measured results, retained fixes, and limitations:
 [`PERFORMANCE-2026-09-07.md`](PERFORMANCE-2026-09-07.md).
@@ -1037,7 +1035,7 @@ Playback peaks ~500 MB, half of it decoder surfaces, all released on BACK.
 about two seconds at t+5s, exactly inside the warmup window, then collapses
 back. Invisible on the Pixel 9 (11.8 GB). It would matter on a 3–4 GB phone,
 where a 471 MB peak five seconds into every cold start is prime LMK territory;
-`isLowRamDevice()` gating is the mitigation if NewTube ever targets those.
+`isLowRamDevice()` gating is the mitigation if MeTube ever targets those.
 Which allocation inside the window is responsible was not isolated. The later
 performance follow-up above distinguishes the speculative format fetch from
 eager startup setup; timing alone does not attribute the entire spike to one.
@@ -1813,7 +1811,7 @@ fed it, and both are now closed:
   Trade-off, deliberate: deliberately tapping a Mix card shows no card either (its
   videos still list under Up next), because at that point a Mix and an auto-radio
   are the same object with no signal left to separate them.
-- Emulator-verified (NewTube_Verify, signed out): home-feed video → no card, Up
+- Emulator-verified (MeTube_Verify, signed out): home-feed video → no card, Up
   next = related only; real playlist (`Lofi Girl - Compilations & Mixes`) → card
   reads `Playing from ♪♪ Lofi Girl - Compilations & Mixes` / `3 / 51`, expands
   with one `Now playing` badge. Unit tests green.
@@ -2285,6 +2283,6 @@ open:
   media3 DefaultPreloadManager.
 
 ## Pending decision
-`NewTube_1.3.0_universal.apk` is built and unpublished — GitHub Releases +
+`MeTube_1.3.0_universal.apk` is built and unpublished — GitHub Releases +
 download page (see `docs/gtm/`) are the ready channels; publishing is Aleix's
 call.

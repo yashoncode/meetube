@@ -4,10 +4,10 @@
 
 Scope: what yt-dlp, NewPipe(Extractor), LibreTube, Piped, PipePipe, YouTube.js/googlevideo, FreeTube,
 Grayjay, Invidious(-companion), ReVanced/Morphe/anddea/rvx, the YouTube-Music Kotlin apps and SmartTube
-upstream (yuliskov/MediaServiceCore) do **today** to get media, compared with NewTube's
+upstream (yuliskov/MediaServiceCore) do **today** to get media, compared with MeTube's
 `MediaServiceCore/.../common/helpers/AppClient.kt` (fork HEAD `795091f7` + uncommitted working tree of
 2026-09-28). Every claim carries a source; **[code]** = read in source at the given SHA, **[issue]/[PR]** =
-stated by a maintainer/contributor, **[measured]** = NewTube's own measurement (HANDOFF / this week's
+stated by a maintainer/contributor, **[measured]** = MeTube's own measurement (HANDOFF / this week's
 Pixel runs). Nothing here was benchmarked by this survey; section (b) is the list of things to benchmark.
 
 SHAs used: yt-dlp `c7fb478` (2026-09-16; master `51bab8a` 2026-09-27 has no later YouTube commit),
@@ -24,7 +24,7 @@ PipePipeExtractor `c68e10e` (v5.4.0), innertubex `195bac9` (v0.7.2, 2026-09-28),
    JS-player web/TV client for everything VISIONOS refuses.** yt-dlp: `visionos` → kids fallback
    appends `web_embedded` and `tv_downgraded` (requested tv_downgraded first — the queue pops from the end —
    and formats from both are merged). Morphe/anddea: VISIONOS → TV_SIMPLY(+POT) → ANDROID_CREATOR.
-   NewPipe dev: VISIONOS only (kids = 360p or nothing). NewTube already has VISIONOS first.
+   NewPipe dev: VISIONOS only (kids = 360p or nothing). MeTube already has VISIONOS first.
 2. **Your WEB_EMBEDDED recipe is exactly yt-dlp's `web_embedded` (since 2026-03-10, PR #16177) and
    MetrolistGroup/innertubex's embed path**, with three differences: yt-dlp/innertubex **never send
    `devicePlaybackCapabilities`** at all; yt-dlp replays the **embed page's whole `INNERTUBE_CONTEXT`**
@@ -35,7 +35,7 @@ PipePipeExtractor `c68e10e` (v5.4.0), innertubex `195bac9` (v0.7.2, 2026-09-28),
 3. **web_embedded is itself entering a SABR-only experiment** (yt-dlp #17666, 2026-09-10: "Both `mweb`
    and `web_embedded` have become SABR-only in some sessions (except for format 18)"). The Safari UA
    commit c7fb478 exists precisely so that such sessions still get **HLS itags 91–96 (≤1080p, muxed)** —
-   which is what NewTube saw for KUcmvVHh_RA on LTE. HLS-for-VOD is a real, maintainer-endorsed fallback.
+   which is what MeTube saw for KUcmvVHh_RA on LTE. HLS-for-VOD is a real, maintainer-endorsed fallback.
 4. **The 403-then-OK-after-48–68 s is most likely YouTube's forced preroll wait ("fake buffering") —
    a hypothesis until the WEB_EMBED response's ad renderers are checked (candidate 2a).** yt-dlp models
    it (`available_at = now + Σ full preroll ad durations`, or the skip offset when skippable) and sleeps;
@@ -44,14 +44,14 @@ PipePipeExtractor `c68e10e` (v5.4.0), innertubex `195bac9` (v0.7.2, 2026-09-28),
    iter.ca (2025-06-20) measured the backoff at **80 % of the ad duration** on the first `/videoplayback`.
    Known avoidances: `contentPlaybackContext.isInlinePlaybackNoAd: true` **plus `inline=1` on the /player
    query** (rvx "Bypass fake buffering"); `adPlaybackContext.pyv=true` (yt-dlp: works for mweb/web_music,
-   **did not work for web_embedded** in 2025-12 testing). NewTube sends isInlinePlaybackNoAd but not
+   **did not work for web_embedded** in 2025-12 testing). MeTube sends isInlinePlaybackNoAd but not
    `inline=1`, and does not parse adPlacements/adSlots.
 5. **TVHTML5 5.x ("downgraded") is the other kids path and the only no-PO-token one that also plays
    non-embeddable kids videos** (bashonly, 2026-07-20; with a POT, MWEB/WEB SABR/TV Simply also do). It is broken for sessions in the `tcl` player-JS experiment
    ("The page needs to be reloaded", yt-dlp #17389, open, high priority). Working bypasses in the wild:
    Samsung/Tizen 2.4.0 device context (yt-dlp PR #17723, "high priority, will probably be merged very
-   soon" — = NewTube TV_TIZEN), an ancient Cobalt UA (SmartTube upstream 2026-09-08:
-   `Cobalt/4.13031-qa … Starboard/1`), TVHTML5 **5.20150304** + Tizen (Morphe TV_DASH). NewTube uses
+   soon" — = MeTube TV_TIZEN), an ancient Cobalt UA (SmartTube upstream 2026-09-08:
+   `Cobalt/4.13031-qa … Starboard/1`), TVHTML5 **5.20150304** + Tizen (Morphe TV_DASH). MeTube uses
    TV_TIZEN only signed-in under a bot wall — never anonymously for kids.
 6. **TVHTML5_SIMPLY + a TV-challenge PO token is Morphe's "plays everything incl. kids" signed-out path**
    (PR #2533, 2026-08-22): challenge from `/tv_config?action_get_config=true`, BotGuard in a WebView,
@@ -62,7 +62,7 @@ PipePipeExtractor `c68e10e` (v5.4.0), innertubex `195bac9` (v0.7.2, 2026-09-28),
    into playback** for sessions in the experiment (inference: NewPipe-style `jnn/v1/Create` challenges
    are equally unbound to the page's EVENT_ID) (BgUtils v4.0.3 2026-08-04,
    bgutil 1.3.2 2026-08-21: 58 % → 92 % success). SmartTube upstream ported this (`PoTokenWebView4`,
-   2026-08-08/12). **NewTube's fork still selects the old `PoTokenWebView` (`jnn/v1/Create`).** Also: GVS
+   2026-08-08/12). **MeTube's fork still selects the old `PoTokenWebView` (`jnn/v1/Create`).** Also: GVS
    tokens are now bound to the **video id** when `html5_generate_content_po_token=true` is in the ytcfg.
 8. **android_vr is dead as a default everywhere** (yt-dlp: all formats 403 with 1.65.10 since
    2026-08-17; Morphe: VR needs OAuth sign-in since 08-19 and moved to Pico/XR identities because Quest
@@ -75,9 +75,9 @@ PipePipeExtractor `c68e10e` (v5.4.0), innertubex `195bac9` (v0.7.2, 2026-09-28),
    unplayable", yuliskov 2026-09-09). yt-dlp's SABR PR #13515 is still unmerged. The "~60 s wall" is the
    `sps` stream-protection status (2 = attestation pending after ~1–2 MB, 3 = required); the fix is a
    **content-bound (video-id) token as raw bytes in `streamer_context.po_token`**. For kids that means
-   WEB/MWEB + a good token (VISIONOS SABR never serves kids). Estimate on top of NewTube's `sabr-media3`:
+   WEB/MWEB + a good token (VISIONOS SABR never serves kids). Estimate on top of MeTube's `sabr-media3`:
    ~1.5–2.5 focused weeks (§3.6).
-10. **Small NewTube hygiene gaps vs the ecosystem**: WEB_CREATOR `1.20241203.01.00` and WEB_REMIX
+10. **Small MeTube hygiene gaps vs the ecosystem**: WEB_CREATOR `1.20241203.01.00` and WEB_REMIX
     `1.20250219.01.00` are ~1–2 years stale (yt-dlp/upstream: `1.20260708.06.00` / `1.20260707.12.00`);
     `TVHTML5_SIMPLY` is sent as client-name id **74** (yt-dlp and Morphe use **75**; YouTube.js has 74);
     IOS goes out as `clientName "iOS"`, osName "iOS" (yt-dlp: `IOS` / `iPhone`; upstream MSC moved to
@@ -88,21 +88,21 @@ PipePipeExtractor `c68e10e` (v5.4.0), innertubex `195bac9` (v0.7.2, 2026-09-28),
 ## (a) Master table — request shapes, who uses them, what they need, what they are good for
 
 Legend: POT = PO token (GVS = on media URLs, PL = in the /player body); JS = needs the player JS for
-sig/n; "kids" = made-for-kids; "age" = age-restricted. "NewTube has it" is checked against
+sig/n; "kids" = made-for-kids; "age" = age-restricted. "MeTube has it" is checked against
 `AppClient.kt` (fork working tree 2026-09-28).
 
-| # | Client / request shape | Who uses it (2026-09) | Needs | Good for / fails on | NewTube has it? | Last confirmed working |
+| # | Client / request shape | Who uses it (2026-09) | Needs | Good for / fails on | MeTube has it? | Last confirmed working |
 |---|---|---|---|---|---|---|
 | 1 | **VISIONOS 1.02** (Apple `RealityDevice17,1` or `14,1`, osName visionOS, osVersion `26.5.23O471`/`26.6.x`, Safari-26 UA; 1.03/1.04 variants) | yt-dlp default #1 (anon + JS-less); NPE dev (only stream client, 1.04 + UA `com.google.visionos.youtube/1.04(...)`); LibreTube (SABR source); PipePipe default; Morphe/anddea default (1.02; 1.03 for AV1); ReVanced (0.1); SmartTube upstream ring #1; innertubex probe only | nothing: no POT, no JS, no cookies | normal VOD, AV1/8K, itag 616 "enhanced bitrate" (gamer191 #17226), VOD m3u8 separate tracks incl. itag 602 (#17143). **Fails: kids, age, paid, movie, private.** Morphe: "may end 1 s early", no stable volume. innertubex: "clean Android sessions can stall"; VISIONOS **0.1** → HTTP 400 FAILED_PRECONDITION (Sept 2026) | **yes** (VISIONOS 1.02, RealityDevice17,1; PREFERRED_FIRST_CLIENT). Measured: SABR from VISIONOS served to the end without POT (HANDOFF §27–28) | yt-dlp default 2026-08-18 (dae52d8); Morphe v1.44.0 2026-09-21; NPE dev 2026-09-27 |
-| 2 | **WEB_EMBEDDED_PLAYER 2.2026xxxx + embed identity**: embed page `/embed/<id>?html5=1` fetched with Referer `https://www.reddit.com/` (non-YouTube) + same UA; /player with `thirdParty.embedUrl=https://www.reddit.com/`, `contentPlaybackContext{html5Preference, signatureTimestamp, encryptedHostFlags}`, that page's visitor | yt-dlp `web_embedded` (signed-in default #1 since 08-18; anon kids/age fallback; Safari UA since 09-16, master only); innertubex/Metrolist (auto, priority 65, Firefox UA, per-video flags); lavalink youtube-source (`fetchEncryptedHostFlags`); SmartTube upstream (flags via YtCfgService, Safari UA 09-18) | JS (sig + n, also `/n/` in the HLS manifest path), **no POT**; per-video embed-page fetch (yt-dlp, innertubex) | **kids (embeddable)**, age-gated **embeddable** videos (yt-dlp), HLS 91–96 ≤1080p with Safari UA. **Fails: non-embeddable** ("Playback on other websites has been disabled", #17497), age-gated non-embeddable. Risks: SABR-only experiment in some sessions (#17666) → HLS still there; forced preroll wait (§7) | **yes** (WEB_EMBED, working tree 2026-09-28; Safari UA; flags+visitor cached 6 h, not per video; sends `supportXhr=false`) | yt-dlp c7fb478 2026-09-16; innertubex v0.7.2 2026-09-28; NewTube Pixel 2026-09-28 (with the 403 window) |
-| 3 | **TVHTML5 5.x "downgraded"** (clientVersion `5.20260707`/`5.20260901`), 5-digit sts, main/`tv-player-ias` JS; UA variants: `Cobalt/Version` (yt-dlp), `(DirectFB; Linux x86_64) Cobalt/4.13031-qa (unlike Gecko) Starboard/1` (SmartTube upstream), Samsung SmartTV Tizen 2.4.0 + deviceMake/Model/osName/osVersion (yt-dlp PR #17723 = NewTube TV_TIZEN) | yt-dlp `tv_downgraded` (signed-in default #2; kids fallback, requested before web_embedded; REQUIRE_AUTH removed 07-20); SmartTube upstream ring #2 (old Cobalt UA, auth); PipePipe (extractor only, app refuses it); innertubex ("UNPLAYABLE in August 2026") | JS, no POT (yt-dlp: "doesn't need PO tokens"), cookies/OAuth OK | **kids incl. non-embeddable** (bashonly 07-20), signed-in playback, age with an account. **Broken for sessions in the `tcl` experiment** ("page needs to be reloaded", #17389); 360° formats differ with Tizen (gamer191) | **yes**: TV_DOWNGRADED (`Cobalt/Version`, ring), **TV_TIZEN** (Tizen, signed-in bot-wall only, not in ring) | TV_TIZEN reproduced off-device 2026-09-25 (HANDOFF §31); PR #17723 comments 2026-09-28 "fixes work for me" |
-| 4 | **TVHTML5 5.20150304** (a 2015 version) + Tizen 2.4.0 (Morphe TV_DASH) or `Cobalt/9.28152-debug … Starboard/4` (rvx TV_LEGACY, "can play SABR format-only videos", `attest_botguard_on_tvhtml5:false`) | Morphe (TV_DASH, live fallback of TV_SABR); rvx (EOL) | JS, no POT | DASH/https where 7.x is SABR; live DASH | no (NewTube's TV_DOWNGRADED/TV_TIZEN use 5.20260707) | Morphe code 2026-09-28 |
+| 2 | **WEB_EMBEDDED_PLAYER 2.2026xxxx + embed identity**: embed page `/embed/<id>?html5=1` fetched with Referer `https://www.reddit.com/` (non-YouTube) + same UA; /player with `thirdParty.embedUrl=https://www.reddit.com/`, `contentPlaybackContext{html5Preference, signatureTimestamp, encryptedHostFlags}`, that page's visitor | yt-dlp `web_embedded` (signed-in default #1 since 08-18; anon kids/age fallback; Safari UA since 09-16, master only); innertubex/Metrolist (auto, priority 65, Firefox UA, per-video flags); lavalink youtube-source (`fetchEncryptedHostFlags`); SmartTube upstream (flags via YtCfgService, Safari UA 09-18) | JS (sig + n, also `/n/` in the HLS manifest path), **no POT**; per-video embed-page fetch (yt-dlp, innertubex) | **kids (embeddable)**, age-gated **embeddable** videos (yt-dlp), HLS 91–96 ≤1080p with Safari UA. **Fails: non-embeddable** ("Playback on other websites has been disabled", #17497), age-gated non-embeddable. Risks: SABR-only experiment in some sessions (#17666) → HLS still there; forced preroll wait (§7) | **yes** (WEB_EMBED, working tree 2026-09-28; Safari UA; flags+visitor cached 6 h, not per video; sends `supportXhr=false`) | yt-dlp c7fb478 2026-09-16; innertubex v0.7.2 2026-09-28; MeTube Pixel 2026-09-28 (with the 403 window) |
+| 3 | **TVHTML5 5.x "downgraded"** (clientVersion `5.20260707`/`5.20260901`), 5-digit sts, main/`tv-player-ias` JS; UA variants: `Cobalt/Version` (yt-dlp), `(DirectFB; Linux x86_64) Cobalt/4.13031-qa (unlike Gecko) Starboard/1` (SmartTube upstream), Samsung SmartTV Tizen 2.4.0 + deviceMake/Model/osName/osVersion (yt-dlp PR #17723 = MeTube TV_TIZEN) | yt-dlp `tv_downgraded` (signed-in default #2; kids fallback, requested before web_embedded; REQUIRE_AUTH removed 07-20); SmartTube upstream ring #2 (old Cobalt UA, auth); PipePipe (extractor only, app refuses it); innertubex ("UNPLAYABLE in August 2026") | JS, no POT (yt-dlp: "doesn't need PO tokens"), cookies/OAuth OK | **kids incl. non-embeddable** (bashonly 07-20), signed-in playback, age with an account. **Broken for sessions in the `tcl` experiment** ("page needs to be reloaded", #17389); 360° formats differ with Tizen (gamer191) | **yes**: TV_DOWNGRADED (`Cobalt/Version`, ring), **TV_TIZEN** (Tizen, signed-in bot-wall only, not in ring) | TV_TIZEN reproduced off-device 2026-09-25 (HANDOFF §31); PR #17723 comments 2026-09-28 "fixes work for me" |
+| 4 | **TVHTML5 5.20150304** (a 2015 version) + Tizen 2.4.0 (Morphe TV_DASH) or `Cobalt/9.28152-debug … Starboard/4` (rvx TV_LEGACY, "can play SABR format-only videos", `attest_botguard_on_tvhtml5:false`) | Morphe (TV_DASH, live fallback of TV_SABR); rvx (EOL) | JS, no POT | DASH/https where 7.x is SABR; live DASH | no (MeTube's TV_DOWNGRADED/TV_TIZEN use 5.20260707) | Morphe code 2026-09-28 |
 | 5 | **TVHTML5 7.x** (`7.20260707.07.00`/`7.20260901.15.00`, Cobalt 25 UA or PS4 GAME_CONSOLE) | yt-dlp `tv` (non-default); SmartTube TV head; Morphe TV_SABR (PS4, SABR, "can play Kids", #3078) | JS; tcl variant (8-digit sts); Morphe's TV_SABR declares `requirePoToken=false` (intent, not proof) | signed-in; kids via SABR (Morphe). DRM-on-everything experiment (#12563); SABR-only often | yes (TV, TV_LEGACY) | Morphe 2026-09-22 (#3078) |
 | 6 | **TVHTML5_SIMPLY 1.0/1.1** (Morphe: Sony PS4, platform GAME_CONSOLE, id 75) **+ TV-challenge POT** | Morphe/anddea fallback #1 (signed-out works since 2026-08-22, PR #2533); yt-dlp `tv_simply` (GVS POT required https/dash; not default); innertubex (priority 42, "two tokens, HLS"); invidious-companion fallback #1 | JS + POT (video-bound PL token + visitor-bound `&pot=` GVS) | Morphe: "Can't play: none" incl. **kids**; no cookies in yt-dlp | partly: TV_SIMPLY 1.0, **id 74**, no POT. [measured 2026-09-07] 5-digit sts → OK and media 206 | Morphe #3078 closed 2026-09-22 (TV Simply working again) |
-| 7 | **ANDROID_VR** 1.65.10 Quest 3 / 1.61.48 / 1.43.32; Morphe: 1.73.21 Pico (SABR) / **1.64.34** DASH / XR 1.69.27, **OAuth required** | yt-dlp (non-default since 08-18); ReVanced fallback (1.43.32); Morphe (signed-in only); invidious-companion fallback #2; Grayjay (off by default since 08-22); NewTube ring | yt-dlp: GVS POT unless player POT; all formats 403 with 1.65.10 since 08-17 | normal VOD; multi-audio (SABR); live DASH. **Fails: kids** | yes (ANDROID_VR 1.65.10) | dead anonymous (yt-dlp 2026-08-18); Morphe OAuth variants 2026-08-19 |
+| 7 | **ANDROID_VR** 1.65.10 Quest 3 / 1.61.48 / 1.43.32; Morphe: 1.73.21 Pico (SABR) / **1.64.34** DASH / XR 1.69.27, **OAuth required** | yt-dlp (non-default since 08-18); ReVanced fallback (1.43.32); Morphe (signed-in only); invidious-companion fallback #2; Grayjay (off by default since 08-22); MeTube ring | yt-dlp: GVS POT unless player POT; all formats 403 with 1.65.10 since 08-17 | normal VOD; multi-audio (SABR); live DASH. **Fails: kids** | yes (ANDROID_VR 1.65.10) | dead anonymous (yt-dlp 2026-08-18); Morphe OAuth variants 2026-08-19 |
 | 8 | **IOS 21.26.4** (iPhone16,2, iOS 18.3.2) | yt-dlp (non-default); NPE release optional (off) | GVS POT for https **and HLS** (not with player POT; needs iOS attestation) | HLS live only with POT; no VOD m3u8 since ~2026-05-18 (#16764) | yes (IOS, sent as `clientName "iOS"`) | not usable without attestation |
 | 9 | **ANDROID 21.x reel_item_watch** (`/youtubei/v1/reel/reel_item_watch`, `disablePlayerResponse:false`) | NPE v0.26.5 release (primary); PipePipe (parallel kids fallback, 360p muxed); ReVanced default ANDROID_REEL_NO_AUTH 20.26.46 | Morphe: "always requires a PoToken" since 2026-07-25; tokenless → itag 18 only | **kids at 360p (itag 18 muxed)**; "Video may stop at 1:00" | yes (ANDROID_REEL, ANDROID, ANDROID_SDK_LESS) | NPE release 2026-08-15; itag 18 "always expected to be sunset" (bashonly) |
-| 10 | **MWEB 2.20260708.05.00** (iPad Safari UA) + WebView BotGuard POT (+ SABR) | PipePipe "mweb (SABR)" (forced when signed in); yt-dlp wiki TL;DR "Use a PO Token Provider … `mweb` client"; bashonly: mweb+POT for non-embeddable/age | JS + GVS POT (itag 18 without); `adPlaybackContext.pyv` accepted | with POT: kids, non-embeddable, age (signed in) — community "works for all videos" (#17497), maintainer advice for non-embeddable/age; SABR-only in some sessions (#17666, then only itag 18 without SABR) | yes (MWEB; NewTube mints a web POT, old jnn/Create flow) | PipePipe v5.4.0 2026-09-24 |
+| 10 | **MWEB 2.20260708.05.00** (iPad Safari UA) + WebView BotGuard POT (+ SABR) | PipePipe "mweb (SABR)" (forced when signed in); yt-dlp wiki TL;DR "Use a PO Token Provider … `mweb` client"; bashonly: mweb+POT for non-embeddable/age | JS + GVS POT (itag 18 without); `adPlaybackContext.pyv` accepted | with POT: kids, non-embeddable, age (signed in) — community "works for all videos" (#17497), maintainer advice for non-embeddable/age; SABR-only in some sessions (#17666, then only itag 18 without SABR) | yes (MWEB; MeTube mints a web POT, old jnn/Create flow) | PipePipe v5.4.0 2026-09-24 |
 | 11 | **WEB (watch-page ytcfg) + content-bound POT + SABR** | FreeTube (Shaka SABR plugin, token minted in Electron from the page `ytAtN`); Grayjay (native media3 UMP; MWEB when logged in); YouTube.js default client; googlevideo examples; invidious-companion (WEB+POT, no SABR → falls back to TV_SIMPLY → ANDROID_VR → MWEB); yt-dlp SABR PR; SmartTube upstream | JS + POT (in /player `serviceIntegrityDimensions` and as raw bytes in `streamer_context.po_token`) + SABR/UMP | everything the browser plays, incl. kids | WEB exists; SABR path debug-only (dies ~60 s = `sps` without POT) | FreeTube v0.25.3 2026-08-28; Grayjay v364 |
 | 12 | **WEB_SAFARI** (Safari 15.5 UA) → pre-merged HLS 91–96 | yt-dlp (non-default since 07-20) | JS (n in manifest path); HLS: no GVS POT "at this time" (wiki) | kids at ≤1080p **when signed in** (ChannelFinWatcher #55: Pocoyó 1080p via web_safari with cookies). "Since 2026.07, HLS formats are only returned with some logged-in or 'trusted' sessions" | yes (WEB_SAFARI, anonymous) | 2026-09-23 (signed-in) |
 | 13 | **WEB_REMIX 1.20260707.12.00** (music.youtube.com) | yt-dlp `web_music` (signed-in music URLs); innertubex primary (Firefox UA) | JS + GVS POT (itag 18 without) | innertubex: "Works for normal, explicit, and kids content when signed in"; BOplaid: works for non-embeddable with POT (#17497) | yes (WEB_MUSIC) but **version `1.20250219.01.00`** | innertubex 2026-09-28 |
@@ -115,7 +115,7 @@ sig/n; "kids" = made-for-kids; "age" = age-restricted. "NewTube has it" is check
 
 ## (b) Ranked candidates to benchmark
 
-Ranked by (chance it plays what NewTube can't today) × (cheapness), after an adversarial astra review
+Ranked by (chance it plays what MeTube can't today) × (cheapness), after an adversarial astra review
 (see "Review" at the end). Each is a concrete request variant; "arms" = what to compare. Test set: kids
 _WB5hh7WOb4, KUcmvVHh_RA and one **non-embeddable** kids video, an age-gated embeddable and an age-gated
 non-embeddable video, one normal control; LTE and Wi-Fi; play past 120 s.
@@ -126,7 +126,7 @@ non-embeddable video, one normal control; LTE and Wi-Fi; play past 120 s.
    `thirdParty.embedUrl=https://www.reddit.com/`, `contentPlaybackContext{html5Preference,
    signatureTimestamp, encryptedHostFlags}`, `racyCheckOk`, `contentCheckOk` — and **no
    `devicePlaybackCapabilities`, no `isInlinePlaybackNoAd`, no `lactMilliseconds`**; X-Goog-Visitor-Id =
-   the same visitor. Compare with NewTube's current body (6 h cached identity, `supportXhr=false`,
+   the same visitor. Compare with MeTube's current body (6 h cached identity, `supportXhr=false`,
    isInlinePlaybackNoAd). Variants from innertubex: Firefox-140 UA, top-level
    `thirdParty.embedUrl=https://www.youtube.com/embed/<id>`, `videoCheckOk`; bashonly's reserve flags
    source `INNERTUBE_CONTEXT.thirdParty.embeddedPlayerContext.embeddedPlayerEncryptedContext`. Every arm
@@ -155,9 +155,9 @@ non-embeddable video, one normal control; LTE and Wi-Fi; play past 120 s.
 3. **TVHTML5 5.x for kids, anonymous** — yt-dlp's other kids fallback (it actually requests
    `tv_downgraded` **before** `web_embedded`: both are appended and the queue is popped from the end).
    Note the reference checkout uses the plain `Cobalt/Version` UA; Tizen is only in open PR #17723. Arms:
-   TV_TIZEN anonymous (today NewTube uses it only signed-in under a bot wall); TV_DOWNGRADED with
+   TV_TIZEN anonymous (today MeTube uses it only signed-in under a bot wall); TV_DOWNGRADED with
    upstream's ancient Cobalt UA `Mozilla/5.0 (DirectFB; Linux x86_64) Cobalt/4.13031-qa (unlike Gecko)
-   Starboard/1` **and the real 5-digit sts** — NewTube's `usesTvSignatureTimestamp` still suffixes
+   Starboard/1` **and the real 5-digit sts** — MeTube's `usesTvSignatureTimestamp` still suffixes
    TV_DOWNGRADED with `001` (`AppClient.kt`), so a UA change alone does not reproduce upstream's 09-08
    recipe; TVHTML5 **5.20150304** + Tizen (Morphe TV_DASH). Measure status, formats with URL, 206 at byte 0
    and deep, playback past 60 s. The non-embeddable kids video is the one WEB_EMBED cannot do.
@@ -170,7 +170,7 @@ non-embeddable video, one normal control; LTE and Wi-Fi; play past 120 s.
 5. **Fix PO-token minting, then re-run the web-POT arms.** Two separate changes: (i) **minting** — port
    upstream's `PoTokenWebView4` (homepage `ytAtN` challenge + ytcfg/EVENT_ID) and log which path actually
    minted (it keeps an `/att/get` fallback, so selecting the class proves nothing); (ii) **binding** —
-   NewTube's streaming token is minted against the web visitorData (`PoTokenProviderImpl`), while
+   MeTube's streaming token is minted against the web visitorData (`PoTokenProviderImpl`), while
    sessions with `html5_generate_content_po_token=true` want it bound to the **video id**. Then: MWEB +
    GVS POT (yt-dlp wiki's general recommendation; bashonly for non-embeddable/age), with
    `adPlaybackContext.pyv` (removes the wait on mweb per yt-dlp); WEB_REMIX `1.20260707.12.00` + GVS POT
@@ -192,7 +192,7 @@ non-embeddable video, one normal control; LTE and Wi-Fi; play past 120 s.
     (the phone already receives embedded SABR metadata), WEB and MWEB SABR on the kids set. Copy-safe
     references: googlevideo, SmartTube `library/sabr` (MIT); LibreTube/Grayjay for reading only.
 11. Low: ANDROID_VR Pico/XR 1.64.34/1.69.27 DASH with an OAuth bearer (Morphe requires sign-in; does it
-    accept NewTube's TV device-flow bearer?) — normal videos only, no kids. ANDROID_CREATOR needs an
+    accept MeTube's TV device-flow bearer?) — normal videos only, no kids. ANDROID_CREATOR needs an
     Android account token, almost certainly not the TV bearer.
 
 ---
@@ -508,8 +508,8 @@ MWEB `2.20260205.04.01`, WEB_KIDS `2.20260205.00.00`, WEB_REMIX `1.20250219.01.0
 UA; added 08-12 `e518645`), TVHTML5 `7.20260311.12.00`, TVHTML5_SIMPLY `1.0` (**id 74** in
 `CLIENT_NAME_IDS`), TVHTML5_SIMPLY_EMBEDDED_PLAYER `2.0` (EMBED, embedUrl youtube.com),
 WEB_EMBEDDED_PLAYER `1.20260206.01.00` (EMBED, embedUrl google.com — stale `1.x` prefix), WEB_CREATOR
-`1.20241203.01.00`, ANDROID_CREATOR `22.43.101`, ANDROID_MUSIC `5.34.51`. (NewTube's `innertube/utils/
-Constants.kt` is derived from this file — hence NewTube's id 74 and stale WEB_CREATOR/WEB_REMIX.)
+`1.20241203.01.00`, ANDROID_CREATOR `22.43.101`, ANDROID_MUSIC `5.34.51`. (MeTube's `innertube/utils/
+Constants.kt` is derived from this file — hence MeTube's id 74 and stale WEB_CREATOR/WEB_REMIX.)
 `getInfo`/`getBasicInfo` default to WEB (`Session.ts:384`). PO tokens are caller-supplied →
 `serviceIntegrityDimensions.poToken`; no minting, **no encryptedHostFlags**. Deciphering: downloads
 `player_es6.vflset/en_US/base.js`, extracts n/sig with a meriyah AST, evaluates via a caller-provided
@@ -530,7 +530,7 @@ leaks, corrected proto names; #56 09-24 "ignore unused streams").
   `playerConfig.mediaCommonConfig.mediaUstreamerRequestConfig`), selected audio/video format ids (16/17),
   captions (18), `streamer_context` (19: `client_info{client_name id, client_version, os…}`, `po_token`=2,
   `playback_cookie`=3, `sabr_contexts`=5, `unsent_sabr_contexts`=6), `ssap_playback_infos` (24).
-  `EnabledTrackTypes {VIDEO_AND_AUDIO=0, AUDIO_ONLY=1, VIDEO_ONLY=2}` (`formatUtils.ts`) — NewTube's
+  `EnabledTrackTypes {VIDEO_AND_AUDIO=0, AUDIO_ONLY=1, VIDEO_ONLY=2}` (`formatUtils.ts`) — MeTube's
   STATUS.md says "there is no video-only value": recheck.
 - **Server messages**: wait `NextRequestPolicy.backoff_time_ms` and echo its playback cookie;
   `SABR_REDIRECT` swaps the URL; `RELOAD_PLAYER_RESPONSE` → re-call /player with
@@ -543,7 +543,7 @@ leaks, corrected proto names; #56 09-24 "ignore unused streams").
   `serviceIntegrityDimensions.poToken`.
 - **The ~60 s wall = stream protection status (`sps`)**: 1 = OK; 2 = attestation pending (a cold-start
   or missing token still gets ~1–2 MB, then the client must re-mint); 3 = attestation required (nothing
-  more). googlevideo re-mints via `onMintPoToken` up to 5 times. Matches NewTube's positional 56–60 s wall
+  more). googlevideo re-mints via `onMintPoToken` up to 5 times. Matches MeTube's positional 56–60 s wall
   (HANDOFF §28). LuanRT (googlevideo #38, 2025-10-07): web now needs content-bound tokens; the TV client
   "doesn't use PO tokens yet". Cold-start token: BgUtils `WebPoMinter.createColdStartToken` (MSC has
   `PoTokenGate.getColdStartPoToken`). ~60 s cutoff reports #38/#45/#52/#53; #53 fixed (2026-08-22) by
@@ -590,7 +590,7 @@ Token from a jsdom worker (bgutils 3.2.0) using the **old `/att/get` challenge**
 | project | language / player | license | size | state |
 |---|---|---|---|---|
 | yuliskov/SmartTube `exoplayer-amzn-2.10.6/library/sabr` | Java, ExoPlayer 2.10.6, port of yt-dlp's SABR processor | MIT | ~8.6k LOC | active (f406bc7 09-17); yuliskov 09-09: "very poor … live or past live videos are completely unplayable" |
-| NewTube `sabr-media3` | media3 1.10.1 | MIT | — | opt-in, off in release (dies ~60 s without POT except VISIONOS) |
+| MeTube `sabr-media3` | media3 1.10.1 | MIT | — | opt-in, off in release (dies ~60 s without POT except VISIONOS) |
 | LibreTube `player/` | Kotlin, media3 | GPL-3.0 | ~2.3k LOC | shipped v32 (08-20), VOD only, VISIONOS context |
 | grayjay-android `sabr` | Kotlin, media3 1.9.0 | Source-First 1.1 | ~5k LOC | default on since 08-22 |
 | A-EDev/Flow `player/sabr` | Kotlin, media3 1.11.0 | GPL-3.0 | ~3.6k LOC | active 09-28; SABR only as an upgrade when direct streams top out <720p |
@@ -599,22 +599,22 @@ Token from a jsdom worker (bgutils 3.2.0) using the **old `/att/get` challenge**
 | chadacious/sabr-exoplayer | Kotlin, media3 1.4.1, DASH + `sabr://` DataSource | MIT | ~3.4k LOC | dormant since 2025-11 |
 | felipeucelli/JavaTube | Java downloader | MIT | — | default VISION_OS since 09-06 |
 
-Copy-safe for MIT NewTube: SmartTube, googlevideo, sabr-exoplayer, JavaTube, yt-dlp (Unlicense). GPL and
+Copy-safe for MIT MeTube: SmartTube, googlevideo, sabr-exoplayer, JavaTube, yt-dlp (Unlicense). GPL and
 Grayjay: reference only.
 
 Architectures: (a) custom MediaSource/MediaPeriod + ChunkSampleStream fed by a session pump (Grayjay,
-LibreTube, SmartTube, NewTube `sabr-media3`); (b) DASH manifest with `sabr://` URIs + DataSource
+LibreTube, SmartTube, MeTube `sabr-media3`); (b) DASH manifest with `sabr://` URIs + DataSource
 (sabr-exoplayer; Shaka analogue in FreeTube); (c) one progressive source per track + merge (Flow;
 simplest, no ABR).
 
-Checklist beyond what NewTube's `sabr-media3` already does (UMP, request builder, VISIONOS end-to-end):
+Checklist beyond what MeTube's `sabr-media3` already does (UMP, request builder, VISIONOS end-to-end):
 (1) a /player client that serves the wanted video by SABR — for kids that means WEB/MWEB (+ content POT)
 or WEB_EMBEDDED; (2) `client_info` in `streamer_context` identical to the /player client (Flow: extra OS
 fields on web trigger reloads); (3) POT bytes (content-bound, decoded) + cookie echo + SABR contexts;
 (4) `sps` 2/3 → re-mint; (5) RELOAD_PLAYER_RESPONSE handshake keeping buffers and CPN; (6) SABR_REDIRECT,
 URL expiry, fallback hosts; (7) backoff (= the ad wait, see §7); (8) a minter that uses the homepage
 `ytAtN` challenge + EVENT_ID with the same UA/visitor as /player. **Estimate: ~1.5–2.5 focused weeks** on
-top of NewTube's existing module (mostly the POT pipeline, `sps`, reload, expiry and a kids test sweep);
+top of MeTube's existing module (mostly the POT pipeline, `sps`, reload, expiry and a kids test sweep);
 4–8 weeks from scratch.
 
 
@@ -627,7 +627,7 @@ by a Morphe team member); development on gitlab.com/ReVanced/revanced-patches, d
 end-of-life 2026-03-10. **anddea**: active, v4.3.0 (2026-09-28), playback code = Morphe's, a few days
 behind.
 
-**How they differ from NewTube structurally**: they hook the official app's own /player, fire the spoofed
+**How they differ from MeTube structurally**: they hook the official app's own /player, fire the spoofed
 request alongside it and swap in only `streamingData` (+ Morphe `playerConfig`). Ads come from the
 stock response, so the stock app runs its own preroll timing — they never need a wait of their own.
 Field masks: Morphe `player?fields=responseContext.visitorData,playabilityStatus,streamingData,playerConfig&alt=proto`;
@@ -766,7 +766,7 @@ Commits touching AppClient / VideoInfoService / QueryBuilder / PoToken since 202
 Notes:
 - Upstream already sends `encryptedHostFlags` for embedded clients (`YtCfgService.getCachedEncryptedHostFlags`,
   since ~2026-05-03 `4175ffaf`) but **not paired with the embed page's visitor** and with
-  **`supportXhr = !isTVClient`** (i.e. `true` for WEB_EMBED) — the two things NewTube found necessary.
+  **`supportXhr = !isTVClient`** (i.e. `true` for WEB_EMBED) — the two things MeTube found necessary.
   Its ring comment still says WEB_EMBED "not working".
 - Upstream body for every client: `contentPlaybackContext{html5Preference, lactMilliseconds:60000,
   isInlinePlaybackNoAd:true, signatureTimestamp, encryptedHostFlags?}` +
@@ -849,7 +849,7 @@ backoff of 80% of the ad duration for ads for the first `/videoplayback` request
 the ad plays meanwhile. On SABR it arrives as `NextRequestPolicy.backoff_time_ms`; on URL formats it
 shows up as 403s until the time passes (bashonly, 2026-08-18: not waiting "likely gives a 403"). rvx's
 settings text: "When a video ad is blocked, GVS generate fake buffering proportional to the ad duration
-(A/B testing)". NewTube's 48–68 s window is consistent with 80 % of ~60–85 s of prerolls (or the
+(A/B testing)". MeTube's 48–68 s window is consistent with 80 % of ~60–85 s of prerolls (or the
 full ad time) — to be checked against the response's ad renderers.
 
 **yt-dlp's `playback_wait` history** [code/PR]:
@@ -881,7 +881,7 @@ per client response, all clients:
   when passing premium account cookies" (loses premium formats).
 - rvx "Bypass fake buffering" (3941a5d9, 2025-09-16): **`inline=1` query param on /player** +
   `contentPlaybackContext.isInlinePlaybackNoAd: true` (iter.ca: with it "InnerTube won't serve you any
-  ads"). NewTube (and SmartTube upstream) already send `isInlinePlaybackNoAd:true` in every body but
+  ads"). MeTube (and SmartTube upstream) already send `isInlinePlaybackNoAd:true` in every body but
   **no `inline=1`** (`VideoInfoApi.java`: bare `/youtubei/v1/player`).
 
 **Who waits before the first media request** (all [code]):
@@ -913,7 +913,7 @@ drops the manifest if unsolved); append `/pot/<token>` to the path when a token 
 same for live; NPE and innertubex use a `?pot=` query instead). Pre-merged HLS is ranked below DASH/https
 for VOD ("pre-merged m3u8 formats may have lower quality audio") but is a legitimate fallback. Timing
 has stages: yt-dlp fetches and parses the master playlist during extraction, but applies `available_at`
-only when downloading the chosen format — so for NewTube, master playlist, media playlist and the first
+only when downloading the chosen format — so for MeTube, master playlist, media playlist and the first
 segment can each fail independently; "a manifest was returned" does not yet mean "HLS plays".
 
 Who uses HLS for VOD as a fallback: **yt-dlp** (web_safari/web_embedded, deprioritised), **LibreTube**
@@ -939,9 +939,9 @@ PipePipe (post-live only), FreeTube/Grayjay/invidious-companion (live only).
   pair: stock `/att/get` **14/24 (58 %)** vs homepage pair **22/24 (92 %)** success; one extra homepage
   fetch per minter, not per token. 2.0.0 (09-08) security fixes only.
 - **SmartTube upstream** ported it as `PoTokenWebView4` (a722df75 08-08, default since 3d9521ff 08-12).
-  **NewTube's fork still selects `PoTokenWebView`**, which uses `https://www.youtube.com/api/jnn/v1/Create`
+  **MeTube's fork still selects `PoTokenWebView`**, which uses `https://www.youtube.com/api/jnn/v1/Create`
   + `GenerateIT` (`potokennp2/generators/PoTokenWebView.kt:124,168`). Minting and binding are separate
-  problems: NewTube's streaming token is minted against the web visitorData
+  problems: MeTube's streaming token is minted against the web visitorData
   (`PoTokenProviderImpl.kt` ~L193, `generatePoToken(webPoTokenVisitorData)`), and `PoTokenWebView4` keeps
   an `/att/get` fallback (L138), so selecting it does not prove the homepage path minted — log it.
 - **GVS token binding moved to the video id** where the ytcfg experiment
@@ -956,9 +956,9 @@ PipePipe (post-live only), FreeTube/Grayjay/invidious-companion (live only).
 - **invidious-companion** still mints from `/att/get` (bgutils 3.2.0) — expect it to hit the same 403s.
 
 
-## 9. NewTube vs the ecosystem: request-shape diffs worth knowing
+## 9. MeTube vs the ecosystem: request-shape diffs worth knowing
 
-| item | NewTube (fork working tree 2026-09-28) | ecosystem | why it may matter |
+| item | MeTube (fork working tree 2026-09-28) | ecosystem | why it may matter |
 |---|---|---|---|
 | `devicePlaybackCapabilities.supportXhr` | `!isTVClient && !isEmbedded` → **true** for WEB, WEB_SAFARI, MWEB, IOS, VISIONOS, ANDROID* | yt-dlp/innertubex: block never sent; rvx: false; Morphe: true (wants SABR); upstream MSC: `!isTV` | measured: WEB_EMBED true → SABR-only, false → URLs. Unmeasured on the other clients |
 | `isInlinePlaybackNoAd` / `lactMilliseconds` | sent to every client with an sts | yt-dlp: never; rvx: isInlinePlaybackNoAd **+ `inline=1` query** | the preroll wait (§7) |
@@ -987,7 +987,7 @@ checked the draft against the local sources. Accepted and applied: yt-dlp reques
 reference `tv_downgraded` is plain Cobalt, Tizen is only the open PR; the preroll-wait explanation is a
 hypothesis until the ad renderers are checked, and yt-dlp waits full ad durations (the 80 % is iter.ca's
 measurement); Morphe's TV_SABR declares no PO token; yt-dlp's `main` player variant is a default, not
-forced; FreeTube also parses prerolls; HLS failure stages; NewTube's TV_DOWNGRADED still gets the `001`
+forced; FreeTube also parses prerolls; HLS failure stages; MeTube's TV_DOWNGRADED still gets the `001`
 sts suffix (`usesTvSignatureTimestamp`), so a UA swap alone is not upstream's recipe; PO-token minting
 vs binding. Ranking changes: a single yt-dlp-shaped WEB_EMBED baseline added as #0, HLS-VOD promoted to
 joint first, preroll split into measure / honour / avoid, the supportXhr sweep demoted for IOS/ANDROID

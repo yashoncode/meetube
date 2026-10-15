@@ -163,7 +163,7 @@ is a stopgap for the other.
   receiver — fixes propagate through the fork. Mark the route "best-effort" in UI.
 
 SmartTube does not advertise itself through same-Wi-Fi discovery. Open SmartTube on
-the TV, then use SmartTube Settings → Remote control and NewTube's "Link with TV
+the TV, then use SmartTube Settings → Remote control and MeTube's "Link with TV
 code" row. The resulting Lounge screen is saved like a YouTube pairing; playback is
 ad-free because SmartTube is the receiver.
 
