@@ -14,6 +14,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
@@ -21,8 +22,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsAnimationCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
@@ -109,17 +112,33 @@ final class CommentComposer {
         mSend.setOnClickListener(v -> send());
         updateSend();
 
-        mDialog.setContentView(mRoot, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-        mDialog.setCanceledOnTouchOutside(true);
+        // METUBE(motion): the window fills the screen and the bar rides the keyboard inside it. A
+        // window that wrapped the bar grew with every frame of the keyboard's slide - a window
+        // relayout each frame, which stuttered behind the keyboard. A tap above the bar closes it.
+        FrameLayout screen = new FrameLayout(context);
+        screen.addView(mRoot, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
+        screen.setOnClickListener(v -> {
+            if (!mSending) {
+                mDialog.cancel();
+            }
+        });
+        mDialog.setContentView(screen, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
         mDialog.setOnShowListener(d -> showKeyboard());
         mDialog.setOnDismissListener(d -> reportClosed());
         Window window = mDialog.getWindow();
         if (window != null) {
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.BOTTOM);
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
                     | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+            WindowCompat.setDecorFitsSystemWindows(window, false);
+            // A full-screen window sets the system bars' icons: keep the page's.
+            WindowInsetsControllerCompat page = WindowCompat.getInsetsController(activity.getWindow(),
+                    activity.getWindow().getDecorView());
+            WindowInsetsControllerCompat own = WindowCompat.getInsetsController(window, window.getDecorView());
+            own.setAppearanceLightStatusBars(page.isAppearanceLightStatusBars());
+            own.setAppearanceLightNavigationBars(page.isAppearanceLightNavigationBars());
         }
         installImeInsets();
     }
@@ -161,7 +180,6 @@ final class CommentComposer {
     void setSending(boolean sending) {
         mSending = sending;
         mDialog.setCancelable(!sending);
-        mDialog.setCanceledOnTouchOutside(!sending);
         mSend.setVisibility(sending ? View.INVISIBLE : View.VISIBLE);
         mProgress.setVisibility(sending ? View.VISIBLE : View.GONE);
         updateSend();

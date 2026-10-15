@@ -164,6 +164,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private int mComposeHint;
     @Nullable
     private String mComposePhoto;
+    private boolean mComposeHidden;
 
     CommentsAdapter(Listener listener) {
         mListener = listener;
@@ -248,10 +249,31 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     void setComposePhoto(@Nullable String photo) {
         if (!Objects.equals(mComposePhoto, photo)) {
             mComposePhoto = photo;
-            if (mComposeHint != 0) {
+            if (hasComposeRow()) {
                 notifyItemChanged(headerCount() - 1);
             }
         }
+    }
+
+    /**
+     * METUBE: the "Add a comment…" row leaves while the composer is open (one bar on screen, no
+     * gap where it was) and comes back after.
+     */
+    void setComposeHidden(boolean hidden) {
+        if (mComposeHidden == hidden) {
+            return;
+        }
+        boolean had = hasComposeRow();
+        mComposeHidden = hidden;
+        if (had && !hasComposeRow()) {
+            notifyItemRemoved(headerCount());
+        } else if (!had && hasComposeRow()) {
+            notifyItemInserted(headerCount() - 1);
+        }
+    }
+
+    private boolean hasComposeRow() {
+        return mComposeHint != 0 && !mComposeHidden;
     }
 
     /** The replies page's "N replies" line (a reply posted to a comment that had none). */
@@ -320,7 +342,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     private int headerCount() {
-        return (mParent != null ? 2 : 0) + (mComposeHint != 0 ? 1 : 0);
+        return (mParent != null ? 2 : 0) + (hasComposeRow() ? 1 : 0);
     }
 
     private int footerCount() {

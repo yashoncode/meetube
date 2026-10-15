@@ -1659,6 +1659,13 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
                 ? R.string.mobile_comments_add_hint : R.string.mobile_comments_reply_hint,
                 draft != null ? draft : prefill, prefill, mMyPhoto, this);
         mComposer.show();
+        setComposeRowsHidden(true);
+    }
+
+    /** METUBE: while the composer is open its bar is the only "Add a comment…" on screen. */
+    private void setComposeRowsHidden(boolean hidden) {
+        mListAdapter.setComposeHidden(hidden);
+        mRepliesAdapter.setComposeHidden(hidden);
     }
 
     /** The open composer's target: one account, and the video or one thread answered with one mention. */
@@ -1679,6 +1686,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
             return;
         }
         mComposer = null;
+        setComposeRowsHidden(false);
         if (draft != null && !draft.trim().isEmpty() && !draft.trim().equals(
                 mComposePrefill != null ? mComposePrefill.trim() : null)) {
             mDrafts.put(draftKey(), draft);
