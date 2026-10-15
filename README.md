@@ -61,6 +61,16 @@ Android 7.0 or later. MeTube has its own app id (`io.github.yashoncode.metube`),
 
 Clone with `--recurse-submodules`. The backend lives in the `MediaServiceCore` and `SharedModules` submodules (NewTube's forks). Add `-PemulatorAbi` to run on an x86_64 emulator. For upstream documentation, see [README.newtube.md](README.newtube.md) and [CLAUDE.md](CLAUDE.md).
 
+## Support MeTube
+
+MeTube is free, has no ads and always will. I build it in my spare time because I love using it.
+If it makes your YouTube a little nicer and you'd like to say thanks, you can buy me a coffee.
+It's completely optional, and every coffee is truly appreciated. ☕
+
+<p align="center"><a href="https://buymeacoffee.com/yashwynth"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy me a coffee"></a></p>
+
+A star on GitHub or sharing MeTube with a friend helps just as much. Thank you for using it! ❤️
+
 ## License
 
 MIT, see [LICENSE](LICENSE). The original NewTube and SmartTube copyright notices are kept. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

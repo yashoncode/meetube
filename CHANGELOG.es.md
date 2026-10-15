@@ -1,5 +1,20 @@
 # Registro de cambios de MeTube
 
+## 2.9.5 — 2026-10-15 — Auriculares en el minirreproductor, interruptores al estilo iOS
+
+### Novedades
+
+- **Auriculares en el minirreproductor.** El minirreproductor de la app tiene un botón de auriculares para pasar a solo audio, y también su ventana flotante (imagen en imagen).
+- **Interruptores al estilo iOS.** Los interruptores de Ajustes son cápsulas compactas con un botón blanco que se vuelve cristal transparente al deslizarse.
+- **Búsqueda esmerilada en Ajustes.** La barra "Buscar en ajustes" es de cristal líquido y la lista se desliza por debajo. Sigue el ajuste Cristal líquido.
+- **Invítame a un café.** Si te gusta MeTube y quieres apoyarlo, hay un enlace en Ajustes y un pequeño agradecimiento al final de Acerca de.
+
+### Cambios
+
+- **Al tirar hacia abajo para la pantalla completa vertical, la página sigue tu dedo,** y vuelve a su sitio si sueltas antes. Entrar y salir es más fluido.
+- **Imagen en imagen más fluida desde el minirreproductor.** Sus botones se ocultan antes de que la ventana se encoja, y la tarjeta vuelve suavemente a su esquina al volver.
+- **En la pantalla completa vertical, los botones de minimizar y auriculares están bajo la barra de progreso,** al alcance del pulgar, y los botones de arriba quedan lejos de la cámara.
+
 ## 2.9.3 — 2026-10-15 — Proveedores de letras, comentarios y pantalla completa más fluidos
 
 ### Novedades

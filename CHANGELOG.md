@@ -2,6 +2,21 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [CHANGELOG.newtube.md](CHANGELOG.newtube.md).
 
+## 2.9.5 — 2026-10-15 — Headphones on the mini player, iOS-style switches
+
+### New
+
+- **Headphones on the mini player.** The in-app mini player has a headphones button to switch to audio only, and so does its floating picture-in-picture window.
+- **iOS-style switches.** Settings switches are compact capsules with a white pill knob that turns into clear glass as it slides.
+- **Frosted search in Settings.** The "Search settings" bar is liquid glass, and the list scrolls under it. It follows the Liquid glass setting.
+- **Buy me a coffee.** If you love MeTube and want to support it, there's a link in Settings and a small thank-you at the bottom of About.
+
+### Changed
+
+- **Pulling down into the vertical fullscreen follows your finger,** and springs back if you let go early. Going in and coming back out are smoother.
+- **Smoother picture-in-picture from the mini player.** Its buttons hide before the window shrinks, and the card eases back into its corner when you return.
+- **In the vertical fullscreen, the minimize and headphones buttons sit under the seek bar,** within reach of your thumb, and the top buttons stay clear of the camera notch.
+
 ## 2.9.3 — 2026-10-15 — Lyrics providers, smoother comments and fullscreen
 
 ### New
