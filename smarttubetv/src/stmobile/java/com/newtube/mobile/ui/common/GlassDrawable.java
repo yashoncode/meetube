@@ -31,7 +31,7 @@ import androidx.annotation.Nullable;
  * view. A disc (a pill, on a wide view) inset into the bounds: the {@link GlassSource} under it
  * (the video) saturated and blurred, a dark tint, grain and a light rim, with a ripple on press.
  * No lens: on a 40dp disc it would only magnify. Below API 31 there is nothing to sample, so the
- * tint alone, darker.
+ * tint alone, darker. With Liquid glass off ({@link Glass#isLiquid}) no grain or rim, as GlassView.
  */
 public final class GlassDrawable extends Drawable {
     private static final float BLUR_DP = 12f;
@@ -44,6 +44,7 @@ public final class GlassDrawable extends Drawable {
     private final GlassSource mSource;
     private final int mInset;
     private final float mDensity;
+    private final boolean mLiquid;
     private final Paint mTint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mNoise = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mRim = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -74,6 +75,7 @@ public final class GlassDrawable extends Drawable {
         mSource = source;
         mInset = insetPx;
         mDensity = host.getResources().getDisplayMetrics().density;
+        mLiquid = Glass.isLiquid(host.getContext());
         boolean live = GlassSource.HARDWARE && source != null;
         mNode = live ? new RenderNode("MeTube glass button") : null;
         mTint.setColor(live ? TINT : FALLBACK_TINT);
@@ -134,8 +136,10 @@ public final class GlassDrawable extends Drawable {
             canvas.restoreToCount(save);
         }
         canvas.drawRoundRect(mShape, r, r, mTint);
-        canvas.drawRoundRect(mShape, r, r, mNoise);
-        canvas.drawRoundRect(mShape, r, r, mRim);
+        if (mLiquid) {
+            canvas.drawRoundRect(mShape, r, r, mNoise);
+            canvas.drawRoundRect(mShape, r, r, mRim);
+        }
     }
 
     /** Refreshes where the glass sits on the source; true when that differs from the last recording. */
