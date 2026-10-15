@@ -85,6 +85,13 @@
     <string name="mobile_lyrics">Letra</string>
     <string name="mobile_lyrics_none">La letra de esta canción no está disponible</string>
     <string name="mobile_lyrics_source">Fuente: %1$s</string>
+    <string name="mobile_lyrics_provider_description">Proveedor de letras: %1$s</string>
+    <string name="mobile_lyrics_provider_choose">Elegir proveedor de letras</string>
+    <string name="mobile_lyrics_provider_current">Proveedor actual</string>
+    <string name="mobile_lyrics_provider_found">Letra encontrada · Toca para usarla</string>
+    <string name="mobile_lyrics_provider_fetching">Buscando la letra&#8230;</string>
+    <string name="mobile_lyrics_provider_not_fetched">Toca para buscar</string>
+    <string name="mobile_lyrics_provider_not_found">Letra no encontrada</string>
     <string name="mobile_watch_share_subject">Mira este vídeo</string>
     <string name="mobile_watch_subscribe">Suscribirse</string>
     <string name="mobile_watch_subscribed">Suscrito</string>

@@ -116,6 +116,19 @@ public class LyricsTest {
     }
 
     @Test
+    public void aSongKeepsWhatEachProviderAnswered() {
+        Lyrics timed = Lyrics.parseLrc(SYNCED, "t", "a", "s");
+        Lyrics.Song song = new Lyrics.Song(new LyricsSources.Query("t", "a", 212, null), false, null);
+        assertFalse(song.asked(0));
+        assertSame(timed, song.answer(0, timed));
+        assertNull(song.answer(1, null));
+        assertTrue(song.asked(1));
+        assertNull(song.lyrics(1)); // asked, and had none
+        assertEquals(timed.lines, song.lyrics(0).lines);
+        assertNull(song.lyrics(0).times); // not this video's timing: shown untimed
+    }
+
+    @Test
     public void lengthsReadAsSeconds() {
         assertEquals(226, Lyrics.seconds("3:46"));
         assertEquals(3723, Lyrics.seconds("1:02:03"));

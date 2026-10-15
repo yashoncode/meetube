@@ -22,14 +22,12 @@ import java.io.StringReader;
 import java.net.URLEncoder;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -56,6 +54,9 @@ import okhttp3.ResponseBody;
  * <p>Timing is only kept when it is this video's: an art track (the recording itself), or a video
  * the recording's length. A music video with an intro shows the words untimed - lit lines would run
  * ahead of the singing.
+ *
+ * <p>What each source answered is kept with the song ({@link Song}), so the listener can switch to
+ * another provider's lyrics, as in BitChord (LyricsSheet's provider chooser).
  */
 final class Lyrics {
     private static final String LRCLIB = "https://lrclib.net/api/search?track_name=";
@@ -78,12 +79,24 @@ final class Lyrics {
                     + "|\\b(?:official\\s+audio|full\\s+(?:audio\\s+)?song|audio\\s+song|lyrics?|lyrical)\\b",
             Pattern.CASE_INSENSITIVE);
 
+    /**
+     * Every source by the name BitChord's chooser gives it, in the order {@link #find} asks them: the
+     * first nine raced, PaxSenix and Genius only when those miss. {@link #ask} goes by this index.
+     */
+    static final String[] PROVIDERS = {"lrc.red", "BiniLyrics", "BetterLyrics", "BetterLyrics Portato",
+            "LyricsPlus", "Unison", "YouTube Music", "KuGou", "LRCLIB", "PaxSenix", "Genius"};
+    private static final int BINI = 1;
+    private static final int PAXSENIX = 9;
+    private static final int GENIUS = 10;
+    /** A source's answer when it has no lyrics for the song. */
+    private static final Lyrics MISS = new Lyrics("", "", Collections.emptyList(), null, "");
+
     static final ExecutorService POOL = Executors.newCachedThreadPool();
-    /** Found lyrics by video id; a miss is asked again next time. */
-    private static final Map<String, Lyrics> sFound = Collections.synchronizedMap(
-            new LinkedHashMap<String, Lyrics>(16, 0.75f, true) {
+    /** Songs whose lyrics were found, by video id; a miss is asked again next time. */
+    private static final Map<String, Song> sFound = Collections.synchronizedMap(
+            new LinkedHashMap<String, Song>(16, 0.75f, true) {
                 @Override
-                protected boolean removeEldestEntry(Map.Entry<String, Lyrics> eldest) {
+                protected boolean removeEldestEntry(Map.Entry<String, Song> eldest) {
                     return size() > 20;
                 }
             });
@@ -105,17 +118,17 @@ final class Lyrics {
         this.source = source;
     }
 
-    /** {@code result} gets the lyrics on the main thread, or null when no source has them. */
+    /** {@code result} gets the song, its lyrics found, on the main thread, or null when no source has them. */
     static void fetch(@NonNull String videoId, String fallbackTitle, String fallbackArtist,
-                      @NonNull Consumer<Lyrics> result) {
-        Lyrics known = sFound.get(videoId);
+                      @NonNull Consumer<Song> result) {
+        Song known = sFound.get(videoId);
         if (known != null) {
             result.accept(known);
             return;
         }
         Handler main = new Handler(Looper.getMainLooper());
         POOL.execute(() -> {
-            Lyrics found = null;
+            Song found = null;
             try {
                 found = find(videoId, fallbackTitle, fallbackArtist);
             } catch (Exception ignored) {
@@ -124,13 +137,35 @@ final class Lyrics {
             if (found != null) {
                 sFound.put(videoId, found);
             }
-            Lyrics answer = found;
+            Song answer = found;
             main.post(() -> result.accept(answer));
         });
     }
 
+    /**
+     * METUBE(lyrics): one provider's lyrics for {@code song}, the listener's pick in the provider
+     * chooser. {@code result} gets them on the main thread (timed as {@link Song#lyrics} times them),
+     * or null when that provider has none; the answer is kept with the song either way.
+     */
+    static void fetch(@NonNull Song song, int provider, @NonNull Consumer<Lyrics> result) {
+        Handler main = new Handler(Looper.getMainLooper());
+        POOL.execute(() -> {
+            Lyrics found = null;
+            try {
+                found = ask(song, provider);
+            } catch (Exception ignored) {
+                // no network, refused, changed answers: none from this provider
+            }
+            Lyrics answer = found;
+            main.post(() -> {
+                song.answer(provider, answer);
+                result.accept(song.lyrics(provider));
+            });
+        });
+    }
+
     @Nullable
-    private static Lyrics find(String videoId, String fallbackTitle, String fallbackArtist) {
+    private static Song find(String videoId, String fallbackTitle, String fallbackArtist) {
         Track track = null;
         try {
             track = track(videoId);
@@ -146,52 +181,122 @@ final class Lyrics {
         boolean timedOk = (track != null && track.audioTrack) || (recording != null && videoSeconds > 0
                 && Math.abs(recording.seconds - videoSeconds) <= SAME_LENGTH_S);
         String lyricsId = track != null ? track.lyricsId : null;
+        Song song = new Song(query, timedOk, lyricsId);
 
         // BitChord's order, minus the sources that are gone or want a key (see LyricsSources)
-        List<Callable<Lyrics>> sources = Arrays.asList(
-                () -> LyricsSources.lrcRed(query),
-                () -> LyricsSources.biniLyrics(query),
-                () -> LyricsSources.betterLyrics(query),
-                () -> LyricsSources.betterLyricsPortato(query),
-                () -> LyricsSources.lyricsPlus(query),
-                () -> LyricsSources.unison(query),
-                () -> lyricsId != null ? youtubeMusic(lyricsId, query) : null,
-                () -> LyricsSources.kuGou(query),
-                () -> lrclib(query));
         List<Future<Lyrics>> racing = new ArrayList<>();
-        for (Callable<Lyrics> source : sources) {
-            racing.add(POOL.submit(source));
+        for (int i = 0; i < PAXSENIX; i++) {
+            int provider = i;
+            // BiniLyrics is lrc.red's catalogue matched by name: raced only when lrc.red had no ISRC
+            racing.add(i == BINI && query.isrc != null ? null : POOL.submit(() -> ask(song, provider)));
         }
         try {
-            Lyrics plain = null;
-            for (Future<Lyrics> answer : racing) {
-                Lyrics found = await(answer);
+            int plain = -1;
+            for (int i = 0; i < racing.size(); i++) {
+                Lyrics found = racing.get(i) != null ? song.answer(i, await(racing.get(i))) : null;
                 if (found == null) {
                     continue;
                 }
                 if (timedOk && found.times != null) {
-                    return found;
+                    return song.show(i);
                 }
-                if (plain == null) {
-                    plain = found.untimed();
+                if (plain < 0) {
+                    plain = i;
                 }
                 if (!timedOk) {
-                    return plain; // nothing further down can do better than words
+                    return song.show(plain); // nothing further down can do better than words
                 }
             }
             // Asked only now, not raced: PaxSenix fetches Apple's 3 MB web player for a token, and
             // Genius scrapes a page - BitChord too keeps Genius for when everything else missed.
-            if (timedOk || plain == null) {
-                Lyrics apple = await(POOL.submit(() -> LyricsSources.paxSenix(query)));
-                if (apple != null && (apple.times != null || plain == null)) {
-                    return timedOk ? apple : apple.untimed();
+            if (timedOk || plain < 0) {
+                Lyrics apple = song.answer(PAXSENIX, await(POOL.submit(() -> ask(song, PAXSENIX))));
+                if (apple != null && (apple.times != null || plain < 0)) {
+                    return song.show(PAXSENIX);
                 }
             }
-            return plain != null ? plain : await(POOL.submit(() -> LyricsSources.genius(query)));
+            if (plain >= 0) {
+                return song.show(plain);
+            }
+            Lyrics genius = song.answer(GENIUS, await(POOL.submit(() -> ask(song, GENIUS))));
+            return genius != null ? song.show(GENIUS) : null;
         } finally {
-            for (Future<Lyrics> answer : racing) {
+            for (int i = 0; i < racing.size(); i++) {
+                Future<Lyrics> answer = racing.get(i);
+                if (answer == null) {
+                    continue;
+                }
+                // an answer already in is kept for the chooser; one still coming is called off
+                if (answer.isDone() && !song.asked(i)) {
+                    song.answer(i, await(answer));
+                }
                 answer.cancel(true);
             }
+        }
+    }
+
+    /** Asks one source ({@link #PROVIDERS} index) for the song's lyrics; null when it has none. */
+    @Nullable
+    private static Lyrics ask(Song song, int provider) throws Exception {
+        LyricsSources.Query query = song.query;
+        switch (provider) {
+            case 0: return LyricsSources.lrcRed(query);
+            case BINI: return LyricsSources.biniLyrics(query);
+            case 2: return LyricsSources.betterLyrics(query);
+            case 3: return LyricsSources.betterLyricsPortato(query);
+            case 4: return LyricsSources.lyricsPlus(query);
+            case 5: return LyricsSources.unison(query);
+            case 6: return song.lyricsId != null ? youtubeMusic(song.lyricsId, query) : null;
+            case 7: return LyricsSources.kuGou(query);
+            case 8: return lrclib(query);
+            case PAXSENIX: return LyricsSources.paxSenix(query);
+            default: return LyricsSources.genius(query);
+        }
+    }
+
+    /**
+     * METUBE(lyrics): one video's song as the sources were asked about it - what they are asked,
+     * whether timing can be this video's, and each one's answer so far, so the provider chooser
+     * shows what each has and switches without asking again. Filled on the lookup's thread before it
+     * is handed on; touched only on the main thread after that.
+     */
+    static final class Song {
+        final LyricsSources.Query query;
+        final boolean timedOk;
+        @Nullable
+        final String lyricsId;
+        /** By provider index: the source's lyrics, {@link Lyrics#MISS}, or null while never asked. */
+        final Lyrics[] answers = new Lyrics[PROVIDERS.length];
+        /** The source whose lyrics are shown. */
+        int shown;
+
+        Song(LyricsSources.Query query, boolean timedOk, @Nullable String lyricsId) {
+            this.query = query;
+            this.timedOk = timedOk;
+            this.lyricsId = lyricsId;
+        }
+
+        boolean asked(int provider) {
+            return answers[provider] != null;
+        }
+
+        /** {@code provider}'s lyrics, their timing kept only when it is this video's; null when none. */
+        @Nullable
+        Lyrics lyrics(int provider) {
+            Lyrics answer = answers[provider];
+            return answer == null || answer == MISS ? null : timedOk ? answer : answer.untimed();
+        }
+
+        /** Keeps {@code provider}'s answer, and hands it back. */
+        @Nullable
+        Lyrics answer(int provider, @Nullable Lyrics lyrics) {
+            answers[provider] = lyrics != null ? lyrics : MISS;
+            return lyrics;
+        }
+
+        Song show(int provider) {
+            shown = provider;
+            return this;
         }
     }
 

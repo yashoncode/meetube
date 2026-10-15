@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  METUBE(lyrics): the song's lyrics, opened from the watch page's Music pill. A title + close header,
-  then a loader until Lyrics answers: timed lines that follow the song (LyricsSheet), plain selectable
+  METUBE(lyrics): the song's lyrics, opened from the watch page's Music pill. A title, provider and
+  close header, then a loader until Lyrics answers: timed lines that follow the song (LyricsSheet), plain selectable
   text, or "not available". The frame is the frosted sheet glass; its height is capped from code so
   it stops under the video, like the Description panel.
 -->
@@ -37,6 +37,40 @@
             android:textColor="@color/mobile_color_on_surface"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <!-- Whose lyrics these are, once found; a tap opens the other providers (LyricsSheet). The
+             comments panel's sort button. -->
+        <LinearLayout
+            android:id="@+id/lyrics_sheet_provider"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_comment_action"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="6dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/lyrics_sheet_provider_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:maxLines="1"
+                android:textColor="@color/mobile_color_on_surface_secondary"
+                android:textSize="14sp"
+                tools:text="LRCLIB" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="2dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_watch_expand" />
+
+        </LinearLayout>
 
         <ImageButton
             android:id="@+id/lyrics_sheet_close"

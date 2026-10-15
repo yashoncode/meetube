@@ -135,12 +135,12 @@ final class LyricsSources {
                 query.title, query.artist, "lrc.red"));
     }
 
-    /** The same Apple catalogue matched by name: only worth asking when lrc.red had no ISRC to go on. */
+    /**
+     * The same Apple catalogue matched by name: raced only when lrc.red had no ISRC to go on
+     * ({@link Lyrics}), asked anyway when the listener picks it.
+     */
     @Nullable
     static Lyrics biniLyrics(Query query) throws Exception {
-        if (query.isrc != null) {
-            return null;
-        }
         JSONArray results = new JSONObject(get("https://lyrics-api.binimum.org/?track=" + enc(query.title)
                 + "&artist=" + enc(query.artist) + duration("&duration=", query))).optJSONArray("results");
         JSONObject hit = results != null ? results.optJSONObject(0) : null;

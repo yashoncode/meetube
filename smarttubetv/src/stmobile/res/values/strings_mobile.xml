@@ -64,6 +64,14 @@
     <string name="mobile_lyrics">Lyrics</string>
     <string name="mobile_lyrics_none">Lyrics aren\'t available for this song</string>
     <string name="mobile_lyrics_source">Source: %1$s</string>
+    <!-- METUBE(lyrics): the lyrics provider chooser (LyricsSheet), in BitChord's words -->
+    <string name="mobile_lyrics_provider_description">Lyrics provider: %1$s</string>
+    <string name="mobile_lyrics_provider_choose">Choose lyrics provider</string>
+    <string name="mobile_lyrics_provider_current">Current provider</string>
+    <string name="mobile_lyrics_provider_found">Lyrics found · Tap to use</string>
+    <string name="mobile_lyrics_provider_fetching">Fetching lyrics&#8230;</string>
+    <string name="mobile_lyrics_provider_not_fetched">Tap to fetch</string>
+    <string name="mobile_lyrics_provider_not_found">Lyrics not found</string>
     <!-- Watch-page action pill: opens the add/remove-from-playlist sheet. "Saved" while the video
          is in at least one playlist. -->
     <string name="mobile_watch_save">Save</string>

@@ -2253,6 +2253,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(content);
         }
+        LyricsSheet.setMorphAlpha(mLyricsSheet, content); // METUBE(lyrics)
         float backdrop = 1f - p;
         if (mWatchScroll != null && mWatchScroll.getBackground() != null) {
             mWatchScroll.getBackground().mutate().setAlpha(Math.round(255f * backdrop));
@@ -5464,11 +5465,10 @@ public class MobilePlaybackActivity extends MobileActivity
             android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
                     new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.STANDARD));
         }
-        applyWatchLayoutForOrientation(Configuration.ORIENTATION_PORTRAIT);
         // METUBE(fullscreen): the bars' room goes or comes back in this same layout, so the box moves
         // once - it used to jump by the status bar when the bars' insets landed mid-move.
         refreshContentInsets();
-        if (mWatchRoot != null) {
+        applyWatchLayoutForOrientation(Configuration.ORIENTATION_PORTRAIT);
         if (on && mWatchScroll != null) {
             // The growing box pushes the page off the bottom instead of the page vanishing at once.
             mWatchScroll.setVisibility(View.VISIBLE);
@@ -5478,6 +5478,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 }
             }, PORTRAIT_FULL_MS);
         }
+        if (mWatchRoot != null) {
             updateInlineViewport(mWatchRoot.getWidth());
         }
         setResizeMode(PlayerData.instance(this).getResizeMode()); // fit while upright-full; also re-lays the controls
@@ -6183,6 +6184,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(contentAlpha);
         }
+        LyricsSheet.setMorphAlpha(mLyricsSheet, contentAlpha); // METUBE(lyrics): fades like the comments
     }
 
     /**
@@ -6278,6 +6280,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(1f);
         }
+        LyricsSheet.setMorphAlpha(mLyricsSheet, 1f); // METUBE(lyrics)
     }
 
     private void animateMorph(float to, long durationMs, @Nullable Runnable endAction) {
@@ -8692,7 +8695,8 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mLyricsSheet = LyricsSheet.create(this, video.videoId, video.getTitle(), video.getAuthor(),
                 isLandscape() ? null : mVideoArea,
-                () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1);
+                () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1,
+                this::showPlayerSheet);
         showPlayerSheet(mLyricsSheet);
     }
 
