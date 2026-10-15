@@ -220,6 +220,12 @@ public class MobileBrowseActivity extends MobileActivity
     /**
      * NEWTUBE(feed-swap): the stale -> fresh swap in flight while the fresh first screen's pictures
      * warm up (see {@link #submitFeed}). While it is pending, grid submissions wait for it - it
+    /**
+     * METUBE(refresh): Home cards already on screen when Home was pulled to refresh. YouTube answers
+     * a refresh with the same Home, so the refreshed list leaves these out and its top fills with
+     * the rest of the page, unseen - no extra request. For this run of the app.
+     */
+    private final java.util.Set<Video> mSeenOnRefresh = new java.util.HashSet<>();
      * submits the newest {@link #mCurrentVideos} when it lands.
      */
     private FeedSwapWarmup mFeedSwap;
@@ -370,6 +376,9 @@ public class MobileBrowseActivity extends MobileActivity
     /**
      * Loading skeleton: card ghosts under a sweeping shimmer (ShimmerLinearLayout) instead of a
      * naked spinner. Only ever shown over an EMPTY grid - a section repainted from
+            if (mCurrentSectionId == MediaGroup.TYPE_HOME) {
+                rememberSeenHome();
+            }
      * {@link FeedCache} keeps its content visible while refreshing. NEWTUBE(motion): it leaves by
      * fading out over the cards that replace it (a cut used to swap one for the other), and at
      * once when nothing replaces it (an error, an empty section).
@@ -378,6 +387,18 @@ public class MobileBrowseActivity extends MobileActivity
         if (visible) {
             mSkeletonShows++;
             mFeedSkeleton.animate().cancel();
+    /** METUBE(refresh): every Home card down to the last one on screen counts as seen. */
+    private void rememberSeenHome() {
+        if (mSeenOnRefresh.size() > 300) {
+            mSeenOnRefresh.clear(); // ponytail: most of Home's first pages seen, start over rather than run dry
+        }
+        List<Video> shown = mAdapter.getCurrentList();
+        int last = Math.min(mLayoutManager.findLastVisibleItemPosition(), shown.size() - 1);
+        for (int i = 0; i <= last; i++) {
+            mSeenOnRefresh.add(shown.get(i));
+        }
+    }
+
             mFeedSkeleton.setAlpha(1f);
             mFeedSkeleton.setVisibility(View.VISIBLE);
             return;
@@ -2612,7 +2633,7 @@ public class MobileBrowseActivity extends MobileActivity
         // and same isMix()", so equal videos always share a bucket.
         java.util.Set<Video> present = new java.util.HashSet<>(mCurrentVideos);
         for (Video video : videos) {
-            if (isVisibleFeedItem(video) && present.add(video)) {
+            if (isVisibleFeedItem(video) && !(home && mSeenOnRefresh.contains(video)) && present.add(video)) {
                 mCurrentVideos.add(video);
             }
         }
@@ -2650,6 +2671,7 @@ public class MobileBrowseActivity extends MobileActivity
      * NEWTUBE(feed): the TV Home feed mixes in search-suggestion tiles - a thumbnail plus a query
      * ("Rivian owner experience"), no video, playlist or channel behind it. On the phone they
      * rendered as video cards whose meta line repeated the title, and tapping one opened Search
+        boolean home = mCurrentSectionId == MediaGroup.TYPE_HOME;
      * instead of playing: a card that lies about what it is. Dropped from the grids.
      */
     private static boolean isSearchQueryTile(Video video) {
