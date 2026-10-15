@@ -180,9 +180,7 @@ public abstract class MobileActivity extends MotherActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(content, (view, windowInsets) -> {
             if (shouldInsetContentForSystemBars()) {
-                Insets insets = windowInsets.getInsets(
-                        WindowInsetsCompat.Type.systemBars()
-                                | WindowInsetsCompat.Type.displayCutout());
+                Insets insets = contentInsets(windowInsets);
                 view.setPadding(insets.left, insets.top, insets.right,
                         shouldInsetContentForNavigationBar() ? insets.bottom : 0);
             } else {
@@ -191,6 +189,11 @@ public abstract class MobileActivity extends MotherActivity {
             return windowInsets;
         });
         ViewCompat.requestApplyInsets(content);
+    }
+
+    /** The bars and cutout the content keeps clear of. */
+    protected Insets contentInsets(WindowInsetsCompat windowInsets) {
+        return windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
     }
 
     /** Override for a screen that intentionally draws behind hidden system bars. */

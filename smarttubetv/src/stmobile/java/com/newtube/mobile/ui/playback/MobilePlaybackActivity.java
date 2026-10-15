@@ -2321,7 +2321,20 @@ public class MobilePlaybackActivity extends MobileActivity
     protected boolean shouldInsetContentForSystemBars() {
         // METUBE(shorts): a short runs under the status and navigation bars, edge to edge; its
         // overlay keeps clear of them itself (the listener on it in bindViews).
-        return layoutOrientation() != Configuration.ORIENTATION_LANDSCAPE && !isShortsMode();
+        // METUBE(fullscreen): so does the vertical fullscreen, its bars hidden.
+        return layoutOrientation() != Configuration.ORIENTATION_LANDSCAPE && !isTallMode();
+    }
+
+    /**
+     * METUBE(fullscreen): the bars' room whether they show yet or not (Android 11+). Leaving the
+     * vertical fullscreen the page lays out while the bars are still hidden; their visible insets
+     * put it at the very top, then dropped it by the status bar once they were back.
+     */
+    @Override
+    protected Insets contentInsets(WindowInsetsCompat insets) {
+        return Build.VERSION.SDK_INT >= 30 ? insets.getInsetsIgnoringVisibility(
+                WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout())
+                : super.contentInsets(insets);
     }
 
     /**
@@ -5452,7 +5465,19 @@ public class MobilePlaybackActivity extends MobileActivity
                     new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.STANDARD));
         }
         applyWatchLayoutForOrientation(Configuration.ORIENTATION_PORTRAIT);
+        // METUBE(fullscreen): the bars' room goes or comes back in this same layout, so the box moves
+        // once - it used to jump by the status bar when the bars' insets landed mid-move.
+        refreshContentInsets();
         if (mWatchRoot != null) {
+        if (on && mWatchScroll != null) {
+            // The growing box pushes the page off the bottom instead of the page vanishing at once.
+            mWatchScroll.setVisibility(View.VISIBLE);
+            mWatchScroll.postDelayed(() -> {
+                if (mPortraitFull && mWatchScroll != null) {
+                    mWatchScroll.setVisibility(View.GONE);
+                }
+            }, PORTRAIT_FULL_MS);
+        }
             updateInlineViewport(mWatchRoot.getWidth());
         }
         setResizeMode(PlayerData.instance(this).getResizeMode()); // fit while upright-full; also re-lays the controls
