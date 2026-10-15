@@ -96,6 +96,7 @@ public final class MobileMiniPlayerController {
         });
 
         mClose.setOnClickListener(v -> close());
+        MiniPip.wireAudioButton(activity.findViewById(R.id.mobile_mini_audio));
         // NEWTUBE(motion): or swipe the card away sideways.
         mSwipe = MiniCardSwipe.attach(mBar, new MiniCardSwipe.Callback() {
             @Override
@@ -489,6 +490,7 @@ public final class MobileMiniPlayerController {
     }
 
     private void updatePlayPause(ExoPlayer player) {
+        MiniPip.syncAudioButton(mActivity.findViewById(R.id.mobile_mini_audio));
         boolean playing = player.getPlayWhenReady()
                 && player.getPlaybackState() != Player.STATE_ENDED
                 && player.getPlaybackState() != Player.STATE_IDLE;

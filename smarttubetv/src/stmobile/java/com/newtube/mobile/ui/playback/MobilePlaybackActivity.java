@@ -442,6 +442,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mBackgroundAudioMode;
     /** METUBE(audio-only): the headphones button is on - the video track stays dropped on screen too. */
     private boolean mAudioOnly;
+    /** METUBE(audio-only): the live session's state, for the mini card's headphones button. */
+    static volatile boolean sAudioOnly;
+    static final String EXTRA_AUDIO_TOGGLE = "toggle";
     /** METUBE(shorts): onStop paused the short (no background play); onStart plays it again. */
     private boolean mShortPausedByLeave;
     /** The PiP headphones closed the window: its exit is not a dismiss, the audio plays on. */
@@ -458,7 +461,7 @@ public class MobilePlaybackActivity extends MobileActivity
     // Picture-in-Picture play/pause RemoteAction wiring.
     static final String ACTION_PIP_TOGGLE = "com.newtube.mobile.action.PIP_TOGGLE";
     /** METUBE(audio-only): the PiP window's headphones - close the window, keep the sound. */
-    private static final String ACTION_PIP_AUDIO = "com.newtube.mobile.action.PIP_AUDIO";
+    static final String ACTION_PIP_AUDIO = "com.newtube.mobile.action.PIP_AUDIO";
     private static final int PIP_REQUEST_TOGGLE = 700;
     private static final int PIP_REQUEST_AUDIO = 701;
     /** What the PiP window was last given (play state + aspect); null outside PiP. */
@@ -1894,6 +1897,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // Real finish: tear down the background-playback service and the PiP receiver.
         unbindPlaybackService();
         unregisterPipReceiver();
+        sAudioOnly = false; // the session is over: the next one's card shows again
 
         if (mPresenter != null && mPresenter.getView() == this) {
             mPresenter.onViewDestroyed();
@@ -2374,6 +2378,14 @@ public class MobilePlaybackActivity extends MobileActivity
             right = Math.max(bars.right, strip);
             top = bars.top;
             bottom = bars.bottom;
+        } else if (mPortraitFull) {
+            // METUBE(fullscreen): the video runs under the hidden status bar, so the top row
+            // drops below the camera's band (the bars' room, visible or not) instead of flanking it.
+            WindowInsetsCompat rootInsets = ViewCompat.getRootWindowInsets(mControlsRoot);
+            if (rootInsets != null) {
+                top = Math.max(rootInsets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.statusBars()).top,
+                        rootInsets.getInsets(WindowInsetsCompat.Type.displayCutout()).top);
+            }
         }
         if (mControlsRoot.getPaddingLeft() != left || mControlsRoot.getPaddingTop() != top
                 || mControlsRoot.getPaddingRight() != right || mControlsRoot.getPaddingBottom() != bottom) {
@@ -2382,6 +2394,30 @@ public class MobilePlaybackActivity extends MobileActivity
         bleedScrim(mTopScrim, left, top, right, 0);
         bleedScrim(mBottomScrim, left, 0, right, bottom);
         applySeekBarLayout(left, top, right, bottom);
+        placeMinimizeAndAudio(bottom);
+    }
+
+    /**
+     * METUBE(fullscreen): in the vertical fullscreen the minimize and headphones buttons sit side by
+     * side under the seek bar, centred in the room it is lifted by - in thumb reach. Elsewhere they
+     * are back at the top-left (the layout's 4 / 52 dp in, 10 dp down).
+     */
+    private void placeMinimizeAndAudio(int bottom) {
+        boolean low = mPortraitFull && !isLandscape();
+        int lift = dp(8) + Math.round(getResources().getDisplayMetrics().heightPixels * PORTRAIT_FULL_BAR_LIFT);
+        int fromBottom = bottom + Math.max(0, lift / 2 - dp(24));
+        View[] buttons = {mBackButton, mAudioButton};
+        for (int i = 0; i < buttons.length; i++) {
+            View button = buttons[i];
+            if (button == null) {
+                continue;
+            }
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) button.getLayoutParams();
+            lp.gravity = low ? Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL : Gravity.TOP | Gravity.START;
+            lp.setMargins(low ? 0 : dp(i == 0 ? 4 : 52), low ? 0 : dp(10), 0, low ? fromBottom : 0);
+            button.setLayoutParams(lp);
+            button.setTranslationX(low ? dp(i == 0 ? -28 : 28) : 0f);
+        }
     }
 
     /**
@@ -2859,6 +2895,7 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     private void setAudioOnly(boolean audioOnly) {
         mAudioOnly = audioOnly;
+        sAudioOnly = audioOnly;
         mAudioButton.setSelected(audioOnly);
         if (mExoPlayerController != null && !mBackgroundAudioMode) {
             mExoPlayerController.setVideoTrackDisabled(audioOnly);
@@ -3013,6 +3050,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 if (intent != null && ACTION_PIP_TOGGLE.equals(intent.getAction())) {
                     togglePlayPause();
                     updatePipActions();
+                } else if (intent != null && intent.getBooleanExtra(EXTRA_AUDIO_TOGGLE, false)) {
+                    setAudioOnly(!mAudioOnly); // the mini card's headphones
                 } else if (intent != null && ACTION_PIP_AUDIO.equals(intent.getAction()) && mIsInPip) {
                     // Sent behind Home like a dismissed window; the exit below keeps the player.
                     mPipToAudio = true;
@@ -3020,6 +3059,8 @@ public class MobilePlaybackActivity extends MobileActivity
                         setAudioOnly(true);
                     }
                     moveTaskToBack(true);
+                } else if (intent != null && ACTION_PIP_AUDIO.equals(intent.getAction()) && !mAudioOnly) {
+                    setAudioOnly(true); // the mini card's PiP window (MiniPip) closes itself
                 }
             }
         };
@@ -5444,7 +5485,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** How far the page must be pulled down from its top to enter the vertical fullscreen. */
     private static final float PORTRAIT_FULL_PULL_DP = 72f;
     /** The box's move into and out of the vertical fullscreen. */
-    private static final long PORTRAIT_FULL_MS = 240;
+    private static final long PORTRAIT_FULL_MS = 320;
     /** The vertical fullscreen's seek bar sits this share of the screen above the bottom. */
     private static final float PORTRAIT_FULL_BAR_LIFT = 0.16f;
     private float mPullDownX;
@@ -5463,20 +5504,38 @@ public class MobilePlaybackActivity extends MobileActivity
         mPortraitFull = on;
         if (mWatchRoot != null) {
             android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
-                    new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.STANDARD));
+                    new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED));
         }
         // METUBE(fullscreen): the bars' room goes or comes back in this same layout, so the box moves
         // once - it used to jump by the status bar when the bars' insets landed mid-move.
         refreshContentInsets();
         applyWatchLayoutForOrientation(Configuration.ORIENTATION_PORTRAIT);
+        if (mVideoArea != null) { // a pull's lift settles as the box grows
+            mVideoArea.animate().scaleX(1f).scaleY(1f).setDuration(PORTRAIT_FULL_MS)
+                    .setInterpolator(Motion.EMPHASIZED).start();
+        }
         if (on && mWatchScroll != null) {
-            // The growing box pushes the page off the bottom instead of the page vanishing at once.
+            // The growing box pushes the page off the bottom, fading, instead of it vanishing at once.
             mWatchScroll.setVisibility(View.VISIBLE);
+            mWatchScroll.animate().cancel();
+            mWatchScroll.animate().alpha(0f)
+                    .translationY(mWatchScroll.getTranslationY() + 96 * getResources().getDisplayMetrics().density)
+                    .setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED_ACCELERATE).start();
             mWatchScroll.postDelayed(() -> {
                 if (mPortraitFull && mWatchScroll != null) {
                     mWatchScroll.setVisibility(View.GONE);
+                    mWatchScroll.setAlpha(1f);
+                    mWatchScroll.setTranslationY(0f);
                 }
             }, PORTRAIT_FULL_MS);
+        } else if (!on && mWatchScroll != null) {
+            // Coming back, the page rises in under the shrinking box instead of popping in.
+            mWatchScroll.animate().cancel();
+            mWatchScroll.setAlpha(0f);
+            mWatchScroll.setTranslationY(64 * getResources().getDisplayMetrics().density);
+            mWatchScroll.animate().alpha(1f).translationY(0f).setStartDelay(PORTRAIT_FULL_MS / 4)
+                    .setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED_DECELERATE)
+                    .withEndAction(() -> mWatchScroll.animate().setStartDelay(0)).start();
         }
         if (mWatchRoot != null) {
             updateInlineViewport(mWatchRoot.getWidth());
@@ -5495,6 +5554,7 @@ public class MobilePlaybackActivity extends MobileActivity
         } else {
             applySystemBarsForOrientation(Configuration.ORIENTATION_PORTRAIT);
         }
+        applyControlsInsets(); // the top row clears the camera band while upright-full
         Haptics.threshold(mContainer, on);
     }
 
@@ -5512,35 +5572,80 @@ public class MobilePlaybackActivity extends MobileActivity
                 mPullDownY = canPullToPortraitFull(event) ? event.getRawY() : -1f;
                 return false;
             case android.view.MotionEvent.ACTION_MOVE:
-                if (mPullConsumed) {
-                    return true;
+                if (mPullDownY < 0f) {
+                    return mPullConsumed;
                 }
-                if (mPullDownY >= 0f) {
-                    float dy = event.getRawY() - mPullDownY;
+                float dy = event.getRawY() - mPullDownY;
+                float density = getResources().getDisplayMetrics().density;
+                if (!mPullConsumed) {
                     float dx = Math.abs(event.getRawX() - mPullDownX);
-                    float density = getResources().getDisplayMetrics().density;
                     if (dy < -8 * density || dx > Math.max(16 * density, Math.abs(dy))) {
                         mPullDownY = -1f; // scrolling the page, or a sideways drag
-                    } else if (dy > PORTRAIT_FULL_PULL_DP * density) {
-                        mPullDownY = -1f;
-                        mPullConsumed = true;
-                        android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
-                        cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
-                        super.dispatchTouchEvent(cancel);
-                        cancel.recycle();
-                        setPortraitFull(true);
-                        return true;
+                        return false;
                     }
+                    if (dy < 10 * density) {
+                        return false;
+                    }
+                    // METUBE(fullscreen): a pull from here on - the page follows the finger.
+                    mPullConsumed = true;
+                    android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
+                    cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
+                    super.dispatchTouchEvent(cancel);
+                    cancel.recycle();
                 }
-                return false;
+                showPullProgress(Math.max(0f, dy));
+                return true;
             case android.view.MotionEvent.ACTION_UP:
             case android.view.MotionEvent.ACTION_CANCEL:
-                mPullDownY = -1f;
                 boolean consumed = mPullConsumed;
+                if (consumed && mPullDownY >= 0f) {
+                    float pulled = event.getRawY() - mPullDownY;
+                    boolean enter = event.getActionMasked() == android.view.MotionEvent.ACTION_UP
+                            && pulled > PORTRAIT_FULL_PULL_DP * getResources().getDisplayMetrics().density;
+                    if (enter) {
+                        setPortraitFull(true);
+                    } else {
+                        settlePull();
+                    }
+                }
+                mPullDownY = -1f;
                 mPullConsumed = false;
                 return consumed;
             default:
                 return mPullConsumed;
+        }
+    }
+
+    /** The pull under the finger: the page slides down (damped) and fades, the video lifts a little. */
+    private void showPullProgress(float dy) {
+        float full = PORTRAIT_FULL_PULL_DP * getResources().getDisplayMetrics().density;
+        float progress = Math.min(1f, dy / full);
+        // Past the threshold the page keeps moving, slower: it still feels attached.
+        float travel = dy <= full ? dy * 0.6f : full * 0.6f + (dy - full) * 0.2f;
+        if (mWatchScroll != null) {
+            mWatchScroll.animate().cancel();
+            mWatchScroll.setTranslationY(travel);
+            mWatchScroll.setAlpha(1f - 0.35f * progress);
+        }
+        if (mVideoArea != null) {
+            mVideoArea.animate().cancel();
+            mVideoArea.setPivotX(mVideoArea.getWidth() / 2f);
+            mVideoArea.setPivotY(0f);
+            float scale = 1f + 0.04f * progress;
+            mVideoArea.setScaleX(scale);
+            mVideoArea.setScaleY(scale);
+        }
+    }
+
+    /** A pull let go short of the threshold: everything springs back. */
+    private void settlePull() {
+        if (mWatchScroll != null) {
+            mWatchScroll.animate().translationY(0f).alpha(1f).setDuration(220)
+                    .setInterpolator(Motion.EMPHASIZED_DECELERATE).start();
+        }
+        if (mVideoArea != null) {
+            mVideoArea.animate().scaleX(1f).scaleY(1f).setDuration(220)
+                    .setInterpolator(Motion.EMPHASIZED_DECELERATE).start();
         }
     }
 

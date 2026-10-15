@@ -353,7 +353,8 @@ public class MobileBrowseActivity extends MobileActivity
             // This screen floated in a task of its own; the app's task gets a fresh Home when
             // the player finishes, so this copy goes with its window.
             finishAndRemoveTask();
-        }, mMiniPlayPause, findViewById(R.id.mobile_mini_close), mMiniProgress);
+        }, mMiniPlayPause, findViewById(R.id.mobile_mini_close), mMiniProgress,
+                findViewById(R.id.mobile_mini_audio));
         // NEWTUBE(mini-inset): the last card can scroll clear of the docked mini-player.
         com.newtube.mobile.ui.playback.MiniPlayerListInset.attach(mMiniPlayerBar, mContentGrid);
     }
@@ -468,6 +469,7 @@ public class MobileBrowseActivity extends MobileActivity
         });
 
         findViewById(R.id.mobile_mini_close).setOnClickListener(v -> closeMiniPlayer());
+        com.newtube.mobile.ui.playback.MiniPip.wireAudioButton(findViewById(R.id.mobile_mini_audio));
         // NEWTUBE(motion): or swipe the card away sideways.
         mMiniSwipe = com.newtube.mobile.ui.playback.MiniCardSwipe.attach(mMiniPlayerBar,
                 new com.newtube.mobile.ui.playback.MiniCardSwipe.Callback() {
@@ -838,6 +840,7 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void updateMiniPlayPauseIcon(ExoPlayer player) {
+        com.newtube.mobile.ui.playback.MiniPip.syncAudioButton(findViewById(R.id.mobile_mini_audio));
         boolean playing = player.getPlayWhenReady()
                 && player.getPlaybackState() != Player.STATE_ENDED
                 && player.getPlaybackState() != Player.STATE_IDLE;
@@ -2147,6 +2150,14 @@ public class MobileBrowseActivity extends MobileActivity
         super.onUserLeaveHint();
         if (mMiniPip != null && !getViewManager().isNewViewPending()) {
             mMiniPip.onUserLeaveHint();
+        }
+    }
+
+    @Override
+    public void onPictureInPictureUiStateChanged(@androidx.annotation.NonNull android.app.PictureInPictureUiState state) {
+        super.onPictureInPictureUiStateChanged(state);
+        if (mMiniPip != null && Build.VERSION.SDK_INT >= 35) {
+            mMiniPip.onTransitioningToPip(state.isTransitioningToPip());
         }
     }
 
