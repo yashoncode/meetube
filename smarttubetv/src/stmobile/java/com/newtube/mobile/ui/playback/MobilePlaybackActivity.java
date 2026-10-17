@@ -1425,6 +1425,10 @@ public class MobilePlaybackActivity extends MobileActivity
             });
         }
         mPlayer.setPlayWhenReady(true);
+        // METUBE(sleep-timer): "End of video" pauses where autoplay would open the next one.
+        mPlayer.setPauseAtEndOfMediaItems(SleepTimer.isEndOfVideo());
+        mPlayer.addListener(mSleepEndListener);
+        SleepTimer.attach(mSleepPause);
         mBenchTicker = com.newtube.mobile.player.BenchTicker.startIfEnabled(
                 BuildConfig.DEBUG || BuildConfig.BENCHMARK, mPlayer, () -> {
                     Video video = getVideo();
@@ -1849,6 +1853,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     protected void onDestroy() {
+        SleepTimer.detach(mSleepPause);
         DownloadRegistry.instance(this).removeListener(mDownloadsListener);
         cancelAutoHide();
         mOrientationHandBack.disarm();
@@ -4303,6 +4308,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // Speed: the native preset sheet; the exhaustive TV dialog nests behind its "More speeds".
         addMenuRow(content, sheet, R.drawable.ic_player_speed, R.string.mobile_player_speed,
                 currentSpeedLabel(), true, this::showSpeedSheet);
+        addMenuRow(content, sheet, R.drawable.ic_player_sleep_timer, R.string.mobile_player_sleep_timer,
+                sleepTimerLabel(), true, this::showSleepTimerSheet);
         if (Helpers.isPictureInPictureSupported(this)) {
             addMenuRow(content, sheet, R.drawable.ic_player_pip, R.string.mobile_player_pip,
                     null, false, this::enterPipFromMenu);
@@ -8039,6 +8046,78 @@ public class MobilePlaybackActivity extends MobileActivity
         String number = speed == Math.floor(speed)
                 ? String.valueOf((int) speed) : String.valueOf(speed);
         return number + "x";
+    }
+
+    // ---------------------------------------------------------------------------------
+    // METUBE(sleep-timer): gear -> Sleep timer (SleepTimer holds the countdown).
+    // ---------------------------------------------------------------------------------
+
+    private final Runnable mSleepPause = this::sleepNow;
+
+    private final Player.Listener mSleepEndListener = new Player.Listener() {
+        @Override
+        public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
+            if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
+                SleepTimer.onPausedAtEnd();
+            }
+        }
+    };
+
+    /** The timer ran out (or the video ended under "End of video"): pause, like the pause button. */
+    private void sleepNow() {
+        if (mPlayer != null) {
+            mPlayer.setPauseAtEndOfMediaItems(false);
+        }
+        if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
+            mExoPlayerController.setPlayWhenReady(false);
+            if (mPresenter != null) {
+                mPresenter.onPauseClicked();
+            }
+        }
+    }
+
+    private String sleepTimerLabel() {
+        int picked = SleepTimer.picked();
+        return picked == SleepTimer.END_OF_VIDEO ? getString(R.string.mobile_sleep_end_of_video)
+                : picked == SleepTimer.OFF ? getString(R.string.mobile_menu_off)
+                : getString(R.string.mobile_sleep_left, SleepTimer.minutesLeft());
+    }
+
+    private String sleepPresetLabel(int minutes) {
+        return minutes == SleepTimer.END_OF_VIDEO ? getString(R.string.mobile_sleep_end_of_video)
+                : minutes == SleepTimer.OFF ? getString(R.string.mobile_menu_off)
+                : getResources().getQuantityString(R.plurals.mobile_settings_minutes, minutes, minutes);
+    }
+
+    private void showSleepTimerSheet() {
+        cancelAutoHide();
+
+        BottomSheetDialog dialog = Haptics.watch(new BottomSheetDialog(this));
+        // Same anatomy as the speed sheet: title, one flat list with a check on the active pick.
+        View content = getLayoutInflater().inflate(R.layout.sheet_mobile_speed, null);
+        dialog.setContentView(content);
+        ((TextView) content.findViewById(R.id.speed_sheet_title)).setText(R.string.mobile_player_sleep_timer);
+        content.findViewById(R.id.speed_sheet_more).setVisibility(View.GONE);
+
+        LinearLayout list = content.findViewById(R.id.speed_sheet_list);
+        int picked = SleepTimer.picked();
+        for (int minutes : SleepTimer.PRESETS) {
+            addQualityRow(list, sleepPresetLabel(minutes), minutes == picked, () -> {
+                SleepTimer.set(minutes);
+                if (mPlayer != null) {
+                    mPlayer.setPauseAtEndOfMediaItems(SleepTimer.isEndOfVideo());
+                }
+                String toast = minutes == SleepTimer.END_OF_VIDEO ? getString(R.string.mobile_sleep_toast_end)
+                        : minutes == SleepTimer.OFF ? getString(R.string.mobile_sleep_toast_off)
+                        : getString(R.string.mobile_sleep_toast_minutes, sleepPresetLabel(minutes));
+                com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content),
+                        toast, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+                dialog.dismiss();
+            });
+        }
+
+        dialog.setOnDismissListener(d -> armAutoHide());
+        showPlayerSheet(dialog);
     }
 
     private void showSpeedSheet() {

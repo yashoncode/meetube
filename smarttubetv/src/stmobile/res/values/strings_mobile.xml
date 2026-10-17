@@ -17,6 +17,13 @@
     <string name="mobile_player_audio_track">Audio track</string>
     <string name="mobile_player_subtitles">Subtitles</string>
     <string name="mobile_player_speed">Playback speed</string>
+    <!-- METUBE(sleep-timer): gear-sheet row + sheet title, and its states. -->
+    <string name="mobile_player_sleep_timer">Sleep timer</string>
+    <string name="mobile_sleep_end_of_video">End of video</string>
+    <string name="mobile_sleep_left">%1$d min left</string>
+    <string name="mobile_sleep_toast_minutes">Video will pause in %1$s</string>
+    <string name="mobile_sleep_toast_end">Video will pause at the end</string>
+    <string name="mobile_sleep_toast_off">Sleep timer off</string>
     <!-- Spoken for the current-chapter button above the seek bar (it opens the Chapters list). -->
     <string name="mobile_player_chapter_button">Chapter: %1$s. Show all chapters</string>
     <!-- NEWTUBE(seek bar): the duration after the position ("1:10 / 4:26:52"), and the current
