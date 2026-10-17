@@ -210,6 +210,11 @@
     <!-- Video quality -->
     <string name="mobile_settings_quality_intro">The quality videos start in. You can change it for one video from the player\'s settings.</string>
     <string name="mobile_settings_default_quality">Default quality</string>
+    <!-- METUBE(quality-network): one default per network; "%1$s" are the two picks' labels. -->
+    <string name="mobile_settings_quality_wifi">On Wi-Fi</string>
+    <string name="mobile_settings_quality_mobile">On mobile data</string>
+    <string name="mobile_settings_quality_same">Same as Wi-Fi</string>
+    <string name="mobile_settings_quality_both">Wi-Fi: %1$s · Mobile data: %2$s</string>
     <string name="mobile_settings_quality_auto">Auto (up to %1$dp)</string>
     <string name="mobile_settings_quality_auto_desc">Recommended. The best your connection allows</string>
     <string name="mobile_settings_quality_up_to">Up to %1$s</string>
