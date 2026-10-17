@@ -306,6 +306,18 @@
 
         </com.newtube.mobile.ui.common.GlassView>
 
+        <!-- METUBE(feed-strip): what Home's chips fold into while the feed scrolls back up, beside
+             the brand pill (ChipBar); a tap brings the chips back. -->
+        <ImageView
+            android:id="@+id/mobile_chip_expand"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/mobile_feed_show_filters"
+            android:elevation="6dp"
+            android:scaleType="center"
+            android:src="@drawable/ic_chips_expand"
+            android:visibility="gone" />
+
         <Space
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -351,6 +363,21 @@
         </com.newtube.mobile.ui.common.GlassView>
 
     </LinearLayout>
+
+    <!-- METUBE(feed-strip): Home's topic chips, liquid-glass pills floating under the top pills;
+         the feed scrolls under them (FeedStrip, the page padded by this row too). -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/mobile_chip_row"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingHorizontal="12dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/mobile_top_glass" />
 
     <!-- METUBE(quotes): the quote a tap on the brand pill shows for three seconds (QuoteCard),
          on the same liquid glass as the pills. -->

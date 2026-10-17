@@ -19,6 +19,9 @@
     <string name="mobile_player_speed">Playback speed</string>
     <!-- METUBE(sleep-timer): gear-sheet row + sheet title, and its states. -->
     <string name="mobile_player_sleep_timer">Sleep timer</string>
+    <!-- METUBE(feed-strip): the first chip on Home and the first avatar on Subscriptions. -->
+    <string name="mobile_feed_all">All</string>
+    <string name="mobile_feed_show_filters">Show filters</string>
     <!-- METUBE(autoplay): gear-sheet switch over Settings > When a video ends (on = next, off = pause). -->
     <string name="mobile_player_autoplay">Autoplay</string>
     <string name="mobile_sleep_end_of_video">End of video</string>

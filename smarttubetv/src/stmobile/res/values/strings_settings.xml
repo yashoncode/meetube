@@ -160,6 +160,13 @@
     <string name="mobile_settings_auto_backup_off">Never</string>
     <string name="mobile_settings_backup_note">A backup holds everything you set up in MeTube. What belongs to your YouTube account, like subscriptions and history, stays there.</string>
 
+    <!-- METUBE(home-rows): General > Home layout (issue #4). -->
+    <string name="mobile_settings_home_layout">Home layout</string>
+    <string name="mobile_settings_home_layout_feed">Feed</string>
+    <string name="mobile_settings_home_layout_feed_desc">One list of videos, like YouTube</string>
+    <string name="mobile_settings_home_layout_rows">Rows</string>
+    <string name="mobile_settings_home_layout_rows_desc">A row you swipe sideways for each topic, like SmartTube</string>
+
     <!-- Playback -->
     <!-- METUBE(background): the battery-optimization exemption row (Playback). -->
     <string name="mobile_settings_screen_off">Keep playing with the screen off</string>

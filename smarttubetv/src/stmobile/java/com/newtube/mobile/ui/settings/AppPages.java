@@ -74,6 +74,15 @@ final class AppPages {
 
         rows.add(startScreen(context));
 
+        // METUBE(home-rows, issue #4): Home as one feed, or as SmartTube's rows of shelves.
+        rows.add(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_home_layout))
+                .option(context.getString(R.string.mobile_settings_home_layout_feed),
+                        context.getString(R.string.mobile_settings_home_layout_feed_desc), false)
+                .option(context.getString(R.string.mobile_settings_home_layout_rows),
+                        context.getString(R.string.mobile_settings_home_layout_rows_desc), true)
+                .bind(() -> com.newtube.mobile.ui.browse.HomeLayout.isRows(context),
+                        rowsOn -> com.newtube.mobile.ui.browse.HomeLayout.setRows(context, rowsOn)));
+
         rows.add(interfaceSize(context, mainUIData));
 
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_voice_search),

@@ -86,6 +86,7 @@ final class SettingsSearch {
             {R.string.mobile_settings_hide_related, R.string.mobile_settings_search_kw_hide_related},
             {R.string.mobile_settings_dislikes, R.string.mobile_settings_search_kw_dislikes},
             {R.string.mobile_settings_quality, R.string.mobile_settings_search_kw_quality},
+            {R.string.mobile_settings_home_layout, R.string.mobile_settings_search_kw_home_layout},
             {R.string.mobile_settings_quality_wifi, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_quality_mobile, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_screen_off, R.string.mobile_settings_search_kw_background},

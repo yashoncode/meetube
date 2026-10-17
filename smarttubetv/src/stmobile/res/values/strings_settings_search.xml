@@ -22,6 +22,7 @@
     <string name="mobile_settings_search_kw_audio_focus">calls notifications other apps interruptions</string>
     <string name="mobile_settings_search_kw_hide_related">suggestions related recommendations</string>
     <string name="mobile_settings_search_kw_dislikes">return youtube dislike ryd</string>
+    <string name="mobile_settings_search_kw_home_layout">rows shelves carousel feed grid smarttube</string>
     <string name="mobile_settings_search_kw_quality">resolution 4k 1080p 720p hd data saver mobile data</string>
     <string name="mobile_settings_search_kw_loudness">volume normalization auto volume quiet loud</string>
     <string name="mobile_settings_search_kw_player_volume">quiet loud sound</string>
