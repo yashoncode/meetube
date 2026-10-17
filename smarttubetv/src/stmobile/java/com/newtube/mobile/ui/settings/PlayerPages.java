@@ -115,6 +115,11 @@ final class PlayerPages {
                 tweaks::isAudioTimeStretchingEnabled, tweaks::setAudioTimeStretchingEnabled));
 
         rows.add(sleepTimer(context, playerData));
+        // METUBE(background): OEM battery managers kill an optimized app's screen-off audio.
+        rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_screen_off),
+                () -> context.getString(com.newtube.mobile.ui.playback.BackgroundPlay.isExempt(context)
+                        ? R.string.mobile_settings_screen_off_on : R.string.mobile_settings_screen_off_off),
+                page -> com.newtube.mobile.ui.playback.BackgroundPlay.request(page.requireActivity())));
 
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_audio_focus),
                 context.getString(R.string.mobile_settings_audio_focus_summary),

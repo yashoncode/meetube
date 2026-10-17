@@ -87,6 +87,7 @@ final class SettingsSearch {
             {R.string.mobile_settings_dislikes, R.string.mobile_settings_search_kw_dislikes},
             {R.string.mobile_settings_quality, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_default_quality, R.string.mobile_settings_search_kw_quality},
+            {R.string.mobile_settings_screen_off, R.string.mobile_settings_search_kw_background},
             {R.string.mobile_settings_loudness, R.string.mobile_settings_search_kw_loudness},
             {R.string.mobile_settings_player_volume, R.string.mobile_settings_search_kw_player_volume},
             {R.string.mobile_settings_captions, R.string.mobile_settings_search_kw_captions},

@@ -69,6 +69,8 @@
          (SSDP/DIAL discovery). Unknown on older releases; requested before the cast picker. -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Background audio with the screen off: OEM battery managers kill optimized apps (BackgroundPlay). -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <!-- LAUNCH MODES: every touch activity is singleTop (NOT the TV's singleInstance) so ALL
          screens share ONE task, like a normal phone app. singleInstance put each screen in its

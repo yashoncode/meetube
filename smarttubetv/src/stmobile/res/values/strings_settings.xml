@@ -161,6 +161,10 @@
     <string name="mobile_settings_backup_note">A backup holds everything you set up in MeTube. What belongs to your YouTube account, like subscriptions and history, stays there.</string>
 
     <!-- Playback -->
+    <!-- METUBE(background): the battery-optimization exemption row (Playback). -->
+    <string name="mobile_settings_screen_off">Keep playing with the screen off</string>
+    <string name="mobile_settings_screen_off_on">Allowed: battery saver won\'t stop the audio</string>
+    <string name="mobile_settings_screen_off_off">Battery saver may stop the audio. Tap to allow MeTube in the background</string>
     <string name="mobile_settings_video_ends">When a video ends</string>
     <string name="mobile_settings_video_ends_next">Play the next video</string>
     <string name="mobile_settings_video_ends_repeat">Repeat the video</string>

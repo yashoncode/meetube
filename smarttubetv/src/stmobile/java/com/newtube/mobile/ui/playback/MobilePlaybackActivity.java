@@ -3289,6 +3289,7 @@ public class MobilePlaybackActivity extends MobileActivity
     };
 
     private void bindPlaybackService() {
+        BackgroundPlay.sPlayed = true; // back on Home, ask once for the battery exemption
         Intent intent = new Intent(this, MobilePlaybackService.class);
         // startService keeps it alive independently of the binding so audio survives backgrounding;
         // safe to call here because the player is created while this Activity is in the foreground.

@@ -2037,6 +2037,10 @@ public class MobileBrowseActivity extends MobileActivity
 
         updateAccountRow();
         getWindow().getDecorView().postDelayed(mUpdateCheckIfDue, UPDATE_CHECK_DELAY_MS);
+        // METUBE(background): not over a live mini player - the dialog would push it into PiP.
+        if (!MiniPlayerBridge.isActive()) {
+            com.newtube.mobile.ui.playback.BackgroundPlay.askOnce(this);
+        }
         // Cheap re-sync; listener callbacks already cover changes while resumed.
         updateCastIconTint();
         // Last-resumed host wins: while this screen is (or is about to be) the one under the

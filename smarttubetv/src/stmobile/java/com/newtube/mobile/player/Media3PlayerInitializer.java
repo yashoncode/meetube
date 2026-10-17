@@ -529,5 +529,10 @@ public class Media3PlayerInitializer {
 
         // Pause when headphones unplug / bluetooth drops - standard phone behavior.
         player.setHandleAudioBecomingNoisy(true);
+
+        // METUBE(background): a partial wake lock + Wi-Fi lock, held by media3 only while playing.
+        // Without them a screen-off stream lost the CPU/Wi-Fi between chunks, ran dry, and the
+        // stalled app was then frozen or killed by the phone's battery manager (realme, 2.9.8).
+        player.setWakeMode(C.WAKE_MODE_NETWORK);
     }
 }
