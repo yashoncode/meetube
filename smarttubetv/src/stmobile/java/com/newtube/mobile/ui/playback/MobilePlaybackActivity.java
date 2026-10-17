@@ -4308,6 +4308,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // Speed: the native preset sheet; the exhaustive TV dialog nests behind its "More speeds".
         addMenuRow(content, sheet, R.drawable.ic_player_speed, R.string.mobile_player_speed,
                 currentSpeedLabel(), true, this::showSpeedSheet);
+        addMenuRow(content, sheet, R.drawable.ic_player_autoplay, R.string.mobile_player_autoplay,
+                stateLabel(isAutoplayOn()), false, this::toggleAutoplay);
         addMenuRow(content, sheet, R.drawable.ic_player_sleep_timer, R.string.mobile_player_sleep_timer,
                 sleepTimerLabel(), true, this::showSleepTimerSheet);
         if (Helpers.isPictureInPictureSupported(this)) {
@@ -4344,6 +4346,17 @@ public class MobilePlaybackActivity extends MobileActivity
             mAmbient.start();
             mAmbient.setFill(isTallMode() ? mVideoArea : null);
         }
+    }
+
+    /** METUBE(autoplay): on unless "When a video ends" is Pause or Close the player. */
+    private boolean isAutoplayOn() {
+        int mode = PlayerData.instance(this).getPlaybackMode();
+        return mode != PlayerConstants.PLAYBACK_MODE_PAUSE && mode != PlayerConstants.PLAYBACK_MODE_CLOSE;
+    }
+
+    private void toggleAutoplay() {
+        PlayerData.instance(this).setPlaybackMode(isAutoplayOn()
+                ? PlayerConstants.PLAYBACK_MODE_PAUSE : PlayerConstants.PLAYBACK_MODE_ALL);
     }
 
     private void toggleAmbient() {

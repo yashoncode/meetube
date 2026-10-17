@@ -19,6 +19,8 @@
     <string name="mobile_player_speed">Playback speed</string>
     <!-- METUBE(sleep-timer): gear-sheet row + sheet title, and its states. -->
     <string name="mobile_player_sleep_timer">Sleep timer</string>
+    <!-- METUBE(autoplay): gear-sheet switch over Settings > When a video ends (on = next, off = pause). -->
+    <string name="mobile_player_autoplay">Autoplay</string>
     <string name="mobile_sleep_end_of_video">End of video</string>
     <string name="mobile_sleep_left">%1$d min left</string>
     <string name="mobile_sleep_toast_minutes">Video will pause in %1$s</string>
