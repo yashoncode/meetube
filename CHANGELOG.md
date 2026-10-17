@@ -2,6 +2,21 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases](https://github.com/aleixrodriala/newtube/releases).
 
+## 2.9.8 — 2026-10-17 — Home filters, sleep timer, steadier background play
+
+### New
+
+- **Filters on Home.** Liquid-glass chips at the top of Home: All, Music, Gaming, News, Sports and Live. They slide away as you scroll down; scrolling back up shows a small arrow beside the MeTube pill that brings them back.
+- **Home as rows.** Settings › General › Home layout › Rows shows Home like SmartTube: one titled row per topic that you swipe sideways. Feed stays the default.
+- **Channels on Subscriptions.** A row of your subscribed channels heads Subscriptions. Tap one to see only that channel's videos; tap All for everything again.
+- **Sleep timer.** In the player's settings: pause after 10 to 90 minutes, or at the end of the video.
+- **Autoplay switch.** In the player's settings, one tap turns playing the next video on or off.
+- **Video quality for Wi-Fi and mobile data.** Settings › Video quality has a default for each. Mobile data starts as "Same as Wi-Fi".
+
+### Fixed
+
+- **Music stopped, and the app was closed, with the screen off.** MeTube now keeps the phone awake and connected while it plays, and asks once to be allowed to run in the background, which battery savers on phones like realme respect. Settings › Playback › "Keep playing with the screen off" shows whether it's allowed.
+
 ## 2.9.6 — 2026-10-15 — Hotfix
 
 ### Fixed
