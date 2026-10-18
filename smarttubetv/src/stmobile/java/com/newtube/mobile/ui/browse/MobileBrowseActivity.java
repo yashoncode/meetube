@@ -746,9 +746,17 @@ public class MobileBrowseActivity extends MobileActivity
                                         + " cb=" + width + "x" + height
                                         + " view=" + textureView.getWidth() + "x" + textureView.getHeight());
                     }
-                    if (session != null && texture != session) {
-                        textureView.setSurfaceTexture(session);
-                        texture.release(); // the view-created texture is never used
+                    // METUBE(crash 2.9.8): the session's texture can be released between the bridge
+                    // handing it out and this callback (the player closed meanwhile); adopting it then
+                    // throws "Cannot setSurfaceTexture to a released SurfaceTexture".
+                    if (session != null && texture != session
+                            && !(Build.VERSION.SDK_INT >= 26 && session.isReleased())) {
+                        try {
+                            textureView.setSurfaceTexture(session);
+                            texture.release(); // the view-created texture is never used
+                        } catch (IllegalArgumentException released) {
+                            // released after the check: keep the view's own texture
+                        }
                     }
                 }
 
