@@ -10,7 +10,6 @@
   <img src=".github/assets/metube/home.jpg" width="160" alt="MeTube search results with channel photos on every card">
   <img src=".github/assets/metube/watch.jpg" width="160" alt="MeTube watch page with ambient glow and glass action pills">
   <img src=".github/assets/metube/shorts.jpg" width="160" alt="MeTube Shorts">
-  <img src=".github/assets/metube/pip.jpg" width="160" alt="A MeTube Short playing in picture-in-picture on the home screen">
   <img src=".github/assets/metube/channel.jpg" width="160" alt="MeTube channel page with the Latest, Popular and Oldest sort">
   <img src=".github/assets/metube/lyrics.jpg" width="160" alt="MeTube synced lyrics panel with provider picker">
   <img src=".github/assets/metube/downloads.jpg" width="160" alt="MeTube offline downloads">
