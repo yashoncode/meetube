@@ -350,6 +350,10 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
         // scrim/back dismiss it.
         boolean showBack = canGoBack();
         mBackButton.setVisibility(showBack ? View.VISIBLE : View.GONE);
+        // METUBE(sheet-title): a sheet with no title and nothing to go back to (e.g. the channel
+        // sort picker) drops the empty bar instead of opening on a blank band.
+        findViewById(R.id.mobile_dialog_toolbar).setVisibility(
+                showBack || !android.text.TextUtils.isEmpty(level.title) ? View.VISIBLE : View.GONE);
         // NEWTUBE(sheet-title): without the arrow the title sat 4dp from the edge while every row
         // starts at 16dp; line it up with the rows. Beside the arrow, 4dp keeps the usual gap.
         mTitleView.setPaddingRelative(

@@ -94,6 +94,10 @@ public class MobileChannelActivity extends MobileActivity
     /** The header holds a real channel name (from the card, or from the loaded videos). */
     private boolean mTitleFromCard;
     private ImageButton mBackButton;
+    /** METUBE(channel sort, issue #5): ChannelPresenter's sorted page arrives as this group id. */
+    private static final int SORTED_GROUP_ID = 144;
+    /** The tab the sort was asked from: the sorted videos replace its contents. */
+    private int mSortTargetId = -1;
     private MobileMiniPlayerController mMiniPlayer;
     private boolean mAnimateMiniFromPlayer;
     private SwipeRefreshLayout mSwipe;
@@ -149,6 +153,12 @@ public class MobileChannelActivity extends MobileActivity
         setupSwipeRefresh();
 
         mBackButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        findViewById(R.id.mobile_channel_sort).setOnClickListener(v -> {
+            if (mPresenter != null && mActiveSectionId != -1) {
+                mSortTargetId = mActiveSectionId;
+                mPresenter.onSearchSettingsClicked(sortChannelId()); // the Latest / Popular / Oldest picker
+            }
+        });
 
         mPresenter = ChannelPresenter.instance(this);
 
@@ -169,6 +179,23 @@ public class MobileChannelActivity extends MobileActivity
         String name = channel != null ? Helpers.firstNonNull(channel.getAuthor(), channel.getTitle()) : null;
         mTitleFromCard = name != null;
         mTitleView.setText(name != null ? name : getString(R.string.header_channels));
+    }
+
+    /** The channel's UC id: the presenter's, or (opened from an @handle link) its videos'. */
+    @Nullable
+    private String sortChannelId() {
+        String id = mPresenter.getChannelId();
+        if (id != null && id.startsWith("UC")) {
+            return id;
+        }
+        for (Section section : mSections.values()) {
+            for (Video video : section.videos) {
+                if (video.channelId != null && video.channelId.startsWith("UC")) {
+                    return video.channelId;
+                }
+            }
+        }
+        return id;
     }
 
     /** NEWTUBE: name a link-opened channel once its first videos arrive. */
@@ -709,9 +736,25 @@ public class MobileChannelActivity extends MobileActivity
 
         runOnUiThread(() -> {
             int id = group.getId();
+            if (id == SORTED_GROUP_ID && group.getAction() != VideoGroup.ACTION_REPLACE
+                    && mSections.containsKey(mSortTargetId)) {
+                id = mSortTargetId; // METUBE(channel sort): the sorted list's next pages
+            }
             Section section = mSections.get(id);
             boolean isNewSection = section == null;
             List<Video> shown = ShortsFilter.withoutShorts(group.getVideos()); // NEWTUBE(shorts)
+            if (id == SORTED_GROUP_ID && group.getAction() == VideoGroup.ACTION_REPLACE) {
+                Section target = mSections.get(mSortTargetId);
+                if (target != null && shown != null) {
+                    target.videos.clear();
+                    target.videos.addAll(shown);
+                    target.group = group; // further pages continue the sorted list
+                    mActiveSectionId = target.id;
+                    rebuildTabs();
+                    showActiveSection(true);
+                }
+                return;
+            }
             boolean content = group.getAction() != VideoGroup.ACTION_REMOVE && group.getAction() != VideoGroup.ACTION_SYNC;
             int shortsDropped = (group.getVideos() != null ? group.getVideos().size() : 0)
                     - (shown != null ? shown.size() : 0);

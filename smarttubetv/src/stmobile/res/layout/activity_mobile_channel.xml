@@ -52,6 +52,17 @@
             android:textStyle="bold"
             tools:text="Some Channel" />
 
+        <!-- METUBE(channel sort, issue #5): Latest / Popular / Oldest for the open tab. -->
+        <ImageButton
+            android:id="@+id/mobile_channel_sort"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/search_sorting"
+            android:padding="12dp"
+            android:src="@drawable/ic_mobile_tune" />
+
     </LinearLayout>
 
     <!-- One tab per channel section, in delivery order. Hidden until sections arrive.

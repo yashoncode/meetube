@@ -491,7 +491,12 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
     }
 
     public void onSearchSettingsClicked() {
-        Observable<List<MediaGroup>> sorting = getContentService().getChannelSortingOptionsObserve(getChannelId());
+        onSearchSettingsClicked(getChannelId());
+    }
+
+    /** METUBE(channel sort): {@code channelId} = the UC id (a link-opened channel only knows its @handle). */
+    public void onSearchSettingsClicked(String channelId) {
+        Observable<List<MediaGroup>> sorting = getContentService().getChannelSortingOptionsObserve(channelId);
         Disposable result = sorting.subscribe(
                 items -> {
                     AppDialogPresenter dialogPresenter = AppDialogPresenter.instance(getContext());
@@ -500,7 +505,7 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
                     for (MediaGroup group : items) {
                         final int tempIdx = idx;
                         options.add(UiOptionItem.from(group.getTitle(), item -> {
-                            //dialogPresenter.closeDialog();
+                            dialogPresenter.closeDialog(); // METUBE(channel sort): one tap picks
                             Observable<MediaGroup> continuation = getContentService().continueGroupObserve(group);
                             Disposable result2 = continuation.subscribe(mediaGroup -> {
                                 if (getView() == null) {
