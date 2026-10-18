@@ -76,6 +76,15 @@ public final class AppUpdates implements AppUpdateCheckerListener {
      * kept the app in memory: only Check for updates found it.
      */
     private static final long AUTO_CHECK_MS = 60 * 60 * 1_000L;
+    /**
+     * METUBE(update pop-up): a found update opens its sheet by itself on Home. "Later" brings it back
+     * after this long for the same version (a newer version asks at once); "Don't ask again" turns
+     * the pop-up off - the You tab's row and dot and Settings > About still offer the update.
+     */
+    private static final long PROMPT_AGAIN_MS = 24 * 60 * 60 * 1_000L;
+    private static final String KEY_PROMPT_OFF = "prompt_off";
+    private static final String KEY_PROMPTED_CODE = "prompted_version_code";
+    private static final String KEY_PROMPTED_AT = "prompted_at_ms";
     /** An automatic check that got no answer is not retried sooner than this in one run. */
     private static final long AUTO_RETRY_MS = 5 * 60 * 1_000L;
     /** A user check joins an automatic one still waiting for its answer if it is younger than this. */
@@ -462,6 +471,28 @@ public final class AppUpdates implements AppUpdateCheckerListener {
         }
 
         return mChecker.isUpdateCheckEnabled() && mPrefs.getInt(KEY_KNOWN_CODE, 0) > mInstalledCode;
+    }
+
+    /** METUBE(update pop-up): a freshly found update the user hasn't been asked about lately. */
+    public boolean shouldPrompt() {
+        if (!BuildConfig.IN_APP_UPDATES || isPromptOff() || mPhase != Phase.AVAILABLE || !hasUpdate()) {
+            return false;
+        }
+        long since = System.currentTimeMillis() - mPrefs.getLong(KEY_PROMPTED_AT, 0);
+        return getUpdateVersionCode() != mPrefs.getInt(KEY_PROMPTED_CODE, 0) || since < 0 || since >= PROMPT_AGAIN_MS;
+    }
+
+    public void markPrompted() {
+        mPrefs.edit().putInt(KEY_PROMPTED_CODE, getUpdateVersionCode())
+                .putLong(KEY_PROMPTED_AT, System.currentTimeMillis()).apply();
+    }
+
+    public boolean isPromptOff() {
+        return mPrefs.getBoolean(KEY_PROMPT_OFF, false);
+    }
+
+    public void setPromptOff(boolean off) {
+        mPrefs.edit().putBoolean(KEY_PROMPT_OFF, off).apply();
     }
 
     /** ...and the user hasn't opened its update sheet yet. */

@@ -1379,11 +1379,26 @@ public class MobileBrowseActivity extends MobileActivity
     /** After the first paint of a return, and not for a screen the user only passes through. */
     private static final long UPDATE_CHECK_DELAY_MS = 3_000;
     private final Runnable mAnnounceUpdateInstalled = this::announceUpdateInstalled;
+    private final Runnable mPromptUpdate = this::maybePromptUpdate;
     /** The You list's update row while it is built, so progress updates it in place. */
     @Nullable private View mYouUpdateRow;
 
+    /**
+     * METUBE(update pop-up): a freshly found update opens its sheet - only over Home in front, at
+     * most once a day per version, never while the user is watching (Home isn't resumed then).
+     */
+    private void maybePromptUpdate() {
+        AppUpdates updates = AppUpdates.instance(this);
+        if (getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+                && !isFinishing() && !MobileUpdateActivity.isShowing() && updates.shouldPrompt()) {
+            updates.markPrompted();
+            MobileUpdateActivity.startPrompt(this);
+        }
+    }
+
     private void onUpdatesChanged() {
         refreshUpdateBadge();
+        maybePromptUpdate();
 
         if (!mYouShowing) {
             return;
@@ -2302,6 +2317,10 @@ public class MobileBrowseActivity extends MobileActivity
         if (mMiniPip != null) {
             mMiniPip.onResume();
         }
+        // METUBE(update pop-up): an update found while the player was in front asks now, once
+        // Home has painted.
+        mBottomNav.removeCallbacks(mPromptUpdate);
+        mBottomNav.postDelayed(mPromptUpdate, UPDATED_NOTICE_DELAY_MS);
 
         if (mPresenter != null) {
             mPresenter.onViewResumed();

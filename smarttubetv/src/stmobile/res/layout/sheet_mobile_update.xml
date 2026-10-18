@@ -151,6 +151,19 @@
         android:orientation="horizontal"
         android:paddingHorizontal="12dp">
 
+        <!-- METUBE(update pop-up): only on a sheet that opened by itself. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/update_sheet_dont_ask"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start|center_vertical"
+            android:text="@string/mobile_update_dont_ask"
+            android:textColor="@color/mobile_color_on_surface_secondary"
+            android:visibility="gone"
+            app:rippleColor="@color/mobile_color_pill" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/update_sheet_secondary"
             style="@style/Widget.MaterialComponents.Button.TextButton"

@@ -57,6 +57,8 @@ import java.util.List;
  */
 public class MobileUpdateActivity extends MobileActivity implements AppUpdates.Listener {
     private static final String EXTRA_MODE = "newtube:update_mode";
+    /** METUBE(update pop-up): opened by itself, so it offers "Don't ask again". */
+    private static final String EXTRA_PROMPT = "metube:update_prompt";
     /** The You tab's update row: what is known (checks only when that is old). */
     private static final int MODE_UPDATE = 0;
     /** Check for updates: always asks the server. */
@@ -72,6 +74,7 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
     @Nullable private static WeakReference<MobileUpdateActivity> sShown;
 
     private int mMode;
+    private MaterialButton mDontAsk;
     private AppUpdates mUpdates;
     private BottomSheetDialog mSheet;
     private TextView mTitle;
@@ -108,6 +111,11 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
     /** The You tab's update row. */
     public static void start(Context context) {
         start(context, MODE_UPDATE);
+    }
+
+    /** METUBE(update pop-up): Home found an update by itself (AppUpdates.shouldPrompt). */
+    public static void startPrompt(Context context) {
+        context.startActivity(intent(context, MODE_UPDATE).putExtra(EXTRA_PROMPT, true));
     }
 
     public static void startInstall(Context context) {
@@ -170,6 +178,12 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
         mReleaseNotesLink = content.findViewById(R.id.update_sheet_release_notes);
         mSecondary = content.findViewById(R.id.update_sheet_secondary);
         mPrimary = content.findViewById(R.id.update_sheet_primary);
+        mDontAsk = content.findViewById(R.id.update_sheet_dont_ask);
+        mDontAsk.setOnClickListener(v -> {
+            mUpdates.setPromptOff(true);
+            android.widget.Toast.makeText(this, R.string.mobile_update_dont_ask_done, android.widget.Toast.LENGTH_LONG).show();
+            dismiss();
+        });
         mScroll = content.findViewById(R.id.update_sheet_scroll);
         mScroll.setMaxHeight(Math.round(screenHeightPx() * NOTES_MAX_HEIGHT_FRACTION));
 
@@ -426,6 +440,7 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
                     mInstallWhenReady = true;
                     mUpdates.download();
                 });
+                mDontAsk.setVisibility(getIntent().getBooleanExtra(EXTRA_PROMPT, false) ? View.VISIBLE : View.GONE);
                 break;
             case DOWNLOADING:
                 show(getString(R.string.mobile_update_downloading_title), getString(R.string.mobile_update_app_version, newVersion),
@@ -566,6 +581,7 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
                             int primaryText, @Nullable View.OnClickListener primary) {
         bind(mSecondary, secondaryText, secondary);
         bind(mPrimary, primaryText, primary);
+        mDontAsk.setVisibility(View.GONE); // AVAILABLE shows it again for a pop-up
     }
 
     private static void bind(MaterialButton button, int text, @Nullable View.OnClickListener listener) {

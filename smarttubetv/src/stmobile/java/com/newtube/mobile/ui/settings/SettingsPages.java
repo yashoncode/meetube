@@ -177,6 +177,11 @@ public final class SettingsPages {
             rows.add(SettingsRow.toggle(context.getString(R.string.check_updates_auto),
                     context.getString(R.string.mobile_settings_update_notify_summary),
                     checker::isUpdateCheckEnabled, checker::setUpdateCheckEnabled));
+            // METUBE(update pop-up): "Don't ask again" on the pop-up turns this off.
+            com.newtube.mobile.update.AppUpdates updates = com.newtube.mobile.update.AppUpdates.instance(context);
+            rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_update_prompt),
+                    context.getString(R.string.mobile_settings_update_prompt_summary),
+                    () -> !updates.isPromptOff(), on -> updates.setPromptOff(!on)));
         }
 
         rows.add(SettingsRow.divider());
