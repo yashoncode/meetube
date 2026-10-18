@@ -2,6 +2,32 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases](https://github.com/aleixrodriala/newtube/releases).
 
+## 2.9.9 — 2026-10-18 — Shorts in picture-in-picture, channel pictures, a new icon
+
+### New
+
+- **Shorts in picture-in-picture.** Press Home while a short plays and it keeps playing in a portrait window with previous, play/pause and next, like YouTube.
+- **Channel pictures on cards.** Home, Subscriptions and Search show each channel's picture beside the video title. Tap the picture or the channel name to open the channel.
+- **Sort a channel.** The new button on a channel page sorts its videos by Latest, Popular or Oldest.
+- **Choose your double-tap.** Settings › Playback › Double-tap to seek: 3, 5, 10, 15 or 30 seconds.
+- **A new icon.** A glossy heart with a play button, on the home screen, the launch animation and the Home pill. Prefer the old one? Settings › Customization › App icon › Classic.
+- **Customization page.** Settings › Customization holds the theme, app icon, glass, interface size, start screen, Home layout, tabs, video menu, thumbnails and playlist style. General keeps language, country, voice search and number formats.
+- **Update pop-up.** When a new version is out, MeTube asks once with Update now or Later. Later asks again a day later; Don't ask again turns it off (Settings › About › Update pop-up).
+
+### Changed
+
+- Group titles in Settings and pop-ups are smaller and red, so they no longer look like options.
+- The account and Buy me a coffee rows left the top of Settings. Switch accounts from the You tab; the thank-you stays at the bottom of About.
+- Updating to 2.9.9 removes MeTube from your home screen once (the launcher entry was renamed for the icon choice). It is still in the app drawer; pin it again from there.
+
+### Fixed
+
+- **Ads in the Shorts feed.** Promoted shorts are now dropped.
+- **Shorts wouldn't swipe right after opening.** The Shorts tab could open on a single subscription short before the rest of the feed arrived, and a swipe did nothing. It now waits for the next short.
+- **Shorts picture-in-picture turned landscape on next.** The window keeps the short's shape while the next one loads.
+- **Home could crash** reattaching the mini player's video.
+- Searches that failed once are retried properly, and captions are no longer offered from auto-dubbed audio (from SmartTube).
+
 ## 2.9.8 — 2026-10-17 — Home filters, sleep timer, steadier background play
 
 ### New
