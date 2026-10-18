@@ -144,6 +144,13 @@ final class PlayerPages {
                 context.getString(R.string.mobile_settings_gesture_seek_summary),
                 () -> PlayerGesturePrefs.isSeekSwipeOn(context),
                 on -> PlayerGesturePrefs.setSeekSwipeOn(context, on)));
+        // METUBE(double-tap seek, issue #6): how far a double tap jumps; 10 s stays the default.
+        SettingsRow.Choice<Integer> doubleTap = SettingsRow.choice(
+                context.getString(R.string.mobile_settings_double_tap_seek));
+        for (int seconds : new int[] {3, 5, 10, 15, 30}) {
+            doubleTap.option(context.getString(R.string.seek_interval_sec, String.valueOf(seconds)), seconds * 1000);
+        }
+        rows.add(doubleTap.bind(playerData::getSeekIncrementMs, playerData::setSeekIncrementMs));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_watch_page)));
         // METUBE(ambient): on by default.

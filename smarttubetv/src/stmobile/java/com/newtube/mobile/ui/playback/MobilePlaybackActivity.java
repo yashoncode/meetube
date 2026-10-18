@@ -1477,6 +1477,9 @@ public class MobilePlaybackActivity extends MobileActivity
 
                     @Override
                     public Boolean shouldForward(Player player, DoubleTapPlayerView playerView, float posX) {
+                        // METUBE(double-tap seek, issue #6): Settings > Player picks the jump.
+                        mYouTubeOverlay.seekSeconds(Math.max(1,
+                                PlayerData.instance(MobilePlaybackActivity.this).getSeekIncrementMs() / 1000));
                         Boolean forward = doubleTapSeekForward(player, posX);
                         if (forward != null) {
                             setUserSeekDirection(forward);
