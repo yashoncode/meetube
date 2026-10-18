@@ -1,4 +1,4 @@
-<p align="center"><img src=".github/assets/metube/icon.svg" width="112" alt="MeTube logo"></p>
+<p align="center"><img src=".github/assets/metube/icon.png" width="112" alt="MeTube logo"></p>
 
 <h1 align="center">MeTube</h1>
 
@@ -7,10 +7,12 @@
 **YouTube, the way it should feel.** No ads. No interruptions. A gorgeous liquid glass interface, synced lyrics, background play and one-tap downloads.
 
 <p align="center">
-  <img src=".github/assets/metube/home.jpg" width="160" alt="MeTube home feed with floating liquid glass navigation">
+  <img src=".github/assets/metube/home.jpg" width="160" alt="MeTube search results with channel photos on every card">
   <img src=".github/assets/metube/watch.jpg" width="160" alt="MeTube watch page with ambient glow and glass action pills">
+  <img src=".github/assets/metube/shorts.jpg" width="160" alt="MeTube Shorts">
+  <img src=".github/assets/metube/pip.jpg" width="160" alt="A MeTube Short playing in picture-in-picture on the home screen">
+  <img src=".github/assets/metube/channel.jpg" width="160" alt="MeTube channel page with the Latest, Popular and Oldest sort">
   <img src=".github/assets/metube/lyrics.jpg" width="160" alt="MeTube synced lyrics panel with provider picker">
-  <img src=".github/assets/metube/shorts.jpg" width="160" alt="MeTube Shorts with liquid glass buttons">
   <img src=".github/assets/metube/downloads.jpg" width="160" alt="MeTube offline downloads">
 </p>
 
@@ -21,9 +23,11 @@
 - 🚫 **Zero ads, zero sponsor segments.** Ads are gone, and SponsorBlock skips in-video sponsors, intros and "like and subscribe" reminders for you.
 - 💎 **Liquid glass everywhere.** Frosted, lens-bending glass on the navigation bar, player buttons and Shorts, iOS 26 style, on Android.
 - 🎤 **Synced lyrics.** Music videos get live, line-by-line lyrics that follow the song. Pick your favourite lyrics provider in one tap.
-- 🎧 **Background play & picture-in-picture.** Lock your screen or switch apps, the music keeps going.
+- 🎧 **Background play & picture-in-picture.** Lock your screen or switch apps, the music keeps going. Shorts float in their own portrait window, with previous and next.
 - ⬇️ **Offline downloads up to 1080p.** Save videos to watch on a flight, a train or with no data.
 - 📱 **Shorts done right.** A clean, full-screen Shorts player with glass like, comment and share buttons.
+- 🧑‍🎤 **Channels at a glance.** Every card shows the channel's photo; tap it, or the channel name, to jump to the channel. Sort any channel's videos by Latest, Popular or Oldest.
+- ⏩ **Your double-tap.** Double-tap to skip 3, 5, 10, 15 or 30 seconds, your pick.
 - 🔄 **Always something new.** Pull Home to refresh and get videos you haven't seen yet.
 - 💬 **Smooth comments & fullscreen.** A rounded glass comment bar that rises with the keyboard, and buttery vertical fullscreen.
 - 👎 **Dislikes are back.** Return YouTube Dislike shows the real count. DeArrow swaps clickbait titles and thumbnails.
