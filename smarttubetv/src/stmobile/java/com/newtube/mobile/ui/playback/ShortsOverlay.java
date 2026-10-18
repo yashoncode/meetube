@@ -1,6 +1,5 @@
 package com.newtube.mobile.ui.playback;
 
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Outline;
@@ -10,7 +9,6 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -110,10 +108,10 @@ final class ShortsOverlay {
     private final SeekBar mProgress;
     private final Watch mWatch;
     private final Host mHost;
+    private boolean mAvatarKnown;
+    private boolean mInPip;
     private final Runnable mPreloadNeighbours = this::preloadNeighbours;
     private final Runnable mHidePeek = this::hidePeek;
-    @Nullable
-    private ObjectAnimator mDiscSpin;
     @Nullable
     private Video mCurrent;
     @Nullable
@@ -229,7 +227,14 @@ final class ShortsOverlay {
     /** The comments sheet takes the lower part of the screen; the short shrinks above it. */
     void setCommentsOpen(boolean open) {
         mCommentsOpen = open;
-        mOverlay.setVisibility(mActive && !open ? View.VISIBLE : View.GONE);
+        mOverlay.setVisibility(mActive && !open && !mInPip ? View.VISIBLE : View.GONE);
+    }
+
+    /** METUBE(shorts-pip): the PiP window shows only the short; the buttons come back on expand. */
+    void setInPip(boolean pip) {
+        mInPip = pip;
+        hidePeek();
+        mOverlay.setVisibility(mActive && !mCommentsOpen && !pip ? View.VISIBLE : View.GONE);
     }
 
     /** Every setVideo: shorts mode follows the video that is playing now. */
@@ -245,6 +250,8 @@ final class ShortsOverlay {
                 mTitle.setMaxLines(2);
                 mAvatar.setImageDrawable(null);
                 mDisc.setImageDrawable(null);
+                mAvatarKnown = false;
+                showKnownAvatar(item);
                 mOverlay.removeCallbacks(mPreloadNeighbours);
                 mOverlay.postDelayed(mPreloadNeighbours, NEIGHBOUR_PRELOAD_DELAY_MS);
                 if (mPeek.getVisibility() == View.VISIBLE && mPeekDir == 0) {
@@ -264,10 +271,9 @@ final class ShortsOverlay {
         if (on != mActive) {
             mActive = on;
             mCommentsOpen = false;
-            mOverlay.setVisibility(on ? View.VISIBLE : View.GONE);
+            mOverlay.setVisibility(on && !mInPip ? View.VISIBLE : View.GONE);
             if (!on) {
                 mCurrent = null;
-                setPlaying(false);
                 hidePeek();
                 mVideo.setTranslationY(0f);
                 mVideo.setAlpha(1f);
@@ -297,25 +303,6 @@ final class ShortsOverlay {
         if (mActive && !mScrubbing) {
             mDurationMs = durationMs;
             mProgress.setProgress(durationMs > 0 ? (int) (positionMs * 1000 / durationMs) : 0);
-        }
-    }
-
-    /** The disc turns while the short plays. */
-    void setPlaying(boolean playing) {
-        if (playing && mActive) {
-            if (mDiscSpin == null) {
-                mDiscSpin = ObjectAnimator.ofFloat(mDisc, View.ROTATION, 0f, 360f);
-                mDiscSpin.setDuration(4000);
-                mDiscSpin.setRepeatCount(ValueAnimator.INFINITE);
-                mDiscSpin.setInterpolator(new LinearInterpolator());
-            }
-            if (!mDiscSpin.isStarted()) {
-                mDiscSpin.start();
-            } else if (mDiscSpin.isPaused()) {
-                mDiscSpin.resume();
-            }
-        } else if (mDiscSpin != null && mDiscSpin.isRunning()) {
-            mDiscSpin.pause();
         }
     }
 
@@ -432,7 +419,32 @@ final class ShortsOverlay {
         }
     }
 
+    /** METUBE(card avatars): the channel's avatar at once, from ChannelAvatars, not the watch page. */
+    private void showKnownAvatar(Video item) {
+        android.content.Context context = mAvatar.getContext();
+        String url = com.newtube.mobile.ui.common.ChannelAvatars.get(context, item.channelId, item.getAuthor());
+        if (url != null) {
+            loadAvatar(url);
+        } else {
+            com.newtube.mobile.ui.common.ChannelAvatars.fetch(context, item.channelId, item.getAuthor(),
+                    () -> item.equals(mCurrent), found -> {
+                if (item.equals(mCurrent)) {
+                    loadAvatar(found);
+                }
+            }, true);
+        }
+    }
+
+    private void loadAvatar(String url) {
+        mAvatarKnown = true;
+        com.bumptech.glide.Glide.with(mAvatar).load(url).circleCrop().into(mAvatar);
+        com.bumptech.glide.Glide.with(mDisc).load(url).centerCrop().into(mDisc);
+    }
+
     private void copyAvatar() {
+        if (mAvatarKnown) {
+            return; // already the channel's own picture
+        }
         Drawable avatar = mWatch.avatar != null ? mWatch.avatar.getDrawable() : null;
         if (avatar != null && avatar.getConstantState() != null) {
             mAvatar.setImageDrawable(avatar.getConstantState().newDrawable().mutate());

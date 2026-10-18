@@ -464,6 +464,11 @@ public class MobilePlaybackActivity extends MobileActivity
     static final String ACTION_PIP_AUDIO = "com.newtube.mobile.action.PIP_AUDIO";
     private static final int PIP_REQUEST_TOGGLE = 700;
     private static final int PIP_REQUEST_AUDIO = 701;
+    /** METUBE(shorts-pip): a short's PiP window walks the feed like YouTube's - previous / next. */
+    static final String ACTION_PIP_PREV = "com.newtube.mobile.action.PIP_PREV";
+    static final String ACTION_PIP_NEXT = "com.newtube.mobile.action.PIP_NEXT";
+    private static final int PIP_REQUEST_PREV = 702;
+    private static final int PIP_REQUEST_NEXT = 703;
     /** What the PiP window was last given (play state + aspect); null outside PiP. */
     @Nullable private String mPipParamsShown;
     /** Sentinel for {@link #mPrePipOrientation}: no orientation was captured. */
@@ -1751,9 +1756,6 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mAmbient != null) {
             mAmbient.stop();
         }
-        if (mShorts != null) {
-            mShorts.setPlaying(false); // no disc turning behind another screen
-        }
         updateOrientationHandBackListener();
 
         super.onPause();
@@ -1792,8 +1794,9 @@ public class MobilePlaybackActivity extends MobileActivity
         // and decoding - onStop is not delivered while a PiP window stays visible, so reaching here
         // uninhibited means a real background (home without PiP, screen off, another screen on top).
         // Re-enabled at the top of onResume, before the texture reattach.
-        if (mShorts != null && mShorts.isActive() && !isFinishing()) {
+        if (mShorts != null && mShorts.isActive() && !mIsInPip && !isFinishing()) {
             // METUBE(shorts): no background play for Shorts - leaving pauses, coming back plays.
+            // (Home with a short playing opens PiP instead; this is a paused short or the screen off.)
             if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
                 mExoPlayerController.setPlayWhenReady(false);
                 mShortPausedByLeave = true;
@@ -1988,11 +1991,6 @@ public class MobilePlaybackActivity extends MobileActivity
             logPip("leave-skip reason=audio-mode");
             return;
         }
-        if (mShorts != null && mShorts.isActive()) {
-            logPip("leave-skip reason=shorts"); // METUBE(shorts): a short pauses instead (onStop)
-            return;
-        }
-
         logPip("leave-enter");
         enterPipMode();
     }
@@ -2790,6 +2788,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 mTimeBar.setVisibility(View.VISIBLE);
             }
             showControlsInternal(false);
+            if (mShorts != null) {
+                mShorts.setInPip(false);
+            }
             logPip("enter-refused-restored");
         } else {
             // onPictureInPictureModeChanged(true) lands a frame or two later; until it does,
@@ -2805,6 +2806,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private void applyPipVideoOnlyLayout() {
         cancelAutoHide();
         hideControls();
+        if (mShorts != null) {
+            mShorts.setInPip(true); // METUBE(shorts-pip): only the short, no side buttons
+        }
         // NEWTUBE(hold-speed): a hold does not follow the video into PiP (no touch ends it there).
         cancelHoldSpeed();
         // NEWTUBE(seek bar): the pills beside the controls go at once, not on a fade that the
@@ -2866,7 +2870,16 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
 
-        builder.setActions(java.util.Arrays.asList(buildAudioOnlyAction(), buildPlayPauseAction()));
+        if (mShorts != null && mShorts.isActive()) {
+            builder.setActions(java.util.Arrays.asList(
+                    buildPipAction(ACTION_PIP_PREV, PIP_REQUEST_PREV, R.drawable.ic_player_previous,
+                            R.string.mobile_player_previous),
+                    buildPlayPauseAction(),
+                    buildPipAction(ACTION_PIP_NEXT, PIP_REQUEST_NEXT, R.drawable.ic_player_next,
+                            R.string.mobile_player_next)));
+        } else {
+            builder.setActions(java.util.Arrays.asList(buildAudioOnlyAction(), buildPlayPauseAction()));
+        }
 
         // Android 12+ gesture navigation does NOT deliver onUserLeaveHint in time for the home
         // gesture, so the manual enterPipMode() path never fires there (observed on the emulator:
@@ -2902,8 +2915,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 && !mIsEnded
                 && mExoPlayerController != null
                 && mExoPlayerController.getPlayWhenReady()
-                && !mAudioOnly // METUBE(audio-only): Home keeps the sound going, no PiP window
-                && !(mShorts != null && mShorts.isActive()); // METUBE(shorts): no PiP for Shorts
+                && !mAudioOnly; // METUBE(audio-only): Home keeps the sound going, no PiP window
     }
 
     /**
@@ -2973,6 +2985,14 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mPlayer != null && mPlayer.getVideoFormat() != null && mPlayer.getVideoFormat().height > 0) {
             width = mPlayer.getVideoFormat().width;
             height = mPlayer.getVideoFormat().height;
+        } else if (mVideoAspect > 0) {
+            // METUBE(shorts pip): between videos (PiP next) the format is gone for a moment; the
+            // 16:9 default then turned the portrait window landscape. Keep the last known shape.
+            width = Math.round(mVideoAspect * 1000);
+            height = 1000;
+        } else if (mShorts != null && mShorts.isActive()) {
+            width = 9;
+            height = 16;
         }
 
         float ratio = (float) width / height;
@@ -3003,6 +3023,15 @@ public class MobilePlaybackActivity extends MobileActivity
 
         Icon icon = Icon.createWithResource(this, iconRes);
         return new RemoteAction(icon, getString(labelRes), getString(labelRes), intent);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private RemoteAction buildPipAction(String action, int requestCode, int iconRes, int labelRes) {
+        PendingIntent intent = PendingIntent.getBroadcast(this, requestCode,
+                new Intent(action).setPackage(getPackageName()),
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        String label = getString(labelRes);
+        return new RemoteAction(Icon.createWithResource(this, iconRes), label, label, intent);
     }
 
     /** METUBE(audio-only): headphones in the PiP window - the window closes, the sound plays on. */
@@ -3036,7 +3065,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // pushed twice each. Only a new play/pause icon or shape is worth a push there.
         if (mIsInPip) {
             String shown = (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady() && !mIsEnded)
-                    + "/" + getVideoAspectRatio();
+                    + "/" + getVideoAspectRatio() + "/" + (mShorts != null && mShorts.isActive());
             if (shown.equals(mPipParamsShown)) {
                 return;
             }
@@ -3070,6 +3099,12 @@ public class MobilePlaybackActivity extends MobileActivity
                 if (intent != null && ACTION_PIP_TOGGLE.equals(intent.getAction())) {
                     togglePlayPause();
                     updatePipActions();
+                } else if (intent != null && ACTION_PIP_PREV.equals(intent.getAction()) && mPresenter != null) {
+                    logPip("action prev");
+                    mPresenter.onPreviousClicked();
+                } else if (intent != null && ACTION_PIP_NEXT.equals(intent.getAction()) && mPresenter != null) {
+                    logPip("action next");
+                    mPresenter.onNextClicked();
                 } else if (intent != null && intent.getBooleanExtra(EXTRA_AUDIO_TOGGLE, false)) {
                     setAudioOnly(!mAudioOnly); // the mini card's headphones
                 } else if (intent != null && ACTION_PIP_AUDIO.equals(intent.getAction()) && mIsInPip) {
@@ -3088,6 +3123,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // Internal-only broadcast; must be flagged not-exported on API 34+.
         IntentFilter filter = new IntentFilter(ACTION_PIP_TOGGLE);
         filter.addAction(ACTION_PIP_AUDIO);
+        filter.addAction(ACTION_PIP_PREV);
+        filter.addAction(ACTION_PIP_NEXT);
         ContextCompat.registerReceiver(this, mPipReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
@@ -3194,6 +3231,9 @@ public class MobilePlaybackActivity extends MobileActivity
             logPip("exit-layout newConfig=" + (newConfig != null ? newConfig.orientation : -1)
                     + " resources=" + layoutOrientation()
                     + " chosen=" + orientation);
+            if (mShorts != null) {
+                mShorts.setInPip(false);
+            }
             applyWatchLayoutForOrientation(orientation);
             applySystemBarsForOrientation(orientation);
             updatePlayPauseIcon();
@@ -4803,6 +4843,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (videoSize.width > 0 && videoSize.height > 0) {
                 mVideoAspect = videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height;
                 applyControlsInsets();
+                updatePipActions(); // a new shape reshapes the PiP window
             }
         }
 
@@ -4821,9 +4862,6 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         private void handleUiStateChange(boolean playWhenReady, int playbackState) {
-            if (mShorts != null) {
-                mShorts.setPlaying(playWhenReady && playbackState == Player.STATE_READY);
-            }
             switch (playbackState) {
                 case Player.STATE_BUFFERING:
                     showProgressBar(true);
