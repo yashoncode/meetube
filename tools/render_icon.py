@@ -1,7 +1,7 @@
 """Draw the MeTube mark: a red heart with a black, round-cornered play triangle in it, on black.
 
-One geometry, three outputs: the launcher vectors (ic_launcher_foreground / _monochrome), the in-app
-mark (ic_metube_mark), and the PNG mipmaps for launchers without adaptive icons plus the README icon.
+One geometry: the themed-icon vector (ic_launcher_monochrome), the splash/in-app mark (ic_metube_mark)
+and ic_launcher_foreground. The launcher icon itself is the painted artwork (tools/icon_from_image.py).
 The heart is Material's "favorite" outline (24-unit grid, Apache 2.0); everything is placed on that
 grid and scaled into the 108-unit adaptive-icon grid. Usage: python tools/render_icon.py
 """
@@ -164,9 +164,5 @@ if __name__ == "__main__":
     (drawable / "ic_metube_mark.xml").write_text(vector(
         "METUBE: the in-app mark (brand pill) - the launcher heart and play triangle.",
         22, MARK, "#FF453A", "#000000", False), encoding="utf-8")
-    for density, size in {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}.items():
-        icon = render(size)
-        for name in ("app_icon.png", "app_icon_alt.png"):
-            icon.save(RES / f"mipmap-{density}" / name)
-    render(512).save(ROOT / ".github" / "assets" / "icon.png")
+    # The launcher PNGs and README icon now come from the painted artwork: tools/icon_from_image.py.
     print("ok")

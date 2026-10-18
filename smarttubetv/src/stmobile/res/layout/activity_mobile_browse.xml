@@ -288,7 +288,7 @@
                     android:layout_height="22dp"
                     android:layout_marginEnd="8dp"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/ic_metube_mark" />
+                    android:src="@drawable/ic_metube_mark_art" />
 
                 <TextView
                     android:id="@+id/mobile_title_bar"

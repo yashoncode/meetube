@@ -2,6 +2,6 @@
 <!-- MeTube adaptive launcher icon (API 26+), overrides @mipmap/app_icon for stmobile. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <foreground android:drawable="@drawable/ic_launcher_art" />
     <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>
