@@ -8,6 +8,7 @@
          word matches as a word start. Translate them as the words people would type. -->
     <string name="mobile_settings_search_kw_account">sign in log in sign out google profile switch</string>
     <string name="mobile_settings_search_kw_theme">dark mode light mode night appearance colors colours</string>
+    <string name="mobile_settings_search_kw_customize">customise personalize personalise appearance look style layout</string>
     <string name="mobile_settings_search_kw_country">country region</string>
     <string name="mobile_settings_search_kw_start_screen">launch startup opens on default tab home page</string>
     <string name="mobile_settings_search_kw_interface_size">ui scale zoom font text size density bigger smaller</string>
@@ -23,6 +24,7 @@
     <string name="mobile_settings_search_kw_hide_related">suggestions related recommendations</string>
     <string name="mobile_settings_search_kw_dislikes">return youtube dislike ryd</string>
     <string name="mobile_settings_search_kw_home_layout">rows shelves carousel feed grid smarttube</string>
+    <string name="mobile_settings_search_kw_app_icon">launcher logo home screen old classic</string>
     <string name="mobile_settings_search_kw_quality">resolution 4k 1080p 720p hd data saver mobile data</string>
     <string name="mobile_settings_search_kw_loudness">volume normalization auto volume quiet loud</string>
     <string name="mobile_settings_search_kw_player_volume">quiet loud sound</string>

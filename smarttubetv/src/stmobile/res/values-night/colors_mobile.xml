@@ -8,6 +8,7 @@
     <color name="mobile_color_background">#000000</color>
     <color name="mobile_color_surface">#1C1C21</color>
     <color name="mobile_color_on_surface">#F5F5F7</color>
+    <color name="mobile_color_section_title">#FF453A</color>
     <color name="mobile_color_on_surface_secondary">#99FFFFFF</color>
     <color name="mobile_color_placeholder">#1C1C21</color>
     <!-- NEWTUBE(motion): the light that sweeps over skeleton blocks (ShimmerLinearLayout). -->

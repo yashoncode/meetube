@@ -69,6 +69,7 @@ final class SettingsSearch {
     private static final int[][] KEYWORDS = {
             {R.string.mobile_settings_account, R.string.mobile_settings_search_kw_account},
             {R.string.mobile_theme, R.string.mobile_settings_search_kw_theme},
+            {R.string.mobile_settings_customize, R.string.mobile_settings_search_kw_customize},
             {R.string.mobile_settings_country, R.string.mobile_settings_search_kw_country},
             {R.string.mobile_settings_start_screen, R.string.mobile_settings_search_kw_start_screen},
             {R.string.mobile_settings_interface_size, R.string.mobile_settings_search_kw_interface_size},
@@ -88,6 +89,7 @@ final class SettingsSearch {
             {R.string.mobile_settings_dislikes, R.string.mobile_settings_search_kw_dislikes},
             {R.string.mobile_settings_quality, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_home_layout, R.string.mobile_settings_search_kw_home_layout},
+            {R.string.mobile_settings_app_icon, R.string.mobile_settings_search_kw_app_icon},
             {R.string.mobile_settings_quality_wifi, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_quality_mobile, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_screen_off, R.string.mobile_settings_search_kw_background},

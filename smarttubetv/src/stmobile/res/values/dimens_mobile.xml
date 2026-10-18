@@ -49,7 +49,7 @@
     <dimen name="mobile_settings_row_padding_vertical">14dp</dimen>
     <dimen name="mobile_settings_row_title_size">16sp</dimen>
     <dimen name="mobile_settings_row_summary_size">14sp</dimen>
-    <dimen name="mobile_settings_header_size">16sp</dimen>
+    <dimen name="mobile_settings_header_size">14sp</dimen>
     <!-- METUBE(glass): room under a list for the floating nav pill (68dp pill + 12dp margin + 12dp gap). -->
     <dimen name="metube_nav_clearance">92dp</dimen>
     <!-- METUBE: the floating mini player, a size up from 180x102 (16:9). MINI_CARD_WIDTH_DP matches. -->

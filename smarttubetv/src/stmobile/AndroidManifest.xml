@@ -102,7 +102,36 @@
             android:launchMode="singleTop"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|uiMode"
             android:theme="@style/Theme.MeTube.Splash"
-            tools:replace="android:launchMode,android:configChanges" />
+            tools:replace="android:launchMode,android:configChanges">
+            <!-- METUBE(app icon): the launcher entries are the aliases below, one per icon. -->
+            <intent-filter tools:node="removeAll" />
+        </activity>
+
+        <!-- METUBE(app icon): Settings > Customization > App icon enables exactly one (AppIcon). -->
+        <activity-alias
+            android:name="com.newtube.mobile.icon.Default"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/app_icon"
+            android:targetActivity="com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.newtube.mobile.icon.Classic"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/app_icon_classic"
+            android:targetActivity="com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <activity
             android:name="com.newtube.mobile.ui.browse.MobileBrowseActivity"

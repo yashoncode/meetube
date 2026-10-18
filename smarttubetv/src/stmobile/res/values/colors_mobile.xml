@@ -12,6 +12,8 @@
     <color name="mobile_color_background">#FFFFFF</color>
     <color name="mobile_color_surface">#FFFFFF</color>
     <color name="mobile_color_on_surface">#0F0F0F</color>
+    <!-- Group titles in Settings and dialogs: the accent, dark enough for small text on white (5:1). -->
+    <color name="mobile_color_section_title">#D7372D</color>
     <color name="mobile_color_on_surface_secondary">#606060</color>
     <color name="mobile_color_badge_bg">#73000000</color>
     <color name="mobile_color_badge_live_bg">#CCD32F2F</color>

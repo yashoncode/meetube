@@ -5,16 +5,13 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.liskovsoft.appupdatechecker2.AppUpdateChecker;
-import com.liskovsoft.mediaserviceinterfaces.oauth.Account;
 import com.liskovsoft.sharedutils.helpers.AppInfoHelpers;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionItem;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AppUpdatePresenter;
 import com.liskovsoft.smartyoutubetv2.common.misc.DiagnosticLog;
-import com.liskovsoft.smartyoutubetv2.common.misc.MediaServiceManager;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.about.AboutShareRows;
-import com.newtube.mobile.ui.browse.AccountsSheet;
 import com.newtube.mobile.ui.common.ThemeMode;
 
 import java.util.ArrayList;
@@ -28,8 +25,7 @@ import java.util.List;
  * <pre>
  * Settings
  *   [ Search settings ]          (SettingsSearchFragment: every row of every page)
- *   Account                      (the accounts sheet)
- *   App:    General · Tabs and feeds · History and privacy
+ *   App:    General · Customization · Feeds · History and privacy
  *   Video:  Playback · Video quality · Captions · SponsorBlock · DeArrow
  *   Other:  Backup and restore · Advanced · About
  * </pre>
@@ -37,6 +33,7 @@ import java.util.List;
 public final class SettingsPages {
     public static final String ROOT = "root";
     public static final String GENERAL = "general";
+    public static final String CUSTOMIZE = "customize";
     public static final String FEEDS = "feeds";
     public static final String FEEDS_TABS = "feeds_tabs";
     public static final String FEEDS_HIDDEN = "feeds_hidden";
@@ -71,6 +68,8 @@ public final class SettingsPages {
         switch (id) {
             case GENERAL:
                 return AppPages.general(context);
+            case CUSTOMIZE:
+                return AppPages.customize(context);
             case FEEDS:
                 return AppPages.feeds(context);
             case FEEDS_TABS:
@@ -108,22 +107,13 @@ public final class SettingsPages {
     private static Page root(Context context) {
         List<SettingsRow> rows = new ArrayList<>();
 
-        Account account = MediaServiceManager.instance().getSelectedAccount();
-        boolean signedIn = account != null && !account.isEmpty();
-        rows.add(SettingsRow.action(R.drawable.ic_settings_account,
-                signedIn && account.getName() != null ? account.getName() : context.getString(R.string.mobile_settings_account),
-                () -> signedIn ? (account.getEmail() != null ? account.getEmail() : context.getString(R.string.mobile_settings_account_switch))
-                        : context.getString(R.string.mobile_settings_account_signed_out),
-                page -> AccountsSheet.show(page.requireActivity(), page::rebuild)));
-        // METUBE(support): near the top, where people see it.
-        rows.add(SettingsRow.action(R.drawable.ic_settings_coffee, context.getString(R.string.mobile_settings_coffee),
-                () -> context.getString(R.string.mobile_settings_coffee_summary),
-                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.mobile_settings_coffee_url))));
-
+        // METUBE: no account or coffee rows here - the You tab switches accounts, About thanks.
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_app)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_general, context.getString(R.string.mobile_settings_general),
-                context.getString(R.string.mobile_settings_general_summary), GENERAL)
-                .summary(() -> generalSummary(context)));
+                context.getString(R.string.mobile_settings_general_summary), GENERAL));
+        rows.add(SettingsRow.page(R.drawable.ic_settings_customize, context.getString(R.string.mobile_settings_customize),
+                context.getString(R.string.mobile_settings_customize_summary), CUSTOMIZE)
+                .summary(() -> customizeSummary(context)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_feeds, context.getString(R.string.mobile_settings_feeds),
                 context.getString(R.string.mobile_settings_feeds_summary), FEEDS));
         rows.add(SettingsRow.page(R.drawable.ic_settings_privacy, context.getString(R.string.mobile_settings_privacy),
@@ -152,12 +142,12 @@ public final class SettingsPages {
         return new Page(context.getString(R.string.header_settings), rows);
     }
 
-    /** "Dark theme · English" style: the two settings people come to General for. */
-    private static CharSequence generalSummary(Context context) {
+    /** "Dark theme, tabs, ...": the theme is what people open Customization for most. */
+    private static CharSequence customizeSummary(Context context) {
         int theme = ThemeMode.get();
         String themeLabel = context.getString(theme == ThemeMode.LIGHT ? R.string.mobile_settings_theme_light_short
                 : theme == ThemeMode.DARK ? R.string.mobile_settings_theme_dark_short : R.string.mobile_settings_theme_system_short);
-        return context.getString(R.string.mobile_settings_general_summary_value, themeLabel);
+        return context.getString(R.string.mobile_settings_customize_summary_value, themeLabel);
     }
 
     private static String versionLine(Context context) {

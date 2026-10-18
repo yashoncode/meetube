@@ -29,13 +29,15 @@
     <string name="mobile_settings_group_video">Video and audio</string>
     <string name="mobile_settings_group_other">Other</string>
     <string name="mobile_settings_general">General</string>
-    <string name="mobile_settings_general_summary">Theme, language, start screen</string>
-    <string name="mobile_settings_general_summary_value">%1$s theme, language, start screen</string>
+    <string name="mobile_settings_general_summary">Language, country, voice search, clock</string>
+    <string name="mobile_settings_customize">Customization</string>
+    <string name="mobile_settings_customize_summary">Theme, tabs, Home layout, video menu</string>
+    <string name="mobile_settings_customize_summary_value">%1$s theme, tabs, Home layout, video menu</string>
     <string name="mobile_settings_theme_system_short">System</string>
     <string name="mobile_settings_theme_light_short">Light</string>
     <string name="mobile_settings_theme_dark_short">Dark</string>
-    <string name="mobile_settings_feeds">Tabs and feeds</string>
-    <string name="mobile_settings_feeds_summary">Tabs, hidden videos, video menu</string>
+    <string name="mobile_settings_feeds">Feeds</string>
+    <string name="mobile_settings_feeds_summary">Hidden videos, titles, channel order</string>
     <string name="mobile_settings_privacy">History and privacy</string>
     <string name="mobile_settings_privacy_summary">Watch and search history</string>
     <string name="mobile_settings_playback">Playback</string>
@@ -162,6 +164,10 @@
 
     <!-- METUBE(home-rows): General > Home layout (issue #4). -->
     <string name="mobile_settings_home_layout">Home layout</string>
+    <string name="mobile_settings_app_icon">App icon</string>
+    <string name="mobile_app_icon_default">MeTube (default)</string>
+    <string name="mobile_app_icon_classic">Classic</string>
+    <string name="mobile_app_icon_pending">The new icon shows on your home screen once you leave MeTube</string>
     <string name="mobile_settings_home_layout_feed">Feed</string>
     <string name="mobile_settings_home_layout_feed_desc">One list of videos, like YouTube</string>
     <string name="mobile_settings_home_layout_rows">Rows</string>

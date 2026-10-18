@@ -1078,6 +1078,13 @@ public class MobileMainApplication extends MainApplication {
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
 
+        // METUBE(app icon): a new launcher icon is applied once nothing of the app is on screen;
+        // not while a player plays on in the background (the alias switch closes its task).
+        if (level == TRIM_MEMORY_UI_HIDDEN
+                && com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter.instance(this).getView() == null) {
+            com.newtube.mobile.ui.common.AppIcon.applyPending(this);
+        }
+
         if (level >= TRIM_MEMORY_RUNNING_LOW) {
             if (level != TRIM_MEMORY_UI_HIDDEN) {
                 SessionWarmup.onMemoryPressure();
