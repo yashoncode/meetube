@@ -8544,6 +8544,8 @@ public class MobilePlaybackActivity extends MobileActivity
             }
 
             setChannelIcon(metadata.getAuthorImageUrl());
+            com.newtube.mobile.ui.common.ChannelAvatars.put(this, metadata.getChannelId(),
+                    metadata.getAuthor(), metadata.getAuthorImageUrl()); // METUBE(card avatars)
 
             // Counts: prefer the real values already synced onto the Video; fall back to metadata.
             if (isCountUnset(mWatchLikeCount) && !TextUtils.isEmpty(metadata.getLikeCount())) {

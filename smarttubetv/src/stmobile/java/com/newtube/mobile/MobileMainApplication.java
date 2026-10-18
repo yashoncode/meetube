@@ -694,6 +694,9 @@ public class MobileMainApplication extends MainApplication {
         // NO NOTIFICATIONS (mobile-only): YouTube refuses the notification inbox to the TV sign-in
         // (HTTP 400 signed in and out, 2026-09-30), so the phone shows no Notifications section: not
         // in the You panel, Set-up sections or Boot to section (SidebarService). Prefs untouched.
+        // Re-checked 2026-10-18 (MeTube issue #6) on a signed-in phone: every client - TV,
+        // TVLegacy, TV_UA, Kids ("Precondition check failed"), Android, MWeb, Web ("invalid
+        // argument") - gets 400 with the TV OAuth token. The inbox wants a web cookie sign-in.
         com.liskovsoft.smartyoutubetv2.common.app.presenters.service.SidebarService.setNotificationsSectionHidden(true);
 
         // UPDATES (mobile-only): the launch check and Settings > About > Check for updates go to the

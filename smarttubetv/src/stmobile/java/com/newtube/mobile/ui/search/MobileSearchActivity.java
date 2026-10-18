@@ -255,7 +255,7 @@ public class MobileSearchActivity extends MobileActivity
 
     private void setupGrid() {
         mLayoutManager = new GridLayoutManager(this, computeSpanCount());
-        mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked);
+        mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked).showAvatars();
 
         // Channel results render as full-width rows even when landscape/tablet uses 2+ columns.
         mLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {

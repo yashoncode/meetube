@@ -53,6 +53,16 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
 
     private final OnVideoClickListener mClickListener;
     private final OnVideoLongClickListener mLongClickListener;
+    private boolean mShowAvatars;
+
+    /**
+     * METUBE(card avatars, issue #6): a round channel avatar beside each card's title, and the
+     * avatar or the channel name in the meta line opens the channel. Off on a channel's own page.
+     */
+    public VideoCardAdapter showAvatars() {
+        mShowAvatars = true;
+        return this;
+    }
 
     public VideoCardAdapter(OnVideoClickListener clickListener) {
         this(clickListener, null);
@@ -101,7 +111,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         if (viewType == VIEW_TYPE_CHANNEL) {
             return new ChannelViewHolder(inflater.inflate(R.layout.item_mobile_channel_card, parent, false), mClickListener);
         }
-        return new VideoViewHolder(inflater.inflate(R.layout.item_video_card, parent, false), mClickListener);
+        VideoViewHolder holder = new VideoViewHolder(inflater.inflate(R.layout.item_video_card, parent, false), mClickListener);
+        holder.mShowAvatar = mShowAvatars;
+        return holder;
     }
 
     @Override
@@ -175,8 +187,12 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         private final TextView mTitle;
         private final TextView mMeta;
         private final View mOverflow;
+        private final ImageView mAvatar;
         private Video mVideo;
         private String mBoundThumbUrl;
+        boolean mShowAvatar;
+        /** Where the last touch landed in the meta line: on the channel name or not. */
+        private boolean mMetaTouchOnChannel;
 
         public VideoViewHolder(@NonNull View itemView, OnVideoClickListener clickListener) {
             super(itemView);
@@ -188,6 +204,28 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mTitle = itemView.findViewById(R.id.video_title);
             mMeta = itemView.findViewById(R.id.video_meta);
             mOverflow = itemView.findViewById(R.id.video_overflow);
+            mAvatar = itemView.findViewById(R.id.video_avatar);
+
+            if (mAvatar != null) {
+                mAvatar.setOnClickListener(v -> openChannel());
+            }
+            // METUBE(issue #6): the channel name at the start of the meta line opens the channel;
+            // the rest of the line (views, age) still opens the video.
+            mMeta.setOnTouchListener((v, event) -> {
+                if (event.getActionMasked() == android.view.MotionEvent.ACTION_DOWN) {
+                    int offset = mMeta.getOffsetForPosition(event.getX(), event.getY());
+                    mMetaTouchOnChannel = mShowAvatar && offset >= 0 && offset < channelNameLength();
+                }
+                return false;
+            });
+            mMeta.setOnClickListener(v -> {
+                if (mMetaTouchOnChannel) {
+                    openChannel();
+                } else {
+                    itemView.performClick();
+                }
+            });
+            mMeta.setOnLongClickListener(v -> itemView.performLongClick());
 
             itemView.setOnClickListener(v -> {
                 if (mVideo != null && clickListener != null) {
@@ -201,9 +239,54 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             });
         }
 
+        /** Length of the channel name that leads the meta line, or 0 when it doesn't lead it. */
+        private int channelNameLength() {
+            CharSequence text = mMeta.getText();
+            String author = mVideo != null ? mVideo.getAuthor() : null;
+            return author != null && !author.isEmpty() && text != null
+                    && text.toString().startsWith(author) ? author.length() : 0;
+        }
+
+        private void openChannel() {
+            if (mVideo != null && com.liskovsoft.smartyoutubetv2.common.app.presenters.ChannelPresenter.canOpenChannel(mVideo)) {
+                PlayerTransitionBridge.clear();
+                com.liskovsoft.smartyoutubetv2.common.misc.MediaServiceManager.chooseChannelPresenter(
+                        itemView.getContext(), mVideo);
+            }
+        }
+
+        private void bindAvatar(Context context, Video video) {
+            if (mAvatar == null) {
+                return;
+            }
+            // Not for mixes and playlists: YouTube shows none there either (many channels, no one).
+            boolean show = mShowAvatar && video.videoId != null && !video.isMix()
+                    && !video.belongsToShorts() && video.getAuthor() != null;
+            mAvatar.setVisibility(show ? View.VISIBLE : View.GONE);
+            if (!show) {
+                return;
+            }
+            mAvatar.setContentDescription(video.getAuthor());
+            android.graphics.drawable.Drawable letter = com.newtube.mobile.ui.common.ChannelAvatars.placeholder(video.getAuthor());
+            String url = com.newtube.mobile.ui.common.ChannelAvatars.get(context, video.channelId, video.getAuthor());
+            if (url == null) {
+                Glide.with(context.getApplicationContext()).clear(mAvatar);
+                mAvatar.setImageDrawable(letter);
+                com.newtube.mobile.ui.common.ChannelAvatars.fetch(context, video.channelId, video.getAuthor(),
+                        () -> mVideo == video, found -> {
+                    if (mVideo == video && mAvatar.getVisibility() == View.VISIBLE) {
+                        Glide.with(itemView.getContext()).load(found).circleCrop().placeholder(letter).into(mAvatar);
+                    }
+                }, false);
+            } else {
+                Glide.with(context).load(url).circleCrop().placeholder(letter).error(letter).into(mAvatar);
+            }
+        }
+
         public void bind(Video video, OnVideoLongClickListener longClickListener) {
             mVideo = video;
             Context context = itemView.getContext();
+            bindAvatar(context, video);
 
             itemView.setOnLongClickListener(v ->
                     mVideo != null && longClickListener != null && longClickListener.onVideoLongClick(mVideo));
@@ -479,6 +562,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mMeta.setText(meta);
             mMeta.setVisibility(meta.length() == 0 ? View.GONE : View.VISIBLE);
 
+            com.newtube.mobile.ui.common.ChannelAvatars.put(itemView.getContext(), video.channelId,
+                    video.getTitle(), video.getCardImageUrl()); // METUBE(card avatars)
             Glide.with(itemView.getContext())
                     .load(video.getCardImageUrl())
                     .circleCrop()

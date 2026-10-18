@@ -946,6 +946,7 @@ public class MobileBrowseActivity extends MobileActivity
                 }
             }
         };
+        mAdapter.showAvatars(); // METUBE(card avatars, issue #6)
         mStrip = new FeedStrip(this::onStripPicked, findViewById(R.id.mobile_blur_target));
         mChipRow = findViewById(R.id.mobile_chip_row);
         mChipRow.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
@@ -1843,6 +1844,10 @@ public class MobileBrowseActivity extends MobileActivity
                 group -> runOnUiThread(() -> {
                     List<Video> channels = VideoGroup.from(group).getVideos();
                     mSubsChannels = channels != null ? new ArrayList<>(channels) : new ArrayList<>();
+                    for (Video channel : mSubsChannels) { // METUBE(card avatars): the feed cards' avatars
+                        com.newtube.mobile.ui.common.ChannelAvatars.put(this, channel.channelId,
+                                Helpers.firstNonNull(channel.getAuthor(), channel.getTitle()), channel.getCardImageUrl());
+                    }
                     if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
                         updateStrip();
                     }
