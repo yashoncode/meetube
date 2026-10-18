@@ -18,9 +18,11 @@ screen in `ui/settings/`: a new setting is a row there (design and per-row audit
 
 ## Repos & commit order
 - Main: `origin` = github.com/yashoncode/metube, branch `main` (pushed from local `metube-root`).
-- Submodules `MediaServiceCore` and `SharedModules` are **our forks**:
-  `origin` = aleixrodriala/<name> (HTTPS — SSH keys are not set up on this
-  Mac), `upstream` = yuliskov/<name>, branch `master`. Commit INSIDE the
+- Submodules, branch `master`, `upstream` = yuliskov/<name>. `MediaServiceCore`:
+  `origin` = yashoncode/MediaServiceCore (our fork, made 2026-10-18), `newtube` =
+  aleixrodriala/MediaServiceCore (NewTube's, pull its fixes from there).
+  `SharedModules`: `origin` = aleixrodriala/SharedModules (no push rights - fork it
+  under yashoncode the same way before changing it). HTTPS only. Commit INSIDE the
   submodule first, push `origin master`, then commit the pointer bump in main.
 - Upstream (yuliskov) fixes are merged into the **submodule forks only**; the
   main repo never merges upstream (TV code is gone). Submodules have repo-local
