@@ -308,7 +308,9 @@ final class AppPages {
                                           int[] order, boolean keepOrder) {
         SidebarService sidebar = SidebarService.instance(context);
         for (int sectionId : order) {
-            if (sectionId == MediaGroup.TYPE_SETTINGS || sectionId == MediaGroup.TYPE_SHORTS) {
+            // METUBE: Trending is gone from YouTube (its feed comes back empty), so it isn't offered.
+            if (sectionId == MediaGroup.TYPE_SETTINGS || sectionId == MediaGroup.TYPE_SHORTS
+                    || sectionId == MediaGroup.TYPE_TRENDING) {
                 continue;
             }
             Integer titleRes = null;

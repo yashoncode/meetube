@@ -1303,7 +1303,8 @@ public class MobileBrowseActivity extends MobileActivity
             if (!section.isEnabled()
                     || navSections.contains(section)
                     || section.getId() == MediaGroup.TYPE_SETTINGS
-                    || section.getId() == MediaGroup.TYPE_SHORTS) {
+                    || section.getId() == MediaGroup.TYPE_SHORTS
+                    || section.getId() == MediaGroup.TYPE_TRENDING) { // METUBE: an empty feed now
                 continue;
             }
             // NEWTUBE(menu): channels/playlists pinned from a card menu ("Pin to You") carry the
