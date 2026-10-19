@@ -794,7 +794,9 @@ public class SuggestionsController extends BasePlayerController {
         // Swiping toward the end of what the tab has loaded: ask it for the next page, which
         // MobileBrowseActivity appends to this queue (ACTION_APPEND), so the swipe never runs dry.
         long now = android.os.SystemClock.elapsedRealtime();
-        if (at >= 0 && step > 0 && queue.size() - to <= SHORTS_AHEAD
+        // ponytail: a search's shorts queue doesn't page (no Browse section behind it); it grows
+        // only as the search screen loads more results.
+        if (at >= 0 && step > 0 && queue.size() - to <= SHORTS_AHEAD && !current.belongsToSearch()
                 && (queue.size() != sShortsMoreAt || now - sShortsMoreAtMs > SHORTS_MORE_RETRY_MS)
                 && getContext() != null) {
             sShortsMoreAt = queue.size();

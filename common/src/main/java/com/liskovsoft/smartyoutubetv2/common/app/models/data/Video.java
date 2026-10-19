@@ -712,6 +712,11 @@ public final class Video {
         return mInShortsTab || (mInShortsTab = belongsToGroup(MediaGroup.TYPE_SHORTS));
     }
 
+    /** METUBE(shorts): a short listed outside the Shorts tab (search results) that plays as one. */
+    public void markShorts() {
+        mInShortsTab = true;
+    }
+
     public boolean belongsToShortsGroup() {
         return isShorts && (belongsToShorts() || belongsToHome());
     }

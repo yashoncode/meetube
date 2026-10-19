@@ -170,6 +170,41 @@
     <string name="mobile_search_insert">Refine this search</string>
     <string name="mobile_search_clear">Clear search</string>
     <string name="mobile_search_filters">Search filters</string>
+    <!-- SearchFiltersDialog: YouTube's own filter names. -->
+    <string name="mobile_search_filter_type">Type</string>
+    <string name="mobile_search_filter_all">All</string>
+    <string name="mobile_search_filter_videos">Videos</string>
+    <string name="mobile_search_filter_shorts">Shorts</string>
+    <string name="mobile_search_filter_channels">Channels</string>
+    <string name="mobile_search_filter_playlists">Playlists</string>
+    <string name="mobile_search_filter_movies">Movies</string>
+    <string name="mobile_search_filter_duration">Duration</string>
+    <string name="mobile_search_filter_any">Any</string>
+    <string name="mobile_search_filter_under_3">Under 3 minutes</string>
+    <string name="mobile_search_filter_3_20">3 - 20 minutes</string>
+    <string name="mobile_search_filter_over_20">Over 20 minutes</string>
+    <string name="mobile_search_filter_upload_date">Upload date</string>
+    <string name="mobile_search_filter_anytime">Anytime</string>
+    <string name="mobile_search_filter_today">Today</string>
+    <string name="mobile_search_filter_this_week">This week</string>
+    <string name="mobile_search_filter_this_month">This month</string>
+    <string name="mobile_search_filter_this_year">This year</string>
+    <string name="mobile_search_filter_prioritize">Prioritize</string>
+    <string name="mobile_search_filter_relevance">Relevance</string>
+    <string name="mobile_search_filter_popularity">Popularity</string>
+    <string name="mobile_search_filter_features">Features</string>
+    <string name="mobile_search_filter_live">Live</string>
+    <string name="mobile_search_filter_4k" translatable="false">4K</string>
+    <string name="mobile_search_filter_hd" translatable="false">HD</string>
+    <string name="mobile_search_filter_subtitles">Subtitles/CC</string>
+    <string name="mobile_search_filter_creative_commons">Creative Commons</string>
+    <string name="mobile_search_filter_360" translatable="false">360°</string>
+    <string name="mobile_search_filter_vr180" translatable="false">VR180</string>
+    <string name="mobile_search_filter_3d" translatable="false">3D</string>
+    <string name="mobile_search_filter_hdr" translatable="false">HDR</string>
+    <string name="mobile_search_filter_location">Location</string>
+    <string name="mobile_search_filter_purchased">Purchased</string>
+    <string name="mobile_search_filter_apply">Apply</string>
     <!-- Zero-result / failed search (the two are indistinguishable at this seam); tap = retry. -->
     <!-- SearchLoadState: an honest empty answer (no retry), and a failed search. -->
     <string name="mobile_search_no_results">No results for “%1$s”</string>

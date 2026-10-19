@@ -26,6 +26,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.liskovsoft.mediaserviceinterfaces.data.SearchOptions;
+import com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.VideoGroup;
 import com.liskovsoft.smartyoutubetv2.common.app.models.search.MediaServiceSearchTagProvider;
@@ -108,6 +110,10 @@ public class MobileSearchActivity extends MobileActivity
     private MediaServiceSearchTagProvider mTagsProvider;
 
     private final List<Video> mVideos = new ArrayList<>();
+    /** METUBE(shorts): every short this search has received, by id, in arrival order. */
+    private final java.util.LinkedHashMap<String, Video> mSearchShorts = new java.util.LinkedHashMap<>();
+    /** METUBE(shorts): shorts shown per result group - two rows of two, like YouTube's app. */
+    private static final int SHORTS_PER_BLOCK = 4;
     private int mLastPaginationTriggerCount = -1;
     /**
      * NEWTUBE(shorts): this search's result groups in arrival order (the first is the main list),
@@ -151,12 +157,9 @@ public class MobileSearchActivity extends MobileActivity
 
         mBackButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
         mMicButton.setOnClickListener(v -> startVoiceRecognition());
-        // METUBE(search filters): the presenter's own filter dialog (date, duration, type, features,
-        // sort) - built for the TV screen and never given a button on the phone.
-        findViewById(R.id.mobile_search_filters).setOnClickListener(v -> {
-            SearchFilterParams.fillTable();
-            mPresenter.onSearchSettingsClicked();
-        });
+        // METUBE(search filters, #11): YouTube's own filter dialog.
+        findViewById(R.id.mobile_search_filters).setOnClickListener(v -> SearchFiltersDialog.show(this,
+                mPresenter.getSearchOptions(), mPresenter::setSearchOptions));
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_search_glass),
                 findViewById(R.id.mobile_search_glass_source));
         if (savedInstanceState == null) {
@@ -258,10 +261,14 @@ public class MobileSearchActivity extends MobileActivity
         mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked).showAvatars();
 
         // Channel results render as full-width rows even when landscape/tablet uses 2+ columns.
+        // METUBE(shorts): every column is two spans wide, so Shorts sit two to a column.
         mLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return mAdapter.isFullSpan(position) ? mLayoutManager.getSpanCount() : 1;
+                if (mAdapter.isFullSpan(position)) {
+                    return mLayoutManager.getSpanCount();
+                }
+                return mAdapter.isShort(position) ? 1 : 2;
             }
         });
 
@@ -472,7 +479,76 @@ public class MobileSearchActivity extends MobileActivity
             return;
         }
         mPresenter.onVideoItemSelected(video);
+        if (video.belongsToShorts()) {
+            queueShorts(video);
+        }
         mPresenter.onVideoItemClicked(video);
+    }
+
+    /**
+     * METUBE(shorts): a short opens the vertical player with every short this search has
+     * received as its queue - the grid shows only a few - so a swipe walks on through them.
+     */
+    private void queueShorts(Video tapped) {
+        List<Video> shorts = new ArrayList<>(mSearchShorts.values());
+        int at = shorts.indexOf(tapped);
+        if (at < 0) {
+            return;
+        }
+        Playlist playlist = Playlist.instance();
+        playlist.clear();
+        playlist.addAll(new ArrayList<>(shorts.subList(Math.max(0, at - 10), Math.min(shorts.size(), at + 40))));
+        playlist.setCurrent(tapped);
+        tapped.fromQueue = true;
+    }
+
+    /** METUBE(shorts): new results' shorts join the end of this search's Shorts queue, if it plays. */
+    private void extendShortsQueue(List<Video> added) {
+        List<Video> queue = Playlist.instance().getAll();
+        if (added.isEmpty() || queue.isEmpty() || !mSearchShorts.containsValue(queue.get(queue.size() - 1))) {
+            return;
+        }
+        List<Video> more = new ArrayList<>(added);
+        more.removeAll(queue);
+        Playlist.instance().addAll(more);
+    }
+
+    /**
+     * METUBE(shorts, #11): Shorts in search results, the way YouTube's app lays them out: a group's
+     * shorts gather into one block of two-column tall cards where its first short was, at most
+     * {@link #SHORTS_PER_BLOCK} of them (all of them when the Shorts type filter is on). Every
+     * short is kept for the player's queue. A tile that only opens a Shorts tab is still dropped.
+     */
+    private List<Video> withShortsBlock(List<Video> videos) {
+        if (videos == null) {
+            return null;
+        }
+        boolean shortsOnly = mPresenter != null
+                && (mPresenter.getSearchOptions() & SearchOptions.TYPE_SHORTS) != 0;
+        List<Video> result = new ArrayList<>(videos.size());
+        List<Video> shorts = new ArrayList<>();
+        List<Video> added = new ArrayList<>();
+        int blockAt = -1;
+        for (Video video : videos) {
+            if (video.isShorts && video.hasVideo()) {
+                video.markShorts();
+                if (mSearchShorts.putIfAbsent(video.videoId, video) == null) {
+                    added.add(video);
+                }
+                if (blockAt < 0) {
+                    blockAt = result.size();
+                }
+                shorts.add(video);
+            } else if (!ShortsFilter.isShort(video)) {
+                result.add(video);
+            }
+        }
+        int shown = shortsOnly ? shorts.size() : Math.min(SHORTS_PER_BLOCK, shorts.size() / 2 * 2);
+        if (shown > 0) {
+            result.addAll(blockAt, shorts.subList(0, shown));
+        }
+        extendShortsQueue(added);
+        return result;
     }
 
     private boolean onVideoLongClicked(Video video) {
@@ -561,7 +637,7 @@ public class MobileSearchActivity extends MobileActivity
     }
 
     private int computeSpanCount() {
-        return com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this);
+        return 2 * com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this);
     }
 
     // ---------------------------------------------------------------------------------
@@ -673,7 +749,7 @@ public class MobileSearchActivity extends MobileActivity
 
         if (mLayoutManager != null) {
             mLayoutManager.setSpanCount(
-                    com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig));
+                    2 * com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig));
         }
     }
 
@@ -703,7 +779,7 @@ public class MobileSearchActivity extends MobileActivity
 
         runOnUiThread(() -> {
             int incoming = group.getVideos() != null ? group.getVideos().size() : 0;
-            List<Video> shown = ShortsFilter.withoutShorts(group.getVideos()); // NEWTUBE(shorts)
+            List<Video> shown = withShortsBlock(group.getVideos()); // METUBE(shorts)
             int shortsHidden = incoming - (shown != null ? shown.size() : 0);
             if (group.getAction() != VideoGroup.ACTION_REMOVE && group.getAction() != VideoGroup.ACTION_SYNC) {
                 if (!mGenerations.accept(group)) {
@@ -841,6 +917,7 @@ public class MobileSearchActivity extends MobileActivity
     public void clearSearch() {
         runOnUiThread(() -> {
             mVideos.clear();
+            mSearchShorts.clear();
             mLastPaginationTriggerCount = -1;
             mResultGroups.clear();
             mTopUp.clear();
