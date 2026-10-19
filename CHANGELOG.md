@@ -2,6 +2,21 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases](https://github.com/aleixrodriala/newtube/releases).
 
+## 3.0.1 — 2026-10-19 — YouTube's search filters, Shorts in search, a real channel page
+
+### New
+
+- **YouTube's search filters.** The filter button opens the same "Search filters" YouTube has: Type, Duration, Upload date and Prioritize, plus Features chips: Live, 4K, HD, Subtitles/CC, Creative Commons, 360°, VR180, 3D, HDR, Location and Purchased. Any combination works now; before, many combinations quietly searched without a filter (#11).
+- **Shorts in search.** Search results show Shorts the way YouTube does: a block of tall cards, two to a row. Tap one to open the Shorts player and swipe through the search's Shorts. Type › Shorts shows only Shorts (#11).
+- **A channel page with a header.** The channel's banner, picture, name, @handle, subscribers and video count and its description (tap to read it all), over a soft blur of the banner. The header scrolls away; the tabs stay (#10).
+- **Both channels on a collab.** A video made by two channels shows both channel pictures, like YouTube.
+- **Hide the tab names.** Settings › Customization › Tab names: off leaves only the icons in the bottom bar.
+
+### Changed
+
+- Channel pictures on cards load sooner while you scroll and fade in instead of popping in.
+- The search filters YouTube no longer has (Last hour, sort by upload date or rating) are gone.
+
 ## 3.0.0 — 2026-10-19 — Your own bottom bar, three app icons, a truthful quality label
 
 ### New

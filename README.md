@@ -25,7 +25,8 @@
 - 🎧 **Background play & picture-in-picture.** Lock your screen or switch apps, the music keeps going. Shorts float in their own portrait window, with previous and next.
 - ⬇️ **Offline downloads up to 1080p.** Save videos to watch on a flight, a train or with no data.
 - 📱 **Shorts done right.** A clean, full-screen Shorts player with glass like, comment and share buttons.
-- 🧑‍🎤 **Channels at a glance.** Every card shows the channel's photo; tap it, or the channel name, to jump to the channel. Sort any channel's videos by Latest, Popular or Oldest.
+- 🧑‍🎤 **Channels at a glance.** Every card shows the channel's photo (both photos on a collab); tap it, or the channel name, to jump to the channel. Channel pages open with the banner, stats and description. Sort any channel's videos by Latest, Popular or Oldest.
+- 🔎 **YouTube's search filters.** Type, duration, upload date, popularity and every feature filter, with Shorts right in the results.
 - ⏩ **Your double-tap.** Double-tap to skip 3, 5, 10, 15 or 30 seconds, your pick.
 - 🎨 **Make it yours.** One Customization page for the theme, the app icon (new, classic or fantasy), glass, Home layout, tabs and the video menu.
 - 🔄 **Always something new.** Pull Home to refresh and get videos you haven't seen yet.
