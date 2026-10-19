@@ -45,6 +45,23 @@
                 android:contentDescription="@null"
                 android:scaleType="centerCrop" />
 
+            <!-- METUBE(shorts): a search Short's title sits on its thumbnail, as on YouTube. -->
+            <TextView
+                android:id="@+id/video_short_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:background="@drawable/mobile_player_bottom_scrim"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium"
+                android:maxLines="2"
+                android:paddingHorizontal="10dp"
+                android:paddingTop="24dp"
+                android:paddingBottom="10dp"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/video_badge"
                 android:layout_width="wrap_content"
@@ -87,6 +104,18 @@
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/video_thumbnail_frame" />
+        <!-- METUBE(collab avatars): a collab's second channel, overlapping the first (shrunk). -->
+        <ImageView
+            android:id="@+id/video_avatar_2"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_collab_avatar_ring"
+            android:padding="2dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/video_avatar"
+            app:layout_constraintTop_toTopOf="@id/video_avatar" />
         <TextView
             android:id="@+id/video_title"
             android:layout_width="0dp"

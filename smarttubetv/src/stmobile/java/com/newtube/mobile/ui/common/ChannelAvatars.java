@@ -54,8 +54,8 @@ public final class ChannelAvatars {
      * the id or the name (~12 KB; a channel page is ~70 KB), on a plain client: the shared one adds
      * the TV sign-in, which WEB endpoints refuse.
      */
-    private static final long FETCH_DELAY_MS = 300;
-    private static final ExecutorService sFetcher = new java.util.concurrent.ThreadPoolExecutor(4, 4,
+    private static final long FETCH_DELAY_MS = 150;
+    private static final ExecutorService sFetcher = new java.util.concurrent.ThreadPoolExecutor(6, 6,
             30, TimeUnit.SECONDS, new java.util.concurrent.LinkedBlockingDeque<Runnable>() {
                 @Override
                 public boolean offer(Runnable runnable) {

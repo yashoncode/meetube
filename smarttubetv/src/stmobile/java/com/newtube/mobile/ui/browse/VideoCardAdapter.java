@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
@@ -59,6 +60,10 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
      * METUBE(card avatars, issue #6): a round channel avatar beside each card's title, and the
      * avatar or the channel name in the meta line opens the channel. Off on a channel's own page.
      */
+    public boolean showsAvatars() {
+        return mShowAvatars;
+    }
+
     public VideoCardAdapter showAvatars() {
         mShowAvatars = true;
         return this;
@@ -104,6 +109,27 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         return position >= 0 && position < getItemCount() && getItemViewType(position) == VIEW_TYPE_CHANNEL;
     }
 
+    /**
+     * METUBE(shorts): which of a two-up Shorts row this card is in (0 left, 1 right), counted along
+     * its run of shorts, or -1 for any other card.
+     * ponytail: assumes two shorts per row (portrait phone); a wider grid gets the same margins.
+     */
+    private int shortsColumn(int position) {
+        if (!isShort(position)) {
+            return -1;
+        }
+        int run = 0;
+        while (isShort(position - 1 - run)) {
+            run++;
+        }
+        return run % 2;
+    }
+
+    /** METUBE(shorts): a tall Shorts card, half a column wide in the search grid. */
+    public boolean isShort(int position) {
+        return position >= 0 && position < getItemCount() && getItem(position).belongsToShorts();
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -122,6 +148,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             ((ChannelViewHolder) holder).bind(getItem(position), mLongClickListener);
         } else {
             ((VideoViewHolder) holder).bind(getItem(position), mLongClickListener);
+            ((VideoViewHolder) holder).bindShortsColumn(shortsColumn(position));
         }
     }
 
@@ -188,6 +215,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         private final TextView mMeta;
         private final View mOverflow;
         private final ImageView mAvatar;
+        private final ImageView mAvatar2;
+        private final TextView mShortTitle;
         private Video mVideo;
         private String mBoundThumbUrl;
         boolean mShowAvatar;
@@ -205,6 +234,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mMeta = itemView.findViewById(R.id.video_meta);
             mOverflow = itemView.findViewById(R.id.video_overflow);
             mAvatar = itemView.findViewById(R.id.video_avatar);
+            mShortTitle = itemView.findViewById(R.id.video_short_title);
+            mAvatar2 = itemView.findViewById(R.id.video_avatar_2);
 
             if (mAvatar != null) {
                 mAvatar.setOnClickListener(v -> openChannel());
@@ -263,24 +294,104 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             boolean show = mShowAvatar && video.videoId != null && !video.isMix()
                     && !video.belongsToShorts() && video.getAuthor() != null;
             mAvatar.setVisibility(show ? View.VISIBLE : View.GONE);
+            String[] collab = show ? collabNames(video.getAuthor()) : null;
+            bindCollab(collab != null);
             if (!show) {
                 return;
             }
             mAvatar.setContentDescription(video.getAuthor());
-            android.graphics.drawable.Drawable letter = com.newtube.mobile.ui.common.ChannelAvatars.placeholder(video.getAuthor());
-            String url = com.newtube.mobile.ui.common.ChannelAvatars.get(context, video.channelId, video.getAuthor());
+            if (collab == null) {
+                loadAvatar(context, video, mAvatar, video.channelId, video.getAuthor());
+            } else {
+                // The TV tile's channel id is the first collaborator's; the second is known by name.
+                loadAvatar(context, video, mAvatar, video.channelId, collab[0]);
+                loadAvatar(context, video, mAvatar2, null, collab[1]);
+            }
+        }
+
+        private void loadAvatar(Context context, Video video, ImageView view, @Nullable String channelId, String name) {
+            android.graphics.drawable.Drawable letter = com.newtube.mobile.ui.common.ChannelAvatars.placeholder(name);
+            String url = com.newtube.mobile.ui.common.ChannelAvatars.get(context, channelId, name);
             if (url == null) {
-                Glide.with(context.getApplicationContext()).clear(mAvatar);
-                mAvatar.setImageDrawable(letter);
-                com.newtube.mobile.ui.common.ChannelAvatars.fetch(context, video.channelId, video.getAuthor(),
+                Glide.with(context.getApplicationContext()).clear(view);
+                view.setImageDrawable(letter);
+                com.newtube.mobile.ui.common.ChannelAvatars.fetch(context, channelId, name,
                         () -> mVideo == video, found -> {
-                    if (mVideo == video && mAvatar.getVisibility() == View.VISIBLE) {
-                        Glide.with(itemView.getContext()).load(found).circleCrop().placeholder(letter).into(mAvatar);
+                    if (mVideo == video && view.getVisibility() == View.VISIBLE) {
+                        Glide.with(itemView.getContext()).load(found).circleCrop().placeholder(letter)
+                                .transition(AVATAR_FADE).into(view);
                     }
                 }, false);
             } else {
-                Glide.with(context).load(url).circleCrop().placeholder(letter).error(letter).into(mAvatar);
+                Glide.with(context).load(url).circleCrop().placeholder(letter).error(letter)
+                        .transition(AVATAR_FADE).into(view);
             }
+        }
+
+        /** METUBE(card avatars): an avatar fades in over its placeholder orb instead of popping. */
+        private static final com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions AVATAR_FADE =
+                com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(
+                        new com.bumptech.glide.request.transition.DrawableCrossFadeFactory.Builder(280)
+                                .setCrossFadeEnabled(true).build());
+
+        /**
+         * METUBE(card avatars): look up and decode the avatar(s) of a card about to scroll in, so
+         * it arrives with them (FeedThumbnailPreloader). Same request shape as the bind's.
+         */
+        public static void prefetchAvatars(Context context, Video video) {
+            if (video.videoId == null || video.isMix() || video.belongsToShorts() || video.getAuthor() == null) {
+                return;
+            }
+            String[] collab = collabNames(video.getAuthor());
+            if (collab == null) {
+                prefetchAvatar(context, video.channelId, video.getAuthor());
+            } else {
+                prefetchAvatar(context, video.channelId, collab[0]);
+                prefetchAvatar(context, null, collab[1]);
+            }
+        }
+
+        private static void prefetchAvatar(Context context, @Nullable String channelId, String name) {
+            int size = Math.round(36 * context.getResources().getDisplayMetrics().density);
+            Context app = context.getApplicationContext();
+            String url = com.newtube.mobile.ui.common.ChannelAvatars.get(context, channelId, name);
+            if (url != null) {
+                Glide.with(app).load(url).circleCrop().preload(size, size);
+            } else {
+                com.newtube.mobile.ui.common.ChannelAvatars.fetch(context, channelId, name, () -> true,
+                        found -> Glide.with(app).load(found).circleCrop().preload(size, size), false);
+            }
+        }
+
+        /** METUBE(collab avatars): two overlapping circles, the first shrunk to the top-left. */
+        private void bindCollab(boolean collab) {
+            if (mAvatar2 == null) {
+                return;
+            }
+            mAvatar2.setVisibility(collab ? View.VISIBLE : View.GONE);
+            if (!collab) {
+                Glide.with(itemView.getContext().getApplicationContext()).clear(mAvatar2);
+            }
+            float scale = collab ? 26f / 36f : 1f;
+            mAvatar.setPivotX(0f);
+            mAvatar.setPivotY(0f);
+            mAvatar.setScaleX(scale);
+            mAvatar.setScaleY(scale);
+        }
+
+        /**
+         * METUBE(collab avatars): a two-channel collab's byline, "A and B" (YouTube's form), split
+         * into the two names, or null for one channel (or for "A and 2 more").
+         * ponytail: English "and" only, and a channel whose own name has " and " in it reads as a
+         * collab - its second "avatar" then stays a placeholder unless a channel has that exact name.
+         */
+        @Nullable
+        static String[] collabNames(String author) {
+            int at = author.indexOf(" and ");
+            if (at <= 0 || author.indexOf(" and ", at + 1) >= 0 || author.endsWith(" more")) {
+                return null;
+            }
+            return new String[] {author.substring(0, at), author.substring(at + 5)};
         }
 
         public void bind(Video video, OnVideoLongClickListener longClickListener) {
@@ -318,6 +429,33 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             bindReadiness(video);
             bindShape(video);
             bindThumbnail(context, video);
+        }
+
+        /**
+         * METUBE(shorts): a Short in the search grid is compact like YouTube's - title on the
+         * thumbnail, one meta line under it, narrow gutters (column 0/1; -1 = a normal card).
+         * The ⋮ menu stays on long-press.
+         */
+        void bindShortsColumn(int column) {
+            boolean shortCard = column >= 0;
+            mShortTitle.setVisibility(shortCard ? View.VISIBLE : View.GONE);
+            mShortTitle.setText(shortCard ? mVideo.getTitle() : null);
+            mTitle.setVisibility(shortCard ? View.GONE : View.VISIBLE);
+            if (shortCard && mOverflow != null) {
+                mOverflow.setVisibility(View.GONE);
+            }
+            float dp = itemView.getResources().getDisplayMetrics().density;
+            int edge = itemView.getResources().getDimensionPixelSize(R.dimen.mobile_card_spacing);
+            int inner = Math.round(3 * dp);
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) itemView.getLayoutParams();
+            // left/right, not start/end: RecyclerView lays out with the resolved margins.
+            int left = !shortCard ? edge : column == 0 ? edge : inner;
+            int right = !shortCard ? edge : column == 0 ? inner : edge;
+            int vertical = shortCard ? Math.round(4 * dp) : edge;
+            if (lp.leftMargin != left || lp.rightMargin != right || lp.topMargin != vertical) {
+                lp.setMargins(left, vertical, right, vertical);
+                itemView.setLayoutParams(lp);
+            }
         }
 
         /** METUBE(shorts): Shorts-tab cards are tall (9:16), everything else 16:9. */

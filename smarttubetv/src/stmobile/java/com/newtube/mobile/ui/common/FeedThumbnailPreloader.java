@@ -74,10 +74,15 @@ public final class FeedThumbnailPreloader extends RecyclerView.OnScrollListener 
     /** Grid whose adapter is the card adapter itself (card position == grid position). */
     public static FeedThumbnailPreloader attach(RecyclerView grid, VideoCardAdapter adapter) {
         return attach(grid, position -> position >= 0 && position < adapter.getItemCount()
-                ? adapter.getCurrentList().get(position) : null);
+                ? adapter.getCurrentList().get(position) : null, adapter.showsAvatars());
     }
 
     public static FeedThumbnailPreloader attach(RecyclerView grid, CardAt cards) {
+        return attach(grid, cards, false);
+    }
+
+    /** {@code avatars}: the cards show channel avatars - look those up ahead too. */
+    public static FeedThumbnailPreloader attach(RecyclerView grid, CardAt cards, boolean avatars) {
         Context context = grid.getContext();
         RequestManager glide = Glide.with(context);
         FeedThumbnailPreloader preloader = new FeedThumbnailPreloader(cards,
@@ -85,6 +90,9 @@ public final class FeedThumbnailPreloader extends RecyclerView.OnScrollListener 
                 new Sink() {
                     @Override
                     public Object preload(Video video) {
+                        if (avatars) {
+                            VideoCardAdapter.VideoViewHolder.prefetchAvatars(context, video);
+                        }
                         return VideoCardAdapter.VideoViewHolder.thumbnailRequest(glide, context, video)
                                 .priority(Priority.LOW)
                                 .preload();
