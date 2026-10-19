@@ -163,9 +163,78 @@ public class MobileChannelActivity extends MobileActivity
         mPresenter = ChannelPresenter.instance(this);
 
         applyChannelTitle();
+        loadHeader();
 
         mPresenter.setView(this);
         mPresenter.onViewInitialized();
+    }
+
+    /** METUBE(channel header, issue #10): the channel's UC id the header shows, once asked for. */
+    @Nullable
+    private String mHeaderChannelId;
+
+    /** Fill the header once the channel's UC id is known (a link-opened one: from its videos). */
+    private void loadHeader() {
+        String id = sortChannelId();
+        if (id == null || !id.startsWith("UC") || id.equals(mHeaderChannelId)) {
+            return;
+        }
+        mHeaderChannelId = id;
+        findViewById(R.id.mobile_channel_header).setVisibility(View.GONE);
+        ChannelHeader.fetch(id, info -> {
+            if (!isDestroyed() && id.equals(mHeaderChannelId)) {
+                bindHeader(id, info);
+            }
+        });
+    }
+
+    private void bindHeader(String channelId, ChannelHeader.Info info) {
+        View header = findViewById(R.id.mobile_channel_header);
+        ((TextView) findViewById(R.id.mobile_channel_name)).setText(info.title);
+        setTextOrGone(R.id.mobile_channel_handle, info.handle);
+        setTextOrGone(R.id.mobile_channel_stats, info.stats);
+        TextView description = setTextOrGone(R.id.mobile_channel_description, info.description);
+        description.setMaxLines(2);
+        description.setOnClickListener(v -> description.setMaxLines(
+                description.getMaxLines() == 2 ? Integer.MAX_VALUE : 2)); // tap: the rest, in place
+
+        com.bumptech.glide.RequestManager glide = com.bumptech.glide.Glide.with(this);
+        com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions fade =
+                com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(250);
+        android.widget.ImageView avatar = findViewById(R.id.mobile_channel_avatar);
+        avatar.setImageDrawable(com.newtube.mobile.ui.common.ChannelAvatars.placeholder(info.title));
+        if (info.avatarUrl != null) {
+            com.newtube.mobile.ui.common.ChannelAvatars.put(this, channelId, info.title, info.avatarUrl);
+            glide.load(info.avatarUrl).circleCrop().placeholder(avatar.getDrawable()).transition(fade).into(avatar);
+        }
+        findViewById(R.id.mobile_channel_banner_frame).setVisibility(info.bannerUrl != null ? View.VISIBLE : View.GONE);
+        if (info.bannerUrl != null) {
+            glide.load(info.bannerUrl).transition(fade).into((android.widget.ImageView) findViewById(R.id.mobile_channel_banner));
+        }
+        // The wash: the banner (or avatar) decoded tiny and stretched - the upscale is the blur.
+        String wash = info.bannerUrl != null ? info.bannerUrl : info.avatarUrl;
+        android.widget.ImageView washView = findViewById(R.id.mobile_channel_header_wash);
+        if (wash != null) {
+            glide.load(wash).override(24).transition(fade).into(washView);
+        } else {
+            glide.clear(washView);
+        }
+        if (!mTitleFromCard) {
+            mTitleFromCard = true;
+            mTitleView.setText(info.title);
+        }
+        if (header.getVisibility() != View.VISIBLE) {
+            header.setVisibility(View.VISIBLE);
+            header.setAlpha(0f);
+            header.animate().alpha(1f).setDuration(220).start();
+        }
+    }
+
+    private TextView setTextOrGone(int id, @Nullable String text) {
+        TextView view = findViewById(id);
+        view.setText(text);
+        view.setVisibility(text != null ? View.VISIBLE : View.GONE);
+        return view;
     }
 
     /**
@@ -772,6 +841,7 @@ public class MobileChannelActivity extends MobileActivity
 
             if (content) {
                 maybeNameFromVideos(group.getVideos());
+                mGrid.post(this::loadHeader); // a link-opened channel's id comes with its videos
             }
 
             switch (group.getAction()) {
@@ -889,6 +959,10 @@ public class MobileChannelActivity extends MobileActivity
             if (!mSwipe.isRefreshing()) {
                 mRestoreSectionTitle = null; // only a refresh's own clear carries the tab over
                 applyChannelTitle(); // NEWTUBE: another channel opened into this page
+                mHeaderChannelId = null;
+                ((com.google.android.material.appbar.AppBarLayout) findViewById(R.id.mobile_channel_appbar))
+                        .setExpanded(true, false);
+                loadHeader();
             }
             mSuppressTabCallback = true;
             mTabs.removeAllTabs();

@@ -65,27 +65,46 @@
 
     </LinearLayout>
 
-    <!-- One tab per channel section, in delivery order. Hidden until sections arrive.
-         tabMaxWidth=0 lifts Material's 264dp cap (it wrapped long section names such as
-         "WING IT! Production Logs (Pet Projects)" onto two lines); with 0 a scrollable tab
-         takes its text's width, up to the screen width minus 56dp, like YouTube's tabs. -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/mobile_channel_tabs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/mobile_color_background"
-        android:visibility="gone"
-        app:tabIndicatorColor="@color/mobile_color_on_surface"
-        app:tabMaxWidth="0dp"
-        app:tabMode="scrollable"
-        app:tabSelectedTextColor="@color/mobile_color_on_surface"
-        app:tabTextColor="@color/mobile_color_on_surface_secondary"
-        tools:visibility="visible" />
-
-    <FrameLayout
+    <!-- METUBE(channel header, issue #10): the header scrolls away with the cards; the tabs stay. -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/mobile_channel_appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/mobile_color_background"
+        android:stateListAnimator="@null"
+        app:elevation="0dp"
+        app:liftOnScroll="false">
+
+        <include layout="@layout/mobile_channel_header" />
+
+        <!-- One tab per channel section, in delivery order. Hidden until sections arrive.
+             tabMaxWidth=0 lifts Material's 264dp cap (it wrapped long section names such as
+             "WING IT! Production Logs (Pet Projects)" onto two lines); with 0 a scrollable tab
+             takes its text's width, up to the screen width minus 56dp, like YouTube's tabs. -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/mobile_channel_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/mobile_color_background"
+            android:visibility="gone"
+            app:tabIndicatorColor="@color/mobile_color_on_surface"
+            app:tabMaxWidth="0dp"
+            app:tabMode="scrollable"
+            app:tabSelectedTextColor="@color/mobile_color_on_surface"
+            app:tabTextColor="@color/mobile_color_on_surface_secondary"
+            tools:visibility="visible" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <!-- Pull-to-refresh reloads the channel (ChannelPresenter.reload), like Home; the rows on
              screen stay until fresh ones land. Also the retry gesture over the failure state,
@@ -134,6 +153,8 @@
             android:indeterminateTintMode="src_in" />
 
     </FrameLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     </LinearLayout>
 
