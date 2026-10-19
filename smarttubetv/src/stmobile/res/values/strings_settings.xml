@@ -78,6 +78,8 @@
     <string name="mobile_settings_tabs">Tabs</string>
     <string name="mobile_settings_tabs_summary">Choose what shows in the bottom bar and in You</string>
     <string name="mobile_settings_tabs_bottom_bar">Bottom bar</string>
+    <string name="mobile_settings_nav_labels">Tab names</string>
+    <string name="mobile_settings_nav_labels_summary">Show each tab\'s name under its icon in the bottom bar</string>
     <string name="mobile_settings_tabs_you">You</string>
     <string name="mobile_settings_tabs_before_search">Tab before Search</string>
     <string name="mobile_settings_tabs_after_search">Tab after Search</string>

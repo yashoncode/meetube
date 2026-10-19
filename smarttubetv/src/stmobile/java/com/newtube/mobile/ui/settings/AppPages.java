@@ -120,6 +120,10 @@ final class AppPages {
                 .bind(() -> com.newtube.mobile.ui.browse.HomeLayout.isRows(context),
                         rowsOn -> com.newtube.mobile.ui.browse.HomeLayout.setRows(context, rowsOn)));
 
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_nav_labels),
+                context.getString(R.string.mobile_settings_nav_labels_summary),
+                () -> NavTabs.showLabels(context), on -> NavTabs.setShowLabels(context, on)));
+
         rows.add(SettingsRow.divider());
 
         rows.add(SettingsRow.page(context.getString(R.string.mobile_settings_tabs),

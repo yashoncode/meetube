@@ -974,7 +974,7 @@ public class MobileBrowseActivity extends MobileActivity
         com.newtube.mobile.ui.common.FeedThumbnailPreloader.attach(mContentGrid, position -> {
             int card = mRowsShown ? -1 : position - stripRows();
             return card >= 0 && card < mAdapter.getItemCount() ? mAdapter.getCurrentList().get(card) : null;
-        });
+        }, true);
         mContentGrid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -2340,6 +2340,8 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onResume() {
         super.onResume();
+        mBottomNav.setLabelVisibilityMode(NavTabs.showLabels(this) // METUBE(nav labels)
+                ? BottomNavigationView.LABEL_VISIBILITY_LABELED : BottomNavigationView.LABEL_VISIBILITY_UNLABELED);
         if (mMiniPip != null) {
             mMiniPip.onResume();
         }

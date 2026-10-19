@@ -79,6 +79,8 @@
     <string name="mobile_settings_tabs_none">Ninguna</string>
     <string name="mobile_settings_tabs_bar_note">Inicio, Buscar y Tú siempre están en la barra. Elige la opción de la otra pestaña para intercambiarlas.</string>
     <string name="mobile_settings_tabs_summary">Elige qué aparece en la barra inferior y en Tú</string>
+    <string name="mobile_settings_nav_labels">Nombres de las pestañas</string>
+    <string name="mobile_settings_nav_labels_summary">Mostrar el nombre de cada pestaña bajo su icono en la barra inferior</string>
     <string name="mobile_settings_tabs_bottom_bar">Barra inferior</string>
     <string name="mobile_settings_tabs_you">Tú</string>
     <string name="mobile_settings_tabs_note">También puedes mantener pulsada una pestaña o una fila de Tú para moverla, renombrarla u ocultarla.</string>

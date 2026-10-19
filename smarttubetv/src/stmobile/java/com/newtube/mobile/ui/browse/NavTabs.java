@@ -20,6 +20,7 @@ public final class NavTabs {
             VideoDownloads.SECTION_ID, MediaGroup.TYPE_HISTORY};
     private static final String PREFS = "metube_nav_tabs";
     private static final String[] KEYS = {"before_search", "after_search"};
+    private static final String KEY_LABELS = "labels";
     /** The bar as it was before the tabs could be picked. */
     private static final int[] DEFAULTS = {MediaGroup.TYPE_SHORTS, VideoDownloads.SECTION_ID};
 
@@ -38,6 +39,15 @@ public final class NavTabs {
             editor.putInt(KEYS[other], get(context, slot));
         }
         editor.apply();
+    }
+
+    /** METUBE(nav labels): Settings > Customization > Tab names - the names under the bar's icons. */
+    public static boolean showLabels(Context context) {
+        return prefs(context).getBoolean(KEY_LABELS, true);
+    }
+
+    public static void setShowLabels(Context context, boolean show) {
+        prefs(context).edit().putBoolean(KEY_LABELS, show).apply();
     }
 
     private static SharedPreferences prefs(Context context) {
