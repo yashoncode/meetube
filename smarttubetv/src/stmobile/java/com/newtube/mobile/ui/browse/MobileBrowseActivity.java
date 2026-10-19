@@ -93,8 +93,8 @@ import java.util.List;
  *
  * {@code BottomNavigationView} hard-caps at 5 items, but {@code BrowsePresenter} can
  * deliver 10+ sections (Home, Trending, Subscriptions, History, Music, Gaming, News,
- * Playlists, Settings, ...). The bar shows only the curated
- * {@link #PREFERRED_SECTION_IDS} plus the synthetic You tab - no backfill; every other
+ * Playlists, Settings, ...). The bar shows only Home, the two tabs picked in {@link NavTabs},
+ * Search and the synthetic You tab - no backfill; every other
  * delivered section (and Settings, and the account entry) is reachable through the You
  * tab's list instead (YouTube's "You" model - there is no drawer).
  *
@@ -121,30 +121,9 @@ public class MobileBrowseActivity extends MobileActivity
     private static final int YOU_ITEM_ID = 2_000_000;
     /** METUBE(search): the Search tab - opens the search screen, never stays selected. */
     private static final int SEARCH_ITEM_ID = 2_000_001;
-    /** METUBE(search): the Search tab sits where Subscriptions was, third. */
-    private static final int SEARCH_ITEM_ORDER = 2;
     private static final int REQUEST_POST_NOTIFICATIONS = 1;
     /** Intent action (download notifications) that lands on the Downloads tab. */
     public static final String ACTION_OPEN_DOWNLOADS = "com.newtube.mobile.OPEN_DOWNLOADS";
-
-    /**
-     * Preferred bottom-nav sections, in priority order. Matched primarily by
-     * {@link BrowseSection#getId()} (stable {@link MediaGroup} TYPE_* constants in
-     * this codebase); the parallel {@link #PREFERRED_SECTION_TITLE_RES} array is a
-     * title-string fallback in case a section ever arrives with a non-standard id.
-     */
-    private static final int[] PREFERRED_SECTION_IDS = {
-            MediaGroup.TYPE_HOME,
-            // METUBE(shorts): Shorts takes History's tab (History lives on in the You panel).
-            MediaGroup.TYPE_SHORTS,
-            // METUBE(search): Search takes Subscriptions' tab (Subscriptions lives on in the You panel).
-            VideoDownloads.SECTION_ID,
-    };
-    private static final int[] PREFERRED_SECTION_TITLE_RES = {
-            R.string.header_home,
-            R.string.header_shorts,
-            R.string.header_downloads,
-    };
 
     private BrowsePresenter mPresenter;
 
@@ -2156,8 +2135,13 @@ public class MobileBrowseActivity extends MobileActivity
     private void rebuildBottomNav() {
         Menu menu = mBottomNav.getMenu();
         List<BrowseSection> navSections = selectNavSections();
+        // METUBE(nav tabs): Search goes after Home and the tab picked before it.
+        int afterSearch = NavTabs.get(this, NavTabs.AFTER_SEARCH);
+        int searchOrder = navSections.size() > 1 && afterSearch != NavTabs.NONE
+                && navSections.get(navSections.size() - 1).getId() == afterSearch
+                ? navSections.size() - 1 : navSections.size();
 
-        StringBuilder signature = new StringBuilder();
+        StringBuilder signature = new StringBuilder().append(searchOrder).append('');
         for (BrowseSection section : navSections) {
             signature.append(toMenuItemId(section.getId())).append('\u0001')
                     .append(section.getTitle()).append('\u0001')
@@ -2181,7 +2165,7 @@ public class MobileBrowseActivity extends MobileActivity
         for (int i = 0; i < navSections.size(); i++) {
             BrowseSection section = navSections.get(i);
 
-            int order = i < SEARCH_ITEM_ORDER ? i : i + 1;
+            int order = i < searchOrder ? i : i + 1;
             android.view.MenuItem item = menu.add(Menu.NONE, toMenuItemId(section.getId()), order, section.getTitle());
 
             int icon = navIconOrResFor(section);
@@ -2190,7 +2174,7 @@ public class MobileBrowseActivity extends MobileActivity
             }
         }
 
-        menu.add(Menu.NONE, SEARCH_ITEM_ID, Math.min(SEARCH_ITEM_ORDER, navSections.size()),
+        menu.add(Menu.NONE, SEARCH_ITEM_ID, searchOrder,
                 R.string.mobile_search_button).setIcon(R.drawable.ic_mobile_search);
         // The synthetic You tab always sits last (account + extra sections + settings).
         menu.add(Menu.NONE, YOU_ITEM_ID, navSections.size() + 1, R.string.mobile_nav_you)
@@ -2211,6 +2195,7 @@ public class MobileBrowseActivity extends MobileActivity
             for (BrowseSection section : navSections) {
                 View itemView = mBottomNav.findViewById(toMenuItemId(section.getId()));
                 if (itemView != null) {
+                    fitNavLabel(itemView);
                     int sectionId = section.getId();
                     itemView.setOnLongClickListener(v -> {
                         if (mPresenter != null) {
@@ -2221,6 +2206,36 @@ public class MobileBrowseActivity extends MobileActivity
                 }
             }
         });
+    }
+
+    /**
+     * METUBE(nav tabs): a label too long for its fifth of the bar ("Subscriptions") gets a smaller
+     * text size instead of ending in "...". Both labels (idle, selected) share one style.
+     */
+    private static void fitNavLabel(View itemView) {
+        if (itemView.getWidth() == 0) {
+            itemView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                    v.removeOnLayoutChangeListener(this);
+                    v.post(() -> fitNavLabel(v));
+                }
+            });
+            return;
+        }
+        float room = itemView.getWidth() - itemView.getPaddingLeft() - itemView.getPaddingRight()
+                - 8 * itemView.getResources().getDisplayMetrics().density;
+        for (int id : new int[] {com.google.android.material.R.id.navigation_bar_item_small_label_view,
+                com.google.android.material.R.id.navigation_bar_item_large_label_view}) {
+            TextView label = itemView.findViewById(id);
+            if (label == null || label.getText() == null) {
+                continue;
+            }
+            float width = label.getPaint().measureText(label.getText().toString());
+            if (width > room && room > 0) {
+                label.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, label.getTextSize() * room / width);
+            }
+        }
     }
 
     /** Callers hold {@link #mSuppressNavCallback}. {@code force}: the menu was just rebuilt. */
@@ -2268,9 +2283,9 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     /**
-     * The bottom nav shows ONLY the {@link #PREFERRED_SECTION_IDS} (in priority
-     * order, when present and enabled) — no backfill from the other delivered
-     * sections; everything else lives in the You panel. BrowsePresenter can deliver
+     * The bottom nav shows ONLY Home and the two {@link NavTabs} picks (when present and
+     * enabled) — no backfill from the other delivered sections; everything else lives in the
+     * You panel. BrowsePresenter can deliver
      * many more sections, and the {@link BottomNavigationView} itself hard-caps at
      * {@link #MAX_NAV_ITEMS}.
      */
@@ -2285,9 +2300,11 @@ public class MobileBrowseActivity extends MobileActivity
 
         List<BrowseSection> chosen = new ArrayList<>();
 
-        for (int i = 0; i < PREFERRED_SECTION_IDS.length && chosen.size() < MAX_NAV_ITEMS; i++) {
-            BrowseSection match = findPreferredSection(
-                    enabledSections, chosen, PREFERRED_SECTION_IDS[i], PREFERRED_SECTION_TITLE_RES[i]);
+        int[] ids = {MediaGroup.TYPE_HOME, NavTabs.get(this, NavTabs.BEFORE_SEARCH),
+                NavTabs.get(this, NavTabs.AFTER_SEARCH)};
+        for (int id : ids) {
+            BrowseSection match = id == NavTabs.NONE ? null : findPreferredSection(enabledSections, chosen, id,
+                    id == MediaGroup.TYPE_HOME ? R.string.header_home : 0);
 
             if (match != null) {
                 chosen.add(match);
@@ -2297,17 +2314,17 @@ public class MobileBrowseActivity extends MobileActivity
         return chosen;
     }
 
-    /** Matches primarily by section id; falls back to a title-string match. */
+    /** Matches primarily by section id; falls back to a title-string match ({@code titleResId} 0: none). */
     private BrowseSection findPreferredSection(
             List<BrowseSection> candidates, List<BrowseSection> alreadyChosen, int id, int titleResId) {
-        String fallbackTitle = getString(titleResId);
+        String fallbackTitle = titleResId != 0 ? getString(titleResId) : null;
 
         for (BrowseSection section : candidates) {
             if (alreadyChosen.contains(section)) {
                 continue;
             }
 
-            if (section.getId() == id || Helpers.equals(section.getTitle(), fallbackTitle)) {
+            if (section.getId() == id || (fallbackTitle != null && Helpers.equals(section.getTitle(), fallbackTitle))) {
                 return section;
             }
         }
@@ -2333,6 +2350,8 @@ public class MobileBrowseActivity extends MobileActivity
         if (mPresenter != null) {
             mPresenter.onViewResumed();
         }
+        // METUBE(nav tabs): the tabs may have been changed in Settings (a no-op when they weren't).
+        rebuildNavigation();
 
         // METUBE(shorts): back from the Shorts player - return to the tab before Shorts.
         if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && !mShortsLaunchPending && !mYouShowing

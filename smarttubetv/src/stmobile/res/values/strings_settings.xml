@@ -79,6 +79,10 @@
     <string name="mobile_settings_tabs_summary">Choose what shows in the bottom bar and in You</string>
     <string name="mobile_settings_tabs_bottom_bar">Bottom bar</string>
     <string name="mobile_settings_tabs_you">You</string>
+    <string name="mobile_settings_tabs_before_search">Tab before Search</string>
+    <string name="mobile_settings_tabs_after_search">Tab after Search</string>
+    <string name="mobile_settings_tabs_none">None</string>
+    <string name="mobile_settings_tabs_bar_note">Home, Search and You always stay on the bar. Picking what the other tab shows swaps the two.</string>
     <string name="mobile_settings_tabs_note">You can also hold a tab or a row in You to move, rename or hide it.</string>
     <string name="mobile_settings_hidden">Hidden videos</string>
     <string name="mobile_settings_hidden_none">Nothing hidden</string>
