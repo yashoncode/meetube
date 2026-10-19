@@ -131,7 +131,7 @@ def triangle_points():
     return pts
 
 
-def render(size, crop=18):
+def render(size, crop=18, ground=GROUND, triangle=GROUND):
     """The adaptive icon as a legacy launcher shows it: the centre 72 units, squircle-masked."""
     full = size * 108 // (108 - 2 * crop) * SS
     u = full / 108
@@ -140,10 +140,10 @@ def render(size, crop=18):
     def place(points):
         return [((x * scale + tx) * u, (y * scale + ty) * u) for x, y in points]
 
-    img = Image.new("RGBA", (full, full), GROUND + (255,))
+    img = Image.new("RGBA", (full, full), ground + (255,))
     d = ImageDraw.Draw(img)
     d.polygon(place(heart_points()), fill=RED)
-    d.polygon(place(triangle_points()), fill=GROUND)
+    d.polygon(place(triangle_points()), fill=triangle)
     c = round(crop * u)
     img = img.crop((c, c, full - c, full - c))
     mask = Image.new("L", img.size, 0)
@@ -164,5 +164,16 @@ if __name__ == "__main__":
     (drawable / "ic_metube_mark.xml").write_text(vector(
         "METUBE: the in-app mark (brand pill) - the launcher heart and play triangle.",
         22, MARK, "#FF453A", "#000000", False), encoding="utf-8")
+    # The Fantasy icon (Settings > Customization > App icon): the red heart with a white play
+    # triangle on a white tile.
+    white = (0xFF, 0xFF, 0xFF)
+    (drawable / "ic_launcher_foreground_fantasy.xml").write_text(vector(
+        "METUBE(app icon): the Fantasy mark - the red heart with a white play triangle.",
+        108, LAUNCHER, "#FF453A", "#FFFFFF", False), encoding="utf-8")
+    (drawable / "ic_metube_mark_fantasy.xml").write_text(vector(
+        "METUBE(app icon): the Fantasy in-app mark (brand pill).",
+        22, MARK, "#FF453A", "#FFFFFF", False), encoding="utf-8")
+    for density, size in {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}.items():
+        render(size, ground=white, triangle=white).save(RES / ("mipmap-" + density) / "app_icon_fantasy.png")
     # The launcher PNGs and README icon now come from the painted artwork: tools/icon_from_image.py.
     print("ok")

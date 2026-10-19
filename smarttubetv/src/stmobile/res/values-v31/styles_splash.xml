@@ -5,4 +5,15 @@
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/metube_splash_beat</item>
         <item name="android:windowSplashScreenAnimationDuration">600</item>
     </style>
+    <!-- METUBE(app icon): the Classic icon's mark, still (AppIcon.syncSplash). -->
+    <style name="Theme.MeTube.Splash.Classic">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+    <!-- METUBE(app icon): the Fantasy icon - its mark on its white tile. -->
+    <style name="Theme.MeTube.Splash.Fantasy">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground_fantasy</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/white</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
 </resources>

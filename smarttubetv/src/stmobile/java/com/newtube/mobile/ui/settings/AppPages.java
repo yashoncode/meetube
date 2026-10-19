@@ -91,8 +91,12 @@ final class AppPages {
 
         // METUBE(app icon): the launcher may take a few seconds to redraw it.
         rows.add(SettingsRow.<String>choice(context.getString(R.string.mobile_settings_app_icon))
-                .option(context.getString(R.string.mobile_app_icon_default), com.newtube.mobile.ui.common.AppIcon.DEFAULT)
-                .option(context.getString(R.string.mobile_app_icon_classic), com.newtube.mobile.ui.common.AppIcon.CLASSIC)
+                .option(context.getString(R.string.mobile_app_icon_default), R.mipmap.app_icon,
+                        com.newtube.mobile.ui.common.AppIcon.DEFAULT)
+                .option(context.getString(R.string.mobile_app_icon_classic), R.mipmap.app_icon_classic,
+                        com.newtube.mobile.ui.common.AppIcon.CLASSIC)
+                .option(context.getString(R.string.mobile_app_icon_fantasy), R.mipmap.app_icon_fantasy,
+                        com.newtube.mobile.ui.common.AppIcon.FANTASY)
                 .bind(() -> com.newtube.mobile.ui.common.AppIcon.current(context),
                         icon -> com.newtube.mobile.ui.common.AppIcon.set(context, icon)));
 

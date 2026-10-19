@@ -31,8 +31,9 @@
     <string name="mobile_settings_customize">Personalización</string>
     <string name="mobile_settings_app_icon">Icono de la app</string>
     <string name="mobile_app_icon_default">MeTube (predeterminado)</string>
-    <string name="mobile_app_icon_classic">Clásico</string>
-    <string name="mobile_app_icon_pending">El nuevo icono aparecerá en tu pantalla de inicio cuando salgas de MeTube</string>
+    <string name="mobile_app_icon_classic">MeTube (clásico)</string>
+    <string name="mobile_app_icon_fantasy">MeTube (fantasía)</string>
+    <string name="mobile_app_icon_pending">Reinicia MeTube para usar el nuevo icono en todas partes, o cambiará cuando salgas de la app</string>
     <string name="mobile_settings_customize_summary">Tema, pestañas, diseño de inicio, menú de vídeo</string>
     <string name="mobile_settings_customize_summary_value">Tema %1$s, pestañas, diseño de inicio, menú de vídeo</string>
     <string name="mobile_settings_theme_system_short">del sistema</string>

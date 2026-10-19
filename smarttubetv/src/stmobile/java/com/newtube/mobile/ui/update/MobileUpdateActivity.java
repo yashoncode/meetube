@@ -170,6 +170,8 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
         @SuppressLint("InflateParams") // a dialog's content: BottomSheetDialog.setContentView gives it its parent
         View content = LayoutInflater.from(this).inflate(R.layout.sheet_mobile_update, null);
         mTitle = content.findViewById(R.id.update_sheet_title);
+        ((android.widget.ImageView) content.findViewById(R.id.mobile_update_icon))
+                .setImageResource(com.newtube.mobile.ui.common.AppIcon.launcherIcon(this));
         mSubtitle = content.findViewById(R.id.update_sheet_subtitle);
         mProgress = content.findViewById(R.id.update_sheet_progress);
         mProgressText = content.findViewById(R.id.update_sheet_progress_text);
