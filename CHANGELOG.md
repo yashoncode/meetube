@@ -2,6 +2,26 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases](https://github.com/aleixrodriala/newtube/releases).
 
+## 3.0.0 — 2026-10-19 — Your own bottom bar, three app icons, a truthful quality label
+
+### New
+
+- **Choose your bottom bar.** Home, Search and You always stay; the tab before Search and the tab after it are yours: Shorts, Subscriptions, Downloads, History or none. Settings › Customization › Tabs. Picking what the other tab shows swaps the two. Subscriptions can be on the bar again (#7).
+- **A third icon: MeTube (Fantasy).** The red heart with a white play button on a white tile, beside MeTube (default) and MeTube (Classic). The icon list shows each one.
+- **The icon is everywhere.** The icon you pick now also shows in the Home pill, the launch screen and the update sheet, not only on the home screen. Picking one offers Restart to switch right away.
+
+### Changed
+
+- Settings choices (theme, app icon, interface size, ...) open in a bottom sheet instead of a pop-up in the middle of the screen.
+- Switches and the picked option are red, the app's accent colour.
+- Trending is gone from Tabs and You: YouTube removed it and its feed came back empty.
+
+### Fixed
+
+- **"Auto (1080p60)" on videos without 60 fps.** In Auto the Quality row showed the Auto ceiling instead of the quality playing. It now shows the real one, for example "Auto (720p)" in the small player and "Auto (1080p)" in fullscreen (#8).
+- **Subscriptions never reached the bottom bar** when turned on in Settings › Tabs (#7).
+- Long tab names such as Subscriptions fit their tab instead of ending in "...".
+
 ## 2.9.9 — 2026-10-18 — Shorts in picture-in-picture, channel pictures, a new icon
 
 ### New

@@ -27,7 +27,7 @@
 - 📱 **Shorts done right.** A clean, full-screen Shorts player with glass like, comment and share buttons.
 - 🧑‍🎤 **Channels at a glance.** Every card shows the channel's photo; tap it, or the channel name, to jump to the channel. Sort any channel's videos by Latest, Popular or Oldest.
 - ⏩ **Your double-tap.** Double-tap to skip 3, 5, 10, 15 or 30 seconds, your pick.
-- 🎨 **Make it yours.** One Customization page for the theme, the app icon (new or classic), glass, Home layout, tabs and the video menu.
+- 🎨 **Make it yours.** One Customization page for the theme, the app icon (new, classic or fantasy), glass, Home layout, tabs and the video menu.
 - 🔄 **Always something new.** Pull Home to refresh and get videos you haven't seen yet.
 - 💬 **Smooth comments & fullscreen.** A rounded glass comment bar that rises with the keyboard, and buttery vertical fullscreen.
 - 👎 **Dislikes are back.** Return YouTube Dislike shows the real count. DeArrow swaps clickbait titles and thumbnails.
