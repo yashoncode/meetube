@@ -61,6 +61,8 @@ public final class SettingsRow {
         final CharSequence label;
         @Nullable final CharSequence description;
         final Object value;
+        /** A preview beside the label (the app icon picker), 0 for none. */
+        @DrawableRes int icon;
 
         Option(CharSequence label, @Nullable CharSequence description, Object value) {
             this.label = label;
@@ -269,6 +271,14 @@ public final class SettingsRow {
 
         public Choice<T> option(CharSequence label, @Nullable CharSequence description, T value) {
             mOptions.add(new Option(label, description, value));
+            return this;
+        }
+
+        /** An option with a preview image beside its label. */
+        public Choice<T> option(CharSequence label, @DrawableRes int icon, T value) {
+            Option option = new Option(label, null, value);
+            option.icon = icon;
+            mOptions.add(option);
             return this;
         }
 

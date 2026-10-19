@@ -16,7 +16,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 /**
- * METUBE(glass switch): an iOS 26 style toggle - a flat 52x28dp capsule (green on, grey off) and a
+ * METUBE(glass switch): an iOS 26 style toggle - a flat 52x28dp capsule (accent on, grey off) and a
  * white pill knob, wider than tall. While it slides across, the knob swells into a clear glass
  * lens and settles back to white, like Liquid Glass. Drawn here, not with the switch's drawables:
  * SwitchCompat makes its track twice the knob's width, which stretched a pill knob's track to 76dp.

@@ -5,25 +5,26 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.Keyframe;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.Haptics;
@@ -48,7 +49,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
     private SettingsAdapter mAdapter;
     private RecyclerView mList;
     private TextView mTitle;
-    @Nullable private AlertDialog mDialog;
+    @Nullable private Dialog mDialog;
     @Nullable private String mHighlight;
 
     public static SettingsPageFragment newInstance(@NonNull String pageId) {
@@ -235,8 +236,8 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
     }
 
     /**
-     * YouTube's choice dialog: the options as a radio list, the current one marked; a tap applies
-     * that option and closes the dialog (Cancel leaves everything as it was).
+     * The choice sheet (METUBE: was a centred dialog): the options as a radio list, the current one
+     * marked, in the app's frosted bottom sheet; a tap applies that option and closes the sheet.
      */
     private void showChoiceDialog(SettingsRow row) {
         if (row.options == null || row.pick == null) {
@@ -245,54 +246,43 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
         List<SettingsRow.Option> options = row.options;
         int current = row.currentIndex();
 
-        BaseAdapter adapter = new BaseAdapter() {
-            @Override
-            public int getCount() {
-                return options.size();
-            }
-
-            @Override
-            public Object getItem(int position) {
-                return options.get(position);
-            }
-
-            @Override
-            public long getItemId(int position) {
-                return position;
-            }
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = convertView != null ? convertView
-                        : LayoutInflater.from(parent.getContext()).inflate(R.layout.item_mobile_settings_choice, parent, false);
-                SettingsRow.Option option = options.get(position);
-                ((RadioButton) view.findViewById(R.id.settings_choice_radio)).setChecked(position == current);
-                ((TextView) view.findViewById(R.id.settings_choice_label)).setText(option.label);
-                TextView description = view.findViewById(R.id.settings_choice_description);
-                description.setText(option.description);
-                description.setVisibility(option.description != null ? View.VISIBLE : View.GONE);
-                return view;
-            }
-        };
-
-        mDialog = Haptics.watch(new MaterialAlertDialogBuilder(requireContext(), R.style.MobileAlertDialog)
-                .setTitle(row.title)
-                .setAdapter(adapter, (dialog, which) -> {
-                    if (which != current) {
-                        row.pick.pick(options.get(which).value);
-                        applied(row);
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show());
-        if (current > 0 && mDialog.getListView() != null) {
-            // A long list (UI scale, quality) opens on the current option, not its first row.
-            mDialog.getListView().setSelection(Math.max(0, current - 2));
+        BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        View content = inflater.inflate(R.layout.sheet_mobile_speed, null);
+        ((TextView) content.findViewById(R.id.speed_sheet_title)).setText(row.title);
+        content.findViewById(R.id.speed_sheet_more).setVisibility(View.GONE);
+        ViewGroup list = content.findViewById(R.id.speed_sheet_list);
+        for (int i = 0; i < options.size(); i++) {
+            SettingsRow.Option option = options.get(i);
+            View view = inflater.inflate(R.layout.item_mobile_settings_choice, list, false);
+            ((RadioButton) view.findViewById(R.id.settings_choice_radio)).setChecked(i == current);
+            ((TextView) view.findViewById(R.id.settings_choice_label)).setText(option.label);
+            TextView description = view.findViewById(R.id.settings_choice_description);
+            description.setText(option.description);
+            description.setVisibility(option.description != null ? View.VISIBLE : View.GONE);
+            ImageView icon = view.findViewById(R.id.settings_choice_icon);
+            icon.setImageResource(option.icon);
+            icon.setVisibility(option.icon != 0 ? View.VISIBLE : View.GONE);
+            int which = i;
+            view.setOnClickListener(v -> {
+                sheet.dismiss();
+                if (which != current) {
+                    row.pick.pick(option.value);
+                    applied(row);
+                }
+            });
+            list.addView(view);
         }
+        sheet.setContentView(content);
+        // A long list (UI scale, quality) opens whole rather than half-peeked.
+        sheet.getBehavior().setSkipCollapsed(true);
+        sheet.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);
+        showDialog(sheet);
+        sheet.show();
     }
 
     /** For rows whose action opens their own dialog. */
-    public void showDialog(@NonNull AlertDialog dialog) {
+    public void showDialog(@NonNull Dialog dialog) {
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
         }
