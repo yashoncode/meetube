@@ -4487,7 +4487,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return qualityLabel(chosen);
         }
 
-        FormatItem playing = mExoPlayerController != null ? mExoPlayerController.getVideoFormat() : null;
+        FormatItem playing = mExoPlayerController != null ? mExoPlayerController.getPlayingVideoFormat() : null;
         return playing != null && playing.getHeight() > 0
                 ? getString(R.string.mobile_quality_auto_current, qualityLabel(playing))
                 : getString(R.string.mobile_quality_auto_short);

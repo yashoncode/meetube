@@ -1028,6 +1028,17 @@ public class Media3PlayerController implements Player.Listener {
         return mTrackAdapter != null ? mTrackAdapter.getSelectedFormat(TrackSelectorManager.RENDERER_INDEX_VIDEO) : null;
     }
 
+    /**
+     * The video stream on screen right now. In Auto {@link #getVideoFormat()} is the Auto ceiling
+     * (a preset such as 1080p60), not a stream, so it can't say what is playing (issue #8).
+     */
+    @Nullable
+    public FormatItem getPlayingVideoFormat() {
+        Format format = mPlayer != null ? mPlayer.getVideoFormat() : null;
+        return format != null ? com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.ExoFormatItem.from(
+                Media3FormatConverter.toMediaTrack(TrackSelectorManager.RENDERER_INDEX_VIDEO, format)) : null;
+    }
+
     public FormatItem getAudioFormat() {
         return mTrackAdapter != null ? mTrackAdapter.getSelectedFormat(TrackSelectorManager.RENDERER_INDEX_AUDIO) : null;
     }
