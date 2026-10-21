@@ -2606,7 +2606,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             applyDisplayCutoutMode(true);
             // Immersive full-bleed video (PLAYER POLISH behaviour).
-            Helpers.makeActivityFullscreen2(this);
+            applyImmersiveSystemBars();
             if (ThemeMode.isLight(this)) {
                 // NEWTUBE(theme): all video - not the light portrait backdrop's white page band.
                 getWindow().getDecorView().setBackgroundColor(Color.BLACK);
@@ -2645,6 +2645,51 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mWatchRoot != null) {
             ViewCompat.requestApplyInsets(mWatchRoot);
+        }
+    }
+
+    /**
+     * NEWTUBE(issue #68): fullscreen's hidden, sticky-immersive bars. A swipe from an edge shows
+     * them over the video for a moment; a tap is the player's and never shows them.
+     *
+     * <p>Was {@code Helpers.makeActivityFullscreen2}, which only told the insets controller - and
+     * on Android 11 that does not last. Android 11's ViewRootImpl rebuilds its window attributes
+     * from the Window's own copy on EVERY attribute change (that helper's own translucent flags
+     * right after, the cutout mode, KEEP_SCREEN_ON on play/pause) and drops the "behaviour set by
+     * the controller" flag doing it; the behaviour is then re-derived from the legacy
+     * systemUiVisibility flags, which held no IMMERSIVE_STICKY: BEHAVIOR_SHOW_BARS_BY_TOUCH. So
+     * the system ate the first tap to show the navigation bar (gesture pill) and left it shown
+     * for good (Mi A3; reproduced on an API 30 emulator: no {@code bhv=}, nav visible after one
+     * tap). Android 12 keeps the flag across attribute copies, so there the controller is enough.
+     * Android 11 gets the legacy flags too: the visibility is carried over every copy, so the
+     * re-derived behaviour is the sticky one.</p>
+     */
+    private void applyImmersiveSystemBars() {
+        Window window = getWindow();
+        View decor = window.getDecorView();
+        // Window flags first: on Android 11 a later attribute change resets the behaviour below.
+        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+                | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        int legacy = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        if (Build.VERSION.SDK_INT >= 30) {
+            window.setDecorFitsSystemWindows(false);
+            if (Build.VERSION.SDK_INT == 30) {
+                decor.setSystemUiVisibility(legacy);
+            }
+            WindowInsetsController controller = window.getInsetsController();
+            if (controller != null) {
+                controller.hide(WindowInsets.Type.systemBars());
+                controller.setSystemBarsBehavior(
+                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                // Bars swiped in over the video: light icons, whatever the page theme asked for.
+                controller.setSystemBarsAppearance(0,
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                                | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
+            }
+        } else {
+            decor.setSystemUiVisibility(legacy);
         }
     }
 
