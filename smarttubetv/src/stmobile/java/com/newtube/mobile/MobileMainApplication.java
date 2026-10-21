@@ -168,6 +168,7 @@ public class MobileMainApplication extends MainApplication {
         super.onCreate();
         // METUBE(glass): which screen a sheet in its own activity frosts.
         com.newtube.mobile.ui.common.SheetGlass.track(this, com.newtube.mobile.ui.dialog.MobileAppDialogActivity.class);
+        com.newtube.mobile.ui.common.SheetGlass.liveOver(com.newtube.mobile.ui.playback.MobilePlaybackActivity.class);
         com.newtube.mobile.ui.common.CountStyle.install(this); // METUBE(counts): K/M or lakh/crore
 
         // Release-visible launch milestones + the "first frame drawn" hook used below.
