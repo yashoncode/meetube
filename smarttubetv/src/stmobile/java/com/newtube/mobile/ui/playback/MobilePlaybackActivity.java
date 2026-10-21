@@ -131,6 +131,7 @@ import com.newtube.mobile.ui.common.FrameGate;
 import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.common.MagneticDrag;
 import com.newtube.mobile.ui.common.MobileActivity;
+import com.newtube.mobile.ui.common.MobileSheets;
 import com.newtube.mobile.ui.common.Motion;
 import com.newtube.mobile.ui.common.ThemeMode;
 import com.newtube.mobile.ui.common.ThemeRefresh;
@@ -1616,6 +1617,11 @@ public class MobilePlaybackActivity extends MobileActivity
 
         mIsResumed = true;
         applyAmbientSetting(); // METUBE(ambient): the Settings switch, read on every resume
+        if (mControlsVisible && !isPlayerSheetShown()) {
+            // NEWTUBE(sheet-landscape): back from a picker screen (Repeat, Zoom...) that held the
+            // controls up. It only paused this screen, so onStart's countdown does not run.
+            armAutoHide();
+        }
         // In the foreground again: auto-PiP behaves normally from here on.
         mSuppressAutoPip = false;
         mDismissDragActive = false;
@@ -1766,6 +1772,7 @@ public class MobilePlaybackActivity extends MobileActivity
         super.onStop();
 
         mIsStopped = true;
+        MobileSheets.setPlayerShown(false, false); // onResume's bars pass sets it again
         applyKeepScreenOn(false); // a hidden window must not hold the screen; onStart re-applies
         stopProgressUpdates();
         cancelAutoHide();
@@ -1861,6 +1868,7 @@ public class MobilePlaybackActivity extends MobileActivity
     protected void onDestroy() {
         SleepTimer.detach(mSleepPause);
         DownloadRegistry.instance(this).removeListener(mDownloadsListener);
+        MobileSheets.setPlayerShown(false, false);
         cancelAutoHide();
         mOrientationHandBack.disarm();
         updateOrientationHandBackListener();
@@ -2013,6 +2021,12 @@ public class MobilePlaybackActivity extends MobileActivity
 
         refreshContentInsets();
         int orientation = layoutOrientation(newConfig.orientation);
+        if (orientation != mSheetsOrientation) {
+            // NEWTUBE(sheet-landscape): a sheet is sized and its window's bars set for the shape
+            // it opened over - the fullscreen video, or the watch page - and the other one has
+            // just taken its place.
+            dismissPlayerSheets();
+        }
         applyWatchLayoutForOrientation(orientation);
         applySystemBarsForOrientation(orientation);
         updateFullscreenIcon(orientation);
@@ -2043,13 +2057,7 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     @Override
     protected boolean onThemeChanged(int night) {
-        for (java.lang.ref.WeakReference<BottomSheetDialog> ref : mShownSheets) {
-            BottomSheetDialog sheet = ref.get();
-            if (sheet != null && sheet.isShowing()) {
-                sheet.dismiss();
-            }
-        }
-        mShownSheets.clear();
+        dismissPlayerSheets();
         for (androidx.fragment.app.Fragment fragment : getSupportFragmentManager().getFragments()) {
             if (fragment instanceof androidx.fragment.app.DialogFragment) {
                 ((androidx.fragment.app.DialogFragment) fragment).dismissAllowingStateLoss();
@@ -2603,6 +2611,8 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void applySystemBarsForOrientation(int orientation) {
+        MobileSheets.setPlayerShown(!mIsStopped && !mIsInPip,
+                orientation == Configuration.ORIENTATION_LANDSCAPE);
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             applyDisplayCutoutMode(true);
             // Immersive full-bleed video (PLAYER POLISH behaviour).
@@ -3213,6 +3223,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (isInPictureInPictureMode) {
             mPipDismissPending = false;
+            MobileSheets.setPlayerShown(false, false); // the screen under PiP keeps its bars
             // A forced orientation must not survive into the pinned task - it wedges the window
             // there permanently (see mPrePipOrientation). Done here rather than in enterPipMode()
             // because the Android 12+ home-gesture auto-enter never goes through that method.
@@ -3693,7 +3704,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     this::showReceiverCaptionsSheet);
         }
 
-        sheet.setContentView(content);
+        sheet.setContentView(sheetRoot(content));
         showPlayerSheet(sheet);
     }
 
@@ -4049,8 +4060,8 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void onAutoHideTick() {
-        if (!mControlsVisible || mIsStopped) {
-            return;
+        if (!mControlsVisible || mIsStopped || isPlayerSheetShown()) {
+            return; // a sheet re-arms this when the last one closes (showPlayerSheet)
         }
 
         // Keep the controls up while the user is scrubbing or while paused/buffering/ended;
@@ -4410,8 +4421,7 @@ public class MobilePlaybackActivity extends MobileActivity
         addMenuRow(content, sheet, R.drawable.ic_mobile_settings, R.string.mobile_menu_more,
                 null, true, this::openPlayerMoreMenu);
 
-        sheet.setContentView(content);
-        sheet.setOnDismissListener(d -> armAutoHide());
+        sheet.setContentView(sheetRoot(content));
         showPlayerSheet(sheet);
     }
 
@@ -4496,17 +4506,25 @@ public class MobilePlaybackActivity extends MobileActivity
         addMenuRow(content, sheet, R.drawable.ic_player_stats, R.string.mobile_menu_stats,
                 stateLabel(statsOn), false, () -> openPlayerOption(R.id.action_video_stats, false));
 
-        sheet.setContentView(content);
-        sheet.setOnDismissListener(d -> armAutoHide());
+        sheet.setContentView(sheetRoot(content));
         showPlayerSheet(sheet);
     }
 
-    /** Shared scaffold for the gear sheets: rounded background + drag handle, no title. */
+    /**
+     * Shared scaffold for the gear sheets: rounded background + drag handle, no title. Returns the
+     * column the rows go in; the sheet's content view is {@link #sheetRoot} of it.
+     *
+     * <p>NEWTUBE(sheet-landscape): the rows scroll under a fixed handle. The column used to be the
+     * sheet itself, so the More level - taller than a phone held sideways - ran over the top of the
+     * screen with its last rows below the bottom, and a drag meant to reach them dragged the whole
+     * sheet away instead. In a scroll view the sheet's own drag only takes over once the list is at
+     * its top (nested scrolling), like any Material sheet.</p>
+     */
     private LinearLayout createSheetContent() {
-        LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setBackgroundResource(R.drawable.bg_mobile_sheet);
-        content.setPadding(0, dp(8), 0, dp(16));
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundResource(R.drawable.bg_mobile_sheet);
+        root.setPadding(0, dp(8), 0, 0);
 
         View handle = new View(this);
         LinearLayout.LayoutParams handleLp = new LinearLayout.LayoutParams(dp(36), dp(4));
@@ -4514,14 +4532,36 @@ public class MobilePlaybackActivity extends MobileActivity
         handleLp.bottomMargin = dp(8);
         handle.setLayoutParams(handleLp);
         handle.setBackgroundResource(R.drawable.bg_mobile_sheet_handle);
-        content.addView(handle);
+        root.addView(handle);
+
+        NestedScrollView scroll = new NestedScrollView(this);
+        scroll.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        root.addView(scroll);
+
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(0, 0, 0, dp(16));
+        scroll.addView(content, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         return content;
+    }
+
+    /** The sheet view around a column from {@link #createSheetContent}. */
+    private static View sheetRoot(LinearLayout content) {
+        return content.getRootView(); // not attached yet: the topmost parent, the scaffold's root
     }
 
     /**
      * Trailing value for the Quality row, official-app style: "Auto (720p)" while adaptive
      * (the rung actually playing right now), the pinned rung's label otherwise.
+     *
+     * <p>The rung playing is the player's own video format. The controller's
+     * {@code getVideoFormat()} answers with the format the app asked for, and in Auto that is the
+     * ceiling preset: every video read "Auto (1080p60)", a 30 fps one whose list stops at 720p
+     * too.</p>
      */
     private String currentQualityLabel() {
         PlayerData playerData = PlayerData.instance(this);
@@ -4545,55 +4585,129 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
+     * NEWTUBE(theme): the sheets shown over this screen, closed by a theme change (onThemeChanged)
+     * and by a turn to the other orientation (onConfigurationChanged).
+     */
+    private final List<java.lang.ref.WeakReference<BottomSheetDialog>> mShownSheets = new ArrayList<>();
+
+    /** The layout orientation the last sheet opened in. */
+    private int mSheetsOrientation = Configuration.ORIENTATION_UNDEFINED;
+
+    private void dismissPlayerSheets() {
+        for (java.lang.ref.WeakReference<BottomSheetDialog> ref : mShownSheets) {
+            BottomSheetDialog sheet = ref.get();
+            if (sheet != null && sheet.isShowing()) {
+                sheet.dismiss();
+            }
+        }
+        mShownSheets.clear();
+    }
+
+    /**
      * A bare BottomSheetDialog over the player misbehaves two ways: it opens half-collapsed at the
      * default auto peek height (tall content ends up cut off below the screen edge), and in the
      * immersive landscape player its focusable window re-summons the system bars, shifting the
      * sheet's layout so it lands partly off-screen. Every in-player sheet must open through here:
-     * expanded and never collapsible, shown focus-less first with the player's system-UI state
-     * mirrored onto its window (focus is restored right after, per the standard immersive-dialog
+     * expanded and never collapsible, shown focus-less first with the player's hidden bars asked
+     * for on its own window too (focus is restored right after, per the standard immersive-dialog
      * recipe) so the bars stay hidden.
      */
-    /** NEWTUBE(theme): the sheets shown over this screen, closed by a theme change (onThemeChanged). */
-    private final List<java.lang.ref.WeakReference<BottomSheetDialog>> mShownSheets = new ArrayList<>();
-
     private void showPlayerSheet(BottomSheetDialog dialog) {
+        pruneShownSheets();
+        mShownSheets.add(new java.lang.ref.WeakReference<>(dialog));
+        mSheetsOrientation = layoutOrientation();
+        Window window = dialog.getWindow();
+        // METUBE(fullscreen): landscape and vertical fullscreen both hide the bars.
+        androidx.core.view.WindowInsetsCompat pageInsets =
+                androidx.core.view.ViewCompat.getRootWindowInsets(getWindow().getDecorView());
+        boolean landscape = mSheetsOrientation == Configuration.ORIENTATION_LANDSCAPE;
+        boolean immersive = landscape || (pageInsets != null
+                && !pageInsets.isVisible(androidx.core.view.WindowInsetsCompat.Type.statusBars()));
+        if (immersive && window != null) {
+            window.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+            // NEWTUBE(sheet-landscape): the sheet's own window decides the bars from Android 12 on;
+            // copying the player's legacy flags kept nothing hidden and the sheet jumped up.
+            MobileSheets.keepSystemBarsHidden(window);
+        }
+        if (landscape) {
+            // NEWTUBE(sheet-landscape): most of these sheets are taller than a phone held sideways.
+            // Uncapped, a sheet that did not fit filled the screen up to its top edge; capped, it
+            // stops short of it, the video stays in sight above, and its list scrolls.
+            int cap = landscapeSheetMaxHeight();
+            if (cap > 0) {
+                MobileSheets.capHeight(dialog, cap);
+            }
+        }
+
+        // NEWTUBE(sheet-landscape): the controls stay as they were for as long as a sheet is up -
+        // neither timer pulls them out from under it (showOverlay, onAutoHideTick) - and their
+        // countdown starts again when the last sheet closes. The shared UI timer hid them ~2 s
+        // into a sheet, so the whole picture behind it changed while the person was choosing.
+        // Hooked on the window, not a dismiss listener: callers (chapters, cast) keep their own.
+        cancelAutoHide();
+        if (window != null) {
+            View decor = window.getDecorView();
+            decor.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(@NonNull View v) {
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(@NonNull View v) {
+                    v.removeOnAttachStateChangeListener(this);
+                    // Posted: a row that opens the next sheet dismisses this one first.
+                    Utils.post(MobilePlaybackActivity.this::onPlayerSheetClosed);
+                }
+            });
+        }
+
+        // NEWTUBE(sheet-landscape): expanded before the first layout. Asked for in the show
+        // listener, it came too late for that layout: a sheet taller than its peek opened as a
+        // stub (one row, or just its title) and only snapped fully open on the next layout -
+        // a second or two later, when the bars came back.
+        BottomSheetBehavior<?> behavior = dialog.getBehavior();
+        behavior.setSkipCollapsed(true);
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        if (immersive && window != null) {
+            dialog.setOnShowListener(d -> window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE));
+        }
+
+        dialog.show();
+    }
+
+    /** The free space left above a sheet over the fullscreen video (see showPlayerSheet). */
+    private static final int LANDSCAPE_SHEET_TOP_GAP_DP = 48;
+
+    private int landscapeSheetMaxHeight() {
+        View decor = getWindow().getDecorView();
+        int height = decor.getHeight();
+        return height > 0 ? height - dp(LANDSCAPE_SHEET_TOP_GAP_DP) : 0;
+    }
+
+    private void pruneShownSheets() {
         for (int i = mShownSheets.size() - 1; i >= 0; i--) {
             BottomSheetDialog shown = mShownSheets.get(i).get();
             if (shown == null || !shown.isShowing()) {
                 mShownSheets.remove(i);
             }
         }
-        mShownSheets.add(new java.lang.ref.WeakReference<>(dialog));
-        Window window = dialog.getWindow();
-        // METUBE(fullscreen): landscape and vertical fullscreen both hide the bars; copying the
-        // old visibility flags no longer kept them hidden for the sheet's own window.
-        androidx.core.view.WindowInsetsCompat pageInsets =
-                androidx.core.view.ViewCompat.getRootWindowInsets(getWindow().getDecorView());
-        boolean immersive = isLandscape() || (pageInsets != null
-                && !pageInsets.isVisible(androidx.core.view.WindowInsetsCompat.Type.statusBars()));
-        if (immersive && window != null) {
-            window.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-            androidx.core.view.WindowInsetsControllerCompat bars =
-                    androidx.core.view.WindowCompat.getInsetsController(window, window.getDecorView());
-            bars.setSystemBarsBehavior(
-                    androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            bars.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());
+    }
+
+    /**
+     * A sheet from {@link #showPlayerSheet} is open over the player, or a picker screen is
+     * ({@code MobileAppDialogActivity}: Repeat, Zoom, Save to playlist...), or is on its way.
+     */
+    private boolean isPlayerSheetShown() {
+        pruneShownSheets();
+        return !mShownSheets.isEmpty() || MobileSheets.isPickerShown()
+                || AppDialogPresenter.instance(this).isDialogShown(); // the screen still on its way
+    }
+
+    private void onPlayerSheetClosed() {
+        if (!isPlayerSheetShown() && !isFinishing()) {
+            armAutoHide();
         }
-
-        dialog.setOnShowListener(d -> {
-            View sheetView = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-            if (sheetView != null) {
-                BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(sheetView);
-                behavior.setSkipCollapsed(true);
-                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-            }
-            if (immersive && window != null) {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-            }
-        });
-
-        dialog.show();
     }
 
     /**
@@ -4608,7 +4722,8 @@ public class MobilePlaybackActivity extends MobileActivity
         row.setClickable(true);
         row.setFocusable(true);
         row.setBackgroundResource(resolveSelectableItemBackground());
-        row.setPadding(dp(20), dp(14), dp(16), dp(14));
+        // 48dp, the pickers' row (item_mobile_quality_row) and the official app's.
+        row.setPadding(dp(20), dp(13), dp(16), dp(13));
         row.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
@@ -4647,11 +4762,68 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         row.setOnClickListener(v -> {
-            sheet.dismiss();
+            if (mSheetHandingOff == sheet) {
+                return; // already opening what a row asked for
+            }
+            if (!chevron) {
+                sheet.dismiss();
+                action.run();
+                return;
+            }
             action.run();
+            handOffSheet(sheet);
         });
 
         container.addView(row);
+    }
+
+    /** NEWTUBE(sheet-landscape): the sheet waiting for what one of its rows opened (handOffSheet). */
+    @Nullable private BottomSheetDialog mSheetHandingOff;
+
+    /** Longest a sheet waits for the picker its row opened before it leaves anyway. */
+    private static final long SHEET_HAND_OFF_TIMEOUT_MS = 1_000;
+
+    /**
+     * NEWTUBE(sheet-landscape): {@code sheet}'s row opened the next level - another sheet, or a
+     * picker screen (Repeat, Zoom, Save to playlist...). Closing the sheet first left a gap: for
+     * a moment, or a second on a slow phone, the bare bright video and its controls showed between
+     * the two dimmed menus. Now the next level comes up first: over a sheet already shown, this
+     * one fades out under it at once; for a picker screen, it waits until that screen's sheet
+     * starts sliding in. Anything else - a confirmation dialog, a message, a picker that loads
+     * first (Download) - and it closes at once, as it always did: waiting for a screen that is
+     * not coming kept it up a second and then took it away under whatever had opened.
+     */
+    private void handOffSheet(BottomSheetDialog sheet) {
+        if (!sheet.isShowing()) {
+            return;
+        }
+        pruneShownSheets();
+        for (java.lang.ref.WeakReference<BottomSheetDialog> ref : mShownSheets) {
+            if (ref.get() != null && ref.get() != sheet) {
+                sheet.dismiss(); // the next sheet is already on top
+                return;
+            }
+        }
+        if (!AppDialogPresenter.instance(this).isDialogShown()) { // true while its screen is pending
+            sheet.dismiss();
+            return;
+        }
+        mSheetHandingOff = sheet;
+        Runnable leave = new Runnable() {
+            @Override
+            public void run() {
+                Utils.removeCallbacks(this);
+                if (mSheetHandingOff == sheet) {
+                    mSheetHandingOff = null;
+                    MobileSheets.setCoveringSheetListener(null);
+                }
+                if (sheet.isShowing()) {
+                    sheet.dismiss();
+                }
+            }
+        };
+        MobileSheets.setCoveringSheetListener(leave);
+        Utils.postDelayed(leave, SHEET_HAND_OFF_TIMEOUT_MS);
     }
 
     private String stateLabel(boolean on) {
@@ -6876,10 +7048,11 @@ public class MobilePlaybackActivity extends MobileActivity
     public void showOverlay(boolean show) {
         if (show) {
             showControlsInternal(true);
-        } else if (!isHoldingSeekBar()) {
+        } else if (!isHoldingSeekBar() && !isPlayerSheetShown()) {
             // NEWTUBE(seek bar): the shared UI timer (PlayerUIController's auto-hide) fires on its
             // own clock; it used to pull the controls - and now the seek bar with its drag - out
-            // from under a finger that was still dragging.
+            // from under a finger that was still dragging. NEWTUBE(sheet-landscape): nor behind
+            // an open sheet - see showPlayerSheet.
             hideControls();
         }
     }
@@ -7728,7 +7901,6 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mChaptersSheet == d) {
                 mChaptersSheet = null;
             }
-            armAutoHide();
         });
         mChaptersSheet = dialog;
         showPlayerSheet(dialog);
@@ -7766,8 +7938,12 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** Distinct resolution rung of the current video: "1080p" / "1080p60" style. */
     private static String qualityLabel(FormatItem item) {
-        int height = item.getHeight();
-        boolean highFps = item.getFrameRate() > 40;
+        return qualityLabel(item.getHeight(), item.getFrameRate());
+    }
+
+    /** A frame rate the stream does not state ({@code Format.NO_VALUE}) reads as a plain rung. */
+    private static String qualityLabel(int height, float frameRate) {
+        boolean highFps = frameRate > 40;
         return height + "p" + (highFps ? "60" : "");
     }
 
@@ -7913,7 +8089,6 @@ public class MobilePlaybackActivity extends MobileActivity
             });
         }
 
-        dialog.setOnDismissListener(d -> armAutoHide());
         showPlayerSheet(dialog);
     }
 
@@ -7925,7 +8100,11 @@ public class MobilePlaybackActivity extends MobileActivity
             // YouTube-style: the leading check alone marks the active choice (no bold).
             row.findViewById(R.id.quality_row_check).setVisibility(View.VISIBLE);
         }
-        row.setOnClickListener(v -> onClick.run());
+        row.setOnClickListener(v -> {
+            if (mSheetHandingOff == null) { // a footer row is opening the next level
+                onClick.run();
+            }
+        });
         parent.addView(row);
     }
 
@@ -8109,11 +8288,12 @@ public class MobilePlaybackActivity extends MobileActivity
         // Caption appearance (style/size/position + the per-channel memory switch): the existing
         // settings dialog, rendered by MobileAppDialogActivity like the rest of settings.
         content.findViewById(R.id.captions_sheet_style).setOnClickListener(v -> {
-            dialog.dismiss();
-            SubtitleSettingsPresenter.instance(this).show();
+            if (mSheetHandingOff != dialog) {
+                SubtitleSettingsPresenter.instance(this).show();
+                handOffSheet(dialog);
+            }
         });
 
-        dialog.setOnDismissListener(d -> armAutoHide());
         showPlayerSheet(dialog);
     }
 
@@ -8243,11 +8423,12 @@ public class MobilePlaybackActivity extends MobileActivity
 
         // Full TV speed dialog: extended 0.25-4x list (long-click path always opens the list).
         content.findViewById(R.id.speed_sheet_more).setOnClickListener(v -> {
-            dialog.dismiss();
-            openPlayerOption(R.id.action_video_speed, true);
+            if (mSheetHandingOff != dialog) {
+                openPlayerOption(R.id.action_video_speed, true);
+                handOffSheet(dialog);
+            }
         });
 
-        dialog.setOnDismissListener(d -> armAutoHide());
         showPlayerSheet(dialog);
     }
 
