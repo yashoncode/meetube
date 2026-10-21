@@ -4093,6 +4093,32 @@ public class MobilePlaybackActivity extends MobileActivity
         armAutoHide();
     }
 
+    /**
+     * NEWTUBE(issue #69): from a video change to that video's first frame, the player's size and
+     * format may still be the previous video's, so its shape is unknown (and fullscreen rotates).
+     */
+    private boolean mVideoShapePending = true;
+
+    /**
+     * NEWTUBE(issue #69): whether the playing video is taller than wide; false while its shape is
+     * not known yet. The video track's format, else the last decoded size.
+     */
+    private boolean isVerticalVideo() {
+        if (mVideoShapePending) {
+            return false;
+        }
+        float aspect = mVideoAspect;
+        androidx.media3.common.Format format = mPlayer != null ? mPlayer.getVideoFormat() : null;
+        if (format != null && format.width > 0 && format.height > 0) {
+            float ratio = format.pixelWidthHeightRatio > 0f ? format.pixelWidthHeightRatio : 1f;
+            aspect = format.width * ratio / format.height;
+            if (format.rotationDegrees % 180 != 0) {
+                aspect = 1f / aspect;
+            }
+        }
+        return aspect > 0f && aspect < 1f;
+    }
+
     private void toggleFullscreen() {
         int windowOrientation = getResources().getConfiguration().orientation;
         boolean toLandscape =
@@ -4109,6 +4135,14 @@ public class MobilePlaybackActivity extends MobileActivity
             // request split screen held back) goes too, or it would rotate the player back.
             releaseFullscreenRequest();
             setLayoutOverride(Configuration.ORIENTATION_UNDEFINED);
+            armAutoHide();
+            return;
+        }
+        if (windowOrientation == Configuration.ORIENTATION_PORTRAIT && !isShortsMode()
+                && isVerticalVideo()) {
+            // METUBE(issue NewTube#69): a vertical video's fullscreen is upright, filling the
+            // screen (the pull-down's vertical fullscreen); rotating it only pillarboxed it.
+            setPortraitFull(!mPortraitFull);
             armAutoHide();
             return;
         }
@@ -5146,6 +5180,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // NEWTUBE(still-lift): the controller's AnalyticsListener saw this event first, so
             // OpenFirstFrame already knows whether it was this open's; the texture may have it.
             maybeLiftStillAtFrame();
+            mVideoShapePending = false; // NEWTUBE(issue #69): this video's shape is known now
         }
     };
 
@@ -6273,6 +6308,11 @@ public class MobilePlaybackActivity extends MobileActivity
             // curve), so the video moves one way only - an up swipe's pull used to dip down first.
             settleFullscreenPull(PORTRAIT_FULL_MS, Motion.STANDARD);
             setPortraitFull(false); // the vertical fullscreen leaves without a rotation
+            return;
+        }
+        if (mFullscreenSwipe == SWIPE_ENTER_FULLSCREEN && !isLandscape() && isVerticalVideo()) {
+            settleFullscreenPull(PORTRAIT_FULL_MS, Motion.STANDARD);
+            setPortraitFull(true); // a vertical video goes fullscreen upright, without a rotation
             return;
         }
         boolean landscapeNow = isLandscape();
@@ -9879,6 +9919,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // title (bare error-reload Video) must not blank the controls title.
         boolean sameVideo = item != null && Helpers.equals(item.videoId, mWatchVideoId);
         if (!sameVideo) {
+            mVideoShapePending = true; // NEWTUBE(issue #69): known again at its first frame
             showPlaybackNotice(null);
             if (mNextCountdown != null) {
                 mNextCountdown.hide();
