@@ -44,6 +44,7 @@ public final class MobileMiniPlayerController {
     private final ImageButton mPlayPause;
     private final ImageButton mClose;
     private final ProgressBar mProgress;
+    private final MiniControls mControls;
     private final Runnable mTick = this::onTick;
     /**
      * SCREEN-ON (#50): the card's screen-on hold follows the player's own events, not the 500 ms
@@ -76,10 +77,14 @@ public final class MobileMiniPlayerController {
         mPlayPause = activity.findViewById(R.id.mobile_mini_play_pause);
         mClose = activity.findViewById(R.id.mobile_mini_close);
         mProgress = activity.findViewById(R.id.mobile_mini_progress);
+        mControls = new MiniControls(activity.findViewById(R.id.mobile_mini_controls));
 
         View.OnClickListener expand = v -> {
             if (mClosing || !MiniPlayerBridge.isActive()) {
                 return; // a closed card leaving
+            }
+            if (mControls.onVideoTap()) {
+                return; // METUBE(mini-controls): the first tap shows the buttons
             }
             publishBounds();
             MiniPlayerBridge.expand(mActivity);
@@ -93,6 +98,7 @@ public final class MobileMiniPlayerController {
                 player.setPlayWhenReady(!player.getPlayWhenReady());
                 updatePlayPause(player);
             }
+            mControls.show(); // a few seconds more
         });
 
         mClose.setOnClickListener(v -> close());
@@ -341,6 +347,7 @@ public final class MobileMiniPlayerController {
         resetTransform();
         mBar.setAlpha(1f);
         mBar.setVisibility(View.GONE);
+        mControls.reset();
         unwatchScreenOn();
         setKeepScreenOn(false); // no card, no video on this screen
     }

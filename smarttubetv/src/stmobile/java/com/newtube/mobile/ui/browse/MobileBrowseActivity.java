@@ -186,6 +186,7 @@ public class MobileBrowseActivity extends MobileActivity
     private ImageView mMiniFreeze;
     private TextureView mMiniTexture;
     private ImageButton mMiniPlayPause;
+    private com.newtube.mobile.ui.playback.MiniControls mMiniControls;
     private ProgressBar mMiniProgress;
     /** 500ms UI ticker while the bar is visible: progress line, play/pause icon, liveness check. */
     private final Runnable mMiniPlayerTick = this::onMiniPlayerTick;
@@ -344,6 +345,7 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniFreeze = findViewById(R.id.mobile_mini_freeze);
         mMiniPlayPause = findViewById(R.id.mobile_mini_play_pause);
         mMiniProgress = findViewById(R.id.mobile_mini_progress);
+        mMiniControls = new com.newtube.mobile.ui.playback.MiniControls(findViewById(R.id.mobile_mini_controls));
         setupMiniPlayerBar();
         mMiniPip = new com.newtube.mobile.ui.playback.MiniPip(this, mMiniPlayerBar, () -> {
             hideMiniPlayer();
@@ -478,12 +480,14 @@ public class MobileBrowseActivity extends MobileActivity
     // ---------------------------------------------------------------------------------
 
     private void setupMiniPlayerBar() {
-        // Tap the video (anywhere but the overlay buttons) = expand back to the watch screen.
+        // Tap the video = show the overlay buttons (METUBE(mini-controls), see MiniControls); tap
+        // it again while they show (anywhere but the buttons) = expand back to the watch screen.
         // The card keeps rendering until our onPause detaches it (hideMiniPlayer there) - the
         // player's onResume then re-parents the session texture back. Detaching HERE would blank
         // the card for the whole activity-switch latency.
         View.OnClickListener expand = v -> {
-            if (!mMiniClosing && MiniPlayerBridge.isActive()) { // not while a closed card leaves
+            if (!mMiniClosing && MiniPlayerBridge.isActive() // not while a closed card leaves
+                    && !mMiniControls.onVideoTap()) {
                 MiniPlayerBridge.expand(this);
             }
         };
@@ -496,6 +500,7 @@ public class MobileBrowseActivity extends MobileActivity
                 player.setPlayWhenReady(!player.getPlayWhenReady());
                 updateMiniPlayPauseIcon(player);
             }
+            mMiniControls.show(); // a few seconds more
         });
 
         findViewById(R.id.mobile_mini_close).setOnClickListener(v -> closeMiniPlayer());
@@ -825,6 +830,7 @@ public class MobileBrowseActivity extends MobileActivity
         stopMiniSwipe();
         mMiniPlayerBar.animate().cancel();
         mMiniPlayerBar.setVisibility(View.GONE);
+        mMiniControls.reset();
         unwatchMiniScreenOn();
         setMiniKeepScreenOn(false); // no card, no video on this screen
         mMiniPlayerBar.setAlpha(1f);
