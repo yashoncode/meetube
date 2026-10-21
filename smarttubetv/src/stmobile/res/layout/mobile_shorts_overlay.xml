@@ -237,17 +237,6 @@
             android:contentDescription="@string/mobile_menu_more"
             android:src="@drawable/ic_mobile_more_vert" />
 
-        <!-- YouTube's spinning disc: the channel's picture, turning while the short plays. -->
-        <ImageView
-            android:id="@+id/mobile_shorts_disc"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/bg_shorts_disc"
-            android:importantForAccessibility="no"
-            android:padding="2dp"
-            android:scaleType="centerCrop" />
-
     </LinearLayout>
 
     <!-- The time while scrubbing, big, like YouTube's. -->

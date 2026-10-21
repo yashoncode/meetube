@@ -102,7 +102,6 @@ final class ShortsOverlay {
     private final TextView mSeekTime;
     private final ImageView mLikeIcon;
     private final ImageView mAvatar;
-    private final ImageView mDisc;
     private final ImageView mFlash;
     private final ImageView mHeart;
     private final ImageView mPeek;
@@ -137,7 +136,6 @@ final class ShortsOverlay {
         mSeekTime = root.findViewById(R.id.mobile_shorts_seek_time);
         mLikeIcon = root.findViewById(R.id.mobile_shorts_like);
         mAvatar = root.findViewById(R.id.mobile_shorts_avatar);
-        mDisc = root.findViewById(R.id.mobile_shorts_disc);
         mFlash = root.findViewById(R.id.mobile_shorts_flash);
         mHeart = root.findViewById(R.id.mobile_shorts_heart);
         mPeek = root.findViewById(R.id.mobile_shorts_peek);
@@ -167,8 +165,7 @@ final class ShortsOverlay {
         // Tap the title for the rest of it (and tap again to fold it).
         mTitle.setOnClickListener(v -> mTitle.setMaxLines(mTitle.getMaxLines() == 2 ? 8 : 2));
 
-        round(mAvatar, true);
-        round(mDisc, false);
+        round(mAvatar);
         mProgress.getThumb().mutate().setAlpha(0);
         mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -254,7 +251,6 @@ final class ShortsOverlay {
             if (fresh) {
                 mTitle.setMaxLines(2);
                 mAvatar.setImageDrawable(null);
-                mDisc.setImageDrawable(null);
                 mAvatarKnown = false;
                 showKnownAvatar(item);
                 mOverlay.removeCallbacks(mPreloadNeighbours);
@@ -443,7 +439,6 @@ final class ShortsOverlay {
     private void loadAvatar(String url) {
         mAvatarKnown = true;
         com.bumptech.glide.Glide.with(mAvatar).load(url).circleCrop().into(mAvatar);
-        com.bumptech.glide.Glide.with(mDisc).load(url).centerCrop().into(mDisc);
     }
 
     private void copyAvatar() {
@@ -453,21 +448,15 @@ final class ShortsOverlay {
         Drawable avatar = mWatch.avatar != null ? mWatch.avatar.getDrawable() : null;
         if (avatar != null && avatar.getConstantState() != null) {
             mAvatar.setImageDrawable(avatar.getConstantState().newDrawable().mutate());
-            mDisc.setImageDrawable(avatar.getConstantState().newDrawable().mutate());
         }
     }
 
-    private static void round(View view, boolean oval) {
-        float radius = 8 * view.getResources().getDisplayMetrics().density;
+    private static void round(View view) {
         view.setClipToOutline(true);
         view.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View v, Outline outline) {
-                if (oval) {
-                    outline.setOval(0, 0, v.getWidth(), v.getHeight());
-                } else {
-                    outline.setRoundRect(0, 0, v.getWidth(), v.getHeight(), radius);
-                }
+                outline.setOval(0, 0, v.getWidth(), v.getHeight());
             }
         });
     }
