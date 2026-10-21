@@ -2757,22 +2757,79 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * The inline video box: 16:9 of the window's width, except in a landscape-shaped window (a
-     * tablet that left fullscreen without rotating), where a full-width 16:9 box would be taller
-     * than the screen and bury the watch page - there it stops at 60% of the window height.
+     * The inline video box: the video's own shape across the window's width, like YouTube's
+     * (METUBE, issue #13: a square music video sat in a 16:9 box with bars at its sides). Never
+     * shorter than 16:9, so a wider film keeps the 16:9 box, and never taller than two thirds of
+     * the window, YouTube's cap for a vertical video, so the title and buttons stay in sight. In a
+     * landscape-shaped window (a tablet that left fullscreen without rotating), where a full-width
+     * 16:9 box would be taller than the screen and bury the watch page, it stops at 60% of the
+     * window height.
      */
     private int inlineBoxHeight(int width) {
         int height = Math.round(width * 9f / 16f);
         Configuration config = getResources().getConfiguration();
-        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE && config.screenHeightDp > 0) {
+        if (config.screenHeightDp > 0) {
             // screenHeightDp is in system dp while this activity's density carries the UI scale
             // override: convert with the system density (VideoViewportCap.windowPixels).
             float systemDensity = getApplicationContext().getResources().getConfiguration()
                     .densityDpi / 160f;
-            int cap = Math.round(config.screenHeightDp * systemDensity * 0.6f);
-            height = Math.min(height, cap);
+            int windowHeight = Math.round(config.screenHeightDp * systemDensity);
+            if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                return Math.min(height, Math.round(windowHeight * 0.6f));
+            }
+            if (mInlineAspect > 0f && mInlineAspect < 16f / 9f) {
+                height = Math.min(Math.round(width / mInlineAspect), windowHeight * 2 / 3);
+            }
         }
         return height;
+    }
+
+    /** METUBE(issue #13): the playing video's shape for the inline box; 0 = not known, 16:9. */
+    private float mInlineAspect;
+
+    /**
+     * METUBE(issue #13): the inline box takes {@code aspect}, growing or shrinking in place while
+     * the page is on screen. Called with the tracks' shape as a video opens, before its first
+     * frame, then with the decoded size. Elsewhere (fullscreen, PiP) the box picks it up when the
+     * page lays out again.
+     */
+    private void setInlineAspect(float aspect) {
+        if (aspect <= 0f || Math.abs(aspect - mInlineAspect) < 0.01f) {
+            return;
+        }
+        mInlineAspect = aspect;
+        if (mWatchRoot == null || mWatchRoot.getWidth() <= 0 || mIsInPip || mPipEnterPending
+                || layoutOrientation() != Configuration.ORIENTATION_PORTRAIT) {
+            return;
+        }
+        if (mIsResumed && mMorphFraction == 0f && !mMorphStartPending && !isTallMode()) {
+            android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
+                    new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED));
+        }
+        applyPortraitVideoHeight(mWatchRoot.getWidth());
+    }
+
+    /** METUBE(issue #13): the shape of the biggest video track, 0 without one. */
+    private static float tracksAspect(androidx.media3.common.Tracks tracks) {
+        androidx.media3.common.Format biggest = null;
+        for (androidx.media3.common.Tracks.Group group : tracks.getGroups()) {
+            if (group.getType() != androidx.media3.common.C.TRACK_TYPE_VIDEO) {
+                continue;
+            }
+            for (int i = 0; i < group.length; i++) {
+                androidx.media3.common.Format format = group.getTrackFormat(i);
+                if (format.width > 0 && format.height > 0
+                        && (biggest == null || format.width * format.height > biggest.width * biggest.height)) {
+                    biggest = format;
+                }
+            }
+        }
+        if (biggest == null) {
+            return 0f;
+        }
+        float ratio = biggest.pixelWidthHeightRatio > 0f ? biggest.pixelWidthHeightRatio : 1f;
+        float aspect = biggest.width * ratio / biggest.height;
+        return biggest.rotationDegrees % 180 != 0 ? 1f / aspect : aspect;
     }
 
     private boolean isLandscape() {
@@ -5085,7 +5142,15 @@ public class MobilePlaybackActivity extends MobileActivity
                 mVideoAspect = videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height;
                 applyControlsInsets();
                 updatePipActions(); // a new shape reshapes the PiP window
+                setInlineAspect(mVideoAspect);
             }
+        }
+
+        @Override
+        public void onTracksChanged(androidx.media3.common.Tracks tracks) {
+            // METUBE(issue #13): the new video's shape before its first frame, so the box is
+            // ready when the picture arrives instead of jumping under it.
+            setInlineAspect(tracksAspect(tracks));
         }
 
         @Override
@@ -6502,10 +6567,13 @@ public class MobilePlaybackActivity extends MobileActivity
         video.set(0, 0, mVideoArea.getWidth(), mVideoArea.getHeight());
         mContainer.offsetDescendantRectToMyCoords(mVideoArea, video);
 
-        float scale = video.width() > 0 ? cardW / video.width() : 0.44f;
-        float cardH = video.height() * scale; // 16:9 video -> ~the card's 102dp
-        float targetX = mContainer.getWidth() - margin - cardW;
-        float targetY = mContainer.getHeight() - bottomNav - margin - cardH;
+        // METUBE(issue #13): the card is 16:9 and fits the video in it, so a box of another shape
+        // (a square or vertical video's) lands centred on the card, where the card shows its picture.
+        float cardH = cardW * 9f / 16f;
+        float scale = video.width() > 0 && video.height() > 0
+                ? Math.min(cardW / video.width(), cardH / video.height()) : 0.44f;
+        float targetX = mContainer.getWidth() - margin - cardW + (cardW - video.width() * scale) / 2f;
+        float targetY = mContainer.getHeight() - bottomNav - margin - (cardH + video.height() * scale) / 2f;
 
         mMorphScaleX = scale;
         mMorphScaleY = scale;
