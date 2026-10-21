@@ -2556,6 +2556,13 @@ public class MobileBrowseActivity extends MobileActivity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
+        // METUBE(fullscreen): the fullscreen player turns Home with it, under its window. Following
+        // it there re-laid the grid twice out of sight (two columns, then one), so Home came back
+        // scrolled elsewhere with its cards rebinding as the player minimized. onResume squares
+        // the grid with Home's own configuration when Home is next on screen.
+        if (com.newtube.mobile.ui.playback.MobilePlaybackActivity.isCoveringScreens()) {
+            return;
+        }
         updateGridSpanCount(com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig));
     }
 
