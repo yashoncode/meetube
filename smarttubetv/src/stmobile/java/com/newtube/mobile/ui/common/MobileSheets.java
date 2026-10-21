@@ -206,6 +206,8 @@ public final class MobileSheets {
      */
     private static final float PEEK_MIN = 0.4f;
     private static final float PEEK_MAX = 0.6f;
+    /** Height of the fade over the list's cut edge: about the half row left showing, and a bit. */
+    private static final int FADE_DP = 40;
 
     private static final class PeekFit implements View.OnLayoutChangeListener, ViewTreeObserver.OnPreDrawListener {
         private final View mFrame;
@@ -260,6 +262,10 @@ public final class MobileSheets {
                 return;
             }
             mWatchedList = list;
+            // METUBE(sheet-landscape): the cut row fades into the sheet instead of ending on a
+            // hard edge, which read as missing bottom padding. Gone once scrolled to the end.
+            list.setVerticalFadingEdgeEnabled(true);
+            list.setFadingEdgeLength(Math.round(FADE_DP * list.getResources().getDisplayMetrics().density));
             if (list instanceof androidx.core.widget.NestedScrollView) {
                 ((androidx.core.widget.NestedScrollView) list).setOnScrollChangeListener(
                         (androidx.core.widget.NestedScrollView.OnScrollChangeListener) (v, x, y, oldX, oldY) -> mFrozen = true);
