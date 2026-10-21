@@ -124,6 +124,23 @@
             android:textSize="14sp"
             tools:text="Vijay Television is a leading Tamil Language Entertainment Channel broadcasting innovative shows and programs from India." />
 
+        <!-- The watch page's Subscribe pill, full width as on YouTube's channel page. Shown signed
+             in, once the channel's state is known. -->
+        <TextView
+            android:id="@+id/mobile_channel_subscribe"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_watch_subscribe"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="@string/mobile_watch_subscribe"
+            android:textColor="@color/mobile_color_on_inverse_surface"
+            android:textSize="14sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
     </LinearLayout>
 
 </FrameLayout>

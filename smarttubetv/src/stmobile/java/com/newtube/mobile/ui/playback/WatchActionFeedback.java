@@ -15,7 +15,7 @@ import com.newtube.mobile.ui.common.MobileSnackbar;
  * flipped the button silently (and signed out it quietly keeps a LOCAL subscription); now it says
  * which channel, with Undo.
  */
-final class WatchActionFeedback {
+public final class WatchActionFeedback {
     private WatchActionFeedback() {
     }
 
@@ -51,7 +51,7 @@ final class WatchActionFeedback {
         MobileSnackbar.show(activity, R.string.mobile_rate_not_ready);
     }
 
-    static void confirmSubscription(Activity activity, boolean subscribed, String channel, Runnable undo) {
+    public static void confirmSubscription(Activity activity, boolean subscribed, String channel, Runnable undo) {
         String text;
         if (TextUtils.isEmpty(channel)) {
             text = activity.getString(subscribed ? R.string.mobile_subscribed : R.string.mobile_unsubscribed);

@@ -94,6 +94,7 @@ public class MobileChannelActivity extends MobileActivity
     private TabLayout mTabs;
     /** The tabs' place in the app bar; the tabs themselves float over the page (setupGlassBars). */
     private View mTabsSpace;
+    private TextView mSubscribe;
     private ProgressBar mProgressBar;
     private TextView mTitleView;
     /** The header holds a real channel name (from the card, or from the loaded videos). */
@@ -187,6 +188,12 @@ public class MobileChannelActivity extends MobileActivity
         }
         mHeaderChannelId = id;
         findViewById(R.id.mobile_channel_header).setVisibility(View.GONE);
+        // Its place is kept (no jump) until this channel's state is known; signed out, no pill.
+        mSubscribe.animate().cancel();
+        mSubscribe.setVisibility(com.liskovsoft.youtubeapi.service.YouTubeSignInService.instance().isSigned()
+                ? View.INVISIBLE : View.GONE);
+        mSubscribeStateFor = null;
+        loadSubscribeState(null);
         ChannelHeader.fetch(id, info -> {
             if (!isDestroyed() && id.equals(mHeaderChannelId)) {
                 bindHeader(id, info);
@@ -234,6 +241,102 @@ public class MobileChannelActivity extends MobileActivity
             header.setAlpha(0f);
             header.animate().alpha(1f).setDuration(220).start();
         }
+    }
+
+    /** METUBE(channel subscribe): the channel whose subscribed state was asked for, once. */
+    @Nullable
+    private String mSubscribeStateFor;
+    @Nullable
+    private io.reactivex.rxjava3.disposables.Disposable mSubscribeAction;
+
+    /**
+     * The header's data (anonymous) has no subscribed state, but a video's watch data does. Opened
+     * from the watch page or Shorts, that video already knows it; else the video it was opened
+     * from, or the channel's first upload, is asked - as the card menu's Subscribe learns it.
+     */
+    private void loadSubscribeState(@Nullable List<Video> videos) {
+        String id = mHeaderChannelId;
+        if (id == null || id.equals(mSubscribeStateFor)
+                || !com.liskovsoft.youtubeapi.service.YouTubeSignInService.instance().isSigned()) {
+            return;
+        }
+        Video from = mPresenter.getChannel();
+        if (from != null && id.equals(from.channelId) && from.isSynced) {
+            mSubscribeStateFor = id;
+            showSubscribed(from.isSubscribed);
+            return;
+        }
+        String videoId = from != null && id.equals(from.channelId) ? from.videoId : null;
+        for (int i = 0; videoId == null && videos != null && i < videos.size(); i++) {
+            videoId = videos.get(i).videoId;
+        }
+        if (videoId == null) {
+            return;
+        }
+        mSubscribeStateFor = id;
+        com.liskovsoft.sharedutils.rx.RxHelper.execute(mediaItems().getMetadataObserve(videoId),
+                metadata -> runOnUiThread(() -> {
+                    // A collab's watch data may be the other channel's.
+                    if (id.equals(mHeaderChannelId) && id.equals(metadata.getChannelId())) {
+                        showSubscribed(metadata.isSubscribed());
+                    }
+                }),
+                error -> runOnUiThread(() -> mSubscribeStateFor = null));
+    }
+
+    private void showSubscribed(boolean on) {
+        if (mSubscribe.getVisibility() != View.VISIBLE) {
+            mSubscribe.setAlpha(0f);
+            mSubscribe.setVisibility(View.VISIBLE);
+            mSubscribe.animate().alpha(1f).setDuration(150).start();
+        }
+        mSubscribe.setSelected(on); // bg_watch_subscribe: solid pill, glass once subscribed
+        mSubscribe.setText(on ? R.string.mobile_watch_subscribed : R.string.mobile_watch_subscribe);
+        mSubscribe.setTextColor(getResources().getColor(on
+                ? R.color.mobile_color_on_surface : R.color.mobile_color_on_inverse_surface));
+    }
+
+    /** The watch page's Subscribe: flips at once with its splash, put back if YouTube refuses. */
+    private void onSubscribeTapped() {
+        String id = mHeaderChannelId;
+        if (id == null) {
+            return;
+        }
+        boolean subscribe = !mSubscribe.isSelected();
+        showSubscribed(subscribe);
+        com.newtube.mobile.ui.common.Haptics.click(mSubscribe);
+        if (subscribe) {
+            com.newtube.mobile.ui.common.Burst.play(mSubscribe, getResources().getColor(R.color.mobile_color_on_surface));
+            Motion.pop(mSubscribe);
+        }
+        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubscribeAction);
+        mSubscribeAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
+                subscribe ? mediaItems().subscribeObserve(id) : mediaItems().unsubscribeObserve(id),
+                error -> runOnUiThread(() -> {
+                    if (id.equals(mHeaderChannelId)) {
+                        showSubscribed(!subscribe);
+                    }
+                    com.newtube.mobile.ui.common.MobileSnackbar.show(this,
+                            subscribe ? R.string.subscribe_failed : R.string.unsubscribe_failed);
+                }),
+                () -> runOnUiThread(() -> {
+                    Video from = mPresenter.getChannel();
+                    if (from != null && id.equals(from.channelId)) {
+                        from.isSubscribed = subscribe; // or reopening from it shows the old state
+                    }
+                    com.newtube.mobile.ui.playback.WatchActionFeedback.confirmSubscription(
+                            this, subscribe, mTitleView.getText().toString(), () -> {
+                                if (id.equals(mHeaderChannelId) && mSubscribe.isSelected() == subscribe) {
+                                    onSubscribeTapped();
+                                }
+                            });
+                }));
+        // NEWTUBE(reopen-related): kept watch-page documents carry the old subscribe state.
+        com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController.onUserStateChanged();
+    }
+
+    private static com.liskovsoft.mediaserviceinterfaces.MediaItemService mediaItems() {
+        return com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getMediaItemService();
     }
 
     private TextView setTextOrGone(int id, @Nullable String text) {
@@ -297,6 +400,8 @@ public class MobileChannelActivity extends MobileActivity
         com.newtube.mobile.ui.playback.MiniPlayerListInset.attach(findViewById(R.id.mobile_mini_player), mGrid);
         mTabs = findViewById(R.id.mobile_channel_tabs);
         mTabsSpace = findViewById(R.id.mobile_channel_tabs_space);
+        mSubscribe = findViewById(R.id.mobile_channel_subscribe);
+        mSubscribe.setOnClickListener(v -> onSubscribeTapped());
         mPeek = findViewById(R.id.mobile_channel_peek);
         mProgressBar = findViewById(R.id.mobile_channel_progress);
         mTitleView = findViewById(R.id.mobile_channel_title);
@@ -863,6 +968,9 @@ public class MobileChannelActivity extends MobileActivity
                 return;
             }
             boolean content = group.getAction() != VideoGroup.ACTION_REMOVE && group.getAction() != VideoGroup.ACTION_SYNC;
+            if (content) {
+                loadSubscribeState(shown);
+            }
             int shortsDropped = (group.getVideos() != null ? group.getVideos().size() : 0)
                     - (shown != null ? shown.size() : 0);
             mShortsEmptied |= content && shortsDropped > 0;
