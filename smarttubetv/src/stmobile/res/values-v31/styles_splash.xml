@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- METUBE(launch): the system splash shows the mark beating once instead of a still icon. -->
+    <!-- METUBE(app icon): no icon of its own (@null), so the system splash shows the icon of the
+         launcher alias that was tapped - the picked one on every Android version, even 12/12L,
+         which can't persist a splash theme (AppIcon.syncSplash). -->
     <style name="Theme.MeTube.Splash" parent="Theme.NewTube">
+        <item name="android:windowSplashScreenAnimatedIcon">@null</item>
+    </style>
+    <!-- METUBE(launch): the default icon's splash, the mark beating once (Android 13+). -->
+    <style name="Theme.MeTube.Splash.Beat">
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/metube_splash_beat</item>
         <item name="android:windowSplashScreenAnimationDuration">600</item>
     </style>

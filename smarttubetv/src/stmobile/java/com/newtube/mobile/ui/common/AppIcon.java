@@ -1,12 +1,12 @@
 package com.newtube.mobile.ui.common;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -76,6 +76,7 @@ public final class AppIcon {
         prefs(context).edit().putString(KEY_PENDING, pending).apply();
         if (context instanceof Activity) {
             syncSplash((Activity) context);
+            syncTask((Activity) context);
         }
         if (pending != null && context instanceof Activity) {
             MobileSnackbar.show(context, context.getString(R.string.mobile_app_icon_pending),
@@ -130,13 +131,24 @@ public final class AppIcon {
 
     /**
      * The launch splash shows the picked mark. An alias can't carry a theme, but Android 13+
-     * remembers a splash theme per app; older versions keep the default splash.
+     * remembers a splash theme per app for every launch; Android 12 shows the tapped alias's icon.
      */
     public static void syncSplash(Activity activity) {
         if (Build.VERSION.SDK_INT >= 33) {
             String icon = current(activity);
             activity.getSplashScreen().setSplashScreenTheme(CLASSIC.equals(icon) ? R.style.Theme_MeTube_Splash_Classic
-                    : FANTASY.equals(icon) ? R.style.Theme_MeTube_Splash_Fantasy : Resources.ID_NULL);
+                    : FANTASY.equals(icon) ? R.style.Theme_MeTube_Splash_Fantasy : R.style.Theme_MeTube_Splash_Beat);
+        }
+    }
+
+    /**
+     * Recents and the task switcher show the picked icon. Without this they take the manifest's
+     * application icon - the default one - for every task not started from the launcher alias.
+     */
+    @SuppressWarnings("deprecation")
+    public static void syncTask(Activity activity) {
+        if (Build.VERSION.SDK_INT >= 28) {
+            activity.setTaskDescription(new ActivityManager.TaskDescription(null, launcherIcon(activity)));
         }
     }
 

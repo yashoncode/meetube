@@ -56,6 +56,7 @@ public abstract class MobileActivity extends MotherActivity {
         MobileSnackbar.install(getApplication()); // NEWTUBE(snackbar): tracks the screen in front
         mThemedNight = ThemeMode.currentNight(this);
         ThemeMode.register(this);
+        AppIcon.syncTask(this);
     }
 
     @Override

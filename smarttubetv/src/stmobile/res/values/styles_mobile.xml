@@ -24,6 +24,11 @@
       stays dark in both, like YouTube's: its chrome uses the fixed mobile_player_* colours.
     -->
     <style name="Theme.NewTube" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- METUBE(app icon): a task the system restores after killing the app (reopened from the
+             launcher or recents) gets its splash from this theme, not the per-icon one AppIcon
+             persists - and without an icon here that splash showed the manifest's (default) icon
+             whatever icon was picked. A blank splash is never the wrong icon. -->
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@android:color/transparent</item>
         <!-- METUBE(loader): every circular spinner is the morphing cookie (metube_loader). -->
         <item name="android:progressBarStyle">@style/Widget.MeTube.Loader</item>
         <item name="android:progressBarStyleLarge">@style/Widget.MeTube.Loader.Large</item>
