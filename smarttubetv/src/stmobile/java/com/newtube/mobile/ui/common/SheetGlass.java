@@ -141,6 +141,17 @@ public final class SheetGlass {
         frost(target, page, CORNER_DP * target.getResources().getDisplayMetrics().density);
     }
 
+    /**
+     * METUBE(glass): a sheet in its own activity over {@code page} (the picker screen) - live over
+     * the player like the player's own sheets: a copy of another window never holds the sheet.
+     */
+    public static void frost(@NonNull View target, @Nullable Activity page) {
+        boolean live = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && sLivePage != null && sLivePage.isInstance(page);
+        frost(target, page != null ? page.getWindow() : null, target,
+                CORNER_DP * target.getResources().getDisplayMetrics().density, live);
+    }
+
     /** As above, rounded to {@code cornerPx} (a popup menu's corners, not a sheet's). */
     public static void frost(@NonNull View target, @Nullable Window page, float cornerPx) {
         frost(target, page, target, cornerPx, false);

@@ -4757,13 +4757,10 @@ public class MobilePlaybackActivity extends MobileActivity
         dialog.show();
     }
 
-    /** The free space left above a sheet over the fullscreen video (see showPlayerSheet). */
-    private static final int LANDSCAPE_SHEET_TOP_GAP_DP = 48;
-
     private int landscapeSheetMaxHeight() {
         View decor = getWindow().getDecorView();
         int height = decor.getHeight();
-        return height > 0 ? height - dp(LANDSCAPE_SHEET_TOP_GAP_DP) : 0;
+        return height > 0 ? height - dp(MobileSheets.LANDSCAPE_TOP_GAP_DP) : 0;
     }
 
     private void pruneShownSheets() {

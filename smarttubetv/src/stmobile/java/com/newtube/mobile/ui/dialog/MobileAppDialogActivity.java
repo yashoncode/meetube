@@ -251,6 +251,8 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
 
         // Sheet mode: tapping the dim scrim dismisses the whole dialog (like a Material sheet).
         mScrim.setOnClickListener(v -> dismissSheet());
+        mContent.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
+                fitOverFullscreenPlayer());
 
         ViewCompat.setOnApplyWindowInsetsListener(mRoot, (view, windowInsets) -> {
             mSystemInsets = windowInsets.getInsets(
@@ -301,6 +303,22 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
         mContent.setPadding(capped ? 0 : mSystemInsets.left, 0,
                 capped ? 0 : mSystemInsets.right, mSystemInsets.bottom);
         mRecyclerView.setMaxHeight(sheetMaxHeight(window.height()));
+    }
+
+    /**
+     * METUBE(sheet-landscape): over the fullscreen video a picker is the gear sheet's twin
+     * (MobilePlaybackActivity.showPlayerSheet): it stops short of the top, the video in sight above
+     * it, and when its list does not fit the last row shows cut about in half, fading out. The 72%
+     * cap let a sheet with a title run into the top edge, its handle cut off.
+     */
+    private void fitOverFullscreenPlayer() {
+        if (!mOverPlayer || mContent.getHeight() == 0
+                || getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            return;
+        }
+        int gap = Math.round(MobileSheets.LANDSCAPE_TOP_GAP_DP * getResources().getDisplayMetrics().density);
+        mRecyclerView.setMaxHeight(MobileSheets.peekingListHeight(mContent, mRecyclerView,
+                liveWindowBounds().height() - gap));
     }
 
     /**
@@ -407,7 +425,7 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
         // METUBE(glass): frosted with the screen under this one, once laid out.
         mContent.post(() -> {
             android.app.Activity page = com.newtube.mobile.ui.common.SheetGlass.backdrop();
-            com.newtube.mobile.ui.common.SheetGlass.frost(mContent, page != null ? page.getWindow() : null);
+            com.newtube.mobile.ui.common.SheetGlass.frost(mContent, page);
         });
         // NEWTUBE(theme): in the light theme the sheet window draws edge to edge, so the scrim also
         // dims the status-bar band (a fitted window left it as an undimmed white strip over the
