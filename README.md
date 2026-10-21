@@ -4,7 +4,7 @@
 
 **YouTube, reimagined. Different by design. Smooth by nature.** <br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
 
-<p align="center"><img src=".github/assets/metube/showcase.webp" width="100%" alt="MeTube: a tilted wall of its screens (Home, Watch, Shorts, Lyrics, Search, Channels, Downloads) under frosted glass pills: No ads, ever. Synced lyrics. Liquid glass. Real dislikes. Background play. Offline in 1080p."></p>
+<p align="center"><img src=".github/assets/metube/showcase.webp" width="100%" alt="MeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Shorts (full screen, swipe ready), Channels (banner, Subscribe, Shorts tab), Liquid glass (a tab bar that floats), Search (YouTube's chips and filters) and Offline (save it in 1080p)"></p>
 
 <p align="center"><a href="https://github.com/yashoncode/metube/releases/latest"><b>⬇ Download the latest MeTube</b></a></p>
 

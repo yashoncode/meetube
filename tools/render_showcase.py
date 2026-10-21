@@ -1,32 +1,18 @@
-"""Renders the README poster: a tilted wall of the app's screens on a liquid colour backdrop,
-with frosted glass pills (the app's own look) floating over it.
+"""Renders the README showcase (bento, the one in use) from the app screenshots in .github/assets/metube/.
 
-    python tools/render_showcase.py
+    python tools/render_showcase.py [bento|coverflow] [out path]
 
-Writes .github/assets/metube/showcase.webp. Re-run after retaking a screenshot in
-.github/assets/metube/.
+Writes .github/assets/metube/showcase.webp by default. Re-run after retaking a screenshot.
 """
 import os
+import sys
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ASSETS = os.path.join(os.path.dirname(__file__), '..', '.github', 'assets', 'metube')
 FONTS = 'C:/Windows/Fonts/'
-
-W, H = 2400, 1260
-RADIUS = 56                       # the poster's own corners
-SHOTS = ['home', 'watch', 'shorts', 'lyrics', 'search', 'channel', 'downloads']
-TILE_W, TILE_GAP = 500, 64
-COLUMN_SHIFT = [0, -520, -180, -700, -330, -60]   # stagger, so no row lines up
-PILLS = [  # text, centre x, centre y (poster pixels)
-    ('No ads, ever', 470, 300),
-    ('Synced lyrics', 1960, 220),
-    ('Liquid glass', 330, 930),
-    ('Offline in 1080p', 2010, 980),
-    ('Background play', 1520, 1130),
-    ('Real dislikes', 860, 1120),
-]
+RED = (255, 69, 58)
 
 
 def font(name, size):
@@ -39,33 +25,94 @@ def rounded_mask(size, radius):
     return mask
 
 
-def tile(shot):
-    img = Image.open(os.path.join(ASSETS, shot + '.jpg')).convert('RGB')
-    img = img.resize((TILE_W, round(img.height * TILE_W / img.width)), Image.LANCZOS)
-    out = Image.new('RGBA', (TILE_W + 16, img.height + 16), (0, 0, 0, 0))
-    d = ImageDraw.Draw(out)
-    d.rounded_rectangle((0, 0, out.width - 1, out.height - 1), 58, fill=(14, 14, 16, 255),
-                        outline=(80, 80, 90, 255), width=2)
-    out.paste(img, (8, 8), rounded_mask(img.size, 50))
+def shot(name, width):
+    img = Image.open(os.path.join(ASSETS, name + '.jpg')).convert('RGB')
+    return img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)
+
+
+def screen(name, width, radius=34, border=(58, 58, 64)):
+    """A frameless screen: the screenshot with rounded corners and a hairline edge."""
+    img = shot(name, width)
+    out = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    out.paste(img, (0, 0), rounded_mask(img.size, radius))
+    ImageDraw.Draw(out).rounded_rectangle((0, 0, img.width - 1, img.height - 1), radius,
+                                          outline=border + (255,), width=2)
     return out
 
 
-def wall():
-    tiles = [tile(s) for s in SHOTS]
-    tw, th = tiles[0].size
-    cols, rows = len(COLUMN_SHIFT), 4
-    img = Image.new('RGBA', (cols * (tw + TILE_GAP), rows * (th + TILE_GAP)), (0, 0, 0, 0))
-    n = 0
-    for c in range(cols):
-        for r in range(rows):
-            t = tiles[(n * 3 + c) % len(tiles)]   # neighbours differ, every screen appears
-            n += 1
-            img.paste(t, (c * (tw + TILE_GAP), r * (th + TILE_GAP) + COLUMN_SHIFT[c] + 300), t)
+def glow(size, center, radius, color, alpha):
+    layer = Image.new('RGBA', size, color + (0,))
+    mask = Image.new('L', size, 0)
+    x, y = center
+    ImageDraw.Draw(mask).ellipse((x - radius, y - radius, x + radius, y + radius), fill=alpha)
+    layer.putalpha(mask.filter(ImageFilter.GaussianBlur(radius * 0.6)))
+    return layer
+
+
+# ---------------------------------------------------------------------------------------------
+# Bento: cards of different sizes, one screen each, a caption and a headline per card.
+
+BENTO_COLS, BENTO_ROWS = 5, 2
+CARD_W, CARD_H, GAP = 470, 640, 26
+CARDS = [  # screen, caption, headline, col, row, col span, row span, layout, tint
+    ('watch', 'Watch', 'No ads.\nReal dislikes.', 0, 0, 1, 2, 'full', (255, 69, 58)),
+    ('lyrics', 'Synced lyrics', 'Every line,\nright on time.', 1, 0, 2, 1, 'side', (150, 70, 255)),
+    ('shorts', 'Shorts', 'Full screen,\nswipe ready.', 3, 0, 1, 2, 'full', (255, 140, 40)),
+    ('channel', 'Channels', 'Banner, Subscribe,\nShorts tab.', 4, 0, 1, 1, 'peek', (255, 70, 150)),
+    ('home', 'Liquid glass', 'A tab bar\nthat floats.', 1, 1, 1, 1, 'peek', (70, 140, 255)),
+    ('search', 'Search', "YouTube's chips\nand filters.", 2, 1, 1, 1, 'peek', (40, 200, 190)),
+    ('downloads', 'Offline', 'Save it\nin 1080p.', 4, 1, 1, 1, 'peek', (60, 210, 110)),
+]
+
+
+def card(name, caption, headline, w, h, layout, tint):
+    img = Image.new('RGBA', (w, h), (22, 22, 26, 255))
+    img.alpha_composite(glow((w, h), (w * 0.5, h * 0.95), max(w, h) * 0.55, tint, 120))
+    d = ImageDraw.Draw(img)
+    cap_f, head_f = font('seguisb.ttf', 30), font('segoeuib.ttf', 46)
+    pad = 40
+    if layout == 'side':
+        d.text((pad, 150), caption, font=cap_f, fill=tint)
+        d.multiline_text((pad, 196), headline, font=head_f, fill=(255, 255, 255), spacing=6)
+        s = screen(name, 420)
+        crop = s.crop((0, int(s.height * 0.315), s.width, s.height))   # the lyrics panel
+        img.alpha_composite(crop, (w - crop.width - 60, max(40, h - crop.height)))
+    else:
+        d.text((pad, pad), caption, font=cap_f, fill=tint)
+        d.multiline_text((pad, pad + 44), headline, font=head_f, fill=(255, 255, 255), spacing=6)
+        top = pad + 44 + (2 if '\n' in headline else 1) * 56 + 34
+        if layout == 'full':
+            s = screen(name, w - 2 * pad)
+            if top + s.height > h - pad:
+                s = screen(name, round((w - 2 * pad) * (h - pad - top) / s.height))
+            img.alpha_composite(s, ((w - s.width) // 2, top))
+        else:
+            s = screen(name, w - 2 * pad - 30)
+            img.alpha_composite(s.crop((0, 0, s.width, h - top)), ((w - s.width) // 2, top))
+    out = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    out.paste(img, (0, 0), rounded_mask((w, h), 40))
+    ImageDraw.Draw(out).rounded_rectangle((0, 0, w - 1, h - 1), 40, outline=(255, 255, 255, 26), width=2)
+    return out
+
+
+def bento():
+    W = BENTO_COLS * CARD_W + (BENTO_COLS - 1) * GAP
+    H = BENTO_ROWS * CARD_H + (BENTO_ROWS - 1) * GAP
+    img = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    for name, caption, headline, c, r, cs, rs, layout, tint in CARDS:
+        w, h = cs * CARD_W + (cs - 1) * GAP, rs * CARD_H + (rs - 1) * GAP
+        img.alpha_composite(card(name, caption, headline, w, h, layout, tint), (c * (CARD_W + GAP), r * (CARD_H + GAP)))
     return img
 
 
+# ---------------------------------------------------------------------------------------------
+# Cover flow: the watch page facing you, the other screens turned away on both sides,
+# reflected in a glossy floor.
+
+FLOW = ['search', 'home', 'lyrics', 'watch', 'shorts', 'channel', 'downloads']
+
+
 def perspective(img, quad, size):
-    """Maps img onto quad (tl, tr, br, bl in output pixels) of an output of the given size."""
     w, h = img.size
     src = [(0, 0), (w, 0), (w, h), (0, h)]
     rows = []
@@ -76,99 +123,56 @@ def perspective(img, quad, size):
     return img.transform(size, Image.PERSPECTIVE, coeffs.tolist(), Image.BICUBIC)
 
 
-def tilt_quad(wall_size, yaw=-24, pitch=18, roll=-12, scale=0.62, distance=3600):
-    """The wall's corners after turning it in 3D (degrees) and projecting it onto the poster."""
-    ww, wh = wall_size[0] * scale, wall_size[1] * scale
-    a, b, c = np.radians([pitch, yaw, roll])
-    rx = np.array([[1, 0, 0], [0, np.cos(a), -np.sin(a)], [0, np.sin(a), np.cos(a)]])
-    ry = np.array([[np.cos(b), 0, np.sin(b)], [0, 1, 0], [-np.sin(b), 0, np.cos(b)]])
-    rz = np.array([[np.cos(c), -np.sin(c), 0], [np.sin(c), np.cos(c), 0], [0, 0, 1]])
-    quad = []
-    for x, y in [(-ww / 2, -wh / 2), (ww / 2, -wh / 2), (ww / 2, wh / 2), (-ww / 2, wh / 2)]:
-        px, py, pz = rx @ ry @ rz @ np.array([x, y, 0.0])
-        k = distance / (distance + pz)
-        quad.append((W / 2 + 120 + px * k, H / 2 + py * k))
-    return quad
+def with_reflection(s):
+    h = s.height
+    out = Image.new('RGBA', (s.width, int(h * 1.42)), (0, 0, 0, 0))
+    out.alpha_composite(s)
+    ref = s.transpose(Image.FLIP_TOP_BOTTOM)
+    fade = Image.linear_gradient('L').resize(ref.size).point(lambda v: max(0, 70 - v * 0.55))
+    ref.putalpha(Image.composite(ref.getchannel('A'), Image.new('L', ref.size, 0), fade))
+    out.alpha_composite(ref, (0, h + 8))
+    return out
 
 
-def backdrop():
-    img = Image.new('RGB', (W, H), (8, 6, 10))
-    blobs = Image.new('RGB', (W, H), (8, 6, 10))
-    d = ImageDraw.Draw(blobs)
-    for (x, y, r, color) in [(1750, 250, 620, (255, 59, 48)), (2250, 1150, 560, (176, 20, 120)),
-                             (1150, 1250, 520, (255, 120, 20)), (250, 1150, 600, (70, 20, 160)),
-                             (300, 120, 420, (200, 30, 60))]:
-        d.ellipse((x - r, y - r, x + r, y + r), fill=color)
-    return Image.blend(img, blobs.filter(ImageFilter.GaussianBlur(260)), 0.95)
-
-
-def glass(base, box, radius):
-    """Frosted glass over base inside box: blur and saturate what's behind, a light veil, a rim."""
-    x0, y0, x1, y1 = box
-    region = base.crop(box).filter(ImageFilter.GaussianBlur(22))
-    region = ImageEnhance.Color(region).enhance(1.6)
-    region = Image.blend(region, Image.new('RGB', region.size, (255, 255, 255)), 0.16)
-    mask = rounded_mask(region.size, radius)
-
-    shadow = Image.new('L', base.size, 0)
-    ImageDraw.Draw(shadow).rounded_rectangle((x0 + 6, y0 + 22, x1 - 6, y1 + 18), radius, fill=150)
-    base.paste((0, 0, 0), (0, 0), shadow.filter(ImageFilter.GaussianBlur(26)))
-    base.paste(region, (x0, y0), mask)
-
-    rim = Image.new('RGBA', region.size, (0, 0, 0, 0))
-    ImageDraw.Draw(rim).rounded_rectangle((0, 0, region.width - 1, region.height - 1), radius,
-                                          outline=(255, 255, 255, 120), width=3)
-    fade = Image.linear_gradient('L').resize(region.size).point(lambda v: 255 - v * 0.7)
-    rim.putalpha(Image.composite(rim.getchannel('A'), Image.new('L', region.size, 0), fade))
-    base.paste(rim, (x0, y0), rim)
-
-
-def pill(base, text, cx, cy):
-    f = font('seguisb.ttf', 46)
-    tw = ImageDraw.Draw(base).textlength(text, font=f)
-    w, h = int(tw) + 150, 104
-    box = (int(cx - w / 2), int(cy - h / 2), int(cx + w / 2), int(cy + h / 2))
-    glass(base, box, h // 2)
-    d = ImageDraw.Draw(base)
-    dot = (box[0] + 52, cy)
-    d.ellipse((dot[0] - 13, dot[1] - 13, dot[0] + 13, dot[1] + 13), fill=(255, 69, 58))
-    d.text((box[0] + 88, cy + 2), text, font=f, fill=(255, 255, 255), anchor='lm')
-
-
-def badge(base):
-    icon = Image.open(os.path.join(ASSETS, 'icon.png')).convert('RGBA').resize((168, 168), Image.LANCZOS)
-    f = font('seguibl.ttf', 132)
-    tw = ImageDraw.Draw(base).textlength('MeTube', font=f)
-    w, h = int(tw) + 168 + 150, 240
-    x0, y0 = (W - w) // 2, (H - h) // 2 - 10
-    glass(base, (x0, y0, x0 + w, y0 + h), 64)
-    base.paste(icon, (x0 + 46, y0 + 36), icon)
-    ImageDraw.Draw(base).text((x0 + 46 + 168 + 34, y0 + h // 2 + 4), 'MeTube', font=f,
-                              fill=(255, 255, 255), anchor='lm')
-
-
-def render():
-    img = backdrop()
-    tilted = perspective(wall(), tilt_quad(wall_size=(3480, 4752)), (W, H))
-    # the wall sits in the colour, a little dimmed, so the glass reads as the foreground
-    shade = Image.new('L', (W, H), 0)
-    ImageDraw.Draw(shade).ellipse((-400, -500, W + 400, H + 500), fill=255)
-    alpha = Image.composite(tilted.getchannel('A'), Image.new('L', (W, H), 0),
-                            shade.filter(ImageFilter.GaussianBlur(200)))
-    img.paste(ImageEnhance.Brightness(tilted.convert('RGB')).enhance(0.82), (0, 0), alpha)
-    vignette = Image.radial_gradient('L').resize((W, H)).point(lambda v: min(255, int(v * 0.9)))
-    img.paste((6, 4, 8), (0, 0), vignette)
-
-    for text, x, y in PILLS:
-        pill(img, text, x, y)
-    badge(img)
-
-    out = img.convert('RGBA')
-    out.putalpha(rounded_mask((W, H), RADIUS))
-    path = os.path.join(ASSETS, 'showcase.webp')
-    out.save(path, quality=86, method=6)
-    print(path, out.size, os.path.getsize(path) // 1024, 'KB')
+def coverflow():
+    W, H = 2600, 1300
+    img = Image.new('RGBA', (W, H), (10, 10, 13, 255))
+    img.alpha_composite(glow((W, H), (W / 2, H * 0.45), 760, RED, 120))
+    img.alpha_composite(glow((W, H), (W * 0.18, H * 0.6), 520, (120, 60, 255), 60))
+    img.alpha_composite(glow((W, H), (W * 0.82, H * 0.6), 520, (255, 140, 40), 60))
+    mid = len(FLOW) // 2
+    base_y = 120
+    layers = []
+    for i, name in enumerate(FLOW):
+        k = i - mid
+        s = with_reflection(screen(name, 420 if k == 0 else 360, radius=30))
+        sw, sh = s.size
+        if k == 0:
+            layers.append((10, s, (W - sw) // 2, base_y))
+            continue
+        side = 1 if k > 0 else -1
+        depth = abs(k)
+        cx = W / 2 + side * (360 + (depth - 1) * 250)
+        near, far = sh * (0.92 - 0.05 * (depth - 1)), sh * (0.70 - 0.05 * (depth - 1))
+        w2 = sw * 0.62
+        top = base_y + 40 + (sh * 0.92 - near) / 2
+        if side > 0:   # turned away to the right: near edge on the left
+            quad = [(cx - w2 / 2, top), (cx + w2 / 2, top + (near - far) / 2),
+                    (cx + w2 / 2, top + (near + far) / 2), (cx - w2 / 2, top + near)]
+        else:
+            quad = [(cx - w2 / 2, top + (near - far) / 2), (cx + w2 / 2, top),
+                    (cx + w2 / 2, top + near), (cx - w2 / 2, top + (near + far) / 2)]
+        layers.append((10 - depth, perspective(s, quad, (W, H)), 0, 0))
+    for _, layer, x, y in sorted(layers, key=lambda l: l[0]):
+        img.alpha_composite(layer, (int(x), int(y)))
+    out = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    out.paste(img, (0, 0), rounded_mask((W, H), 56))
+    return out
 
 
 if __name__ == '__main__':
-    render()
+    style = sys.argv[1] if len(sys.argv) > 1 else 'bento'
+    result = {'bento': bento, 'coverflow': coverflow}[style]()
+    path = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ASSETS, 'showcase.webp')
+    result.save(path, quality=88, method=6)
+    print(path, result.size, os.path.getsize(path) // 1024, 'KB')
