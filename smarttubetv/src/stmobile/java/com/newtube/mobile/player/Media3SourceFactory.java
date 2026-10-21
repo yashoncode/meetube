@@ -473,6 +473,11 @@ public class Media3SourceFactory {
             leafFactory = new DebugMediaShaper.Factory(leafFactory);
         }
 
+        // NEWTUBE(wall-swap): a 403 past what an armed VOD open already played waits for the
+        // recovery walk's answer and continues on its URL for the same file (MediaRepoint). Above
+        // the shaper (the synthetic wall is judged per answer), below the cache and the gates.
+        leafFactory = MediaRepoint.wrap(leafFactory);
+
         // googlevideo range-query mirroring sits directly on the leaf transport, BELOW the cache
         // tier (CacheDataSource upstream = resolving(leaf)): the cache key factory reads only
         // id/itag/lmt/xtags/sq from the ORIGINAL uri, so cache keys never see rn=/range=.

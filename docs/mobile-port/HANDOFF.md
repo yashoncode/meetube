@@ -2201,9 +2201,24 @@ after the wall (browse identity untouched, 2 per 6 h). Synthetic wall for tests:
 synthetic wall on the Mi 8 and the Pixel (Wi-Fi and LTE): recovery in 0.84-1.22 s, no reload cap,
 the next videos on the fresh identity at normal start times.
 
-**Left for after 1.11.0 (LANES §9):** Media3 treats the wall's 403 as fatal, so playback stops
-with buffer left and the resume snaps back ~6 s to the previous sync sample. Act on the first
-past-60 s 403 before the buffer drains and join the recovery source at the buffer's end.
+**The stop and the rewind (issue #84, branch `fix/wall-seamless`, 2026-10-19).** Media3 took the
+wall's 403 as fatal: the loader meets the wall far ahead of the playhead (emulator: stream 60 s
+requested at position 20-27 s), yet the error ended playback with 22-40 s still buffered, and the
+reload's history-resume keyframe snap put it 0.8-6.3 s back. Two changes:
+- **Seamless swap (`MediaRepoint`, rollback `debug.arc.wall_swap=0`).** A DataSource layer under
+  the cache holds a 403 of the armed open (the watched generated-DASH VOD source, after it has
+  been served) while `ErrorFixerController.onMediaRefusedAhead` runs the usual blame, wall memory
+  and recovery walk; `PlayerEngine.repointMedia` then points the held request, and the rest of the
+  open, at the new answer's URL for the same file (itag, lmt, xtags, clen; the URL's `id` is per
+  answer). Two swaps per open, 20 s. An answer without the file (WEB_EMBED's SABR-only + HLS
+  answers) gets one more walk with that source as the suspect (TV_TIZEN served it on the
+  emulator); no answer at all lets the 403 through to the old reload, which reuses the walk's
+  answer. Logs `wall-swap wait|request|walk|landed|mismatch|served|give-up|timeout`.
+- **Exact recovery resume (`debug.arc.recovery_exact=0`).** The reload after a source error seeks
+  exactly to the error position instead of the keyframe snap.
+Emulator, synthetic wall: no error, no reload, no rewind in 4/4 runs (walk 1.0-1.8 s, 32-39 s still
+buffered when it landed); a seek past the wall waits on a spinner for the walk and resumes at the
+target. Not yet on a phone; not seen signed in (by code the walk asks TV_TIZEN with the account).
 
 Reports: `~/projects/newtube-launch/netbench/r11-{pixel,mi8,emu-home}.md`, the TTFF analysis
 `r11-ttff-analysis.md`; design and evidence `docs/player-sources/LANES.md` §2.3, §7-9.
