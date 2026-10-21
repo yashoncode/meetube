@@ -1019,11 +1019,28 @@ public class MobilePlaybackActivity extends MobileActivity
         // hides them (the detector's click toggles). The click listener above stays for TalkBack.
         mControlsRoot.setOnTouchListener((v, event) -> mPlayerView.onTouchEvent(event));
         // A tap right after one that revealed the controls may be the second of a double tap: it
-        // goes to the detector whole, not to a control that just appeared under the finger.
+        // goes to the detector whole, not to a control that just appeared under the finger. Except
+        // play/pause, like YouTube (measured 21.18): a quick double tap on the middle of a hidden
+        // player pauses or plays it; the sides still seek.
         mVideoArea.setTapRouter(new PinchZoomLayout.TapRouter() {
+            private final int[] mAreaAt = new int[2];
+            private final int[] mButtonAt = new int[2];
+
             @Override
             public boolean claimDown(android.view.MotionEvent down) {
-                return isSecondTapOfReveal(down);
+                return isSecondTapOfReveal(down) && !isOnPlayPause(down);
+            }
+
+            private boolean isOnPlayPause(android.view.MotionEvent down) {
+                if (mPlayPauseButton == null || !mPlayPauseButton.isShown()) {
+                    return false;
+                }
+                mVideoArea.getLocationInWindow(mAreaAt);
+                mPlayPauseButton.getLocationInWindow(mButtonAt);
+                float x = down.getX() + mAreaAt[0] - mButtonAt[0];
+                float y = down.getY() + mAreaAt[1] - mButtonAt[1];
+                return x >= 0 && x < mPlayPauseButton.getWidth()
+                        && y >= 0 && y < mPlayPauseButton.getHeight();
             }
 
             @Override
