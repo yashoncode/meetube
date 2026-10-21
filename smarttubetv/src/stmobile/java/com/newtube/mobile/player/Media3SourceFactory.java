@@ -252,12 +252,16 @@ public class Media3SourceFactory {
             // Existing installs have no measurement timestamp: an old fast-network hint must
             // not select a large first chunk on today's weak link. Fresh transfers can raise
             // quality immediately; this does not constrain the user's explicit track choice.
-            boolean startupPolicy = !(BuildConfig.DEBUG || BuildConfig.BENCHMARK)
-                    || !"off".equals(DebugMediaShaper.prop("debug.arc.startup_abr"));
+            // Test builds: debug.arc.startup_abr=off runs the legacy seed, =stale treats every
+            // stored hint as too old (the first open of a session), without waiting it out.
+            String startupProp = BuildConfig.DEBUG || BuildConfig.BENCHMARK
+                    ? DebugMediaShaper.prop("debug.arc.startup_abr") : null;
+            boolean startupPolicy = !"off".equals(startupProp);
+            boolean forceStale = "stale".equals(startupProp);
             sBandwidthMeter = new StartupBandwidthMeter(builder.build(),
                     type -> StartupBandwidthMeter.seedFor(
                             preferences.getLong(bitrateKey(type), 0),
-                            preferences.getLong(KEY_BITRATE_TIME_PREFIX + type, 0),
+                            forceStale ? 0 : preferences.getLong(KEY_BITRATE_TIME_PREFIX + type, 0),
                             System.currentTimeMillis()),
                     (type, bitrate) -> saveMeasuredEstimate(context, type, bitrate), currentType,
                     startupPolicy, androidx.media3.common.util.Clock.DEFAULT);
@@ -267,7 +271,7 @@ public class Media3SourceFactory {
             NetPath.log(NetPath.context() + " abr-init network=" + networkTypeName(currentType)
                     + " seed=" + sBandwidthMeter.getBitrateEstimate()
                     + " storedSeed=" + (currentSeed > 0 ? currentSeed : "default")
-                    + " bootstrap=" + (startupPolicy ? "fresh" : "legacy")
+                    + " bootstrap=" + (!startupPolicy ? "legacy" : forceStale ? "forced-stale" : "fresh")
                     + " storedTypes=" + seededTypes);
         }
         return sBandwidthMeter;

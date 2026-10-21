@@ -1662,7 +1662,7 @@ reason=account-change`, `restore-auth-route-quarantine ... format=v3 ... probati
 `player-ring definitive-unplayable video= clients= reason-hash= attempts= skipped=`,
 `buffer-default aligned from=MEDIUM to=HIGH pass=v2` (logged by the process Android starts
 right after an install, often before a capture begins), `buffer-cap network metered= dataSaver=
-event= -> on|off`, `viewport inline size= metered= dataSaver= -> cap on|off reason=`,
+event= -> on|off`, (`viewport inline ...` until 2026-10-19, see §38),
 `startup-init-timeout adaptive budgetMs= early= reason=`, `... action=transport-failover from=cronet
 to=okhttp ... cronetStatus=`, `startup-failover okhttp answered|no-response|failed ... bypass=
 reason=`, `media-transport cronet-bypass ... evidence=okhttp-answered`, `okhttp-fallback active
@@ -2390,3 +2390,66 @@ seek bar was rebuilt the way YouTube draws it, with a touch band as wide as YouT
 on YouTube 21.18) that `WatchRootLayout` hit-tests because half of it lies over the page; press
 and hold for 2x keeps the pitch and ends with its video. Details and measurements are in the
 commit messages `8ef63af9`..`d406874a`.
+
+## 38. Quality start: vertical 1080p and startup chunks (2026-10-19, branch fix/quality-start)
+
+Users reported that Auto takes too long to reach full quality and that a 1080p default "is not
+obeyed". Three causes, all measured on the Pixel 9 with a benchmark `.check` build
+(`tools/netbench` appbench, raw logs and `summarize.py` in
+`~/projects/newtube-launch/netbench/quality-start/`):
+
+- **Vertical videos were capped at YouTube's 480p.** The Auto ceiling (and every Settings cap)
+  was `setMaxVideoSize(1920, 1080)`; media3 checks `width <= max && height <= max` with no
+  rotation (1.10.1 bytecode, `DefaultTrackSelector$VideoTrackInfo`), so a vertical video's 1080p
+  (1080x1920) and 720p (720x1280) never fit and 608x1080 (itag 779/780, "480p") won. The ceilings
+  are square now (`VideoRung.ceilingSide`: 1080p -> 1920x1920). Labels, the quality sheet's rung
+  order and the loose match of a carried-over session pick use `VideoRung.classHeight`
+  (YouTube's class: the larger of the short side and the long side's 16:9 equivalent, 10% slack).
+  A box is not the class rule: under a 720p cap a square 1080x1080 fits, under 480p the 608x1080
+  variant does not (480x854 does). Rare shapes, documented in `VideoRung`.
+- **Low startup chunks played out after 1080p was already fetched.** With no fresh bandwidth
+  hint (the first video after 5 min) the first chunk is 240-480p by design (TTFF; see the
+  2026-09-08 startup-bandwidth section in STATUS). The estimate allows 1080p within 1-3 s, but
+  stock `AdaptiveTrackSelection.evaluateQueueSize` only drops buffered chunks starting more than
+  25 s ahead AND at most 1279x719, so on Wi-Fi, where 2-3 low chunks are buffered before the
+  switch, 1080p reached the screen 10-18 s in. `ViewportCappedTrackSelection.evaluateQueueSize`
+  now drops chunks loaded before the selection's first switch (`trackSelectionReason == INITIAL`)
+  from 5 s of playout ahead, below the selected rung in class and bitrate, only when: the
+  selection switched by its own decision (ADAPTIVE; a selection re-created by an audio/captions
+  change is UNKNOWN with its top rung nominally selected), the selected rung still fits
+  `estimate x fraction` and the window cap (the selection only refreshes per chunk request), and
+  within 30 s of the selection's creation (never a paused live stream whose window moved on).
+  Chunks from later switches keep the stock rule: a dip mid-video never throws a long buffer
+  away. Why 5 s: media3 only picks a rung whose bitrate is <= 0.7 x the estimate, so a 5 s chunk
+  at the new rung takes <= 3.5 s to fetch; 5 s of kept buffer covers it, a smaller window may
+  not. Logged as `rung replace ... chunks= from= pos= to=`. SABR never discards (empty
+  `reevaluateBuffer`), so this is DASH/HLS only.
+- **60 fps videos open below 1080p60 even with a fresh hint**: the fresh seed is capped at
+  4 Mbps (`StartupBandwidthMeter.MAX_RECENT_SEED_BPS`) and 1080p60 VP9's manifest (peak) bitrate
+  needs ~7-11 Mbps of estimate. NOT changed: a 1080p60 first chunk is ~2.6 MB vs ~0.4 MB at 480p,
+  about a second more before the first frame on LTE; the owner's priority is speed.
+
+**"Background data off" is Data Saver to the app, so the portrait-box cap is gone.**
+`ConnectivityManager.getRestrictBackgroundStatus()` answers ENABLED both for global Data Saver
+and for an app whose per-app "Background data" is off (`REJECT_METERED_BACKGROUND`; measured:
+the system's Restrict background was false while `.check`, once on that list, logged
+`dataSaver=y`). Public APIs cannot tell the two apart. So a user who turned background data off
+for NewTube got the data-saving caps on mobile data: the portrait box capped at 720p (the quality
+row read "Auto (720p)") and the 30 s cellular buffer. The owner's own Pixel has background data
+off for the daily app, `.debug` and ~40 other apps. No public route to the global state exists:
+toggling Data Saver changes no readable setting (only the Quick Settings tile lists, emulator
+API 35), and `NetworkPolicyManager.getRestrictBackground` needs MANAGE_NETWORK_POLICY.
+Decision (owner delegated it, 2026-10-19): the portrait-box rung cap was removed
+(`VideoViewportCap` has only the PiP/mini window now; `setInline`/`clearInline`/
+`setInlineViewport` are gone), and the invisible part stays: the forward-buffer ceiling
+(`MeteredBufferLoadControl`, 30 s + played) still applies on metered + "Data Saver". The visible
+saving was small (1080p vs 720p in a 1080x608 box, ~2.4 vs ~1.8 Mbps) and it read as a bug.
+
+`rung fetch` / `rung show` (`VideoRungLog`) are logged in every build type, so a user's
+diagnostic log shows when quality went up. `debug.arc.startup_abr=stale` (debug/benchmark builds)
+treats every stored bandwidth hint as too old, to measure the first-open-of-a-session case
+without waiting 5 minutes.
+
+Pixel harness note: `cmd media_session volume --set` cannot unmute a stream that a 0 muted on
+Android 17; appbench restores with `cmd audio set-volume 3 <n>` now (one run had left the owner's
+media volume muted).

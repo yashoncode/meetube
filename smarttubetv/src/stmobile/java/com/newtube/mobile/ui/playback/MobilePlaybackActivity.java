@@ -381,7 +381,6 @@ public class MobilePlaybackActivity extends MobileActivity
                         && layoutOrientation()
                         == Configuration.ORIENTATION_PORTRAIT) {
                     applyPortraitVideoHeight(width);
-                    updateInlineViewport(width);
                 }
             };
 
@@ -1249,11 +1248,6 @@ public class MobilePlaybackActivity extends MobileActivity
             lp.height = LinearLayout.LayoutParams.MATCH_PARENT;
             lp.weight = 0;
             mVideoArea.setLayoutParams(lp);
-            // Fullscreen: the data-saving inline-box cap no longer applies to NEW chunks
-            // (buffered ones play out). The watch root's next portrait layout re-arms it.
-            if (mExoPlayerController != null) {
-                mExoPlayerController.clearInlineViewport("fullscreen");
-            }
             if (mWatchScroll != null) {
                 mWatchScroll.setVisibility(View.GONE);
             }
@@ -1394,6 +1388,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // NOTE: stock EventLogger does NOT emit loadStarted/loadCompleted lines, so per-chunk
         // network timing is invisible with it alone - NetPathLoadListener (tag NetPath) fills
         // exactly that gap with one dense line per load event.
+        // NEWTUBE(quality-start): video rung switches, every build (a user's diagnostic log too).
+        mPlayer.addAnalyticsListener(new com.newtube.mobile.player.VideoRungLog());
         if (BuildConfig.DEBUG) {
             mPlayer.addAnalyticsListener(new androidx.media3.exoplayer.util.EventLogger());
             mPlayer.addAnalyticsListener(new NetPathLoadListener(this));
@@ -2764,29 +2760,6 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private boolean isLandscape() {
         return layoutOrientation() == Configuration.ORIENTATION_LANDSCAPE;
-    }
-
-    /**
-     * NEWTUBE(viewport): report the portrait video box - {@code boxWidth} x its 16:9 height, the
-     * exact size {@link #applyPortraitVideoHeight} lays it out with (1080x608 on a Pixel 9) - as
-     * the inline window. The player caps NEW chunks to it only while saving data - metered network
-     * AND Data Saver on (VideoViewportCap). Called on every watch-root layout; an unchanged box is
-     * a no-op there.
-     * PiP (and a PiP entry already accepted) owns the cap and its layout is not the inline box, so
-     * it is never recorded then. A zoom/fill resize mode crops the video to the box, which needs a
-     * larger rung for non-16:9 videos (the cap handles that as "fill").
-     */
-    private void updateInlineViewport(int boxWidth) {
-        if (mExoPlayerController == null || boxWidth <= 0 || mIsInPip || mPipEnterPending
-                || isLandscape()) {
-            return;
-        }
-        if (isTallMode()) {
-            mExoPlayerController.clearInlineViewport("shorts"); // full screen, not a 16:9 box
-            return;
-        }
-        mExoPlayerController.setInlineViewport(boxWidth, inlineBoxHeight(boxWidth),
-                getResizeMode() != RESIZE_MODE_DEFAULT);
     }
 
     // ---------------------------------------------------------------------------------
@@ -5829,9 +5802,6 @@ public class MobilePlaybackActivity extends MobileActivity
                     .setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED_DECELERATE)
                     .withEndAction(() -> mWatchScroll.animate().setStartDelay(0)).start();
         }
-        if (mWatchRoot != null) {
-            updateInlineViewport(mWatchRoot.getWidth());
-        }
         setResizeMode(PlayerData.instance(this).getResizeMode()); // fit while upright-full; also re-lays the controls
         if (mAmbient != null) {
             mAmbient.setFill(on ? mVideoArea : null); // the black bands glow with the video
@@ -5996,9 +5966,6 @@ public class MobilePlaybackActivity extends MobileActivity
         setResizeMode(PlayerData.instance(this).getResizeMode());
         if (mAmbient != null) {
             mAmbient.setFill(isTallMode() ? mVideoArea : null); // the bands around a short glow
-        }
-        if (mWatchRoot != null) {
-            updateInlineViewport(mWatchRoot.getWidth());
         }
         updateSeekBarLine();
         if (!mControlsVisible) {
@@ -7938,13 +7905,17 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** Distinct resolution rung of the current video: "1080p" / "1080p60" style. */
     private static String qualityLabel(FormatItem item) {
-        return qualityLabel(item.getHeight(), item.getFrameRate());
+        return qualityLabel(item.getWidth(), item.getHeight(), item.getFrameRate());
     }
 
-    /** A frame rate the stream does not state ({@code Format.NO_VALUE}) reads as a plain rung. */
-    private static String qualityLabel(int height, float frameRate) {
+    /**
+     * YouTube's name for the rung: its class, not its height (a vertical video's 1080x1920 is
+     * "1080p" and its 608x1080 is "480p", see VideoRung). A frame rate the stream does not state
+     * ({@code Format.NO_VALUE}) reads as a plain rung.
+     */
+    private static String qualityLabel(int width, int height, float frameRate) {
         boolean highFps = frameRate > 40;
-        return height + "p" + (highFps ? "60" : "");
+        return com.newtube.mobile.player.VideoRung.classHeight(width, height) + "p" + (highFps ? "60" : "");
     }
 
     /**
@@ -9834,10 +9805,6 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mPlayerView != null) {
             mPlayerView.setResizeMode(mode);
-        }
-        // Fit vs fill changes the pixels a non-16:9 video needs in the inline box.
-        if (mWatchRoot != null) {
-            updateInlineViewport(mWatchRoot.getWidth());
         }
         applyControlsInsets(); // fill/zoom: the controls span the width (controlsStrip)
     }
