@@ -42,6 +42,7 @@ import com.newtube.mobile.ui.playback.MiniPlayerBridge;
 import com.newtube.mobile.ui.playback.MobileMiniPlayerController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,8 @@ public class MobileChannelActivity extends MobileActivity
          * for the next page, so a tab whose cards were all Shorts can still continue.
          */
         VideoGroup group;
+        /** METUBE(shorts): the channel's Shorts tab - its shorts stay, as tall cards. */
+        boolean shorts;
 
         Section(int id, String title) {
             this.id = id;
@@ -179,10 +182,29 @@ public class MobileChannelActivity extends MobileActivity
     /** METUBE(channel header, issue #10): the channel's UC id the header shows, once asked for. */
     @Nullable
     private String mHeaderChannelId;
+    /** A link-opened channel's "@handle" and, once resolved, its UC id. */
+    @Nullable
+    private String mHandle;
+    @Nullable
+    private String mHandleChannelId;
 
     /** Fill the header once the channel's UC id is known (a link-opened one: from its videos). */
     private void loadHeader() {
         String id = sortChannelId();
+        if (id != null && id.startsWith("@") && !id.equals(mHandle)) {
+            mHandle = id;
+            ChannelHeader.resolveHandle(id, channelId -> {
+                if (!isDestroyed() && id.equals(mHandle)) {
+                    mHandleChannelId = channelId;
+                    loadHeader();
+                    for (Section section : mSections.values()) {
+                        if (section.shorts) {
+                            withShortsViews(section.videos);
+                        }
+                    }
+                }
+            });
+        }
         if (id == null || !id.startsWith("UC") || id.equals(mHeaderChannelId)) {
             return;
         }
@@ -366,6 +388,9 @@ public class MobileChannelActivity extends MobileActivity
         if (id != null && id.startsWith("UC")) {
             return id;
         }
+        if (id != null && id.equals(mHandle) && mHandleChannelId != null) {
+            return mHandleChannelId; // a link's @handle, resolved (loadHeader)
+        }
         for (Section section : mSections.values()) {
             for (Video video : section.videos) {
                 if (video.channelId != null && video.channelId.startsWith("UC")) {
@@ -412,7 +437,7 @@ public class MobileChannelActivity extends MobileActivity
 
     private void setupGrid() {
         mLayoutManager = new GridLayoutManager(this, computeSpanCount());
-        mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked);
+        mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked).shortsTiles();
         mLoadMoreFooter = new LoadMoreFailureAdapter(this::retryLoadMore);
 
         // Channel rows (rare here) span the whole grid width in multi-column layouts, and so does
@@ -421,7 +446,7 @@ public class MobileChannelActivity extends MobileActivity
             @Override
             public int getSpanSize(int position) {
                 return position >= mAdapter.getItemCount() || mAdapter.isFullSpan(position)
-                        ? mLayoutManager.getSpanCount() : 1;
+                        ? mLayoutManager.getSpanCount() : cardSpan(mAdapter, position);
             }
         });
 
@@ -477,12 +502,12 @@ public class MobileChannelActivity extends MobileActivity
      * otherwise it springs back. A claimed swipe cancels the card's press, so it never plays.
      */
     private void setupTabSwipe() {
-        mPeekAdapter = new VideoCardAdapter(video -> { });
+        mPeekAdapter = new VideoCardAdapter(video -> { }).shortsTiles();
         GridLayoutManager peekLayout = new GridLayoutManager(this, computeSpanCount());
         peekLayout.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return mPeekAdapter.isFullSpan(position) ? peekLayout.getSpanCount() : 1;
+                return mPeekAdapter.isFullSpan(position) ? peekLayout.getSpanCount() : cardSpan(mPeekAdapter, position);
             }
         });
         mPeek.setLayoutManager(peekLayout);
@@ -609,9 +634,14 @@ public class MobileChannelActivity extends MobileActivity
     }
 
     private void onVideoClicked(Video video) {
-        if (mPresenter != null) {
-            mPresenter.onVideoItemClicked(video);
+        if (mPresenter == null) {
+            return;
         }
+        Section active = mSections.get(mActiveSectionId);
+        if (video.belongsToShorts() && active != null && active.shorts) {
+            ShortsFilter.queueAround(new ArrayList<>(active.videos), video); // swipe on through the tab
+        }
+        mPresenter.onVideoItemClicked(video);
     }
 
     private boolean onVideoLongClicked(Video video) {
@@ -780,8 +810,68 @@ public class MobileChannelActivity extends MobileActivity
         return true;
     }
 
+    /**
+     * METUBE(shorts): the channel's Shorts tab - its shorts open the Shorts player, as YouTube's
+     * tab does (a tile that only opens a Shorts list still goes).
+     */
+    private static List<Video> shortsOf(@Nullable List<Video> videos) {
+        List<Video> shorts = new ArrayList<>();
+        if (videos != null) {
+            for (Video video : videos) {
+                if (video.isShorts && video.hasVideo()) {
+                    video.markShorts();
+                    shorts.add(video);
+                }
+            }
+        }
+        return shorts;
+    }
+
+    /** METUBE(shorts): the Shorts tab's view counts by video id, for {@link #mShortsViewsFor}. */
+    private final Map<String, String> mShortsViews = new HashMap<>();
+    @Nullable
+    private String mShortsViewsFor;
+
+    /** The tiles show "26K views" (their info line); the counts come from ChannelHeader once per channel. */
+    private void withShortsViews(List<Video> shorts) {
+        String id = sortChannelId();
+        if (id != null && id.startsWith("UC") && !id.equals(mShortsViewsFor)) {
+            mShortsViewsFor = id;
+            mShortsViews.clear();
+            ChannelHeader.fetchShortsViews(id, views -> {
+                if (!id.equals(mShortsViewsFor)) {
+                    return;
+                }
+                mShortsViews.putAll(views);
+                for (Section section : mSections.values()) {
+                    if (section.shorts) {
+                        applyShortsViews(section.videos);
+                        mAdapter.refreshItems(section.videos);
+                    }
+                }
+            });
+        }
+        applyShortsViews(shorts);
+    }
+
+    private void applyShortsViews(List<Video> shorts) {
+        for (Video video : shorts) {
+            String views = mShortsViews.get(video.videoId);
+            if (views != null) {
+                video.secondTitle = views;
+            }
+        }
+    }
+
+    /** METUBE(shorts): every column is three spans wide, so the Shorts tab's tiles sit three to a column. */
+    private static final int SHORTS_PER_COLUMN = 3;
+
+    private static int cardSpan(VideoCardAdapter adapter, int position) {
+        return adapter.isShort(position) ? 1 : SHORTS_PER_COLUMN;
+    }
+
     private int computeSpanCount() {
-        return com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this);
+        return SHORTS_PER_COLUMN * com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this);
     }
 
     /** Sync the TabLayout with the current sections (delivery order), keeping the selection. */
@@ -930,7 +1020,7 @@ public class MobileChannelActivity extends MobileActivity
         super.onConfigurationChanged(newConfig);
 
         if (mLayoutManager != null) {
-            int spans = com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig);
+            int spans = SHORTS_PER_COLUMN * com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig);
             mLayoutManager.setSpanCount(spans);
             ((GridLayoutManager) mPeek.getLayoutManager()).setSpanCount(spans);
         }
@@ -954,7 +1044,11 @@ public class MobileChannelActivity extends MobileActivity
             }
             Section section = mSections.get(id);
             boolean isNewSection = section == null;
-            List<Video> shown = ShortsFilter.withoutShorts(group.getVideos()); // NEWTUBE(shorts)
+            Section owner = section != null ? section : id == SORTED_GROUP_ID ? mSections.get(mSortTargetId) : null;
+            boolean shortsTab = owner != null ? owner.shorts
+                    : ShortsFilter.isShortsSection(group.getTitle(), getString(R.string.header_shorts), group.getVideos());
+            List<Video> shown = shortsTab ? shortsOf(group.getVideos())
+                    : ShortsFilter.withoutShorts(group.getVideos()); // NEWTUBE(shorts)
             if (id == SORTED_GROUP_ID && group.getAction() == VideoGroup.ACTION_REPLACE) {
                 Section target = mSections.get(mSortTargetId);
                 if (target != null && shown != null) {
@@ -970,12 +1064,15 @@ public class MobileChannelActivity extends MobileActivity
             boolean content = group.getAction() != VideoGroup.ACTION_REMOVE && group.getAction() != VideoGroup.ACTION_SYNC;
             if (content) {
                 loadSubscribeState(shown);
+                if (shortsTab) {
+                    withShortsViews(shown);
+                }
             }
             int shortsDropped = (group.getVideos() != null ? group.getVideos().size() : 0)
                     - (shown != null ? shown.size() : 0);
             mShortsEmptied |= content && shortsDropped > 0;
-            // ...and no Shorts tab: the channel's Shorts section (emptied here, or already by the
-            // service under a stored "Hide shorts from a channel") never becomes a tab. Any other
+            // The channel's Shorts section keeps its shorts (METUBE: the Shorts tab), unless the
+            // service already emptied it under a stored "Hide shorts from a channel". Any other
             // section keeps its tab while it has more to load, even if this page was all Shorts
             // (its last Short is the next page's anchor); one with nothing now and nothing more to
             // load, or nothing to continue from, is left out.
@@ -1029,6 +1126,7 @@ public class MobileChannelActivity extends MobileActivity
             }
 
             if (content && section != null) {
+                section.shorts = shortsTab;
                 section.group = group; // NEWTUBE(shorts): the next page's anchor
                 section.topUp.onPageLanded(shortsDropped);
             }

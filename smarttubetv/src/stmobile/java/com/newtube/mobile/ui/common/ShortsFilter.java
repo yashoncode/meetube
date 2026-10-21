@@ -15,7 +15,8 @@ import java.util.List;
  * channel pages and their tabs, playlists, Up next - drops them, always; there is no setting (the
  * shared "Hide content" Shorts rows and the Shorts section are not shown on the phone, and nothing
  * here reads their prefs). A Short opened from a shared youtube.com/shorts/ link still plays in the
- * normal player: links are not lists.
+ * normal player: links are not lists. METUBE brought Shorts back where they are asked for: the
+ * Shorts tab, a block in search, and a channel's own Shorts tab - those lists keep theirs.
  *
  * <p>A Short is what the item itself says it is ({@link Video#isShorts}: a reel renderer, the Shorts
  * badge or tile style, or a lockup whose tap opens the reel player - see MediaServiceCore's
@@ -210,6 +211,23 @@ public final class ShortsFilter {
             }
         }
         return true;
+    }
+
+    /**
+     * METUBE(shorts): a tapped short opens the vertical player with the shorts around it in
+     * {@code shorts} as its queue, so a swipe walks on through them.
+     */
+    public static void queueAround(List<Video> shorts, Video tapped) {
+        int at = shorts.indexOf(tapped);
+        if (at < 0) {
+            return;
+        }
+        com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist playlist =
+                com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance();
+        playlist.clear();
+        playlist.addAll(new ArrayList<>(shorts.subList(Math.max(0, at - 10), Math.min(shorts.size(), at + 40))));
+        playlist.setCurrent(tapped);
+        tapped.fromQueue = true;
     }
 
     private static boolean containsShort(List<Video> videos) {

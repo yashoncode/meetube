@@ -73,26 +73,129 @@ final class ChannelHeader {
         });
     }
 
+    interface ViewsCallback {
+        void onViews(Map<String, String> views);
+    }
+
+    /** The channel's Shorts tab, as MWEB's channel page asks for it. */
+    private static final String SHORTS_TAB_PARAMS = "EgZzaG9ydHPyBgUKA5oBAA==";
+
+    /**
+     * METUBE(shorts): "26K views" for each short on the channel's Shorts tab, by video id - the TV
+     * client's Shorts tiles carry only the handle. One anonymous MWEB browse of that tab: its first
+     * page, ~48 shorts; later ones go without. Main thread; {@code callback} on it, when found.
+     */
+    static void fetchShortsViews(String channelId, ViewsCallback callback) {
+        sFetcher.execute(() -> {
+            Map<String, String> views = new java.util.HashMap<>();
+            JSONObject response = browse(channelId, SHORTS_TAB_PARAMS);
+            if (response != null) {
+                collectShortsViews(response, views);
+            }
+            if (!views.isEmpty()) {
+                sMain.post(() -> callback.onViews(views));
+            }
+        });
+    }
+
+    private static void collectShortsViews(@Nullable Object node, Map<String, String> out) {
+        if (node instanceof JSONObject) {
+            JSONObject object = (JSONObject) node;
+            JSONObject lockup = object.optJSONObject("shortsLockupViewModel");
+            if (lockup != null) {
+                JSONObject reel = path(lockup, "onTap", "innertubeCommand", "reelWatchEndpoint");
+                String views = text(path(lockup, "overlayMetadata", "secondaryText"));
+                if (reel != null && views != null) {
+                    out.put(reel.optString("videoId"), views);
+                }
+            }
+            for (java.util.Iterator<String> keys = object.keys(); keys.hasNext(); ) {
+                collectShortsViews(object.opt(keys.next()), out);
+            }
+        } else if (node instanceof JSONArray) {
+            JSONArray array = (JSONArray) node;
+            for (int i = 0; i < array.length(); i++) {
+                collectShortsViews(array.opt(i), out);
+            }
+        }
+    }
+
+    interface IdCallback {
+        void onId(String channelId);
+    }
+
+    /** Main thread only: "@handle" -> UC id, for the session. */
+    private static final Map<String, String> sHandles = new java.util.HashMap<>();
+
+    /**
+     * A channel opened from a youtube.com/@handle link knows only the handle all the way through
+     * (the TV browse takes it, and a Shorts tab's tiles carry no channel id), while the header,
+     * Subscribe and the Shorts tab's view counts need the UC id: MWEB's resolve_url gives it.
+     * Main thread; {@code callback} on it, when found.
+     */
+    static void resolveHandle(String handle, IdCallback callback) {
+        String cached = sHandles.get(handle);
+        if (cached != null) {
+            callback.onId(cached);
+            return;
+        }
+        sFetcher.execute(() -> {
+            JSONObject response = null;
+            try {
+                response = call("navigation/resolve_url",
+                        new JSONObject().put("url", "https://www.youtube.com/" + handle));
+            } catch (org.json.JSONException ignored) {
+                // a constant body
+            }
+            JSONObject browse = path(response, "endpoint", "browseEndpoint");
+            String id = browse != null ? browse.optString("browseId") : "";
+            if (id.startsWith("UC")) {
+                sMain.post(() -> {
+                    sHandles.put(handle, id);
+                    callback.onId(id);
+                });
+            }
+        });
+    }
+
     @Nullable
     private static Info load(String channelId) {
+        JSONObject response = browse(channelId, null);
+        return response != null ? parse(response) : null;
+    }
+
+    @Nullable
+    private static JSONObject browse(String channelId, @Nullable String params) {
+        try {
+            JSONObject body = new JSONObject().put("browseId", channelId);
+            if (params != null) {
+                body.put("params", params);
+            }
+            return call("browse", body);
+        } catch (org.json.JSONException e) {
+            return null;
+        }
+    }
+
+    /** An anonymous MWEB InnerTube call: {@code body} plus the client context. */
+    @Nullable
+    private static JSONObject call(String endpoint, JSONObject body) {
         try {
             if (sHttp == null) {
                 sHttp = new OkHttpClient.Builder().callTimeout(15, TimeUnit.SECONDS).build();
             }
-            JSONObject body = new JSONObject()
-                    .put("context", new JSONObject().put("client", new JSONObject()
-                            .put("clientName", "MWEB").put("clientVersion", "2.20251015.01.00")
-                            .put("hl", java.util.Locale.getDefault().getLanguage())))
-                    .put("browseId", channelId);
+            body.put("context", new JSONObject().put("client", new JSONObject()
+                    .put("clientName", "MWEB").put("clientVersion", "2.20251015.01.00")
+                    .put("hl", java.util.Locale.getDefault().getLanguage())));
             Request request = new Request.Builder()
-                    .url("https://www.youtube.com/youtubei/v1/browse?prettyPrint=false")
+                    .url("https://www.youtube.com/youtubei/v1/" + endpoint + "?prettyPrint=false")
                     .post(RequestBody.create(body.toString(), MediaType.get("application/json")))
                     .build();
             try (Response response = sHttp.newCall(request).execute()) {
                 if (!response.isSuccessful() || response.body() == null) {
                     return null;
                 }
-                return parse(new JSONObject(response.body().string()));
+                return new JSONObject(response.body().string());
             }
         } catch (Exception e) {
             return null;

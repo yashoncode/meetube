@@ -490,16 +490,7 @@ public class MobileSearchActivity extends MobileActivity
      * received as its queue - the grid shows only a few - so a swipe walks on through them.
      */
     private void queueShorts(Video tapped) {
-        List<Video> shorts = new ArrayList<>(mSearchShorts.values());
-        int at = shorts.indexOf(tapped);
-        if (at < 0) {
-            return;
-        }
-        Playlist playlist = Playlist.instance();
-        playlist.clear();
-        playlist.addAll(new ArrayList<>(shorts.subList(Math.max(0, at - 10), Math.min(shorts.size(), at + 40))));
-        playlist.setCurrent(tapped);
-        tapped.fromQueue = true;
+        ShortsFilter.queueAround(new ArrayList<>(mSearchShorts.values()), tapped);
     }
 
     /** METUBE(shorts): new results' shorts join the end of this search's Shorts queue, if it plays. */

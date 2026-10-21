@@ -38,6 +38,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     private static final int VIEW_TYPE_VIDEO = 0;
     /** Channel result row (round avatar + name + subs) — e.g. channels in search results. */
     private static final int VIEW_TYPE_CHANNEL = 1;
+    /** METUBE(shorts): a channel Shorts tab's tile (item_mobile_shorts_tile), see {@link #shortsTiles}. */
+    private static final int VIEW_TYPE_SHORT_TILE = 2;
 
     public interface OnVideoClickListener {
         void onVideoClick(Video video);
@@ -66,6 +68,14 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
 
     public VideoCardAdapter showAvatars() {
         mShowAvatars = true;
+        return this;
+    }
+
+    private boolean mShortsTiles;
+
+    /** METUBE(shorts): Shorts as YouTube's channel Shorts tab draws them, not as search's cards. */
+    public VideoCardAdapter shortsTiles() {
+        mShortsTiles = true;
         return this;
     }
 
@@ -101,6 +111,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         // (videoId/playlistId null + a VL... channelId — the standard shape of the user
         // Playlists section): those must stay thumbnail cards, not round-avatar channel rows.
         Video item = getItem(position);
+        if (mShortsTiles && item.belongsToShorts()) {
+            return VIEW_TYPE_SHORT_TILE;
+        }
         return item.isChannel() && !item.isPlaylistAsChannel() ? VIEW_TYPE_CHANNEL : VIEW_TYPE_VIDEO;
     }
 
@@ -137,6 +150,10 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         if (viewType == VIEW_TYPE_CHANNEL) {
             return new ChannelViewHolder(inflater.inflate(R.layout.item_mobile_channel_card, parent, false), mClickListener);
         }
+        if (viewType == VIEW_TYPE_SHORT_TILE) {
+            return new ShortTileHolder(inflater.inflate(R.layout.item_mobile_shorts_tile, parent, false),
+                    mClickListener, mLongClickListener);
+        }
         VideoViewHolder holder = new VideoViewHolder(inflater.inflate(R.layout.item_video_card, parent, false), mClickListener);
         holder.mShowAvatar = mShowAvatars;
         return holder;
@@ -146,6 +163,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ChannelViewHolder) {
             ((ChannelViewHolder) holder).bind(getItem(position), mLongClickListener);
+        } else if (holder instanceof ShortTileHolder) {
+            ((ShortTileHolder) holder).bind(getItem(position));
         } else {
             ((VideoViewHolder) holder).bind(getItem(position), mLongClickListener);
             ((VideoViewHolder) holder).bindShortsColumn(shortsColumn(position));
@@ -159,6 +178,79 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             ((VideoViewHolder) holder).unbind();
         } else if (holder instanceof ChannelViewHolder) {
             ((ChannelViewHolder) holder).unbind();
+        } else if (holder instanceof ShortTileHolder) {
+            ((ShortTileHolder) holder).unbind();
+        }
+    }
+
+    /** METUBE(shorts): see item_mobile_shorts_tile. Tap plays, the corner menu is the long-press menu. */
+    static class ShortTileHolder extends RecyclerView.ViewHolder {
+        private final ImageView mThumbnail;
+        private final TextView mViews;
+        private Video mVideo;
+
+        ShortTileHolder(@NonNull View itemView, OnVideoClickListener clickListener,
+                @Nullable OnVideoLongClickListener longClickListener) {
+            super(itemView);
+            mThumbnail = itemView.findViewById(R.id.shorts_tile_thumbnail);
+            mViews = itemView.findViewById(R.id.shorts_tile_views);
+            itemView.setOnClickListener(v -> {
+                if (mVideo != null && clickListener != null) {
+                    PlayerTransitionBridge.clear();
+                    clickListener.onVideoClick(mVideo);
+                }
+            });
+            View more = itemView.findViewById(R.id.shorts_tile_more);
+            more.setVisibility(longClickListener == null ? View.GONE : View.VISIBLE);
+            View.OnLongClickListener menu = v -> mVideo != null && longClickListener != null
+                    && longClickListener.onVideoLongClick(mVideo);
+            itemView.setOnLongClickListener(menu);
+            more.setOnClickListener(menu::onLongClick);
+        }
+
+        void bind(Video video) {
+            mVideo = video;
+            itemView.setContentDescription(video.getTitle());
+            mViews.setText(viewsOf(video.getSecondTitle()));
+            Context context = itemView.getContext();
+            // The 720x1280 portrait, decoded at tile size (the cards' request crops it to 16:9).
+            com.bumptech.glide.RequestBuilder<android.graphics.drawable.Drawable> fallback = Glide.with(context)
+                    .load("https://i.ytimg.com/vi/" + video.videoId + "/hq720.jpg")
+                    .format(DecodeFormat.PREFER_RGB_565).override(TILE_W, TILE_H).centerCrop();
+            Glide.with(context)
+                    .load(VideoViewHolder.thumbnailUrl(context, video))
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .format(DecodeFormat.PREFER_RGB_565)
+                    .override(TILE_W, TILE_H)
+                    .centerCrop()
+                    .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(150))
+                    .error(fallback)
+                    .into(mThumbnail);
+        }
+
+        void unbind() {
+            mVideo = null;
+            Glide.with(itemView.getContext().getApplicationContext()).clear(mThumbnail);
+        }
+
+        private static final int TILE_W = 360;
+        private static final int TILE_H = 640;
+
+        /**
+         * "1.2M views" out of the info line ("Channel · 1.2M views · 3 days ago"): its first part
+         * with a digit that isn't the @handle (the TV Shorts tile's whole line), else nothing.
+         */
+        static CharSequence viewsOf(@Nullable CharSequence info) {
+            if (info == null) {
+                return null;
+            }
+            for (String part : info.toString().split("[•·]")) {
+                String trimmed = part.trim();
+                if (!trimmed.startsWith("@") && trimmed.matches(".*\\d.*")) {
+                    return trimmed;
+                }
+            }
+            return null;
         }
     }
 
