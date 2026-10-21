@@ -2,7 +2,7 @@
 
 <h1 align="center">MeTube</h1>
 
-**YouTube, the way it should feel.** No ads. No interruptions. A gorgeous liquid glass interface, synced lyrics, background play and one-tap downloads.
+**YouTube, reimagined. Different by design. Smooth by nature.**  No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br> **A fresh way to experience YouTube.**
 
 <details>
 <summary><b>📸 Screenshots</b> (tap to open)</summary>
