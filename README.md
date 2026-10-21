@@ -30,7 +30,7 @@
 - 📱 **Shorts done right.** A clean, full-screen Shorts player with glass like, comment and share buttons.
 - 🧑‍🎤 **Channels at a glance.** Every card shows the channel's photo (both photos on a collab); tap it, or the channel name, to jump straight to the channel. Channel pages open with the banner, stats, description and a Subscribe button under a frosted glass bar, with a Shorts tab like YouTube's. Sort any channel's videos by Latest, Popular or Oldest.
 - 🔎 **YouTube's search filters.** One-tap chips for All, Videos, Shorts, Live and Recently uploaded, plus the full filter dialog: type, duration, upload date, popularity and every feature filter.
-- 🌏 **Speaks your language.** MeTube is in English, Español and 繁體中文 (Traditional Chinese), and channel pages, view counts and dates follow your language too. Want MeTube in yours? See [TRANSLATING.md](TRANSLATING.md).
+- 🌏 **Speaks your language.** MeTube is in English, Español, Română, Русский, 简体中文 (Simplified Chinese) and 繁體中文 (Traditional Chinese), and channel pages, view counts and dates follow your language too. Want MeTube in yours? See [TRANSLATING.md](TRANSLATING.md).
 - ⏩ **Your double-tap.** Double-tap to skip 3, 5, 10, 15 or 30 seconds, your pick.
 - 🎨 **Make it yours.** One Customization page for the theme, the app icon (new, classic or fantasy), glass, Home layout, tabs and the video menu.
 - 🔄 **Always something new.** Pull Home to refresh and get videos you haven't seen yet.
