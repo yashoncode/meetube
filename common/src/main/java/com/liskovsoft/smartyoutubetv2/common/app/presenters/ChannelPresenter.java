@@ -43,6 +43,8 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
     private boolean mLoadDelivered;
     /** Pull-to-refresh over rows: the old rows stay until the first fresh batch replaces them. */
     private boolean mReplaceOnFirstRows;
+    /** The page is open while the card's channel is still being looked up (openBeforeLookup). */
+    private boolean mLookingUp;
 
     private interface OnChannelId {
         void onChannelId(String channelId);
@@ -80,6 +82,8 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
                 updateRows(group);
             }
             mPendingGroups.clear();
+        } else if (mLookingUp) {
+            getView().showProgressBar(true);
         }
     }
 
@@ -97,6 +101,7 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
         // Otherwise keep the cache to easily restore in case activity is killed by the system.
         mChannelId = null;
         mPendingGroups.clear();
+        mLookingUp = false;
         disposeActions();
     }
 
@@ -156,7 +161,51 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
 
     public void openChannel(Video item) {
         mChannel = item;
+        if (item != null && item.channelId == null && item.videoId != null) {
+            openBeforeLookup(item);
+            return;
+        }
         extractChannelId(item, this::openChannel);
+    }
+
+    /**
+     * METUBE(channel open): a feed card knows its video, not its channel, and naming the channel
+     * takes a /next of that video (~1 s). The page used to open only after it; now it opens at once
+     * (the card's channel name, a spinner) and fills when the channel is known. The watch data is
+     * kept on the card ({@link Video#sync}, as the card menu does), so the page's Subscribe reads
+     * the subscribed state from it instead of asking again.
+     */
+    private void openBeforeLookup(Video item) {
+        disposeActions();
+        mChannelId = null;
+        mPendingGroups.clear();
+        mLoadDelivered = false;
+        mLookingUp = true;
+
+        if (getView() != null) {
+            getView().clear();
+            getView().showProgressBar(true);
+        }
+
+        getViewManager().startView(ChannelView.class);
+
+        getServiceManager().loadMetadata(item, metadata -> {
+            if (!mLookingUp || metadata.getChannelId() == null) {
+                finishLookup(null);
+                return;
+            }
+            mLookingUp = false;
+            item.sync(metadata);
+            openChannel(metadata.getChannelId());
+        }, this::finishLookup, () -> finishLookup(null));
+    }
+
+    /** The lookup ended without a channel (offline, a removed video): the page's failure state. */
+    private void finishLookup(Throwable error) {
+        if (mLookingUp) {
+            mLookingUp = false;
+            finishLoad(error);
+        }
     }
 
     public void openChannel(String channelId) {
