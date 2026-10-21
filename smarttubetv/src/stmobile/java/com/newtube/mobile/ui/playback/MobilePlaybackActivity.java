@@ -5497,6 +5497,7 @@ public class MobilePlaybackActivity extends MobileActivity
         watch.share = mWatchShare;
         watch.subscribe = mWatchSubscribe;
         watch.subscribeLabel = mWatchSubscribe;
+        watch.channel = findViewById(R.id.mobile_watch_channel_row);
         watch.likeCount = mWatchLikeCount;
         watch.commentsCount = findViewById(R.id.mobile_watch_comments_count);
         watch.meta = mWatchMeta;
@@ -9008,8 +9009,11 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         // Channel-id lookup may be asynchronous. Mark the route now, but detach/activate the live
         // mini session only when MobileChannelActivity is actually created; a failed lookup leaves
-        // the watch page untouched.
-        MiniPlayerBridge.prepareNavigation(this);
+        // the watch page untouched. A short never goes mini: it stays behind the channel, paused
+        // by onStop, and Back returns to it.
+        if (!isShortsMode()) {
+            MiniPlayerBridge.prepareNavigation(this);
+        }
         MediaServiceManager.chooseChannelPresenter(this, video);
     }
 

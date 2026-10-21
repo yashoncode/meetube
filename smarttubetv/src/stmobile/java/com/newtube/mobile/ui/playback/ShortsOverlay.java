@@ -68,6 +68,7 @@ final class ShortsOverlay {
         View dislike;
         View share;
         View subscribe;
+        View channel;
         TextView likeCount;
         TextView commentsCount;
         TextView meta;
@@ -147,6 +148,10 @@ final class ShortsOverlay {
         forward(R.id.mobile_shorts_dislike, watch.dislike);
         forward(R.id.mobile_shorts_share, watch.share);
         forward(R.id.mobile_shorts_subscribe, watch.subscribe);
+        // The avatar and the name open the channel (#12: with no click of their own the tap fell
+        // through to the video, where a double tap likes).
+        forward(R.id.mobile_shorts_avatar, watch.channel);
+        forward(R.id.mobile_shorts_channel, watch.channel);
         mOverlay.findViewById(R.id.mobile_shorts_comments).setOnClickListener(v -> mHost.openShortsComments());
         mOverlay.findViewById(R.id.mobile_shorts_more).setOnClickListener(v -> mHost.openShortsMore());
         mOverlay.findViewById(R.id.mobile_shorts_back).setOnClickListener(v -> mHost.exitShorts());
