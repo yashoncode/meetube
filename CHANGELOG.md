@@ -2,6 +2,23 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases](https://github.com/aleixrodriala/newtube/releases).
 
+## 3.0.5 — 2026-10-21 — MeTube in Traditional Chinese, Shorts on channels, search chips
+
+### New
+
+- **MeTube in Traditional Chinese (繁體中文).** Every phone screen is translated for Taiwan, thanks to [@Capricornus007](https://github.com/Capricornus007) (#14). Channel pages now also show their stats in your language's own script.
+- **A Shorts tab on channel pages.** Like YouTube's: tall tiles three to a row with the view count on each. Tap one to open the Shorts player and swipe through the channel's Shorts. Channels that only post Shorts no longer show an empty page.
+- **Subscribe on the channel page.** Signed in, the channel header has a Subscribe button with the same splash as the watch page, and Undo.
+- **Search chips.** All, Videos, Shorts, Live and Recently uploaded sit under the search bar, like YouTube's. One tap filters the results.
+- **A frosted glass bar on channel pages.** The top bar and tabs frost the page scrolling under them.
+
+### Fixed
+
+- Tapping the channel name or picture on a Short opened nothing, and a double tap there liked the video. Both now open the channel (#12).
+- Tapping a channel picture on Home opened the channel after about a second; the page now opens at once and fills in.
+- A channel opened from a youtube.com/@handle link now shows its header, Subscribe button and Shorts view counts.
+- On a channel whose latest video is a collab, the header could show the other channel.
+
 ## 3.0.1 — 2026-10-19 — YouTube's search filters, Shorts in search, a real channel page
 
 ### New
