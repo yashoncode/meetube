@@ -78,3 +78,6 @@ tools/ui-audit/
 keystore.properties
 *.jks
 dist/
+
+# Python bytecode from tools/*.py
+__pycache__/
