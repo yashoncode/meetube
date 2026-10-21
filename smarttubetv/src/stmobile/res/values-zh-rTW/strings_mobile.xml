@@ -324,7 +324,7 @@
     <string name="mobile_cast_option_direct_title">直接投放</string>
     <string name="mobile_cast_option_direct_subtitle">用手機控制畫質・不支援字幕</string>
     <string name="mobile_cast_option_app_title">透過電視應用程式播放</string>
-    <string name="mobile_cast_option_app_subtitle">直播與字幕需要它・畫質用遥控器控制</string>
+    <string name="mobile_cast_option_app_subtitle">直播與字幕需要它・畫質用遙控器控制</string>
     <string name="mobile_cast_connecting_youtube_app">正在連線到電視上的 YouTube 應用程式…</string>
     <string name="mobile_cast_direct_live_unsupported">直播內容需要電視上的 YouTube 或 SmartTube</string>
     <string name="mobile_cast_direct_incompatible">這支影片無法直接投放（沒有電視能播放的格式）</string>
@@ -340,7 +340,7 @@
     <string name="mobile_cast_code_open_youtube">在電視的 YouTube 中開啟：</string>
     <string name="mobile_cast_code_find">在任一電視應用程式中找到代碼：</string>
     <string name="mobile_cast_code_youtube_path">設定 → 用電視代碼連結</string>
-    <string name="mobile_cast_code_smarttube_path">設定 → 遥控器</string>
+    <string name="mobile_cast_code_smarttube_path">設定 → 遙控器</string>
     <string name="mobile_cast_code_helper">可以包含破折號和空格</string>
     <string name="mobile_cast_code_smarttube_benefit">提示：用 SmartTube 就能在電視上控制畫質與字幕。</string>
     <string name="mobile_cast_code_positive">連結</string>
@@ -375,16 +375,16 @@
     <string name="mobile_cast_more_options">電視播放選項</string>
     <string name="mobile_cast_controls_title">電視播放選項</string>
     <string name="mobile_cast_direct_summary">直接投放・用這支手機控制畫質・字幕需要電視應用程式</string>
-    <string name="mobile_cast_app_summary">電視應用程式・字幕由這支手機控制・畫質用遥控器</string>
+    <string name="mobile_cast_app_summary">電視應用程式・字幕由這支手機控制・畫質用遙控器</string>
     <string name="mobile_cast_quality_auto_1080">自動（最高 1080p）</string>
     <string name="mobile_cast_quality_cap">最高 %1$dp</string>
-    <string name="mobile_cast_quality_tv_remote">使用遥控器</string>
+    <string name="mobile_cast_quality_tv_remote">使用遙控器</string>
     <string name="mobile_cast_subtitles_need_tv_app">改用電視應用程式</string>
-    <string name="mobile_cast_quality_receiver_help">請在電視的播放器設定中选择画質。</string>
-    <string name="mobile_cast_subtitles_sent">已將字幕选择送到電視</string>
-    <string name="mobile_cast_subtitles_failed">無法在這台接收裝置上变更字幕</string>
+    <string name="mobile_cast_quality_receiver_help">請在電視的播放器設定中選擇畫質。</string>
+    <string name="mobile_cast_subtitles_sent">已將字幕選擇送到電視</string>
+    <string name="mobile_cast_subtitles_failed">無法在這台接收裝置上變更字幕</string>
     <string name="mobile_cast_switch_subtitles_title">要用電視應用程式看字幕嗎？</string>
-    <string name="mobile_cast_switch_subtitles_message">電視應用程式支援字幕，画質則由遥控器控制。我们会先试已配對的 SmartTube，再试 YouTube。</string>
+    <string name="mobile_cast_switch_subtitles_message">電視應用程式支援字幕，畫質則由遙控器控制。我們會先試已配對的 SmartTube，再試 YouTube。</string>
     <string name="mobile_cast_switch_subtitles_positive">切換</string>
     <string name="mobile_cast_tv_volume_label">電視音量</string>
     <string name="mobile_sign_in_to_rate">登入後才能為影片按讚或倒讚</string>
@@ -541,13 +541,13 @@
         正在下載 MeTube 更新
     </string>
     <string name="mobile_theme">主題</string>
-    <string name="mobile_theme_system">跟随系統</string>
+    <string name="mobile_theme_system">跟隨系統</string>
     <string name="mobile_theme_light">淺色</string>
     <string name="mobile_theme_dark">深色</string>
     <string name="mobile_about_star">在 GitHub 上給 MeTube 加星</string>
     <string name="mobile_about_star_desc">免費且開放原始碼。加顆星能讓更多人找到它</string>
     <string name="mobile_about_share">分享 MeTube</string>
-    <string name="mobile_about_share_desc">把連結发给需要的人</string>
+    <string name="mobile_about_share_desc">把連結發給需要的人</string>
     <string name="mobile_about_share_text">MeTube — 建於 SmartTube 之上的手機 YouTube 客戶端：%1$s</string>
     <string name="sabr_vod_option">即使連結可用也偏好 SABR（實驗功能；下一支點播影片生效）</string>
     <string name="sabr_vod_stopped">已停止實驗性 SABR 播放。點播放可重試，或在設定中關閉 SABR。</string>
