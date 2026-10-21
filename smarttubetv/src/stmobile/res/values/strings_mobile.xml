@@ -10,6 +10,8 @@
     <string name="mobile_player_pause">Pause</string>
     <string name="mobile_player_replay">Replay</string>
     <string name="mobile_player_fullscreen">Toggle fullscreen</string>
+    <string name="mobile_player_hide_actions">Hide actions</string>
+    <string name="mobile_player_show_actions">Show actions</string>
     <string name="mobile_player_time_default" translatable="false">0:00</string>
     <string name="mobile_player_live" translatable="false">LIVE</string>
     <string name="mobile_player_quality">Quality</string>

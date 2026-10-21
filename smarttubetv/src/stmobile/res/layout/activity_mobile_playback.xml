@@ -147,11 +147,18 @@
                 <!-- paddingEnd must clear the full top-right options row (mobile_player_options):
                      3 icon buttons * 48dp (no end margin) = 144dp. Otherwise the wrapped
                      title runs under the leftmost option (cast) icon. -->
+                <!-- METUBE(fullscreen): the title, and in the vertical fullscreen the channel under it
+                     (placeTitle moves them below the top row there, YouTube's). -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top"
+                    android:orientation="vertical">
+
                 <TextView
                     android:id="@+id/mobile_player_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="top"
                     android:ellipsize="end"
                     android:maxLines="2"
                     android:paddingStart="104dp"
@@ -166,6 +173,27 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     tools:text="Video title goes here and may wrap onto a second line" />
+
+                <TextView
+                    android:id="@+id/mobile_player_author"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:paddingStart="16dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="12dp"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="13sp"
+                    android:visibility="gone"
+                    tools:text="Channel name" />
+
+                </LinearLayout>
 
                 <!-- Top-right player options, YouTube-style trio: Cast, Subtitles/CC, and the
                      gear. Everything else (quality, speed, PiP, the long tail) lives one level
@@ -359,6 +387,19 @@
 
                     </FrameLayout>
 
+                    <!-- METUBE(fullscreen-actions): fullscreen only - hides (chevron down) or brings
+                         back (chevron up) the row of actions under the seek bar. -->
+                    <ImageButton
+                        android:id="@+id/mobile_player_actions_toggle"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/mobile_player_hide_actions"
+                        android:padding="10dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_chips_expand"
+                        android:visibility="gone" />
+
                     <ImageButton
                         android:id="@+id/mobile_player_fullscreen"
                         android:layout_width="@dimen/mobile_player_icon_button"
@@ -368,6 +409,51 @@
                         android:padding="12dp"
                         android:scaleType="fitCenter"
                         android:src="@drawable/ic_player_fullscreen" />
+
+                </LinearLayout>
+
+                <!-- METUBE(fullscreen-actions): the watch page's actions, small, on one glass pill
+                     under the seek bar in fullscreen (YouTube's, with Download for Save). Each one
+                     taps its watch-page twin; applySeekBarLayout places the row and lifts the bar. -->
+                <LinearLayout
+                    android:id="@+id/mobile_player_actions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|start"
+                    android:layout_marginStart="8dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="4dp"
+                    android:visibility="gone">
+
+                    <ImageButton
+                        android:id="@+id/mobile_player_like"
+                        style="@style/MobilePlayerAction"
+                        android:contentDescription="@string/mobile_watch_like"
+                        android:src="@drawable/ic_watch_thumb_up_outline" />
+
+                    <ImageButton
+                        android:id="@+id/mobile_player_dislike"
+                        style="@style/MobilePlayerAction"
+                        android:contentDescription="@string/mobile_watch_dislike"
+                        android:src="@drawable/ic_watch_thumb_down_outline" />
+
+                    <ImageButton
+                        android:id="@+id/mobile_player_comments"
+                        style="@style/MobilePlayerAction"
+                        android:contentDescription="@string/mobile_comments_entry"
+                        android:src="@drawable/ic_watch_comment" />
+
+                    <ImageButton
+                        android:id="@+id/mobile_player_download"
+                        style="@style/MobilePlayerAction"
+                        android:contentDescription="@string/dialog_download"
+                        android:src="@drawable/ic_watch_download" />
+
+                    <ImageButton
+                        android:id="@+id/mobile_player_share"
+                        style="@style/MobilePlayerAction"
+                        android:contentDescription="@string/mobile_watch_share"
+                        android:src="@drawable/ic_watch_share" />
 
                 </LinearLayout>
 

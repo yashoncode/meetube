@@ -189,6 +189,8 @@ public class MobilePlaybackActivity extends MobileActivity
     /** NEWTUBE(issue #9): the last known video display aspect (pixel aspect included), 0 = none yet. */
     private float mVideoAspect;
     private TextView mTitleView;
+    /** METUBE(fullscreen): the channel, under the title in the vertical fullscreen. */
+    private TextView mPlayerAuthor;
     private ImageButton mBackButton;
     private ImageButton mPlayPauseButton;
     private ImageButton mFullscreenButton;
@@ -202,6 +204,24 @@ public class MobilePlaybackActivity extends MobileActivity
     private PlayerTimeBar mTimeBar;
     /** The row on the bar: time, current chapter, fullscreen. */
     @Nullable private View mBottomRow;
+    /**
+     * METUBE(fullscreen-actions): like, dislike, comments, download and share on a pill under the
+     * bar in fullscreen, and the chevron that hides or shows it. Shown until the chevron hides it, and
+     * the choice is kept.
+     */
+    @Nullable private View mActionsRow;
+    @Nullable private ImageButton mActionsToggle;
+    @Nullable private ImageButton mPlayerLike;
+    @Nullable private ImageButton mPlayerDislike;
+    @Nullable private ImageButton mPlayerDownload;
+    @Nullable private View mPlayerComments;
+    private boolean mActionsShown;
+    /** The pill's comments button left fullscreen: open the panel once the page is back. */
+    private boolean mCommentsAfterFullscreen;
+    /** Landscape comments: the panel in a column beside the video (layOutCommentsSide). */
+    private boolean mCommentsSide;
+    private static final String PLAYER_UI_PREFS = "metube_player_ui";
+    private static final String KEY_ACTIONS_SHOWN = "fullscreen_actions";
     /** Previous / play-pause / next, and the top-right options: they step aside while scrubbing. */
     @Nullable private View mTransport;
     @Nullable private View mOptionsRow;
@@ -718,6 +738,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mTopScrim = findViewById(R.id.mobile_player_top_scrim);
         mBottomScrim = findViewById(R.id.mobile_player_bottom_scrim);
         mTitleView = findViewById(R.id.mobile_player_title);
+        mPlayerAuthor = findViewById(R.id.mobile_player_author);
         mBackButton = findViewById(R.id.mobile_player_back);
         mAudioButton = findViewById(R.id.mobile_player_audio);
         mPlayPauseButton = findViewById(R.id.mobile_player_play_pause);
@@ -728,6 +749,13 @@ public class MobilePlaybackActivity extends MobileActivity
         mLiveChip.setOnClickListener(v -> jumpToLiveEdge());
         mTimeBar = findViewById(R.id.mobile_player_time_bar);
         mBottomRow = findViewById(R.id.mobile_player_bottom_row);
+        mActionsRow = findViewById(R.id.mobile_player_actions);
+        mActionsToggle = findViewById(R.id.mobile_player_actions_toggle);
+        mPlayerLike = findViewById(R.id.mobile_player_like);
+        mPlayerDislike = findViewById(R.id.mobile_player_dislike);
+        mPlayerDownload = findViewById(R.id.mobile_player_download);
+        mPlayerComments = findViewById(R.id.mobile_player_comments);
+        mActionsShown = getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).getBoolean(KEY_ACTIONS_SHOWN, true);
         mTransport = findViewById(R.id.mobile_player_transport);
         mOptionsRow = findViewById(R.id.mobile_player_options);
         mTopPill = findViewById(R.id.mobile_player_top_pill);
@@ -759,10 +787,10 @@ public class MobilePlaybackActivity extends MobileActivity
         // METUBE(glass): every control over the video sits on a frosted disc of it (time: a pill).
         com.newtube.mobile.ui.common.GlassSource videoGlass = findViewById(R.id.mobile_player_glass);
         for (View control : new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
-                mPrevButton, mNextButton, mFullscreenButton}) {
+                mPrevButton, mNextButton, mFullscreenButton, mActionsToggle}) {
             com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, dp(4));
         }
-        for (View control : new View[] {mPlayPauseButton, findViewById(R.id.mobile_player_time)}) {
+        for (View control : new View[] {mPlayPauseButton, findViewById(R.id.mobile_player_time), mActionsRow}) {
             com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, 0);
         }
         mDebugViewGroup = findViewById(R.id.mobile_player_debug);
@@ -1201,6 +1229,30 @@ public class MobilePlaybackActivity extends MobileActivity
         // Download: the quality picker, or the download's own menu once it is on the device.
         mWatchDownload.setOnClickListener(v -> onDownloadTapped());
         DownloadRegistry.instance(this).addListener(mDownloadsListener);
+        // METUBE(fullscreen-actions): the fullscreen pill taps the page's own buttons. Comments open
+        // beside the landscape video; the vertical fullscreen has no room, so it leaves for the page.
+        mPlayerLike.setOnClickListener(v -> mWatchLike.performClick());
+        mPlayerDislike.setOnClickListener(v -> mWatchDislike.performClick());
+        mPlayerDownload.setOnClickListener(v -> onDownloadTapped());
+        findViewById(R.id.mobile_player_share).setOnClickListener(v -> shareCurrentVideo());
+        mPlayerComments.setOnClickListener(v -> {
+            if (isLandscape()) { // beside the video, YouTube's
+                hideControls();
+                setCommentsSide(true);
+                OneShotPreDrawListener.add(mWatchRoot, this::onCommentsEntryClicked);
+            } else {
+                // Upright, straight back to the page: toggleFullscreen turns a 16:9 video sideways.
+                mCommentsAfterFullscreen = true;
+                setPortraitFull(false);
+            }
+        });
+        mActionsToggle.setOnClickListener(v -> {
+            mActionsShown = !mActionsShown;
+            getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).edit().putBoolean(KEY_ACTIONS_SHOWN, mActionsShown).apply();
+            android.transition.TransitionManager.beginDelayedTransition(mVideoArea);
+            applyControlsInsets();
+            armAutoHide();
+        });
 
         // Channel row (avatar + name/subs) opens the channel page; the Subscribe button inside
         // the row keeps its own click. ChannelPresenter resolves the channelId from metadata
@@ -1263,14 +1315,18 @@ public class MobilePlaybackActivity extends MobileActivity
                 mAmbient.setFill(null);
             }
             lp.height = LinearLayout.LayoutParams.MATCH_PARENT;
-            lp.weight = 0;
+            layOutCommentsSide(lp, mCommentsSide);
             mVideoArea.setLayoutParams(lp);
             if (mWatchScroll != null) {
                 mWatchScroll.setVisibility(View.GONE);
             }
-            // Fullscreen hides an open comments panel and keeps its place for portrait.
+            if (mWatchFab != null && mCommentsSide) {
+                mWatchFab.setVisibility(View.GONE);
+            }
+            // Fullscreen hides an open comments panel and keeps its place for portrait, unless
+            // the pill opened it beside the video.
             if (mCommentsPanel != null) {
-                mCommentsPanel.setSuspended(true);
+                mCommentsPanel.setSuspended(!mCommentsSide);
             }
             // The watch-page title is hidden with the content in fullscreen, so retain the compact
             // title in the player chrome there.
@@ -1284,6 +1340,11 @@ public class MobilePlaybackActivity extends MobileActivity
             Configuration config = getResources().getConfiguration();
             int width = Math.round(config.screenWidthDp
                     * getResources().getDisplayMetrics().density);
+            if (mCommentsSide) { // an open panel goes back under the video
+                mCommentsSide = false;
+                setResizeMode(PlayerData.instance(this).getResizeMode());
+            }
+            layOutCommentsSide(lp, false);
             if (width > 0) {
                 // METUBE(shorts): a short fills the portrait screen; the watch page steps aside.
                 // So does any video in the vertical fullscreen (setPortraitFull).
@@ -1302,13 +1363,48 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             if (mCommentsPanel != null) {
                 mCommentsPanel.setSuspended(isTallMode());
+                if (mCommentsAfterFullscreen && !isTallMode()) {
+                    mCommentsAfterFullscreen = false; // METUBE(fullscreen-actions)
+                    OneShotPreDrawListener.add(mWatchRoot, this::onCommentsEntryClicked);
+                }
             }
             // Portrait already presents the complete title immediately below the video. Repeating
             // it in the overlay squeezes five useful controls into half the top bar and makes the
-            // player look crowded, especially for two-line titles.
+            // player look crowded, especially for two-line titles. The vertical fullscreen has no
+            // page: the title shows there (placeTitle).
             if (mTitleView != null) {
-                mTitleView.setVisibility(View.GONE);
+                mTitleView.setVisibility(mPortraitFull ? View.VISIBLE : View.GONE);
             }
+        }
+    }
+
+    /**
+     * METUBE(fullscreen-actions): YouTube's landscape comments. While {@code side}, the page is a
+     * row: the video on the left and, on the right, the watch area as a column that holds the
+     * comments panel. Otherwise the usual column (in fullscreen the video takes all of it).
+     */
+    private void layOutCommentsSide(LinearLayout.LayoutParams video, boolean side) {
+        View area = findViewById(R.id.mobile_watch_area);
+        if (!(mWatchRoot instanceof LinearLayout) || area == null) {
+            return;
+        }
+        ((LinearLayout) mWatchRoot).setOrientation(side ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
+        video.width = side ? 0 : LinearLayout.LayoutParams.MATCH_PARENT;
+        video.weight = side ? 1 : 0;
+        int width = mWatchRoot.getWidth() > 0 ? mWatchRoot.getWidth() : getResources().getDisplayMetrics().widthPixels;
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) area.getLayoutParams();
+        lp.width = side ? Math.round(width * 0.4f) : LinearLayout.LayoutParams.MATCH_PARENT;
+        lp.height = side ? LinearLayout.LayoutParams.MATCH_PARENT : 0;
+        lp.weight = side ? 0 : 1;
+        area.setLayoutParams(lp);
+    }
+
+    /** The comments column beside the fullscreen video, or the video alone again. */
+    private void setCommentsSide(boolean side) {
+        if (mCommentsSide != side && (!side || isLandscape())) {
+            mCommentsSide = side;
+            applyWatchLayoutForOrientation(Configuration.ORIENTATION_LANDSCAPE);
+            setResizeMode(PlayerData.instance(this).getResizeMode()); // fit beside the comments
         }
     }
 
@@ -2424,6 +2520,8 @@ public class MobilePlaybackActivity extends MobileActivity
             if (rootInsets != null) {
                 top = Math.max(rootInsets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.statusBars()).top,
                         rootInsets.getInsets(WindowInsetsCompat.Type.displayCutout()).top);
+                // ...and the bottom rows stop over the gesture bar, YouTube's.
+                bottom = rootInsets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars()).bottom;
             }
         }
         if (mControlsRoot.getPaddingLeft() != left || mControlsRoot.getPaddingTop() != top
@@ -2433,30 +2531,21 @@ public class MobilePlaybackActivity extends MobileActivity
         bleedScrim(mTopScrim, left, top, right, 0);
         bleedScrim(mBottomScrim, left, 0, right, bottom);
         applySeekBarLayout(left, top, right, bottom);
-        placeMinimizeAndAudio(bottom);
+        placeTitle();
     }
 
     /**
-     * METUBE(fullscreen): in the vertical fullscreen the minimize and headphones buttons sit side by
-     * side under the seek bar, centred in the room it is lifted by - in thumb reach. Elsewhere they
-     * are back at the top-left (the layout's 4 / 52 dp in, 10 dp down).
+     * METUBE(fullscreen): the vertical fullscreen lays the top out like YouTube's: the title under
+     * the top row, the screen's width, and the channel under it. Elsewhere the title sits between
+     * the top-left buttons and the options (landscape), or is gone (portrait: the page has it).
      */
-    private void placeMinimizeAndAudio(int bottom) {
-        boolean low = mPortraitFull && !isLandscape();
-        int lift = dp(8) + Math.round(getResources().getDisplayMetrics().heightPixels * PORTRAIT_FULL_BAR_LIFT);
-        int fromBottom = bottom + Math.max(0, lift / 2 - dp(24));
-        View[] buttons = {mBackButton, mAudioButton};
-        for (int i = 0; i < buttons.length; i++) {
-            View button = buttons[i];
-            if (button == null) {
-                continue;
-            }
-            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) button.getLayoutParams();
-            lp.gravity = low ? Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL : Gravity.TOP | Gravity.START;
-            lp.setMargins(low ? 0 : dp(i == 0 ? 4 : 52), low ? 0 : dp(10), 0, low ? fromBottom : 0);
-            button.setLayoutParams(lp);
-            button.setTranslationX(low ? dp(i == 0 ? -28 : 28) : 0f);
+    private void placeTitle() {
+        if (mTitleView == null || mPlayerAuthor == null) {
+            return;
         }
+        boolean full = mPortraitFull && !isLandscape();
+        mTitleView.setPaddingRelative(dp(full ? 16 : 104), dp(full ? 62 : 18), dp(full ? 16 : 148), dp(full ? 0 : 12));
+        mPlayerAuthor.setVisibility(full ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -2470,12 +2559,25 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mTimeBar == null) {
             return;
         }
-        // METUBE(fullscreen): the vertical fullscreen floats the bar like landscape does, and well
-        // above the bottom edge - where a thumb reaches it, clear of the gesture bar.
+        // METUBE(fullscreen): the vertical fullscreen floats the bar like landscape does, just over
+        // the gesture bar (applyControlsInsets).
         boolean inline = !isLandscape() && !mPortraitFull;
         int side = inline ? 0 : dp(12);
-        int lift = inline ? 0 : dp(8) + (mPortraitFull && !isLandscape()
-                ? Math.round(getResources().getDisplayMetrics().heightPixels * PORTRAIT_FULL_BAR_LIFT) : 0);
+        int lift = inline ? 0 : dp(8);
+        // METUBE(fullscreen-actions): the actions pill takes the bar's place and the bar, with
+        // everything over it, rises above the pill. The chevron beside fullscreen flips it.
+        boolean actions = !inline && mActionsShown;
+        if (mActionsRow != null && mActionsToggle != null) {
+            mActionsRow.setVisibility(actions ? View.VISIBLE : View.GONE);
+            setMargins(mActionsRow, dp(8), 0, 0, lift);
+            mActionsToggle.setVisibility(inline ? View.GONE : View.VISIBLE);
+            mActionsToggle.setRotation(actions ? 0f : 180f);
+            mActionsToggle.setContentDescription(getString(actions
+                    ? R.string.mobile_player_hide_actions : R.string.mobile_player_show_actions));
+        }
+        if (actions) {
+            lift += dp(44);
+        }
         setMargins(mTimeBar, left + side, 0, right + side, bottom + lift);
         mTimeBar.setTrackAtBottom(inline);
         updateSeekBarLine();
@@ -2552,7 +2654,7 @@ public class MobilePlaybackActivity extends MobileActivity
             float windowX = down.getX() + mRootAt[0];
             float windowY = down.getY() + mRootAt[1];
             return !isOn(mFullscreenButton, windowX, windowY) && !isOn(mChapterButton, windowX, windowY)
-                    && !isOn(mLiveChip, windowX, windowY);
+                    && !isOn(mLiveChip, windowX, windowY) && !isOn(mActionsToggle, windowX, windowY);
         }
 
         @Override
@@ -2950,7 +3052,8 @@ public class MobilePlaybackActivity extends MobileActivity
             mVideoArea.setVisibility(View.VISIBLE);
             LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
             lp.height = LinearLayout.LayoutParams.MATCH_PARENT;
-            lp.weight = 0;
+            mCommentsSide = false; // the window is all video
+            layOutCommentsSide(lp, false);
             mVideoArea.setLayoutParams(lp);
         }
     }
@@ -5865,8 +5968,6 @@ public class MobilePlaybackActivity extends MobileActivity
     private static final float PORTRAIT_FULL_PULL_DP = 72f;
     /** The box's move into and out of the vertical fullscreen. */
     private static final long PORTRAIT_FULL_MS = 320;
-    /** The vertical fullscreen's seek bar sits this share of the screen above the bottom. */
-    private static final float PORTRAIT_FULL_BAR_LIFT = 0.16f;
     private float mPullDownX;
     private float mPullDownY = -1f;
     private boolean mPullConsumed;
@@ -7461,7 +7562,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // Nothing came for this page at all: drop what was held for it (online too - a failed
         // /next leaves no comments key either; a late metadata bind re-shows the row).
         if (mCommentsKey == null && mWatchCommentsEntry != null) {
-            mWatchCommentsEntry.setVisibility(View.GONE);
+            setCommentsEntryVisibility(View.GONE);
         }
         if (TextUtils.isEmpty(mWatchSubs.getText())) {
             mWatchSubs.setVisibility(View.GONE);
@@ -7871,7 +7972,8 @@ public class MobilePlaybackActivity extends MobileActivity
         mScrubChromeHidden = scrubbing;
         float alpha = scrubbing ? 0f : 1f;
         long duration = scrubbing ? Motion.FADE_OUT_MS : Motion.FADE_IN_MS;
-        for (View view : new View[] {mBackButton, mAudioButton, mTitleView, mOptionsRow, mTransport, mBottomRow, mTopScrim}) {
+        for (View view : new View[] {mBackButton, mAudioButton, mTitleView, mPlayerAuthor, mOptionsRow, mTransport,
+                mBottomRow, mActionsRow, mTopScrim}) {
             if (view != null) {
                 view.animate().cancel();
                 view.animate().alpha(alpha).setDuration(duration).setInterpolator(Motion.STANDARD).start();
@@ -8549,6 +8651,17 @@ public class MobilePlaybackActivity extends MobileActivity
                 .show();
     }
 
+    /**
+     * The comments row on the page, and its button on the fullscreen pill (METUBE(fullscreen-actions)),
+     * which only shows once there are comments: the row's reserved space means nothing there.
+     */
+    private void setCommentsEntryVisibility(int visibility) {
+        mWatchCommentsEntry.setVisibility(visibility);
+        if (mPlayerComments != null) {
+            mPlayerComments.setVisibility(mCommentsKey != null ? View.VISIBLE : View.GONE);
+        }
+    }
+
     private void onCommentsEntryClicked() {
         if (mCommentsKey == null || mCommentsPanel == null) {
             return;
@@ -8593,6 +8706,10 @@ public class MobilePlaybackActivity extends MobileActivity
             // METUBE(shorts): the comments of a short closed - it fills the screen again.
             if (!shown && mShorts != null && mShorts.isCommentsOpen()) {
                 growShortBack(220);
+            }
+            // METUBE(fullscreen-actions): the landscape comments closed - the video takes the screen back.
+            if (!shown && mCommentsSide && mCommentsPanel != null && !mCommentsPanel.isOpen()) {
+                setCommentsSide(false);
             }
             // The page under the panel is covered: keep TalkBack off it (the video stays reachable).
             if (mWatchScroll != null) {
@@ -8717,6 +8834,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // Channel name has the same bare-reload-Video blanking problem as the title above.
         if (isNewVideo || !TextUtils.isEmpty(item.getAuthor())) {
             mWatchChannelName.setText(item.getAuthor());
+            mPlayerAuthor.setText(item.getAuthor());
         }
 
         // Fallback meta line until the metadata load returns a clean "views • date". The
@@ -8776,7 +8894,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mCommentsKey = null;
         mLiveChatKey = null;
         if (mWatchCommentsEntry != null) {
-            mWatchCommentsEntry.setVisibility(View.VISIBLE); // reserved; see above
+            setCommentsEntryVisibility(View.VISIBLE); // reserved; see above
         }
         if (mWatchCommentsCount != null) {
             mWatchCommentsCount.setText(null);
@@ -8895,6 +9013,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
             if (!TextUtils.isEmpty(metadata.getAuthor())) {
                 setWatchTextFaded(mWatchChannelName, metadata.getAuthor());
+                mPlayerAuthor.setText(metadata.getAuthor());
             }
 
             if (!TextUtils.isEmpty(metadata.getSubscriberCount())) {
@@ -8930,7 +9049,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mCommentsKey = metadata.getCommentsKey();
             mLiveChatKey = metadata.getLiveChatKey();
             if (mWatchCommentsEntry != null) {
-                mWatchCommentsEntry.setVisibility(mCommentsKey != null ? View.VISIBLE : View.GONE);
+                setCommentsEntryVisibility(mCommentsKey != null ? View.VISIBLE : View.GONE);
             }
             // NEWTUBE(comments-panel): the panel's source, the total on the card, and - best
             // effort, once the video has played a moment - the first page (bound after the first
@@ -9026,12 +9145,14 @@ public class MobilePlaybackActivity extends MobileActivity
         // NEWTUBE(haptics): the tap took effect - a click and a pop of the thumb, like YouTube's.
         boolean like = actionId == R.id.action_thumbs_up;
         Haptics.click(like ? mWatchLike : mWatchDislike);
-        // METUBE(burst): a like splashes - on the Shorts thumb when the tap came from there.
-        View likeIcon = mShorts != null && mShorts.isActive() ? mShorts.likeIcon() : mWatchLikeIcon;
+        // METUBE(burst): a like splashes - on the Shorts thumb or the fullscreen pill when the tap
+        // came from there.
+        boolean pill = mActionsRow != null && mActionsRow.isShown();
+        View likeIcon = mShorts != null && mShorts.isActive() ? mShorts.likeIcon() : pill ? mPlayerLike : mWatchLikeIcon;
         if (like && stateAfter == BUTTON_ON) {
             Burst.play(likeIcon, getColorInt(R.color.mobile_color_primary));
         }
-        Motion.pop(like ? likeIcon : mWatchDislikeIcon);
+        Motion.pop(like ? likeIcon : pill ? mPlayerDislike : mWatchDislikeIcon);
         WatchActionFeedback.confirmRating(this, like, stateAfter == BUTTON_ON,
                 undoRating(ratingBefore, ratingAfter));
     }
@@ -9106,7 +9227,11 @@ public class MobilePlaybackActivity extends MobileActivity
         if (buttonId == R.id.action_thumbs_up && mWatchLikeIcon != null) {
             // NEWTUBE(icons): filled while on, outlined while off, both in the text colour - the
             // CC button's language. A red tint on the active thumb broke the no-tints rule.
-            mWatchLikeIcon.setImageResource(on ? R.drawable.ic_watch_thumb_up : R.drawable.ic_watch_thumb_up_outline);
+            int icon = on ? R.drawable.ic_watch_thumb_up : R.drawable.ic_watch_thumb_up_outline;
+            mWatchLikeIcon.setImageResource(icon);
+            if (mPlayerLike != null) {
+                mPlayerLike.setImageResource(icon);
+            }
             if (mWatchLike != null) {
                 mWatchLike.setSelected(on);
                 if (mShorts != null) {
@@ -9114,7 +9239,11 @@ public class MobilePlaybackActivity extends MobileActivity
                 }
             }
         } else if (buttonId == R.id.action_thumbs_down && mWatchDislikeIcon != null) {
-            mWatchDislikeIcon.setImageResource(on ? R.drawable.ic_watch_thumb_down : R.drawable.ic_watch_thumb_down_outline);
+            int icon = on ? R.drawable.ic_watch_thumb_down : R.drawable.ic_watch_thumb_down_outline;
+            mWatchDislikeIcon.setImageResource(icon);
+            if (mPlayerDislike != null) {
+                mPlayerDislike.setImageResource(icon);
+            }
             if (mWatchDislike != null) {
                 mWatchDislike.setSelected(on);
             }
@@ -9205,20 +9334,20 @@ public class MobilePlaybackActivity extends MobileActivity
             DownloadItem item = currentDownload();
             boolean offered = VideoDownloads.canDownload(video) || (video != null && video.isLocal()) || item != null;
             mWatchDownload.setVisibility(offered ? View.VISIBLE : View.GONE);
+            mPlayerDownload.setVisibility(offered ? View.VISIBLE : View.GONE);
             if (!offered) {
                 return;
             }
+            int icon = item != null && item.isDone() ? R.drawable.ic_watch_downloaded : R.drawable.ic_watch_download;
+            mWatchDownloadIcon.setImageResource(icon);
+            mPlayerDownload.setImageResource(icon);
             if (item != null && item.isDone()) {
-                mWatchDownloadIcon.setImageResource(R.drawable.ic_watch_downloaded);
                 mWatchDownloadLabel.setText(R.string.mobile_download_pill_downloaded);
             } else if (item != null && item.state == DownloadItem.STATE_DOWNLOADING && item.progressPercent() >= 0) {
-                mWatchDownloadIcon.setImageResource(R.drawable.ic_watch_download);
                 mWatchDownloadLabel.setText(item.progressPercent() + "%");
             } else if (item != null && item.isActive()) {
-                mWatchDownloadIcon.setImageResource(R.drawable.ic_watch_download);
                 mWatchDownloadLabel.setText(R.string.mobile_download_badge_queued);
             } else {
-                mWatchDownloadIcon.setImageResource(R.drawable.ic_watch_download);
                 mWatchDownloadLabel.setText(R.string.dialog_download);
             }
         });
@@ -9920,9 +10049,10 @@ public class MobilePlaybackActivity extends MobileActivity
     public void setResizeMode(int mode) {
         if (isShortsMode()) {
             mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM; // shorts fill the screen
-        } else if (mPortraitFull && !isLandscape()) {
+        } else if (mPortraitFull && !isLandscape() || mCommentsSide) {
             // METUBE(fullscreen): the whole picture, upright; ambient mode fills the bands. A pinch's
-            // "fill" (landscape) would crop a 16:9 video to a sliver of its middle here.
+            // "fill" (landscape) would crop a 16:9 video to a sliver of its middle here - and to
+            // its middle beside the landscape comments (METUBE(fullscreen-actions)).
             mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
         }
         if (mPlayerView != null) {
