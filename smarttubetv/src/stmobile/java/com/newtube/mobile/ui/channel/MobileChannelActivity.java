@@ -215,7 +215,9 @@ public class MobileChannelActivity extends MobileActivity
         mSubscribe.setVisibility(com.liskovsoft.youtubeapi.service.YouTubeSignInService.instance().isSigned()
                 ? View.INVISIBLE : View.GONE);
         mSubscribeStateFor = null;
-        loadSubscribeState(null);
+        mSubscribeTried.clear();
+        // A link's channel is named (resolveHandle) after its videos may have arrived: ask with them.
+        loadSubscribeState(mSections.isEmpty() ? null : mSections.values().iterator().next().videos);
         ChannelHeader.fetch(id, info -> {
             if (!isDestroyed() && id.equals(mHeaderChannelId)) {
                 bindHeader(id, info);
@@ -270,15 +272,19 @@ public class MobileChannelActivity extends MobileActivity
     private String mSubscribeStateFor;
     @Nullable
     private io.reactivex.rxjava3.disposables.Disposable mSubscribeAction;
+    /** Videos whose watch data named another channel (collabs), for {@link #mSubscribeStateFor}. */
+    private final java.util.Set<String> mSubscribeTried = new java.util.HashSet<>();
+    private static final int SUBSCRIBE_STATE_TRIES = 3;
 
     /**
      * The header's data (anonymous) has no subscribed state, but a video's watch data does. Opened
      * from the watch page or Shorts, that video already knows it; else the video it was opened
-     * from, or the channel's first upload, is asked - as the card menu's Subscribe learns it.
+     * from, or the channel's first upload, is asked - as the card menu's Subscribe learns it. A
+     * collab's watch data may be the other channel's: then the next upload is asked.
      */
     private void loadSubscribeState(@Nullable List<Video> videos) {
         String id = mHeaderChannelId;
-        if (id == null || id.equals(mSubscribeStateFor)
+        if (id == null || id.equals(mSubscribeStateFor) || mSubscribeTried.size() >= SUBSCRIBE_STATE_TRIES
                 || !com.liskovsoft.youtubeapi.service.YouTubeSignInService.instance().isSigned()) {
             return;
         }
@@ -288,19 +294,28 @@ public class MobileChannelActivity extends MobileActivity
             showSubscribed(from.isSubscribed);
             return;
         }
-        String videoId = from != null && id.equals(from.channelId) ? from.videoId : null;
+        String videoId = from != null && id.equals(from.channelId) && !mSubscribeTried.contains(from.videoId)
+                ? from.videoId : null;
         for (int i = 0; videoId == null && videos != null && i < videos.size(); i++) {
-            videoId = videos.get(i).videoId;
+            String candidate = videos.get(i).videoId;
+            videoId = mSubscribeTried.contains(candidate) ? null : candidate;
         }
         if (videoId == null) {
             return;
         }
         mSubscribeStateFor = id;
+        String asked = videoId;
         com.liskovsoft.sharedutils.rx.RxHelper.execute(mediaItems().getMetadataObserve(videoId),
                 metadata -> runOnUiThread(() -> {
-                    // A collab's watch data may be the other channel's.
-                    if (id.equals(mHeaderChannelId) && id.equals(metadata.getChannelId())) {
+                    if (!id.equals(mHeaderChannelId)) {
+                        return;
+                    }
+                    if (id.equals(metadata.getChannelId())) {
                         showSubscribed(metadata.isSubscribed());
+                    } else {
+                        mSubscribeTried.add(asked);
+                        mSubscribeStateFor = null;
+                        loadSubscribeState(videos);
                     }
                 }),
                 error -> runOnUiThread(() -> mSubscribeStateFor = null));
@@ -391,14 +406,20 @@ public class MobileChannelActivity extends MobileActivity
         if (id != null && id.equals(mHandle) && mHandleChannelId != null) {
             return mHandleChannelId; // a link's @handle, resolved (loadHeader)
         }
+        // The id most of its videos carry: the first may be a collab, named for the other channel.
+        Map<String, Integer> counts = new HashMap<>();
+        String best = null;
         for (Section section : mSections.values()) {
             for (Video video : section.videos) {
                 if (video.channelId != null && video.channelId.startsWith("UC")) {
-                    return video.channelId;
+                    int count = counts.merge(video.channelId, 1, Integer::sum);
+                    if (best == null || count > counts.get(best)) {
+                        best = video.channelId;
+                    }
                 }
             }
         }
-        return id;
+        return best != null ? best : id;
     }
 
     /** NEWTUBE: name a link-opened channel once its first videos arrive. */

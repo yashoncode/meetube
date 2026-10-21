@@ -184,9 +184,10 @@ final class ChannelHeader {
             if (sHttp == null) {
                 sHttp = new OkHttpClient.Builder().callTimeout(15, TimeUnit.SECONDS).build();
             }
+            // The feeds' own hl (BCP-47: zh-TW, not "zh", which YouTube answers in Simplified).
             body.put("context", new JSONObject().put("client", new JSONObject()
                     .put("clientName", "MWEB").put("clientVersion", "2.20251015.01.00")
-                    .put("hl", java.util.Locale.getDefault().getLanguage())));
+                    .put("hl", com.liskovsoft.googlecommon.common.locale.LocaleManager.instance().getLanguage())));
             Request request = new Request.Builder()
                     .url("https://www.youtube.com/youtubei/v1/" + endpoint + "?prettyPrint=false")
                     .post(RequestBody.create(body.toString(), MediaType.get("application/json")))
