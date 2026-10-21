@@ -2,10 +2,11 @@
 
 <h1 align="center">MeTube</h1>
 
-<p align="center"><img src=".github/assets/metube/poster.png" alt="MeTube: All of YouTube, none of the ads"></p>
-
 **YouTube, the way it should feel.** No ads. No interruptions. A gorgeous liquid glass interface, synced lyrics, background play and one-tap downloads.
 
+<details>
+<summary><b>📸 Screenshots</b> (tap to open)</summary>
+<br>
 <p align="center">
   <img src=".github/assets/metube/home.jpg" width="160" alt="MeTube Home with topic chips and the floating glass tab bar">
   <img src=".github/assets/metube/search.jpg" width="160" alt="MeTube search results with YouTube's chips: All, Videos, Shorts, Live, Recently uploaded">
@@ -15,6 +16,7 @@
   <img src=".github/assets/metube/lyrics.jpg" width="160" alt="MeTube synced lyrics panel with provider picker">
   <img src=".github/assets/metube/downloads.jpg" width="160" alt="MeTube offline downloads">
 </p>
+</details>
 
 <p align="center"><a href="https://github.com/yashoncode/metube/releases/latest"><b>⬇ Download the latest MeTube</b></a></p>
 
