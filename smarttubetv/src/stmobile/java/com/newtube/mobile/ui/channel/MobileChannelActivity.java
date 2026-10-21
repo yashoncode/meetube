@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.tabs.TabLayout;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
@@ -31,6 +32,8 @@ import com.liskovsoft.smartyoutubetv2.common.utils.LoadFailure;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.browse.VideoCardAdapter;
 import com.newtube.mobile.ui.common.FilteredPageTopUp;
+import com.newtube.mobile.ui.common.Glass;
+import com.newtube.mobile.ui.common.GlassView;
 import com.newtube.mobile.ui.common.MobileActivity;
 import com.newtube.mobile.ui.common.Motion;
 import com.newtube.mobile.ui.common.ShortsFilter;
@@ -89,6 +92,8 @@ public class MobileChannelActivity extends MobileActivity
     private GridLayoutManager mLayoutManager;
     private VideoCardAdapter mAdapter;
     private TabLayout mTabs;
+    /** The tabs' place in the app bar; the tabs themselves float over the page (setupGlassBars). */
+    private View mTabsSpace;
     private ProgressBar mProgressBar;
     private TextView mTitleView;
     /** The header holds a real channel name (from the card, or from the loaded videos). */
@@ -151,6 +156,7 @@ public class MobileChannelActivity extends MobileActivity
         setupGrid();
         setupTabs();
         setupSwipeRefresh();
+        setupGlassBars();
 
         mBackButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
         findViewById(R.id.mobile_channel_sort).setOnClickListener(v -> {
@@ -290,6 +296,7 @@ public class MobileChannelActivity extends MobileActivity
         // NEWTUBE(mini-inset): the last row can scroll clear of the docked mini-player card.
         com.newtube.mobile.ui.playback.MiniPlayerListInset.attach(findViewById(R.id.mobile_mini_player), mGrid);
         mTabs = findViewById(R.id.mobile_channel_tabs);
+        mTabsSpace = findViewById(R.id.mobile_channel_tabs_space);
         mPeek = findViewById(R.id.mobile_channel_peek);
         mProgressBar = findViewById(R.id.mobile_channel_progress);
         mTitleView = findViewById(R.id.mobile_channel_title);
@@ -526,6 +533,36 @@ public class MobileChannelActivity extends MobileActivity
         });
     }
 
+    /**
+     * METUBE(glass): the top bar and the tabs frost the page scrolling under them. The tabs float
+     * outside the page (a GlassSource can't hold its own glass), so they follow their place in the
+     * app bar; the header fades over its last stretch under the top bar, or its bottom strip would
+     * stay there, blurred, over the cards going by.
+     */
+    private void setupGlassBars() {
+        View source = findViewById(R.id.mobile_channel_glass_source);
+        GlassView bar = findViewById(R.id.mobile_channel_bar);
+        GlassView tabsBar = findViewById(R.id.mobile_channel_tabs_bar);
+        Glass.blur(bar, source);
+        Glass.blur(tabsBar, source);
+        View header = findViewById(R.id.mobile_channel_header);
+        float barHeight = getResources().getDimension(R.dimen.mobile_title_bar_height);
+        int reach = Math.round(GlassView.BLUR_REACH_DP * getResources().getDisplayMetrics().density);
+        ((AppBarLayout) findViewById(R.id.mobile_channel_appbar)).addOnOffsetChangedListener((appBar, offset) -> {
+            float tabsY = mTabsSpace.getTop() + offset;
+            tabsBar.setTranslationY(tabsY);
+            header.setAlpha(Math.min(1f, (appBar.getTotalScrollRange() + offset) / barHeight));
+            // Pinned, the two bars touch: each blurs into the other so they read as one, no line.
+            boolean touching = tabsY <= 0 && mTabsSpace.getVisibility() == View.VISIBLE;
+            bar.setBlurReach(0, touching ? reach : 0);
+            tabsBar.setBlurReach(touching ? reach : 0, 0);
+        });
+        // The cards start 104dp (bar + tabs) up, under the glass: so does the refresh spinner.
+        int under = Math.round(104 * getResources().getDisplayMetrics().density);
+        mSwipe.setProgressViewOffset(false, mSwipe.getProgressViewStartOffset() + under,
+                mSwipe.getProgressViewEndOffset() + under);
+    }
+
     /** Failure state's Try again: the same first load, from a blank page. */
     private void retryFirstPage() {
         if (mPresenter != null) {
@@ -676,6 +713,7 @@ public class MobileChannelActivity extends MobileActivity
 
         // Tab bar only earns its space with 2+ sections; a single section shows as a plain feed.
         mTabs.setVisibility(mSections.size() > 1 ? View.VISIBLE : View.GONE);
+        mTabsSpace.setVisibility(mTabs.getVisibility());
 
         mSuppressTabCallback = false;
     }
@@ -967,6 +1005,7 @@ public class MobileChannelActivity extends MobileActivity
             mSuppressTabCallback = true;
             mTabs.removeAllTabs();
             mTabs.setVisibility(View.GONE);
+            mTabsSpace.setVisibility(View.GONE);
             mSuppressTabCallback = false;
             syncLoadMoreFooter();
             mAdapter.submitList(new ArrayList<>());

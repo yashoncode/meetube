@@ -50,6 +50,8 @@ import java.util.Random;
  */
 public class GlassView extends FrameLayout {
     private static final float BLUR_DP = 8f;
+    /** How far past an edge {@link #setBlurReach} looks: the blur's whole kernel. */
+    public static final float BLUR_REACH_DP = 2 * BLUR_DP;
     private static final float SATURATION = 1.5f;
     private static final float REFRACTION_HEIGHT_DP = 24f;
     private static final float REFRACTION_AMOUNT_DP = 24f;
@@ -170,6 +172,8 @@ public class GlassView extends FrameLayout {
     private int mRecordedY = Integer.MIN_VALUE;
     private int mEffectW;
     private int mEffectH;
+    private int mReachTop;
+    private int mReachBottom;
 
     @Nullable private GlassSource mSource;
     /** Sits on glass already (glassOnGlass): its tint is drawn as given, see-through. */
@@ -214,6 +218,19 @@ public class GlassView extends FrameLayout {
         mRimPaint.setMaskFilter(new BlurMaskFilter(0.25f * mDensity, BlurMaskFilter.Blur.NORMAL));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             mRimPaint.setBlendMode(BlendMode.PLUS);
+        }
+    }
+
+    /**
+     * Flat glass only (the lens is laid out on the view's own size): also blur this much of the page
+     * past the top / bottom edge. A blur clamps at its edge, so two bars that touch (the channel
+     * page's top bar and pinned tabs) met in a line; reaching into each other they blur alike.
+     */
+    public void setBlurReach(int topPx, int bottomPx) {
+        if (topPx != mReachTop || bottomPx != mReachBottom) {
+            mReachTop = topPx;
+            mReachBottom = bottomPx;
+            invalidate();
         }
     }
 
@@ -283,14 +300,14 @@ public class GlassView extends FrameLayout {
         mRecordedY = mLoc[1] - mSourceLoc[1];
         int w = getWidth();
         int h = getHeight();
-        node.setPosition(0, 0, w, h);
+        node.setPosition(0, -mReachTop, w, h + mReachBottom);
         if (w != mEffectW || h != mEffectH) {
             mEffectW = w;
             mEffectH = h;
             node.setRenderEffect(effect(w, h));
         }
         Canvas recording = node.beginRecording();
-        recording.translate(-mRecordedX, -mRecordedY);
+        recording.translate(-mRecordedX, -mRecordedY + mReachTop);
         // The source's own (opaque) background first: its node holds only the children, and text
         // on a bare background would blur to near-transparent and let the sharp page show through.
         android.graphics.drawable.Drawable ground = mSource.getBackground();
