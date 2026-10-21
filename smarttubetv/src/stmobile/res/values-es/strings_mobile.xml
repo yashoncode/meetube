@@ -245,6 +245,7 @@
     <string name="mobile_search_filter_anytime">Cualquier fecha</string>
     <string name="mobile_search_filter_today">Hoy</string>
     <string name="mobile_search_filter_this_week">Esta semana</string>
+    <string name="mobile_search_filter_recent">Subidos recientemente</string>
     <string name="mobile_search_filter_this_month">Este mes</string>
     <string name="mobile_search_filter_this_year">Este año</string>
     <string name="mobile_search_filter_prioritize">Priorizar</string>

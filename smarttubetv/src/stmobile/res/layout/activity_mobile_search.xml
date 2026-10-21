@@ -40,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingTop="@dimen/mobile_title_bar_height"
+            android:paddingTop="@dimen/mobile_search_results_top"
             android:paddingHorizontal="@dimen/mobile_card_spacing"
             android:paddingBottom="@dimen/mobile_card_spacing"
             android:scrollbars="vertical"
@@ -52,7 +52,7 @@
             layout="@layout/mobile_feed_skeleton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/mobile_title_bar_height"
+            android:layout_marginTop="@dimen/mobile_search_results_top"
             android:visibility="gone" />
 
         <!-- A search that ends with zero rows used to just... stop (spinner gone, screen
@@ -63,7 +63,32 @@
             layout="@layout/mobile_page_load_state"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/mobile_title_bar_height" />
+            android:layout_marginTop="@dimen/mobile_search_results_top" />
+
+        <!-- METUBE(search chips): YouTube's chip row over the results - All, Videos, Shorts, Live,
+             Recently uploaded - shortcuts to the filter dialog's own flags. Shown from the first
+             search on; the suggestions list below covers it while the query is edited. -->
+        <HorizontalScrollView
+            android:id="@+id/mobile_search_chips_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="@dimen/mobile_title_bar_height"
+            android:clipToPadding="false"
+            android:paddingHorizontal="12dp"
+            android:scrollbars="none"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/mobile_search_chips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                app:chipSpacingHorizontal="8dp"
+                app:singleLine="true"
+                app:singleSelection="true" />
+
+        </HorizontalScrollView>
 
         <!-- Suggestions/history: a full-height vertical list OVER the results while the user
              is editing the query (YouTube-style; was a one-line horizontal chip strip).

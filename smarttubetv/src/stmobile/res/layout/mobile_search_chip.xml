@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- METUBE(search chips): one chip of the row over the results (MobileSearchActivity.setupChips). -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.MaterialComponents.Chip.Choice"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:fontFamily="sans-serif-medium"
+    android:textColor="@color/mobile_search_chip_text"
+    android:textSize="14sp"
+    app:checkedIconVisible="false"
+    app:chipBackgroundColor="@color/mobile_search_chip_bg"
+    app:chipCornerRadius="8dp"
+    app:chipStrokeWidth="0dp"
+    app:ensureMinTouchTargetSize="false" />

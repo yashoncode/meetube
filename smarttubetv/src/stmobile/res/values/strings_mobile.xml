@@ -189,6 +189,8 @@
     <string name="mobile_search_filter_this_week">This week</string>
     <string name="mobile_search_filter_this_month">This month</string>
     <string name="mobile_search_filter_this_year">This year</string>
+    <!-- The chip row over search results: uploads of this week, as YouTube's chip. -->
+    <string name="mobile_search_filter_recent">Recently uploaded</string>
     <string name="mobile_search_filter_prioritize">Prioritize</string>
     <string name="mobile_search_filter_relevance">Relevance</string>
     <string name="mobile_search_filter_popularity">Popularity</string>

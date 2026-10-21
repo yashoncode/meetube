@@ -159,7 +159,11 @@ public class MobileSearchActivity extends MobileActivity
         mMicButton.setOnClickListener(v -> startVoiceRecognition());
         // METUBE(search filters, #11): YouTube's own filter dialog.
         findViewById(R.id.mobile_search_filters).setOnClickListener(v -> SearchFiltersDialog.show(this,
-                mPresenter.getSearchOptions(), mPresenter::setSearchOptions));
+                mPresenter.getSearchOptions(), options -> {
+                    mPresenter.setSearchOptions(options);
+                    syncChips();
+                }));
+        setupChips();
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_search_glass),
                 findViewById(R.id.mobile_search_glass_source));
         if (savedInstanceState == null) {
@@ -248,6 +252,50 @@ public class MobileSearchActivity extends MobileActivity
         int bottom = Math.max(0, ime - bars);
         if (area.getPaddingBottom() != bottom) {
             area.setPadding(area.getPaddingLeft(), area.getPaddingTop(), area.getPaddingRight(), bottom);
+        }
+    }
+
+    /** METUBE(search chips): {label, filter flag}; All is no flag. */
+    private static final int[][] CHIPS = {
+            {R.string.mobile_search_filter_all, 0},
+            {R.string.mobile_search_filter_videos, SearchOptions.TYPE_VIDEO},
+            {R.string.mobile_search_filter_shorts, SearchOptions.TYPE_SHORTS},
+            {R.string.mobile_search_filter_live, SearchOptions.FEATURE_LIVE},
+            {R.string.mobile_search_filter_recent, SearchOptions.UPLOAD_DATE_THIS_WEEK}};
+    /** The flags a chip replaces with its own: every type, Live and every upload date. */
+    private static final int CHIP_FLAGS = SearchOptions.TYPE_VIDEO | SearchOptions.TYPE_SHORTS
+            | SearchOptions.TYPE_CHANNEL | SearchOptions.TYPE_PLAYLIST | SearchOptions.TYPE_MOVIE
+            | SearchOptions.FEATURE_LIVE | SearchOptions.UPLOAD_DATE_TODAY | SearchOptions.UPLOAD_DATE_THIS_WEEK
+            | SearchOptions.UPLOAD_DATE_THIS_MONTH | SearchOptions.UPLOAD_DATE_THIS_YEAR;
+    private com.google.android.material.chip.ChipGroup mChips;
+
+    /**
+     * METUBE(search chips): YouTube's chip row over the results. A chip is a one-tap filter: it
+     * searches again with its flag in place of the other chips' (Duration, Prioritize and Features
+     * from the dialog stay). Picked in the dialog, a mix no chip names leaves none picked.
+     */
+    private void setupChips() {
+        mChips = findViewById(R.id.mobile_search_chips);
+        for (int[] entry : CHIPS) {
+            com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip)
+                    getLayoutInflater().inflate(R.layout.mobile_search_chip, mChips, false);
+            chip.setText(entry[0]);
+            int flag = entry[1];
+            chip.setOnClickListener(v -> {
+                int options = (mPresenter.getSearchOptions() & ~CHIP_FLAGS) | flag;
+                if (options != mPresenter.getSearchOptions()) {
+                    mPresenter.setSearchOptions(options);
+                }
+                syncChips();
+            });
+            mChips.addView(chip);
+        }
+    }
+
+    private void syncChips() {
+        int picked = mPresenter.getSearchOptions() & CHIP_FLAGS;
+        for (int i = 0; i < CHIPS.length; i++) {
+            ((com.google.android.material.chip.Chip) mChips.getChildAt(i)).setChecked(CHIPS[i][1] == picked);
         }
     }
 
@@ -456,6 +504,8 @@ public class MobileSearchActivity extends MobileActivity
         mSearchInput.clearFocus();
         mSuggestions.setVisibility(View.GONE);
         mTagAdapter.clearTags();
+        ((View) mChips.getParent()).setVisibility(View.VISIBLE);
+        syncChips();
         mPresenter.onSearch(normalized);
     }
 
