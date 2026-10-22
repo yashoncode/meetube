@@ -6,6 +6,7 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -53,15 +54,22 @@ public class PinchZoomLayout extends FrameLayout {
     /** Direction fired last in this gesture: 0 none, 1 zoom-in, -1 zoom-out. */
     private int mLastDirection;
 
-    /** METUBE(shorts): the child whose top and bottom edges fade into this box's background. */
+    /** METUBE(shorts): the child whose picture's edges fade into this box's background. */
     @Nullable
     private View mFadeChild;
+    /** The picture inside it (the video's frame), whose edges fade; null: the child's own. */
+    @Nullable
+    private View mFadePicture;
     private int mFadePx;
     private final Paint mFadePaint = new Paint();
-    private int mFadeTop = -1;
-    private int mFadeBottom = -1;
+    /** Where the fades were last laid out: the picture's box clipped to the child's. */
+    private final Rect mFadeEdges = new Rect();
+    private final Rect mFadeAt = new Rect();
     private LinearGradient mFadeTopShader;
     private LinearGradient mFadeBottomShader;
+    private LinearGradient mFadeLeftShader;
+    private LinearGradient mFadeRightShader;
+    private final OnLayoutChangeListener mFadeRelayout = (v, l, t, r, b, ol, ot, or, ob) -> invalidate();
 
     public PinchZoomLayout(Context context) {
         this(context, null);
@@ -174,15 +182,24 @@ public class PinchZoomLayout extends FrameLayout {
         return true;
     }
     /**
-     * METUBE(shorts): fade {@code child}'s top and bottom {@code px} into this box's background
-     * (the ambient fill), like Instagram's reels - no hard line where the video meets the blur.
+     * METUBE(shorts): fade the edges of {@code picture} (inside {@code child}) {@code px} into this
+     * box's background (the ambient fill), like Instagram's reels - no hard line where the video
+     * meets the blur. A picture as big as the child (a zoomed short on a phone) fades at the
+     * child's top and bottom; one narrower (a whole short on a tablet) fades at its sides too.
      * Null switches it off. Only that child fades; the overlays above it stay sharp.
      */
-    public void setEdgeFade(@Nullable View child, int px) {
-        if (child != mFadeChild || px != mFadePx) {
+    public void setEdgeFade(@Nullable View child, @Nullable View picture, int px) {
+        if (child != mFadeChild || picture != mFadePicture || px != mFadePx) {
             mFadeChild = child;
+            if (mFadePicture != null) {
+                mFadePicture.removeOnLayoutChangeListener(mFadeRelayout);
+            }
+            mFadePicture = picture;
+            if (picture != null) {
+                picture.addOnLayoutChangeListener(mFadeRelayout); // its shape is known late
+            }
             mFadePx = px;
-            mFadeTop = -1;
+            mFadeEdges.setEmpty();
             invalidate();
         }
     }
@@ -196,19 +213,39 @@ public class PinchZoomLayout extends FrameLayout {
         int top = child.getTop();
         int right = child.getRight();
         int bottom = child.getBottom();
-        int fade = Math.min(mFadePx, (bottom - top) / 4);
-        if (top != mFadeTop || bottom != mFadeBottom) {
-            mFadeTop = top;
-            mFadeBottom = bottom;
-            mFadeTopShader = new LinearGradient(0, top, 0, top + fade, 0xFF000000, 0, Shader.TileMode.CLAMP);
-            mFadeBottomShader = new LinearGradient(0, bottom - fade, 0, bottom, 0, 0xFF000000, Shader.TileMode.CLAMP);
+        mFadeAt.set(left, top, right, bottom);
+        if (mFadePicture != null && mFadePicture.getWidth() > 0 && mFadePicture.isAttachedToWindow()) {
+            Rect picture = new Rect(0, 0, mFadePicture.getWidth(), mFadePicture.getHeight());
+            offsetDescendantRectToMyCoords(mFadePicture, picture);
+            if (!mFadeAt.intersect(picture)) {
+                mFadeAt.set(left, top, right, bottom);
+            }
         }
+        int fadeY = Math.min(mFadePx, mFadeAt.height() / 4);
+        int fadeX = Math.min(mFadePx, mFadeAt.width() / 4);
+        if (!mFadeAt.equals(mFadeEdges)) {
+            mFadeEdges.set(mFadeAt);
+            Rect e = mFadeEdges;
+            mFadeTopShader = new LinearGradient(0, e.top, 0, e.top + fadeY, 0xFF000000, 0, Shader.TileMode.CLAMP);
+            mFadeBottomShader = new LinearGradient(0, e.bottom - fadeY, 0, e.bottom, 0, 0xFF000000, Shader.TileMode.CLAMP);
+            mFadeLeftShader = new LinearGradient(e.left, 0, e.left + fadeX, 0, 0xFF000000, 0, Shader.TileMode.CLAMP);
+            mFadeRightShader = new LinearGradient(e.right - fadeX, 0, e.right, 0, 0, 0xFF000000, Shader.TileMode.CLAMP);
+        }
+        Rect e = mFadeEdges;
         int save = canvas.saveLayer(left, top, right, bottom, null);
         boolean more = super.drawChild(canvas, child, drawingTime);
         mFadePaint.setShader(mFadeTopShader);
-        canvas.drawRect(left, top, right, top + fade, mFadePaint);
+        canvas.drawRect(e.left, e.top, e.right, e.top + fadeY, mFadePaint);
         mFadePaint.setShader(mFadeBottomShader);
-        canvas.drawRect(left, bottom - fade, right, bottom, mFadePaint);
+        canvas.drawRect(e.left, e.bottom - fadeY, e.right, e.bottom, mFadePaint);
+        if (e.left > left) {
+            mFadePaint.setShader(mFadeLeftShader);
+            canvas.drawRect(e.left, e.top, e.left + fadeX, e.bottom, mFadePaint);
+        }
+        if (e.right < right) {
+            mFadePaint.setShader(mFadeRightShader);
+            canvas.drawRect(e.right - fadeX, e.top, e.right, e.bottom, mFadePaint);
+        }
         canvas.restoreToCount(save);
         return more;
     }

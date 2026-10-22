@@ -863,7 +863,9 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mShorts != null) {
                 mShorts.alignPeek(bars.top, bars.bottom);
             }
-            mVideoArea.setEdgeFade(isShortsMode() ? glass : null, dp(48));
+            mVideoArea.setEdgeFade(isShortsMode() ? glass : null,
+                    mPlayerView != null ? mPlayerView.getContentFrame() : null,
+                    dp(48));
             return insets;
         });
         mShorts = new ShortsOverlay(getWindow().getDecorView(), mVideoArea, new ShortsOverlay.Host() {
