@@ -806,7 +806,6 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchScroll = findViewById(R.id.mobile_watch_scroll);
         mWatchFab = findViewById(R.id.mobile_watch_fullscreen_fab);
         if (mWatchFab != null) {
-            com.newtube.mobile.ui.common.Glass.blur(mWatchFab, findViewById(R.id.mobile_watch_glass));
             mWatchFab.setOnClickListener(v -> {
                 if (v.getAlpha() > 0.5f) {
                     toggleFullscreen();

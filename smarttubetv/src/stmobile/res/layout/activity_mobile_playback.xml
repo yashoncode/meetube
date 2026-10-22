@@ -1369,7 +1369,9 @@
 
         <!-- METUBE(fullscreen): a floating glass button, bottom-right over the page, that takes the
              playing video fullscreen. Under the comments panel, which covers it when open; the
-             page (and with it this button) has no height in fullscreen and Shorts. -->
+             page (and with it this button) has no height in fullscreen and Shorts.
+             Tinted, not frosted (glassOnGlass): its elevation floats it over the open comments
+             panel too, where a frost of the page under the panel showed as a solid black disc. -->
         <com.newtube.mobile.ui.common.GlassView
             android:id="@+id/mobile_watch_fullscreen_fab"
             android:layout_width="52dp"
@@ -1380,8 +1382,10 @@
             android:contentDescription="@string/mobile_player_fullscreen"
             android:elevation="6dp"
             android:focusable="true"
+            android:foreground="@drawable/bg_watch_fab_ring"
             app:glassCornerRadius="26dp"
-            app:glassTint="@color/metube_glass_tint">
+            app:glassOnGlass="true"
+            app:glassTint="@color/mobile_watch_fab_tint">
 
             <ImageView
                 android:layout_width="26dp"
@@ -1389,7 +1393,7 @@
                 android:layout_gravity="center"
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_player_fullscreen"
-                app:tint="@color/mobile_color_on_surface" />
+                app:tint="@color/mobile_player_on_video" />
 
         </com.newtube.mobile.ui.common.GlassView>
 

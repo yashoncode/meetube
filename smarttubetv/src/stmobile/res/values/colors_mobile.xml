@@ -71,6 +71,10 @@
          YouTube's: controls and chips over the video, the mini player, the cast overlays. -->
     <color name="mobile_player_on_video">#FFFFFF</color>
     <color name="mobile_player_pill">#6B18181C</color>
+    <!-- METUBE(fullscreen): the watch page's fullscreen button, see-through like the controls'
+         discs (GlassDrawable's tint), with a dark ring to stand out on light thumbnails (#29). -->
+    <color name="mobile_watch_fab_tint">#47000000</color>
+    <color name="mobile_watch_fab_ring">#59000000</color>
     <color name="mobile_player_cast_active">#64D2FF</color>
 
     <!-- METUBE(glass): the floating-glass surfaces (light side; dark in values-night). -->
