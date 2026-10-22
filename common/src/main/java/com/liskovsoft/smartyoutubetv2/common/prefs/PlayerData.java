@@ -67,6 +67,11 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
     private FormatItem mVideoFormat;
     // METUBE(quality-network): the quality on mobile data; null = the same as on Wi-Fi (mVideoFormat).
     private FormatItem mCellularVideoFormat;
+    // METUBE(shorts-quality): the quality for Shorts, on any network; Auto (up to 1080p) at first.
+    private FormatItem mShortsVideoFormat;
+    // METUBE(shorts-quality): a short is playing (set on every open): the video quality read and
+    // written is then mShortsVideoFormat (issue #26).
+    private boolean mShortsPlaying;
     private FormatItem mTempVideoFormat;
     private FormatItem mAudioFormat;
     // NEWTUBE(pin-rescue): session-scoped audio override, mirrors mTempVideoFormat (never persisted).
@@ -388,7 +393,8 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
 
         switch (type) {
             case FormatItem.TYPE_VIDEO:
-                format = isOnMobileData() ? mCellularVideoFormat : mVideoFormat;
+                format = mShortsPlaying ? mShortsVideoFormat
+                        : isOnMobileData() ? mCellularVideoFormat : mVideoFormat;
                 break;
             case FormatItem.TYPE_AUDIO:
                 format = mAudioFormat;
@@ -414,7 +420,9 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
 
         switch (format.getType()) {
             case FormatItem.TYPE_VIDEO:
-                if (isOnMobileData()) {
+                if (mShortsPlaying) {
+                    mShortsVideoFormat = format; // a pick in a short's player stays with Shorts
+                } else if (isOnMobileData()) {
                     mCellularVideoFormat = format;
                 } else {
                     mVideoFormat = format;
@@ -452,6 +460,23 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
     public void setCellularVideoFormat(FormatItem format) {
         mCellularVideoFormat = format;
         persistState();
+    }
+
+    /** METUBE(shorts-quality): the Shorts quality (Settings). */
+    public FormatItem getShortsVideoFormat() {
+        return FormatItem.checkFormat(mShortsVideoFormat, FormatItem.TYPE_VIDEO);
+    }
+
+    public void setShortsVideoFormat(FormatItem format) {
+        if (format != null) {
+            mShortsVideoFormat = format;
+            persistState();
+        }
+    }
+
+    /** METUBE(shorts-quality): what opens next is a short (or not); see {@link #mShortsPlaying}. */
+    public void setShortsPlaying(boolean shorts) {
+        mShortsPlaying = shorts;
     }
 
     /**
@@ -1001,6 +1026,7 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
         mIsVideoFlipEnabled = Helpers.parseBoolean(split, 61, false);
         mIsAudioDelayEnabled = Helpers.parseBoolean(split, 62, false);
         mCellularVideoFormat = ExoFormatItem.from(Helpers.parseStr(split, 63));
+        mShortsVideoFormat = Helpers.firstNonNull(ExoFormatItem.from(Helpers.parseStr(split, 64)), getDefaultVideoFormat());
 
         if (speeds != null) {
             for (String speedSpec : speeds) {
@@ -1038,7 +1064,7 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
                 mIsNumberKeySeekEnabled, mIsSkip24RateEnabled, mAfrPauseMs, mIsLiveChatEnabled, mLastSubtitleFormats, mLastSpeed, mRotationAngle,
                 mZoomPercents, mPlaybackMode, mAudioLanguage, mSubtitleLanguage, mEnabledSubtitlesPerChannel, mIsSubtitlesPerChannelEnabled,
                 mIsSpeedPerChannelEnabled, Helpers.mergeArray(mSpeeds.values().toArray()), mPitch, mIsSkipShortsEnabled, mLastAudioLanguages,
-                mIsVideoFlipEnabled, mIsAudioDelayEnabled, mCellularVideoFormat
+                mIsVideoFlipEnabled, mIsAudioDelayEnabled, mCellularVideoFormat, mShortsVideoFormat
         ));
     }
 

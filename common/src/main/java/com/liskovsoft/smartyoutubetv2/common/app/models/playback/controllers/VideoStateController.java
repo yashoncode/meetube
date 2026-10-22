@@ -292,6 +292,8 @@ public class VideoStateController extends BasePlayerController {
 
     @Override
     public void onSourceChanged(Video item) {
+        // METUBE(shorts-quality): a short opens in the Shorts quality, if one is set (issue #26).
+        getPlayerData().setShortsPlaying(item != null && item.belongsToShorts());
         // At this stage video isn't loaded yet. So format switch isn't take any resources.
         restoreFormats();
     }
@@ -363,6 +365,7 @@ public class VideoStateController extends BasePlayerController {
     @Override
     public void onFinish() {
         mIncognito = false;
+        getPlayerData().setShortsPlaying(false); // Settings reads the videos' quality again
     }
 
     private void clearStateOfNextVideo() {

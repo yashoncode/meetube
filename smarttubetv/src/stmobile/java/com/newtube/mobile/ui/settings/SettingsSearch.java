@@ -92,6 +92,7 @@ final class SettingsSearch {
             {R.string.mobile_settings_app_icon, R.string.mobile_settings_search_kw_app_icon},
             {R.string.mobile_settings_quality_wifi, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_quality_mobile, R.string.mobile_settings_search_kw_quality},
+            {R.string.mobile_settings_quality_shorts, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_screen_off, R.string.mobile_settings_search_kw_background},
             {R.string.mobile_settings_loudness, R.string.mobile_settings_search_kw_loudness},
             {R.string.mobile_settings_player_volume, R.string.mobile_settings_search_kw_player_volume},

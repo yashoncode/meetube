@@ -36,7 +36,8 @@ Settings
   Video and audio
     Playback                    When a video ends · When you leave the app · speed · sleep timer ·
                                 audio focus · Resume · Under the video
-    Video quality               Default quality (Auto or a cap: 2160p…360p) · loudness · volume
+    Video quality               Default quality (Auto or a cap: 2160p…360p) on Wi-Fi, on mobile
+                                data, for Shorts · loudness · volume
     Captions                    Style · Size · Distance from the bottom · per channel · Android's settings
     SponsorBlock                on/off · what to do per kind of part · Marks on the seek bar › · More
     DeArrow                     Better titles · Better thumbnails
@@ -165,7 +166,8 @@ Per-row evidence (what each pref does on the phone, with file:line) is in
   ignores (exit PiP; Open playlist always shows where it applies; Move up follows Move down) or that
   `PhoneOnlyPrefs` keeps off (Open comments, Pause history, and the QR code, Switch account and
   Check for updates above).
-- **Shorts** rows are gone with Shorts (1.12.0); **Hide Mixes** too (its filter only runs on the old v1
+- The TV's **Shorts** rows are gone with its Shorts (1.12.0); the phone's Shorts have their own
+  quality row (Video quality, issue #26). **Hide Mixes** is gone too (its filter only runs on the old v1
   lists; every phone feed is v2).
 
 Labels: every row has its own phone string in `strings_settings.xml` (English and Spanish). Other

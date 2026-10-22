@@ -247,8 +247,9 @@ final class PlayerPages {
         PlayerTweaksData tweaks = PlayerTweaksData.instance(context);
 
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_quality_intro)));
-        rows.add(defaultQuality(context, false));
-        rows.add(defaultQuality(context, true));
+        rows.add(defaultQuality(context, QUALITY_WIFI));
+        rows.add(defaultQuality(context, QUALITY_MOBILE));
+        rows.add(defaultQuality(context, QUALITY_SHORTS));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_audio)));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_loudness),
@@ -263,17 +264,21 @@ final class PlayerPages {
 
     /** "Auto (up to 1080p)" or the cap the user picked, for the Video quality row on the top level. */
     static CharSequence qualitySummary(Context context) {
-        CharSequence wifi = defaultQuality(context, false).summaryText();
+        CharSequence wifi = defaultQuality(context, QUALITY_WIFI).summaryText();
         if (PlayerData.instance(context).getCellularVideoFormat() == null) {
             return wifi != null ? wifi : "";
         }
         return context.getString(R.string.mobile_settings_quality_both, wifi,
-                defaultQuality(context, true).summaryText());
+                defaultQuality(context, QUALITY_MOBILE).summaryText());
     }
 
     private static final String QUALITY_AUTO = "auto";
     private static final String QUALITY_OTHER = "other";
     private static final String QUALITY_SAME = "same";
+    /** Which default a quality row sets. */
+    private static final int QUALITY_WIFI = 0;
+    private static final int QUALITY_MOBILE = 1;
+    private static final int QUALITY_SHORTS = 2;
 
     /**
      * YouTube-style quality choice: Auto plus one cap per resolution. Each cap is a preset (a
@@ -281,16 +286,20 @@ final class PlayerPages {
      * codec presets stay one level down, under Advanced > Video format. A preset picked there shows
      * here under its own name.
      */
-    private static SettingsRow defaultQuality(Context context, boolean mobileData) {
+    private static SettingsRow defaultQuality(Context context, int which) {
         PlayerData playerData = PlayerData.instance(context);
-        // METUBE(quality-network): one row for Wi-Fi, one for mobile data ("Same as Wi-Fi" = none).
-        FormatItem current = mobileData ? playerData.getCellularVideoFormat() : playerData.getWifiVideoFormat();
+        // METUBE(quality-network): one row for Wi-Fi, one for mobile data ("Same as Wi-Fi" = none),
+        // METUBE(shorts-quality): and one for Shorts, Auto (up to 1080p) at first (issue #26).
+        FormatItem current = which == QUALITY_MOBILE ? playerData.getCellularVideoFormat()
+                : which == QUALITY_SHORTS ? playerData.getShortsVideoFormat() : playerData.getWifiVideoFormat();
         SettingsRow.Pick<FormatItem> store = format -> {
             if (playerData.isLegacyCodecsForced()) {
                 playerData.setLegacyCodecsForced(false); // same as setFormat below
             }
-            if (mobileData) {
+            if (which == QUALITY_MOBILE) {
                 playerData.setCellularVideoFormat(format);
+            } else if (which == QUALITY_SHORTS) {
+                playerData.setShortsVideoFormat(format);
             } else {
                 playerData.setWifiVideoFormat(format);
             }
@@ -309,15 +318,17 @@ final class PlayerPages {
             }
         }
 
-        SettingsRow.Choice<String> choice = SettingsRow.choice(context.getString(mobileData
-                ? R.string.mobile_settings_quality_mobile : R.string.mobile_settings_quality_wifi));
+        SettingsRow.Choice<String> choice = SettingsRow.choice(context.getString(
+                which == QUALITY_MOBILE ? R.string.mobile_settings_quality_mobile
+                        : which == QUALITY_SHORTS ? R.string.mobile_settings_quality_shorts
+                        : R.string.mobile_settings_quality_wifi));
         String currentKey;
-        if (mobileData) {
+        if (which == QUALITY_MOBILE) {
             choice.option(context.getString(R.string.mobile_settings_quality_same), QUALITY_SAME);
         }
         choice.option(context.getString(R.string.mobile_settings_quality_auto, autoHeight),
                 context.getString(R.string.mobile_settings_quality_auto_desc), QUALITY_AUTO);
-        if (mobileData && current == null) {
+        if (which == QUALITY_MOBILE && current == null) {
             currentKey = QUALITY_SAME;
         } else {
             currentKey = current == null || !current.isPreset() ? QUALITY_AUTO : null;
