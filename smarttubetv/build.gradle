@@ -47,7 +47,7 @@ abstract class CopyRenamedApks extends DefaultTask {
 
         builtArtifacts.elements.each { artifact ->
             def abi = artifact.filters.find { it.filterType.toString() == 'ABI' }?.identifier ?: 'universal'
-            def version = artifact.versionName ?: 'unknown'
+            def version = (artifact.versionName ?: 'unknown').split(' ')[0] // without the code name
             def outputFile = new File(outputDirectory, "MeTube_${version}_${nameTag.get()}${abi}.apk")
             Files.copy(new File(artifact.outputFile).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
@@ -314,8 +314,10 @@ android {
             // fork-point 31.97/2387). versionCode starts at 10000 - above upstream's code so
             // existing test installs upgrade in place - and encodes the version:
             // 1.0.0 -> 10000, 1.0.1 -> 10001, 1.1.0 -> 10100, 2.0.0 -> 20000.
+            // METUBE: every release has a code name after its number (Settings > About, App info);
+            // APK files and the update manifest use the number alone.
             versionCode 30100
-            versionName "3.1.0"
+            versionName "3.1.0 DoomsSlay"
         }
     }
 }

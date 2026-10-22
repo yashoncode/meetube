@@ -99,7 +99,7 @@ def main():
 
     gradle = (ROOT / "smarttubetv" / "build.gradle").read_text(encoding="utf-8")
     # The stmobile flavor's pair (defaultConfig still carries upstream's 2387 / "31.97").
-    code = re.search(r'versionCode\s+(\d+)\s+versionName\s+"' + re.escape(name) + '"', gradle)
+    code = re.search(r'versionCode\s+(\d+)\s+versionName\s+"' + re.escape(name) + '( [^"]+)?"', gradle)
     if not code or int(code.group(1)) != version_code(name):
         sys.exit(f"build.gradle has no versionCode {version_code(name)} for versionName {name}")
 
