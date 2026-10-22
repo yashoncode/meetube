@@ -57,7 +57,8 @@
     <dimen name="mobile_settings_header_size">14sp</dimen>
     <!-- METUBE(glass): room under a list for the floating nav pill (68dp pill + 12dp margin + 12dp gap). -->
     <dimen name="metube_nav_clearance">92dp</dimen>
-    <!-- METUBE: the floating mini player, a size up from 180x102 (16:9). MINI_CARD_WIDTH_DP matches. -->
+    <!-- METUBE: the floating mini player, a size up from 180x102 (16:9); bigger on tablets
+         (values-sw600dp, -sw720dp, -sw800dp). -->
     <dimen name="metube_mini_width">216dp</dimen>
     <dimen name="metube_mini_height">122dp</dimen>
     <!-- METUBE(glass): the floating "Search settings" pill: under the title bar, and the room the

@@ -6758,10 +6758,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mMorphOverOwnBackdrop;
     /** NEWTUBE(motion): an open/expand morph is posted but has not placed its first frame yet. */
     private boolean mMorphStartPending;
-    private static final int MINI_CARD_WIDTH_DP = 216; // METUBE: = @dimen/metube_mini_width
     /** NEWTUBE(motion): see the mini expansion in onResume. */
     private static final long HOST_CARD_FOLD_WAIT_MS = 50;
-    private static final int MINI_CARD_HEIGHT_DP = 102;
     /**
      * NEWTUBE(motion): the corner radius and elevation the video box morphs to - the mini card's
      * (mobile_mini_player_overlay.xml) and a feed card thumbnail's. The box used to stay square with
@@ -6784,7 +6782,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** Compute the video transform (pivot 0,0) that maps the video area onto the mini card. */
     private void computeMorphTarget() {
         float density = getResources().getDisplayMetrics().density;
-        float cardW = MINI_CARD_WIDTH_DP * density;
+        float cardW = getResources().getDimension(R.dimen.metube_mini_width); // a tablet's is bigger
         float margin = 12 * density;
         // Card bottom offset comes from the DESTINATION host: Browse's card floats above its
         // 56dp bottom-nav row, Search/Channel overlay cards sit flush at the content bottom.
@@ -7301,9 +7299,8 @@ public class MobilePlaybackActivity extends MobileActivity
             if (captureFullSizeStill) {
                 frame = mVideoTexture.getBitmap();
             } else {
-                float density = getResources().getDisplayMetrics().density;
-                int width = Math.max(1, Math.round(MINI_CARD_WIDTH_DP * density));
-                int height = Math.max(1, Math.round(MINI_CARD_HEIGHT_DP * density));
+                int width = Math.max(1, getResources().getDimensionPixelSize(R.dimen.metube_mini_width));
+                int height = Math.max(1, getResources().getDimensionPixelSize(R.dimen.metube_mini_height));
                 frame = mVideoTexture.getBitmap(width, height);
             }
             if (frame != null) {
@@ -7322,9 +7319,9 @@ public class MobilePlaybackActivity extends MobileActivity
         MiniPlayerBridge.activate(this);
         // The card shows this player's live frames at card size: cap NEW chunks to that window.
         // Card px use the app density on purpose - it is the density the card is laid out with.
-        float cardDensity = getResources().getDisplayMetrics().density;
-        mExoPlayerController.setSmallWindowViewport("mini", Math.round(MINI_CARD_WIDTH_DP * cardDensity),
-                Math.round(MINI_CARD_HEIGHT_DP * cardDensity));
+        mExoPlayerController.setSmallWindowViewport("mini",
+                getResources().getDimensionPixelSize(R.dimen.metube_mini_width),
+                getResources().getDimensionPixelSize(R.dimen.metube_mini_height));
         // A deep-linked open arms ViewManager's player-only mode ("watch, then back to the
         // launcher"). Minimizing into an in-app host means the user is now USING the app, so
         // drop the flag - a stale one makes startParentView "exit to Home" on the next back
