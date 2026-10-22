@@ -297,6 +297,7 @@
     <string name="action_signin">Sign in</string>
     <string name="mobile_empty_generic">Nothing to show here yet</string>
     <string name="mobile_empty_subscriptions">Videos from channels you subscribe to show up here</string>
+    <string name="mobile_empty_my_videos">Your public uploads show up here. YouTube keeps private and unlisted videos out of the TV sign-in MeTube uses.</string>
     <!-- Same empty state, but the device has no working network: say so instead of blaming the feed. -->
     <string name="mobile_empty_no_connection">No connection. Check your network and try again.</string>
     <!-- Channel / uploads / playlist pages (MobileChannel*Activity): the first page failed with a

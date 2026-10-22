@@ -3238,7 +3238,10 @@ public class MobileBrowseActivity extends MobileActivity
                 // to carry, and running the section's own onAction here would be the wrong thing.
                 actionData = null;
             } else {
-                mErrorMessage.setText(R.string.mobile_empty_generic);
+                // Issue #19: TV, the one client that takes MeTube's sign-in, never lists private or
+                // unlisted uploads, not even to their owner, so an empty My videos needs saying why.
+                mErrorMessage.setText(mCurrentSectionId == MediaGroup.TYPE_MY_VIDEOS
+                        ? R.string.mobile_empty_my_videos : R.string.mobile_empty_generic);
                 mErrorAction.setVisibility(View.GONE);
             }
 
