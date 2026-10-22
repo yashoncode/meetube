@@ -5756,7 +5756,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // FROM CACHE ONLY and let the narrow one (also cached, by the related row) serve the miss.
         // METUBE(shorts): a short fills the screen - its portrait still, from the network if need be
         // (the Shorts overlay has usually preloaded it into memory for its swipe peek already).
-        mVideoStill.setScaleType(item.belongsToShorts() ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_XY);
+        mVideoStill.setScaleType(!item.belongsToShorts() ? ImageView.ScaleType.FIT_XY
+                : ShortsOverlay.fillsScreen(this) ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER);
         if (item.belongsToShorts() && !isFinishing() && !isDestroyed()) {
             ShortsOverlay.portrait(this, item.videoId).placeholder(seed).error(seed).into(mVideoStill);
             return;
@@ -10135,7 +10136,9 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     public void setResizeMode(int mode) {
         if (isShortsMode()) {
-            mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM; // shorts fill the screen
+            if (ShortsOverlay.fillsScreen(this)) {
+                mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM; // shorts fill a phone
+            }
         } else if (mPortraitFull && !isLandscape() || mCommentsSide
                 || mShorts != null && mShorts.isCommentsOpen()) {
             // METUBE(fullscreen): the whole picture, upright; ambient mode fills the bands. A pinch's

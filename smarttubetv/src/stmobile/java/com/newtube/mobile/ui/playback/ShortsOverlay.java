@@ -153,6 +153,9 @@ final class ShortsOverlay {
         mFlash = root.findViewById(R.id.mobile_shorts_flash);
         mHeart = root.findViewById(R.id.mobile_shorts_heart);
         mPeek = root.findViewById(R.id.mobile_shorts_peek);
+        if (!fillsScreen(root.getContext())) {
+            mPeek.setScaleType(ImageView.ScaleType.FIT_CENTER); // whole, as the video is (#25)
+        }
         mProgress = root.findViewById(R.id.mobile_shorts_progress);
         ShortsSeen.load(root.getContext());
 
@@ -231,8 +234,18 @@ final class ShortsOverlay {
     }
 
     /**
+     * A short fills a phone's screen (zoomed, YouTube's way), cropping a little off a 9:16 short's
+     * sides. A tablet's screen is shaped too unlike a short for that: there a short follows the
+     * zoom setting, so Default shows all of it - zoomed, a 4:5 short lost a fifth of its width (#25).
+     */
+    static boolean fillsScreen(@NonNull Context context) {
+        return context.getApplicationContext().getResources().getConfiguration().smallestScreenWidthDp < 600;
+    }
+
+    /**
      * The peek takes the video's own box (between the system bars), so the still a swipe lands on
-     * is framed exactly like the video that replaces it (both crop to fill: shorts play zoomed).
+     * is framed exactly like the video that replaces it (both crop to fill where shorts play
+     * zoomed, {@link #fillsScreen}).
      */
     void alignPeek(int top, int bottom) {
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mPeek.getLayoutParams();
