@@ -4,4 +4,6 @@
          here, 0.6 of the short side less 16dp edges: 341dp wide on a 600dp-wide screen. -->
     <dimen name="metube_mini_width">341dp</dimen>
     <dimen name="metube_mini_height">192dp</dimen>
+    <!-- METUBE(tablet): the nav pill centred and as wide as its five items need. -->
+    <dimen name="metube_nav_max_width">480dp</dimen>
 </resources>

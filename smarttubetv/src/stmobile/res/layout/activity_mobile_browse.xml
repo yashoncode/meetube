@@ -552,7 +552,8 @@
         app:glassTint="@color/metube_glass_tint"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_max="@dimen/metube_nav_max_width">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/mobile_bottom_nav"
