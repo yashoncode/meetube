@@ -51,6 +51,10 @@ public class CommentsPanelLayout extends FrameLayout implements NestedScrollingP
         /** METUBE(shorts): the sheet has started leaving (it is gone {@code durationMs} from now). */
         default void onPanelClosing(long durationMs) {
         }
+
+        /** METUBE(shorts): the sheet moved; {@code gone} is how far off the screen it is (0 open, 1 gone). */
+        default void onPanelMoved(float gone) {
+        }
     }
 
     static final Interpolator EMPHASIZED = new PathInterpolator(0.2f, 0f, 0f, 1f);
@@ -238,11 +242,19 @@ public class CommentsPanelLayout extends FrameLayout implements NestedScrollingP
 
     /** Sheet position: 0 = open, {@link #sheetRange()} = off the bottom. The scrim follows. */
     private void setOffset(float y) {
-        mSheet.setTranslationY(y);
+        moveSheet(y);
         float range = sheetRange();
         float shown = range > 0 ? 1f - Math.min(1f, Math.max(0f, y / range)) : 0f;
         mScrim.animate().cancel();
         mScrim.setAlpha(SCRIM_ALPHA * shown);
+    }
+
+    private void moveSheet(float y) {
+        mSheet.setTranslationY(y);
+        if (mCallback != null) {
+            float range = sheetRange();
+            mCallback.onPanelMoved(range > 0 ? Math.min(1f, Math.max(0f, y / range)) : 1f);
+        }
     }
 
     private void animateOffset(float to, long durationMs, Interpolator interpolator, @Nullable Runnable end) {
@@ -262,7 +274,7 @@ public class CommentsPanelLayout extends FrameLayout implements NestedScrollingP
             float y = (float) a.getAnimatedValue();
             if (closing) {
                 // Closing: the scrim runs on its own, longer fade (closeFrom); only move the sheet.
-                mSheet.setTranslationY(y);
+                moveSheet(y);
             } else {
                 setOffset(y);
             }

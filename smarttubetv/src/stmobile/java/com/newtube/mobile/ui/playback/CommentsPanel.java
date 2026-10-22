@@ -93,6 +93,10 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         /** METUBE(shorts): the panel has started closing; it is gone in {@code durationMs}. */
         default void onCommentsPanelClosing(long durationMs) {
         }
+
+        /** METUBE(shorts): the sheet moved, {@code gone} of the way off the screen (0 open, 1 gone). */
+        default void onCommentsPanelMoved(float gone) {
+        }
     }
 
     private static final int NO_FAILURE = -1;
@@ -680,6 +684,11 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
     @Override
     public void onPanelClosing(long durationMs) {
         mHost.onCommentsPanelClosing(durationMs);
+    }
+
+    @Override
+    public void onPanelMoved(float gone) {
+        mHost.onCommentsPanelMoved(gone);
     }
 
     @Override

@@ -994,6 +994,9 @@ public class MobilePlaybackActivity extends MobileActivity
             if ((r - l) != (or_ - ol) || (b - t) != (ob - ot)) {
                 applyControlsInsets();
             }
+            if (mShortsCommentsGone >= 0f) {
+                followShortsComments(mShortsCommentsGone); // METUBE(shorts): the box's new size
+            }
         });
 
         // No extra system-bar padding on the watch page itself: in portrait the Activity content
@@ -5981,6 +5984,63 @@ public class MobilePlaybackActivity extends MobileActivity
         return watch;
     }
 
+    /** METUBE(shorts): how far a short's open comments are off the screen (0 open, 1 gone); -1 none. */
+    private float mShortsCommentsGone = -1f;
+    private final int[] mShortsBoxAt = new int[2];
+
+    /**
+     * METUBE(shorts): the short above its comments grows and shrinks with the sheet a frame at a
+     * time, like YouTube's (#27). Scaled from its top centre and lifted, the box reaches down to
+     * the sheet's top edge; with the sheet gone it covers the whole window, where the full-screen
+     * layout then puts it, so the switch at the end does not show. Re-applied after each layout
+     * (the box shrinks to its third one frame after the sheet starts up).
+     */
+    private void followShortsComments(float gone) {
+        if (mVideoArea == null || mShorts == null || !mShorts.isCommentsOpen() || isLandscape()) {
+            return;
+        }
+        mShortsCommentsGone = gone;
+        int height = mVideoArea.getHeight();
+        int window = getWindow().getDecorView().getHeight();
+        if (height <= 0 || window <= height) {
+            return; // still the full-screen box
+        }
+        mVideoArea.getLocationInWindow(mShortsBoxAt);
+        float top = mShortsBoxAt[1] - mVideoArea.getTranslationY();
+        float scale = 1f + (window / (float) height - 1f) * gone;
+        mVideoArea.animate().cancel();
+        mVideoArea.setPivotX(mVideoArea.getWidth() / 2f);
+        mVideoArea.setPivotY(0f);
+        mVideoArea.setScaleX(scale);
+        mVideoArea.setScaleY(scale);
+        mVideoArea.setTranslationY(-top * gone);
+    }
+
+    /** METUBE(shorts): a short's comments are gone - the short takes the full screen again. */
+    private void onShortsCommentsClosed() {
+        boolean followed = mShortsCommentsGone >= 0.99f;
+        mShortsCommentsGone = -1f;
+        if (!followed) { // the sheet left without telling (predictive back): swell back
+            resetShortsBox();
+            growShortBack(220);
+            return;
+        }
+        // Already drawn full size: swap in the full-screen layout under the same picture.
+        mShorts.setCommentsOpen(false);
+        applyShortsLayout();
+        if (mVideoArea != null) {
+            OneShotPreDrawListener.add(mVideoArea, this::resetShortsBox);
+        }
+    }
+
+    private void resetShortsBox() {
+        if (mVideoArea != null) {
+            mVideoArea.setScaleX(1f);
+            mVideoArea.setScaleY(1f);
+            mVideoArea.setTranslationY(0f);
+        }
+    }
+
     /**
      * METUBE(shorts): leave the comments - the box takes the full screen at once and is scaled
      * down to where the short was, then grows into place (top-centre pivot), so the short swells
@@ -8781,19 +8841,19 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         @Override
-        public void onCommentsPanelClosing(long durationMs) {
-            // METUBE(shorts): as the comments slide away the short grows back to the full screen
-            // with them, like YouTube's, instead of waiting at the top over black.
-            if (mShorts != null && mShorts.isCommentsOpen()) {
-                growShortBack(durationMs);
-            }
+        public void onCommentsPanelMoved(float gone) {
+            // METUBE(shorts): as the comments slide the short grows or shrinks with them.
+            followShortsComments(gone);
         }
 
         @Override
         public void onCommentsPanelShown(boolean shown) {
             // METUBE(shorts): the comments of a short closed - it fills the screen again.
             if (!shown && mShorts != null && mShorts.isCommentsOpen()) {
-                growShortBack(220);
+                onShortsCommentsClosed();
+            } else if (!shown && mShortsCommentsGone >= 0f) { // Shorts left with the comments up
+                mShortsCommentsGone = -1f;
+                resetShortsBox();
             }
             // METUBE(fullscreen-actions): the landscape comments closed - the video takes the screen back.
             if (!shown && mCommentsSide && mCommentsPanel != null && !mCommentsPanel.isOpen()) {
