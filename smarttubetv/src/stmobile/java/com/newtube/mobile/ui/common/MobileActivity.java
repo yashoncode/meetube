@@ -10,6 +10,7 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.graphics.Insets;
@@ -57,6 +58,12 @@ public abstract class MobileActivity extends MotherActivity {
         mThemedNight = ThemeMode.currentNight(this);
         ThemeMode.register(this);
         AppIcon.syncTask(this);
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        FocusRing.install(getWindow()); // METUBE(tv): the remote's highlight, on every screen
     }
 
     @Override

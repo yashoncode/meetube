@@ -6,7 +6,8 @@
   ordinary touchscreen phones/tablets:
     * android.software.leanback  -> NOT required (TV manifest + leanbackassistant
       both declare it required=true; tools:replace forces the merged value false).
-    * android.hardware.touchscreen -> required (TV manifest declares it false).
+    * android.hardware.touchscreen -> NOT required either (METUBE(tv), issue #21): Android TV and
+      TV boxes have none, and the app is used there with the remote.
 
   SplashActivity already carries the normal LAUNCHER category in the main manifest,
   so no launcher changes are needed here - it routes via SplashPresenter ->
@@ -20,7 +21,7 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
-          tools:ignore="MissingLeanbackLauncher,UnsupportedTvHardware">
+          tools:ignore="UnsupportedTvHardware">
 
     <uses-feature
         android:name="android.software.leanback"
@@ -28,7 +29,7 @@
         tools:replace="android:required" />
     <uses-feature
         android:name="android.hardware.touchscreen"
-        android:required="true"
+        android:required="false"
         tools:replace="android:required" />
 
     <!-- Background audio: a media-playback foreground service (MobilePlaybackService) keeps the
@@ -88,6 +89,7 @@
          player re-colours its watch page in place so the video never stops. -->
     <application
         android:name="com.newtube.mobile.MobileMainApplication"
+        android:banner="@drawable/metube_tv_banner"
         android:theme="@style/Theme.NewTube"
         tools:replace="android:name,android:theme">
 
@@ -118,6 +120,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- METUBE(tv): the TV home screen's entry (the application's banner). -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity-alias>
         <activity-alias
@@ -130,6 +134,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- METUBE(tv): the TV home screen's entry (the application's banner). -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity-alias>
         <activity-alias
@@ -142,6 +148,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- METUBE(tv): the TV home screen's entry (the application's banner). -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity-alias>
 

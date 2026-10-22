@@ -1005,6 +1005,19 @@ public class MobileBrowseActivity extends MobileActivity
                 maybeTriggerPagination();
             }
         });
+        if (com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
+            // METUBE(tv): the remote's way to the chips is up from the first row, so there the feed
+            // goes back to its top and the chips come out (a touch gets them by scrolling up).
+            mContentGrid.getViewTreeObserver().addOnGlobalFocusChangeListener((oldFocus, newFocus) -> {
+                View item = newFocus != null ? mContentGrid.findContainingItemView(newFocus) : null;
+                int position = item != null ? mContentGrid.getChildAdapterPosition(item) : RecyclerView.NO_POSITION;
+                if (position != RecyclerView.NO_POSITION && mContentGrid.canScrollVertically(-1)
+                        && mLayoutManager.getSpanSizeLookup().getSpanGroupIndex(position,
+                                mLayoutManager.getSpanCount()) <= stripRows()) {
+                    mContentGrid.smoothScrollToPosition(0);
+                }
+            });
+        }
     }
 
     /**
@@ -2644,6 +2657,14 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void handleBack() {
+        // METUBE(tv): Back from the page goes to the bottom bar first - a remote has no other way
+        // down to it (Down keeps scrolling the feed). From the bar, Back does what it always did.
+        if (com.newtube.mobile.ui.common.FocusRing.isTv(this) && !mBottomNav.hasFocus()) {
+            View tab = mBottomNav.findViewById(mBottomNav.getSelectedItemId());
+            if (tab != null && tab.requestFocus()) {
+                return;
+            }
+        }
         // A grid section opened from a You-panel row: back returns to the panel (its natural
         // parent surface), like YouTube's You-tab sub-screens.
         if (mSectionFromYou && !mYouShowing) {

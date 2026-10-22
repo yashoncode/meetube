@@ -2227,6 +2227,10 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mClosing) {
             return;
         }
+        if (mControlsVisible && com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
+            hideControls(); // METUBE(tv): the remote's Back closes the controls before it leaves the video
+            return;
+        }
         if (!mBackPreview && mMorphAnimator == null && !mMorphStartPending && !mMagnetDragging
                 && mMorphFraction != 0f) {
             // METUBE(fullscreen): a morph left half-way with nothing moving it locks out Back, the
@@ -3642,7 +3646,77 @@ public class MobilePlaybackActivity extends MobileActivity
         if (CastVolumeKeys.onDispatchKeyEvent(this, event)) {
             return true;
         }
+        if (com.newtube.mobile.ui.common.FocusRing.isTv(this) && onRemoteKey(event)) {
+            return true;
+        }
         return super.dispatchKeyEvent(event);
+    }
+
+    /**
+     * METUBE(tv): the remote on the player (issue #21). Hidden controls: OK plays or pauses and shows
+     * them, Left and Right seek on the bar, Up and Down bring them up. Shown, the keys move between
+     * them as focus does anywhere, and each one keeps them up. A short: Up and Down change it, OK
+     * plays or pauses, unless one of its buttons has the focus.
+     */
+    private boolean onRemoteKey(KeyEvent event) {
+        int code = event.getKeyCode();
+        boolean ok = code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER;
+        boolean vertical = code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN;
+        boolean horizontal = code == KeyEvent.KEYCODE_DPAD_LEFT || code == KeyEvent.KEYCODE_DPAD_RIGHT;
+        boolean press = event.getAction() == KeyEvent.ACTION_DOWN;
+        boolean first = press && event.getRepeatCount() == 0;
+        if (mIsInPip || mPlayer == null || !(ok || vertical || horizontal)) {
+            return false;
+        }
+        if (mShorts != null && mShorts.isActive()) {
+            if (mShorts.holdsFocus() || horizontal) {
+                return false;
+            }
+            if (first && ok) {
+                togglePlayPause();
+            } else if (first && mPresenter != null) {
+                if (code == KeyEvent.KEYCODE_DPAD_DOWN) {
+                    mPresenter.onNextClicked();
+                } else {
+                    mPresenter.onPreviousClicked();
+                }
+            }
+            return true;
+        }
+        if (mControlsVisible) {
+            if (press) {
+                armAutoHide();
+            }
+            return false;
+        }
+        View focus = getCurrentFocus();
+        if (focus != null && !isDescendant(mVideoArea, focus)) {
+            return false; // on the watch page under the video: its own focus moves
+        }
+        if (press) {
+            showControlsInternal(true);
+            if (ok && first) {
+                togglePlayPause();
+            }
+            if (horizontal) {
+                // The double tap's jump (Settings > Player), not the bar's default 1/20 of the video.
+                mTimeBar.setKeyTimeIncrement(PlayerData.instance(this).getSeekIncrementMs());
+                mTimeBar.requestFocus();
+                mTimeBar.onKeyDown(code, event);
+            } else {
+                mPlayPauseButton.requestFocus();
+            }
+        }
+        return true;
+    }
+
+    private static boolean isDescendant(View parent, View view) {
+        for (Object at = view; at instanceof View; at = ((View) at).getParent()) {
+            if (at == parent) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void setupCastOverlay() {
@@ -4461,6 +4535,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (Build.VERSION.SDK_INT >= 24 && isInMultiWindowMode()) {
             return true;
         }
+        if (com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
+            return true; // METUBE(tv): a TV never turns - a portrait request only letterboxed the app
+        }
         return getApplicationContext().getResources().getConfiguration()
                 .smallestScreenWidthDp >= 600;
     }
@@ -4835,9 +4912,14 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean landscape = mSheetsOrientation == Configuration.ORIENTATION_LANDSCAPE;
         boolean immersive = landscape || (pageInsets != null
                 && !pageInsets.isVisible(androidx.core.view.WindowInsetsCompat.Type.statusBars()));
-        if (immersive && window != null) {
+        // METUBE(tv): not on a TV - no bars to keep away, and the window sometimes never got the
+        // focus back, so the remote's keys went on to the player under the sheet.
+        boolean focusLater = immersive && !com.newtube.mobile.ui.common.FocusRing.isTv(this);
+        if (focusLater && window != null) {
             window.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        }
+        if (immersive && window != null) {
             // NEWTUBE(sheet-landscape): the sheet's own window decides the bars from Android 12 on;
             // copying the player's legacy flags kept nothing hidden and the sheet jumped up.
             MobileSheets.keepSystemBarsHidden(window);
@@ -4882,7 +4964,7 @@ public class MobilePlaybackActivity extends MobileActivity
         BottomSheetBehavior<?> behavior = dialog.getBehavior();
         behavior.setSkipCollapsed(true);
         behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        if (immersive && window != null) {
+        if (focusLater && window != null) {
             dialog.setOnShowListener(d -> window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE));
         }
 

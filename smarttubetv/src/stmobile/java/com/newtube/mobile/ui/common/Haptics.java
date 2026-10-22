@@ -207,9 +207,12 @@ public final class Haptics {
                 new Class<?>[]{Window.Callback.class}, (proxy, method, args) -> {
                     if ("dispatchTouchEvent".equals(method.getName())) {
                         onTouch(window.peekDecorView(), (MotionEvent) args[0]);
-                    } else if ("onAttachedToWindow".equals(method.getName())
-                            && dialog instanceof com.google.android.material.bottomsheet.BottomSheetDialog) {
-                        SheetGlass.frost(dialog); // METUBE(glass): every sheet passes through here
+                    } else if ("onAttachedToWindow".equals(method.getName())) {
+                        if (dialog instanceof com.google.android.material.bottomsheet.BottomSheetDialog) {
+                            SheetGlass.frost(dialog); // METUBE(glass): every sheet passes through here
+                        }
+                        FocusRing.install(window); // METUBE(tv): and every dialog
+                        FocusRing.focusFirstRow(window);
                     }
                     try {
                         return method.invoke(callback, args);

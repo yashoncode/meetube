@@ -274,6 +274,8 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
             list.addView(view);
         }
         sheet.setContentView(content);
+        com.newtube.mobile.ui.common.FocusRing.install(sheet.getWindow()); // METUBE(tv)
+        com.newtube.mobile.ui.common.FocusRing.focusFirstRow(sheet.getWindow());
         // A long list (UI scale, quality) opens whole rather than half-peeked.
         sheet.getBehavior().setSkipCollapsed(true);
         sheet.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);

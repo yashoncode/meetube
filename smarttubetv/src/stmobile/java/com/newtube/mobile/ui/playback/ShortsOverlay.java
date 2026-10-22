@@ -260,6 +260,12 @@ final class ShortsOverlay {
         return mActive;
     }
 
+    /** METUBE(tv): one of the short's buttons has the remote's focus (Up and Down then move between them). */
+    boolean holdsFocus() {
+        View focus = mOverlay.findFocus();
+        return focus != null && focus != mOverlay;
+    }
+
     /** Shorts mode with the video filling the screen (not shrunk above the comments). */
     boolean isFullscreen() {
         return mActive && !mCommentsOpen;
