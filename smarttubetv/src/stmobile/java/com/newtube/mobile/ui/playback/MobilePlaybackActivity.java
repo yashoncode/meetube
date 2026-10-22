@@ -7366,15 +7366,39 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** NEWTUBE(motion): the buffering spinner's state, see showProgressBar. */
     private boolean mSpinnerShown;
+    /**
+     * METUBE(shorts): a short opening shows its still, like YouTube's, not a spinner over it; the
+     * spinner (white there) comes only for a load or stall longer than this.
+     */
+    private static final long SHORTS_SPINNER_DELAY_MS = 1000;
+    private final Runnable mShowShortsSpinner = () -> setSpinnerShown(true);
 
     @Override
     public void showProgressBar(boolean show) {
-        if (mProgressBar != null && show != mSpinnerShown) {
+        if (mProgressBar != null) {
+            mProgressBar.removeCallbacks(mShowShortsSpinner);
+            if (show && !mSpinnerShown && isShortsMode()) {
+                mProgressBar.postDelayed(mShowShortsSpinner, SHORTS_SPINNER_DELAY_MS);
+            } else {
+                setSpinnerShown(show);
+            }
+        }
+        // Fresh installs: while the one-time session setup is still running, tell the user why
+        // this first load is longer than usual. Never shows again once any fetch succeeded.
+        if (mSetupHint != null) {
+            mSetupHint.setVisibility(show && !SessionWarmup.isWarm() ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void setSpinnerShown(boolean show) {
+        if (show != mSpinnerShown) {
             // NEWTUBE(motion): fade in and out instead of popping, and take the play/pause glyph's
             // place rather than drawing over it (it spun around the pause bars on every open).
             mSpinnerShown = show;
             mProgressBar.animate().cancel();
             if (show) {
+                mProgressBar.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(
+                        isShortsMode() ? Color.WHITE : getColorInt(R.color.mobile_color_primary)));
                 mProgressBar.setAlpha(0f);
                 mProgressBar.setVisibility(View.VISIBLE);
                 mProgressBar.animate().alpha(1f).setDuration(Motion.FADE_IN_MS)
@@ -7385,11 +7409,6 @@ public class MobilePlaybackActivity extends MobileActivity
                         .withEndAction(() -> mProgressBar.setVisibility(View.GONE)).start();
             }
             syncPlayPauseWithSpinner();
-        }
-        // Fresh installs: while the one-time session setup is still running, tell the user why
-        // this first load is longer than usual. Never shows again once any fetch succeeded.
-        if (mSetupHint != null) {
-            mSetupHint.setVisibility(show && !SessionWarmup.isWarm() ? View.VISIBLE : View.GONE);
         }
     }
 

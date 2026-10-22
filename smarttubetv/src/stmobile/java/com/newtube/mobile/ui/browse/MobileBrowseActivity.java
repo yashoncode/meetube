@@ -1180,6 +1180,13 @@ public class MobileBrowseActivity extends MobileActivity
             if (isFreshShort(video) || (anyShort && video.belongsToShorts() && video.hasVideo())) {
                 mShortsLaunchPending = false;
                 mShortsLaunchPages = 0;
+                // The player covers the tab now (its window is translucent, so this one keeps
+                // drawing): a spinner left turning here redrew this window ~100 times a second
+                // under every short, GPU time taken from the player's own swipes.
+                View loading = findViewById(R.id.mobile_shorts_loading);
+                if (loading != null) {
+                    loading.setVisibility(View.GONE);
+                }
                 onVideoClicked(video);
                 return;
             }
