@@ -7283,6 +7283,12 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mPlayer == null) {
             return false;
         }
+        // METUBE(lyrics): the panel goes with the watch page. Left open, its window outlived the
+        // minimize and resetMorph faded it back in over the mini player (issue #30).
+        if (mLyricsSheet != null) {
+            mLyricsSheet.dismiss();
+            mLyricsSheet = null;
+        }
 
         // Freeze the current frame over the morphing video box, then detach the TextureView so
         // the session texture is free for the Browse card the moment it resumes (a SurfaceTexture
