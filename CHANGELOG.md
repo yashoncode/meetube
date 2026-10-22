@@ -2,6 +2,40 @@
 
 All notable user-facing changes to MeTube. MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases](https://github.com/aleixrodriala/newtube/releases).
 
+## 3.1.0 (2026-10-22): Actions in fullscreen, a video box that fits, quicker Shorts
+
+### New
+
+- **Like, comment and share in fullscreen.** A small frosted pill under the seek bar, in landscape and vertical fullscreen, has like, dislike, comments, download and share, with the same state as the watch page. The arrow beside the fullscreen button hides it, and MeTube remembers your choice (#9).
+- **The video box takes the video's shape.** A square or vertical video no longer sits in a 16:9 box with black bars at its sides. The box follows the video, up to two thirds of the screen, so the title and buttons stay in sight (#13).
+- **Live frosted glass over the player.** The settings sheet and the pickers opened over a video (download quality, repeat, zoom, save to playlist) blur the video as it keeps playing, instead of a frozen copy of it. Android 12 and newer (#17).
+- **Shorts swipe faster.** The next short starts opening while the old one slides away, and stays preloaded while the current one loops. A swipe now plays the next short about a third sooner, with no red spinner over it and no jump from its picture to its video.
+- **Comments beside the landscape video.** Comments opened in landscape fullscreen take a column on the right while the video plays on the left, like YouTube.
+- **YouTube's vertical fullscreen.** Minimize and headphones at the top left, the title and channel under them, the seek bar and the actions just above the gesture bar.
+- **Vertical videos go fullscreen upright.** The fullscreen button and the swipe up open a vertical video in vertical fullscreen, not turned to landscape with black bars.
+
+### Changed
+
+- **The mini player's buttons show on a tap**, like a picture-in-picture window. Tap the card for headphones, play/pause and close; tap the video while they show to open the player.
+- **Vertical videos play in 1080p.** They were capped at 480p. Full quality also arrives sooner: the low quality start is replaced once the connection allows it, in about 5 s on Wi-Fi instead of about 10.
+- **A quick double tap on play/pause plays or pauses**, like YouTube. With the controls hidden, the second tap used to hide them again.
+- **Player sheets in landscape stay still and scroll.** Every row is in reach, and the last row on screen is cut in half and fades out, a hint that the list goes on.
+- Shorts action buttons are a little smaller, and the second channel picture under them is gone.
+- Romanian, Russian and Simplified Chinese cover more of the app, thanks to NewTube's translators on [Weblate](https://hosted.weblate.org/projects/newtube/).
+
+### Fixed
+
+- **Home's grey placeholder stayed over the loaded videos** for seconds on slower phones, and could flash back when leaving Shorts. It now fades once (#20).
+- **My videos looked broken with private or unlisted uploads.** YouTube never lists those to MeTube's sign-in, only public ones; an empty My videos now says so instead of "Nothing to show here yet" (#19).
+- **No pause and rewind at the one minute mark.** When YouTube refuses a session at 60 seconds, the buffered video keeps playing while MeTube fetches a working link for the same stream.
+- **Previous goes back even with SponsorBlock.** A second tap returns to the previous video even when SponsorBlock skipped an intro, and that video resumes where you left it.
+- **The app opens on Android 7.0 again.**
+- **Fullscreen on Android 11:** the gesture bar no longer stays on screen.
+- Audio tracks are labelled better: original, dubbed and audio description tracks are told apart.
+- Home no longer looks like it is loading again after you leave the fullscreen player.
+- The app icon you picked shows on every launch screen and in recent apps, also after Android restarted MeTube in the background.
+- Videos open a little lighter: the remote control service is built only when it is used.
+
 ## 3.0.5 — 2026-10-21 — MeTube in Traditional Chinese, Shorts on channels, search chips
 
 ### New
