@@ -6,6 +6,9 @@
          the real current width instead of always the long screen dimension - that
          TV helper assumes landscape, which is wrong for a portrait phone). -->
     <dimen name="mobile_card_target_width">168dp</dimen>
+    <!-- METUBE(tablet): a sheet's widest, Material's 640dp; an upright tablet's sheets span the
+         screen (values-sw600dp-port), as a phone's do. -->
+    <dimen name="metube_sheet_max_width">640dp</dimen>
     <dimen name="mobile_card_spacing">8dp</dimen>
     <dimen name="mobile_card_corner_radius">20dp</dimen>
     <!-- Standard phone toolbar height (actionBarSize). -->

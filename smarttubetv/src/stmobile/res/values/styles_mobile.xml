@@ -159,6 +159,7 @@
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.NewTube.BottomSheet</item>
         <!-- METUBE: Material squares the top corners off once a sheet is expanded; keep them round. -->
         <item name="shouldRemoveExpandedCorners">false</item>
+        <item name="android:maxWidth">@dimen/metube_sheet_max_width</item>
     </style>
 
     <style name="ShapeAppearance.NewTube.BottomSheet" parent="">
