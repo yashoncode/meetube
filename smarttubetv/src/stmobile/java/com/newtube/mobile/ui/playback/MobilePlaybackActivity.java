@@ -2894,6 +2894,11 @@ public class MobilePlaybackActivity extends MobileActivity
             if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 return Math.min(height, Math.round(windowHeight * 0.6f));
             }
+            if (mShorts != null && mShorts.isCommentsOpen()) {
+                // METUBE(shorts): YouTube's split for a short's comments - the short in the top
+                // third, the comments under it. The two-thirds cap below left them a third (#27).
+                return windowHeight / 3;
+            }
             if (mInlineAspect > 0f && mInlineAspect < 16f / 9f) {
                 height = Math.min(Math.round(width / mInlineAspect), windowHeight * 2 / 3);
             }
@@ -10131,10 +10136,12 @@ public class MobilePlaybackActivity extends MobileActivity
     public void setResizeMode(int mode) {
         if (isShortsMode()) {
             mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM; // shorts fill the screen
-        } else if (mPortraitFull && !isLandscape() || mCommentsSide) {
+        } else if (mPortraitFull && !isLandscape() || mCommentsSide
+                || mShorts != null && mShorts.isCommentsOpen()) {
             // METUBE(fullscreen): the whole picture, upright; ambient mode fills the bands. A pinch's
             // "fill" (landscape) would crop a 16:9 video to a sliver of its middle here - and to
-            // its middle beside the landscape comments (METUBE(fullscreen-actions)).
+            // its middle beside the landscape comments (METUBE(fullscreen-actions)), and a short
+            // to a band of its middle in the third above its comments (#27).
             mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
         }
         if (mPlayerView != null) {
