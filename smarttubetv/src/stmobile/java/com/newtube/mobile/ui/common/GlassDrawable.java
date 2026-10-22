@@ -55,6 +55,24 @@ public final class GlassDrawable extends Drawable {
     private int mRecordedY = Integer.MIN_VALUE;
     @Nullable
     private final RenderNode mNode;
+    private boolean mPaused;
+
+    /**
+     * Off, {@code host}'s glass (from {@link #apply}) stops sampling its source and shows the tint
+     * alone. Every disc re-blurs its part of the video each frame: ten of them made 13% of the
+     * player's frames late on a vivo T3 Pro while a sheet covered them (#28).
+     */
+    public static void setLive(@NonNull View host, boolean live) {
+        Drawable background = host.getBackground();
+        if (background instanceof RippleDrawable
+                && ((RippleDrawable) background).getDrawable(0) instanceof GlassDrawable) {
+            GlassDrawable glass = (GlassDrawable) ((RippleDrawable) background).getDrawable(0);
+            if (glass.mPaused == live) {
+                glass.mPaused = !live;
+                glass.invalidateSelf();
+            }
+        }
+    }
 
     /** Makes {@code host}'s background the glass, inset {@code insetPx} from its edges, with a ripple. */
     public static void apply(@NonNull View host, @Nullable GlassSource source, int insetPx) {
@@ -78,7 +96,6 @@ public final class GlassDrawable extends Drawable {
         mLiquid = Glass.isLiquid(host.getContext());
         boolean live = GlassSource.HARDWARE && source != null;
         mNode = live ? new RenderNode("MeTube glass button") : null;
-        mTint.setColor(live ? TINT : FALLBACK_TINT);
         mNoise.setShader(new BitmapShader(GlassView.noise(), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
         mNoise.setAlpha(NOISE_ALPHA);
         mRim.setStyle(Paint.Style.STROKE);
@@ -116,7 +133,10 @@ public final class GlassDrawable extends Drawable {
             return;
         }
         float r = Math.min(mShape.width(), mShape.height()) / 2f;
-        if (mNode != null && canvas.isHardwareAccelerated() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        boolean live = mNode != null && !mPaused && canvas.isHardwareAccelerated()
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+        mTint.setColor(live ? TINT : FALLBACK_TINT);
+        if (live) {
             moved();
             mRecordedX = mLoc[0] - mSourceLoc[0];
             mRecordedY = mLoc[1] - mSourceLoc[1];
