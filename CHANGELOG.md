@@ -7,10 +7,10 @@ Every MeTube release, newest first.<br>
 
 </div>
 
-MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases](https://github.com/aleixrodriala/newtube/releases).
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.1.1** Spectre](#311-spectre) | 2026-10-22 | MeTube on Android TV, Shorts quality, tablet fixes |
 | [**3.1.0** DoomsSlay](#310-doomsslay) | 2026-10-22 | Actions in fullscreen, a video box that fits, quicker Shorts |
 | [**3.0.5**](#305) | 2026-10-21 | MeTube in Traditional Chinese, Shorts on channels, search chips |
 | [**3.0.1**](#301) | 2026-10-19 | YouTube's search filters, Shorts in search, a real channel page |
@@ -32,6 +32,40 @@ MeTube is a fork of NewTube; for NewTube's own history, see [NewTube's releases]
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.1.1 Spectre
+
+> **MeTube on Android TV, Shorts quality, tablet fixes**<br>
+> 📅 2026-10-22 · closes #21, #25, #26, #27, #28, #29 and #30
+
+### ✨ New
+
+- **MeTube on Android TV and TV boxes.** Install it on a TV, open it from the TV home screen and use it with just the remote. A white ring shows what you are on, everywhere. On Home, press Up from the first row for the topic chips and Back for the bottom bar. In the player, OK plays or pauses, Left and Right seek, Up and Down bring up the controls, and Back hides them before it leaves the video. In Shorts, Up and Down move between shorts. It is the same MeTube you know from your phone, not SmartTube's TV look (#21).
+- **Shorts have their own default quality.** Settings > Video quality has a Shorts row next to Wi-Fi and mobile data, so you can save data on Shorts and keep other videos sharp, or the other way round (#26).
+
+### 🛠️ Changed
+
+- **Shorts comments work like YouTube's.** They take two thirds of the screen with the whole short above them, and the short grows and shrinks with the comments as you drag them (#27).
+- **The floating fullscreen button is see-through**, with a dark ring, so it no longer hides the comments under it (#29).
+- **Tablets feel more at home.** A short shows whole when the zoom setting is Default, and its sides blend into the glow. The mini player is as big as picture-in-picture, sheets span an upright tablet's width, and the bottom bar is only as wide as its items (#25).
+
+### 🐛 Fixed
+
+- **The lyrics panel no longer follows you home.** Going Home with lyrics open used to carry the panel into the picture-in-picture window, and minimizing left it over the mini player. Lyrics and other open panels now close when the player shrinks (#30).
+- **The video stays smooth under the settings sheet.** It stuttered for a moment when the sheet opened (#28).
+- A long channel name on a short no longer splits the Subscribe button over two lines.
+
+### ✅ Issues resolved
+
+| Issue | Asked for | In 3.1.1 |
+| :-- | :-- | :-- |
+| [#21](https://github.com/yashoncode/metube/issues/21) | Use MeTube with a TV remote | A TV home screen entry and remote control on every screen |
+| [#25](https://github.com/yashoncode/metube/issues/25) | Shorts stretched on tablets | Tablets show the whole short when zoom is Default |
+| [#26](https://github.com/yashoncode/metube/issues/26) | A separate quality for Shorts | A Shorts row in Settings > Video quality |
+| [#27](https://github.com/yashoncode/metube/issues/27) | Shorts comments don't open fully | Comments take two thirds of the screen |
+| [#28](https://github.com/yashoncode/metube/issues/28) | Stutter when opening the video options | The video keeps playing smoothly |
+| [#29](https://github.com/yashoncode/metube/issues/29) | A lighter fullscreen button | A see-through button with a dark ring |
+| [#30](https://github.com/yashoncode/metube/issues/30) | Lyrics panel over the mini player | Open panels close when the player shrinks |
 
 ## 3.1.0 DoomsSlay
 
