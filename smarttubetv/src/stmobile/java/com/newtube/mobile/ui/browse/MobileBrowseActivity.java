@@ -447,7 +447,8 @@ public class MobileBrowseActivity extends MobileActivity
         if (visible) {
             mSkeletonShows++;
             mFeedSkeleton.animate().cancel();
-            mFeedSkeleton.setAlpha(1f);
+            // The Shorts tab shows a spinner, never the skeleton (showShortsTab).
+            mFeedSkeleton.setAlpha(mCurrentSectionId == MediaGroup.TYPE_SHORTS ? 0f : 1f);
             mFeedSkeleton.setVisibility(View.VISIBLE);
             return;
         }
@@ -459,12 +460,20 @@ public class MobileBrowseActivity extends MobileActivity
         if (mFeedSkeleton.getVisibility() != View.VISIBLE) {
             return;
         }
-        mFeedSkeleton.animate().cancel();
         if (mCurrentVideos.isEmpty()) {
+            mFeedSkeleton.animate().cancel();
             mFeedSkeleton.setVisibility(View.GONE);
             mFeedSkeleton.setAlpha(1f);
             return;
         }
+        // Issue #20: each page of a loading feed says "hide" again (3-8 times a page), and each call
+        // used to cancel the fade and start it over, so on a slow phone the skeleton stayed over
+        // the cards for as long as pages kept coming. One fade per show; only a new show stops it.
+        if (mSkeletonLeaving == mSkeletonShows) {
+            return;
+        }
+        mSkeletonLeaving = mSkeletonShows;
+        mFeedSkeleton.animate().cancel();
         int shows = mSkeletonShows;
         SkeletonReveal.fadeOverCards(mFeedSkeleton, mContentGrid, () -> shows == mSkeletonShows, () -> {
             mFeedSkeleton.setVisibility(View.GONE);
@@ -474,6 +483,8 @@ public class MobileBrowseActivity extends MobileActivity
 
     /** Counts skeleton shows, so a reveal waiting for its cards yields to a newer load. */
     private int mSkeletonShows;
+    /** The show whose fade-out is under way (setSkeletonVisible(false) starts one per show). */
+    private int mSkeletonLeaving = -1;
 
     // ---------------------------------------------------------------------------------
     // In-app mini-player bar
@@ -1192,7 +1203,11 @@ public class MobileBrowseActivity extends MobileActivity
     /** METUBE(shorts): the grid never shows on the Shorts tab - a spinner until the player opens. */
     private void showShortsTab(boolean shorts) {
         mContentSwipe.setAlpha(shorts ? 0f : 1f);
-        mFeedSkeleton.setAlpha(shorts ? 0f : 1f);
+        // A skeleton already fading out over the new tab's cards keeps its alpha: putting it back
+        // to 1 flashed it over them until the fade caught up.
+        if (shorts || mSkeletonLeaving != mSkeletonShows) {
+            mFeedSkeleton.setAlpha(shorts ? 0f : 1f);
+        }
         View loading = findViewById(R.id.mobile_shorts_loading);
         if (loading != null) {
             loading.setVisibility(shorts ? View.VISIBLE : View.GONE);
