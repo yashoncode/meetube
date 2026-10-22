@@ -856,6 +856,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 video.bottomMargin = bars.bottom;
                 glass.setLayoutParams(video);
             }
+            if (mShorts != null) {
+                mShorts.alignPeek(bars.top, bars.bottom);
+            }
             mVideoArea.setEdgeFade(isShortsMode() ? glass : null, dp(48));
             return insets;
         });
@@ -882,6 +885,11 @@ public class MobilePlaybackActivity extends MobileActivity
                 if (mPresenter != null) {
                     mPresenter.onPreviousClicked();
                 }
+            }
+
+            @Override
+            public void freezeShortFrame(boolean freeze) {
+                setShortFreeze(freeze);
             }
 
             @Override
@@ -5409,6 +5417,40 @@ public class MobilePlaybackActivity extends MobileActivity
         mVideoStill.setVisibility(View.GONE);
         contentFrame.addView(mVideoStill, 1, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    /** METUBE(shorts): the paged-away short's last frame, over the video while the next one opens. */
+    private ImageView mShortFreeze;
+
+    /**
+     * METUBE(shorts): a swipe opens the next short as the finger lifts, while the old one is still
+     * sliding away. The old one keeps its last frame (half size is plenty for 200 ms of motion) over
+     * whatever the new open draws - its still, its first frames - until the slide ends.
+     */
+    private void setShortFreeze(boolean freeze) {
+        if (!freeze) {
+            if (mShortFreeze != null) {
+                mShortFreeze.setVisibility(View.GONE);
+                mShortFreeze.setImageDrawable(null);
+            }
+            return;
+        }
+        if (mVideoTexture == null || !mVideoTexture.isAvailable()) {
+            return;
+        }
+        Bitmap frame = mVideoTexture.getBitmap(Math.max(1, mVideoTexture.getWidth() / 2),
+                Math.max(1, mVideoTexture.getHeight() / 2));
+        if (frame == null) {
+            return;
+        }
+        if (mShortFreeze == null) {
+            mShortFreeze = new ImageView(this);
+            mShortFreeze.setScaleType(ImageView.ScaleType.FIT_XY);
+            mPlayerView.getContentFrame().addView(mShortFreeze, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        }
+        mShortFreeze.setImageBitmap(frame);
+        mShortFreeze.setVisibility(View.VISIBLE);
     }
 
     private final TextureView.SurfaceTextureListener mVideoTextureListener = new TextureView.SurfaceTextureListener() {

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -52,6 +53,9 @@ final class ShortsOverlay {
         void playNextShort();
 
         void playPreviousShort();
+
+        /** Hold (or drop) the playing short's last frame over the video while the next one opens. */
+        void freezeShortFrame(boolean freeze);
 
         void openShortsComments();
 
@@ -121,6 +125,16 @@ final class ShortsOverlay {
     private boolean mCommentsOpen;
     private boolean mScrubbing;
     private long mDurationMs;
+    /** A swipe committed: the old short slides away while the new one already opens under it. */
+    private boolean mPaging;
+    private boolean mPagingNext;
+    private boolean mPagedOpen;
+    private final Runnable mOpenPaged = this::openPaged;
+    /** When in the slide the paged-to short opens (share of the slide's duration). */
+    private static final float OPEN_AT_SLIDE = 0.4f;
+    /** The new short's bind, held until the old one has slid away (its text slides with it). */
+    @Nullable
+    private Video mPendingBind;
 
     ShortsOverlay(@NonNull View root, @NonNull View video, @NonNull Host host, @NonNull Watch watch) {
         mOverlay = root.findViewById(R.id.mobile_shorts_overlay);
@@ -205,12 +219,28 @@ final class ShortsOverlay {
 
     /** The portrait still of a short - one request shape for the peek, its preload and the host's still. */
     static RequestBuilder<Drawable> portrait(@NonNull Context context, @NonNull String videoId) {
+        // fitCenter, not centerCrop: oar2 is the short's own aspect, and the views showing it crop
+        // it into the video's box as the player crops the video - cropped twice, it jumped when
+        // the video replaced it.
         return Glide.with(context.getApplicationContext())
                 .load("https://i.ytimg.com/vi/" + videoId + "/oar2.jpg")
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .format(DecodeFormat.PREFER_RGB_565)
                 .override(PORTRAIT_W, PORTRAIT_H)
-                .centerCrop();
+                .fitCenter();
+    }
+
+    /**
+     * The peek takes the video's own box (between the system bars), so the still a swipe lands on
+     * is framed exactly like the video that replaces it (both crop to fill: shorts play zoomed).
+     */
+    void alignPeek(int top, int bottom) {
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mPeek.getLayoutParams();
+        if (lp.topMargin != top || lp.bottomMargin != bottom) {
+            lp.topMargin = top;
+            lp.bottomMargin = bottom;
+            mPeek.setLayoutParams(lp);
+        }
     }
 
     boolean isActive() {
@@ -242,6 +272,16 @@ final class ShortsOverlay {
     /** Every setVideo: shorts mode follows the video that is playing now. */
     void bind(@Nullable Video item) {
         boolean on = item != null && item.belongsToShorts();
+        if (on && mPaging && !item.equals(mCurrent)) {
+            mPendingBind = item;
+            return;
+        }
+        if (!on) {
+            // Left Shorts mid-slide: nothing to open or bind.
+            mPagedOpen = true;
+            mPendingBind = null;
+            endPaging();
+        }
         if (on) {
             boolean fresh = mCurrent == null || !mCurrent.equals(item);
             mCurrent = item;
@@ -301,7 +341,7 @@ final class ShortsOverlay {
     }
 
     void setProgress(long positionMs, long durationMs) {
-        if (mActive && !mScrubbing) {
+        if (mActive && !mScrubbing && !mPaging) {
             mDurationMs = durationMs;
             mProgress.setProgress(durationMs > 0 ? (int) (positionMs * 1000 / durationMs) : 0);
         }
@@ -333,6 +373,10 @@ final class ShortsOverlay {
     /** The short follows the finger; the neighbour's thumbnail comes in behind it. */
     void drag(float dy) {
         int dir = dy < 0 ? 1 : dy > 0 ? -1 : 0; // finger up: the next short comes up from below
+        if (mPaging) {
+            mVideo.animate().cancel(); // a new swipe inside the slide: land the last one first
+            endPaging();
+        }
         if (dir != mPeekDir) {
             showPeek(dir);
         }
@@ -351,23 +395,58 @@ final class ShortsOverlay {
         }
         boolean next = dy < 0;
         float left = 1f - Math.min(1f, Math.abs(mVideo.getTranslationY()) / height);
-        mVideo.animate().translationY(next ? -height : height).setDuration(Math.max(90, (long) (OUT_MS * left)))
+        long duration = Math.max(90, (long) (OUT_MS * left));
+        // The next short opens while the old one is still sliding away (it used to start only once
+        // the slide was over, so every swipe waited the slide plus the open). Not at the very lift:
+        // the open's main-thread work would stutter the slide where it moves fastest. At 40% of the
+        // slide (~65% of its travel) the rest is the slow tail, where a dropped frame does not show.
+        mPaging = true;
+        mPagingNext = next;
+        mPagedOpen = false;
+        mOverlay.postDelayed(mOpenPaged, (long) (duration * OPEN_AT_SLIDE));
+        mVideo.animate().translationY(next ? -height : height).setDuration(duration)
                 .setInterpolator(new DecelerateInterpolator())
-                .withEndAction(() -> {
-                    mProgress.setProgress(0);
-                    // The thumbnail now fills the screen: it stays there, over the old short's last
-                    // frame, until the new one is bound (bind hides it).
-                    mPeekDir = 0;
-                    mPeek.setTranslationY(0f);
-                    mVideo.setTranslationY(0f);
-                    mOverlay.removeCallbacks(mHidePeek);
-                    mOverlay.postDelayed(mHidePeek, PEEK_COVER_MAX_MS);
-                    if (next) {
-                        mHost.playNextShort();
-                    } else {
-                        mHost.playPreviousShort();
-                    }
-                }).start();
+                .withEndAction(this::endPaging).start();
+    }
+
+    /** The paged-to short opens, under the paged-away one's frozen last frame. */
+    private void openPaged() {
+        if (!mPaging || mPagedOpen) {
+            return;
+        }
+        mPagedOpen = true;
+        mHost.freezeShortFrame(true);
+        if (mPagingNext) {
+            mHost.playNextShort();
+        } else {
+            mHost.playPreviousShort();
+        }
+    }
+
+    /** The slide is over (or cut short): the new short takes the screen. */
+    private void endPaging() {
+        if (!mPaging) {
+            return;
+        }
+        mOverlay.removeCallbacks(mOpenPaged);
+        openPaged(); // a slide cut short before its open: open now
+        mPaging = false;
+        mProgress.setProgress(0);
+        // The thumbnail now fills the screen: it stays there, over the new short's opening video,
+        // until the new one is bound (bind hides it) - by now usually already playing under it.
+        mPeekDir = 0;
+        mPeek.setTranslationY(0f);
+        mVideo.setTranslationY(0f);
+        mOverlay.removeCallbacks(mHidePeek);
+        mOverlay.postDelayed(mHidePeek, PEEK_COVER_MAX_MS);
+        mHost.freezeShortFrame(false);
+        Video pending = mPendingBind;
+        mPendingBind = null;
+        if (pending != null) {
+            bind(pending);
+            // Its still (or already its video) has been under the frozen frame since the open.
+            hidePeek();
+        }
     }
 
     private void showChrome(boolean show) {
