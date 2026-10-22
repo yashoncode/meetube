@@ -3035,6 +3035,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private void applyPipVideoOnlyLayout() {
         cancelAutoHide();
         hideControls();
+        // METUBE(lyrics): a sheet's window belongs to this activity, so it shrank into the pinned
+        // window too (the lyrics panel left open over the launcher, issue #30).
+        dismissPlayerSheets();
         if (mShorts != null) {
             mShorts.setInPip(true); // METUBE(shorts-pip): only the short, no side buttons
         }
