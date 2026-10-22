@@ -232,12 +232,29 @@ public class Media3NextPreloaderTest {
     }
 
     @Test
-    public void seekOrFormatChangeCancelsEvenACompletedUnusedPreload() {
+    public void formatChangeCancelsEvenACompletedUnusedPreload() {
         preloader.offer("next", source);
         events.onCompleted();
-        preloader.cancel("seek");
+        preloader.cancel("format-change");
         assertEquals(1, engine.removed.size());
         assertEquals(1, discarded.size());
+    }
+
+    @Test
+    public void seekStopsAnInFlightPreload() {
+        preloader.offer("next", source);
+        preloader.onSeek();
+        assertEquals(1, engine.removed.size());
+        assertEquals(1, discarded.size());
+    }
+
+    @Test
+    public void seekKeepsACompletedPreload() {
+        preloader.offer("next", source);
+        events.onCompleted();
+        preloader.onSeek(); // a short looping back to 0
+        assertTrue(engine.removed.isEmpty());
+        assertTrue(preloader.isReady("next"));
     }
 
     @Test

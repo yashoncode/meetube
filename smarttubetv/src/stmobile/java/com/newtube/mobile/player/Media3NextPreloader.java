@@ -242,6 +242,17 @@ final class Media3NextPreloader {
         // or the next reset/release. Removing it here during an early loading event loses handoff.
     }
 
+    /**
+     * A seek re-buffers the foreground: a sample still loading stops for it, a finished one stays.
+     * METUBE(shorts): a short loops by seeking to 0, which threw away the next short's ready
+     * sample and left the swipe a cold start.
+     */
+    void onSeek() {
+        if (mPending != null && !mPending.complete) {
+            cancelPending("seek");
+        }
+    }
+
     void onForegroundError() {
         cancelPending("foreground-error");
         releaseAdopting();

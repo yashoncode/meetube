@@ -746,7 +746,7 @@ public class Media3PlayerController implements Player.Listener {
 
     private void seekTo(long positionMs) {
         if (mNextPreloader != null) {
-            mNextPreloader.cancel("seek");
+            mNextPreloader.onSeek();
         }
         // A pending seek before the timeline is known is accepted; once duration is known,
         // clamp tiny overflows instead of dropping the jump (same fix as the legacy controller).
@@ -1122,7 +1122,9 @@ public class Media3PlayerController implements Player.Listener {
 
     public void selectFormat(FormatItem formatItem) {
         if (formatItem != null && mTrackAdapter != null) {
-            if (mNextPreloader != null) {
+            // A subtitle pick (the settings' language lands ~1 s into each short) leaves the next
+            // video's preload alone: it never loads text tracks.
+            if (mNextPreloader != null && formatItem.getType() != FormatItem.TYPE_SUBTITLE) {
                 mNextPreloader.cancel("format-change");
             }
             mTrackAdapter.selectFormat(formatItem);
@@ -1450,7 +1452,7 @@ public class Media3PlayerController implements Player.Listener {
         }
         if (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
             if (mNextPreloader != null) {
-                mNextPreloader.cancel("seek");
+                mNextPreloader.onSeek();
             }
             mEventListener.onSeekEnd();
             // SmartTube 6331ce5: seek completion resets the buffering watchdog. Media3 may
