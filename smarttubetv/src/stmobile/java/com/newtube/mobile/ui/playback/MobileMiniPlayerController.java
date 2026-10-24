@@ -356,11 +356,15 @@ public final class MobileMiniPlayerController {
             final TextureView texture = new TextureView(mActivity);
             texture.setOpaque(false); // NEWTUBE(texture-opaque): see MobilePlaybackActivity
             texture.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+                /** The session texture this view adopted: the player's, never released here. */
+                private SurfaceTexture mAdopted;
+
                 @Override
                 public void onSurfaceTextureAvailable(SurfaceTexture created, int width, int height) {
                     SurfaceTexture session = MiniPlayerBridge.getSessionTexture();
                     if (session != null && created != session) {
                         texture.setSurfaceTexture(session);
+                        mAdopted = session;
                         created.release();
                     }
                 }
@@ -372,8 +376,10 @@ public final class MobileMiniPlayerController {
                 @Override
                 public boolean onSurfaceTextureDestroyed(SurfaceTexture texture) {
                     // The playback Activity owns the session texture. Release only a temporary
-                    // TextureView-created surface that was never replaced by that session.
-                    return texture != MiniPlayerBridge.getSessionTexture();
+                    // TextureView-created surface that was never replaced by that session - checked
+                    // against the one adopted too: the bridge hands out nothing once the player
+                    // took the session back (METUBE(issue #38)).
+                    return texture != mAdopted && texture != MiniPlayerBridge.getSessionTexture();
                 }
 
                 @Override

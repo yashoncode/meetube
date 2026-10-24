@@ -726,6 +726,9 @@ public class MobileBrowseActivity extends MobileActivity
             final TextureView textureView = new TextureView(this);
             textureView.setOpaque(false); // NEWTUBE(texture-opaque): see MobilePlaybackActivity
             textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+                /** The session texture this view adopted: the player's, never released here. */
+                private SurfaceTexture mAdopted;
+
                 @Override
                 public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
                     SurfaceTexture session = MiniPlayerBridge.getSessionTexture();
@@ -743,6 +746,7 @@ public class MobileBrowseActivity extends MobileActivity
                             && !(Build.VERSION.SDK_INT >= 26 && session.isReleased())) {
                         try {
                             textureView.setSurfaceTexture(session);
+                            mAdopted = session;
                             texture.release(); // the view-created texture is never used
                         } catch (IllegalArgumentException released) {
                             // released after the check: keep the view's own texture
@@ -763,8 +767,11 @@ public class MobileBrowseActivity extends MobileActivity
                 @Override
                 public boolean onSurfaceTextureDestroyed(SurfaceTexture texture) {
                     // Never release the session texture - the playback activity owns it. Only a
-                    // view-created texture that was never swapped out may die here.
-                    return texture != MiniPlayerBridge.getSessionTexture();
+                    // view-created texture that was never swapped out may die here. METUBE(issue
+                    // #38): checked against the one adopted, not the bridge's - a card floated in
+                    // PiP is removed after the player took the session back, when the bridge
+                    // hands out nothing, and released the player's live texture (crash on expand).
+                    return texture != mAdopted && texture != MiniPlayerBridge.getSessionTexture();
                 }
 
                 @Override
@@ -876,7 +883,14 @@ public class MobileBrowseActivity extends MobileActivity
         ExoPlayer player = MiniPlayerBridge.getPlayer();
         if (player == null) {
             // The hidden playback activity died (system kill / finished elsewhere): fold the bar.
+            boolean pinned = mMiniPip != null && mMiniPip.isPinned();
             hideMiniPlayer();
+            if (pinned) {
+                // METUBE(issue #38): or it took the video back while this copy of Home floated
+                // (the app reopened from the launcher): the window goes, as when it is closed.
+                // Left up, it showed Home's bars in PiP and a second Home opened under it.
+                finishAndRemoveTask();
+            }
             return;
         }
         long duration = player.getDuration();
