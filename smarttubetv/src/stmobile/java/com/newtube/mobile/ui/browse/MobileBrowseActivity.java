@@ -384,13 +384,12 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void padUnderTopBar(int barPx) {
-        for (View page : new View[] {mContentGrid, mYouPanel, mFeedSkeleton, mErrorContainer}) {
+        // The You rows, not their scroll view: its avatar glow runs up under the pills (METUBE(you-glow)).
+        for (View page : new View[] {mContentGrid, findViewById(R.id.mobile_you_content), mFeedSkeleton,
+                mErrorContainer}) {
             if (page != null) {
                 page.setPadding(page.getPaddingLeft(), barPx, page.getPaddingRight(), page.getPaddingBottom());
             }
-        }
-        if (mYouPanel instanceof ViewGroup) {
-            ((ViewGroup) mYouPanel).setClipToPadding(false);
         }
         int spinner = Math.round(40 * getResources().getDisplayMetrics().density);
         mContentSwipe.setProgressViewOffset(false, barPx - spinner, barPx + spinner / 2);
@@ -2490,11 +2489,31 @@ public class MobileBrowseActivity extends MobileActivity
             } else {
                 mYouAvatar.setImageResource(R.drawable.ic_mobile_account);
             }
+            showYouBackdrop(avatarUrl);
         } else {
             mYouAccountText.setText(R.string.dialog_add_account);
             mYouAccountSub.setVisibility(View.GONE);
             mYouAvatar.setImageResource(R.drawable.ic_mobile_account);
+            showYouBackdrop(null);
         }
+    }
+
+    /**
+     * METUBE(you-glow): the avatar as the You header's glow, loaded tiny (blurred by the upscale
+     * alone below API 31) and blurred on the GPU above it. Signed out: none, the page stays black.
+     */
+    private void showYouBackdrop(@Nullable String avatarUrl) {
+        android.widget.ImageView backdrop = findViewById(R.id.mobile_you_backdrop_image);
+        if (avatarUrl == null || avatarUrl.isEmpty()) {
+            com.bumptech.glide.Glide.with(this).clear(backdrop);
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            float blur = 48 * getResources().getDisplayMetrics().density;
+            backdrop.setRenderEffect(android.graphics.RenderEffect.createBlurEffect(blur, blur,
+                    android.graphics.Shader.TileMode.CLAMP));
+        }
+        com.bumptech.glide.Glide.with(this).load(avatarUrl).override(32).into(backdrop);
     }
 
     @Override

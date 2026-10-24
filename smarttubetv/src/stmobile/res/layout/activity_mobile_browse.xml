@@ -126,7 +126,34 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:visibility="visible">
 
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <!-- METUBE(you-glow): the account's avatar, blurred, washed down into the black page
+                 behind the header and the top pills (the rows below are padded by padUnderTopBar). -->
+            <FrameLayout
+                android:id="@+id/mobile_you_backdrop"
+                android:layout_width="match_parent"
+                android:layout_height="320dp">
+
+                <ImageView
+                    android:id="@+id/mobile_you_backdrop_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha="0.55"
+                    android:contentDescription="@null"
+                    android:scaleType="centerCrop" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/mobile_playlist_header_scrim" />
+
+            </FrameLayout>
+
             <LinearLayout
+                android:id="@+id/mobile_you_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -207,6 +234,8 @@
                     android:orientation="vertical" />
 
             </LinearLayout>
+
+            </FrameLayout>
 
         </ScrollView>
 
