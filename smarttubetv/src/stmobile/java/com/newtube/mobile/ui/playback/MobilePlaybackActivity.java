@@ -899,6 +899,11 @@ public class MobilePlaybackActivity extends MobileActivity
                     return; // comments still loading (or off for this short)
                 }
                 mShorts.setCommentsOpen(true);
+                if (isLandscape()) { // #57: beside the short, as beside a fullscreen video
+                    setCommentsSide(true);
+                    OneShotPreDrawListener.add(mWatchRoot, MobilePlaybackActivity.this::onCommentsEntryClicked);
+                    return;
+                }
                 applyShortsLayout();
                 onCommentsEntryClicked();
             }
@@ -2153,6 +2158,9 @@ public class MobilePlaybackActivity extends MobileActivity
             dismissPlayerSheets();
         }
         applyWatchLayoutForOrientation(orientation);
+        if (mShorts != null && mShorts.isActive()) {
+            applyShortsLayout(); // METUBE(issue #57): the short's zoom and glow for the new shape
+        }
         applySystemBarsForOrientation(orientation);
         updateFullscreenIcon(orientation);
         onFullscreenSwipeConfigured();
@@ -6483,8 +6491,12 @@ public class MobilePlaybackActivity extends MobileActivity
                 && y >= at[1] && y < at[1] + mWatchScroll.getHeight();
     }
 
+    /**
+     * Any orientation (#57): landscape used to fall back to the ordinary fullscreen player under
+     * the Shorts overlay, so a vertical swipe set the brightness instead of paging.
+     */
     private boolean isShortsMode() {
-        return mShorts != null && mShorts.isFullscreen() && !isLandscape();
+        return mShorts != null && mShorts.isFullscreen();
     }
 
     /**

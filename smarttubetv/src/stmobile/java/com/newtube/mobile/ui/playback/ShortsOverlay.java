@@ -2,6 +2,7 @@ package com.newtube.mobile.ui.playback;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
@@ -152,9 +153,6 @@ final class ShortsOverlay {
         mFlash = root.findViewById(R.id.mobile_shorts_flash);
         mHeart = root.findViewById(R.id.mobile_shorts_heart);
         mPeek = root.findViewById(R.id.mobile_shorts_peek);
-        if (!fillsScreen(root.getContext())) {
-            mPeek.setScaleType(ImageView.ScaleType.FIT_CENTER); // whole, as the video is (#25)
-        }
         mProgress = root.findViewById(R.id.mobile_shorts_progress);
         ShortsSeen.load(root.getContext());
 
@@ -235,9 +233,11 @@ final class ShortsOverlay {
      * A short fills a phone's screen (zoomed, YouTube's way), cropping a little off a 9:16 short's
      * sides. A tablet's screen is shaped too unlike a short for that: there a short follows the
      * zoom setting, so Default shows all of it - zoomed, a 4:5 short lost a fifth of its width (#25).
+     * So does a phone held sideways, where filling would leave a band of the short's middle (#57).
      */
     static boolean fillsScreen(@NonNull Context context) {
-        return context.getApplicationContext().getResources().getConfiguration().smallestScreenWidthDp < 600;
+        return context.getApplicationContext().getResources().getConfiguration().smallestScreenWidthDp < 600
+                && context.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE;
     }
 
     /**
@@ -481,6 +481,9 @@ final class ShortsOverlay {
             return;
         }
         mOverlay.removeCallbacks(mHidePeek);
+        // Whole where the video is whole (#25), and the phone can turn under a short (#57).
+        mPeek.setScaleType(fillsScreen(mPeek.getContext()) ? ImageView.ScaleType.CENTER_CROP
+                : ImageView.ScaleType.FIT_CENTER);
         float height = mVideo.getHeight();
         mPeek.setTranslationY(dir > 0 ? height : -height);
         mPeek.setVisibility(View.VISIBLE);
