@@ -39,6 +39,7 @@ final class ExploreDrawer {
             {MediaGroup.TYPE_NEWS, R.drawable.ic_explore_news},
             {MediaGroup.TYPE_SPORTS, R.drawable.ic_explore_sports}};
     private static final long SLIDE_MS = 220;
+    private static final float CORNER_DP = 24f;
 
     private ExploreDrawer() {
     }
@@ -50,6 +51,16 @@ final class ExploreDrawer {
         dialog.setContentView(R.layout.mobile_explore_drawer);
         View scrim = dialog.findViewById(R.id.mobile_explore_scrim);
         View panel = dialog.findViewById(R.id.mobile_explore_panel);
+        // Rounded on its open side: the outline runs a radius past the left edge, so only the
+        // right corners curve; it clips the frost, the glow and the shadow alike.
+        float corner = CORNER_DP * activity.getResources().getDisplayMetrics().density;
+        panel.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, android.graphics.Outline outline) {
+                outline.setRoundRect(-Math.round(corner), 0, view.getWidth(), view.getHeight(), corner);
+            }
+        });
+        panel.setClipToOutline(true);
         LinearLayout items = dialog.findViewById(R.id.mobile_explore_items);
         for (int[] row : ROWS) {
             BrowseSection section = find(sections, row[0]);
