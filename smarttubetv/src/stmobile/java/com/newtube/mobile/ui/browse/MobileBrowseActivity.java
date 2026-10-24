@@ -1833,6 +1833,9 @@ public class MobileBrowseActivity extends MobileActivity
                             ? getString(R.string.mobile_feed_all) : section.getTitle(), null, null));
                 }
             }
+            if (chips.size() > 1) {
+                chips.add(0, new FeedStrip.Item(FeedStrip.EXPLORE, "", null, null)); // METUBE(explore)
+            }
             mStrip.show(chips.size() > 1 ? FeedStrip.MODE_CHIPS : FeedStrip.MODE_NONE, chips, mCurrentSectionId);
             updateChipRow();
         } else if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
@@ -1868,7 +1871,12 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void onStripPicked(FeedStrip.Item item) {
-        if (mStrip.mode() == FeedStrip.MODE_CHIPS) {
+        if (item.id == FeedStrip.EXPLORE) {
+            ExploreDrawer.show(this, mSections, sectionId -> {
+                mSectionFromYou = false;
+                onSectionChosen(sectionId);
+            });
+        } else if (mStrip.mode() == FeedStrip.MODE_CHIPS) {
             // A topic opens in Home's place: Home's tab stays lit (no tab of its own), Back = Home.
             mSectionFromYou = false;
             onSectionChosen((int) item.id);

@@ -23,6 +23,7 @@
     <string name="mobile_player_sleep_timer">Sleep timer</string>
     <!-- METUBE(feed-strip): the first chip on Home and the first avatar on Subscriptions. -->
     <string name="mobile_feed_all">All</string>
+    <string name="mobile_explore">Explore</string>
     <string name="mobile_feed_show_filters">Show filters</string>
     <!-- METUBE(autoplay): gear-sheet switch over Settings > When a video ends (on = next, off = pause). -->
     <string name="mobile_player_autoplay">Autoplay</string>
