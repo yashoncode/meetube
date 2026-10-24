@@ -44,6 +44,7 @@ public final class MobileMiniPlayerController {
     private final ImageButton mPlayPause;
     private final ImageButton mClose;
     private final ProgressBar mProgress;
+    private final MiniControls mControls;
     private final Runnable mTick = this::onTick;
     /**
      * SCREEN-ON (#50): the card's screen-on hold follows the player's own events, not the 500 ms
@@ -89,6 +90,7 @@ public final class MobileMiniPlayerController {
         mClose = activity.findViewById(R.id.mobile_mini_close);
         mProgress = activity.findViewById(R.id.mobile_mini_progress);
         glassButtons(activity);
+        mControls = new MiniControls(mPlayPause, mClose, activity.findViewById(R.id.mobile_mini_audio));
 
         View.OnClickListener expand = v -> {
             if (mClosing || !MiniPlayerBridge.isActive()) {
@@ -106,6 +108,7 @@ public final class MobileMiniPlayerController {
                 player.setPlayWhenReady(!player.getPlayWhenReady());
                 updatePlayPause(player);
             }
+            mControls.show(); // a few seconds more
         });
 
         mClose.setOnClickListener(v -> close());
@@ -120,6 +123,11 @@ public final class MobileMiniPlayerController {
             @Override
             public void onSwipedAway(float toTranslationX, long durationMs) {
                 close(toTranslationX, durationMs);
+            }
+
+            @Override
+            public void onTouched() {
+                mControls.show();
             }
         }, mFrame, mBar);
     }
@@ -237,6 +245,7 @@ public final class MobileMiniPlayerController {
         MiniPlayerBridge.fitToVideo(mFrame); // NEWTUBE(issue #9): letterbox, never stretch
         attachTexture();
         mBar.setVisibility(View.VISIBLE);
+        mControls.show();
         updatePlayPause(player);
 
         Utils.removeCallbacks(mTick);
@@ -354,6 +363,7 @@ public final class MobileMiniPlayerController {
         resetTransform();
         mBar.setAlpha(1f);
         mBar.setVisibility(View.GONE);
+        mControls.reset();
         unwatchScreenOn();
         setKeepScreenOn(false); // no card, no video on this screen
     }

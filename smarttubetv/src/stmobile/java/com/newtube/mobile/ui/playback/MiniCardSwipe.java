@@ -36,6 +36,10 @@ public final class MiniCardSwipe implements View.OnTouchListener {
 
         /** Committed: fly the card to {@code toTranslationX} over {@code durationMs}, then close. */
         void onSwipedAway(float toTranslationX, long durationMs);
+
+        /** A finger came down on the card (METUBE(mini-controls): its buttons come back). */
+        default void onTouched() {
+        }
     }
 
     private static final float FLING_VELOCITY_DP = 450f;
@@ -103,6 +107,7 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     public boolean onTouch(View view, MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                mCallback.onTouched();
                 mDownRawX = event.getRawX();
                 mDownRawY = event.getRawY();
                 mDragging = false;

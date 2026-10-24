@@ -209,6 +209,7 @@ public class MobileBrowseActivity extends MobileActivity
     private static final long MINI_FOLD_WAIT_MS = 50;
     /** NEWTUBE(motion): the card was pre-drawn for a minimize; its buttons fade in once it is ours. */
     private boolean mMiniButtonsFadePending;
+    private com.newtube.mobile.ui.playback.MiniControls mMiniControls;
     private final MiniPlayerBridge.CardFold mMiniCardFold = onFolded -> {
         foldMiniCard();
         if (onFolded != null) {
@@ -345,6 +346,8 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayPause = findViewById(R.id.mobile_mini_play_pause);
         mMiniProgress = findViewById(R.id.mobile_mini_progress);
         com.newtube.mobile.ui.playback.MobileMiniPlayerController.glassButtons(this);
+        mMiniControls = new com.newtube.mobile.ui.playback.MiniControls(mMiniPlayPause,
+                findViewById(R.id.mobile_mini_close), findViewById(R.id.mobile_mini_audio));
         setupMiniPlayerBar();
         mMiniPip = new com.newtube.mobile.ui.playback.MiniPip(this, mMiniPlayerBar, () -> {
             hideMiniPlayer();
@@ -507,6 +510,7 @@ public class MobileBrowseActivity extends MobileActivity
                 player.setPlayWhenReady(!player.getPlayWhenReady());
                 updateMiniPlayPauseIcon(player);
             }
+            mMiniControls.show(); // a few seconds more
         });
 
         findViewById(R.id.mobile_mini_close).setOnClickListener(v -> closeMiniPlayer());
@@ -522,6 +526,11 @@ public class MobileBrowseActivity extends MobileActivity
                     @Override
                     public void onSwipedAway(float toTranslationX, long durationMs) {
                         closeMiniPlayer(toTranslationX, durationMs);
+                    }
+
+                    @Override
+                    public void onTouched() {
+                        mMiniControls.show();
                     }
                 }, mMiniPlayerFrame, mMiniPlayerBar);
     }
@@ -639,6 +648,7 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayerBar.setScaleY(1f);
         mMiniPlayerBar.setTranslationX(0f);
         mMiniPlayerBar.setVisibility(View.VISIBLE);
+        mMiniControls.show();
         updateMiniPlayPauseIcon(player);
 
         Utils.removeCallbacks(mMiniPlayerTick);
@@ -851,6 +861,7 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayerBar.setTranslationX(0f);
         mMiniButtonsFadePending = false;
         setMiniButtonsAlpha(1f);
+        mMiniControls.reset();
         if (mMiniPip != null) {
             mMiniPip.update(); // no card, nothing to float
         }
