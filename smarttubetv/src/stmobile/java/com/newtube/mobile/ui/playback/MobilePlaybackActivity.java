@@ -1099,6 +1099,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mTimeBar.setTouchRouted(true);
         if (mWatchRoot instanceof WatchRootLayout) {
             ((WatchRootLayout) mWatchRoot).setTouchRouter(new SeekBandRouter());
+            ((WatchRootLayout) mWatchRoot).setPageScroll(this::collapseTallBox);
         }
 
         mBackButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
@@ -2909,7 +2910,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 return windowHeight / 3;
             }
             if (mInlineAspect > 0f && mInlineAspect < 16f / 9f) {
-                height = Math.min(Math.round(width / mInlineAspect), windowHeight * 2 / 3);
+                int tall = Math.min(Math.round(width / mInlineAspect), windowHeight * 2 / 3);
+                height = Math.max(height, tall - mTallBoxCollapse); // the page scrolled it away (#36)
             }
         }
         return height;
@@ -2929,6 +2931,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         mInlineAspect = aspect;
+        mTallBoxCollapse = 0;
         if (mWatchRoot == null || mWatchRoot.getWidth() <= 0 || mIsInPip || mPipEnterPending
                 || layoutOrientation() != Configuration.ORIENTATION_PORTRAIT) {
             return;
@@ -2938,6 +2941,36 @@ public class MobilePlaybackActivity extends MobileActivity
                     new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED));
         }
         applyPortraitVideoHeight(mWatchRoot.getWidth());
+    }
+
+    /** METUBE(issue #36): how much of a tall video's box the page has scrolled away, px. */
+    private int mTallBoxCollapse;
+
+    /**
+     * METUBE(issue #36): YouTube's page under a tall video - scrolled up, the page first shrinks
+     * the box down to 16:9, then moves; back at its top, pulled down, it grows the box again
+     * before anything else. Returns the part of {@code dy} the box took.
+     */
+    private int collapseTallBox(View page, int dy) {
+        if (page != mWatchScroll || mWatchRoot == null || mVideoArea == null || isTallMode()
+                || mIsInPip || mPipEnterPending || mMorphFraction != 0f
+                || layoutOrientation() != Configuration.ORIENTATION_PORTRAIT
+                || (dy < 0 && page.canScrollVertically(-1))) {
+            return 0;
+        }
+        int width = mWatchRoot.getWidth();
+        int height = mVideoArea.getLayoutParams().height;
+        if (width <= 0 || height <= 0) {
+            return 0;
+        }
+        int spare = height + mTallBoxCollapse - Math.round(width * 9f / 16f);
+        int collapse = Math.max(0, Math.min(spare, mTallBoxCollapse + dy));
+        int taken = collapse - mTallBoxCollapse;
+        if (taken != 0) {
+            mTallBoxCollapse = collapse;
+            applyPortraitVideoHeight(width);
+        }
+        return taken;
     }
 
     /** METUBE(issue #13): the shape of the biggest video track, 0 without one. */
@@ -6345,6 +6378,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** A touch on the watch page while it rests at its top (the title row is in view). */
     private boolean canPullToPortraitFull(android.view.MotionEvent event) {
         if (mWatchScroll == null || mWatchScroll.getVisibility() != View.VISIBLE || mWatchScroll.getScrollY() != 0
+                || mTallBoxCollapse > 0 // the pull grows the box first (#36)
                 || isLandscape() || isTallMode() || mIsInPip || mClosing || mMorphFraction != 0f
                 || (mCommentsPanel != null && mCommentsPanel.isOpen())) {
             return false;
@@ -8908,6 +8942,12 @@ public class MobilePlaybackActivity extends MobileActivity
         // that resumed every queued watch-page image before the first frame. Avatars wait for the
         // hold's normal release like the rest of the page.
         Utils.removeCallbacks(mPrefetchComments);
+        // METUBE(issue #36): a tall video shrinks to 16:9, leaving the comments the room YouTube gives them.
+        if (mWatchRoot != null && mIsResumed) {
+            android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
+                    new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED));
+        }
+        collapseTallBox(mWatchScroll, Integer.MAX_VALUE / 2);
         mCommentsPanel.open();
     }
 
@@ -9059,6 +9099,10 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             if (mWatchScroll != null) {
                 mWatchScroll.scrollTo(0, 0);
+            }
+            if (mTallBoxCollapse > 0 && mWatchRoot != null) { // its box starts whole (#36)
+                mTallBoxCollapse = 0;
+                mWatchRoot.requestLayout(); // mWatchRootLayoutListener re-lays the box
             }
         }
 
