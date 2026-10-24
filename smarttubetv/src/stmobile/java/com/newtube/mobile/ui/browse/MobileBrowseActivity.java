@@ -447,6 +447,7 @@ public class MobileBrowseActivity extends MobileActivity
     private void setSkeletonVisible(boolean visible) {
         if (visible) {
             mSkeletonShows++;
+            mFeedSkeleton.removeCallbacks(mSkeletonLeaveDeadline);
             mFeedSkeleton.animate().cancel();
             // The Shorts tab shows a spinner, never the skeleton (showShortsTab).
             mFeedSkeleton.setAlpha(mCurrentSectionId == MediaGroup.TYPE_SHORTS ? 0f : 1f);
@@ -475,6 +476,8 @@ public class MobileBrowseActivity extends MobileActivity
         }
         mSkeletonLeaving = mSkeletonShows;
         mFeedSkeleton.animate().cancel();
+        mFeedSkeleton.removeCallbacks(mSkeletonLeaveDeadline);
+        mFeedSkeleton.postDelayed(mSkeletonLeaveDeadline, SKELETON_LEAVE_MAX_MS);
         int shows = mSkeletonShows;
         SkeletonReveal.fadeOverCards(mFeedSkeleton, mContentGrid, () -> shows == mSkeletonShows, () -> {
             mFeedSkeleton.setVisibility(View.GONE);
@@ -486,6 +489,23 @@ public class MobileBrowseActivity extends MobileActivity
     private int mSkeletonShows;
     /** The show whose fade-out is under way (setSkeletonVisible(false) starts one per show). */
     private int mSkeletonLeaving = -1;
+    /**
+     * Issue #56: a leave waits up to 400 ms for the cards, then fades; this is well past both.
+     * On the reporter's phone (Galaxy A03 Core, Android 13 Go) the skeleton still sat over the
+     * loaded cards, and every later "hide" took the leave for under way and did nothing - so
+     * however that fade was lost, a leave now ends here at the latest, cut instead of faded.
+     */
+    private static final long SKELETON_LEAVE_MAX_MS = 1_500;
+    private final Runnable mSkeletonLeaveDeadline = () -> {
+        if (mSkeletonLeaving != mSkeletonShows || mFeedSkeleton.getVisibility() != View.VISIBLE) {
+            return; // gone already, or a newer load put it back (its own leave ends it)
+        }
+        com.liskovsoft.smartyoutubetv2.common.misc.NetPath.log("skeleton leave-deadline alpha="
+                + mFeedSkeleton.getAlpha() + " cards=" + mContentGrid.getChildCount());
+        mFeedSkeleton.animate().cancel();
+        mFeedSkeleton.setVisibility(View.GONE);
+        mFeedSkeleton.setAlpha(1f);
+    };
 
     // ---------------------------------------------------------------------------------
     // In-app mini-player bar
