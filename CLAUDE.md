@@ -102,11 +102,17 @@ without auditing `LiveDashManifestParser` + `Helpers.setField` call sites).
   override while `screen*Dp` stay system values: to turn a window's dp into real pixels
   use the application context's `densityDpi` (`VideoViewportCap.windowPixels`).
 
-## graphify
+## Code graph (codebase-memory MCP)
 
-Optional tool, not a required first step: a local AST graph (gitignored `graphify-out/`).
-Reach for it only when a question spans many files you have not located yet ("what calls X
-across the submodules", "how does A reach B"): `graphify path "<A>" "<B>"`,
-`graphify explain "<symbol>"`, `graphify query "<question>"`. When the file is already known,
-read it directly. The graph does not refresh itself: run `graphify update .` (local, no LLM)
-before relying on it after code changes.
+`.mcp.json` registers `codebase-memory-mcp` (binary on PATH; project
+`C-Users-Yashwanth-MeTube`, includes both submodules; `.cbmignore` drops test fixtures and
+native libs). Optional, not a required first step: when the file is already known, read it.
+Use it when the answer spans files you have not located:
+- callers/callees: `trace_path` (`direction` inbound/outbound, `depth` 1-2) — exact, ~150 tokens.
+- find code by idea: `search_graph` with `semantic_query` as a keyword ARRAY and a small
+  `semantic_limit` (it ignores `limit` and returns 50 rows otherwise); by name/text: `query`.
+- a method's source without the whole file: `get_code_snippet`; a file's shape: `get_file_outline`.
+- what an uncommitted diff touches: `detect_changes`.
+The index stays fresh while a session is open (watcher); after edits made outside one, run
+`index_repository`. Java reflection (`Helpers.setField`) and dynamic dispatch are invisible to
+it: a symbol with no callers is not proof of dead code.

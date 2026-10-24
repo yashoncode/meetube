@@ -81,4 +81,3 @@ dist/
 
 # Python bytecode from tools/*.py
 __pycache__/
-graphify-out/

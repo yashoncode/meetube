@@ -1,0 +1,8 @@
+# codebase-memory-mcp: keep the index to code and docs.
+# Captured InnerTube responses and bundled JS used only as test fixtures.
+**/src/test/resources/
+**/src/androidTest/resources/
+# Prebuilt native libraries and media.
+**/jniLibs/
+smarttubetv/src/debug/assets/
+.github/assets/
