@@ -267,7 +267,7 @@ public class MobileSearchActivity extends MobileActivity
             | SearchOptions.TYPE_CHANNEL | SearchOptions.TYPE_PLAYLIST | SearchOptions.TYPE_MOVIE
             | SearchOptions.FEATURE_LIVE | SearchOptions.UPLOAD_DATE_TODAY | SearchOptions.UPLOAD_DATE_THIS_WEEK
             | SearchOptions.UPLOAD_DATE_THIS_MONTH | SearchOptions.UPLOAD_DATE_THIS_YEAR;
-    private com.google.android.material.chip.ChipGroup mChips;
+    private android.widget.LinearLayout mChips;
 
     /**
      * METUBE(search chips): YouTube's chip row over the results. A chip is a one-tap filter: it
@@ -276,10 +276,13 @@ public class MobileSearchActivity extends MobileActivity
      */
     private void setupChips() {
         mChips = findViewById(R.id.mobile_search_chips);
+        com.newtube.mobile.ui.common.GlassSource results = findViewById(R.id.mobile_search_chips_source);
         for (int[] entry : CHIPS) {
-            com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip)
-                    getLayoutInflater().inflate(R.layout.mobile_search_chip, mChips, false);
+            TextView chip = (TextView) getLayoutInflater().inflate(R.layout.mobile_search_chip, mChips, false);
             chip.setText(entry[0]);
+            // METUBE(glass): frosted results under each chip, as the Home feed strip's pills.
+            com.newtube.mobile.ui.common.GlassDrawable.apply(chip, results, 0);
+            chip.setTag(R.id.mobile_search_chips, chip.getBackground());
             int flag = entry[1];
             chip.setOnClickListener(v -> {
                 int options = (mPresenter.getSearchOptions() & ~CHIP_FLAGS) | flag;
@@ -295,7 +298,18 @@ public class MobileSearchActivity extends MobileActivity
     private void syncChips() {
         int picked = mPresenter.getSearchOptions() & CHIP_FLAGS;
         for (int i = 0; i < CHIPS.length; i++) {
-            ((com.google.android.material.chip.Chip) mChips.getChildAt(i)).setChecked(CHIPS[i][1] == picked);
+            // The picked chip is a solid light pill (FeedStrip's), the rest are glass.
+            TextView chip = (TextView) mChips.getChildAt(i);
+            boolean selected = CHIPS[i][1] == picked;
+            if (selected) {
+                android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+                bg.setCornerRadius(18 * getResources().getDisplayMetrics().density);
+                bg.setColor(0xF2FFFFFF);
+                chip.setBackground(bg);
+            } else {
+                chip.setBackground((android.graphics.drawable.Drawable) chip.getTag(R.id.mobile_search_chips));
+            }
+            chip.setTextColor(selected ? 0xFF000000 : 0xFFFFFFFF);
         }
     }
 

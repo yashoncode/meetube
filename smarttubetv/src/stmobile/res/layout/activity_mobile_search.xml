@@ -35,6 +35,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- METUBE(glass): the results alone, which the chips below frost (a glass may not sit
+             in the source it samples). -->
+        <com.newtube.mobile.ui.common.GlassSource
+            android:id="@+id/mobile_search_chips_source"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/mobile_search_grid"
             android:layout_width="match_parent"
@@ -45,6 +52,8 @@
             android:paddingBottom="@dimen/mobile_card_spacing"
             android:scrollbars="vertical"
             tools:listitem="@layout/item_video_card" />
+
+        </com.newtube.mobile.ui.common.GlassSource>
 
         <!-- NEWTUBE(motion): results load under card ghosts (the feed's shimmering skeleton), not
              a centered spinner; only over an empty list (MobileSearchActivity.showProgressBar). -->
@@ -79,14 +88,12 @@
             android:visibility="gone"
             tools:visibility="visible">
 
-            <com.google.android.material.chip.ChipGroup
+            <LinearLayout
                 android:id="@+id/mobile_search_chips"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                app:chipSpacingHorizontal="8dp"
-                app:singleLine="true"
-                app:singleSelection="true" />
+                android:orientation="horizontal" />
 
         </HorizontalScrollView>
 

@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(search chips): one chip of the row over the results (MobileSearchActivity.setupChips). -->
-<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/Widget.MaterialComponents.Chip.Choice"
+<!-- METUBE(search chips): one chip of the row over the results (MobileSearchActivity.setupChips),
+     a glass pill like the Home feed strip's (FeedStrip); its background is set from code. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_height="36dp"
+    android:layout_marginEnd="8dp"
+    android:elevation="4dp"
     android:fontFamily="sans-serif-medium"
-    android:textColor="@color/mobile_search_chip_text"
-    android:textSize="14sp"
-    app:checkedIconVisible="false"
-    app:chipBackgroundColor="@color/mobile_search_chip_bg"
-    app:chipCornerRadius="8dp"
-    app:chipStrokeWidth="0dp"
-    app:ensureMinTouchTargetSize="false" />
+    android:gravity="center"
+    android:minHeight="34dp"
+    android:paddingHorizontal="14dp"
+    android:textColor="#FFFFFFFF"
+    android:textSize="14sp" />
