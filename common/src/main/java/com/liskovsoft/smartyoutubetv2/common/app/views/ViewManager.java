@@ -240,8 +240,15 @@ public class ViewManager {
         // an in-task launch only reuses instances within the caller's own task.
         Activity foreground = sForegroundActivity.get();
         boolean playerTarget = activityClass == mViewMapping.get(PlaybackView.class);
+        // METUBE(issue #34): a live player in the caller's own task (the in-app mini player) is
+        // reordered in-task too. Android 8 ignores REORDER_TO_FRONT on the NEW_TASK launch below
+        // and stacked a second player that restarted the video.
+        Object player = PlaybackPresenter.instance(mContext).getView();
+        boolean playerInTask = playerTarget && foreground != null && player instanceof Activity
+                && !((Activity) player).isFinishing()
+                && ((Activity) player).getTaskId() == foreground.getTaskId();
 
-        if (foreground != null && !foreground.isFinishing() && !playerTarget) {
+        if (foreground != null && !foreground.isFinishing() && (!playerTarget || playerInTask)) {
             Intent intent = new Intent(foreground, activityClass);
 
             if (sReorderToFrontEnabled) {
