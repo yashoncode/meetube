@@ -68,6 +68,18 @@ public final class MobileMiniPlayerController {
     private boolean mButtonsFadePending;
     private final MiniPlayerBridge.CardFold mCardFold = this::foldForPlayer;
 
+    /**
+     * METUBE(glass): the mini card's buttons on the player's see-through discs (close and audio:
+     * 40dp in a 48dp target). They are ImageButtons: with no background they show the platform's
+     * grey button box, so every screen with a card calls this (Home has its own card code).
+     */
+    public static void glassButtons(Activity activity) {
+        int inset = Math.round(4 * activity.getResources().getDisplayMetrics().density);
+        com.newtube.mobile.ui.common.GlassDrawable.apply(activity.findViewById(R.id.mobile_mini_play_pause), null, 0);
+        com.newtube.mobile.ui.common.GlassDrawable.apply(activity.findViewById(R.id.mobile_mini_close), null, inset);
+        com.newtube.mobile.ui.common.GlassDrawable.apply(activity.findViewById(R.id.mobile_mini_audio), null, inset);
+    }
+
     public MobileMiniPlayerController(Activity activity) {
         mActivity = activity;
         mBar = activity.findViewById(R.id.mobile_mini_player);
@@ -76,6 +88,7 @@ public final class MobileMiniPlayerController {
         mPlayPause = activity.findViewById(R.id.mobile_mini_play_pause);
         mClose = activity.findViewById(R.id.mobile_mini_close);
         mProgress = activity.findViewById(R.id.mobile_mini_progress);
+        glassButtons(activity);
 
         View.OnClickListener expand = v -> {
             if (mClosing || !MiniPlayerBridge.isActive()) {

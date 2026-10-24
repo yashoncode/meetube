@@ -344,6 +344,7 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniFreeze = findViewById(R.id.mobile_mini_freeze);
         mMiniPlayPause = findViewById(R.id.mobile_mini_play_pause);
         mMiniProgress = findViewById(R.id.mobile_mini_progress);
+        com.newtube.mobile.ui.playback.MobileMiniPlayerController.glassButtons(this);
         setupMiniPlayerBar();
         mMiniPip = new com.newtube.mobile.ui.playback.MiniPip(this, mMiniPlayerBar, () -> {
             hideMiniPlayer();
