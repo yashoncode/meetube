@@ -242,8 +242,6 @@ public class MobilePlaybackActivity extends MobileActivity
     private NextCountdown mNextCountdown;
     private ImageButton mSubtitlesButton;
     private ImageButton mMoreButton;
-    /** The controls on a frosted disc of the video (GlassDrawable). */
-    private View[] mGlassControls = new View[0];
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
     private ViewGroup mDebugViewGroup;
@@ -786,18 +784,15 @@ public class MobilePlaybackActivity extends MobileActivity
         mMoreButton = findViewById(R.id.mobile_player_more);
         mPrevButton = findViewById(R.id.mobile_player_previous);
         mNextButton = findViewById(R.id.mobile_player_next);
-        // METUBE(glass): every control over the video sits on a frosted disc of it (time: a pill).
-        com.newtube.mobile.ui.common.GlassSource videoGlass = findViewById(R.id.mobile_player_glass);
+        // METUBE(glass): every control over the video sits on a see-through tinted disc (time: a
+        // pill). No frost: the video shows through sharp, as it must over HDR's SurfaceView (#35).
         for (View control : new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
                 mPrevButton, mNextButton, mFullscreenButton, mActionsToggle}) {
-            com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, dp(4));
+            com.newtube.mobile.ui.common.GlassDrawable.apply(control, null, dp(4));
         }
-        View time = findViewById(R.id.mobile_player_time);
-        for (View control : new View[] {mPlayPauseButton, time, mActionsRow}) {
-            com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, 0);
+        for (View control : new View[] {mPlayPauseButton, findViewById(R.id.mobile_player_time), mActionsRow}) {
+            com.newtube.mobile.ui.common.GlassDrawable.apply(control, null, 0);
         }
-        mGlassControls = new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
-                mPrevButton, mNextButton, mFullscreenButton, mActionsToggle, mPlayPauseButton, time, mActionsRow};
         mDebugViewGroup = findViewById(R.id.mobile_player_debug);
 
         // Watch page content column.
@@ -1750,9 +1745,6 @@ public class MobilePlaybackActivity extends MobileActivity
             // NEWTUBE(sheet-landscape): back from a picker screen (Repeat, Zoom...) that held the
             // controls up. It only paused this screen, so onStart's countdown does not run.
             armAutoHide();
-        }
-        if (!isPlayerSheetShown()) {
-            setControlsGlassLive(true); // a picker screen that a sheet handed over to is gone
         }
         // In the foreground again: auto-PiP behaves normally from here on.
         mSuppressAutoPip = false;
@@ -4976,7 +4968,6 @@ public class MobilePlaybackActivity extends MobileActivity
         // into a sheet, so the whole picture behind it changed while the person was choosing.
         // Hooked on the window, not a dismiss listener: callers (chapters, cast) keep their own.
         cancelAutoHide();
-        setControlsGlassLive(false);
         if (window != null) {
             View decor = window.getDecorView();
             decor.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
@@ -5035,19 +5026,6 @@ public class MobilePlaybackActivity extends MobileActivity
     private void onPlayerSheetClosed() {
         if (!isPlayerSheetShown() && !isFinishing()) {
             armAutoHide();
-            setControlsGlassLive(true);
-        }
-    }
-
-    /**
-     * METUBE(glass): off while a sheet or a picker covers the controls - dimmed under it, their
-     * frost cost the video its smoothness and showed nothing (#28). Back on as the last one goes.
-     */
-    private void setControlsGlassLive(boolean live) {
-        for (View control : mGlassControls) {
-            if (control != null) {
-                com.newtube.mobile.ui.common.GlassDrawable.setLive(control, live);
-            }
         }
     }
 
