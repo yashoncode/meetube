@@ -101,7 +101,7 @@ final class SearchFiltersDialog {
             features.addView(chip);
         }
 
-        Haptics.watch(new MaterialAlertDialogBuilder(activity, R.style.MobileAlertDialog)
+        androidx.appcompat.app.AlertDialog filters = Haptics.watch(new MaterialAlertDialogBuilder(activity, R.style.MobileAlertDialog)
                 .setTitle(R.string.mobile_search_filters)
                 .setView(content)
                 .setNegativeButton(android.R.string.cancel, null)
@@ -119,6 +119,12 @@ final class SearchFiltersDialog {
                     onApply.accept(result);
                 })
                 .show());
+        // METUBE(glass): frosted with the results under it, like the sheets (the 28dp card's corners).
+        View panel = filters.findViewById(androidx.appcompat.R.id.parentPanel);
+        if (panel != null) {
+            panel.post(() -> com.newtube.mobile.ui.common.SheetGlass.frost(panel, activity.getWindow(),
+                    28 * activity.getResources().getDisplayMetrics().density));
+        }
     }
 
     private static void showChoices(Activity activity, TextView value, int[][] row, IntConsumer onPick) {
