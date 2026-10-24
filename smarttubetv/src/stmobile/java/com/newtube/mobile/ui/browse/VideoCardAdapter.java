@@ -489,6 +489,15 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         public void bind(Video video, OnVideoLongClickListener longClickListener) {
             mVideo = video;
             Context context = itemView.getContext();
+            if (android.text.TextUtils.isEmpty(video.getTitle())) {
+                // METUBE(issue #41): a bare video id from the feed - its title and channel are asked for.
+                com.newtube.mobile.ui.common.MissingTitles.fill(video, () -> {
+                    if (mVideo == video) {
+                        bindAvatar(itemView.getContext(), video);
+                        bindPartial(video);
+                    }
+                });
+            }
             bindAvatar(context, video);
 
             itemView.setOnLongClickListener(v ->
