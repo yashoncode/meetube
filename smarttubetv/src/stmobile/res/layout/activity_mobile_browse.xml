@@ -130,27 +130,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <!-- METUBE(you-glow): the account's avatar, blurred, washed down into the black page
-                 behind the header and the top pills (the rows below are padded by padUnderTopBar). -->
-            <FrameLayout
-                android:id="@+id/mobile_you_backdrop"
+            <!-- METUBE(rgb glow): the RGB light in the top left, behind the header and the top pills
+                 (the rows below are padded by padUnderTopBar). -->
+            <com.newtube.mobile.ui.common.RgbGlow
                 android:layout_width="match_parent"
-                android:layout_height="320dp">
-
-                <ImageView
-                    android:id="@+id/mobile_you_backdrop_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:alpha="0.55"
-                    android:contentDescription="@null"
-                    android:scaleType="centerCrop" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/mobile_playlist_header_scrim" />
-
-            </FrameLayout>
+                android:layout_height="360dp" />
 
             <LinearLayout
                 android:id="@+id/mobile_you_content"
@@ -159,9 +143,9 @@
                 android:orientation="vertical"
                 android:paddingBottom="@dimen/metube_nav_clearance">
 
-                <!-- Account header, official-app style: circular avatar (real account image via
-                     Glide when signed in), name + email, chevron. Tap = sign in when signed out,
-                     manage/switch accounts when signed in. -->
+                <!-- Account header, as YouTube's You page has it: a big avatar, the name and the
+                     email, then the Accounts and Settings pills. A tap on the header or on Accounts
+                     signs in when signed out and switches accounts when signed in. -->
                 <LinearLayout
                     android:id="@+id/mobile_you_account_row"
                     android:layout_width="match_parent"
@@ -171,13 +155,14 @@
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="20dp"
-                    android:paddingVertical="20dp">
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="12dp">
 
                     <ImageView
                         android:id="@+id/mobile_you_avatar"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
                         android:contentDescription="@null"
                         android:src="@drawable/ic_mobile_account" />
 
@@ -196,7 +181,7 @@
                             android:maxLines="1"
                             android:text="@string/dialog_add_account"
                             android:textColor="@color/mobile_color_on_surface"
-                            android:textSize="20sp"
+                            android:textSize="26sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -212,20 +197,78 @@
 
                     </LinearLayout>
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_chevron_right" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/mobile_you_accounts"
+                        style="@style/Widget.NewTube.Button.Pill"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="@string/settings_accounts" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/mobile_you_settings"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:fontFamily="sans-serif-medium"
+                        android:insetTop="4dp"
+                        android:insetBottom="4dp"
+                        android:letterSpacing="0"
+                        android:minHeight="48dp"
+                        android:text="@string/header_settings"
+                        android:textAllCaps="false"
+                        android:textColor="@color/mobile_color_on_surface"
+                        android:textSize="14sp"
+                        app:cornerRadius="22dp"
+                        app:rippleColor="@color/mobile_color_divider"
+                        app:strokeColor="@color/mobile_color_on_surface_secondary" />
 
                 </LinearLayout>
 
-                <View
+                <!-- History, YouTube style: a heading that opens it, then its latest videos in a
+                     row that scrolls sideways (MobileBrowseActivity.loadYouHistory). -->
+                <LinearLayout
+                    android:id="@+id/mobile_you_history"
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginHorizontal="20dp"
-                    android:layout_marginBottom="8dp"
-                    android:background="@color/mobile_color_divider" />
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/mobile_you_history_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="12dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:drawablePadding="4dp"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:text="@string/header_history"
+                        android:textColor="@color/mobile_color_on_surface"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/mobile_you_history_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false"
+                        android:paddingHorizontal="10dp" />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/mobile_you_rows"

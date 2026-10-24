@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * METUBE(explore): YouTube's side menu, behind the compass at the head of Home's chips: the topic
  * feeds this app can open (a section turned off in Settings gets no row), on the frosted page
- * with a red accent glow.
+ * with the RGB glow (RgbGlow).
  */
 final class ExploreDrawer {
     interface Listener {

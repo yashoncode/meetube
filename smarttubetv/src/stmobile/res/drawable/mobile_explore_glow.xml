@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(explore): the Explore menu's red accent, washed from its top corner into the frost. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient
-        android:angle="315"
-        android:centerColor="#26D7372D"
-        android:endColor="#00D7372D"
-        android:startColor="#99D7372D" />
-</shape>

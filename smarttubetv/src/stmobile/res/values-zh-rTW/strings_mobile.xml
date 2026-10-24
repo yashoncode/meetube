@@ -231,6 +231,7 @@
     </string>
     <string name="mobile_nav_you">你的頻道</string>
     <string name="mobile_you_explore">探索</string>
+    <string name="mobile_you_library">媒體庫</string>
     <string name="mobile_no_browser">找不到可開啟此連結的應用程式</string>
     <string name="mobile_add_device_title">配對裝置</string>
     <string name="mobile_add_device_done">完成</string>

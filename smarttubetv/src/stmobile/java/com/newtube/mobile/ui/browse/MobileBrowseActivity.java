@@ -154,6 +154,9 @@ public class MobileBrowseActivity extends MobileActivity
     /** That channel's last page, for the next one. */
     @Nullable private MediaGroup mSubsChannelPage;
     @Nullable private io.reactivex.rxjava3.disposables.Disposable mSubsAction;
+    /** METUBE(you page): the You page's History row, fetched each time the page opens. */
+    @Nullable private io.reactivex.rxjava3.disposables.Disposable mYouHistoryAction;
+    private VideoCardAdapter mYouHistoryAdapter;
     @Nullable private List<Video> mSubsChannels;
     @Nullable private io.reactivex.rxjava3.disposables.Disposable mSubsChannelsAction;
     private BottomNavigationView mBottomNav;
@@ -387,7 +390,7 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void padUnderTopBar(int barPx) {
-        // The You rows, not their scroll view: its avatar glow runs up under the pills (METUBE(you-glow)).
+        // The You rows, not their scroll view: its RGB glow runs up under the pills (METUBE(rgb glow)).
         for (View page : new View[] {mContentGrid, findViewById(R.id.mobile_you_content), mFeedSkeleton,
                 mErrorContainer}) {
             if (page != null) {
@@ -1302,6 +1305,72 @@ public class MobileBrowseActivity extends MobileActivity
         // browsing signed-out with stored accounts, so they stay re-selectable).
         View accountRow = findViewById(R.id.mobile_you_account_row);
         accountRow.setOnClickListener(v -> AccountsSheet.show(this, this::updateAccountRow));
+        findViewById(R.id.mobile_you_accounts).setOnClickListener(v -> AccountsSheet.show(this, this::updateAccountRow));
+        findViewById(R.id.mobile_you_settings).setOnClickListener(v -> openSettings());
+        findViewById(R.id.mobile_you_history_title).setOnClickListener(v -> openFromYou(MediaGroup.TYPE_HISTORY));
+
+        // METUBE(you page): History's latest videos, two and a bit across like YouTube's You page.
+        int cardWidth = Math.round(getResources().getDisplayMetrics().widthPixels / 2.4f);
+        mYouHistoryAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked) {
+            @NonNull
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                RecyclerView.ViewHolder holder = super.onCreateViewHolder(parent, viewType);
+                holder.itemView.getLayoutParams().width = cardWidth;
+                return holder;
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                super.onBindViewHolder(holder, position);
+                View avatar = holder.itemView.findViewById(R.id.video_avatar);
+                if (avatar != null) {
+                    avatar.setVisibility(View.GONE); // a small card: the title takes the width
+                }
+            }
+        };
+        RecyclerView historyList = findViewById(R.id.mobile_you_history_list);
+        historyList.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+        historyList.setAdapter(mYouHistoryAdapter);
+    }
+
+    /** METUBE(you page): History's videos for its row - the last ones seen at once, then fresh ones. */
+    private void loadYouHistory() {
+        BrowseSection history = null;
+        for (BrowseSection section : mSections) {
+            if (section.getId() == MediaGroup.TYPE_HISTORY && section.isEnabled()) {
+                history = section;
+            }
+        }
+        View block = findViewById(R.id.mobile_you_history);
+        block.setVisibility(history != null ? View.VISIBLE : View.GONE);
+        if (history == null) {
+            return;
+        }
+        ((TextView) findViewById(R.id.mobile_you_history_title)).setText(history.getTitle());
+        List<Video> cached = FeedCache.get(MediaGroup.TYPE_HISTORY);
+        showYouHistory(cached);
+        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mYouHistoryAction);
+        mYouHistoryAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
+                com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService().getHistoryObserve(),
+                group -> runOnUiThread(() -> showYouHistory(group != null ? VideoGroup.from(group).getVideos() : null)),
+                error -> android.util.Log.w("MobileBrowse", "You history: " + error));
+    }
+
+    private void showYouHistory(@Nullable List<Video> videos) {
+        if (isDestroyed()) {
+            return;
+        }
+        List<Video> shown = new ArrayList<>();
+        if (videos != null) {
+            for (Video video : videos) {
+                if (video.videoId != null && shown.size() < 20) {
+                    shown.add(video);
+                }
+            }
+        }
+        findViewById(R.id.mobile_you_history_list).setVisibility(shown.isEmpty() ? View.GONE : View.VISIBLE);
+        mYouHistoryAdapter.submitList(shown);
     }
 
     /** Show the You panel over the content area (the panel is opaque; the grid stays put). */
@@ -1310,6 +1379,7 @@ public class MobileBrowseActivity extends MobileActivity
         mSectionFromYou = false;
         rebuildYouRows();
         updateAccountRow();
+        loadYouHistory();
         mContentSwipe.setRefreshing(false);
         mYouPanel.setVisibility(View.VISIBLE);
         onYouPanelToggled();
@@ -1384,6 +1454,7 @@ public class MobileBrowseActivity extends MobileActivity
                     || navSections.contains(section)
                     || section.getId() == MediaGroup.TYPE_SETTINGS
                     || section.getId() == MediaGroup.TYPE_SHORTS
+                    || section.getId() == MediaGroup.TYPE_HISTORY // METUBE(you page): its own row up top
                     || section.getId() == MediaGroup.TYPE_TRENDING) { // METUBE: an empty feed now
                 continue;
             }
@@ -1396,8 +1467,11 @@ public class MobileBrowseActivity extends MobileActivity
             (isPersonalSection(section.getId()) ? personal : explore).add(section);
         }
 
-        for (BrowseSection section : personal) {
-            addYouSectionRow(section);
+        if (!personal.isEmpty()) {
+            addYouGroupLabel(getString(R.string.mobile_you_library));
+            for (BrowseSection section : personal) {
+                addYouSectionRow(section);
+            }
         }
 
         if (!pinned.isEmpty()) {
@@ -1413,20 +1487,11 @@ public class MobileBrowseActivity extends MobileActivity
                 addYouSectionRow(section);
             }
         }
-
-        addYouDivider();
-        addYouRow(R.drawable.ic_mobile_settings, getString(R.string.header_settings),
-                this::openSettings);
     }
 
     private void addYouSectionRow(BrowseSection section) {
         int sectionId = section.getId();
-        View row = addYouRow(section.getResId(), section.getTitle(), () -> {
-            mSectionFromYou = true;
-            hideYouPanel();
-            onSectionChosen(sectionId);
-            onYouPanelToggled(); // now that the chosen section is current: its name in the top bar
-        });
+        View row = addYouRow(section.getResId(), section.getTitle(), () -> openFromYou(sectionId));
         row.setOnLongClickListener(v -> {
             if (mPresenter != null) {
                 mPresenter.onSectionLongPressed(sectionId);
@@ -1435,7 +1500,13 @@ public class MobileBrowseActivity extends MobileActivity
         });
     }
 
-    /** Small secondary-color group label, official-You-page style. */
+    private void openFromYou(int sectionId) {
+        mSectionFromYou = true;
+        hideYouPanel();
+        onSectionChosen(sectionId);
+        onYouPanelToggled(); // now that the chosen section is current: its name in the top bar
+    }
+
     // ---------------------------------------------------------------------------------
     // Updates (NEWTUBE update-flow)
     // ---------------------------------------------------------------------------------
@@ -1543,15 +1614,16 @@ public class MobileBrowseActivity extends MobileActivity
                 hasNotes ? () -> MobileUpdateActivity.startWhatsNew(this) : null, MobileSnackbar.NOTICE_DURATION_MS);
     }
 
+    /** A group's heading, as YouTube's You page has them ("Library"). */
     private void addYouGroupLabel(CharSequence text) {
         TextView label = new TextView(this);
         label.setText(text);
-        label.setTextColor(getColorInt(R.color.mobile_color_on_surface_secondary));
-        label.setTextSize(14);
+        label.setTextColor(getColorInt(R.color.mobile_color_on_surface));
+        label.setTextSize(20);
         label.setTypeface(label.getTypeface(), android.graphics.Typeface.BOLD);
-        int pad = Math.round(20 * getResources().getDisplayMetrics().density);
-        int padV = Math.round(10 * getResources().getDisplayMetrics().density);
-        label.setPadding(pad, padV, pad, padV / 2);
+        float density = getResources().getDisplayMetrics().density;
+        label.setPadding(Math.round(16 * density), Math.round(20 * density), Math.round(16 * density),
+                Math.round(6 * density));
         mYouRows.addView(label);
     }
 
@@ -2528,31 +2600,11 @@ public class MobileBrowseActivity extends MobileActivity
             } else {
                 mYouAvatar.setImageResource(R.drawable.ic_mobile_account);
             }
-            showYouBackdrop(avatarUrl);
         } else {
             mYouAccountText.setText(R.string.dialog_add_account);
             mYouAccountSub.setVisibility(View.GONE);
             mYouAvatar.setImageResource(R.drawable.ic_mobile_account);
-            showYouBackdrop(null);
         }
-    }
-
-    /**
-     * METUBE(you-glow): the avatar as the You header's glow, loaded tiny (blurred by the upscale
-     * alone below API 31) and blurred on the GPU above it. Signed out: none, the page stays black.
-     */
-    private void showYouBackdrop(@Nullable String avatarUrl) {
-        android.widget.ImageView backdrop = findViewById(R.id.mobile_you_backdrop_image);
-        if (avatarUrl == null || avatarUrl.isEmpty()) {
-            com.bumptech.glide.Glide.with(this).clear(backdrop);
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            float blur = 48 * getResources().getDisplayMetrics().density;
-            backdrop.setRenderEffect(android.graphics.RenderEffect.createBlurEffect(blur, blur,
-                    android.graphics.Shader.TileMode.CLAMP));
-        }
-        com.bumptech.glide.Glide.with(this).load(avatarUrl).override(32).into(backdrop);
     }
 
     @Override
@@ -2640,7 +2692,7 @@ public class MobileBrowseActivity extends MobileActivity
         unwatchMiniScreenOn(); // the shared player outlives this Activity
         mNavHandler.removeCallbacks(mNavRebuild);
         mNavHandler.removeCallbacks(mRunwayCheck);
-        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction, mSubsChannelsAction);
+        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction, mSubsChannelsAction, mYouHistoryAction);
         cancelFeedSwap(); // NEWTUBE(feed-swap)
         mContentGrid.removeCallbacks(mRestoreItemAnimator);
         MiniPlayerBridge.unregisterMiniHost(this);

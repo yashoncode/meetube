@@ -5,6 +5,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="mobile_nav_you">Tú</string>
     <string name="mobile_you_explore">Explorar</string>
+    <string name="mobile_you_library">Biblioteca</string>
 
     <!-- Upstream es translation says "REGISTRARSE" (= create an account) on every sign-in
          button - wrong action. App-module resources override the library's, so fix it here
