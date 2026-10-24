@@ -2612,6 +2612,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mActionsToggle.setContentDescription(getString(actions
                     ? R.string.mobile_player_hide_actions : R.string.mobile_player_show_actions));
         }
+        updateMoreVideosHint();
         if (actions) {
             lift += dp(44);
         }
@@ -6206,6 +6207,23 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable
     private MoreVideosPanel mMoreVideos;
 
+    /**
+     * The up chevron at the bottom of the landscape controls: shown in the band beside the actions
+     * pill (hidden with the pill, whose band the seek bar then takes) while there are videos to raise.
+     */
+    private void updateMoreVideosHint() {
+        View hint = findViewById(R.id.mobile_player_more_hint);
+        if (hint == null) {
+            return;
+        }
+        boolean show = isLandscape() && mActionsRow != null && mActionsRow.getVisibility() == View.VISIBLE
+                && !mRelatedVideos.isEmpty();
+        hint.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (show) {
+            setMargins(hint, 0, 0, 0, ((ViewGroup.MarginLayoutParams) mActionsRow.getLayoutParams()).bottomMargin);
+        }
+    }
+
     private ShortsOverlay.Watch shortsWatchViews() {
         ShortsOverlay.Watch watch = new ShortsOverlay.Watch();
         watch.like = mWatchLike;
@@ -7937,6 +7955,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             if (mMoreVideos != null) {
                 mMoreVideos.setVideos(mRelatedVideos);
+                updateMoreVideosHint();
             }
             // Hide the queue card until the new video's rows say it's still in one. mQueueExpanded
             // is deliberately NOT reset: staying open across an in-queue advance is the point.
@@ -10009,6 +10028,7 @@ public class MobilePlaybackActivity extends MobileActivity
         bindQueueCard(current, currentId, findQueueGroupId(current));
         if (mMoreVideos != null) {
             mMoreVideos.setVideos(mRelatedVideos);
+            updateMoreVideosHint();
         }
 
         // Queue rows count as "content landed" too: a playlist whose suggestions are ALL queue

@@ -457,6 +457,20 @@
 
                 </LinearLayout>
 
+                <!-- METUBE(more videos): a bare up chevron beside the actions pill, saying the
+                     video swipes up for More videos (no button: the swipe is the way in). -->
+                <ImageView
+                    android:id="@+id/mobile_player_more_hint"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:alpha="0.8"
+                    android:importantForAccessibility="no"
+                    android:padding="8dp"
+                    android:rotation="180"
+                    android:src="@drawable/ic_chips_expand"
+                    android:visibility="gone" />
+
             </FrameLayout>
 
             <!-- NEWTUBE(seek bar): the seek bar, YouTube-style - outside the controls overlay so that
