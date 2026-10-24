@@ -34,4 +34,34 @@ final class RatingUndo {
         }
         return now == LIKE ? likeId : dislikeId; // back to unrated: switch off the one that is on
     }
+
+    /** Digits, maybe in groups of three ("133", "1,234", "12 345"); "1.2K" is not one. */
+    private static final java.util.regex.Pattern PLAIN_COUNT =
+            java.util.regex.Pattern.compile("\\d{1,15}(?:[,.'\\s\u00a0\u202f]\\d{3})*");
+
+    /**
+     * METUBE(issue #45): the like count after this account's like came or went, as YouTube's
+     * count does. {@code raw} is YouTube's count, which held the like when {@code likedInRaw}.
+     * A rounded count ("1.2K") stays as it is.
+     */
+    static CharSequence likeCount(CharSequence raw, boolean likedInRaw, boolean likedNow) {
+        if (raw == null || likedInRaw == likedNow || !PLAIN_COUNT.matcher(raw).matches()) {
+            return raw;
+        }
+        String text = raw.toString();
+        String digits = text.replaceAll("\\D", "");
+        if (digits.length() > 15) {
+            return raw;
+        }
+        long count = Long.parseLong(digits) + (likedNow ? 1 : -1);
+        if (count < 0) {
+            return raw;
+        }
+        StringBuilder out = new StringBuilder(Long.toString(count));
+        String separators = text.replaceAll("\\d", "");
+        for (int i = out.length() - 3; i > 0 && !separators.isEmpty(); i -= 3) {
+            out.insert(i, separators.charAt(0)); // grouped as YouTube grouped it
+        }
+        return out.toString();
+    }
 }

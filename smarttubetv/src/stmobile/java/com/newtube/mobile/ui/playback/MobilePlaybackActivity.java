@@ -9247,7 +9247,8 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         if (!TextUtils.isEmpty(item.likeCount)) {
-            mWatchLikeCount.setText(item.likeCount);
+            mLikeCountRaw = item.likeCount;
+            showLikeCount(false);
         }
         // NEWTUBE(ryd-opt-in): also on a same-video bind, so switching the option off hides the count
         // it showed, and a live /next refresh can't paint its estimate.
@@ -9271,6 +9272,8 @@ public class MobilePlaybackActivity extends MobileActivity
         mDescriptionDate = null;
         mWatchMeta.setText(null);
         mWatchLikeCount.setText(R.string.mobile_watch_count_placeholder);
+        mLikeCountRaw = null;
+        mLikedInRaw = -1;
         mWatchDislikeCount.setText(R.string.mobile_watch_count_placeholder);
         mWatchSubs.setText(null);
         // NEWTUBE(watch-jump): INVISIBLE, not GONE - the subscriber line, the Comments row and the
@@ -9422,7 +9425,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
             // Counts: prefer the real values already synced onto the Video; fall back to metadata.
             if (isCountUnset(mWatchLikeCount) && !TextUtils.isEmpty(metadata.getLikeCount())) {
-                setWatchTextFaded(mWatchLikeCount, metadata.getLikeCount());
+                mLikeCountRaw = metadata.getLikeCount();
             }
             // NEWTUBE(ryd-opt-in): metadata's dislike count is only an estimate from the likes.
             if (showsDislikeCount() && isCountUnset(mWatchDislikeCount)
@@ -9436,6 +9439,9 @@ public class MobilePlaybackActivity extends MobileActivity
             setButtonState(R.id.action_thumbs_down,
                     metadata.getLikeStatus() == MediaItemMetadata.LIKE_STATUS_DISLIKE ? BUTTON_ON : BUTTON_OFF);
             setButtonState(R.id.action_subscribe, metadata.isSubscribed() ? BUTTON_ON : BUTTON_OFF);
+            // METUBE(issue #45): YouTube's count holds the like it reports; a tap moves it from there.
+            mLikedInRaw = metadata.getLikeStatus() == MediaItemMetadata.LIKE_STATUS_LIKE ? 1 : 0;
+            showLikeCount(true);
 
             // Comments / live-chat availability. A non-null comments key = comments enabled; a
             // non-null live-chat key = live stream. Reuse the same keys the TV controllers use.
@@ -9550,6 +9556,26 @@ public class MobilePlaybackActivity extends MobileActivity
                 undoRating(ratingBefore, ratingAfter));
     }
 
+    /** METUBE(issue #45): the like count as YouTube gave it, for {@link #showLikeCount}. */
+    @Nullable
+    private CharSequence mLikeCountRaw;
+    /** Whether {@link #mLikeCountRaw} holds this account's like: 1/0, -1 until metadata says. */
+    private int mLikedInRaw = -1;
+
+    /** YouTube's like count, moved by one when the thumb's state differs from the one it counted. */
+    private void showLikeCount(boolean faded) {
+        if (mLikeCountRaw == null || mWatchLikeCount == null) {
+            return;
+        }
+        CharSequence text = mLikedInRaw == -1 ? mLikeCountRaw : RatingUndo.likeCount(mLikeCountRaw,
+                mLikedInRaw == 1, getButtonState(R.id.action_thumbs_up) == BUTTON_ON);
+        if (faded) {
+            setWatchTextFaded(mWatchLikeCount, text);
+        } else {
+            mWatchLikeCount.setText(text);
+        }
+    }
+
     private int currentRating() {
         return RatingUndo.rating(getButtonState(R.id.action_thumbs_up) == BUTTON_ON,
                 getButtonState(R.id.action_thumbs_down) == BUTTON_ON);
@@ -9631,6 +9657,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     mShorts.setLiked(on);
                 }
             }
+            showLikeCount(false); // Shorts mirrors it
         } else if (buttonId == R.id.action_thumbs_down && mWatchDislikeIcon != null) {
             int icon = on ? R.drawable.ic_watch_thumb_down : R.drawable.ic_watch_thumb_down_outline;
             mWatchDislikeIcon.setImageResource(icon);
