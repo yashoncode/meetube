@@ -250,6 +250,15 @@ final class PlayerPages {
         rows.add(defaultQuality(context, QUALITY_WIFI));
         rows.add(defaultQuality(context, QUALITY_MOBILE));
         rows.add(defaultQuality(context, QUALITY_SHORTS));
+        // METUBE(issue #35): only where the screen can show it.
+        if (com.newtube.mobile.player.Media3PlayerController.isHdrDisplay(context)) {
+            rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_hdr),
+                    context.getString(R.string.mobile_settings_hdr_summary),
+                    tweaks::isHdrEnabled, enabled -> {
+                        tweaks.setHdrEnabled(enabled);
+                        com.newtube.mobile.player.Media3PlayerController.applyHdrSetting(context);
+                    }));
+        }
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_audio)));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_loudness),

@@ -217,6 +217,10 @@ class Media3TrackAdapter {
             MediaTrack track = item.getTrack();
             String codec = track != null && track.format != null ? track.format.codecs : null;
             builder.setPreferredVideoMimeTypes(mimeTypesForCodec(codec));
+            TrackSelectionOverride hdr = hdrOverride(ceiling);
+            if (hdr != null) {
+                builder.setOverrideForType(hdr);
+            }
         } else {
             TrackLocation location = findTrack(TrackSelectorManager.RENDERER_INDEX_VIDEO, item);
             if (location != null) {
@@ -323,6 +327,44 @@ class Media3TrackAdapter {
                     .setOverrideForType(
                             new TrackSelectionOverride(best.group.getMediaTrackGroup(), best.trackIndex)));
         }
+    }
+
+    /**
+     * METUBE(issue #35): HDR streams are in the manifest only with the HDR setting on, so Auto plays
+     * them when this device can: the HDR set with the tallest playable rung within the preset's
+     * size ceiling (VP9 on a tie), adapting inside it. The preset's frame rate and codec are left
+     * out - YouTube's HDR is 60 fps VP9.2 or AV1, so a "30fps avc" preset would always rule it out -
+     * and media3 can't prefer HDR itself: it knows a track is HDR only from colour info, which
+     * DASH doesn't carry. Null: no playable HDR, plain Auto.
+     */
+    @Nullable
+    private TrackSelectionOverride hdrOverride(int ceiling) {
+        TrackSelectionOverride best = null;
+        int bestHeight = 0;
+        boolean bestVp9 = false;
+        for (Tracks.Group group : mTracks.getGroups()) {
+            if (group.getType() != C.TRACK_TYPE_VIDEO) {
+                continue;
+            }
+            List<Integer> tracks = new ArrayList<>();
+            int height = 0;
+            boolean vp9 = false;
+            for (int i = 0; i < group.length; i++) {
+                androidx.media3.common.Format format = group.getTrackFormat(i);
+                if (group.isTrackSupported(i) && TrackSelectorUtil.isHdrFormat(format.id, format.codecs)
+                        && Math.max(format.width, format.height) <= ceiling) {
+                    tracks.add(i);
+                    height = Math.max(height, Math.min(format.width, format.height));
+                    vp9 = androidx.media3.common.MimeTypes.VIDEO_VP9.equals(format.sampleMimeType);
+                }
+            }
+            if (!tracks.isEmpty() && (height > bestHeight || (height == bestHeight && vp9 && !bestVp9))) {
+                best = new TrackSelectionOverride(group.getMediaTrackGroup(), tracks);
+                bestHeight = height;
+                bestVp9 = vp9;
+            }
+        }
+        return best;
     }
 
     /** Preset codec ("vp9"/"avc"...) -> soft media3 mime preference; unknown -> no preference. */

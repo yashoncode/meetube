@@ -218,6 +218,8 @@
     <string name="mobile_settings_quality_more_data">Usa más datos</string>
     <string name="mobile_settings_quality_less_data">Usa menos datos</string>
     <string name="mobile_settings_quality_data_saver">Ahorra datos</string>
+    <string name="mobile_settings_hdr">Vídeo HDR</string>
+    <string name="mobile_settings_hdr_summary">Reproduce los vídeos HDR en HDR, con más brillo y color. Usa más datos. Se aplica al siguiente vídeo que abras</string>
     <string name="mobile_settings_audio">Audio</string>
     <string name="mobile_settings_loudness">Igualar el volumen</string>
     <string name="mobile_settings_loudness_summary">Baja los vídeos muy altos al nivel normal de YouTube</string>

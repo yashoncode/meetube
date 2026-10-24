@@ -1584,6 +1584,8 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mSessionSurface != null) {
             mPlayer.setVideoSurface(mSessionSurface);
         }
+        mHdrOutput = false; // a new player starts on the texture; its tracks switch it (#35)
+        finishHdrSwap();
         // The stock black shutter only lifts on a "rendered first frame" event tied to
         // PlayerView-owned surfaces; with the external surface it would sit over the loading
         // still forever. The still + black video area do its job now.
@@ -1810,6 +1812,7 @@ public class MobilePlaybackActivity extends MobileActivity
             reattachVideoTexture();
         }
         MiniPlayerBridge.deactivate();
+        updateHdrOutput(); // back from the card (#35)
 
         if (launch != null) {
             // A normal feed/search/channel tap: cover the video with the exact tapped thumbnail,
@@ -5408,6 +5411,8 @@ public class MobilePlaybackActivity extends MobileActivity
             // METUBE(issue #13): the new video's shape before its first frame, so the box is
             // ready when the picture arrives instead of jumping under it.
             setInlineAspect(tracksAspect(tracks));
+            mHdrTrack = isHdrSelected(tracks);
+            updateHdrOutput();
         }
 
         @Override
@@ -5501,6 +5506,18 @@ public class MobilePlaybackActivity extends MobileActivity
         public void onRenderedFirstFrame() {
             // NEWTUBE(still-lift): the controller's AnalyticsListener saw this event first, so
             // OpenFirstFrame already knows whether it was this open's; the texture may have it.
+            if (mHdrSwapPending) {
+                finishHdrSwap();
+            }
+            if (mHdrOutput) {
+                // METUBE(issue #35): the frame went to the HDR SurfaceView, which the still-lift
+                // can't watch: count it as the texture's, and lift a hand-off still here.
+                mLastTextureFrameRealtimeMs = android.os.SystemClock.elapsedRealtime();
+                if (mStillAwaitFrame && !mStillAwaitReady) {
+                    mStillAwaitFrame = false;
+                    liftLoadingStill("hdr");
+                }
+            }
             maybeLiftStillAtFrame();
             mVideoShapePending = false; // NEWTUBE(issue #69): this video's shape is known now
         }
@@ -5545,6 +5562,103 @@ public class MobilePlaybackActivity extends MobileActivity
     private void armStillForReady() {
         mStillAwaitReady = true;
         mStillArmedRealtimeMs = android.os.SystemClock.elapsedRealtime();
+    }
+
+    // ---------------------------------------------------------------------------------
+    // METUBE(issue #35): HDR output. Android shows HDR only from a SurfaceView; the session
+    // TextureView above tone-maps it to SDR (measured on a vivo V2404: SurfaceFlinger composites
+    // the SurfaceView layer as BT2020_ITU_PQ, the window as sRGB/P3 even in COLOR_MODE_HDR). So
+    // while an HDR track plays in the resting watch page or fullscreen, the codec draws into a
+    // SurfaceView under the texture instead; every morph and the mini card keep the texture (a
+    // SurfaceView can't be clipped to the morph's corners or read back for the hand-off stills).
+    // A switch is MediaCodec#setOutputSurface (no re-init), and the old output stays on screen
+    // until the first frame reaches the new one, so neither direction flashes black.
+    // ---------------------------------------------------------------------------------
+
+    @Nullable
+    private android.view.SurfaceView mHdrSurface;
+    /** The selected video track is HDR (only in the manifest with the HDR setting on). */
+    private boolean mHdrTrack;
+    /** The codec draws into {@link #mHdrSurface}. */
+    private boolean mHdrOutput;
+    /** Switched output, waiting for its first frame to retire the old one. */
+    private boolean mHdrSwapPending;
+
+    private void updateHdrOutput() {
+        boolean want = mPlayer != null && mHdrTrack && mMorphFraction == 0f && !MiniPlayerBridge.isActive();
+        if (want == mHdrOutput) {
+            return;
+        }
+        mHdrOutput = want;
+        mHdrSwapPending = true;
+        if (want) {
+            ViewGroup contentFrame = mPlayerView.getContentFrame();
+            if (mHdrSurface == null) {
+                mHdrSurface = new android.view.SurfaceView(this);
+            }
+            if (contentFrame.indexOfChild(mHdrSurface) != 0) { // under the texture, which covers it until the swap
+                contentFrame.removeView(mHdrSurface);
+                contentFrame.addView(mHdrSurface, 0, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            }
+            mHdrSurface.setVisibility(View.VISIBLE);
+            mPlayer.setVideoSurfaceView(mHdrSurface);
+        } else if (mPlayer != null && mSessionSurface != null) {
+            mPlayer.setVideoSurface(mSessionSurface);
+        } else {
+            finishHdrSwap(); // no player to draw a frame: just put the texture back
+        }
+    }
+
+    /** The first frame reached the new output: show it, retire the old one. */
+    private void finishHdrSwap() {
+        mHdrSwapPending = false;
+        if (mVideoTexture != null) {
+            mVideoTexture.setAlpha(mHdrOutput ? 0f : 1f);
+        }
+        if (!mHdrOutput && mHdrSurface != null) {
+            mHdrSurface.setVisibility(View.GONE);
+        }
+    }
+
+    /** The HDR SurfaceView's frame for a hand-off still (PixelCopy, waited for; a few ms), or null. */
+    @Nullable
+    private Bitmap copyHdrFrame(int width, int height) {
+        if (mHdrSurface == null || !mHdrSurface.getHolder().getSurface().isValid()) {
+            return null;
+        }
+        Bitmap frame = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        android.os.HandlerThread thread = new android.os.HandlerThread("hdr-still");
+        thread.start();
+        java.util.concurrent.CountDownLatch done = new java.util.concurrent.CountDownLatch(1);
+        int[] result = {-1};
+        android.view.PixelCopy.request(mHdrSurface, frame, copyResult -> {
+            result[0] = copyResult;
+            done.countDown();
+        }, new android.os.Handler(thread.getLooper()));
+        try {
+            done.await(200, java.util.concurrent.TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+        }
+        thread.quitSafely();
+        return result[0] == android.view.PixelCopy.SUCCESS ? frame : null;
+    }
+
+    private static boolean isHdrSelected(androidx.media3.common.Tracks tracks) {
+        for (androidx.media3.common.Tracks.Group group : tracks.getGroups()) {
+            if (group.getType() != androidx.media3.common.C.TRACK_TYPE_VIDEO) {
+                continue;
+            }
+            for (int i = 0; i < group.length; i++) {
+                androidx.media3.common.Format format = group.getTrackFormat(i);
+                if (group.isTrackSelected(i) && com.liskovsoft.smartyoutubetv2.common.exoplayer.selector
+                        .TrackSelectorUtil.isHdrFormat(format.id, format.codecs)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** Build the code-managed video texture + still inside the PlayerView's content frame. */
@@ -5609,7 +5723,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 // Very first availability: adopt this texture for the whole session.
                 mSessionTexture = texture;
                 mSessionSurface = new Surface(texture);
-                if (mPlayer != null) {
+                if (mPlayer != null && !mHdrOutput) {
                     mPlayer.setVideoSurface(mSessionSurface);
                 }
             } else if (texture != mSessionTexture) {
@@ -6977,6 +7091,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** Apply the morph at fraction f (0 = fullscreen player, 1 = sitting on the mini card). */
     private void applyMorph(float f) {
         mMorphFraction = f;
+        updateHdrOutput(); // a morphing box shows the texture (#35)
         mVideoArea.setPivotX(0f);
         mVideoArea.setPivotY(0f);
         float sx = 1f + (mMorphScaleX - 1f) * f;
@@ -7089,6 +7204,7 @@ public class MobilePlaybackActivity extends MobileActivity
             updatePipActions();
         }
         mMorphFraction = 0f;
+        updateHdrOutput();
         mMorphOverOwnBackdrop = false;
         mVideoArea.setScaleX(1f);
         mVideoArea.setScaleY(1f);
@@ -7421,11 +7537,15 @@ public class MobilePlaybackActivity extends MobileActivity
             // navigation still starts its destination animation at full width, so retain the
             // full-size capture for that path.
             Bitmap frame;
-            if (captureFullSizeStill) {
+            int width = Math.max(1, getResources().getDimensionPixelSize(R.dimen.metube_mini_width));
+            int height = Math.max(1, getResources().getDimensionPixelSize(R.dimen.metube_mini_height));
+            if (mHdrOutput && mHdrSurface != null) { // the texture holds an old frame (#35)
+                frame = captureFullSizeStill
+                        ? copyHdrFrame(Math.max(1, mHdrSurface.getWidth()), Math.max(1, mHdrSurface.getHeight()))
+                        : copyHdrFrame(width, height);
+            } else if (captureFullSizeStill) {
                 frame = mVideoTexture.getBitmap();
             } else {
-                int width = Math.max(1, getResources().getDimensionPixelSize(R.dimen.metube_mini_width));
-                int height = Math.max(1, getResources().getDimensionPixelSize(R.dimen.metube_mini_height));
                 frame = mVideoTexture.getBitmap(width, height);
             }
             if (frame != null) {
@@ -7442,6 +7562,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     "mini handoff detach t=" + android.os.SystemClock.uptimeMillis());
         }
         MiniPlayerBridge.activate(this);
+        updateHdrOutput(); // the card shows the session texture (#35)
         // The card shows this player's live frames at card size: cap NEW chunks to that window.
         // Card px use the app density on purpose - it is the density the card is laid out with.
         mExoPlayerController.setSmallWindowViewport("mini",

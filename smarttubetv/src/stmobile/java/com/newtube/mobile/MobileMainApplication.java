@@ -166,6 +166,7 @@ public class MobileMainApplication extends MainApplication {
         // Keep ALL existing TV init: Conscrypt, GlobalPreferences, multidex, the
         // global exception handler and every other View->Activity mapping.
         super.onCreate();
+        com.newtube.mobile.player.Media3PlayerController.applyHdrSetting(this); // METUBE(issue #35)
         // METUBE(glass): which screen a sheet in its own activity frosts.
         com.newtube.mobile.ui.common.SheetGlass.track(this, com.newtube.mobile.ui.dialog.MobileAppDialogActivity.class);
         com.newtube.mobile.ui.common.SheetGlass.liveOver(com.newtube.mobile.ui.playback.MobilePlaybackActivity.class);

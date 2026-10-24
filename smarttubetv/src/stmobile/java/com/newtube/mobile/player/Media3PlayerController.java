@@ -1183,6 +1183,22 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     /**
+     * METUBE(issue #35): the HDR setting, on a screen that can show HDR, puts YouTube's HDR streams
+     * in the manifest (YouTubeMPDBuilder). Applies from the next video opened.
+     */
+    public static void applyHdrSetting(android.content.Context context) {
+        com.liskovsoft.youtubeapi.formatbuilders.mpdbuilder.YouTubeMPDBuilder.setHdrEnabled(
+                com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData.instance(context).isHdrEnabled()
+                        && isHdrDisplay(context));    }
+
+    public static boolean isHdrDisplay(android.content.Context context) {
+        android.hardware.display.DisplayManager displays = (android.hardware.display.DisplayManager)
+                context.getSystemService(android.content.Context.DISPLAY_SERVICE);
+        android.view.Display display = displays != null ? displays.getDisplay(android.view.Display.DEFAULT_DISPLAY) : null;
+        return android.os.Build.VERSION.SDK_INT >= 26 && display != null && display.isHdr();
+    }
+
+    /**
      * The video stream on screen right now. In Auto {@link #getVideoFormat()} is the Auto ceiling
      * (a preset such as 1080p60), not a stream, so it can't say what is playing (issue #8).
      */

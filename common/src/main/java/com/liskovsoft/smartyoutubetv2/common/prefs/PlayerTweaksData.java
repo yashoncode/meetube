@@ -96,6 +96,7 @@ public class PlayerTweaksData implements ProfileChangeListener {
     // NEWTUBE(ryd-opt-in): Return YouTube Dislike is a third-party host that learns every video
     // you open, so asking it is opt-in (off by default); the likes counter above stays on.
     private boolean mIsReturnYouTubeDislikeEnabled;
+    private boolean mIsHdrEnabled;
     private boolean mIsChapterNotificationEnabled;
     private boolean mIsPlayerUiOnNextEnabled;
     private boolean mIsPlayerAutoVolumeEnabled;
@@ -535,6 +536,16 @@ public class PlayerTweaksData implements ProfileChangeListener {
         persistData();
     }
 
+    /** METUBE(issue #35): HDR video, off by default. */
+    public boolean isHdrEnabled() {
+        return mIsHdrEnabled;
+    }
+
+    public void setHdrEnabled(boolean enable) {
+        mIsHdrEnabled = enable;
+        persistData();
+    }
+
     public boolean isChapterNotificationEnabled() {
         return mIsChapterNotificationEnabled;
     }
@@ -775,6 +786,7 @@ public class PlayerTweaksData implements ProfileChangeListener {
         mIsAudioTimeStretchingEnabled = Helpers.parseBoolean(split, 59, true);
         mIsQueueRespectsPlaybackMode = Helpers.parseBoolean(split, 60, false);
         mIsReturnYouTubeDislikeEnabled = Helpers.parseBoolean(split, 61, false);
+        mIsHdrEnabled = Helpers.parseBoolean(split, 62, false);
 
         updateDefaultValues();
     }
@@ -803,7 +815,7 @@ public class PlayerTweaksData implements ProfileChangeListener {
                 mIsOculusQuestFixEnabled, null, mIsExtraLongSpeedListEnabled, mIsQuickSkipVideosEnabled, mIsNetworkErrorFixingDisabled, mIsCommentsPlacedLeft,
                 null, mIsAudioFocusEnabled, mIsDontResizeVideoToFitDialogEnabled, mIsSuggestionsHorizontallyScrolled,
                 mIsQuickSkipShortsAltEnabled, mIsQuickSkipVideosAltEnabled, mIsAudioTimeStretchingEnabled, mIsQueueRespectsPlaybackMode,
-                mIsReturnYouTubeDislikeEnabled
+                mIsReturnYouTubeDislikeEnabled, mIsHdrEnabled
                 ));
     }
 
