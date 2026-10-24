@@ -414,6 +414,10 @@ class Media3TrackAdapter {
         }
         String targetId = item.getFormatId();
         TrackLocation fallback = null;
+        boolean video = rendererIndex == TrackSelectorManager.RENDERER_INDEX_VIDEO;
+        int targetClass = video ? VideoRung.classHeight(item.getWidth(), item.getHeight()) : 0;
+        TrackLocation nearest = null;
+        androidx.media3.common.Format nearestFormat = null;
 
         for (Tracks.Group group : mTracks.getGroups()) {
             if (Media3FormatConverter.rendererIndexForTrackType(group.getType()) != rendererIndex) {
@@ -432,10 +436,38 @@ class Media3TrackAdapter {
                 if (fallback == null && matchesLoosely(rendererIndex, item, format)) {
                     fallback = new TrackLocation(group, i);
                 }
+
+                if (targetClass > 0 && VideoRung.classHeight(format.width, format.height) <= targetClass
+                        && (nearestFormat == null || isNearer(item, format, nearestFormat))) {
+                    nearest = new TrackLocation(group, i);
+                    nearestFormat = format;
+                }
             }
         }
 
-        return fallback;
+        // METUBE(issue #58): a pick carried to a video without that stream (another codec or
+        // frame rate, or no such rung) plays the nearest rung at or below it. Leaving Auto in
+        // place opened at 240p while the Quality row kept reading the pick.
+        return fallback != null ? fallback : nearest;
+    }
+
+    /** Whether {@code candidate} is closer to the picked rung than {@code best}: class, frame rate, codec, bitrate. */
+    private static boolean isNearer(FormatItem item, androidx.media3.common.Format candidate,
+            androidx.media3.common.Format best) {
+        int classDiff = VideoRung.classHeight(candidate.width, candidate.height)
+                - VideoRung.classHeight(best.width, best.height);
+        if (classDiff != 0) {
+            return classDiff > 0;
+        }
+        float fpsDiff = Math.abs(best.frameRate - item.getFrameRate()) - Math.abs(candidate.frameRate - item.getFrameRate());
+        if (fpsDiff != 0) {
+            return fpsDiff > 0;
+        }
+        int codecDiff = MediaTrack.getCodecWeight(candidate.codecs) - MediaTrack.getCodecWeight(best.codecs);
+        if (codecDiff != 0) {
+            return codecDiff > 0;
+        }
+        return candidate.bitrate > best.bitrate;
     }
 
     /**
