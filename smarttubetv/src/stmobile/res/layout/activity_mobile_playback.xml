@@ -748,6 +748,40 @@
 
             <include layout="@layout/mobile_next_countdown" />
 
+            <!-- METUBE(more videos, issue #24): swiped up over the fullscreen video (MoreVideosPanel).
+                 INVISIBLE, not GONE: measured from the start, so the first swipe knows its height. -->
+            <LinearLayout
+                android:id="@+id/mobile_more_videos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:background="@drawable/mobile_more_videos_scrim"
+                android:clickable="true"
+                android:orientation="vertical"
+                android:paddingTop="40dp"
+                android:paddingBottom="8dp"
+                android:visibility="invisible">
+
+                <TextView
+                    android:id="@+id/mobile_more_videos_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginBottom="4dp"
+                    android:text="@string/mobile_player_more_videos"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/mobile_more_videos_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="4dp" />
+
+            </LinearLayout>
+
         </com.newtube.mobile.ui.playback.PinchZoomLayout>
 
         <!-- Everything under the video: the watch content, and the comments panel that slides

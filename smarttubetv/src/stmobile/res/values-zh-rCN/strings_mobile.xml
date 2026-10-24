@@ -42,6 +42,7 @@
     <string name="mobile_watch_subscribe">订阅</string>
     <string name="mobile_watch_subscribed">已订阅</string>
     <string name="mobile_watch_related">即将播放</string>
+    <string name="mobile_player_more_videos">更多视频</string>
     <string name="mobile_watch_offline">你已离线</string>
     <string name="mobile_watch_queue_from">正在播放来自 %1$s 的内容</string>
     <string name="mobile_watch_queue_fallback">队列</string>

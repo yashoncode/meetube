@@ -42,6 +42,7 @@
     <string name="mobile_watch_subscribe">Подписаться</string>
     <string name="mobile_watch_subscribed">Вы подписаны</string>
     <string name="mobile_watch_related">Далее</string>
+    <string name="mobile_player_more_videos">Другие видео</string>
     <string name="mobile_watch_offline">Вы офлайн</string>
     <string name="mobile_watch_queue_from">Воспроизведение из %1$s</string>
     <string name="mobile_watch_queue_fallback">очередь</string>

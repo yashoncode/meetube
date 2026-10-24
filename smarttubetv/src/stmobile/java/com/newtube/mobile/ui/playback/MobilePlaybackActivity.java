@@ -772,6 +772,7 @@ public class MobilePlaybackActivity extends MobileActivity
             setPlayWhenReady(true);
         }, () -> showControls(true));
         mCastButton = findViewById(R.id.mobile_player_cast);
+        mMoreVideos = new MoreVideosPanel(findViewById(R.id.mobile_more_videos), this::onRelatedClicked);
         mCastOverlay = findViewById(R.id.mobile_cast_overlay);
         mCastOverlayTitle = findViewById(R.id.mobile_cast_overlay_title);
         mCastPlayPause = findViewById(R.id.mobile_cast_play_pause);
@@ -1014,6 +1015,10 @@ public class MobilePlaybackActivity extends MobileActivity
             if (isShortsMode()) {
                 mVideoArea.removeCallbacks(mShortsSingleTap);
                 mVideoArea.postDelayed(mShortsSingleTap, 260);
+                return;
+            }
+            if (mMoreVideos != null && mMoreVideos.isShown()) {
+                mMoreVideos.close(); // METUBE(more videos): a tap on the video above it puts it away
                 return;
             }
             boolean reveal = !mControlsVisible;
@@ -2231,6 +2236,10 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mClosing) {
             return;
         }
+        if (mMoreVideos != null && mMoreVideos.isShown()) {
+            mMoreVideos.close();
+            return;
+        }
         if (mControlsVisible && com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
             hideControls(); // METUBE(tv): the remote's Back closes the controls before it leaves the video
             return;
@@ -3417,6 +3426,9 @@ public class MobilePlaybackActivity extends MobileActivity
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
 
         mIsInPip = isInPictureInPictureMode;
+        if (isInPictureInPictureMode && mMoreVideos != null) {
+            mMoreVideos.hide(); // the PiP window shows only the video
+        }
         mPipStateStale = false;
         mPipLayoutHold = true; // entering, or on the way out until onResume
         mPipEnterPending = false;
@@ -6188,6 +6200,11 @@ public class MobilePlaybackActivity extends MobileActivity
     private static final int SWIPE_SEEK = 6;
     /** METUBE(shorts): a vertical drag that pages to the next / previous short. */
     private static final int SWIPE_SHORTS = 7;
+    /** METUBE(more videos, issue #24): the landscape panel of Up next cards, under the finger. */
+    private static final int SWIPE_MORE_VIDEOS = 8;
+
+    @Nullable
+    private MoreVideosPanel mMoreVideos;
 
     private ShortsOverlay.Watch shortsWatchViews() {
         ShortsOverlay.Watch watch = new ShortsOverlay.Watch();
@@ -6580,6 +6597,10 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mSwipeDownRawX = downRawX;
         boolean vertical = direction == PlayerContainerLayout.UP || direction == PlayerContainerLayout.DOWN;
+        if (mMoreVideos != null && mMoreVideos.isShown()) {
+            // Up or down moves the panel; sideways is its row's own scroll, not a seek.
+            return vertical && mMoreVideos.begin() ? SWIPE_MORE_VIDEOS : PlayerContainerLayout.SWIPE_NONE;
+        }
         if (!vertical) {
             return beginSeekSwipe(downRawX + dx);
         }
@@ -6607,8 +6628,15 @@ public class MobilePlaybackActivity extends MobileActivity
                     mVideoArea.getHeight());
             return level;
         }
-        return direction == PlayerContainerLayout.DOWN
-                ? beginFullscreenSwipe(SWIPE_EXIT_FULLSCREEN) : PlayerContainerLayout.SWIPE_NONE;
+        if (direction == PlayerContainerLayout.DOWN) {
+            return beginFullscreenSwipe(SWIPE_EXIT_FULLSCREEN);
+        }
+        // METUBE(more videos): up, between the level zones, raises the Up next cards over the video.
+        if (mMoreVideos != null && !isCastOverlayShown() && mMoreVideos.begin()) {
+            hideControls();
+            return SWIPE_MORE_VIDEOS;
+        }
+        return PlayerContainerLayout.SWIPE_NONE;
     }
 
     @Override
@@ -6616,6 +6644,9 @@ public class MobilePlaybackActivity extends MobileActivity
         switch (swipe) {
             case SWIPE_SHORTS:
                 mShorts.drag(dy);
+                break;
+            case SWIPE_MORE_VIDEOS:
+                mMoreVideos.drag(dy);
                 break;
             case SWIPE_MINIMIZE:
                 onDismissDrag(Math.max(0f, dy));
@@ -6643,6 +6674,9 @@ public class MobilePlaybackActivity extends MobileActivity
         switch (swipe) {
             case SWIPE_SHORTS:
                 mShorts.release(dy, yVelocity);
+                break;
+            case SWIPE_MORE_VIDEOS:
+                mMoreVideos.release(dy, yVelocity);
                 break;
             case SWIPE_MINIMIZE:
                 onDismissDragReleased(Math.max(0f, dy), yVelocity);
@@ -6674,6 +6708,9 @@ public class MobilePlaybackActivity extends MobileActivity
         switch (swipe) {
             case SWIPE_SHORTS:
                 mShorts.release(0f, 0f);
+                break;
+            case SWIPE_MORE_VIDEOS:
+                mMoreVideos.release(0f, 0f);
                 break;
             case SWIPE_MINIMIZE:
                 onDismissDragCancelled();
@@ -6911,6 +6948,9 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     private void onFullscreenSwipeConfigured() {
         resetFullscreenPull();
+        if (mMoreVideos != null) {
+            mMoreVideos.hide();
+        }
         updateSwipeBrightness();
     }
 
@@ -7894,6 +7934,9 @@ public class MobilePlaybackActivity extends MobileActivity
             setChapters(null);
             if (mRelatedAdapter != null) {
                 mRelatedAdapter.submitList(new ArrayList<>());
+            }
+            if (mMoreVideos != null) {
+                mMoreVideos.setVideos(mRelatedVideos);
             }
             // Hide the queue card until the new video's rows say it's still in one. mQueueExpanded
             // is deliberately NOT reset: staying open across an in-queue advance is the point.
@@ -9964,6 +10007,9 @@ public class MobilePlaybackActivity extends MobileActivity
         Video current = getVideo();
         String currentId = current != null ? current.videoId : null;
         bindQueueCard(current, currentId, findQueueGroupId(current));
+        if (mMoreVideos != null) {
+            mMoreVideos.setVideos(mRelatedVideos);
+        }
 
         // Queue rows count as "content landed" too: a playlist whose suggestions are ALL queue
         // would otherwise leave the Up-next skeleton pulsing until its safety timeout.
