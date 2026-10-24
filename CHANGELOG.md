@@ -10,6 +10,7 @@ Every MeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.1.5** Orizon](#315-orizon) | 2026-10-25 | A new You page, More videos in fullscreen, HDR video |
 | [**3.1.1** Spectre](#311-spectre) | 2026-10-22 | MeTube on Android TV, Shorts quality, tablet fixes |
 | [**3.1.0** DoomsSlay](#310-doomsslay) | 2026-10-22 | Actions in fullscreen, a video box that fits, quicker Shorts |
 | [**3.0.5**](#305) | 2026-10-21 | MeTube in Traditional Chinese, Shorts on channels, search chips |
@@ -32,6 +33,54 @@ Every MeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.1.5 Orizon
+
+> **A new You page, More videos in fullscreen, HDR video**<br>
+> 📅 2026-10-25 · closes #24, #34, #35, #36, #38, #41, #45, #50, #56, #57 and #58
+
+### 📣 A new name is coming
+
+- **MeTube will get a new name soon.** The app, its features and your settings stay the same, and updates keep arriving as they do now. We want to pick the name with you: share your ideas and vote in [GitHub Discussions](https://github.com/yashoncode/metube/discussions).
+
+### ✨ New
+
+- **A You page like YouTube's.** Your picture, name and email up top with Accounts and Settings buttons, your latest History in a row that scrolls sideways, then your Library and Explore. A soft light in the corner slowly drifts through the colours and fades into true black, so it stays easy on AMOLED screens.
+- **Swipe up in fullscreen for More videos.** In landscape, a swipe up on the middle of the video raises a row of Up next videos while the video keeps playing. Pick one to play it, or swipe down, tap the video or press Back to put the row away. A small arrow at the bottom shows it is there (#24).
+- **An Explore menu on Home.** A compass before the topic chips opens a side menu with Music, Live, Gaming, News and Sports, frosted over the page, with the same colour light and rounded corners.
+- **HDR video.** Turn on HDR video in Settings > Player and HDR videos play in HDR on a screen that can show it. It is off by default (#35).
+
+### 🛠️ Changed
+
+- **The mini player opens on the first tap.** Its buttons fade away three seconds after it shows and come back when you touch it, and a tap on the video always opens it again (#34).
+- **Under a tall video, swiping up shows the details.** The video box first shrinks to the usual size, as on YouTube, then the page scrolls. Pull down at the top to grow it back (#36).
+- **Shorts stay Shorts in landscape.** Turn the phone or tablet sideways and you still swipe from short to short, see the whole short, and get comments beside it (#57).
+- **A like moves the like count.** Liking a video or a short now adds one to the count, and taking the like back takes one off (#45).
+- **Each channel tab keeps its place.** Switching between Videos, Shorts, Popular and the rest returns you to where you left each one (#50).
+- **See-through glass everywhere.** The buttons over the video, the mini player's buttons, the Search filter chips and the Search filters dialog all use the same clear glass, so the video and results show through.
+
+### 🐛 Fixed
+
+- **The quality you pick is the quality you get.** On some videos, choosing 1080p played 240p while the button still said 1080p. Now the closest quality at or below your pick plays (#58).
+- **Video titles no longer go missing.** A card that arrived with only a picture now fills in its title and channel by itself (#41).
+- **Home no longer stays stuck on the loading placeholders** on some phones, such as the Galaxy A03 Core, after the videos have loaded (#56).
+- **Leaving picture-in-picture no longer crashes,** and picture-in-picture no longer shows the whole app instead of the video (#38).
+
+### ✅ Issues resolved
+
+| Issue | Asked for | In 3.1.5 |
+| :-- | :-- | :-- |
+| [#24](https://github.com/yashoncode/metube/issues/24) | A swipe-up More videos panel in fullscreen | Swipe up in landscape for a row of Up next videos |
+| [#34](https://github.com/yashoncode/metube/issues/34) | Fix the mini player | One tap opens it, its buttons fade away |
+| [#35](https://github.com/yashoncode/metube/issues/35) | HDR video | An HDR video switch in Settings > Player |
+| [#36](https://github.com/yashoncode/metube/issues/36) | Swipe up to see a tall video's details | The box shrinks first, then the page scrolls |
+| [#38](https://github.com/yashoncode/metube/issues/38) | Picture-in-picture shows the whole app | Only the video floats, and leaving it no longer crashes |
+| [#41](https://github.com/yashoncode/metube/issues/41) | Video titles sometimes missing | Missing titles fill themselves in |
+| [#45](https://github.com/yashoncode/metube/issues/45) | Liking Shorts doesn't update the like | The like count moves with your like |
+| [#50](https://github.com/yashoncode/metube/issues/50) | Channel tabs jump back to the top | Each tab keeps its scroll position |
+| [#56](https://github.com/yashoncode/metube/issues/56) | Home stuck on loading | The placeholders always make way for the videos |
+| [#57](https://github.com/yashoncode/metube/issues/57) | Shorts turn into a normal video in landscape | Shorts mode holds in any orientation |
+| [#58](https://github.com/yashoncode/metube/issues/58) | 1080p picked, 240p played | The nearest quality to your pick plays |
 
 ## 3.1.1 Spectre
 
