@@ -118,6 +118,11 @@ public final class SheetGlass {
 
     /** A bottom sheet dialog that just showed: frosts its content with its activity's page. */
     static void frost(@NonNull Dialog dialog) {
+        frost(dialog, true);
+    }
+
+    /** As above; square corners for a sheet that is a full-height column (the landscape live chat). */
+    public static void frost(@NonNull Dialog dialog, boolean rounded) {
         View frame = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
         Activity activity = activityOf(dialog.getContext());
         if (frame instanceof ViewGroup && ((ViewGroup) frame).getChildCount() > 0 && activity != null) {
@@ -132,7 +137,7 @@ public final class SheetGlass {
             boolean live = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                     && sLivePage != null && sLivePage.isInstance(activity);
             frost(sheet.getChildAt(0), activity.getWindow(), sheet,
-                    CORNER_DP * sheet.getResources().getDisplayMetrics().density, live);
+                    rounded ? CORNER_DP * sheet.getResources().getDisplayMetrics().density : 0f, live);
         }
     }
 

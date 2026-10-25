@@ -7,16 +7,20 @@ import android.graphics.BitmapShader;
 import android.graphics.BlendMode;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.LinearGradient;
 import android.graphics.Outline;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.RenderEffect;
 import android.graphics.RenderNode;
 import android.graphics.RuntimeShader;
 import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
@@ -212,13 +216,68 @@ public class GlassView extends FrameLayout {
 
         mNoisePaint.setShader(new BitmapShader(noise(), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
         mNoisePaint.setAlpha(NOISE_ALPHA);
-        // Kyant's Highlight.Default: a 0.5dp line (stroked 1dp across the edge), softened by 0.25dp.
-        mRimPaint.setStyle(Paint.Style.STROKE);
-        mRimPaint.setStrokeWidth(mDensity);
-        mRimPaint.setMaskFilter(new BlurMaskFilter(0.25f * mDensity, BlurMaskFilter.Blur.NORMAL));
+        setUpRim(mRimPaint, mDensity);
+    }
+
+    /** Kyant's Highlight.Default: a 0.5dp line (stroked 1dp across the edge), softened by 0.25dp. */
+    private static void setUpRim(Paint paint, float density) {
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(density);
+        paint.setMaskFilter(new BlurMaskFilter(0.25f * density, BlurMaskFilter.Blur.NORMAL));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            mRimPaint.setBlendMode(BlendMode.PLUS);
+            paint.setBlendMode(BlendMode.PLUS);
         }
+    }
+
+    /** The light rim catching the corners, for its {@code w} x {@code h} rounded rect. */
+    private static Shader rimShader(int w, int h, float radius) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return highlight(w, h, radius);
+        }
+        // No runtime shaders: light from above, a faint bounce at the bottom.
+        return new LinearGradient(0, 0, 0, h,
+                new int[] {0x66FFFFFF, 0x14FFFFFF, 0x0AFFFFFF, 0x2EFFFFFF},
+                new float[] {0f, 0.35f, 0.7f, 1f}, Shader.TileMode.CLAMP);
+    }
+
+    /**
+     * METUBE(live chat, issue #32): this glass's specular rim alone, as a foreground for a rounded
+     * card that is not a GlassView (the landscape chat and comments cards).
+     */
+    public static Drawable rim(float cornerPx, float density) {
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        setUpRim(paint, density);
+        RectF rect = new RectF();
+        return new Drawable() {
+            @Override
+            protected void onBoundsChange(@NonNull Rect bounds) {
+                rect.set(bounds);
+                paint.setShader(bounds.isEmpty() ? null
+                        : rimShader(bounds.width(), bounds.height(), Math.min(cornerPx, Math.min(bounds.width(), bounds.height()) / 2f)));
+            }
+
+            @Override
+            public void draw(@NonNull Canvas canvas) {
+                if (paint.getShader() != null) {
+                    canvas.drawRoundRect(rect, cornerPx, cornerPx, paint);
+                }
+            }
+
+            @Override
+            public void setAlpha(int alpha) {
+                paint.setAlpha(alpha);
+            }
+
+            @Override
+            public void setColorFilter(@Nullable ColorFilter filter) {
+                paint.setColorFilter(filter);
+            }
+
+            @Override
+            public int getOpacity() {
+                return PixelFormat.TRANSLUCENT;
+            }
+        };
     }
 
     /**
@@ -260,14 +319,7 @@ public class GlassView extends FrameLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mRimRect.set(0, 0, w, h);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            mRimPaint.setShader(highlight(w, h));
-        } else {
-            // No runtime shaders: light from above, a faint bounce at the bottom.
-            mRimPaint.setShader(new LinearGradient(0, 0, 0, h,
-                    new int[] {0x66FFFFFF, 0x14FFFFFF, 0x0AFFFFFF, 0x2EFFFFFF},
-                    new float[] {0f, 0.35f, 0.7f, 1f}, Shader.TileMode.CLAMP));
-        }
+        mRimPaint.setShader(rimShader(w, h, radius(w, h)));
     }
 
     @Override
@@ -341,10 +393,10 @@ public class GlassView extends FrameLayout {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    private Shader highlight(int w, int h) {
+    private static Shader highlight(int w, int h, float radius) {
         RuntimeShader shader = new RuntimeShader(HIGHLIGHT_AGSL);
         shader.setFloatUniform("size", w, h);
-        shader.setFloatUniform("radius", radius(w, h));
+        shader.setFloatUniform("radius", radius);
         shader.setColorUniform("color", 0x80FFFFFF);
         shader.setFloatUniform("angle", (float) Math.toRadians(HIGHLIGHT_ANGLE));
         shader.setFloatUniform("falloff", 1f);

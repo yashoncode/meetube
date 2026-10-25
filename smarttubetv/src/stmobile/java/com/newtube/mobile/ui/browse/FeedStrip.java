@@ -36,8 +36,6 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
     static final int MODE_NONE = 0;
     static final int MODE_CHIPS = 1;
     static final int MODE_AVATARS = 2;
-    /** METUBE(explore): the compass chip heading Home's chips; it opens ExploreDrawer. */
-    static final long EXPLORE = Long.MIN_VALUE;
 
     static final class Item {
         final long id;
@@ -275,12 +273,6 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                     label.setBackground((android.graphics.drawable.Drawable) label.getTag(R.id.mobile_feed_strip));
                 }
                 label.setTextColor(selected ? 0xFF000000 : 0xFFFFFFFF);
-                // The compass: a glyph, no label, a squarer pill.
-                boolean explore = item.id == EXPLORE;
-                label.setCompoundDrawablesRelativeWithIntrinsicBounds(explore ? R.drawable.ic_explore_compass : 0, 0, 0, 0);
-                label.setContentDescription(explore ? context.getString(R.string.mobile_explore) : null);
-                int pad = dp(context, explore ? 8 : 14);
-                label.setPadding(pad, 0, pad, 0);
             }
             holder.itemView.setOnClickListener(v -> {
                 if (item.id != mSelected) {

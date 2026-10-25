@@ -61,6 +61,8 @@ final class ShortsOverlay {
 
         void openShortsMore();
 
+        void openShortsDescription();
+
         void seekShortTo(long positionMs);
 
         void exitShorts();
@@ -175,8 +177,8 @@ final class ShortsOverlay {
         }
         GlassDrawable.apply(mOverlay.findViewById(R.id.mobile_shorts_back), null,
                 Math.round(4 * root.getResources().getDisplayMetrics().density)); // the player's minimize disc
-        // Tap the title for the rest of it (and tap again to fold it).
-        mTitle.setOnClickListener(v -> mTitle.setMaxLines(mTitle.getMaxLines() == 2 ? 8 : 2));
+        // METUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
+        mTitle.setOnClickListener(v -> mHost.openShortsDescription());
 
         round(mAvatar);
         mProgress.getThumb().mutate().setAlpha(0);

@@ -215,11 +215,15 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable private ImageButton mPlayerDislike;
     @Nullable private ImageButton mPlayerDownload;
     @Nullable private View mPlayerComments;
+    @Nullable private View mPlayerChat; // METUBE(live chat, issue #32): chat from the fullscreen pill
     private boolean mActionsShown;
     /** The pill's comments button left fullscreen: open the panel once the page is back. */
     private boolean mCommentsAfterFullscreen;
     /** Landscape comments: the panel in a column beside the video (layOutCommentsSide). */
     private boolean mCommentsSide;
+    private boolean mChatSide; // METUBE(live chat, issue #32): the landscape video beside the chat column
+    private int mChatMargin; // the room the video gives the chat column (its end margin, once slid)
+    @Nullable private android.animation.ValueAnimator mChatSlide;
     private static final String PLAYER_UI_PREFS = "metube_player_ui";
     private static final String KEY_ACTIONS_SHOWN = "fullscreen_actions";
     /** Previous / play-pause / next, and the top-right options: they step aside while scrubbing. */
@@ -755,6 +759,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerDislike = findViewById(R.id.mobile_player_dislike);
         mPlayerDownload = findViewById(R.id.mobile_player_download);
         mPlayerComments = findViewById(R.id.mobile_player_comments);
+        mPlayerChat = findViewById(R.id.mobile_player_chat);
         mActionsShown = getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).getBoolean(KEY_ACTIONS_SHOWN, true);
         mTransport = findViewById(R.id.mobile_player_transport);
         mOptionsRow = findViewById(R.id.mobile_player_options);
@@ -912,6 +917,11 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override
             public void openShortsMore() {
                 openPlayerMenu(); // quality, speed, captions... the gear sheet
+            }
+
+            @Override
+            public void openShortsDescription() {
+                showDescriptionSheet();
             }
 
             @Override
@@ -1269,6 +1279,10 @@ public class MobilePlaybackActivity extends MobileActivity
                 setPortraitFull(false);
             }
         });
+        mPlayerChat.setOnClickListener(v -> {
+            hideControls();
+            onChatEntryClicked();
+        });
         mActionsToggle.setOnClickListener(v -> {
             mActionsShown = !mActionsShown;
             getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).edit().putBoolean(KEY_ACTIONS_SHOWN, mActionsShown).apply();
@@ -1368,6 +1382,15 @@ public class MobilePlaybackActivity extends MobileActivity
                 setResizeMode(PlayerData.instance(this).getResizeMode());
             }
             layOutCommentsSide(lp, false);
+            if (mChatSide) { // upright, the chat goes back under the video
+                mChatSide = false;
+                mChatMargin = 0;
+                if (mChatSlide != null) {
+                    mChatSlide.cancel();
+                }
+                lp.setMarginEnd(0);
+                setResizeMode(PlayerData.instance(this).getResizeMode());
+            }
             if (width > 0) {
                 // METUBE(shorts): a short fills the portrait screen; the watch page steps aside.
                 // So does any video in the vertical fullscreen (setPortraitFull).
@@ -1419,7 +1442,12 @@ public class MobilePlaybackActivity extends MobileActivity
         lp.width = side ? Math.round(width * 0.4f) : LinearLayout.LayoutParams.MATCH_PARENT;
         lp.height = side ? LinearLayout.LayoutParams.MATCH_PARENT : 0;
         lp.weight = side ? 0 : 1;
+        // METUBE(live chat, issue #32): beside the video the comments float as a rounded card, like
+        // the live chat's, a margin in from the edges and the video.
+        int margin = side ? LiveChatSheet.cardMarginPx(area) : 0;
+        lp.setMargins(margin, margin, margin, margin);
         area.setLayoutParams(lp);
+        LiveChatSheet.roundCard(area, side);
     }
 
     /** The comments column beside the fullscreen video, or the video alone again. */
@@ -8201,9 +8229,7 @@ public class MobilePlaybackActivity extends MobileActivity
             chatReceiver.setCallback(this::onChatItemReceived);
 
             // Chat is now streaming; make sure the entry is reachable even if metadata was slow.
-            if (mWatchChatEntry != null) {
-                mWatchChatEntry.setVisibility(View.VISIBLE);
-            }
+            setChatEntryVisible(true);
         });
     }
 
@@ -9234,6 +9260,47 @@ public class MobilePlaybackActivity extends MobileActivity
         stopLiveChatStream();
     }
 
+    @Nullable
+    @Override
+    public View getChatVideoArea() {
+        return isLandscape() ? null : mVideoArea;
+    }
+
+    @Override
+    public void setChatColumn(int widthPx) {
+        int margin = isLandscape() ? widthPx : 0;
+        if (mChatMargin != margin) {
+            boolean wasSide = mChatSide;
+            mChatSide = margin > 0;
+            mChatMargin = margin;
+            // The video glides aside for the chat and back when it closes, the way the sheet slides.
+            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
+            if (mChatSlide != null) {
+                mChatSlide.cancel();
+            }
+            mChatSlide = android.animation.ValueAnimator.ofInt(lp.getMarginEnd(), margin);
+            mChatSlide.setDuration(Motion.ENTER_MS);
+            mChatSlide.setInterpolator(Motion.STANDARD);
+            mChatSlide.addUpdateListener(a -> {
+                lp.setMarginEnd((int) a.getAnimatedValue());
+                mVideoArea.setLayoutParams(lp);
+            });
+            mChatSlide.start();
+            setResizeMode(PlayerData.instance(this).getResizeMode()); // the whole picture beside the chat
+        }
+    }
+
+    /** The page's live chat row and its button on the fullscreen pill (issue #32) show together. */
+    private void setChatEntryVisible(boolean visible) {
+        int visibility = visible ? View.VISIBLE : View.GONE;
+        if (mWatchChatEntry != null) {
+            mWatchChatEntry.setVisibility(visibility);
+        }
+        if (mPlayerChat != null) {
+            mPlayerChat.setVisibility(visibility);
+        }
+    }
+
     // ---------------------------------------------------------------------------------
     // Watch page - header binding, actions and related list.
     // ---------------------------------------------------------------------------------
@@ -9357,9 +9424,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mWatchCommentsCount != null) {
             mWatchCommentsCount.setText(null);
         }
-        if (mWatchChatEntry != null) {
-            mWatchChatEntry.setVisibility(View.GONE);
-        }
+        setChatEntryVisible(false);
         mChatItems.clear();
         RxHelper.disposeActions(mLiveChatAction);
         mLiveChatAction = null;
@@ -9526,8 +9591,8 @@ public class MobilePlaybackActivity extends MobileActivity
                     Utils.postDelayed(mPrefetchComments, COMMENTS_PREFETCH_DELAY_MS);
                 }
             }
-            if (mWatchChatEntry != null && mLiveChatKey != null) {
-                mWatchChatEntry.setVisibility(View.VISIBLE);
+            if (mLiveChatKey != null) {
+                setChatEntryVisible(true);
             }
         }
     }
@@ -9570,7 +9635,9 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         CharSequence likes = isCountUnset(mWatchLikeCount) ? null : mWatchLikeCount.getText();
         showPlayerSheet(DescriptionSheet.create(this, mWatchTitle.getText(), likes, mDescriptionViews,
-                mDescriptionDate, mWatchDescription.getText(), isLandscape() ? null : mVideoArea));
+                mDescriptionDate, mWatchDescription.getText(),
+                // A short fills the screen: a plain sheet over it, not one sized to under the video.
+                isLandscape() || (mShorts != null && mShorts.isActive()) ? null : mVideoArea));
     }
 
     /** Route Like / Dislike / Subscribe through the presenter's onButtonClicked vocabulary. */
@@ -10537,7 +10604,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (ShortsOverlay.fillsScreen(this)) {
                 mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM; // shorts fill a phone
             }
-        } else if (mPortraitFull && !isLandscape() || mCommentsSide
+        } else if (mPortraitFull && !isLandscape() || mCommentsSide || mChatSide
                 || mShorts != null && mShorts.isCommentsOpen()) {
             // METUBE(fullscreen): the whole picture, upright; ambient mode fills the bands. A pinch's
             // "fill" (landscape) would crop a 16:9 video to a sliver of its middle here - and to

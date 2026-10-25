@@ -188,6 +188,7 @@ public class MobileSearchActivity extends MobileActivity
         mMicButton = findViewById(R.id.mobile_search_mic);
         mSuggestions = findViewById(R.id.mobile_search_suggestions);
         mGrid = findViewById(R.id.mobile_search_grid);
+        setupNavPill(); // before the mini inset, which keeps the grid's bottom padding as its base
         // NEWTUBE(mini-inset): the last row can scroll clear of the docked mini-player card.
         com.newtube.mobile.ui.playback.MiniPlayerListInset.attach(findViewById(R.id.mobile_mini_player), mGrid);
         mSkeleton = findViewById(R.id.mobile_feed_skeleton);
@@ -199,6 +200,39 @@ public class MobileSearchActivity extends MobileActivity
             }
         });
     }
+
+    /**
+     * METUBE(search nav): Browse's floating tab bar over the results (Search lit), sliding away as
+     * they scroll down like Browse's. None when no Browse is open to copy the tabs from.
+     */
+    private void setupNavPill() {
+        View pill = findViewById(R.id.mobile_nav_glass);
+        View bar = findViewById(R.id.mobile_bottom_nav);
+        if (!com.newtube.mobile.ui.browse.MobileBrowseActivity.copyNavTabs(this,
+                (com.google.android.material.bottomnavigation.BottomNavigationView) bar,
+                () -> mGrid.smoothScrollToPosition(0))) {
+            return;
+        }
+        mNavPill = pill;
+        com.newtube.mobile.ui.common.Glass.blur(pill, findViewById(R.id.mobile_search_glass_source));
+        // The pill floats above the system bar already: the bar must not pad itself by it too.
+        ViewCompat.setOnApplyWindowInsetsListener(bar, (v, insets) -> insets);
+        int clearance = getResources().getDimensionPixelSize(R.dimen.metube_nav_clearance);
+        mGrid.setPadding(mGrid.getPaddingLeft(), mGrid.getPaddingTop(), mGrid.getPaddingRight(), clearance);
+        ((android.view.ViewGroup.MarginLayoutParams) findViewById(R.id.mobile_mini_player).getLayoutParams())
+                .bottomMargin = clearance;
+        mGrid.addOnScrollListener(new com.newtube.mobile.ui.common.NavHider(pill));
+        showNavPill();
+    }
+
+    /** The bar is the results' only: typing has the suggestions and the keyboard there. */
+    private void showNavPill() {
+        if (mNavPill != null) {
+            mNavPill.setVisibility(mSearchInput.hasFocus() ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    private View mNavPill;
 
     /**
      * NEWTUBE(motion): the results area ends at the keyboard's top edge and follows it frame by
@@ -405,6 +439,7 @@ public class MobileSearchActivity extends MobileActivity
             if (hasFocus) {
                 loadSearchTags(getSearchText());
             }
+            showNavPill();
         });
     }
 

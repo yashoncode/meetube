@@ -443,6 +443,14 @@
                         android:contentDescription="@string/mobile_comments_entry"
                         android:src="@drawable/ic_watch_comment" />
 
+                    <!-- METUBE(live chat, issue #32): a live stream's chat, from fullscreen too. -->
+                    <ImageButton
+                        android:id="@+id/mobile_player_chat"
+                        style="@style/MobilePlayerAction"
+                        android:contentDescription="@string/mobile_live_chat_entry"
+                        android:src="@drawable/ic_watch_chat"
+                        android:visibility="gone" />
+
                     <ImageButton
                         android:id="@+id/mobile_player_download"
                         style="@style/MobilePlayerAction"

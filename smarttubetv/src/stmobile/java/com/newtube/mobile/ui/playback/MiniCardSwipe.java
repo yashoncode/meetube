@@ -5,6 +5,7 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import androidx.annotation.Nullable;
@@ -12,19 +13,17 @@ import androidx.dynamicanimation.animation.DynamicAnimation;
 import androidx.dynamicanimation.animation.SpringAnimation;
 
 import com.newtube.mobile.ui.common.Haptics;
-import com.newtube.mobile.ui.common.MagneticDrag;
 
 /**
- * NEWTUBE(motion): swipe the docked mini card sideways to close it, like YouTube's. The card
- * fades with the distance; let go past the point where it lets go (or flick it) and it flies off
- * that side, keeping the finger's speed, and the host closes the session; otherwise it springs
- * back. Taps are untouched: the swipe only claims a touch once it is clearly sideways, and then
- * cancels the card's pending click so the release does not also expand it.
+ * METUBE(mini-float): the docked mini card floats free, like YouTube's Shorts mini player. Drag it
+ * anywhere and it follows the finger; let go and it springs to the nearest corner of the screen,
+ * the throw's direction counted. Flung hard sideways, or let go mostly past a side edge, it flies
+ * off that side and the host closes the session (the old swipe to close). Taps are untouched: the
+ * drag only claims a touch once it has moved past the touch slop, and then cancels the card's
+ * pending click so the release does not also expand it.
  *
- * <p>NEWTUBE(haptics): it swipes like a notification on the Pixel (MagneticDrag): stuck at half
- * the finger's distance with a faint grain, then a click at 72 dp - 40% of the card, the old
- * commit point - where it catches up with the finger; back under 56 dp it sticks again, with the
- * same click. The spring back has SystemUI's small bounce.</p>
+ * <p>The card's laid-out place is its home corner (bottom, end); the other corners are
+ * translations from it. Every host puts the card home when it shows it again.</p>
  *
  * <p>Shared by Home's card (MobileBrowseActivity) and the Search/Channel one
  * (MobileMiniPlayerController); each host does its own closing in {@link Callback}.</p>
@@ -43,28 +42,35 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     }
 
     private static final float FLING_VELOCITY_DP = 450f;
+    /** A sideways throw this fast (and mostly sideways) closes the card instead of moving it. */
+    private static final float CLOSE_VELOCITY_DP = 1800f;
+    /** How far a throw carries when picking the corner, in seconds of its speed. */
+    private static final float THROW_S = 0.18f;
+    /** The corners keep clear of the top bar's pills. */
+    private static final float TOP_CLEARANCE_DP = 80f;
     /** SystemUI's snap-back spring for a notification that did not go. */
-    private static final float SNAP_BACK_STIFFNESS = 550f;
-    private static final float SNAP_BACK_DAMPING = 0.6f;
+    private static final float SNAP_STIFFNESS = 550f;
+    private static final float SNAP_DAMPING = 0.75f;
     private static final long FLY_MIN_MS = 110;
     private static final long FLY_MAX_MS = 240;
 
     private final View mCard;
     private final Callback mCallback;
     private final int mTouchSlop;
-    private final float mFlingVelocity;
-    private final MagneticDrag mMagnet;
-    @Nullable
-    private SpringAnimation mSnapBack;
+    private final float mDensity;
+    private final SpringAnimation mSnapX;
+    private final SpringAnimation mSnapY;
     private float mDownRawX;
     private float mDownRawY;
+    private float mStartX;
+    private float mStartY;
     private boolean mDragging;
-    /** The touch stopped being a swipe (a second finger): consume it to the end. */
+    /** The touch stopped being a drag (a second finger): consume it to the end. */
     private boolean mIgnoring;
     @Nullable
     private VelocityTracker mVelocity;
 
-    /** Returns the swipe, so the host can {@link #stop} it before moving the card itself. */
+    /** Returns the drag, so the host can {@link #stop} it before moving the card itself. */
     public static MiniCardSwipe attach(View card, Callback callback, View... touchTargets) {
         MiniCardSwipe swipe = new MiniCardSwipe(card, callback);
         for (View target : touchTargets) {
@@ -76,10 +82,8 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     }
 
     /**
-     * NEWTUBE(haptics): the host is about to move the card itself (close, fold, show, enter): stop
-     * the swipe's springs, which a card.animate().cancel() does not reach, and ignore the rest of a
-     * touch still on it. A spring back still running kept restoring the card's alpha and position
-     * under the host's own fade.
+     * The host is about to move the card itself (close, fold, show, enter): stop the springs,
+     * which a card.animate().cancel() does not reach, and ignore the rest of a touch still on it.
      */
     public void stop() {
         if (mDragging) {
@@ -87,19 +91,23 @@ public final class MiniCardSwipe implements View.OnTouchListener {
             mIgnoring = true;
             recycleVelocity();
         }
-        mMagnet.finish();
-        cancelSnapBack();
+        mSnapX.cancel();
+        mSnapY.cancel();
     }
 
     private MiniCardSwipe(View card, Callback callback) {
         mCard = card;
         mCallback = callback;
         mTouchSlop = ViewConfiguration.get(card.getContext()).getScaledTouchSlop();
-        mFlingVelocity = FLING_VELOCITY_DP * card.getResources().getDisplayMetrics().density;
-        mMagnet = new MagneticDrag(card, position -> {
-            mCard.setTranslationX(position);
-            mCard.setAlpha(alphaFor(position));
-        });
+        mDensity = card.getResources().getDisplayMetrics().density;
+        mSnapX = spring(DynamicAnimation.TRANSLATION_X);
+        mSnapY = spring(DynamicAnimation.TRANSLATION_Y);
+    }
+
+    private SpringAnimation spring(DynamicAnimation.ViewProperty property) {
+        SpringAnimation spring = new SpringAnimation(mCard, property, 0f);
+        spring.getSpring().setStiffness(SNAP_STIFFNESS).setDampingRatio(SNAP_DAMPING);
+        return spring;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -124,12 +132,11 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                 float dx = event.getRawX() - mDownRawX;
                 float dy = event.getRawY() - mDownRawY;
                 if (!mDragging) {
-                    if (Math.abs(dx) <= mTouchSlop || Math.abs(dx) <= Math.abs(dy) * 1.5f
-                            || !mCallback.canSwipe()) {
+                    if (Math.hypot(dx, dy) <= mTouchSlop || !mCallback.canSwipe()) {
                         return false;
                     }
                     mDragging = true;
-                    // Drop the press and its pending click: this touch is a swipe now.
+                    // Drop the press and its pending click: this touch is a drag now.
                     MotionEvent cancel = MotionEvent.obtain(event);
                     cancel.setAction(MotionEvent.ACTION_CANCEL);
                     view.onTouchEvent(cancel);
@@ -139,10 +146,14 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                         parent.requestDisallowInterceptTouchEvent(true);
                     }
                     mCard.animate().cancel();
-                    cancelSnapBack();
-                    mMagnet.start();
+                    mSnapX.cancel();
+                    mSnapY.cancel();
+                    mStartX = mCard.getTranslationX();
+                    mStartY = mCard.getTranslationY();
                 }
-                mMagnet.move(dx);
+                mCard.setTranslationX(mStartX + dx);
+                mCard.setTranslationY(mStartY + dy);
+                mCard.setAlpha(alphaFor());
                 return true;
             }
             case MotionEvent.ACTION_UP: {
@@ -156,27 +167,24 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                 }
                 trackVelocity(event);
                 float velocityX = 0f;
+                float velocityY = 0f;
                 if (mVelocity != null) {
                     mVelocity.computeCurrentVelocity(1000);
                     velocityX = mVelocity.getXVelocity();
+                    velocityY = mVelocity.getYVelocity();
                 }
                 recycleVelocity();
                 mDragging = false;
-                float dx = event.getRawX() - mDownRawX;
-                mMagnet.move(dx); // where the finger lifted, which a last MOVE may not have said
-                mMagnet.finish();
-                release(mMagnet.isDetached(), dx, velocityX);
+                release(velocityX, velocityY);
                 return true;
             }
             case MotionEvent.ACTION_POINTER_DOWN:
-                // A second finger: not a swipe any more. The card goes back; the rest of the touch
-                // is ignored (no index-0 jump when the first finger lifts).
+                // A second finger: not a drag any more. The card settles; the rest is ignored.
                 if (mDragging) {
                     mDragging = false;
                     mIgnoring = true;
                     recycleVelocity();
-                    mMagnet.finish();
-                    springBack(0f);
+                    snapToCorner(0f, 0f);
                 }
                 return mIgnoring;
             case MotionEvent.ACTION_CANCEL:
@@ -184,8 +192,7 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                 mIgnoring = false;
                 if (mDragging) {
                     mDragging = false;
-                    mMagnet.finish();
-                    springBack(0f);
+                    snapToCorner(0f, 0f);
                     return true;
                 }
                 return false;
@@ -194,51 +201,71 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         }
     }
 
-    /**
-     * Decided on the finger ({@code dx}), animated from the card: right after the click the card
-     * still trails the finger (its gap springs shut), and a fast swipe let go within a frame of it
-     * clicked but read the card's 0 and sprang back.
-     */
-    private void release(boolean detached, float dx, float velocityX) {
-        boolean flung = Math.abs(velocityX) > mFlingVelocity && Math.signum(velocityX) == Math.signum(dx);
-        boolean flungBack = Math.abs(velocityX) > mFlingVelocity && Math.signum(velocityX) == -Math.signum(dx);
-        if (dx == 0f || flungBack || (!detached && !flung) || !mCallback.canSwipe()) {
-            springBack(velocityX);
+    private void release(float velocityX, float velocityY) {
+        float overhang = sideOverhang();
+        boolean thrownAway = Math.abs(velocityX) > CLOSE_VELOCITY_DP * mDensity
+                && Math.abs(velocityX) > Math.abs(velocityY) * 1.5f;
+        if ((thrownAway || Math.abs(overhang) > mCard.getWidth() / 2f) && mCallback.canSwipe()) {
+            float direction = thrownAway ? Math.signum(velocityX) : Math.signum(overhang);
+            Haptics.threshold(mCard, true);
+            // Off that side of the screen: at least the card's width plus its distance to the edge.
+            float target = direction * mCard.getResources().getDisplayMetrics().widthPixels;
+            float remaining = Math.abs(target - mCard.getTranslationX());
+            float speed = Math.max(Math.abs(velocityX), FLING_VELOCITY_DP * mDensity * 2f);
+            long durationMs = Math.round(1000f * remaining / speed);
+            mCallback.onSwipedAway(target, Math.max(FLY_MIN_MS, Math.min(FLY_MAX_MS, durationMs)));
             return;
         }
-        if (!detached) {
-            Haptics.threshold(mCard, true); // flung before it let go: the click it skipped
-        }
-        // Off that side of the screen: at least the card's width plus its distance to the edge.
-        float screenWidth = mCard.getResources().getDisplayMetrics().widthPixels;
-        float target = Math.signum(dx) * screenWidth;
-        float remaining = Math.abs(target - mCard.getTranslationX());
-        float speed = Math.max(Math.abs(velocityX), mFlingVelocity * 2f);
-        long durationMs = Math.round(1000f * remaining / speed);
-        durationMs = Math.max(FLY_MIN_MS, Math.min(FLY_MAX_MS, durationMs));
-        mCallback.onSwipedAway(target, durationMs);
+        snapToCorner(velocityX, velocityY);
     }
 
-    private void springBack(float velocityX) {
-        mCard.animate().cancel();
-        if (mSnapBack == null) {
-            mSnapBack = new SpringAnimation(mCard, DynamicAnimation.TRANSLATION_X, 0f);
-            mSnapBack.getSpring().setStiffness(SNAP_BACK_STIFFNESS).setDampingRatio(SNAP_BACK_DAMPING);
-            mSnapBack.addUpdateListener((animation, value, velocity) -> mCard.setAlpha(alphaFor(value)));
+    /**
+     * To the corner nearest where the throw would carry the card. Home is its laid-out place; the
+     * other side and the top are translations, measured in its parent.
+     */
+    private void snapToCorner(float velocityX, float velocityY) {
+        View parent = (View) mCard.getParent();
+        if (parent == null) {
+            return;
         }
-        mSnapBack.cancel();
-        mSnapBack.setStartVelocity(velocityX);
-        mSnapBack.animateToFinalPosition(0f);
+        int margin = mCard.getLayoutParams() instanceof ViewGroup.MarginLayoutParams
+                ? Math.max(((ViewGroup.MarginLayoutParams) mCard.getLayoutParams()).getMarginEnd(), 0) : 0;
+        // Home is at one side; the other side sits the same margin in from the other edge.
+        float homeLeft = mCard.getLeft();
+        float otherSide = homeLeft + mCard.getWidth() / 2f < parent.getWidth() / 2f
+                ? parent.getWidth() - margin - mCard.getRight() : margin - homeLeft;
+        float top = TOP_CLEARANCE_DP * mDensity - mCard.getTop();
+
+        float centerX = homeLeft + mCard.getWidth() / 2f + mCard.getTranslationX() + velocityX * THROW_S;
+        float centerY = mCard.getTop() + mCard.getHeight() / 2f + mCard.getTranslationY() + velocityY * THROW_S;
+        float homeCenterX = homeLeft + mCard.getWidth() / 2f;
+        float x = Math.abs(centerX - homeCenterX) < Math.abs(centerX - (homeCenterX + otherSide)) ? 0f : otherSide;
+        float y = centerY > parent.getHeight() / 2f || top >= 0f ? 0f : top;
+
+        mCard.setAlpha(1f);
+        mSnapX.setStartVelocity(velocityX);
+        mSnapX.animateToFinalPosition(x);
+        mSnapY.setStartVelocity(velocityY);
+        mSnapY.animateToFinalPosition(y);
     }
 
-    private void cancelSnapBack() {
-        if (mSnapBack != null) {
-            mSnapBack.cancel();
+    /** How far past a side edge of its parent the card hangs (negative: the start side). */
+    private float sideOverhang() {
+        View parent = (View) mCard.getParent();
+        if (parent == null) {
+            return 0f;
         }
+        float left = mCard.getLeft() + mCard.getTranslationX();
+        float right = left + mCard.getWidth();
+        if (left < 0f) {
+            return left;
+        }
+        return Math.max(0f, right - parent.getWidth());
     }
 
-    private float alphaFor(float dx) {
-        float fraction = Math.min(1f, Math.abs(dx) / (Math.max(1, mCard.getWidth()) * 1.2f));
+    /** The card fades as it hangs past a side edge, a hint that letting go there closes it. */
+    private float alphaFor() {
+        float fraction = Math.min(1f, Math.abs(sideOverhang()) / Math.max(1, mCard.getWidth()));
         return 1f - 0.85f * fraction;
     }
 

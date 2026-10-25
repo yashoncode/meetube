@@ -232,6 +232,7 @@ public final class MobileMiniPlayerController {
         mBar.setScaleX(1f);
         mBar.setScaleY(1f);
         mBar.setTranslationX(0f); // a card swiped away (MiniCardSwipe)
+        mBar.setTranslationY(0f); // or dragged to another corner (METUBE(mini-float))
 
         mEntryAnimating = animateFromPlayer;
         mTextureHasFrame = false;

@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 
 /**
  * METUBE(rgb glow): a soft light in the top left corner whose colour walks the hue wheel, behind
- * the You page's header and the Explore menu. Done the way Gemini lights its pure black page: one
+ * the You page's header. Done the way Gemini lights its pure black page: one
  * saturated colour at about a third of its strength at most, faded out on a long eased curve, so
  * the black stays true black past it. Two lights a third of the wheel apart make it multi colour.
  */

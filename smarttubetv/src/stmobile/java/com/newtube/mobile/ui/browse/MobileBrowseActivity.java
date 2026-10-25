@@ -141,6 +141,8 @@ public class MobileBrowseActivity extends MobileActivity
     private FeedStrip mStrip;
     private RecyclerView mChipRow;
     private ChipBar mChipBar;
+    // METUBE(nav hide, issue #37): the floating nav pill slides away while a feed scrolls down.
+    private com.newtube.mobile.ui.common.NavHider mNavHider;
     // METUBE(home-rows): Home drawn as SmartTube's shelves (HomeLayout), mirroring mAdapter's list.
     private HomeRowsAdapter mRows;
     private androidx.recyclerview.widget.ConcatAdapter mFeedAdapter;
@@ -264,6 +266,7 @@ public class MobileBrowseActivity extends MobileActivity
         setContentView(R.layout.activity_mobile_browse);
 
         registerBackHandler(this::handleBack);
+        sLive = new java.lang.ref.WeakReference<>(this);
 
         bindViews();
         if (savedInstanceState == null) {
@@ -373,6 +376,13 @@ public class MobileBrowseActivity extends MobileActivity
             bar += mChipRow.getHeight(); // hidden chips keep their room: the feed never jumps
         }
         padUnderTopBar(bar);
+    }
+
+    /** A new page: the nav pill back if a scroll had slid it away. */
+    private void showNav() {
+        if (mNavHider != null) {
+            mNavHider.show();
+        }
     }
 
     /** Home's chips float only over Home and its topics, never over the You panel. */
@@ -670,6 +680,7 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayerBar.setScaleX(1f);
         mMiniPlayerBar.setScaleY(1f);
         mMiniPlayerBar.setTranslationX(0f);
+        mMiniPlayerBar.setTranslationY(0f); // METUBE(mini-float): back home from the corner it was dragged to
         mMiniPlayerBar.setVisibility(View.VISIBLE);
         mMiniControls.show();
         updateMiniPlayPauseIcon(player);
@@ -882,6 +893,7 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayerBar.setScaleX(1f);
         mMiniPlayerBar.setScaleY(1f);
         mMiniPlayerBar.setTranslationX(0f);
+        mMiniPlayerBar.setTranslationY(0f); // METUBE(mini-float): back home from the corner it was dragged to
         mMiniButtonsFadePending = false;
         setMiniButtonsAlpha(1f);
         mMiniControls.reset();
@@ -1047,6 +1059,10 @@ public class MobileBrowseActivity extends MobileActivity
                 maybeTriggerPagination();
             }
         });
+        if (!com.newtube.mobile.ui.common.FocusRing.isTv(this)) { // a remote needs the tabs in reach
+            mNavHider = new com.newtube.mobile.ui.common.NavHider(findViewById(R.id.mobile_nav_glass));
+            mContentGrid.addOnScrollListener(mNavHider);
+        }
         if (com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
             // METUBE(tv): the remote's way to the chips is up from the first row, so there the feed
             // goes back to its top and the chips come out (a touch gets them by scrolling up).
@@ -1399,6 +1415,7 @@ public class MobileBrowseActivity extends MobileActivity
      * You sub-screen with a back arrow and its name.
      */
     private void onYouPanelToggled() {
+        showNav();
         int a11y = mYouShowing
                 ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS : View.IMPORTANT_FOR_ACCESSIBILITY_AUTO;
         mContentSwipe.setImportantForAccessibility(a11y);
@@ -1675,6 +1692,7 @@ public class MobileBrowseActivity extends MobileActivity
             clearSubsChannel(); // METUBE(feed-strip): a filter belongs to the visit that set it
         }
         mCurrentSectionId = sectionId;
+        showNav();
         updateStrip();
         paintCachedSnapshot(sectionId, switched);
         syncNavHighlight(sectionId);
@@ -1936,9 +1954,6 @@ public class MobileBrowseActivity extends MobileActivity
                             ? getString(R.string.mobile_feed_all) : section.getTitle(), null, null));
                 }
             }
-            if (chips.size() > 1) {
-                chips.add(0, new FeedStrip.Item(FeedStrip.EXPLORE, "", null, null)); // METUBE(explore)
-            }
             mStrip.show(chips.size() > 1 ? FeedStrip.MODE_CHIPS : FeedStrip.MODE_NONE, chips, mCurrentSectionId);
             updateChipRow();
         } else if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
@@ -1974,12 +1989,7 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void onStripPicked(FeedStrip.Item item) {
-        if (item.id == FeedStrip.EXPLORE) {
-            ExploreDrawer.show(this, mSections, sectionId -> {
-                mSectionFromYou = false;
-                onSectionChosen(sectionId);
-            });
-        } else if (mStrip.mode() == FeedStrip.MODE_CHIPS) {
+        if (mStrip.mode() == FeedStrip.MODE_CHIPS) {
             // A topic opens in Home's place: Home's tab stays lit (no tab of its own), Back = Home.
             mSectionFromYou = false;
             onSectionChosen((int) item.id);
@@ -2685,6 +2695,46 @@ public class MobileBrowseActivity extends MobileActivity
         super.onNewIntent(intent);
         setIntent(intent);
         handleOpenDownloads(intent);
+        int tab = intent.getIntExtra(EXTRA_NAV_TAB, 0);
+        if (tab != 0 && mBottomNav.getMenu().findItem(tab) != null) {
+            mBottomNav.setSelectedItemId(tab);
+        }
+    }
+
+    /** METUBE(search nav): the open Browse, whose tabs another screen's bar copies. */
+    private static java.lang.ref.WeakReference<MobileBrowseActivity> sLive = new java.lang.ref.WeakReference<>(null);
+    private static final String EXTRA_NAV_TAB = "metube_nav_tab";
+
+    /**
+     * METUBE(search nav): fills {@code bar} with Browse's tabs (Search lit) and wires a tap on one
+     * to go back to Browse on that tab. False when no Browse is open: the screen keeps no bar.
+     */
+    public static boolean copyNavTabs(android.app.Activity screen, BottomNavigationView bar, Runnable onSearchReselected) {
+        MobileBrowseActivity browse = sLive.get();
+        if (browse == null || browse.isFinishing()) {
+            return false;
+        }
+        Menu source = browse.mBottomNav.getMenu();
+        Menu menu = bar.getMenu();
+        menu.clear();
+        for (int i = 0; i < source.size(); i++) {
+            android.view.MenuItem item = source.getItem(i);
+            android.graphics.drawable.Drawable icon = item.getIcon();
+            if (icon != null && icon.getConstantState() != null) {
+                icon = icon.getConstantState().newDrawable(screen.getResources()).mutate();
+            }
+            menu.add(Menu.NONE, item.getItemId(), item.getOrder(), item.getTitle()).setIcon(icon);
+        }
+        bar.setLabelVisibilityMode(browse.mBottomNav.getLabelVisibilityMode());
+        bar.setSelectedItemId(SEARCH_ITEM_ID);
+        bar.setOnItemSelectedListener(item -> {
+            screen.startActivity(new Intent(screen, MobileBrowseActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    .putExtra(EXTRA_NAV_TAB, item.getItemId()));
+            return false; // Search stays lit while this screen closes
+        });
+        bar.setOnItemReselectedListener(item -> onSearchReselected.run());
+        return true;
     }
 
     @Override

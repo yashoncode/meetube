@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,13 +84,18 @@ public class LiveChatAdapter extends RecyclerView.Adapter<LiveChatAdapter.VH> {
         void bind(ChatItem item) {
             Context context = itemView.getContext();
 
-            String author = item.getAuthorName() != null ? item.getAuthorName() : "";
+            // An Arabic or Hebrew name is set apart (a bidi isolate): it reads right to left on its
+            // own instead of turning the row over, which put the name at the far end of the line.
+            String author = item.getAuthorName() != null
+                    ? androidx.core.text.BidiFormatter.getInstance().unicodeWrap(item.getAuthorName()) : "";
             String message = item.getMessage() != null ? item.getMessage() : "";
 
             SpannableStringBuilder sb = new SpannableStringBuilder();
             if (!author.isEmpty()) {
                 sb.append(author);
-                sb.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, author.length(),
+                // METUBE(live chat, issue #32): YouTube's rows - the name in grey, the message white.
+                sb.setSpan(new android.text.style.ForegroundColorSpan(androidx.core.content.ContextCompat.getColor(
+                        context, R.color.mobile_color_on_surface_secondary)), 0, author.length(),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 sb.append("  ");
             }
