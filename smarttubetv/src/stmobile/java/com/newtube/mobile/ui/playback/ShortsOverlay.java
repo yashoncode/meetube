@@ -121,6 +121,7 @@ final class ShortsOverlay {
     private final Watch mWatch;
     private final Host mHost;
     private boolean mAvatarKnown;
+    private Drawable mAvatarOrb;
     private boolean mInPip;
     private final Runnable mPreloadNeighbours = this::preloadNeighbours;
     private final Runnable mHidePeek = this::hidePeek;
@@ -321,7 +322,9 @@ final class ShortsOverlay {
             mTitle.setText(item.getTitle());
             if (fresh) {
                 mTitle.setMaxLines(2);
-                mAvatar.setImageDrawable(null);
+                com.bumptech.glide.Glide.with(mAvatar).clear(mAvatar);
+                mAvatarOrb = com.newtube.mobile.ui.common.ChannelAvatars.placeholder(item.getAuthor());
+                mAvatar.setImageDrawable(mAvatarOrb); // the Home cards' breathing orb until it lands
                 mAvatarKnown = false;
                 showKnownAvatar(item);
                 mOverlay.removeCallbacks(mPreloadNeighbours);
@@ -551,7 +554,8 @@ final class ShortsOverlay {
 
     private void loadAvatar(String url) {
         mAvatarKnown = true;
-        com.bumptech.glide.Glide.with(mAvatar).load(url).circleCrop().into(mAvatar);
+        com.bumptech.glide.Glide.with(mAvatar).load(url).circleCrop().placeholder(mAvatarOrb)
+                .error(mAvatarOrb).transition(com.newtube.mobile.ui.common.ChannelAvatars.FADE).into(mAvatar);
     }
 
     private void copyAvatar() {

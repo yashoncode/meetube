@@ -258,6 +258,12 @@ public final class ChannelAvatars {
         return new OrbDrawable(name);
     }
 
+    /** An avatar fades in over its placeholder orb instead of popping. */
+    public static final com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions FADE =
+            com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(
+                    new com.bumptech.glide.request.transition.DrawableCrossFadeFactory.Builder(280)
+                            .setCrossFadeEnabled(true).build());
+
     private static final class OrbDrawable extends Drawable {
         /** Breathes this long, then rests (a channel that never resolves shouldn't redraw forever). */
         private static final long PULSE_MS = 6_000;

@@ -411,20 +411,14 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                         () -> mVideo == video, found -> {
                     if (mVideo == video && view.getVisibility() == View.VISIBLE) {
                         Glide.with(itemView.getContext()).load(found).circleCrop().placeholder(letter)
-                                .transition(AVATAR_FADE).into(view);
+                                .transition(com.newtube.mobile.ui.common.ChannelAvatars.FADE).into(view);
                     }
                 }, false);
             } else {
                 Glide.with(context).load(url).circleCrop().placeholder(letter).error(letter)
-                        .transition(AVATAR_FADE).into(view);
+                        .transition(com.newtube.mobile.ui.common.ChannelAvatars.FADE).into(view);
             }
         }
-
-        /** METUBE(card avatars): an avatar fades in over its placeholder orb instead of popping. */
-        private static final com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions AVATAR_FADE =
-                com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(
-                        new com.bumptech.glide.request.transition.DrawableCrossFadeFactory.Builder(280)
-                                .setCrossFadeEnabled(true).build());
 
         /**
          * METUBE(card avatars): look up and decode the avatar(s) of a card about to scroll in, so
