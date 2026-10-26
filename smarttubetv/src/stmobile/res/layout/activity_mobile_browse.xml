@@ -131,10 +131,19 @@
                 android:layout_height="wrap_content">
 
             <!-- METUBE(rgb glow): the RGB light in the top left, behind the header and the top pills
-                 (the rows below are padded by padUnderTopBar). -->
-            <com.newtube.mobile.ui.common.RgbGlow
+                 (the rows below are padded by padUnderTopBar). Its own glass source: the Accounts and
+                 Settings pills frost it (they sit inside mobile_blur_target, so can't sample that). -->
+            <com.newtube.mobile.ui.common.GlassSource
+                android:id="@+id/mobile_you_glow_source"
                 android:layout_width="match_parent"
-                android:layout_height="360dp" />
+                android:layout_height="360dp"
+                android:background="@color/mobile_color_background">
+
+                <com.newtube.mobile.ui.common.RgbGlow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </com.newtube.mobile.ui.common.GlassSource>
 
             <LinearLayout
                 android:id="@+id/mobile_you_content"
@@ -205,34 +214,57 @@
                     android:orientation="horizontal"
                     android:paddingHorizontal="16dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/mobile_you_accounts"
-                        style="@style/Widget.NewTube.Button.Pill"
+                    <com.newtube.mobile.ui.common.GlassView
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="44dp"
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
-                        android:text="@string/settings_accounts" />
+                        app:glassCornerRadius="22dp"
+                        app:glassTint="@color/metube_glass_tint">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/mobile_you_settings"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/mobile_you_accounts"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:fontFamily="sans-serif-medium"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:letterSpacing="0"
+                            android:text="@string/settings_accounts"
+                            android:textAllCaps="false"
+                            android:textColor="@color/mobile_color_on_surface"
+                            android:textSize="14sp"
+                            app:cornerRadius="22dp"
+                            app:rippleColor="@color/mobile_color_divider" />
+
+                    </com.newtube.mobile.ui.common.GlassView>
+
+                    <com.newtube.mobile.ui.common.GlassView
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="44dp"
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
-                        android:fontFamily="sans-serif-medium"
-                        android:insetTop="4dp"
-                        android:insetBottom="4dp"
-                        android:letterSpacing="0"
-                        android:minHeight="48dp"
-                        android:text="@string/header_settings"
-                        android:textAllCaps="false"
-                        android:textColor="@color/mobile_color_on_surface"
-                        android:textSize="14sp"
-                        app:cornerRadius="22dp"
-                        app:rippleColor="@color/mobile_color_divider"
-                        app:strokeColor="@color/mobile_color_on_surface_secondary" />
+                        app:glassCornerRadius="22dp"
+                        app:glassTint="@color/metube_glass_tint">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/mobile_you_settings"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:fontFamily="sans-serif-medium"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:letterSpacing="0"
+                            android:text="@string/header_settings"
+                            android:textAllCaps="false"
+                            android:textColor="@color/mobile_color_on_surface"
+                            android:textSize="14sp"
+                            app:cornerRadius="22dp"
+                            app:rippleColor="@color/mobile_color_divider" />
+
+                    </com.newtube.mobile.ui.common.GlassView>
 
                 </LinearLayout>
 

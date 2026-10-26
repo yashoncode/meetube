@@ -1323,6 +1323,8 @@ public class MobileBrowseActivity extends MobileActivity
         accountRow.setOnClickListener(v -> AccountsSheet.show(this, this::updateAccountRow));
         findViewById(R.id.mobile_you_accounts).setOnClickListener(v -> AccountsSheet.show(this, this::updateAccountRow));
         findViewById(R.id.mobile_you_settings).setOnClickListener(v -> openSettings());
+        com.newtube.mobile.ui.common.Glass.blur((View) findViewById(R.id.mobile_you_accounts).getParent(), findViewById(R.id.mobile_you_glow_source));
+        com.newtube.mobile.ui.common.Glass.blur((View) findViewById(R.id.mobile_you_settings).getParent(), findViewById(R.id.mobile_you_glow_source));
         findViewById(R.id.mobile_you_history_title).setOnClickListener(v -> openFromYou(MediaGroup.TYPE_HISTORY));
 
         // METUBE(you page): History's latest videos, two and a bit across like YouTube's You page.
