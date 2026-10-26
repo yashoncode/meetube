@@ -5462,6 +5462,9 @@ public class MobilePlaybackActivity extends MobileActivity
             // An unknown size keeps the last one, as the content frame does (DoubleTapPlayerViewImpl).
             if (videoSize.width > 0 && videoSize.height > 0) {
                 mVideoAspect = videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height;
+                if (isShortsMode()) {
+                    setResizeMode(PlayerData.instance(MobilePlaybackActivity.this).getResizeMode()); // fill or whole, by shape
+                }
                 applyControlsInsets();
                 updatePipActions(); // a new shape reshapes the PiP window
                 setInlineAspect(mVideoAspect);
@@ -10706,8 +10709,12 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     public void setResizeMode(int mode) {
         if (isShortsMode()) {
-            if (ShortsOverlay.fillsScreen(this)) {
+            if (ShortsOverlay.fillsScreen(this) && mVideoAspect < SHORTS_FILL_MAX_ASPECT) {
                 mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM; // shorts fill a phone
+            } else if (ShortsOverlay.fillsScreen(this)) {
+                // A square or wide "short" zoomed to the screen kept a strip of its middle: whole,
+                // like YouTube, with the ambient glow in the bands.
+                mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
             }
         } else if (mPortraitFull && !isLandscape() || mCommentsSide || mChatSide
                 || mShorts != null && mShorts.isCommentsOpen()) {
@@ -10722,6 +10729,13 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         applyControlsInsets(); // fill/zoom: the controls span the width (controlsStrip)
     }
+
+    /**
+     * A short this narrow or narrower (width / height) fills a phone. 9:16 is 0.56, 3:4 is 0.75: a
+     * tall short loses a sliver of its sides, a 4:5, square or wide one would lose most of itself.
+     * 0 (size not known yet) fills, as every short did.
+     */
+    private static final float SHORTS_FILL_MAX_ASPECT = 0.7f;
 
     @Override
     public int getResizeMode() {
