@@ -100,6 +100,8 @@ public class VideoMenuPresenter extends BaseMenuPresenter {
         int ACTION_ADD_TO_QUEUE = 5;
         int ACTION_PLAY_NEXT = 6;
         int ACTION_REMOVE_AUTHOR = 7;
+        /** METUBE(#65): the video is back in the playlist (Undo), or its removal failed. */
+        int ACTION_RESTORE_TO_PLAYLIST = 8;
         void onItemAction(Video videoItem, int action);
     }
 
@@ -290,7 +292,12 @@ public class VideoMenuPresenter extends BaseMenuPresenter {
 
         RxHelper.disposeActions(mAddToPlaylistAction);
         mAddToPlaylistAction = RxHelper.execute(mMediaItemService.removeFromPlaylistObserve(playlistId, video.videoId),
-                error -> confirm(context.getString(R.string.feedback_failed)),
+                error -> {
+                    if (callback != null) {
+                        callback.onItemAction(video, VideoMenuCallback.ACTION_RESTORE_TO_PLAYLIST);
+                    }
+                    confirm(context.getString(R.string.feedback_failed));
+                },
                 () -> {
                     // The card leaves the list it is in; other screens showing the playlist
                     // (the You tab's pinned Watch later) refetch when next shown.
@@ -300,18 +307,50 @@ public class VideoMenuPresenter extends BaseMenuPresenter {
                     BrowsePresenter.instance(context).onPlaylistEdited();
                     confirm(context.getString(R.string.removed_from, playlistTitle),
                             context.getString(R.string.action_undo),
-                            () -> undoRemoveFromOwnPlaylist(context, video, playlistId, playlistTitle));
+                            () -> undoRemoveFromOwnPlaylist(context, video, playlistId, playlistTitle, callback));
                 });
     }
 
-    /** Undo puts the video back in the playlist; the list shows it again on its next load. */
-    private void undoRemoveFromOwnPlaylist(Context context, Video video, String playlistId, String playlistTitle) {
+    /**
+     * METUBE(#65): the menu's "Remove from" without the menu, for a swipe on a playlist page:
+     * removed, a snackbar with Undo, and the callback told either way (see ACTION_RESTORE_TO_PLAYLIST).
+     */
+    public void removeFromOwnPlaylist(Video video, String playlistId, String playlistTitle, VideoMenuCallback callback) {
+        mVideo = video;
+        mCallback = callback;
+        removeFromOwnPlaylist(playlistId, playlistTitle);
+    }
+
+    /**
+     * METUBE(#65): {@code onOwn} gets the playlist's title when {@code playlistId} is one of the
+     * signed-in user's own playlists holding {@code video} (the menu's Remove test); never otherwise.
+     */
+    public void findOwnPlaylist(Video video, String playlistId, com.liskovsoft.sharedutils.rx.OnResult<String> onOwn) {
+        if (video == null || video.videoId == null || playlistId == null) {
+            return;
+        }
+        MediaServiceManager.instance().authCheck(() -> RxHelper.execute(mMediaItemService.getPlaylistsInfoObserve(video.videoId),
+                infos -> {
+                    PlaylistInfo own = OwnPlaylistMatch.find(playlistId, infos);
+                    if (own != null) {
+                        onOwn.onResult(own.getTitle());
+                    }
+                },
+                error -> Log.e(TAG, "Own playlist check error: %s", error.getMessage())), null);
+    }
+
+    /** Undo puts the video back in the playlist; a swipe's list puts its card back too. */
+    private void undoRemoveFromOwnPlaylist(Context context, Video video, String playlistId, String playlistTitle,
+            VideoMenuCallback callback) {
         Observable<Void> addObserve = video.mediaItem != null ?
                 mMediaItemService.addToPlaylistObserve(playlistId, video.mediaItem) : mMediaItemService.addToPlaylistObserve(playlistId, video.videoId);
         RxHelper.disposeActions(mAddToPlaylistAction);
         mAddToPlaylistAction = RxHelper.execute(addObserve,
                 error -> confirm(context.getString(R.string.feedback_failed)),
                 () -> {
+                    if (callback != null) {
+                        callback.onItemAction(video, VideoMenuCallback.ACTION_RESTORE_TO_PLAYLIST);
+                    }
                     BrowsePresenter.instance(context).onPlaylistEdited();
                     confirm(context.getString(R.string.added_to, playlistTitle));
                 });

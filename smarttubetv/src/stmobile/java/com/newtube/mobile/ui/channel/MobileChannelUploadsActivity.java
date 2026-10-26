@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -21,6 +22,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.VideoGroup;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.QueuePlaybackMode;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.ChannelUploadsPresenter;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.VideoMenuPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.views.ChannelUploadsView;
 import com.liskovsoft.smartyoutubetv2.common.utils.LoadFailure;
 import com.liskovsoft.smartyoutubetv2.tv.R;
@@ -99,6 +101,11 @@ public class MobileChannelUploadsActivity extends MobileActivity
     private boolean mShortsEmptied;
     /** NEWTUBE(shorts): onDestroy has begun - the presenter's teardown must not page on. */
     private boolean mTornDown;
+    /** METUBE(#65): the playlist found to be the user's own (its cards swipe out of it), and its name. */
+    @Nullable private String mOwnPlaylistId;
+    @Nullable private String mOwnPlaylistTitle;
+    /** The playlist already asked about, so each one is checked once. */
+    @Nullable private String mOwnCheckedFor;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -254,6 +261,76 @@ public class MobileChannelUploadsActivity extends MobileActivity
                 applyToolbarTitleAlpha();
             }
         });
+        // METUBE(#65): in the user's own playlist a card swiped sideways leaves it (Undo on the snackbar).
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START | ItemTouchHelper.END) {
+            @Override
+            public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder holder) {
+                return holder.getBindingAdapter() == mAdapter && isOwnPlaylistShown()
+                        ? super.getSwipeDirs(recyclerView, holder) : 0;
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder holder,
+                    @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder holder, int direction) {
+                removeSwiped(holder.getBindingAdapterPosition());
+            }
+        }).attachToRecyclerView(mGrid);
+    }
+
+    @Nullable
+    private String openerPlaylistId() {
+        Video opener = mPresenter != null ? mPresenter.getChannel() : null;
+        return opener != null ? opener.getPlaylistId() : null;
+    }
+
+    private boolean isOwnPlaylistShown() {
+        return mOwnPlaylistId != null && mOwnPlaylistId.equals(openerPlaylistId());
+    }
+
+    /** METUBE(#65): once per playlist, with its first video: the menu's own-playlist test. */
+    private void checkOwnPlaylist() {
+        String playlistId = openerPlaylistId();
+        if (playlistId == null || playlistId.equals(mOwnCheckedFor)) {
+            return;
+        }
+        for (Video video : mVideos) {
+            if (video != null && video.hasVideo()) {
+                mOwnCheckedFor = playlistId;
+                VideoMenuPresenter.instance(this).findOwnPlaylist(video, playlistId, title -> runOnUiThread(() -> {
+                    mOwnPlaylistId = playlistId;
+                    mOwnPlaylistTitle = title;
+                }));
+                return;
+            }
+        }
+    }
+
+    private void removeSwiped(int position) {
+        Video video = position >= 0 && position < mAdapter.getItemCount() ? mAdapter.getCurrentList().get(position) : null;
+        int index = video != null ? mVideos.indexOf(video) : -1;
+        String playlistId = mOwnPlaylistId;
+        if (index < 0 || playlistId == null) {
+            mAdapter.notifyItemChanged(position); // slide it back
+            return;
+        }
+        mVideos.remove(index);
+        mAdapter.submitList(new ArrayList<>(mVideos));
+        updatePlayAllVisibility();
+        VideoMenuPresenter.instance(this).removeFromOwnPlaylist(video, playlistId, mOwnPlaylistTitle,
+                (item, action) -> runOnUiThread(() -> {
+                    // Undo, or the removal failed: the card goes back where it was.
+                    if (action == VideoMenuPresenter.VideoMenuCallback.ACTION_RESTORE_TO_PLAYLIST
+                            && !mVideos.contains(item) && playlistId.equals(openerPlaylistId())) {
+                        mVideos.add(Math.min(index, mVideos.size()), item);
+                        mAdapter.submitList(new ArrayList<>(mVideos));
+                        updatePlayAllVisibility();
+                    }
+                }));
     }
 
     private boolean isHeaderPosition(int position) {
@@ -618,6 +695,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
             mLastPaginationTriggerCount = -1; // allow pagination to fire again at the new size
             mAdapter.submitList(new ArrayList<>(mVideos));
             updatePlayAllVisibility();
+            checkOwnPlaylist();
 
             if (!mVideos.isEmpty()) {
                 hideLoadState();
