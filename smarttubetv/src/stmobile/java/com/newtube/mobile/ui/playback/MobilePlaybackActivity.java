@@ -8652,9 +8652,15 @@ public class MobilePlaybackActivity extends MobileActivity
     // Simple Quality and Audio track sheets (the gear sheet's everyday pickers)
     // ---------------------------------------------------------------------------------
 
-    /** Distinct resolution rung of the current video: "1080p" / "1080p60" style. */
+    /**
+     * Distinct resolution rung of the current video: "1080p" / "1080p60" style, "2160p60 HDR" for
+     * an HDR stream (issue #63), so an HDR rung and its SDR twin are separate rows, like YouTube.
+     */
     private static String qualityLabel(FormatItem item) {
-        return qualityLabel(item.getWidth(), item.getHeight(), item.getFrameRate());
+        String label = qualityLabel(item.getWidth(), item.getHeight(), item.getFrameRate());
+        com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.track.MediaTrack track = item.getTrack();
+        return track != null && com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.TrackSelectorUtil
+                .isHdrFormat(track.format) ? label + " HDR" : label;
     }
 
     /**
