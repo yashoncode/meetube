@@ -226,6 +226,8 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable private android.animation.ValueAnimator mChatSlide;
     private static final String PLAYER_UI_PREFS = "metube_player_ui";
     private static final String KEY_ACTIONS_SHOWN = "fullscreen_actions";
+    private static final String KEY_TIME_REMAINING = "time_remaining";
+    private boolean mTimeRemaining; // METUBE(issue #67): the time pill counts down, toggled by a tap
     /** Previous / play-pause / next, and the top-right options: they step aside while scrubbing. */
     @Nullable private View mTransport;
     @Nullable private View mOptionsRow;
@@ -761,6 +763,14 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerComments = findViewById(R.id.mobile_player_comments);
         mPlayerChat = findViewById(R.id.mobile_player_chat);
         mActionsShown = getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).getBoolean(KEY_ACTIONS_SHOWN, true);
+        mTimeRemaining = getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).getBoolean(KEY_TIME_REMAINING, false);
+        findViewById(R.id.mobile_player_time).setOnClickListener(v -> {
+            mTimeRemaining = !mTimeRemaining;
+            getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).edit().putBoolean(KEY_TIME_REMAINING, mTimeRemaining).apply();
+            if (mExoPlayerController != null) {
+                setTextIfChanged(mPositionView, positionText(mExoPlayerController.getPositionMs(), getDurationMs()));
+            }
+        });
         mTransport = findViewById(R.id.mobile_player_transport);
         mOptionsRow = findViewById(R.id.mobile_player_options);
         mTopPill = findViewById(R.id.mobile_player_top_pill);
@@ -1184,7 +1194,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 mScrubbing = false;
                 setScrubChrome(false);
                 if (!canceled) {
-                    setTextIfChanged(mPositionView, formatTime(position));
+                    setTextIfChanged(mPositionView, positionText(position, getDurationMs()));
                     updateChapterButton(position);
                 }
                 if (!canceled && mExoPlayerController != null) {
@@ -5370,7 +5380,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mShorts != null) {
                 mShorts.setProgress(position, duration);
             }
-            setTextIfChanged(mPositionView, formatTime(position));
+            setTextIfChanged(mPositionView, positionText(position, duration));
             setTextIfChanged(mDurationView, getString(R.string.mobile_player_duration, formatTime(duration)));
             updateLiveChip(position, duration);
             updateChapterButton(position);
@@ -5416,6 +5426,12 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mPlayer != null) {
             mPlayer.setPlayWhenReady(true);
         }
+    }
+
+    /** The pill's first half: elapsed, or "-" and the time left (issue #67); a live stream stays elapsed. */
+    private String positionText(long positionMs, long durationMs) {
+        boolean live = getVideo() != null && getVideo().isLive;
+        return mTimeRemaining && !live ? "-" + formatTime(durationMs - positionMs) : formatTime(positionMs);
     }
 
     private String formatTime(long timeMs) {
