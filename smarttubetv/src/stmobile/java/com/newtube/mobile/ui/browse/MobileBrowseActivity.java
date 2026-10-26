@@ -2308,13 +2308,20 @@ public class MobileBrowseActivity extends MobileActivity
     private void rebuildBottomNav() {
         Menu menu = mBottomNav.getMenu();
         List<BrowseSection> navSections = selectNavSections();
-        // METUBE(nav tabs): Search goes after Home and the tab picked before it.
-        int afterSearch = NavTabs.get(this, NavTabs.AFTER_SEARCH);
-        int searchOrder = navSections.size() > 1 && afterSearch != NavTabs.NONE
-                && navSections.get(navSections.size() - 1).getId() == afterSearch
-                ? navSections.size() - 1 : navSections.size();
+        // METUBE(nav tabs): Search goes after Home and as many of the two tabs as Settings put before it.
+        int searchPosition = NavTabs.searchPosition(this);
+        int first = NavTabs.get(this, NavTabs.FIRST);
+        int second = NavTabs.get(this, NavTabs.SECOND);
+        int searchOrder = 0;
+        for (BrowseSection section : navSections) {
+            int id = section.getId();
+            if (id == MediaGroup.TYPE_HOME || (id == first && searchPosition > 0) || (id == second && searchPosition > 1)) {
+                searchOrder++;
+            }
+        }
 
-        StringBuilder signature = new StringBuilder().append(searchOrder).append('');
+        boolean searchOnTop = NavTabs.searchOnTop(this); // METUBE(search place): then the bar has no Search tab
+        StringBuilder signature = new StringBuilder().append(searchOnTop ? -1 : searchOrder).append('');
         for (BrowseSection section : navSections) {
             signature.append(toMenuItemId(section.getId())).append('\u0001')
                     .append(section.getTitle()).append('\u0001')
@@ -2322,7 +2329,7 @@ public class MobileBrowseActivity extends MobileActivity
         }
         String newSignature = signature.toString();
 
-        if (newSignature.equals(mNavSignature) && menu.size() == navSections.size() + 1) {
+        if (newSignature.equals(mNavSignature) && menu.size() == navSections.size() + (searchOnTop ? 1 : 2)) {
             // Same tabs as on screen: only re-assert the highlight (the section may have moved).
             mSuppressNavCallback = true;
             reassertNavHighlight(menu, false);
@@ -2347,8 +2354,10 @@ public class MobileBrowseActivity extends MobileActivity
             }
         }
 
-        menu.add(Menu.NONE, SEARCH_ITEM_ID, searchOrder,
-                R.string.mobile_search_button).setIcon(R.drawable.ic_mobile_search);
+        if (!searchOnTop) {
+            menu.add(Menu.NONE, SEARCH_ITEM_ID, searchOrder,
+                    R.string.mobile_search_button).setIcon(R.drawable.ic_mobile_search);
+        }
         // The synthetic You tab always sits last (account + extra sections + settings).
         menu.add(Menu.NONE, YOU_ITEM_ID, navSections.size() + 1, R.string.mobile_nav_you)
                 .setIcon(R.drawable.ic_nav_you);
@@ -2473,8 +2482,7 @@ public class MobileBrowseActivity extends MobileActivity
 
         List<BrowseSection> chosen = new ArrayList<>();
 
-        int[] ids = {MediaGroup.TYPE_HOME, NavTabs.get(this, NavTabs.BEFORE_SEARCH),
-                NavTabs.get(this, NavTabs.AFTER_SEARCH)};
+        int[] ids = {MediaGroup.TYPE_HOME, NavTabs.get(this, NavTabs.FIRST), NavTabs.get(this, NavTabs.SECOND)};
         for (int id : ids) {
             BrowseSection match = id == NavTabs.NONE ? null : findPreferredSection(enabledSections, chosen, id,
                     id == MediaGroup.TYPE_HOME ? R.string.header_home : 0);
@@ -2514,6 +2522,12 @@ public class MobileBrowseActivity extends MobileActivity
         super.onResume();
         mBottomNav.setLabelVisibilityMode(NavTabs.showLabels(this) // METUBE(nav labels)
                 ? BottomNavigationView.LABEL_VISIBILITY_LABELED : BottomNavigationView.LABEL_VISIBILITY_UNLABELED);
+        // METUBE(search place): Search in the top bar or the bottom one, as Settings > Tabs says.
+        boolean searchOnTop = NavTabs.searchOnTop(this);
+        mSearchButton.setVisibility(searchOnTop ? View.VISIBLE : View.GONE);
+        if (searchOnTop == (mBottomNav.getMenu().findItem(SEARCH_ITEM_ID) != null)) {
+            rebuildNavigation();
+        }
         if (mMiniPip != null) {
             mMiniPip.onResume();
         }
@@ -2728,14 +2742,23 @@ public class MobileBrowseActivity extends MobileActivity
             menu.add(Menu.NONE, item.getItemId(), item.getOrder(), item.getTitle()).setIcon(icon);
         }
         bar.setLabelVisibilityMode(browse.mBottomNav.getLabelVisibilityMode());
-        bar.setSelectedItemId(SEARCH_ITEM_ID);
-        bar.setOnItemSelectedListener(item -> {
+        // Search in the top bar (METUBE(search place)): the tab Browse is on stays lit, and a tap on it goes back too.
+        boolean hasSearch = source.findItem(SEARCH_ITEM_ID) != null;
+        bar.setSelectedItemId(hasSearch ? SEARCH_ITEM_ID : browse.mBottomNav.getSelectedItemId());
+        com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener goBack = item -> {
             screen.startActivity(new Intent(screen, MobileBrowseActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
                     .putExtra(EXTRA_NAV_TAB, item.getItemId()));
             return false; // Search stays lit while this screen closes
+        };
+        bar.setOnItemSelectedListener(goBack);
+        bar.setOnItemReselectedListener(item -> {
+            if (hasSearch) {
+                onSearchReselected.run();
+            } else {
+                goBack.onNavigationItemSelected(item);
+            }
         });
-        bar.setOnItemReselectedListener(item -> onSearchReselected.run());
         return true;
     }
 

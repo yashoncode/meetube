@@ -87,6 +87,8 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 return new TextHolder(inflater.inflate(R.layout.item_mobile_settings_note, parent, false));
             case SettingsRow.KIND_FOOTER:
                 return new FooterHolder(inflater.inflate(R.layout.item_mobile_settings_footer, parent, false));
+            case SettingsRow.KIND_CUSTOM:
+                return new RecyclerView.ViewHolder(new android.widget.FrameLayout(parent.getContext())) {};
             case SettingsRow.KIND_DIVIDER:
                 return new RecyclerView.ViewHolder(inflater.inflate(R.layout.item_mobile_settings_divider, parent, false)) {};
             default:
@@ -101,6 +103,12 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ((TextHolder) holder).text.setText(row.title);
         } else if (holder instanceof RowHolder) {
             ((RowHolder) holder).bind(row, mListener);
+        } else if (row.kind == SettingsRow.KIND_CUSTOM && row.custom != null) {
+            ViewGroup host = (ViewGroup) holder.itemView;
+            host.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            host.removeAllViews();
+            host.addView(row.custom.create(host, mListener));
         } else if (holder instanceof FooterHolder) {
             FooterHolder footer = (FooterHolder) holder;
             footer.icon.setImageResource(row.icon);

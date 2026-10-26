@@ -263,9 +263,7 @@ final class AppPages {
                 MediaGroup.TYPE_USER_PLAYLISTS, MediaGroup.TYPE_MY_VIDEOS, MediaGroup.TYPE_CHANNEL_UPLOADS,
                 MediaGroup.TYPE_PLAYBACK_QUEUE, MediaGroup.TYPE_BLOCKED_CHANNELS};
 
-        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_tabs_bottom_bar)));
-        rows.add(navTab(context, NavTabs.BEFORE_SEARCH, R.string.mobile_settings_tabs_before_search));
-        rows.add(navTab(context, NavTabs.AFTER_SEARCH, R.string.mobile_settings_tabs_after_search));
+        rows.add(BarEditor.row(context)); // METUBE(bar editor): the bars as a stack to drag
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_tabs_bar_note)));
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_tabs_you)));
         addSectionToggles(context, rows, sections, you, true);
@@ -289,23 +287,6 @@ final class AppPages {
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_tabs_note)));
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_tabs), rows);
-    }
-
-    /** METUBE(nav tabs, issue #7): one of the two bottom-bar tabs beside Search. */
-    private static SettingsRow navTab(Context context, int slot, int titleRes) {
-        int[] titles = {R.string.header_shorts, R.string.header_subscriptions, R.string.header_downloads,
-                R.string.header_history};
-        SettingsRow.Choice<Integer> choice = SettingsRow.choice(context.getString(titleRes));
-        for (int i = 0; i < NavTabs.CHOICES.length; i++) {
-            choice.option(context.getString(titles[i]), NavTabs.CHOICES[i]);
-        }
-        choice.option(context.getString(R.string.mobile_settings_tabs_none), NavTabs.NONE);
-        return choice.bind(() -> NavTabs.get(context, slot), sectionId -> {
-            NavTabs.set(context, slot, sectionId);
-            if (sectionId != NavTabs.NONE) {
-                BrowsePresenter.instance(context).enableSection(sectionId, true);
-            }
-        });
     }
 
     private static void addSectionToggles(Context context, List<SettingsRow> rows, Map<Integer, Integer> sections,

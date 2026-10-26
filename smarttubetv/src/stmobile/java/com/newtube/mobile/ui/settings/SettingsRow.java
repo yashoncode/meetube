@@ -42,10 +42,17 @@ public final class SettingsRow {
     public static final int KIND_DIVIDER = 5;
     /** METUBE(support): a centred thank-you at the foot of a page - icon, a line, a small link. */
     public static final int KIND_FOOTER = 6;
+    /** METUBE(bar editor): a row that is its own view (the Tabs page's drag-to-order bar). */
+    public static final int KIND_CUSTOM = 7;
 
     /** What a toggle or a choice does after it has been applied. */
     public interface Toggle {
         void set(boolean on);
+    }
+
+    /** Builds a {@link #KIND_CUSTOM} row's view; {@code page} opens choice sheets as rows do. */
+    interface Custom {
+        android.view.View create(@NonNull android.view.ViewGroup parent, @NonNull SettingsAdapter.Listener page);
     }
 
     public interface Pick<T> {
@@ -83,6 +90,7 @@ public final class SettingsRow {
     @Nullable Supplier<Object> current;
     @Nullable Pick<Object> pick;
     @Nullable BooleanSupplier enabled;
+    @Nullable Custom custom;
     /** The change only lands after the app restarts: offer the restart. */
     boolean restart;
     /** Red title: an action that deletes something. */
@@ -95,6 +103,13 @@ public final class SettingsRow {
     public static SettingsRow header(CharSequence title) {
         SettingsRow row = new SettingsRow(KIND_HEADER);
         row.title = title;
+        return row;
+    }
+
+    static SettingsRow custom(CharSequence title, @NonNull Custom custom) {
+        SettingsRow row = new SettingsRow(KIND_CUSTOM);
+        row.title = title;
+        row.custom = custom;
         return row;
     }
 
