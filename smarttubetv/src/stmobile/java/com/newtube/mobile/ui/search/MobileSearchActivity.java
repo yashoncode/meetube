@@ -814,8 +814,12 @@ public class MobileSearchActivity extends MobileActivity
 
     @Override
     public int getMiniCardBottomOffsetPx() {
-        // Overlay card (mobile_mini_player_overlay.xml) sits flush at the content bottom.
-        return 0;
+        // Overlay card (mobile_mini_player_overlay.xml): its 12dp margin, the morph's own, or clear of
+        // the nav pill (setupNavPill). Flush, the swipe-down aimed the video under the pill and it
+        // jumped up on landing.
+        View card = findViewById(R.id.mobile_mini_player);
+        int margin = ((android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams()).bottomMargin;
+        return Math.max(0, margin - Math.round(12 * getResources().getDisplayMetrics().density));
     }
 
     // NOTE: back normally flows OnBackPressedDispatcher -> MobileActivity.finish() ->
