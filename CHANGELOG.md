@@ -42,7 +42,7 @@ Every MeTube release, newest first.<br>
 
 ### 💌 Love MeTube? Your friends might too
 
-- **We would never ask you to share MeTube.** Okay, we are asking, a little. If it saved you from one unskippable ad this week, there is probably a friend, a cousin or a mum out there still sitting through all of them like it is 2015. Send them [the download link](https://github.com/yashoncode/metube/releases/latest). Or don't, and keep the ad free life to yourself. We will just be here, refreshing the download count every five minutes, totally fine about it.
+- **Know someone still sitting through ads?** If MeTube spared you even one unskippable ad this week, there is probably a friend, a cousin or a mum out there still watching all of them like it is 2015. Send them [the download link](https://github.com/yashoncode/metube/releases/latest). Or don't, and keep the ad free life to yourself. We will just be here, refreshing the download count every five minutes, totally fine about it.
 
 ### ✨ New
 
