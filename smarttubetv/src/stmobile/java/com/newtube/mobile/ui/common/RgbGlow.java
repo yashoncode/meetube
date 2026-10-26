@@ -4,13 +4,17 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.RadialGradient;
 import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
@@ -18,6 +22,9 @@ import androidx.annotation.Nullable;
  * the You page's header. Done the way Gemini lights its pure black page: one
  * saturated colour at about a third of its strength at most, faded out on a long eased curve, so
  * the black stays true black past it. Two lights a third of the wheel apart make it multi colour.
+ *
+ * <p>The page is padded clear of the status bar, so while the glow shows the same light is also
+ * painted behind the bar (the content's top padding), lined up so the two read as one.</p>
  */
 public final class RgbGlow extends View {
     private static final long CYCLE_MS = 14_000;
@@ -32,6 +39,40 @@ public final class RgbGlow extends View {
     private final int[] mColors = new int[STOPS.length];
     @Nullable private ValueAnimator mCycle;
     private float mHue = 220f; // Gemini's blue, where it rests when animations are off
+    @Nullable private View mBandHost;
+    private final int[] mGlowAt = new int[2];
+    private final int[] mHostAt = new int[2];
+
+    /** The status bar strip: the host's top padding, the lights placed where this view has them. */
+    private final Drawable mBand = new Drawable() {
+        @Override
+        public void draw(@NonNull Canvas canvas) {
+            View host = mBandHost;
+            if (host == null || host.getPaddingTop() <= 0) {
+                return;
+            }
+            getLocationInWindow(mGlowAt);
+            host.getLocationInWindow(mHostAt);
+            canvas.save();
+            canvas.clipRect(0, 0, host.getWidth(), host.getPaddingTop());
+            canvas.translate(mGlowAt[0] - mHostAt[0], mGlowAt[1] - mHostAt[1]);
+            drawLights(canvas);
+            canvas.restore();
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+        }
+
+        @Override
+        public void setColorFilter(@Nullable ColorFilter colorFilter) {
+        }
+
+        @Override
+        public int getOpacity() {
+            return PixelFormat.TRANSLUCENT;
+        }
+    };
 
     public RgbGlow(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -50,6 +91,7 @@ public final class RgbGlow extends View {
         mCycle.addUpdateListener(a -> {
             mHue = (220f + (float) a.getAnimatedValue()) % 360f;
             invalidate();
+            mBand.invalidateSelf(); // every frame: also follows the page as it scrolls
         });
         mCycle.start();
     }
@@ -66,6 +108,15 @@ public final class RgbGlow extends View {
     @Override
     public void onVisibilityAggregated(boolean isVisible) {
         super.onVisibilityAggregated(isVisible);
+        if (isVisible && mBandHost == null) {
+            mBandHost = getRootView().findViewById(android.R.id.content);
+            if (mBandHost != null) {
+                mBandHost.setBackground(mBand);
+            }
+        } else if (!isVisible && mBandHost != null) {
+            mBandHost.setBackground(null);
+            mBandHost = null;
+        }
         if (mCycle != null) {
             if (isVisible) {
                 mCycle.resume();
@@ -77,6 +128,10 @@ public final class RgbGlow extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        drawLights(canvas);
+    }
+
+    private void drawLights(Canvas canvas) {
         float w = getWidth();
         float h = getHeight();
         float r = Math.max(w, h);

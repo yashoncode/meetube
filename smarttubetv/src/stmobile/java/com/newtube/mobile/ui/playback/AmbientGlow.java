@@ -29,6 +29,9 @@ import androidx.annotation.Nullable;
  * <p>In the vertical fullscreen the same frames also fill the black bands above and below the
  * video ({@link #setFill}): the frame blown up to the whole screen, dimmed, behind the picture.
  * Both follow the Ambient mode setting (on unless turned off, {@link #isOn}).</p>
+ *
+ * <p>Upright, the status bar above the video takes the colours of its top edge too, YouTube's
+ * ({@link #setBar}).</p>
  */
 public final class AmbientGlow implements Runnable {
     private static final int FRAME_W = 48;
@@ -45,6 +48,9 @@ public final class AmbientGlow implements Runnable {
     private final TextureView mVideo;
     private final GlowDrawable mDrawable;
     private final FillDrawable mFill = new FillDrawable();
+    private final BarDrawable mBar = new BarDrawable();
+    @Nullable
+    private View mBarHost;
     @Nullable
     private View mFillHost;
     private boolean mRunning;
@@ -94,6 +100,21 @@ public final class AmbientGlow implements Runnable {
         }
     }
 
+    /**
+     * {@code content} (the page under the status bar, padded clear of it) paints its top padding
+     * with the video's top edge; null takes it off. Nothing shows where the page has no top padding
+     * (sideways, vertical fullscreen, Shorts: the video runs under the bar there).
+     */
+    void setBar(@Nullable View content) {
+        if (mBarHost != null) {
+            mBarHost.setBackground(null);
+        }
+        mBarHost = content;
+        if (content != null) {
+            content.setBackground(mBar);
+        }
+    }
+
     @Override
     public void run() {
         if (!mRunning) {
@@ -106,6 +127,7 @@ public final class AmbientGlow implements Runnable {
                 blur(frame);
                 mDrawable.push(frame);
                 mFill.push(frame);
+                mBar.push(frame);
             }
         }
         mHost.postDelayed(this, INTERVAL_MS);
@@ -199,6 +221,76 @@ public final class AmbientGlow implements Runnable {
         @Override
         public int getOpacity() {
             return PixelFormat.OPAQUE;
+        }
+    }
+
+    /** The status bar band: the frame's top rows stretched across the host's top padding. */
+    private final class BarDrawable extends Drawable {
+        private final Paint mFrame = new Paint(Paint.FILTER_BITMAP_FLAG);
+        private final Rect mSource = new Rect();
+        private final Rect mBand = new Rect();
+        @Nullable private Bitmap mCurrent;
+        @Nullable private Bitmap mPrevious;
+        private float mMix = 1f;
+        private ValueAnimator mFadeIn;
+        private int mAlpha = 255; // the swipe down to the mini player fades it with the page
+
+        BarDrawable() {
+            ColorMatrix saturate = new ColorMatrix();
+            saturate.setSaturation(1.6f); // the glow under the video's look, so the two read as one
+            mFrame.setColorFilter(new ColorMatrixColorFilter(saturate));
+        }
+
+        void push(Bitmap frame) {
+            mPrevious = mCurrent;
+            mCurrent = frame;
+            if (mFadeIn != null) {
+                mFadeIn.cancel();
+            }
+            mFadeIn = ValueAnimator.ofFloat(0f, 1f).setDuration(mPrevious == null ? FADE_MS / 2 : FADE_MS);
+            mFadeIn.addUpdateListener(a -> {
+                mMix = (float) a.getAnimatedValue();
+                invalidateSelf();
+            });
+            mFadeIn.start();
+        }
+
+        @Override
+        public void draw(@NonNull Canvas canvas) {
+            if (mAlpha == 0) {
+                return;
+            }
+            canvas.drawColor(mAlpha << 24);
+            int top = mBarHost != null ? mBarHost.getPaddingTop() : 0;
+            if (mCurrent == null || top <= 0) {
+                return;
+            }
+            Rect bounds = getBounds();
+            mBand.set(bounds.left, bounds.top, bounds.right, bounds.top + top);
+            mSource.set(0, 0, FRAME_W, FRAME_H / 4); // the top quarter: what the bar sits on
+            if (mPrevious != null && mMix < 1f) {
+                mFrame.setAlpha(Math.round(GLOW_ALPHA * (1f - mMix) * mAlpha / 255f));
+                canvas.drawBitmap(mPrevious, mSource, mBand, mFrame);
+            }
+            mFrame.setAlpha(Math.round(GLOW_ALPHA * mMix * mAlpha / 255f));
+            canvas.drawBitmap(mCurrent, mSource, mBand, mFrame);
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+            if (mAlpha != alpha) {
+                mAlpha = alpha;
+                invalidateSelf();
+            }
+        }
+
+        @Override
+        public void setColorFilter(@Nullable ColorFilter colorFilter) {
+        }
+
+        @Override
+        public int getOpacity() {
+            return PixelFormat.TRANSLUCENT;
         }
     }
 

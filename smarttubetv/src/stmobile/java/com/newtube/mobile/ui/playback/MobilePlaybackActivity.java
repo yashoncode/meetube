@@ -4800,9 +4800,11 @@ public class MobilePlaybackActivity extends MobileActivity
         if (ambient && mAmbient == null && mVideoTexture != null && mWatchContent != null) {
             mAmbient = new AmbientGlow(mWatchContent, mVideoTexture,
                     androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background));
+            mAmbient.setBar(findViewById(android.R.id.content)); // the status bar glows too
         } else if (!ambient && mAmbient != null) {
             mAmbient.stop();
             mAmbient.setFill(null);
+            mAmbient.setBar(null);
             mAmbient = null;
             mWatchContent.setBackground(null);
         }
@@ -7193,6 +7195,11 @@ public class MobilePlaybackActivity extends MobileActivity
             mWatchContent.setAlpha(contentAlpha);
         }
         float backdrop = morphBackdropAlpha(settled, mMorphOverOwnBackdrop); // NEWTUBE(no-host-minimize)
+        if (setMorphBlur(settled)) {
+            // METUBE(minimize blur): Home shows through blurred, not under a black sheet - the black
+            // goes in the first quarter, a light dim stays and clears with the blur.
+            backdrop = Math.max(0f, 1f - 4f * settled) * 0.65f + 0.35f * (1f - settled);
+        }
         if (mWatchScroll != null && mWatchScroll.getBackground() != null) {
             int backdropAlpha = Math.round(255f * backdrop);
             mWatchScroll.getBackground().mutate().setAlpha(backdropAlpha);
@@ -7227,11 +7234,38 @@ public class MobilePlaybackActivity extends MobileActivity
      * decor drawable also paints the manually inset status/navigation-bar bands, so leaving it
      * opaque would hide the Activity below even after all watch-page children became transparent.
      */
+    private static final float MORPH_BLUR_DP = 24f;
+
+    /**
+     * METUBE(minimize blur): blur what is behind the window (Home) by the morph's progress, full at
+     * the start, none on the card; off (and false) at rest, over our own backdrop, or where the
+     * system has no cross-window blur (before Android 12, battery saver, some devices).
+     */
+    private boolean setMorphBlur(float f) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return false;
+        }
+        boolean on = f > 0f && f < 1f && !mMorphOverOwnBackdrop && getWindowManager().isCrossWindowBlurEnabled();
+        if (on) {
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.flags |= WindowManager.LayoutParams.FLAG_BLUR_BEHIND;
+            lp.setBlurBehindRadius(Math.round(MORPH_BLUR_DP * getResources().getDisplayMetrics().density * (1f - f)));
+            getWindow().setAttributes(lp);
+        } else if ((getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_BLUR_BEHIND) != 0) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+        }
+        return on;
+    }
+
     private void setWindowBackdropAlpha(float alpha) {
         Drawable backdrop = getWindow().getDecorView().getBackground();
         if (backdrop != null) {
             int drawableAlpha = Math.round(255f * Math.max(0f, Math.min(1f, alpha)));
             backdrop.mutate().setAlpha(drawableAlpha);
+        }
+        View content = findViewById(android.R.id.content);
+        if (content != null && content.getBackground() != null) { // METUBE(ambient): the status bar glow
+            content.getBackground().setAlpha(Math.round(255f * Math.max(0f, Math.min(1f, alpha))));
         }
     }
 
@@ -7295,6 +7329,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mWatchScroll.getBackground().mutate().setAlpha(255);
         }
         setWindowBackdropAlpha(1f);
+        setMorphBlur(0f);
         if (mControlsRoot != null) {
             mControlsRoot.setAlpha(mControlsVisible ? 1f : 0f);
         }
