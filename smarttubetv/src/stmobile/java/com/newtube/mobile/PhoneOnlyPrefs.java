@@ -109,6 +109,15 @@ final class PhoneOnlyPrefs implements AppPrefs.ProfileChangeListener {
         if (accounts.isSelectAccountOnBootEnabled()) {
             accounts.selectAccountOnBoot(false);
         }
+
+        // History shows the Shorts you watched: the TV hid them by default, with no phone row to undo
+        // it, so a Shorts-only history (and the You page's History row) came back empty.
+        com.liskovsoft.sharedutils.prefs.GlobalPreferences.instance(mContext); // MediaServiceData reads it
+        com.liskovsoft.youtubeapi.service.internal.MediaServiceData data =
+                com.liskovsoft.youtubeapi.service.internal.MediaServiceData.instance();
+        if (data.isContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY)) {
+            data.setContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY, false);
+        }
     }
 
     /**
