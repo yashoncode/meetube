@@ -593,4 +593,6 @@
     <string name="mobile_settings_update_prompt_summary">有新版本時詢問是否更新</string>
     <string name="mobile_about_repo_url">https://github.com/yashoncode/metube</string>
     <string name="mobile_about_site_url">https://github.com/yashoncode/metube</string>
+    <string name="mobile_shorts_mute">靜音</string>
+    <string name="mobile_shorts_unmute">取消靜音</string>
 </resources>

@@ -887,6 +887,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 applyShortsLayout();
                 if (on) {
                     hideControls();
+                } else if (mShortsMuted) {
+                    toggleShortsMute(); // a long video after the shorts plays with its sound
+                    mShorts.showMuted(false);
                 }
             }
 
@@ -944,6 +947,17 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override
             public void exitShorts() {
                 getOnBackPressedDispatcher().onBackPressed();
+            }
+
+            @Override
+            public boolean toggleShortsMute() {
+                return MobilePlaybackActivity.this.toggleShortsMute();
+            }
+
+            @Override
+            public void openShortsSearch() {
+                com.liskovsoft.smartyoutubetv2.common.app.presenters.SearchPresenter
+                        .instance(MobilePlaybackActivity.this).startSearch(null);
             }
         }, shortsWatchViews());
         mWatchCommentsCount = findViewById(R.id.mobile_watch_comments_count);
@@ -6278,6 +6292,7 @@ public class MobilePlaybackActivity extends MobileActivity
         watch.like = mWatchLike;
         watch.dislike = mWatchDislike;
         watch.share = mWatchShare;
+        watch.download = mWatchDownload;
         watch.subscribe = mWatchSubscribe;
         watch.subscribeLabel = mWatchSubscribe;
         watch.channel = findViewById(R.id.mobile_watch_channel_row);
@@ -6286,6 +6301,25 @@ public class MobilePlaybackActivity extends MobileActivity
         watch.meta = mWatchMeta;
         watch.avatar = mWatchAvatar;
         return watch;
+    }
+
+    /** METUBE(shorts): the top bar's mute, kept from short to short until it is tapped again or Shorts end. */
+    private boolean mShortsMuted;
+    private float mShortsVolumeBeforeMute = 1f;
+
+    /** Through the controller, like the close fade, so loudness normalization does not undo it. */
+    private boolean toggleShortsMute() {
+        if (mExoPlayerController == null) {
+            return mShortsMuted;
+        }
+        mShortsMuted = !mShortsMuted;
+        if (mShortsMuted) {
+            mShortsVolumeBeforeMute = mExoPlayerController.getVolume();
+            mExoPlayerController.setVolume(0f);
+        } else {
+            mExoPlayerController.setVolume(mShortsVolumeBeforeMute);
+        }
+        return mShortsMuted;
     }
 
     /** METUBE(shorts): how far a short's open comments are off the screen (0 open, 1 gone); -1 none. */

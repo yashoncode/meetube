@@ -66,6 +66,11 @@ final class ShortsOverlay {
         void seekShortTo(long positionMs);
 
         void exitShorts();
+
+        /** Mutes the shorts (or unmutes them); true when they are now muted. */
+        boolean toggleShortsMute();
+
+        void openShortsSearch();
     }
 
     /** The watch page's views the overlay mirrors and forwards to. */
@@ -73,6 +78,7 @@ final class ShortsOverlay {
         View like;
         View dislike;
         View share;
+        View download;
         View subscribe;
         View channel;
         TextView likeCount;
@@ -161,6 +167,7 @@ final class ShortsOverlay {
         forward(R.id.mobile_shorts_like, watch.like);
         forward(R.id.mobile_shorts_dislike, watch.dislike);
         forward(R.id.mobile_shorts_share, watch.share);
+        forward(R.id.mobile_shorts_download, watch.download);
         forward(R.id.mobile_shorts_subscribe, watch.subscribe);
         // The avatar and the name open the channel (#12: with no click of their own the tap fell
         // through to the video, where a double tap likes).
@@ -169,14 +176,19 @@ final class ShortsOverlay {
         mOverlay.findViewById(R.id.mobile_shorts_comments).setOnClickListener(v -> mHost.openShortsComments());
         mOverlay.findViewById(R.id.mobile_shorts_more).setOnClickListener(v -> mHost.openShortsMore());
         mOverlay.findViewById(R.id.mobile_shorts_back).setOnClickListener(v -> mHost.exitShorts());
+        mOverlay.findViewById(R.id.mobile_shorts_search).setOnClickListener(v -> mHost.openShortsSearch());
+        mOverlay.findViewById(R.id.mobile_shorts_mute).setOnClickListener(v -> showMuted(mHost.toggleShortsMute()));
         // METUBE(glass): as on the player, the buttons over the short (and the play / pause flash)
         // sit on see-through tinted discs; the actions keep their 48dp discs, the labels their shadows.
         for (int id : new int[] {R.id.mobile_shorts_like, R.id.mobile_shorts_dislike, R.id.mobile_shorts_comments,
                 R.id.mobile_shorts_share, R.id.mobile_shorts_more, R.id.mobile_shorts_flash}) {
             GlassDrawable.apply(mOverlay.findViewById(id), null, 0);
         }
-        GlassDrawable.apply(mOverlay.findViewById(R.id.mobile_shorts_back), null,
-                Math.round(4 * root.getResources().getDisplayMetrics().density)); // the player's minimize disc
+        for (int id : new int[] {R.id.mobile_shorts_back, R.id.mobile_shorts_download, R.id.mobile_shorts_mute,
+                R.id.mobile_shorts_search}) {
+            GlassDrawable.apply(mOverlay.findViewById(id), null,
+                    Math.round(4 * root.getResources().getDisplayMetrics().density)); // the player's minimize disc
+        }
         // METUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
         mTitle.setOnClickListener(v -> mHost.openShortsDescription());
 
@@ -595,6 +607,14 @@ final class ShortsOverlay {
                 target.set(s);
             }
         });
+    }
+
+    /** The mute button's look: crossed out while the shorts are muted. */
+    void showMuted(boolean muted) {
+        ImageView mute = mOverlay.findViewById(R.id.mobile_shorts_mute);
+        mute.setImageResource(muted ? R.drawable.ic_player_volume_off : R.drawable.ic_player_volume_up);
+        mute.setContentDescription(mute.getContext().getString(
+                muted ? R.string.mobile_shorts_unmute : R.string.mobile_shorts_mute));
     }
 
     private void forward(int id, @Nullable View target) {

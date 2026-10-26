@@ -363,4 +363,6 @@
     <string name="unpinned_from_sidebar">A fost eliminat din secțiunea „Tu”</string>
     <string name="pin_unpin_from_sidebar">Fixează în secțiunea „Tu”</string>
     <string name="mobile_settings_gesture_seek_summary">Într-o parte pe videoclip</string>
+    <string name="mobile_shorts_mute">Dezactivează sunetul</string>
+    <string name="mobile_shorts_unmute">Activează sunetul</string>
 </resources>

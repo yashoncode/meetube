@@ -357,4 +357,6 @@
     <string name="mobile_about_share_text">MeTube —— 一款基于 SmartTube 的手机 YouTube 客户端：%1$s</string>
     <string name="sabr_vod_option">即使链接可用也优先 SABR（实验性；下一个 VOD）</string>
     <string name="sabr_vod_stopped">实验性 SABR 播放已停止。点播放重试，或在设置中禁用 SABR。</string>
+    <string name="mobile_shorts_mute">静音</string>
+    <string name="mobile_shorts_unmute">取消静音</string>
 </resources>

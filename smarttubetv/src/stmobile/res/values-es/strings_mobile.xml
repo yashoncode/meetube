@@ -468,4 +468,6 @@
     <string name="mobile_next_in">A continuación en %1$d</string>
     <string name="mobile_next_play">Reproducir</string>
     <string name="mobile_next_cancel">Cancelar</string>
+    <string name="mobile_shorts_mute">Silenciar</string>
+    <string name="mobile_shorts_unmute">Activar sonido</string>
 </resources>

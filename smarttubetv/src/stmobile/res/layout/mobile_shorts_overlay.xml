@@ -63,6 +63,48 @@
 
     </LinearLayout>
 
+    <!-- Download, mute and search, small like the back button: YouTube's top-right pair plus ours. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/mobile_shorts_download"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/dialog_download"
+            android:padding="12dp"
+            android:src="@drawable/ic_watch_download"
+            android:tint="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/mobile_shorts_mute"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/mobile_shorts_mute"
+            android:padding="12dp"
+            android:src="@drawable/ic_player_volume_up"
+            android:tint="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/mobile_shorts_search"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/mobile_search_button"
+            android:padding="12dp"
+            android:src="@drawable/ic_mobile_search"
+            android:tint="@android:color/white" />
+
+    </LinearLayout>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="200dp"

@@ -548,4 +548,6 @@
     <string name="mobile_next_in">Up next in %1$d</string>
     <string name="mobile_next_play">Play now</string>
     <string name="mobile_next_cancel">Cancel</string>
+    <string name="mobile_shorts_mute">Mute</string>
+    <string name="mobile_shorts_unmute">Unmute</string>
 </resources>
