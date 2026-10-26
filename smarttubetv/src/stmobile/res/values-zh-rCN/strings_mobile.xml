@@ -49,6 +49,7 @@
     <string name="mobile_watch_queue_now_playing">正在播放</string>
     <string name="mobile_watch_description">简介</string>
     <string name="mobile_watch_share_subject">观看此视频</string>
+    <string name="mobile_watch_share_at">从 %1$s 开始分享</string>
     <string name="mobile_comments_entry">评论</string>
     <string name="mobile_comments_title">评论</string>
     <string name="mobile_comments_replies_title">回复</string>

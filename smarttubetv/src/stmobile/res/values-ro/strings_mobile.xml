@@ -49,6 +49,7 @@
     <string name="mobile_watch_queue_now_playing">Se redă acum</string>
     <string name="mobile_watch_description">Descriere</string>
     <string name="mobile_watch_share_subject">Urmărește acest videoclip</string>
+    <string name="mobile_watch_share_at">Se distribuie de la %1$s</string>
     <string name="mobile_comments_entry">Comentarii</string>
     <string name="mobile_comments_title">Comentarii</string>
     <string name="mobile_comments_replies_title">Răspunsuri</string>

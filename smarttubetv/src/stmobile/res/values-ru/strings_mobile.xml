@@ -49,6 +49,7 @@
     <string name="mobile_watch_queue_now_playing">Сейчас играет</string>
     <string name="mobile_watch_description">Описание</string>
     <string name="mobile_watch_share_subject">Посмотрите это видео</string>
+    <string name="mobile_watch_share_at">Ссылка с %1$s</string>
     <string name="mobile_comments_entry">Комментарии</string>
     <string name="mobile_comments_title">Комментарии</string>
     <string name="mobile_comments_replies_title">Ответы</string>

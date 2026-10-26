@@ -1252,7 +1252,8 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         });
         mWatchSubscribe.setOnClickListener(v -> onSubscribeTapped());
-        mWatchShare.setOnClickListener(v -> shareCurrentVideo());
+        mWatchShare.setOnClickListener(v -> shareCurrentVideo(false));
+        mWatchShare.setOnLongClickListener(v -> shareCurrentVideo(true)); // from this second (#68)
         // Save opens the same add/remove-from-playlist sheet as gear -> More -> Save to playlist.
         mWatchSave.setOnClickListener(v -> {
             if (!WatchActionFeedback.blockIfSignedOut(this, R.string.msg_sign_in_to_save)) {
@@ -1267,7 +1268,9 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerLike.setOnClickListener(v -> mWatchLike.performClick());
         mPlayerDislike.setOnClickListener(v -> mWatchDislike.performClick());
         mPlayerDownload.setOnClickListener(v -> onDownloadTapped());
-        findViewById(R.id.mobile_player_share).setOnClickListener(v -> shareCurrentVideo());
+        View playerShare = findViewById(R.id.mobile_player_share);
+        playerShare.setOnClickListener(v -> shareCurrentVideo(false));
+        playerShare.setOnLongClickListener(v -> shareCurrentVideo(true));
         mPlayerComments.setOnClickListener(v -> {
             if (isLandscape()) { // beside the video, YouTube's
                 hideControls();
@@ -9937,18 +9940,29 @@ public class MobilePlaybackActivity extends MobileActivity
         });
     }
 
-    private void shareCurrentVideo() {
+    /**
+     * METUBE(share-at-time, issue #68): a tap shares the plain link, a long press shares it from
+     * the second playing now ({@code ?t=}); a live stream or the very start shares plain.
+     */
+    private boolean shareCurrentVideo(boolean atPosition) {
         Video video = getVideo();
         if (video == null || TextUtils.isEmpty(video.videoId)) {
-            return;
+            return false;
         }
 
         String url = "https://youtu.be/" + video.videoId;
+        long seconds = atPosition && mPlayer != null && !video.isLive ? mPlayer.getCurrentPosition() / 1000 : 0;
+        if (seconds > 0) {
+            url += "?t=" + seconds;
+            android.widget.Toast.makeText(this, getString(R.string.mobile_watch_share_at, formatTime(seconds * 1000)),
+                    android.widget.Toast.LENGTH_SHORT).show();
+        }
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.mobile_watch_share_subject));
         intent.putExtra(Intent.EXTRA_TEXT, url);
         startActivity(Intent.createChooser(intent, getString(R.string.mobile_watch_share)));
+        return true;
     }
 
     /** METUBE(music): the Music pill shows for videos YouTube Music has, and only those. */
