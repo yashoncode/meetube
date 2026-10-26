@@ -146,6 +146,15 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
                     clickListener.onRelatedClick(mVideo, mThumbnail);
                 }
             });
+            // METUBE(issue #66): a hold opens the video's menu, the feeds' (queue, playlist, share...).
+            itemView.setOnLongClickListener(v -> {
+                if (mVideo == null) {
+                    return false;
+                }
+                com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.VideoMenuPresenter
+                        .instance(v.getContext()).showMenu(mVideo);
+                return true;
+            });
 
             if (pressListener != null) {
                 PressIntentDetector detector = new PressIntentDetector(
