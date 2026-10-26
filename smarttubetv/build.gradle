@@ -316,8 +316,8 @@ android {
             // 1.0.0 -> 10000, 1.0.1 -> 10001, 1.1.0 -> 10100, 2.0.0 -> 20000.
             // METUBE: every release has a code name after its number (Settings > About, App info);
             // APK files and the update manifest use the number alone.
-            versionCode 30105
-            versionName "3.1.5 Orizon"
+            versionCode 30107
+            versionName "3.1.7 Clozone"
         }
     }
 }
