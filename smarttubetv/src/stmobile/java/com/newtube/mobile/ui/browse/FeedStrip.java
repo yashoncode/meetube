@@ -191,7 +191,14 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                 ImageView avatar = new ImageView(context);
                 avatar.setId(android.R.id.icon);
                 avatar.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                cell.addView(avatar, new LinearLayout.LayoutParams(dp(context, 56), dp(context, 56)));
+                // METUBE(issue #73): a channel seen live gets the glowing red ring over its avatar.
+                android.widget.FrameLayout avatarBox = new android.widget.FrameLayout(context);
+                avatarBox.addView(avatar, new android.widget.FrameLayout.LayoutParams(dp(context, 56), dp(context, 56)));
+                com.newtube.mobile.ui.common.LiveRingView ring = new com.newtube.mobile.ui.common.LiveRingView(context, null);
+                ring.setId(android.R.id.icon2);
+                ring.setVisibility(View.GONE);
+                avatarBox.addView(ring, new android.widget.FrameLayout.LayoutParams(dp(context, 56), dp(context, 56)));
+                cell.addView(avatarBox, new LinearLayout.LayoutParams(dp(context, 56), dp(context, 56)));
                 TextView name = new TextView(context);
                 name.setId(android.R.id.text1);
                 name.setSingleLine();
@@ -262,6 +269,10 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                     avatar.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     avatar.clearColorFilter();
                 }
+                com.newtube.mobile.ui.common.LiveRingView.bind(holder.itemView.findViewById(android.R.id.icon2), avatar,
+                        item.data instanceof com.liskovsoft.smartyoutubetv2.common.app.models.data.Video
+                                && com.newtube.mobile.ui.common.LiveRingView.isLive(
+                                        ((com.liskovsoft.smartyoutubetv2.common.app.models.data.Video) item.data).channelId), 0);
             } else {
                 // The picked chip is a solid light pill on the glass row, the rest are glass.
                 if (selected) {

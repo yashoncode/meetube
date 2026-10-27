@@ -5501,6 +5501,12 @@ public class MobilePlaybackActivity extends MobileActivity
 
         boolean isLive = getVideo() != null && getVideo().isLive;
         mLiveChip.setVisibility(isLive ? View.VISIBLE : View.GONE);
+        if (isLive) {
+            com.newtube.mobile.ui.common.LiveRingView.markLive(getVideo().channelId);
+        }
+        if (mWatchAvatar != null) { // METUBE(issue #73): the channel's glowing live ring
+            com.newtube.mobile.ui.common.LiveRingView.bind(findViewById(R.id.mobile_watch_avatar_live), mWatchAvatar, isLive, 0);
+        }
         updateSeekBarLine();
 
         if (isLive) {

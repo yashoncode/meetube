@@ -35,6 +35,9 @@ final class ChannelHeader {
         String description;
         String avatarUrl;
         String bannerUrl;
+        /** METUBE(issue #73): the avatar's "LIVE" badge (YouTube's wording) and the stream, when live. */
+        String liveBadge;
+        String liveVideoId;
     }
 
     interface Callback {
@@ -213,6 +216,14 @@ final class ChannelHeader {
         Info info = new Info();
         info.title = text(path(header, "title", "dynamicTextViewModel", "text"));
         info.avatarUrl = largest(path(header, "image", "decoratedAvatarViewModel", "avatar", "avatarViewModel", "image"), 0);
+        JSONObject avatar = path(header, "image", "decoratedAvatarViewModel");
+        info.liveBadge = avatar != null && path(avatar, "liveData") != null
+                ? path(avatar, "liveData").optString("liveBadgeText", "").trim() : "";
+        JSONObject watch = path(avatar, "rendererContext", "commandContext", "onTap", "innertubeCommand", "watchEndpoint");
+        info.liveVideoId = watch != null ? watch.optString("videoId", "") : "";
+        if (info.liveBadge.isEmpty() || info.liveVideoId.isEmpty()) {
+            info.liveBadge = info.liveVideoId = null;
+        }
         info.bannerUrl = largest(path(header, "banner", "imageBannerViewModel", "image"), 1080);
         info.description = text(path(header, "description", "descriptionPreviewViewModel", "description"));
         List<String> stats = new ArrayList<>();

@@ -1740,6 +1740,7 @@ public class MobileBrowseActivity extends MobileActivity
 
         mLastPaginationTriggerCount = -1;
         mLastNearEndTriggerCount = -1;
+        markLiveChannels();
         mContentGrid.animate().cancel();
         mContentGrid.setAlpha(1f);
         if (switched) {
@@ -3211,7 +3212,21 @@ public class MobileBrowseActivity extends MobileActivity
         restoreItemAnimatorAfterLayout();
     }
 
+    /** METUBE(issue #73): the Subscriptions feed says which channels are live; their strip avatars glow. */
+    private void markLiveChannels() {
+        boolean added = false;
+        for (Video video : mCurrentVideos) {
+            if (video.isLive) {
+                added |= com.newtube.mobile.ui.common.LiveRingView.markLive(video.channelId);
+            }
+        }
+        if (added && mStrip != null && mStrip.mode() == FeedStrip.MODE_AVATARS) {
+            mStrip.select(mStrip.selected()); // rebinds the avatars
+        }
+    }
+
     private void submitGrid() {
+        markLiveChannels();
         List<Video> list = new ArrayList<>(mCurrentVideos);
         if (mParkedItemAnimator == null && !mSectionSwapPending) {
             mAdapter.submitList(list);

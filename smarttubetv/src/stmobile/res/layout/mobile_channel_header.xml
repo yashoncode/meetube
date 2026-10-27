@@ -59,11 +59,41 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/mobile_channel_avatar"
-                android:layout_width="76dp"
-                android:layout_height="76dp"
-                android:contentDescription="@null" />
+            <!-- METUBE(issue #73): a live channel's avatar gets YouTube's glowing red ring
+                 (LiveRingView, over it) and LIVE badge. -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/mobile_channel_avatar"
+                    android:layout_width="76dp"
+                    android:layout_height="76dp"
+                    android:contentDescription="@null" />
+
+                <com.newtube.mobile.ui.common.LiveRingView
+                    android:id="@+id/mobile_channel_avatar_ring"
+                    android:layout_width="76dp"
+                    android:layout_height="76dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/mobile_channel_avatar_live"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:background="@drawable/bg_mobile_live_chip"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="1dp"
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    android:visibility="gone"
+                    tools:text="LIVE"
+                    tools:visibility="visible" />
+
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"

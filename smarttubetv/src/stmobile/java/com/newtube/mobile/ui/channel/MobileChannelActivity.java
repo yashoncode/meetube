@@ -248,6 +248,16 @@ public class MobileChannelActivity extends MobileActivity
             com.newtube.mobile.ui.common.ChannelAvatars.put(this, channelId, info.title, info.avatarUrl);
             glide.load(info.avatarUrl).circleCrop().placeholder(avatar.getDrawable()).transition(fade).into(avatar);
         }
+        // METUBE(issue #73): live now - YouTube's red ring and badge; a tap on the avatar watches the stream.
+        boolean live = info.liveVideoId != null;
+        if (live) {
+            com.newtube.mobile.ui.common.LiveRingView.markLive(channelId);
+        }
+        com.newtube.mobile.ui.common.LiveRingView.bind(findViewById(R.id.mobile_channel_avatar_ring), avatar, live, 0);
+        setTextOrGone(R.id.mobile_channel_avatar_live, info.liveBadge);
+        avatar.setOnClickListener(live ? v -> com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter
+                .instance(this).openVideo(info.liveVideoId) : null);
+        avatar.setClickable(live);
         findViewById(R.id.mobile_channel_banner_frame).setVisibility(info.bannerUrl != null ? View.VISIBLE : View.GONE);
         if (info.bannerUrl != null) {
             glide.load(info.bannerUrl).transition(fade).into((android.widget.ImageView) findViewById(R.id.mobile_channel_banner));

@@ -116,6 +116,14 @@
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="@id/video_avatar"
             app:layout_constraintTop_toTopOf="@id/video_avatar" />
+        <!-- METUBE(issue #73): a live video's channel avatar gets the glowing red ring. -->
+        <com.newtube.mobile.ui.common.LiveRingView
+            android:id="@+id/video_avatar_live"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/video_avatar"
+            app:layout_constraintTop_toTopOf="@id/video_avatar" />
         <TextView
             android:id="@+id/video_title"
             android:layout_width="0dp"

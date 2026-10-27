@@ -309,6 +309,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         private final ImageView mAvatar;
         private final ImageView mAvatar2;
         private final TextView mShortTitle;
+        @Nullable private final com.newtube.mobile.ui.common.LiveRingView mLiveRing;
         private Video mVideo;
         private String mBoundThumbUrl;
         boolean mShowAvatar;
@@ -328,6 +329,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mAvatar = itemView.findViewById(R.id.video_avatar);
             mShortTitle = itemView.findViewById(R.id.video_short_title);
             mAvatar2 = itemView.findViewById(R.id.video_avatar_2);
+            mLiveRing = itemView.findViewById(R.id.video_avatar_live);
 
             if (mAvatar != null) {
                 mAvatar.setOnClickListener(v -> openChannel());
@@ -388,6 +390,11 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mAvatar.setVisibility(show ? View.VISIBLE : View.GONE);
             String[] collab = show ? collabNames(video.getAuthor()) : null;
             bindCollab(collab != null);
+            // METUBE(issue #73): live now - the glowing red ring around the channel.
+            if (video.isLive) {
+                com.newtube.mobile.ui.common.LiveRingView.markLive(video.channelId);
+            }
+            com.newtube.mobile.ui.common.LiveRingView.bind(mLiveRing, mAvatar, show && collab == null && video.isLive, 0);
             if (!show) {
                 return;
             }
@@ -754,6 +761,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         private final ImageView mAvatar;
         private final TextView mName;
         private final TextView mMeta;
+        @Nullable private final com.newtube.mobile.ui.common.LiveRingView mLiveRing;
         private Video mVideo;
 
         ChannelViewHolder(@NonNull View itemView, OnVideoClickListener clickListener) {
@@ -762,6 +770,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mAvatar = itemView.findViewById(R.id.channel_avatar);
             mName = itemView.findViewById(R.id.channel_name);
             mMeta = itemView.findViewById(R.id.channel_meta);
+            mLiveRing = itemView.findViewById(R.id.channel_avatar_live);
 
             itemView.setOnClickListener(v -> {
                 if (mVideo != null && clickListener != null) {
@@ -803,6 +812,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                     .placeholder(R.drawable.ic_watch_channel_placeholder)
                     .error(R.drawable.ic_watch_channel_placeholder)
                     .into(mAvatar);
+            com.newtube.mobile.ui.common.LiveRingView.bind(mLiveRing, mAvatar,
+                    com.newtube.mobile.ui.common.LiveRingView.isLive(video.channelId), 0); // METUBE(issue #73)
         }
 
         void unbind() {
