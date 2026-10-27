@@ -624,7 +624,8 @@ public class VideoLoaderController extends BasePlayerController {
             //} else { // 18+ video or the video is hidden/removed
             //    scheduleNextVideoTimer(5_000);
             //}
-        } else if (formatInfo.isLive() && (formatInfo.containsDashUrl() || formatInfo.containsHlsUrl())) {
+        } else if ((formatInfo.isLive() || isPostLiveDvr(formatInfo))
+                && (formatInfo.containsDashUrl() || formatInfo.containsHlsUrl())) {
             // NEWTUBE(live): a live stream must ride a URL manifest - media3 refreshes it natively
             // (live window, manifest reload, behind-live-window recovery). The generated MPD is a
             // static side-load that cannot refresh: on media3 it produced a fake ~48h static
@@ -982,6 +983,22 @@ public class VideoLoaderController extends BasePlayerController {
         }
 
         return true;
+    }
+
+    /**
+     * METUBE(issue #83): a stream that ended but is still being processed (hours, longer for long
+     * streams). Its adaptive formats are live segments, so the generated MPD is a non-refreshing
+     * dynamic one that opens at its live edge - the very end - and ends at once (zero media
+     * fetched, Replay). Its manifest URL (often HLS only, no DASH url) plays it from the start.
+     * Told by the format links, the MPD builder's own live test. A processed VOD's links are
+     * plain and keep the generated MPD.
+     */
+    private static boolean isPostLiveDvr(MediaItemFormatInfo formatInfo) {
+        if (formatInfo.isLive() || !formatInfo.containsDashFormats()) {
+            return false;
+        }
+        String url = formatInfo.getAdaptiveFormats().get(0).getUrl();
+        return url != null && (url.contains("live=1") || url.contains("yt_live_broadcast"));
     }
 
     private boolean acceptDashLive(MediaItemFormatInfo formatInfo) {
