@@ -223,6 +223,7 @@
 
     <!-- Bottom-nav "You" tab (account + extra sections + settings) -->
     <string name="mobile_nav_you">You</string>
+    <string name="mobile_nav_subs">Subs</string>
     <!-- You-tab group label over the discovery feeds (Music, Gaming, News, ...). -->
     <string name="mobile_you_explore">Explore</string>
     <string name="mobile_you_library">Library</string>

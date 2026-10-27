@@ -114,6 +114,7 @@
     <string name="mobile_channel_tab_videos">Видео</string>
     <string name="mobile_channel_tab_more">Ещё</string>
     <string name="mobile_nav_you">Вы</string>
+    <string name="mobile_nav_subs">Подписки</string>
     <string name="mobile_you_explore">Обзор</string>
     <string name="mobile_you_library">Библиотека</string>
     <string name="mobile_no_browser">Не найдено приложение для открытия этой ссылки</string>

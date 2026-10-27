@@ -2347,7 +2347,10 @@ public class MobileBrowseActivity extends MobileActivity
             BrowseSection section = navSections.get(i);
 
             int order = i < searchOrder ? i : i + 1;
-            android.view.MenuItem item = menu.add(Menu.NONE, toMenuItemId(section.getId()), order, section.getTitle());
+            // METUBE(issue #81): "Subscriptions" wraps to two lines in a 5-tab bar; the bar says "Subs".
+            CharSequence title = section.getId() == MediaGroup.TYPE_SUBSCRIPTIONS
+                    ? getString(R.string.mobile_nav_subs) : section.getTitle();
+            android.view.MenuItem item = menu.add(Menu.NONE, toMenuItemId(section.getId()), order, title);
 
             int icon = navIconOrResFor(section);
             if (icon > 0) {
@@ -2380,6 +2383,9 @@ public class MobileBrowseActivity extends MobileActivity
                 if (itemView != null) {
                     fitNavLabel(itemView);
                     int sectionId = section.getId();
+                    if (sectionId == MediaGroup.TYPE_HOME) {
+                        continue; // METUBE: Home has no menu on long-press, as the You tab
+                    }
                     itemView.setOnLongClickListener(v -> {
                         if (mPresenter != null) {
                             mPresenter.onSectionLongPressed(sectionId);
