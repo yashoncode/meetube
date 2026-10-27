@@ -7364,25 +7364,30 @@ public class MobilePlaybackActivity extends MobileActivity
      * METUBE(minimize blur): blur what is behind the window (Home) by the morph's progress, full at
      * the start, none on the card; off (and false) at rest, over our own backdrop, or where the
      * system has no cross-window blur (before Android 12, battery saver, some devices).
+     *
+     * <p>The window's background blur, not FLAG_BLUR_BEHIND: a blur-behind radius is a window
+     * attribute, so changing it every frame re-laid out the window every frame, and the screen
+     * showed the shrinking video a frame late now and then - it jumped back and forth (recorded on
+     * a vivo V2404). The background blur is drawn with the window's own frames.</p>
      */
     private boolean setMorphBlur(float f) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             return false;
         }
         boolean on = f > 0f && f < 1f && !mMorphOverOwnBackdrop && getWindowManager().isCrossWindowBlurEnabled();
-        if (on) {
-            WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.flags |= WindowManager.LayoutParams.FLAG_BLUR_BEHIND;
-            lp.setBlurBehindRadius(Math.round(MORPH_BLUR_DP * getResources().getDisplayMetrics().density * (1f - f)));
-            getWindow().setAttributes(lp);
-        } else if ((getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_BLUR_BEHIND) != 0) {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-        }
+        getWindow().setBackgroundBlurRadius(on
+                ? Math.round(MORPH_BLUR_DP * getResources().getDisplayMetrics().density * (1f - f)) : 0);
         return on;
     }
 
     private void setWindowBackdropAlpha(float alpha) {
         Drawable backdrop = getWindow().getDecorView().getBackground();
+        if (backdrop instanceof android.graphics.drawable.LayerDrawable) {
+            // the decor's background blur (setMorphBlur) under the window's own background: only
+            // the background fades, the blur goes by its radius
+            android.graphics.drawable.LayerDrawable layers = (android.graphics.drawable.LayerDrawable) backdrop;
+            backdrop = layers.getDrawable(layers.getNumberOfLayers() - 1);
+        }
         if (backdrop != null) {
             int drawableAlpha = Math.round(255f * Math.max(0f, Math.min(1f, alpha)));
             backdrop.mutate().setAlpha(drawableAlpha);
