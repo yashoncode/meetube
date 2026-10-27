@@ -189,6 +189,9 @@
     <string name="mobile_settings_home_layout_feed_desc">One list of videos, like YouTube</string>
     <string name="mobile_settings_home_layout_rows">Rows</string>
     <string name="mobile_settings_home_layout_rows_desc">A row you swipe sideways for each topic, like SmartTube</string>
+    <!-- METUBE(glass, issue #80) -->
+    <string name="mobile_settings_player_frost">Frosted player buttons</string>
+    <string name="mobile_settings_player_frost_summary">The buttons over a video and a short blur the picture under them. Uses more battery, and can stutter on slower phones</string>
 
     <!-- Playback -->
     <!-- METUBE(background): the battery-optimization exemption row (Playback). -->

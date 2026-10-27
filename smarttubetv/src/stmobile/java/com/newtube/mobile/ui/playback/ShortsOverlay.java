@@ -180,14 +180,17 @@ final class ShortsOverlay {
         mOverlay.findViewById(R.id.mobile_shorts_search).setOnClickListener(v -> mHost.openShortsSearch());
         mOverlay.findViewById(R.id.mobile_shorts_mute).setOnClickListener(v -> showMuted(mHost.toggleShortsMute()));
         // METUBE(glass): as on the player, the buttons over the short (and the play / pause flash)
-        // sit on see-through tinted discs; the actions keep their 48dp discs, the labels their shadows.
+        // sit on see-through tinted discs (frosted ones of the short with Frosted player buttons on);
+        // the actions keep their 48dp discs, the labels their shadows.
+        com.newtube.mobile.ui.common.GlassSource glass = com.newtube.mobile.ui.common.Glass.isPlayerFrost(
+                root.getContext()) ? root.findViewById(R.id.mobile_player_glass) : null;
         for (int id : new int[] {R.id.mobile_shorts_like, R.id.mobile_shorts_dislike, R.id.mobile_shorts_comments,
                 R.id.mobile_shorts_share, R.id.mobile_shorts_more, R.id.mobile_shorts_flash}) {
-            GlassDrawable.apply(mOverlay.findViewById(id), null, 0);
+            GlassDrawable.apply(mOverlay.findViewById(id), glass, 0);
         }
         for (int id : new int[] {R.id.mobile_shorts_back, R.id.mobile_shorts_download, R.id.mobile_shorts_mute,
                 R.id.mobile_shorts_search}) {
-            GlassDrawable.apply(mOverlay.findViewById(id), null,
+            GlassDrawable.apply(mOverlay.findViewById(id), glass,
                     Math.round(4 * root.getResources().getDisplayMetrics().density)); // the player's minimize disc
         }
         // METUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
