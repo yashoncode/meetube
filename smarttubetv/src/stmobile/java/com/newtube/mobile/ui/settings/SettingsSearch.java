@@ -275,6 +275,11 @@ final class SettingsSearch {
                     case SettingsRow.KIND_SWITCH:
                     case SettingsRow.KIND_CHOICE:
                         break;
+                    case SettingsRow.KIND_CUSTOM:
+                        if (row.options == null) {
+                            continue; // the Tabs page's bar editor
+                        }
+                        break; // a choice drawn as tiles (Tiles)
                     default:
                         continue;
                 }

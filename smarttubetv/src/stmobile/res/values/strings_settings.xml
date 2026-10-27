@@ -363,4 +363,17 @@
     <!-- About -->
     <string name="mobile_settings_version">Version</string>
     <string name="mobile_settings_update_notify_summary">Tells you when a new version is out</string>
+    <!-- METUBE(customize): the Customization page's groups and its tiles' short names -->
+    <string name="mobile_settings_customize_look">Look</string>
+    <string name="mobile_settings_customize_layout">Layout</string>
+    <string name="mobile_settings_customize_effects">Glass and motion</string>
+    <string name="mobile_settings_customize_tabs_menus">Tabs and menus</string>
+    <string name="mobile_settings_thumbnails_default_short">Original</string>
+    <string name="mobile_settings_thumbnails_start_short">Start</string>
+    <string name="mobile_settings_thumbnails_middle_short">Middle</string>
+    <string name="mobile_settings_thumbnails_end_short">End</string>
+    <string name="mobile_settings_playlists_style_grid_short">Playlists</string>
+    <string name="mobile_settings_playlists_style_rows_short">Videos</string>
+    <string name="mobile_settings_interface_size_sample">How a video title looks at this size</string>
+    <string name="mobile_settings_interface_size_sample_meta">MeTube · 1.2M views · 2 days ago</string>
 </resources>

@@ -215,6 +215,20 @@ public final class SettingsRow {
                 item::isSelected, item::onSelect);
     }
 
+    /**
+     * METUBE(customize): this choice as a {@link #KIND_CUSTOM} row (its view set by the caller),
+     * keeping title, options and pick, so search still finds it by them.
+     */
+    SettingsRow asCustom() {
+        SettingsRow row = new SettingsRow(KIND_CUSTOM);
+        row.title = title;
+        row.options = options;
+        row.current = current;
+        row.pick = pick;
+        row.restart = restart;
+        return row;
+    }
+
     public SettingsRow enabledWhen(@NonNull BooleanSupplier enabled) {
         this.enabled = enabled;
         return this;
