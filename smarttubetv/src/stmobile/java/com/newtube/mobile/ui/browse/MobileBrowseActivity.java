@@ -151,8 +151,23 @@ public class MobileBrowseActivity extends MobileActivity
     /** Home's chips (issue #4): the topic feeds SmartTube already has, shown as Home filters. */
     private static final int[] HOME_CHIPS = {MediaGroup.TYPE_HOME, MediaGroup.TYPE_MUSIC,
             MediaGroup.TYPE_GAMING, MediaGroup.TYPE_NEWS, MediaGroup.TYPE_SPORTS, MediaGroup.TYPE_LIVE};
-    /** Subscriptions narrowed to one channel (issue #2); null = every channel. */
+    /**
+     * Subscriptions narrowed to one channel (issue #2); null = every channel. METUBE(issue #79):
+     * also Home narrowed to one of its personal chips ({@link #mHomeChip}).
+     */
     @Nullable private Video mSubsChannel;
+    /**
+     * METUBE(issue #79): Home's personal chips, the channels the account watches most (its watch
+     * history). YouTube's own Home chips are WEB-only, and WEB refuses the TV sign-in (400, as does
+     * every non-TV client), so they are built here. Empty = none yet, null = ask.
+     */
+    @Nullable private List<Video> mHomeChips;
+    /** The personal chip whose channel feed is on Home now (the channel filter's feed). */
+    @Nullable private Video mHomeChip;
+    @Nullable private io.reactivex.rxjava3.disposables.Disposable mHomeChipsAction;
+    /** Personal chips' strip ids, clear of the section ids the topic chips use. */
+    private static final long HOME_CHIP_ID = 1_000_000;
+    private static final int HOME_CHIPS_MAX = 10;
     /** That channel's last page, for the next one. */
     @Nullable private MediaGroup mSubsChannelPage;
     @Nullable private io.reactivex.rxjava3.disposables.Disposable mSubsAction;
@@ -421,6 +436,14 @@ public class MobileBrowseActivity extends MobileActivity
             if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
                 mSubsChannels = null; // new subscriptions show up in the strip too
                 updateStrip();
+            }
+            if (isHomeChip(mCurrentSectionId) && mHomeChip == null) {
+                mHomeChips = null; // METUBE(issue #79): the chips follow the watch history
+                updateStrip();
+            }
+            if (mHomeChip != null) {
+                loadHomeChip(mHomeChip);
+                return;
             }
             if (mSubsChannel != null) {
                 loadSubsChannel(mSubsChannel);
@@ -1955,14 +1978,26 @@ public class MobileBrowseActivity extends MobileActivity
         applyHomeLayout();
         if (isHomeChip(mCurrentSectionId)) {
             List<FeedStrip.Item> chips = new ArrayList<>();
+            if (mHomeChips == null) {
+                loadHomeChips();
+            }
+            long selected = mCurrentSectionId;
             for (int chip : HOME_CHIPS) {
                 BrowseSection section = findKnownSection(chip);
                 if (chip == MediaGroup.TYPE_HOME || section != null) {
                     chips.add(new FeedStrip.Item(chip, chip == MediaGroup.TYPE_HOME
                             ? getString(R.string.mobile_feed_all) : section.getTitle(), null, null));
                 }
+                // METUBE(issue #79): right after All, the account's own channels, then the topics
+                for (int i = 0; chip == MediaGroup.TYPE_HOME && mHomeChips != null && i < mHomeChips.size(); i++) {
+                    Video channel = mHomeChips.get(i);
+                    chips.add(new FeedStrip.Item(HOME_CHIP_ID + i, channel.getAuthor(), null, channel));
+                    if (channel == mHomeChip) {
+                        selected = HOME_CHIP_ID + i;
+                    }
+                }
             }
-            mStrip.show(chips.size() > 1 ? FeedStrip.MODE_CHIPS : FeedStrip.MODE_NONE, chips, mCurrentSectionId);
+            mStrip.show(chips.size() > 1 ? FeedStrip.MODE_CHIPS : FeedStrip.MODE_NONE, chips, selected);
             updateChipRow();
         } else if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
             if (mSubsChannels == null) {
@@ -1997,7 +2032,18 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void onStripPicked(FeedStrip.Item item) {
-        if (mStrip.mode() == FeedStrip.MODE_CHIPS) {
+        if (item.id >= HOME_CHIP_ID) { // METUBE(issue #79): a personal chip
+            mStrip.select(item.id);
+            loadHomeChip((Video) item.data);
+        } else if (mHomeChip != null && item.id == mCurrentSectionId) {
+            // the section's own chip from a personal one: its feed again, from its snapshot while the presenter refreshes
+            clearSubsChannel();
+            mStrip.select(item.id);
+            paintCachedSnapshot(mCurrentSectionId, true);
+            if (mPresenter != null) {
+                mPresenter.onSectionFocused(mCurrentSectionId);
+            }
+        } else if (mStrip.mode() == FeedStrip.MODE_CHIPS) {
             // A topic opens in Home's place: Home's tab stays lit (no tab of its own), Back = Home.
             mSectionFromYou = false;
             onSectionChosen((int) item.id);
@@ -2036,18 +2082,44 @@ public class MobileBrowseActivity extends MobileActivity
                 error -> android.util.Log.w("MobileBrowse", "Subscribed channels: " + error));
     }
 
+    private void loadHomeChips() {
+        mHomeChips = new ArrayList<>(); // asked once per visit (refresh asks again); none until it answers
+        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mHomeChipsAction);
+        mHomeChipsAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
+                com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService().getHistoryObserve(),
+                group -> runOnUiThread(() -> {
+                    mHomeChips = topChannels(VideoGroup.from(group).getVideos(), HOME_CHIPS_MAX);
+                    if (mHomeChip == null && isHomeChip(mCurrentSectionId) && !mYouShowing) {
+                        updateStrip();
+                    }
+                }),
+                error -> android.util.Log.w("MobileBrowse", "Home chips: " + error));
+    }
+
+    /** The {@code max} channels with the most videos in {@code history}; a tie goes to the newer one. */
+    static List<Video> topChannels(@Nullable List<Video> history, int max) {
+        java.util.Map<String, Video> newest = new java.util.LinkedHashMap<>(); // history comes newest first
+        java.util.Map<String, Integer> count = new java.util.HashMap<>();
+        for (Video video : history != null ? history : new ArrayList<Video>()) {
+            if (video.channelId != null && video.getAuthor() != null) {
+                newest.putIfAbsent(video.channelId, video);
+                count.merge(video.channelId, 1, Integer::sum);
+            }
+        }
+        List<Video> channels = new ArrayList<>(newest.values());
+        java.util.Collections.sort(channels, (a, b) -> count.get(b.channelId) - count.get(a.channelId)); // stable
+        return new ArrayList<>(channels.subList(0, Math.min(max, channels.size())));
+    }
+
+    /** METUBE(issue #79): Home narrowed to a personal chip: that channel's uploads replace Home's feed. */
+    private void loadHomeChip(Video chip) {
+        loadSubsChannel(chip);
+        mHomeChip = chip; // after: the filter's reset clears it
+    }
+
     /** Subscriptions narrowed to one channel: its uploads replace the feed, newest first. */
     private void loadSubsChannel(Video channel) {
-        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction);
-        mSubsChannel = channel;
-        mSubsChannelPage = null;
-        hideError();
-        mCurrentVideos.clear();
-        mAwaitingFreshContent = false;
-        cancelFeedSwap();
-        mAdapter.submitList(new ArrayList<>());
-        showReloadSkeleton();
-        mContentSwipe.setRefreshing(false);
+        resetFilteredFeed(channel);
         Video target = channel;
         mSubsAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
                 target.mediaItem != null
@@ -2062,6 +2134,21 @@ public class MobileBrowseActivity extends MobileActivity
                 }));
     }
 
+    /** An empty feed with its skeleton, waiting for {@code target}'s first page. */
+    private void resetFilteredFeed(Video target) {
+        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction);
+        mSubsChannel = target;
+        mSubsChannelPage = null;
+        mHomeChip = null;
+        hideError();
+        mCurrentVideos.clear();
+        mAwaitingFreshContent = false;
+        cancelFeedSwap();
+        mAdapter.submitList(new ArrayList<>());
+        showReloadSkeleton();
+        mContentSwipe.setRefreshing(false);
+    }
+
     private void loadSubsChannelPage() {
         MediaGroup page = mSubsChannelPage;
         Video target = mSubsChannel;
@@ -2073,7 +2160,12 @@ public class MobileBrowseActivity extends MobileActivity
         mSubsAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
                 com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService().continueGroupObserve(page),
                 group -> runOnUiThread(() -> onSubsChannelPage(target, group)),
-                error -> android.util.Log.w("MobileBrowse", "Channel feed page: " + error));
+                error -> runOnUiThread(() -> {
+                    if (mSubsChannel == target) {
+                        setSkeletonVisible(false);
+                    }
+                    android.util.Log.w("MobileBrowse", "Channel feed page: " + error);
+                }));
     }
 
     private void onSubsChannelPage(Video target, MediaGroup group) {
@@ -2091,6 +2183,7 @@ public class MobileBrowseActivity extends MobileActivity
         com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction);
         mSubsChannel = null;
         mSubsChannelPage = null;
+        mHomeChip = null;
     }
 
     private void maybeTriggerPagination() {
@@ -2791,7 +2884,8 @@ public class MobileBrowseActivity extends MobileActivity
         unwatchMiniScreenOn(); // the shared player outlives this Activity
         mNavHandler.removeCallbacks(mNavRebuild);
         mNavHandler.removeCallbacks(mRunwayCheck);
-        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction, mSubsChannelsAction, mYouHistoryAction);
+        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction, mSubsChannelsAction, mYouHistoryAction,
+                mHomeChipsAction);
         cancelFeedSwap(); // NEWTUBE(feed-swap)
         mContentGrid.removeCallbacks(mRestoreItemAnimator);
         MiniPlayerBridge.unregisterMiniHost(this);
@@ -2893,6 +2987,11 @@ public class MobileBrowseActivity extends MobileActivity
         if (!mYouShowing && mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS && mSubsChannel != null
                 && mStrip != null && mStrip.mode() == FeedStrip.MODE_AVATARS) {
             onStripPicked(new FeedStrip.Item(-1, getString(R.string.mobile_feed_all), null, null));
+            return;
+        }
+        // METUBE(issue #79): Home narrowed to a chip - Back goes to All first, like a channel filter.
+        if (!mYouShowing && mHomeChip != null && mStrip != null && mStrip.mode() == FeedStrip.MODE_CHIPS) {
+            onStripPicked(new FeedStrip.Item(mCurrentSectionId, getString(R.string.mobile_feed_all), null, null));
             return;
         }
 
