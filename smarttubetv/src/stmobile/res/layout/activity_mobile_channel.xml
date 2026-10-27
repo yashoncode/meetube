@@ -197,6 +197,40 @@
 
     </com.newtube.mobile.ui.common.GlassView>
 
+    <!-- METUBE(channel nav): Browse's floating nav pill over the channel, the tab it came from lit
+         (MobileBrowseActivity.copyNavTabs); slides away as the page scrolls down. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/mobile_nav_glass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="12dp"
+        android:elevation="6dp"
+        android:padding="6dp"
+        android:visibility="gone"
+        app:glassCornerRadius="34dp"
+        app:glassTint="@color/metube_glass_tint">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/mobile_bottom_nav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:elevation="0dp"
+            app:itemBackground="@drawable/bg_nav_item"
+            app:itemIconSize="24dp"
+            app:itemIconTint="@color/mobile_bottom_nav_item"
+            app:itemRippleColor="@android:color/transparent"
+            app:itemTextAppearanceActive="@style/MobileBottomNavText"
+            app:itemTextAppearanceActiveBoldEnabled="false"
+            app:itemTextAppearanceInactive="@style/MobileBottomNavText"
+            app:itemTextColor="@color/mobile_bottom_nav_item"
+            app:labelVisibilityMode="labeled"
+            app:paddingBottomSystemWindowInsets="false" />
+
+    </com.newtube.mobile.ui.common.GlassView>
+
     <!-- Channel navigation from the watch page keeps playback alive in this overlay. -->
     <include layout="@layout/mobile_mini_player_overlay" />
 

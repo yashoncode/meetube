@@ -2741,6 +2741,15 @@ public class MobileBrowseActivity extends MobileActivity
      * to go back to Browse on that tab. False when no Browse is open: the screen keeps no bar.
      */
     public static boolean copyNavTabs(android.app.Activity screen, BottomNavigationView bar, Runnable onSearchReselected) {
+        return copyNavTabs(screen, bar, true, onSearchReselected);
+    }
+
+    /**
+     * {@code searchLit} false (a channel page): the tab Browse is on stays lit and Search is a tab
+     * like the others, opening Search back in Browse.
+     */
+    public static boolean copyNavTabs(android.app.Activity screen, BottomNavigationView bar, boolean searchLit,
+                                      Runnable onSearchReselected) {
         MobileBrowseActivity browse = sLive.get();
         if (browse == null || browse.isFinishing()) {
             return false;
@@ -2758,7 +2767,7 @@ public class MobileBrowseActivity extends MobileActivity
         }
         bar.setLabelVisibilityMode(browse.mBottomNav.getLabelVisibilityMode());
         // Search in the top bar (METUBE(search place)): the tab Browse is on stays lit, and a tap on it goes back too.
-        boolean hasSearch = source.findItem(SEARCH_ITEM_ID) != null;
+        boolean hasSearch = searchLit && source.findItem(SEARCH_ITEM_ID) != null;
         bar.setSelectedItemId(hasSearch ? SEARCH_ITEM_ID : browse.mBottomNav.getSelectedItemId());
         com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener goBack = item -> {
             screen.startActivity(new Intent(screen, MobileBrowseActivity.class)

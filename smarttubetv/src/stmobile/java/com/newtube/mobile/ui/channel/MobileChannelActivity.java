@@ -165,6 +165,7 @@ public class MobileChannelActivity extends MobileActivity
         setupTabs();
         setupSwipeRefresh();
         setupGlassBars();
+        setupNavPill();
 
         mBackButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
         findViewById(R.id.mobile_channel_sort).setOnClickListener(v -> {
@@ -710,6 +711,26 @@ public class MobileChannelActivity extends MobileActivity
                 mSwipe.setRefreshing(false);
             }
         });
+    }
+
+    /** METUBE(channel nav): Browse's floating tab bar over the channel, as Search has it. None without a Browse. */
+    private void setupNavPill() {
+        View pill = findViewById(R.id.mobile_nav_glass);
+        com.google.android.material.bottomnavigation.BottomNavigationView bar = findViewById(R.id.mobile_bottom_nav);
+        if (!com.newtube.mobile.ui.browse.MobileBrowseActivity.copyNavTabs(this, bar, false, () -> { })) {
+            return;
+        }
+        Glass.blur(pill, findViewById(R.id.mobile_channel_glass_source));
+        // The pill floats above the system bar already: the bar must not pad itself by it too.
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(bar, (v, insets) -> insets);
+        int clearance = getResources().getDimensionPixelSize(R.dimen.metube_nav_clearance);
+        for (RecyclerView list : new RecyclerView[] {mGrid, findViewById(R.id.mobile_channel_peek)}) {
+            list.setPadding(list.getPaddingLeft(), list.getPaddingTop(), list.getPaddingRight(), clearance);
+        }
+        ((android.view.ViewGroup.MarginLayoutParams) findViewById(R.id.mobile_mini_player).getLayoutParams())
+                .bottomMargin = clearance;
+        mGrid.addOnScrollListener(new com.newtube.mobile.ui.common.NavHider(pill));
+        pill.setVisibility(View.VISIBLE);
     }
 
     /**
