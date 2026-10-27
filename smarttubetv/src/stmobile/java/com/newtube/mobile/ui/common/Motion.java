@@ -30,6 +30,11 @@ public final class Motion {
     /** A surface leaving (a sheet sliding down). */
     public static final long EXIT_MS = 200;
 
+    /** A page arriving out of frosted glass (a bottom-bar tab switch, {@link #frostIn}). */
+    public static final long FROST_MS = 320;
+    /** How frosted that page starts, in dp of blur radius. */
+    private static final float FROST_BLUR_DP = 14f;
+
     /** The like "pop": a quick press-in, overshoot and settle (the comments' thumb uses the same). */
     public static final long POP_MS = 260;
 
@@ -42,6 +47,45 @@ public final class Motion {
      */
     public static void pop(android.view.View view) {
         pop(view, 0.78f, 1.12f);
+    }
+
+    /**
+     * METUBE(frost): {@code view} arrives out of frosted glass - it fades in while its blur clears,
+     * on the GPU (RenderEffect, Android 12+; older ones get the fade alone). The blur is cleared at
+     * the end, so scrolling and the glass that samples the page pay nothing afterwards. A new call
+     * on the same view takes over from the running one.
+     */
+    public static void frostIn(android.view.View view) {
+        view.animate().cancel();
+        view.setAlpha(0f);
+        view.animate().alpha(1f).setDuration(FROST_MS).setInterpolator(EMPHASIZED_DECELERATE).withLayer().start();
+        if (android.os.Build.VERSION.SDK_INT < 31) {
+            return;
+        }
+        Object running = view.getTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator);
+        if (running instanceof android.animation.Animator) {
+            ((android.animation.Animator) running).cancel();
+        }
+        float radius = FROST_BLUR_DP * view.getResources().getDisplayMetrics().density;
+        android.animation.ValueAnimator frost = android.animation.ValueAnimator.ofFloat(radius, 0f);
+        frost.setDuration(FROST_MS);
+        frost.setInterpolator(EMPHASIZED_DECELERATE);
+        frost.addUpdateListener(a -> {
+            float r = (float) a.getAnimatedValue();
+            view.setRenderEffect(r < 0.5f ? null : android.graphics.RenderEffect.createBlurEffect(
+                    r, r, android.graphics.Shader.TileMode.CLAMP));
+        });
+        frost.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) { // also after cancel()
+                view.setRenderEffect(null);
+                if (view.getTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator) == animation) {
+                    view.setTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator, null);
+                }
+            }
+        });
+        view.setTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator, frost);
+        frost.start();
     }
 
     /** METUBE(motion): the same pop, barely there - for a whole bar acknowledging a change. */

@@ -1254,10 +1254,15 @@ public class MobileBrowseActivity extends MobileActivity
         }
         if (itemId == YOU_ITEM_ID) {
             showYouPanel();
+            Motion.frostIn(mYouPanel); // METUBE(frost)
         } else {
+            boolean fromYou = mYouShowing;
             mSectionFromYou = false;
             hideYouPanel();
             onSectionChosen(itemId - ITEM_ID_OFFSET);
+            if (fromYou && !mSectionSwapPending && mContentGrid.getVisibility() == View.VISIBLE) {
+                Motion.frostIn(mContentGrid); // METUBE(frost): back to the tab under You - same page, same arrival
+            }
         }
         maybeLaunchShorts();
     }
@@ -3333,9 +3338,7 @@ public class MobileBrowseActivity extends MobileActivity
         // at its top.
         mLayoutManager.scrollToPositionWithOffset(0, 0);
         if (mAdapter.getItemCount() > 0) {
-            mContentGrid.setAlpha(0f);
-            mContentGrid.animate().alpha(1f).setDuration(Motion.FADE_IN_MS)
-                    .setInterpolator(Motion.STANDARD).withLayer().start();
+            Motion.frostIn(mContentGrid); // METUBE(frost): the new tab clears out of frosted glass
         }
         restoreItemAnimatorAfterLayout();
     }

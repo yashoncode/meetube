@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- METUBE(frost): the running blur of Motion.frostIn, on the view it frosts. -->
+    <item name="mobile_frost_animator" type="id" />
+    <!-- METUBE(nav lens): the running wiggle of NavLens.jiggle, on the bar it wiggles. -->
+    <item name="mobile_jiggle_animator" type="id" />
+</resources>
