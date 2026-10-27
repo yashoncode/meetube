@@ -998,9 +998,23 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         });
 
-        // Pinch on the video = YouTube's zoom-to-fill toggle. Enabled in landscape/fullscreen only
-        // (applyWatchLayoutForOrientation), like the official app.
-        mVideoArea.setPinchListener(this::onPinchZoom);
+        // Pinch on the video = YouTube's zoom-to-fill toggle in landscape/fullscreen
+        // (applyWatchLayoutForOrientation), like the official app; past it, and everywhere else
+        // (the portrait player, Shorts), a free zoom of the picture (issue #55).
+        mVideoArea.setPinchListener(new PinchZoomLayout.PinchListener() {
+            @Override
+            public boolean onPinchZoom(boolean zoomIn) {
+                return MobilePlaybackActivity.this.onPinchZoom(zoomIn);
+            }
+
+            @Override
+            public void onZoomChanged(float zoom) {
+                showZoomHint(zoom == 1f ? getString(R.string.mobile_player_zoom_original)
+                        : String.format(Locale.US, "%.1fx", zoom));
+            }
+        });
+        mVideoArea.setZoomTarget(mPlayerView.getContentFrame());
+        mVideoArea.setPinchEnabled(true);
 
         // PLAYER LAYOUT POLISH. The controls overlay fills the video box.
         //  * LANDSCAPE/fullscreen: the video is full-bleed to the screen edges, so inset the whole
@@ -1366,9 +1380,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
 
-        // Pinch-zoom is a fullscreen gesture (the portrait 16:9 box keeps its two-finger touches
-        // for nothing - matching YouTube, which only zooms in fullscreen).
-        mVideoArea.setPinchEnabled(orientation == Configuration.ORIENTATION_LANDSCAPE);
+        // The fill / original snap is a fullscreen gesture, as YouTube's; the free zoom (#55) is
+        // everywhere, and starts over at 1x when the phone turns.
+        mVideoArea.setSnapEnabled(orientation == Configuration.ORIENTATION_LANDSCAPE);
+        mVideoArea.resetZoom();
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if (mPortraitFull) { // the landscape fullscreen takes over; upright again is the page
@@ -1492,17 +1507,19 @@ public class MobilePlaybackActivity extends MobileActivity
      * (AppDialogUtil.createVideoZoomCategory), so the gesture, the dialog selection and the
      * PlayerUIController restore-on-init all stay one setting.
      */
-    private void onPinchZoom(boolean zoomIn) {
+    private boolean onPinchZoom(boolean zoomIn) {
         int mode = zoomIn ? RESIZE_MODE_FIT_BOTH : RESIZE_MODE_DEFAULT;
-        if (mode != getResizeMode()) {
-            // NEWTUBE(haptics): the pinch snapped into the other zoom - a tick as it crosses over.
-            Haptics.tick(mVideoArea);
+        if (mode == getResizeMode()) {
+            return false; // already there: a pinch out zooms on (issue #55)
         }
+        // NEWTUBE(haptics): the pinch snapped into the other zoom - a tick as it crosses over.
+        Haptics.tick(mVideoArea);
         PlayerData playerData = PlayerData.instance(this);
         playerData.setResizeMode(mode);
         playerData.setZoomPercents(-1);
         animateResizeMode(mode);
-        showZoomHint(zoomIn ? R.string.mobile_player_zoom_fill : R.string.mobile_player_zoom_original);
+        showZoomHint(getString(zoomIn ? R.string.mobile_player_zoom_fill : R.string.mobile_player_zoom_original));
+        return true;
     }
 
     /**
@@ -1513,6 +1530,7 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     private void animateResizeMode(int mode) {
         ViewGroup contentFrame = mPlayerView != null ? mPlayerView.getContentFrame() : null;
+        mVideoArea.resetZoom(); // a new mode starts unzoomed (issue #55)
         if (contentFrame == null || contentFrame.getWidth() == 0 || getResizeMode() == mode) {
             setResizeMode(mode);
             return;
@@ -1541,13 +1559,13 @@ public class MobilePlaybackActivity extends MobileActivity
     };
 
     /** Show the YouTube-style zoom chip, re-arming the fade-out if a pinch fires again mid-show. */
-    private void showZoomHint(int textRes) {
+    private void showZoomHint(CharSequence text) {
         if (mZoomHintView == null) {
             return;
         }
         mZoomHintView.removeCallbacks(mHideZoomHint);
         mZoomHintView.animate().cancel();
-        mZoomHintView.setText(textRes);
+        mZoomHintView.setText(text);
         if (mZoomHintView.getVisibility() != View.VISIBLE) {
             mZoomHintView.setAlpha(0f);
             mZoomHintView.setVisibility(View.VISIBLE);
@@ -10796,6 +10814,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 mNextCountdown.hide();
             }
             cancelHoldSpeed();
+            if (mVideoArea != null) {
+                mVideoArea.resetZoom(); // METUBE(issue #55): each video starts whole
+            }
             // NEWTUBE(gestures): a drag held across an autoplay would have seeked the new video to
             // the old one's spot (the bar's and a swipe's alike): it ends here, seeking nothing.
             if (mTimeBar != null) {
