@@ -192,6 +192,12 @@
     <!-- METUBE(glass, issue #80) -->
     <string name="mobile_settings_player_frost">Frosted player buttons</string>
     <string name="mobile_settings_player_frost_summary">The buttons over a video and a short blur the picture under them. Uses more battery, and can stutter on slower phones</string>
+    <!-- METUBE(list layout, issue #82) -->
+    <string name="mobile_settings_video_layout">Video layout</string>
+    <string name="mobile_settings_video_layout_cards">Cards</string>
+    <string name="mobile_settings_video_layout_cards_desc">A big thumbnail for each video</string>
+    <string name="mobile_settings_video_layout_list">List</string>
+    <string name="mobile_settings_video_layout_list_desc">A small thumbnail beside the title, more videos on screen</string>
 
     <!-- Playback -->
     <!-- METUBE(background): the battery-optimization exemption row (Playback). -->

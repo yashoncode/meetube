@@ -354,7 +354,8 @@ public class MobileSearchActivity extends MobileActivity
 
     private void setupGrid() {
         mLayoutManager = new GridLayoutManager(this, computeSpanCount());
-        mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked).showAvatars();
+        mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked).showAvatars()
+                .setListRows(com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this));
 
         // Channel results render as full-width rows even when landscape/tablet uses 2+ columns.
         // METUBE(shorts): every column is two spans wide, so Shorts sit two to a column.

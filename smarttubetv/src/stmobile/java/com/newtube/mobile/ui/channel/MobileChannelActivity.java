@@ -472,7 +472,8 @@ public class MobileChannelActivity extends MobileActivity
 
     private void setupGrid() {
         mLayoutManager = new GridLayoutManager(this, computeSpanCount());
-        mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked).shortsTiles();
+        mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked).shortsTiles()
+                .setListRows(com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this));
         mLoadMoreFooter = new LoadMoreFailureAdapter(this::retryLoadMore);
 
         // Channel rows (rare here) span the whole grid width in multi-column layouts, and so does
@@ -541,7 +542,7 @@ public class MobileChannelActivity extends MobileActivity
      * otherwise it springs back. A claimed swipe cancels the card's press, so it never plays.
      */
     private void setupTabSwipe() {
-        mPeekAdapter = new VideoCardAdapter(video -> { }).shortsTiles();
+        mPeekAdapter = new VideoCardAdapter(video -> { }).shortsTiles().setListRows(com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this));
         GridLayoutManager peekLayout = new GridLayoutManager(this, computeSpanCount());
         peekLayout.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override

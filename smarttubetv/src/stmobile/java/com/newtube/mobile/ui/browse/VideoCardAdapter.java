@@ -40,6 +40,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     private static final int VIEW_TYPE_CHANNEL = 1;
     /** METUBE(shorts): a channel Shorts tab's tile (item_mobile_shorts_tile), see {@link #shortsTiles}. */
     private static final int VIEW_TYPE_SHORT_TILE = 2;
+    /** METUBE(list layout, issue #82): a video as a compact row (item_video_row), see {@link #setListRows}. */
+    private static final int VIEW_TYPE_VIDEO_ROW = 3;
 
     public interface OnVideoClickListener {
         void onVideoClick(Video video);
@@ -79,6 +81,17 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         return this;
     }
 
+    private boolean mListRows;
+
+    /** METUBE(list layout, issue #82): videos as rows, not cards (Settings > Video layout); Shorts stay tiles. */
+    public VideoCardAdapter setListRows(boolean listRows) {
+        if (mListRows != listRows) {
+            mListRows = listRows;
+            notifyDataSetChanged();
+        }
+        return this;
+    }
+
     public VideoCardAdapter(OnVideoClickListener clickListener) {
         this(clickListener, null);
     }
@@ -114,7 +127,10 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         if (mShortsTiles && item.belongsToShorts()) {
             return VIEW_TYPE_SHORT_TILE;
         }
-        return item.isChannel() && !item.isPlaylistAsChannel() ? VIEW_TYPE_CHANNEL : VIEW_TYPE_VIDEO;
+        if (item.isChannel() && !item.isPlaylistAsChannel()) {
+            return VIEW_TYPE_CHANNEL;
+        }
+        return mListRows && !item.belongsToShorts() ? VIEW_TYPE_VIDEO_ROW : VIEW_TYPE_VIDEO;
     }
 
     /** Full-span rows (channel results) for the grid's SpanSizeLookup in multi-column layouts. */
@@ -154,7 +170,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             return new ShortTileHolder(inflater.inflate(R.layout.item_mobile_shorts_tile, parent, false),
                     mClickListener, mLongClickListener);
         }
-        VideoViewHolder holder = new VideoViewHolder(inflater.inflate(R.layout.item_video_card, parent, false), mClickListener);
+        VideoViewHolder holder = new VideoViewHolder(inflater.inflate(viewType == VIEW_TYPE_VIDEO_ROW
+                ? R.layout.item_video_row : R.layout.item_video_card, parent, false), mClickListener);
         holder.mShowAvatar = mShowAvatars;
         return holder;
     }

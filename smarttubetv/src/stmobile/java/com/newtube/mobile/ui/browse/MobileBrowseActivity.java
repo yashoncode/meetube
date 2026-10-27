@@ -2553,6 +2553,9 @@ public class MobileBrowseActivity extends MobileActivity
 
         updateAccountRow();
         applyHomeLayout(); // METUBE(home-rows): back from Settings with another Home layout
+        if (mAdapter != null) {
+            mAdapter.setListRows(HomeLayout.isVideoList(this)); // METUBE(list layout, issue #82)
+        }
         getWindow().getDecorView().postDelayed(mUpdateCheckIfDue, UPDATE_CHECK_DELAY_MS);
         // METUBE(background): not over a live mini player - the dialog would push it into PiP.
         if (!MiniPlayerBridge.isActive()) {
