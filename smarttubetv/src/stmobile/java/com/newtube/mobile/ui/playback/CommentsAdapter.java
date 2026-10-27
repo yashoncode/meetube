@@ -641,6 +641,25 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 }
                 return false;
             });
+            // METUBE(issue #78): like YouTube - a tap opens the replies, a double tap likes.
+            android.view.GestureDetector rowGestures = new android.view.GestureDetector(context,
+                    new android.view.GestureDetector.SimpleOnGestureListener() {
+                        @Override
+                        public boolean onSingleTapConfirmed(@NonNull android.view.MotionEvent e) {
+                            onRowTapped();
+                            return true;
+                        }
+
+                        @Override
+                        public boolean onDoubleTap(@NonNull android.view.MotionEvent e) {
+                            onRowDoubleTapped();
+                            return true;
+                        }
+                    });
+            itemView.setOnTouchListener((v, e) -> {
+                rowGestures.onTouchEvent(e);
+                return false; // the row's own long press (copy) still runs
+            });
             // TalkBack reads a comment as one item and offers its actions there; the like and
             // replies buttons stay reachable on their own too.
             ViewCompat.setScreenReaderFocusable(itemView, true);
@@ -802,6 +821,34 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         public void onTextLongPressed(CommentTextView view) {
             if (mEntry != null) {
                 mListener.onCopy(mEntry);
+            }
+        }
+
+        @Override
+        public void onTextTapped(CommentTextView view) {
+            onRowTapped();
+        }
+
+        @Override
+        public void onTextDoubleTapped(CommentTextView view) {
+            onRowDoubleTapped();
+        }
+
+        private void onRowTapped() {
+            if (mEntry != null && !mIsParent && mEntry.hasReplies()) {
+                mListener.onRepliesClicked(mEntry);
+            }
+        }
+
+        /** Likes, never unlikes (YouTube's double tap); an already liked comment just pops its thumb. */
+        private void onRowDoubleTapped() {
+            if (mEntry == null) {
+                return;
+            }
+            if (mEntry.liked) {
+                popThumb();
+            } else {
+                mListener.onLikeClicked(mEntry);
             }
         }
 

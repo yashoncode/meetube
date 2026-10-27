@@ -44,6 +44,12 @@ public class CommentTextView extends AppCompatTextView {
 
         /** A long press on the text: the comment's whole-row long press. */
         void onTextLongPressed(CommentTextView view);
+
+        /** A tap on text with nothing to fold or follow: the comment's whole-row tap. */
+        void onTextTapped(CommentTextView view);
+
+        /** A double tap on the text: the comment's whole-row double tap. */
+        void onTextDoubleTapped(CommentTextView view);
     }
 
     static final int FOLD_LINES = 4;
@@ -95,7 +101,15 @@ public class CommentTextView extends AppCompatTextView {
             }
 
             @Override
-            public boolean onSingleTapUp(@NonNull MotionEvent e) {
+            public boolean onDoubleTap(@NonNull MotionEvent e) {
+                if (mListener != null) {
+                    mListener.onTextDoubleTapped(CommentTextView.this);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(@NonNull MotionEvent e) { // METUBE(issue #78): not half a double tap
                 // "Read more" is painted over the end of the last folded line; whatever text (a
                 // link, a timestamp) lies under it is hidden, so the label wins there.
                 ClickableSpan span = isOnReadMore(e) ? null : spanAt(e);
@@ -110,7 +124,10 @@ public class CommentTextView extends AppCompatTextView {
                     }
                     return true;
                 }
-                return false;
+                if (mListener != null) {
+                    mListener.onTextTapped(CommentTextView.this);
+                }
+                return true;
             }
 
             @Override
