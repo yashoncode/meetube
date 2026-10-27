@@ -265,6 +265,12 @@ final class AppPages {
 
         rows.add(BarEditor.row(context)); // METUBE(bar editor): the bars as a stack to drag
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_tabs_bar_note)));
+        // METUBE(bar reset): Home, Shorts, Search, Subs, You - Search in the bar, not on top.
+        rows.add(SettingsRow.action(context.getString(R.string.mobile_settings_tabs_reset),
+                context.getString(R.string.mobile_settings_tabs_reset_summary), page -> {
+                    NavTabs.setLayout(context, MediaGroup.TYPE_SHORTS, MediaGroup.TYPE_SUBSCRIPTIONS, 1, false);
+                    page.rebuild();
+                }));
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_tabs_you)));
         addSectionToggles(context, rows, sections, you, true);
         rows.add(SettingsRow.header(context.getString(R.string.mobile_you_explore)));
