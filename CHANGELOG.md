@@ -10,6 +10,7 @@ Every MeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.1.8** Lora](#318-lora) | 2026-10-27 | Live rings, a playful Customization page, zoom anywhere |
 | [**3.1.7** Clozone](#317-clozone) | 2026-10-26 | Your bars your way, live chat beside the video, share from the second |
 | [**3.1.5** Orizon](#315-orizon) | 2026-10-25 | A new You page, More videos in fullscreen, HDR video |
 | [**3.1.1** Spectre](#311-spectre) | 2026-10-22 | MeTube on Android TV, Shorts quality, tablet fixes |
@@ -34,6 +35,57 @@ Every MeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.1.8 Lora
+
+> **Live rings, a playful Customization page, zoom anywhere**<br>
+> 📅 2026-10-27 · closes #46, #55, #73, #78, #79, #80, #81, #82, #83 and #86
+
+### ✨ New
+
+- **See who is live at a glance.** A channel streaming right now gets a glowing red ring around its picture: on video cards, in your Subscriptions strip, on the watch page and on the channel page, where a LIVE badge sits under it and a tap on the picture opens the stream (#73).
+- **Home chips made for you.** Right after All, Home now shows chips for the channels you watch most, picked from your watch history. Tap one for that channel's latest videos; Back takes you to All again (#79).
+- **Videos as a list.** Settings > Customization > Video layout shows videos as compact rows with a small thumbnail beside the title, so more fit on screen. It works on Home, Subscriptions, channels, playlists and search. Shorts stay as tiles (#82).
+- **Pinch to zoom, anywhere.** Zoom into the video up to 5x on the small player, in Shorts and in fullscreen, and move around with two fingers. Each new video starts whole again (#55).
+- **Comments like on YouTube.** Tap a comment to open its replies, double tap it to like it (#78).
+- **A liquid glass lens on the bottom bar.** Pick a tab and a glass lens glides over to it while the bar wiggles. Turn it off under Settings > Customization > Tab switch animation (#46).
+- **Frosted player buttons are back, as a setting.** Turn on Settings > Customization > Frosted player buttons and the buttons over a video and a short blur the picture under them again. It is off by default because it costs battery on slower phones (#80).
+- **High performance mode.** Settings > General > High performance mode keeps the app at your screen's top refresh rate, 120 Hz on most newer phones, for the smoothest scrolling. Off by default.
+- **All subscriptions in one list.** Hold All on the Subscriptions strip to see every channel you follow, A to Z.
+- **Reset the bar.** Settings > Customization > Tabs has a button that puts the bar back to Home, Shorts, Search, Subs and You.
+
+### 🛠️ Changed
+
+- **A playful Customization page.** Theme, app icon, Home layout, video layout, thumbnails and playlists are now picture tiles you tap, and Interface size is a slider with a live preview. Everything sits in four groups: Look, Layout, Glass and motion, Tabs and menus.
+- **Frosted glass switches.** Every switch in the app is a simple frosted glass toggle now.
+- **Tabs arrive out of frosted glass.** Switching tabs, the new page clears in from a soft blur.
+- **Shorts open smoother.** The Shorts player rises in from the bottom once the bar has settled, and going back is smoother too.
+- **Hold a short to see it clean.** The buttons fade away while you hold, and stay away after you let go until you touch the screen again. For 2x speed, hold the top right corner instead.
+- **The bottom bar stays on channel pages,** with the tab you came from still lit.
+- **Smaller buttons on the small player,** so they cover less of the video. Fullscreen keeps the big ones.
+
+### 🐛 Fixed
+
+- **Streams that just ended play again.** A live stream that finished in the last few hours only showed Retry. It now plays from the start (#83).
+- **Back on a filtered Subscriptions feed** goes to All your channels first, not to Home (#86).
+- **Bottom bar names line up.** "Subscriptions" wrapped onto two lines; the bar now says "Subs" (#81).
+- **Home no longer opens a menu on a long press** of its tab.
+- **Minimizing the player no longer jumps** back and forth on some phones.
+
+### ✅ Issues resolved
+
+| Issue | Asked for | In 3.1.8 |
+| :-- | :-- | :-- |
+| [#46](https://github.com/yashoncode/metube/issues/46) | A liquid glass bottom bar with effect settings | A glass lens glides between tabs, with its own switch |
+| [#55](https://github.com/yashoncode/metube/issues/55) | Zoom in the video player | Pinch to zoom up to 5x, everywhere |
+| [#73](https://github.com/yashoncode/metube/issues/73) | A red ring on live channels | A glowing ring wherever the channel shows |
+| [#78](https://github.com/yashoncode/metube/issues/78) | YouTube style comment taps | Tap for replies, double tap to like |
+| [#79](https://github.com/yashoncode/metube/issues/79) | Personal Home chips | Chips for the channels you watch most |
+| [#80](https://github.com/yashoncode/metube/issues/80) | Glass player buttons are gone | Frosted player buttons setting |
+| [#81](https://github.com/yashoncode/metube/issues/81) | Bottom bar names out of line | "Subs" fits on one line |
+| [#82](https://github.com/yashoncode/metube/issues/82) | Videos as a list | Video layout: Cards or List |
+| [#83](https://github.com/yashoncode/metube/issues/83) | Recent live streams only show Retry | They play from the start |
+| [#86](https://github.com/yashoncode/metube/issues/86) | Back from a channel goes Home | Back goes to All first |
 
 ## 3.1.7 Clozone
 
