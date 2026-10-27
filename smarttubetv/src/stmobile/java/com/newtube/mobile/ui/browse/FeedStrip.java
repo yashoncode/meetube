@@ -60,6 +60,8 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
     private final ItemAdapter mItems = new ItemAdapter();
     private int mMode = MODE_NONE;
     private long mSelected;
+    /** METUBE(all subscriptions): long-press on the avatars' "All". */
+    @Nullable private Runnable mOnAllLongPressed;
 
     FeedStrip(Listener listener, @Nullable GlassSource glass) {
         mListener = listener;
@@ -96,6 +98,10 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
         } else if (!wasShown && shown) {
             notifyItemInserted(0);
         }
+    }
+
+    void setOnAllLongPressed(@Nullable Runnable onAllLongPressed) {
+        mOnAllLongPressed = onAllLongPressed;
     }
 
     void select(long selected) {
@@ -290,6 +296,12 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                     mListener.onPicked(item);
                 }
             });
+            boolean allAvatar = mMode == MODE_AVATARS && item.data == null && mOnAllLongPressed != null;
+            holder.itemView.setOnLongClickListener(allAvatar ? v -> {
+                mOnAllLongPressed.run();
+                return true;
+            } : null);
+            holder.itemView.setLongClickable(allAvatar);
         }
     }
 }

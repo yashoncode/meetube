@@ -1006,6 +1006,11 @@ public class MobileBrowseActivity extends MobileActivity
         };
         mAdapter.showAvatars(); // METUBE(card avatars, issue #6)
         mStrip = new FeedStrip(this::onStripPicked, findViewById(R.id.mobile_blur_target));
+        mStrip.setOnAllLongPressed(() -> {
+            if (mSubsChannels != null && !mSubsChannels.isEmpty()) {
+                SubsChannelsSheet.show(this, mSubsChannels);
+            }
+        });
         mChipRow = findViewById(R.id.mobile_chip_row);
         mChipRow.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
         mChipRow.setItemAnimator(null);
@@ -2873,6 +2878,12 @@ public class MobileBrowseActivity extends MobileActivity
         // parent surface), like YouTube's You-tab sub-screens.
         if (mSectionFromYou && !mYouShowing) {
             showYouPanel();
+            return;
+        }
+        // METUBE(issue #86): Subscriptions narrowed to one channel - Back widens it to All first.
+        if (!mYouShowing && mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS && mSubsChannel != null
+                && mStrip != null && mStrip.mode() == FeedStrip.MODE_AVATARS) {
+            onStripPicked(new FeedStrip.Item(-1, getString(R.string.mobile_feed_all), null, null));
             return;
         }
 
