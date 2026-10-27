@@ -1097,12 +1097,25 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerView.setHoldListener(new DoubleTapPlayerViewImpl.HoldListener() {
             @Override
             public boolean onHoldStart(float x, float y) {
+                if (isShortsMode() && mShorts != null) {
+                    // METUBE(shorts): a held short shows only itself; held in its top-right
+                    // quarter, also at 2x (where it can).
+                    mShorts.setClean(true);
+                    mShortsStayClean = !(x > mPlayerView.getWidth() / 2f && y < mPlayerView.getHeight() / 2f);
+                    if (!mShortsStayClean) {
+                        beginHoldSpeed();
+                    }
+                    return true;
+                }
                 return beginHoldSpeed();
             }
 
             @Override
             public void onHoldEnd() {
                 endHoldSpeed();
+                if (mShorts != null && !mShortsStayClean) { // a clean hold stays clean until the next touch
+                    mShorts.setClean(false);
+                }
             }
         });
         mPlayerView.setDoubleTapBeganListener(posX -> {
@@ -6575,8 +6588,28 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent event) {
+        int action = event.getActionMasked();
+        if (action == android.view.MotionEvent.ACTION_DOWN && mShortsStayClean) {
+            // METUBE(shorts): the touch after a clean hold only brings the buttons back
+            mShortsStayClean = false;
+            mShortsRevealTouch = true;
+            if (mShorts != null) {
+                mShorts.setClean(false);
+            }
+        }
+        if (mShortsRevealTouch) {
+            if (action == android.view.MotionEvent.ACTION_UP || action == android.view.MotionEvent.ACTION_CANCEL) {
+                mShortsRevealTouch = false;
+            }
+            return true;
+        }
         return pullToPortraitFull(event) || super.dispatchTouchEvent(event);
     }
+
+    /** METUBE(shorts): a short held clean (not at 2x) stays clean after the finger lifts. */
+    private boolean mShortsStayClean;
+    /** The gesture that brought a clean short's buttons back - swallowed whole. */
+    private boolean mShortsRevealTouch;
 
     /** True while the gesture is the pull that entered the vertical fullscreen (it is swallowed). */
     private boolean pullToPortraitFull(android.view.MotionEvent event) {

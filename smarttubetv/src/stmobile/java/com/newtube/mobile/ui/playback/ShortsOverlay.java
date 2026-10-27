@@ -486,6 +486,12 @@ final class ShortsOverlay {
         }
     }
 
+    /** METUBE(shorts): a held short shows only itself - every button and line fades until the finger lifts. */
+    void setClean(boolean clean) {
+        mOverlay.animate().cancel();
+        mOverlay.animate().alpha(clean ? 0f : 1f).setDuration(150).start();
+    }
+
     private void showChrome(boolean show) {
         for (int id : new int[] {R.id.mobile_shorts_info, R.id.mobile_shorts_actions}) {
             mOverlay.findViewById(id).animate().alpha(show ? 1f : 0f).setDuration(150).start();
