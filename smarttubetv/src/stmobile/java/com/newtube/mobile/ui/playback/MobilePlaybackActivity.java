@@ -1370,6 +1370,28 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
+     * METUBE(player): the page's small portrait player gets smaller buttons (40dp; the play / pause
+     * keeps its size) so they cover less of its picture; fullscreen keeps the full-size ones.
+     */
+    private void sizePlayerControls(boolean compact) {
+        int icon = compact ? dp(40) : getResources().getDimensionPixelSize(R.dimen.mobile_player_icon_button);
+        int pad = compact ? dp(10) : dp(12);
+        for (View button : new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
+                mPrevButton, mNextButton, mFullscreenButton}) {
+            if (button != null) {
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) button.getLayoutParams();
+                lp.width = icon;
+                lp.height = icon;
+                if (button == mAudioButton) {
+                    lp.setMarginStart(dp(4) + icon); // beside the back button
+                }
+                button.setLayoutParams(lp);
+                button.setPadding(pad, pad, pad, pad);
+            }
+        }
+    }
+
+    /**
      * Portrait: 16:9 video box pinned at the top, scrollable watch content filling the rest.
      * Landscape: hide the content and let the video fill the whole screen (PLAYER POLISH immersive).
      */
@@ -1384,6 +1406,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // everywhere, and starts over at 1x when the phone turns.
         mVideoArea.setSnapEnabled(orientation == Configuration.ORIENTATION_LANDSCAPE);
         mVideoArea.resetZoom();
+        sizePlayerControls(orientation != Configuration.ORIENTATION_LANDSCAPE && !mPortraitFull);
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if (mPortraitFull) { // the landscape fullscreen takes over; upright again is the page
