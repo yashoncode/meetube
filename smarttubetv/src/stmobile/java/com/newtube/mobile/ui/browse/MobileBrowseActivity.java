@@ -1223,8 +1223,23 @@ public class MobileBrowseActivity extends MobileActivity
                 return false; // a button, not a place: the tab you were on stays lit
             }
             if (!mSuppressNavCallback) {
-                Motion.nudge(findViewById(R.id.mobile_nav_glass)); // METUBE(motion): the bar acknowledges the switch
-                onNavItemChosen(item.getItemId());
+                int itemId = item.getItemId();
+                if (itemId == toMenuItemId(MediaGroup.TYPE_SHORTS) && playNavLens(itemId)) {
+                    // METUBE(shorts): the lens and the bar's wiggle play alone, then the player rises in.
+                    // The Shorts tab's layout and the player's start take ~250 ms of the main thread
+                    // (gfxinfo: 56 + 162 ms frames), which froze the wiggle's last stretch.
+                    mBottomNav.postDelayed(() -> {
+                        if (mBottomNav.getSelectedItemId() == itemId) { // not left for another tab meanwhile
+                            onNavItemChosen(itemId);
+                        }
+                    }, com.newtube.mobile.ui.common.NavLens.JIGGLE_MS);
+                } else if (playNavLens(itemId)) {
+                    // The page swaps a frame later: its heaviest frames land while the lens swells in place.
+                    mBottomNav.postOnAnimation(() -> onNavItemChosen(itemId));
+                } else {
+                    Motion.nudge(findViewById(R.id.mobile_nav_glass)); // METUBE(motion): the bar acknowledges the switch
+                    onNavItemChosen(itemId);
+                }
             }
             return true;
         });
@@ -1241,6 +1256,47 @@ public class MobileBrowseActivity extends MobileActivity
                 onNavItemChosen(item.getItemId());
             }
         });
+    }
+
+    /**
+     * METUBE(shorts): the lens is gliding to a tab. The Shorts player waits for it to settle: its
+     * start took the glide's frames and only the switch to Shorts stuttered.
+     */
+    private boolean mNavLensGliding;
+
+    /** The lit-tab pill (bg_nav_item), off the bar while the lens is it. */
+    @Nullable
+    private android.graphics.drawable.Drawable mNavPill;
+
+    /**
+     * METUBE(nav lens, issue #46): the bar wiggles toward the picked tab and the lit pill becomes a
+     * liquid glass lens that glides there and settles back into the pill. False with the setting off
+     * (or no switch to show): then the bar only nudges.
+     */
+    private boolean playNavLens(int toItemId) {
+        com.newtube.mobile.ui.common.NavLens lens = findViewById(R.id.mobile_nav_lens);
+        View from = mBottomNav.findViewById(mBottomNav.getSelectedItemId());
+        View to = mBottomNav.findViewById(toItemId);
+        View bar = findViewById(R.id.mobile_nav_glass);
+        if (!com.newtube.mobile.ui.common.NavLens.enabled(this) || from == null || to == null || from == to
+                || to.getWidth() == 0 || !(bar instanceof com.newtube.mobile.ui.common.GlassView)) {
+            return false;
+        }
+        com.newtube.mobile.ui.common.NavLens.jiggle(bar, to.getLeft() > from.getLeft() ? 1 : -1);
+        if (lens == null || !com.newtube.mobile.ui.common.NavLens.supported(this)) {
+            return true;
+        }
+        if (mNavPill == null) {
+            mNavPill = mBottomNav.getItemBackground();
+        }
+        mBottomNav.setItemBackground(null);
+        mNavLensGliding = true;
+        lens.play((com.newtube.mobile.ui.common.GlassView) bar, from, to, () -> {
+            mBottomNav.setItemBackground(mNavPill);
+            mNavLensGliding = false;
+            mBottomNav.post(this::maybeLaunchShorts); // held while the lens glided
+        });
+        return true;
     }
 
     private void onNavItemChosen(int itemId) {
@@ -1273,7 +1329,7 @@ public class MobileBrowseActivity extends MobileActivity
     private int mLastNonShortsNavItem = MediaGroup.TYPE_HOME + ITEM_ID_OFFSET;
 
     private void maybeLaunchShorts() {
-        if (!mShortsLaunchPending || mCurrentSectionId != MediaGroup.TYPE_SHORTS || mYouShowing
+        if (!mShortsLaunchPending || mCurrentSectionId != MediaGroup.TYPE_SHORTS || mYouShowing || mNavLensGliding
                 || !getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
             return;
         }
@@ -1292,6 +1348,7 @@ public class MobileBrowseActivity extends MobileActivity
                     loading.setVisibility(View.GONE);
                 }
                 onVideoClicked(video);
+                overridePendingTransition(R.anim.shorts_open_enter, R.anim.mobile_stay); // fades up from the bottom
                 return;
             }
         }
@@ -1300,6 +1357,13 @@ public class MobileBrowseActivity extends MobileActivity
             mPresenter.onScrollEnd(mCurrentVideos.get(mCurrentVideos.size() - 1)); // all seen: next page
         }
     }
+
+    private final Runnable mLeaveShortsTab = () -> {
+        if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && !mShortsLaunchPending && !mYouShowing
+                && mBottomNav.getMenu().findItem(mLastNonShortsNavItem) != null) {
+            mBottomNav.setSelectedItemId(mLastNonShortsNavItem);
+        }
+    };
 
     /** Pages asked for while the Shorts tab looked for an unseen short. */
     private int mShortsLaunchPages;
@@ -2652,10 +2716,12 @@ public class MobileBrowseActivity extends MobileActivity
         // METUBE(nav tabs): the tabs may have been changed in Settings (a no-op when they weren't).
         rebuildNavigation();
 
-        // METUBE(shorts): back from the Shorts player - return to the tab before Shorts.
-        if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && !mShortsLaunchPending && !mYouShowing
-                && mBottomNav.getMenu().findItem(mLastNonShortsNavItem) != null) {
-            mBottomNav.setSelectedItemId(mLastNonShortsNavItem);
+        // METUBE(shorts): back from the Shorts player - return to the tab before Shorts, once the
+        // player's close (player_close_exit, 200 ms) is over: the lens and the tab's load ran
+        // inside that window animation and stuttered.
+        mBottomNav.removeCallbacks(mLeaveShortsTab);
+        if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && !mShortsLaunchPending && !mYouShowing) {
+            mBottomNav.postDelayed(mLeaveShortsTab, 240);
         } else {
             maybeLaunchShorts();
         }
@@ -2749,6 +2815,7 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onPause() {
         super.onPause();
+        mBottomNav.removeCallbacks(mLeaveShortsTab);
 
         if (mPresenter != null) {
             mPresenter.onViewPaused();

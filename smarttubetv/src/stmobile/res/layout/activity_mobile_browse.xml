@@ -665,4 +665,15 @@
 
     </com.newtube.mobile.ui.common.GlassView>
 
+    <!-- METUBE(nav lens, issue #46): the liquid glass lens a tab switch glides across the bar;
+         sized and placed in code (NavLens.play), there only while it moves. -->
+    <com.newtube.mobile.ui.common.NavLens
+        android:id="@+id/mobile_nav_lens"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:elevation="8dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

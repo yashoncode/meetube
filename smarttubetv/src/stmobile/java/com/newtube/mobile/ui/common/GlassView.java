@@ -84,7 +84,7 @@ public class GlassView extends FrameLayout {
             + "    }\n"
             + "}\n";
 
-    private static final String REFRACTION_AGSL =
+    static final String REFRACTION_AGSL =
             "uniform shader content;\n"
             + "uniform float2 size;\n"
             + "uniform float radius;\n"
@@ -405,6 +405,11 @@ public class GlassView extends FrameLayout {
 
     private float radius(int w, int h) {
         return Math.min(mCorner, Math.min(w, h) / 2f);
+    }
+
+    /** The corner as drawn, at the current size (NavLens clips the bar it re-draws to it). */
+    float corner() {
+        return radius(getWidth(), getHeight());
     }
 
     /** Refreshes the on-screen offsets; true when they differ from the last recording. */
