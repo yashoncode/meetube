@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
@@ -30,6 +31,8 @@ public class GlassSwitch extends SwitchMaterial {
 
     private final float mDp;
     private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /** The knob's frosted edge: a soft blur around it. */
+    private final Paint mFrost = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF mRect = new RectF();
     private final int mOn;
     private final int mOff;
@@ -53,6 +56,7 @@ public class GlassSwitch extends SwitchMaterial {
         setTrackDrawable(new ColorDrawable(Color.TRANSPARENT));
         setBackground(null);
         mPosition = isChecked() ? 1f : 0f;
+        mFrost.setMaskFilter(new BlurMaskFilter(3 * mDp, BlurMaskFilter.Blur.NORMAL));
     }
 
     @Override
@@ -111,19 +115,18 @@ public class GlassSwitch extends SwitchMaterial {
         mRect.set(cx - knobW / 2f, cy - knobH / 2f, cx + knobW / 2f, cy + knobH / 2f);
         float r = knobH / 2f;
 
-        // a soft shade under the white knob, gone while it is glass
-        mPaint.setColor(Color.argb(Math.round(40 * (1f - mLens)), 0, 0, 0));
-        mRect.offset(0, mDp);
-        canvas.drawRoundRect(mRect, r, r, mPaint);
-        mRect.offset(0, -mDp);
-
-        mPaint.setColor(Color.argb(Math.round(255 - 185 * mLens), 255, 255, 255));
+        // METUBE(frost): a frosted knob - a blurred milky halo, frosted white glass over it (the
+        // track's colour faintly through), clearer as the lens mid-slide
+        mFrost.setColor(Color.argb(Math.round(150 * (1f - mLens)), 255, 255, 255));
+        canvas.drawRoundRect(mRect, r, r, mFrost);
+        mPaint.setColor(Color.argb(Math.round(215 - 150 * mLens), 255, 255, 255));
         canvas.drawRoundRect(mRect, r, r, mPaint);
         if (mLens > 0f) {
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeWidth(1.2f * mDp);
             mPaint.setColor(Color.argb(Math.round(230 * mLens), 255, 255, 255));
             canvas.drawRoundRect(mRect, r, r, mPaint);
+            mPaint.setStyle(Paint.Style.FILL);
         }
     }
 
