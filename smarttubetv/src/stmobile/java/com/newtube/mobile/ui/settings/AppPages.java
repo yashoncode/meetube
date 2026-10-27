@@ -73,6 +73,18 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_indian_counts_summary),
                 () -> CountStyle.isIndian(context), on -> CountStyle.setIndian(context, on)).needsRestart());
 
+        // METUBE(performance): every screen at the display's top refresh rate (BitChord's setting).
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_performance)));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_high_refresh),
+                context.getString(R.string.mobile_settings_high_refresh_summary,
+                        com.newtube.mobile.ui.common.HighRefresh.topRate(context)),
+                () -> com.newtube.mobile.ui.common.HighRefresh.isEnabled(context), on -> {
+                    com.newtube.mobile.ui.common.HighRefresh.setEnabled(context, on);
+                    if (context instanceof android.app.Activity) {
+                        com.newtube.mobile.ui.common.HighRefresh.apply((android.app.Activity) context);
+                    }
+                }));
+
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_general), rows);
     }
 

@@ -192,6 +192,10 @@
     <!-- METUBE(glass, issue #80) -->
     <string name="mobile_settings_player_frost">Frosted player buttons</string>
     <string name="mobile_settings_player_frost_summary">The buttons over a video and a short blur the picture under them. Uses more battery, and can stutter on slower phones</string>
+    <!-- METUBE(performance) -->
+    <string name="mobile_settings_performance">Performance</string>
+    <string name="mobile_settings_high_refresh">High performance mode</string>
+    <string name="mobile_settings_high_refresh_summary">Keeps the app at %1$d Hz for the smoothest motion. Uses more battery; Android may lower it when the phone is hot or the battery saver is on</string>
     <!-- METUBE(nav lens, issue #46) -->
     <string name="mobile_settings_tab_motion">Tab switch animation</string>
     <string name="mobile_settings_tab_motion_summary">A glass lens glides to the tab and the bar wiggles. Off on slower phones until you turn it on</string>

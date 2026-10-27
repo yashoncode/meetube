@@ -284,6 +284,7 @@ public abstract class MobileActivity extends MotherActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        HighRefresh.apply(this); // METUBE(performance): back from Settings with it changed
 
         // Mandatory: keeps the ViewManager back-stack/parent lookup correct.
         if (isBackStackScreen()) {
