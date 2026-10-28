@@ -206,6 +206,17 @@ final class AppPages {
                 () -> com.newtube.mobile.ui.common.NavLens.enabled(context),
                 on -> com.newtube.mobile.ui.common.NavLens.setEnabled(context, on)));
 
+        // METUBE(nav bloom, issue #47): a glow behind the lit tab, with or without Liquid glass.
+        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_tab_glow))
+                .option(context.getString(R.string.mobile_settings_tab_glow_white),
+                        context.getString(R.string.mobile_settings_tab_glow_white_desc), com.newtube.mobile.ui.browse.NavBloom.MODE_WHITE)
+                .option(context.getString(R.string.mobile_settings_tab_glow_tabs),
+                        context.getString(R.string.mobile_settings_tab_glow_tabs_desc), com.newtube.mobile.ui.browse.NavBloom.MODE_TABS)
+                .option(context.getString(R.string.mobile_settings_tab_glow_accent),
+                        context.getString(R.string.mobile_settings_tab_glow_accent_desc), com.newtube.mobile.ui.browse.NavBloom.MODE_ACCENT)
+                .option(context.getString(R.string.mobile_settings_tab_glow_off), null, com.newtube.mobile.ui.browse.NavBloom.MODE_OFF)
+                .bind(() -> com.newtube.mobile.ui.browse.NavBloom.mode(context), mode -> com.newtube.mobile.ui.browse.NavBloom.setMode(context, mode)));
+
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_nav_labels),
                 context.getString(R.string.mobile_settings_nav_labels_summary),
                 () -> NavTabs.showLabels(context), on -> NavTabs.setShowLabels(context, on)));

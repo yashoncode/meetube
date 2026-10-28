@@ -21,6 +21,19 @@ public class GlassSource extends FrameLayout {
 
     @Nullable
     final RenderNode node = HARDWARE ? new RenderNode("MeTube glass source") : null;
+    /**
+     * Off, the children draw straight to the window and every glass on this source shows its tint
+     * alone. For a SurfaceView child (the player's HDR output, #35): its hole was punched only where
+     * the glass re-drew this node, so the video showed through the buttons and nowhere else.
+     */
+    boolean sampling = true;
+
+    public void setSampling(boolean on) {
+        if (sampling != on) {
+            sampling = on;
+            invalidate();
+        }
+    }
 
     public GlassSource(@NonNull Context context) {
         super(context);
@@ -32,7 +45,7 @@ public class GlassSource extends FrameLayout {
 
     @Override
     protected void dispatchDraw(@NonNull Canvas canvas) {
-        if (node != null && canvas.isHardwareAccelerated()) {
+        if (node != null && sampling && canvas.isHardwareAccelerated()) {
             node.setPosition(0, 0, getWidth(), getHeight());
             Canvas recording = node.beginRecording();
             super.dispatchDraw(recording);

@@ -57,6 +57,7 @@ public final class GlassDrawable extends Drawable {
     @Nullable
     private final RenderNode mNode;
     private boolean mPaused;
+    private boolean mSampled = true;
 
     /**
      * Off, {@code host}'s glass (from {@link #apply}) stops sampling its source and shows the tint
@@ -109,8 +110,9 @@ public final class GlassDrawable extends Drawable {
                     RenderEffect.createColorFilterEffect(new ColorMatrixColorFilter(saturate)), Shader.TileMode.CLAMP));
             mNode.setClipToOutline(true);
             // re-sample when the button moves over the video (a rotation re-centres the transport)
+            // ...and when the source starts or stops sampling (HDR output)
             host.getViewTreeObserver().addOnPreDrawListener(() -> {
-                if (host.isShown() && moved()) {
+                if (host.isShown() && (mSampled != mSource.sampling || moved())) {
                     invalidateSelf();
                 }
                 return true;
@@ -134,9 +136,10 @@ public final class GlassDrawable extends Drawable {
             return;
         }
         float r = Math.min(mShape.width(), mShape.height()) / 2f;
-        boolean live = mNode != null && !mPaused && canvas.isHardwareAccelerated()
+        mSampled = mSource != null && mSource.sampling;
+        boolean live = mNode != null && !mPaused && mSampled && canvas.isHardwareAccelerated()
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
-        mTint.setColor(live || mSource == null || mPaused ? TINT : FALLBACK_TINT);
+        mTint.setColor(live || mSource == null || mPaused || !mSampled ? TINT : FALLBACK_TINT);
         if (live) {
             moved();
             mRecordedX = mLoc[0] - mSourceLoc[0];
