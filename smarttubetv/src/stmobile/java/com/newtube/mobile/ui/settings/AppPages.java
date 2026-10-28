@@ -28,6 +28,7 @@ import com.newtube.mobile.ui.browse.NavTabs;
 import com.newtube.mobile.ui.common.CountStyle;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 import com.newtube.mobile.ui.common.ThemeMode;
+import com.newtube.mobile.ui.playback.WatchLook;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -174,6 +175,17 @@ final class AppPages {
 
         rows.add(startScreen(context));
 
+        // METUBE(watch-look): the watch page compact (default) or as it was, and the player's buttons.
+        rows.add(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_watch_style))
+                .option(context.getString(R.string.mobile_settings_watch_style_compact),
+                        context.getString(R.string.mobile_settings_watch_style_compact_desc), false)
+                .option(context.getString(R.string.mobile_settings_watch_style_classic),
+                        context.getString(R.string.mobile_settings_watch_style_classic_desc), true)
+                .bind(() -> WatchLook.isClassic(context), classic -> WatchLook.setClassic(context, classic))
+                .needsRestart());
+        rows.add(SettingsRow.page(context.getString(R.string.mobile_settings_player_buttons),
+                () -> context.getString(R.string.mobile_settings_player_buttons_summary), SettingsPages.PLAYER_BUTTONS));
+
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_effects)));
 
         // METUBE(glass): the lens shader runs every frame something scrolls under the glass.
@@ -205,6 +217,41 @@ final class AppPages {
                 () -> context.getString(R.string.mobile_settings_video_menu_summary), SettingsPages.FEEDS_MENU));
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_customize), rows);
+    }
+
+    /** METUBE(watch-look): which buttons the player shows (PlayerButton hides the rest). */
+    static SettingsPages.Page playerButtons(Context context) {
+        List<SettingsRow> rows = new ArrayList<>();
+        rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_player_buttons_note)));
+
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_top)));
+        playerButton(context, rows, R.string.mobile_player_audio_only, "mobile_player_audio");
+        playerButton(context, rows, R.string.mobile_cast_button, "mobile_player_cast");
+        playerButton(context, rows, R.string.mobile_player_subtitles, "mobile_player_subtitles");
+
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_center)));
+        playerButton(context, rows, R.string.mobile_settings_player_prev_next, "mobile_player_previous", "mobile_player_next");
+
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_fullscreen)));
+        playerButton(context, rows, R.string.mobile_watch_like, "mobile_player_like");
+        playerButton(context, rows, R.string.mobile_watch_dislike, "mobile_player_dislike");
+        playerButton(context, rows, R.string.mobile_comments_entry, "mobile_player_comments");
+        playerButton(context, rows, R.string.mobile_live_chat_entry, "mobile_player_chat");
+        playerButton(context, rows, R.string.dialog_download, "mobile_player_download");
+        playerButton(context, rows, R.string.mobile_watch_share, "mobile_player_share");
+
+        return new SettingsPages.Page(context.getString(R.string.mobile_settings_player_buttons), rows);
+    }
+
+    /** One switch for one or more buttons that show and hide together. */
+    private static void playerButton(Context context, List<SettingsRow> rows, int titleRes, String... buttons) {
+        rows.add(SettingsRow.toggle(context.getString(titleRes), null,
+                () -> WatchLook.isShown(context, buttons[0]),
+                on -> {
+                    for (String button : buttons) {
+                        WatchLook.setShown(context, button, on);
+                    }
+                }));
     }
 
     /** The tab NewTube opens on: the enabled sections, then pinned channels and playlists. */
