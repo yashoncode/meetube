@@ -22,10 +22,13 @@ import java.util.TreeMap;
  * Picks what the downloader can turn into a plain playable file, from the format lists the
  * player already resolved. Pure Java (no Android types) so the selection rules are unit-tested.
  *
- * <p>Only H.264 video and AAC audio are offered: {@code MediaMuxer} writes MP4, every phone
- * decodes them, and YouTube serves both for every video up to 1080p. VP9/AV1 rungs (1440p+)
- * would need a WebM muxer and are left out. When a video has no separate H.264 track at all
- * (rare), the progressive muxed streams (itag 18/22) are offered instead - those need no muxing.
+ * <p>Up to 1080p: H.264 video and AAC audio muxed into MP4 - every phone decodes them, and
+ * YouTube serves both for every video up to 1080p. Above that (1440p, 4K) YouTube only serves
+ * VP9 (or AV1), so those rungs are VP9 + Opus muxed into WebM, the same best-video + best-audio
+ * merge yt-dlp does, done by the platform's WebM muxer. HDR VP9 ({@code vp09.02}) and AV1 are
+ * left out: washed out on SDR screens, and no platform muxer for AV1 before Android 14. When a
+ * video has no separate H.264 track at all (rare), the progressive muxed streams (itag 18/22)
+ * are offered instead - those need no muxing.
  */
 public final class DownloadOptions {
     private DownloadOptions() {
@@ -49,6 +52,20 @@ public final class DownloadOptions {
                 int height = progressive.getHeight();
                 result.add(new DownloadOption(DownloadOption.KIND_VIDEO, labelOf(progressive, height),
                         height, progressive, null, sumLengths(progressive, null)));
+            }
+        }
+
+        // METUBE(4k-download): the VP9 rungs taller than every MP4 one go on top, tallest first.
+        MediaFormat opus = pickAudio(adaptiveFormats, null, null, true);
+        if (opus != null) {
+            int tallestMp4 = result.isEmpty() ? 0 : result.get(0).height;
+            int at = 0;
+            for (Map.Entry<Integer, MediaFormat> entry : pickVideoRungs(adaptiveFormats, true).entrySet()) {
+                if (entry.getKey() > tallestMp4) {
+                    MediaFormat video = entry.getValue();
+                    result.add(at++, new DownloadOption(DownloadOption.KIND_VIDEO, labelOf(video, entry.getKey()),
+                            entry.getKey(), video, opus, sumLengths(video, opus)));
+                }
             }
         }
 
@@ -83,6 +100,13 @@ public final class DownloadOptions {
     @Nullable
     static MediaFormat pickAudio(@Nullable List<MediaFormat> formats, @Nullable String itag,
                                  @Nullable String wantedTrack) {
+        return pickAudio(formats, itag, wantedTrack, false);
+    }
+
+    /** {@code opus}: among Opus (WebM) tracks instead of AAC when no itag is given. */
+    @Nullable
+    static MediaFormat pickAudio(@Nullable List<MediaFormat> formats, @Nullable String itag,
+                                 @Nullable String wantedTrack, boolean opus) {
         if (formats == null) {
             return null;
         }
@@ -94,7 +118,7 @@ public final class DownloadOptions {
             if (format.getUrl() == null || format.isDrc()) {
                 continue;
             }
-            if (itag != null ? !itag.equals(format.getITag()) : !isAacAudio(format)) {
+            if (itag != null ? !itag.equals(format.getITag()) : !(opus ? isOpusAudio(format) : isAacAudio(format))) {
                 continue;
             }
 
@@ -114,6 +138,11 @@ public final class DownloadOptions {
 
     /** Highest-bitrate H.264 track per height, tallest first. */
     static Map<Integer, MediaFormat> pickVideoRungs(@Nullable List<MediaFormat> formats) {
+        return pickVideoRungs(formats, false);
+    }
+
+    /** {@code vp9}: SDR VP9 (WebM) tracks instead of H.264. */
+    static Map<Integer, MediaFormat> pickVideoRungs(@Nullable List<MediaFormat> formats, boolean vp9) {
         TreeMap<Integer, MediaFormat> byHeight = new TreeMap<>(Collections.reverseOrder());
 
         if (formats == null) {
@@ -121,7 +150,7 @@ public final class DownloadOptions {
         }
 
         for (MediaFormat format : formats) {
-            if (!isAvcVideo(format) || format.getHeight() <= 0 || format.isOtf()) {
+            if (!(vp9 ? isVp9Video(format) : isAvcVideo(format)) || format.getHeight() <= 0 || format.isOtf()) {
                 continue;
             }
 
@@ -159,6 +188,29 @@ public final class DownloadOptions {
     static boolean isAvcVideo(MediaFormat format) {
         return format.getUrl() != null && mimeStartsWith(format, "video/mp4")
                 && mimeContains(format, "avc1");
+    }
+
+    /** "vp9" is SDR; HDR VP9 is tagged {@code vp09.02...} and does not match. */
+    static boolean isVp9Video(MediaFormat format) {
+        return format.getUrl() != null && mimeStartsWith(format, "video/webm")
+                && mimeContains(format, "vp9");
+    }
+
+    static boolean isOpusAudio(MediaFormat format) {
+        return format.getUrl() != null && mimeStartsWith(format, "audio/webm")
+                && mimeContains(format, "opus");
+    }
+
+    /** A finished part is WebM (Matroska) when it opens with the EBML magic; MP4 parts never do. */
+    static boolean isWebmFile(@Nullable File file) {
+        if (file == null) {
+            return false;
+        }
+        try (InputStream in = new FileInputStream(file)) {
+            return in.read() == 0x1A && in.read() == 0x45 && in.read() == 0xDF && in.read() == 0xA3;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     static boolean isAacAudio(MediaFormat format) {

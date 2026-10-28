@@ -301,7 +301,6 @@
     <string name="mobile_download_error_generic">Descărcarea a eșuat. Atinge pentru a încerca din nou.</string>
     <string name="mobile_download_error_link">Linkul de descărcare a expirat. Atinge pentru a încerca din nou.</string>
     <string name="mobile_download_done_title">Descărcare finalizată</string>
-    <string name="mobile_download_play">Redare</string>
     <string name="mobile_download_retry">Reîncearcă descărcarea</string>
     <string name="mobile_download_cancel">Anulează descărcarea</string>
     <string name="mobile_download_delete">Șterge descărcarea</string>

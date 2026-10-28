@@ -422,7 +422,6 @@
     <string name="mobile_download_error_generic">下載失敗。點一下可重試。</string>
     <string name="mobile_download_error_link">下載連結已過期。點一下可重試。</string>
     <string name="mobile_download_done_title">下載完成</string>
-    <string name="mobile_download_play">播放</string>
     <string name="mobile_download_retry">重試下載</string>
     <string name="mobile_download_cancel">取消下載</string>
     <string name="mobile_download_delete">刪除下載</string>

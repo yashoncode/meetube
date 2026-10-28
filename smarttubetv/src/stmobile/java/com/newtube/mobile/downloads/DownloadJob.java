@@ -291,11 +291,14 @@ final class DownloadJob {
         mRegistry.notifyChanged();
         mListener.onProgress(mItem);
 
-        String fileName = DownloadOptions.fileNameFor(mItem.title, mItem.videoId, mItem.isAudioOnly() ? "m4a" : "mp4");
-        DownloadStorage.Target target = mStorage.create(fileName, mItem.isAudioOnly());
+        // METUBE(4k-download): VP9 + Opus parts (1440p and up) can only go into WebM.
+        boolean webm = DownloadOptions.isWebmFile(videoPart);
+        String fileName = DownloadOptions.fileNameFor(mItem.title, mItem.videoId,
+                mItem.isAudioOnly() ? "m4a" : webm ? "webm" : "mp4");
+        DownloadStorage.Target target = mStorage.create(fileName, mItem.isAudioOnly(), mimeOf(fileName));
         MediaMuxer muxer = null;
         try {
-            muxer = mStorage.openMuxer(target);
+            muxer = mStorage.openMuxer(target, webm);
             long durationMs = MediaMuxHelper.mux(videoPart, audioPart, muxer,
                     (timeUs, durationUs) -> !mItem.cancelRequested);
             muxer.release();
@@ -322,6 +325,13 @@ final class DownloadJob {
             }
             throw e instanceof IOException ? (IOException) e : new IOException("mux failed", e);
         }
+    }
+
+    static String mimeOf(@Nullable String fileName) {
+        if (fileName != null && fileName.endsWith(".webm")) {
+            return "video/webm";
+        }
+        return fileName != null && fileName.endsWith(".m4a") ? "audio/mp4" : "video/mp4";
     }
 
     /** One copy per video and kind: a re-download replaces the earlier file. */

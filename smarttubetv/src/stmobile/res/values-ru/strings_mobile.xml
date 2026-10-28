@@ -305,7 +305,6 @@
     <string name="mobile_download_error_generic">Ошибка загрузки. Нажмите, чтобы повторить.</string>
     <string name="mobile_download_error_link">Ссылка для загрузки истекла. Нажмите, чтобы повторить.</string>
     <string name="mobile_download_done_title">Загрузка завершена</string>
-    <string name="mobile_download_play">Воспроизвести</string>
     <string name="mobile_download_retry">Повторить загрузку</string>
     <string name="mobile_download_cancel">Отменить загрузку</string>
     <string name="mobile_download_delete">Удалить загрузку</string>

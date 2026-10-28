@@ -12,7 +12,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * Joins a DASH video part and a DASH audio part into one ordinary MP4 without re-encoding, by
+ * Joins a DASH video part and a DASH audio part into one ordinary MP4 (or WebM, for the VP9 +
+ * Opus rungs above 1080p) without re-encoding, by
  * copying samples through {@link MediaExtractor} -> {@link MediaMuxer}. The two YouTube parts
  * are fragmented MP4 (moof/mdat with a sidx), which the platform extractor reads natively; the
  * muxer rewrites them as a classic moov-indexed file that any player and the gallery accept.
@@ -21,7 +22,7 @@ import java.nio.ByteBuffer;
  * seeking back and forth between a video block and an audio block.
  */
 final class MediaMuxHelper {
-    /** Sample sizes are bounded by the largest keyframe; 1080p keyframes stay well under this. */
+    /** Sample sizes are bounded by the largest keyframe; 4K VP9 keyframes stay well under this. */
     private static final int VIDEO_BUFFER_BYTES = 8 * 1024 * 1024;
     private static final int AUDIO_BUFFER_BYTES = 1024 * 1024;
 

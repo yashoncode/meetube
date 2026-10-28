@@ -403,7 +403,6 @@
     <string name="mobile_download_error_generic">La descarga ha fallado. Toca para reintentar.</string>
     <string name="mobile_download_error_link">El enlace de descarga ha caducado. Toca para reintentar.</string>
     <string name="mobile_download_done_title">Descarga completada</string>
-    <string name="mobile_download_play">Reproducir</string>
     <string name="mobile_download_retry">Reintentar la descarga</string>
     <string name="mobile_download_cancel">Cancelar la descarga</string>
     <string name="mobile_download_delete">Eliminar la descarga</string>

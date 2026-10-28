@@ -226,6 +226,12 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <!-- METUBE(download-folder): invisible host for the system folder picker. -->
+        <activity
+            android:name="com.newtube.mobile.downloads.DownloadFolderActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <!--
           Touch AppDialog renderer (Wave 3). configChanges/launchMode mirror the other
           registered View Activities: ViewManager.startActivity() always launches with
