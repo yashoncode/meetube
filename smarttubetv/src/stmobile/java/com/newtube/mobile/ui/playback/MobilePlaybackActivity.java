@@ -5106,6 +5106,11 @@ public class MobilePlaybackActivity extends MobileActivity
         // MEETUBE(ambient): the video's colours around it - on unless turned off here or in Settings.
         addMenuRow(content, sheet, R.drawable.ic_player_brightness_high, R.string.mobile_settings_ambient,
                 stateLabel(AmbientGlow.isOn(this)), false, this::toggleAmbient);
+        // MEETUBE(issue #108): this Short, out of the Shorts player into the regular one.
+        if (mShorts != null && mShorts.isActive()) {
+            addMenuRow(content, sheet, R.drawable.ic_player_fullscreen, R.string.mobile_menu_watch_regular,
+                    null, false, this::openShortAsVideo);
+        }
         addMenuRow(content, sheet, R.drawable.ic_mobile_settings, R.string.mobile_menu_more,
                 null, true, this::openPlayerMoreMenu);
 
@@ -5145,6 +5150,20 @@ public class MobilePlaybackActivity extends MobileActivity
     private void toggleAutoplay() {
         PlayerData.instance(this).setPlaybackMode(isAutoplayOn()
                 ? PlayerConstants.PLAYBACK_MODE_PAUSE : PlayerConstants.PLAYBACK_MODE_ALL);
+    }
+
+    /**
+     * MEETUBE(issue #108): reopen the Short as a copy outside the Shorts tab (copy() drops
+     * markShorts() too), so the player loads it again in the regular layout with Up next.
+     */
+    private void openShortAsVideo() {
+        Video item = getVideo();
+        if (item == null) {
+            return;
+        }
+        Video regular = item.copy();
+        regular.setGroup(null);
+        mPresenter.openVideo(regular);
     }
 
     private void toggleAmbient() {

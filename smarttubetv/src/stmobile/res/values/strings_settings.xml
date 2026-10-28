@@ -327,7 +327,7 @@
     <string name="mobile_settings_high_bitrate">High-bitrate formats</string>
     <string name="mobile_settings_high_bitrate_summary">Adds YouTube\'s higher-bitrate 1080p streams when a video has them. Costs an extra request</string>
     <string name="mobile_settings_sabr">Stream with SABR (experimental)</string>
-    <string name="mobile_settings_sabr_summary">YouTube\'s newer streaming protocol, from the next video on. Uses a bit less data</string>
+    <string name="mobile_settings_sabr_summary">YouTube\'s newer streaming protocol, from the next video on. A video it fails on plays the usual way</string>
     <string name="mobile_settings_legacy_codecs">Single-file streams</string>
     <string name="mobile_settings_legacy_codecs_summary">Plays the old one-file stream, usually 360p, with no quality changes. Only for very slow phones</string>
     <string name="mobile_settings_live">Live streams</string>

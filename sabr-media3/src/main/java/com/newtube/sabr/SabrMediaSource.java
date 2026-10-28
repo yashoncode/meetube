@@ -421,7 +421,6 @@ public final class SabrMediaSource extends BaseMediaSource {
         /** The server answered normally but sent no media: wait, do not fail. */
         boolean idle;
         volatile boolean canceled;
-        @Nullable volatile DataSource activeTransport;
 
         MediaLoad(TrackStream owner, long generation, long requestNumber, float speed) {
             this.owner = owner;
@@ -443,18 +442,19 @@ public final class SabrMediaSource extends BaseMediaSource {
                     + "/" + track.format.id).build();
         }
 
+        /**
+         * Only flags the load: the loading thread sees it at its next read and closes its own
+         * source. Closing it from here (the playback thread, on every seek) raced that read -
+         * OkHttp drains the body on close, so two threads read one socket and okio threw
+         * "Unbalanced enter/exit", an unchecked error that stopped playback (issue #109).
+         */
         @Override public void cancelLoad() {
             canceled = true;
-            DataSource source = activeTransport;
-            if (source != null) {
-                try { source.close(); } catch (IOException ignored) { }
-            }
         }
 
         @Override public void load() throws IOException {
             if (canceled) return;
             DataSource source = owner.period.transport.createDataSource();
-            activeTransport = source;
             long deadline = SystemClock.elapsedRealtime() + 20_000;
             try {
                 if (canceled) return;
@@ -509,7 +509,6 @@ public final class SabrMediaSource extends BaseMediaSource {
                 // Exception messages and causes from transports/parsers may embed media secrets.
                 throw new SabrException("io_or_container_" + failure.getClass().getSimpleName());
             } finally {
-                activeTransport = null;
                 try { source.close(); } catch (IOException ignored) { }
             }
         }
