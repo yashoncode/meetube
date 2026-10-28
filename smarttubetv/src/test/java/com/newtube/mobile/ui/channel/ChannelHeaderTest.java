@@ -16,7 +16,7 @@ import org.robolectric.annotation.ConscryptMode;
 import java.io.InputStream;
 import java.util.Scanner;
 
-/** METUBE(channel header, #10): the fixture is a real MWEB browse header (Vijay Television, 2026-10-19). */
+/** MEETUBE(channel header, #10): the fixture is a real MWEB browse header (Vijay Television, 2026-10-19). */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28, manifest = Config.NONE, application = Application.class)
 @ConscryptMode(ConscryptMode.Mode.OFF)

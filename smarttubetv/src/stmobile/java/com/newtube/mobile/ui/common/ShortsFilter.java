@@ -15,7 +15,7 @@ import java.util.List;
  * channel pages and their tabs, playlists, Up next - drops them, always; there is no setting (the
  * shared "Hide content" Shorts rows and the Shorts section are not shown on the phone, and nothing
  * here reads their prefs). A Short opened from a shared youtube.com/shorts/ link still plays in the
- * normal player: links are not lists. METUBE brought Shorts back where they are asked for: the
+ * normal player: links are not lists. MEETUBE brought Shorts back where they are asked for: the
  * Shorts tab, a block in search, and a channel's own Shorts tab - those lists keep theirs.
  *
  * <p>A Short is what the item itself says it is ({@link Video#isShorts}: a reel renderer, the Shorts
@@ -214,7 +214,7 @@ public final class ShortsFilter {
     }
 
     /**
-     * METUBE(shorts): a tapped short opens the vertical player with the shorts around it in
+     * MEETUBE(shorts): a tapped short opens the vertical player with the shorts around it in
      * {@code shorts} as its queue, so a swipe walks on through them.
      */
     public static void queueAround(List<Video> shorts, Video tapped) {

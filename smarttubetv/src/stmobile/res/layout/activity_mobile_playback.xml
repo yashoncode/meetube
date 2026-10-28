@@ -61,7 +61,7 @@
                  the texture is simply re-parented between this view and the Browse mini card
                  (same technique as the YouTube app). PlayerView still does aspect-ratio,
                  subtitles and the double-tap layer. -->
-            <!-- METUBE(glass): the video, recorded so the player's glass buttons (GlassDrawable)
+            <!-- MEETUBE(glass): the video, recorded so the player's glass buttons (GlassDrawable)
                  frost it. Shorts margins and the edge fade apply to this box (applyShortsLayout). -->
             <com.newtube.mobile.ui.common.GlassSource
                 android:id="@+id/mobile_player_glass"
@@ -84,7 +84,7 @@
                 app:yt_animationDuration="500"
                 app:yt_seekSeconds="10" />
 
-            <!-- METUBE(shorts): vertical-player overlay, under the controls. -->
+            <!-- MEETUBE(shorts): vertical-player overlay, under the controls. -->
             <include layout="@layout/mobile_shorts_overlay" />
 
             <!-- Custom controls overlay. clickable so taps on empty space hide it. -->
@@ -128,7 +128,7 @@
                     android:src="@drawable/ic_player_minimize"
                     android:tint="@color/mobile_player_on_video" />
 
-                <!-- METUBE(audio-only): headphones - play the sound alone (the video track is dropped,
+                <!-- MEETUBE(audio-only): headphones - play the sound alone (the video track is dropped,
                      the thumbnail stays), and Home keeps the audio going instead of a PiP window. -->
                 <com.newtube.mobile.ui.playback.PlayerButton
                     android:id="@+id/mobile_player_audio"
@@ -147,7 +147,7 @@
                 <!-- paddingEnd must clear the full top-right options row (mobile_player_options):
                      3 icon buttons * 48dp (no end margin) = 144dp. Otherwise the wrapped
                      title runs under the leftmost option (cast) icon. -->
-                <!-- METUBE(fullscreen): the title, and in the vertical fullscreen the channel under it
+                <!-- MEETUBE(fullscreen): the title, and in the vertical fullscreen the channel under it
                      (placeTitle moves them below the top row there, YouTube's). -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -307,7 +307,7 @@
                     android:paddingStart="8dp"
                     android:paddingEnd="4dp">
 
-                    <!-- METUBE(glass): position / duration on one glass pill. -->
+                    <!-- MEETUBE(glass): position / duration on one glass pill. -->
                     <LinearLayout
                         android:id="@+id/mobile_player_time"
                         android:layout_width="wrap_content"
@@ -387,7 +387,7 @@
 
                     </FrameLayout>
 
-                    <!-- METUBE(fullscreen-actions): fullscreen only - hides (chevron down) or brings
+                    <!-- MEETUBE(fullscreen-actions): fullscreen only - hides (chevron down) or brings
                          back (chevron up) the row of actions under the seek bar. -->
                     <ImageButton
                         android:id="@+id/mobile_player_actions_toggle"
@@ -412,7 +412,7 @@
 
                 </LinearLayout>
 
-                <!-- METUBE(fullscreen-actions): the watch page's actions, small, on one glass pill
+                <!-- MEETUBE(fullscreen-actions): the watch page's actions, small, on one glass pill
                      under the seek bar in fullscreen (YouTube's, with Download for Save). Each one
                      taps its watch-page twin; applySeekBarLayout places the row and lifts the bar. -->
                 <LinearLayout
@@ -443,7 +443,7 @@
                         android:contentDescription="@string/mobile_comments_entry"
                         android:src="@drawable/ic_watch_comment" />
 
-                    <!-- METUBE(live chat, issue #32): a live stream's chat, from fullscreen too. -->
+                    <!-- MEETUBE(live chat, issue #32): a live stream's chat, from fullscreen too. -->
                     <com.newtube.mobile.ui.playback.PlayerButton
                         android:id="@+id/mobile_player_chat"
                         style="@style/MobilePlayerAction"
@@ -465,7 +465,7 @@
 
                 </LinearLayout>
 
-                <!-- METUBE(more videos): a bare up chevron beside the actions pill, saying the
+                <!-- MEETUBE(more videos): a bare up chevron beside the actions pill, saying the
                      video swipes up for More videos (no button: the swipe is the way in). -->
                 <ImageView
                     android:id="@+id/mobile_player_more_hint"
@@ -479,7 +479,7 @@
                     android:src="@drawable/ic_chips_expand"
                     android:visibility="gone" />
 
-                <!-- METUBE(lock, issue #98): fullscreen only (applyControlsInsets); locks out every
+                <!-- MEETUBE(lock, issue #98): fullscreen only (applyControlsInsets); locks out every
                      gesture until mobile_player_unlock is tapped. Hideable in Player buttons. -->
                 <com.newtube.mobile.ui.playback.PlayerButton
                     android:id="@+id/mobile_player_lock"
@@ -490,7 +490,7 @@
 
             </FrameLayout>
 
-            <!-- METUBE(lock): the one thing a locked player answers; a tap anywhere shows it. -->
+            <!-- MEETUBE(lock): the one thing a locked player answers; a tap anywhere shows it. -->
             <ImageButton
                 android:id="@+id/mobile_player_unlock"
                 style="@style/MobilePlayerLock"
@@ -572,7 +572,7 @@
                 android:gravity="center_horizontal"
                 android:orientation="vertical">
 
-                <!-- METUBE(issue #77): a frosted glass disc with a thin white arc, like the
+                <!-- MEETUBE(issue #77): a frosted glass disc with a thin white arc, like the
                      player's other glass, instead of a bare red spinner. -->
                 <ProgressBar
                     android:id="@+id/mobile_player_progress"
@@ -791,7 +791,7 @@
 
             <include layout="@layout/mobile_next_countdown" />
 
-            <!-- METUBE(more videos, issue #24): swiped up over the fullscreen video (MoreVideosPanel).
+            <!-- MEETUBE(more videos, issue #24): swiped up over the fullscreen video (MoreVideosPanel).
                  INVISIBLE, not GONE: measured from the start, so the first swipe knows its height. -->
             <LinearLayout
                 android:id="@+id/mobile_more_videos"
@@ -835,7 +835,7 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
-        <!-- METUBE(glass): the page the floating fullscreen button frosts. -->
+        <!-- MEETUBE(glass): the page the floating fullscreen button frosts. -->
         <com.newtube.mobile.ui.common.GlassSource
             android:id="@+id/mobile_watch_glass"
             android:layout_width="match_parent"
@@ -857,7 +857,7 @@
                 android:orientation="vertical"
                 android:paddingBottom="24dp">
 
-                <!-- METUBE(watch-look): title, actions, channel and comments - compact or classic
+                <!-- MEETUBE(watch-look): title, actions, channel and comments - compact or classic
                      (WatchLook), inflated before the views are found (MobilePlaybackActivity). -->
                 <ViewStub
                     android:id="@+id/mobile_watch_details"
@@ -1005,7 +1005,7 @@
                     android:textSize="16sp"
                     android:fontFamily="sans-serif-medium" />
 
-                <!-- METUBE(issue #74): All / From <channel> over the related list. -->
+                <!-- MEETUBE(issue #74): All / From <channel> over the related list. -->
                 <HorizontalScrollView
                     android:id="@+id/mobile_watch_related_chips"
                     android:layout_width="match_parent"
@@ -1062,7 +1062,7 @@
 
         </com.newtube.mobile.ui.common.GlassSource>
 
-        <!-- METUBE(fullscreen): a floating glass button, bottom-right over the page, that takes the
+        <!-- MEETUBE(fullscreen): a floating glass button, bottom-right over the page, that takes the
              playing video fullscreen. Under the comments panel, which covers it when open; the
              page (and with it this button) has no height in fullscreen and Shorts.
              Tinted, not frosted (glassOnGlass): its elevation floats it over the open comments

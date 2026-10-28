@@ -44,7 +44,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * METUBE(lyrics): a song's lyrics, found the way BitChord finds them (github.com/kushagrasinghx/BitChord,
+ * MEETUBE(lyrics): a song's lyrics, found the way BitChord finds them (github.com/kushagrasinghx/BitChord,
  * LyricsRepository). YouTube Music names the recording - its own title, artists and length for this
  * video - and lrc.red's search settles which recording that is (its ISRC and true length). Then every
  * source is asked at once and the answers are taken in BitChord's priority order, so a miss never
@@ -60,7 +60,7 @@ import okhttp3.ResponseBody;
  */
 final class Lyrics {
     private static final String LRCLIB = "https://lrclib.net/api/search?track_name=";
-    static final String AGENT = "MeTube (https://github.com/yashoncode/metube)";
+    static final String AGENT = "MeeTube (https://github.com/yashoncode/meetube)";
     /** How far a recording's length may be from the video's for its timing to be this video's. */
     static final int SAME_LENGTH_S = 3;
     /** Fewer lines than this is a vandalised or stub entry ("probe"), not lyrics. */
@@ -143,7 +143,7 @@ final class Lyrics {
     }
 
     /**
-     * METUBE(lyrics): one provider's lyrics for {@code song}, the listener's pick in the provider
+     * MEETUBE(lyrics): one provider's lyrics for {@code song}, the listener's pick in the provider
      * chooser. {@code result} gets them on the main thread (timed as {@link Song#lyrics} times them),
      * or null when that provider has none; the answer is kept with the song either way.
      */
@@ -255,7 +255,7 @@ final class Lyrics {
     }
 
     /**
-     * METUBE(lyrics): one video's song as the sources were asked about it - what they are asked,
+     * MEETUBE(lyrics): one video's song as the sources were asked about it - what they are asked,
      * whether timing can be this video's, and each one's answer so far, so the provider chooser
      * shows what each has and switches without asking again. Filled on the lookup's thread before it
      * is handed on; touched only on the main thread after that.

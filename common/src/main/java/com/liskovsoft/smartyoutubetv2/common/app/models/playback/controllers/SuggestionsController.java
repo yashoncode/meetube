@@ -728,7 +728,7 @@ public class SuggestionsController extends BasePlayerController {
             return null;
         }
 
-        // METUBE(shorts): in the Shorts player next/previous walk the Shorts tab's queue in order,
+        // MEETUBE(shorts): in the Shorts player next/previous walk the Shorts tab's queue in order,
         // by position (not the playlist's own cursor), and never fall back to a regular video.
         if (getVideo().belongsToShorts()) {
             return getShortNeighbour(getVideo(), 1);
@@ -749,7 +749,7 @@ public class SuggestionsController extends BasePlayerController {
         return result;
     }
 
-    /** METUBE(shorts): the short two swipes ahead in the Shorts queue, or null outside Shorts. */
+    /** MEETUBE(shorts): the short two swipes ahead in the Shorts queue, or null outside Shorts. */
     public Video getShortAfterNext() {
         if (getPlayer() == null || getVideo() == null || !getVideo().belongsToShorts()) {
             return null;
@@ -780,9 +780,9 @@ public class SuggestionsController extends BasePlayerController {
         return result;
     }
 
-    /** METUBE(shorts): queue size when the Shorts tab was last asked for its next page. */
+    /** MEETUBE(shorts): queue size when the Shorts tab was last asked for its next page. */
     private static int sShortsMoreAt = -1;
-    /** METUBE(shorts): a page that added nothing (all seen) may be asked again after this. */
+    /** MEETUBE(shorts): a page that added nothing (all seen) may be asked again after this. */
     private static long sShortsMoreAtMs;
     private static final long SHORTS_MORE_RETRY_MS = 3_000;
     private static final int SHORTS_AHEAD = 6;

@@ -31,7 +31,7 @@ import java.lang.reflect.Proxy;
  * and on a like, and a firm buzz when press-and-hold turns on 2x speed. Taps, double-tap seeks,
  * swipes and play/pause stay silent there.
  *
- * <p>METUBE(haptics): MeTube answers every tap too - a button, a card, a chip, a switch, a menu
+ * <p>MEETUBE(haptics): MeeTube answers every tap too - a button, a card, a chip, a switch, a menu
  * row: {@link #onTouch} gives one click to whatever clickable view a tap lands on, for every
  * screen (MobileActivity) and every sheet, dialog and popup ({@link #watch}). The player's own
  * surface opts out (hapticFeedbackEnabled=false) - its taps are the double-tap seek's, which
@@ -159,7 +159,7 @@ public final class Haptics {
     }
 
     /**
-     * METUBE(haptics): feed a window's touches here; a tap (no drag, no long press) on an enabled
+     * MEETUBE(haptics): feed a window's touches here; a tap (no drag, no long press) on an enabled
      * clickable view clicks. The view is found the way the touch is dispatched - topmost visible
      * child first, the deepest clickable one under the finger.
      */
@@ -195,7 +195,7 @@ public final class Haptics {
         }
     }
 
-    /** METUBE(haptics): a dialog's or sheet's taps click like the screens' do. Returns the dialog. */
+    /** MEETUBE(haptics): a dialog's or sheet's taps click like the screens' do. Returns the dialog. */
     @NonNull
     public static <T extends Dialog> T watch(@NonNull T dialog) {
         Window window = dialog.getWindow();
@@ -209,9 +209,9 @@ public final class Haptics {
                         onTouch(window.peekDecorView(), (MotionEvent) args[0]);
                     } else if ("onAttachedToWindow".equals(method.getName())) {
                         if (dialog instanceof com.google.android.material.bottomsheet.BottomSheetDialog) {
-                            SheetGlass.frost(dialog); // METUBE(glass): every sheet passes through here
+                            SheetGlass.frost(dialog); // MEETUBE(glass): every sheet passes through here
                         }
-                        FocusRing.install(window); // METUBE(tv): and every dialog
+                        FocusRing.install(window); // MEETUBE(tv): and every dialog
                         FocusRing.focusFirstRow(window);
                     }
                     try {
@@ -223,7 +223,7 @@ public final class Haptics {
         return dialog;
     }
 
-    /** METUBE(haptics): a popup menu's taps click too. */
+    /** MEETUBE(haptics): a popup menu's taps click too. */
     public static void watch(@NonNull PopupWindow popup) {
         popup.setTouchInterceptor((v, event) -> {
             onTouch(v, event);

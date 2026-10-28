@@ -7,7 +7,7 @@ import android.os.SystemClock;
 import androidx.annotation.Nullable;
 
 /**
- * METUBE(sleep-timer): the player sheet's YouTube-style sleep timer - pause after N minutes, or at
+ * MEETUBE(sleep-timer): the player sheet's YouTube-style sleep timer - pause after N minutes, or at
  * the end of the current video. Session-only (never persisted) and process-wide, so it outlives a
  * recreated player screen. The countdown runs on the main looper: the player's wake lock keeps the
  * CPU up while audio plays, and once nothing plays there is nothing left to pause.

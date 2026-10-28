@@ -23,7 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * METUBE(description): YouTube's Description panel - the title, a Likes / Views / date row and the
+ * MEETUBE(description): YouTube's Description panel - the title, a Likes / Views / date row and the
  * description, selectable so any of it can be copied. Opened from the watch page's title; a plain
  * {@link BottomSheetDialog} on the frosted sheet glass, shown by the player (showPlayerSheet).
  */
@@ -36,7 +36,7 @@ final class DescriptionSheet {
     private DescriptionSheet() {
     }
 
-    /** METUBE(description): the sections under the description; any left null is not shown. */
+    /** MEETUBE(description): the sections under the description; any left null is not shown. */
     static final class Extras {
         /** Opens the transcript; null for a video without captions. */
         @Nullable

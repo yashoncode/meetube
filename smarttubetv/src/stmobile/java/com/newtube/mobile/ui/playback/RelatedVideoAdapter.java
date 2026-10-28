@@ -57,7 +57,7 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
      * Up-next list the playing video isn't present at all.
      */
     private String mCurrentVideoId;
-    /** METUBE(list layout): full-width cards (item_mobile_related_card) instead of rows. */
+    /** MEETUBE(list layout): full-width cards (item_mobile_related_card) instead of rows. */
     private boolean mCards;
 
     /** Set before the list binds (Customization > Video layout: Cards). */
@@ -154,7 +154,7 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
                     clickListener.onRelatedClick(mVideo, mThumbnail);
                 }
             });
-            // METUBE(issue #66): a hold opens the video's menu, the feeds' (queue, playlist, share...).
+            // MEETUBE(issue #66): a hold opens the video's menu, the feeds' (queue, playlist, share...).
             itemView.setOnLongClickListener(v -> {
                 if (mVideo == null) {
                     return false;

@@ -377,7 +377,7 @@ public class Media3PlayerController implements Player.Listener {
                         () -> mSourceStash.offerIfAbsent(videoId, result));
                 // Manager/player interactions belong to main. Recorded live/OTF keeps only the
                 // existing XML prebuild; its normalized manifest must not start speculative loads.
-                // METUBE(shorts): media itself only for a swiped-to short (or with the debug prop);
+                // MEETUBE(shorts): media itself only for a swiped-to short (or with the debug prop);
                 // ordinary autoplay keeps NewTube's source-only stash.
                 if ((preloadMedia || Media3PlayerInitializer.preloadEveryNextMedia())
                         && !formatInfo.isLiveContent() && !formatInfo.isUnplayable()) {
@@ -1183,7 +1183,7 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     /**
-     * METUBE(issue #35): the HDR setting, on a screen that can show HDR, puts YouTube's HDR streams
+     * MEETUBE(issue #35): the HDR setting, on a screen that can show HDR, puts YouTube's HDR streams
      * in the manifest (YouTubeMPDBuilder). Applies from the next video opened.
      */
     public static void applyHdrSetting(android.content.Context context) {

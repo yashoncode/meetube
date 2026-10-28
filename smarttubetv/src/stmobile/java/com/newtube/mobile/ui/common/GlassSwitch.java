@@ -17,7 +17,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 /**
- * METUBE(glass switch): an iOS 26 style toggle - a flat 52x28dp capsule (accent on, grey off) and a
+ * MEETUBE(glass switch): an iOS 26 style toggle - a flat 52x28dp capsule (accent on, grey off) and a
  * white pill knob, wider than tall. While it slides across, the knob swells into a clear glass
  * lens and settles back to white, like Liquid Glass. Drawn here, not with the switch's drawables:
  * SwitchCompat makes its track twice the knob's width, which stretched a pill knob's track to 76dp.
@@ -50,8 +50,8 @@ public class GlassSwitch extends SwitchMaterial {
     public GlassSwitch(Context context, AttributeSet attrs) {
         super(context, attrs);
         mDp = getResources().getDisplayMetrics().density;
-        mOn = ContextCompat.getColor(context, R.color.metube_switch_on);
-        mOff = ContextCompat.getColor(context, R.color.metube_switch_off);
+        mOn = ContextCompat.getColor(context, R.color.meetube_switch_on);
+        mOff = ContextCompat.getColor(context, R.color.meetube_switch_off);
         setThumbDrawable(new ColorDrawable(Color.TRANSPARENT));
         setTrackDrawable(new ColorDrawable(Color.TRANSPARENT));
         setBackground(null);
@@ -115,7 +115,7 @@ public class GlassSwitch extends SwitchMaterial {
         mRect.set(cx - knobW / 2f, cy - knobH / 2f, cx + knobW / 2f, cy + knobH / 2f);
         float r = knobH / 2f;
 
-        // METUBE(frost): a frosted knob - a blurred milky halo, frosted white glass over it (the
+        // MEETUBE(frost): a frosted knob - a blurred milky halo, frosted white glass over it (the
         // track's colour faintly through), clearer as the lens mid-slide
         mFrost.setColor(Color.argb(Math.round(150 * (1f - mLens)), 255, 255, 255));
         canvas.drawRoundRect(mRect, r, r, mFrost);

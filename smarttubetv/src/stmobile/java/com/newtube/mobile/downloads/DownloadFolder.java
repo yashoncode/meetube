@@ -16,12 +16,12 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 
 /**
- * METUBE(download-folder): a folder the user picks through the system picker (internal storage,
- * an SD card, anything the picker offers). Unset means the default: Movies/MeTube and Music/MeTube.
+ * MEETUBE(download-folder): a folder the user picks through the system picker (internal storage,
+ * an SD card, anything the picker offers). Unset means the default: Movies/MeeTube and Music/MeeTube.
  * Opened from Settings > General and by a long press on Download.
  */
 public final class DownloadFolder {
-    private static final String PREFS = "metube_downloads";
+    private static final String PREFS = "meetube_downloads";
     private static final String KEY_TREE = "folder_tree_uri";
 
     private DownloadFolder() {
@@ -51,13 +51,13 @@ public final class DownloadFolder {
         prefs(context).edit().putString(KEY_TREE, tree != null ? tree.toString() : null).apply();
     }
 
-    /** "Download/MeTube", or the default's description. */
+    /** "Download/MeeTube", or the default's description. */
     public static CharSequence label(Context context) {
         Uri tree = get(context);
         if (tree == null) {
             return context.getString(R.string.mobile_download_folder_default);
         }
-        String id = DocumentsContract.getTreeDocumentId(tree); // "primary:Download/MeTube", "1A2B-3C4D:Videos"
+        String id = DocumentsContract.getTreeDocumentId(tree); // "primary:Download/MeeTube", "1A2B-3C4D:Videos"
         int colon = id.indexOf(':');
         String volume = colon >= 0 ? id.substring(0, colon) : "";
         String path = colon >= 0 ? id.substring(colon + 1) : id;

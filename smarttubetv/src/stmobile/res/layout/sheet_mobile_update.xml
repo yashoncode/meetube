@@ -152,7 +152,7 @@
         android:orientation="horizontal"
         android:paddingHorizontal="12dp">
 
-        <!-- METUBE(update pop-up): only on a sheet that opened by itself. -->
+        <!-- MEETUBE(update pop-up): only on a sheet that opened by itself. -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/update_sheet_dont_ask"
             style="@style/Widget.MaterialComponents.Button.TextButton"

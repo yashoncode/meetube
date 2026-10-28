@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(watch-look): the classic watch page (Settings > Customization > Watch page): title, a
+<!-- MEETUBE(watch-look): the classic watch page (Settings > Customization > Watch page): title, a
      row of labelled pills, the channel row, the comments card. Inflated into
      mobile_watch_details; the compact one is include_watch_details_compact. Same ids in both. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
-    <!-- METUBE: title and meta are one target - both open the description, so one
+    <!-- MEETUBE: title and meta are one target - both open the description, so one
          press feedback covers the pair instead of two separate highlights. -->
     <LinearLayout
         android:id="@+id/mobile_watch_header"
@@ -203,7 +203,7 @@
 
         </LinearLayout>
 
-        <!-- METUBE(lyrics): the song's lyrics (LyricsSheet); shown only for videos YouTube Music has. -->
+        <!-- MEETUBE(lyrics): the song's lyrics (LyricsSheet); shown only for videos YouTube Music has. -->
         <LinearLayout
             android:id="@+id/mobile_watch_music"
             android:layout_width="wrap_content"
@@ -319,7 +319,7 @@
         android:paddingHorizontal="@dimen/mobile_watch_content_padding"
         android:paddingVertical="8dp">
 
-        <!-- METUBE(issue #73): a live stream's channel gets the glowing red ring. -->
+        <!-- MEETUBE(issue #73): a live stream's channel gets the glowing red ring. -->
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
@@ -371,7 +371,7 @@
 
         </LinearLayout>
 
-        <!-- METUBE(glass): a TextView, not a MaterialButton - Material re-tints its own
+        <!-- MEETUBE(glass): a TextView, not a MaterialButton - Material re-tints its own
              background, so the glass "Subscribed" pill (bg_watch_subscribe, selected =
              subscribed) would never show. -->
         <TextView

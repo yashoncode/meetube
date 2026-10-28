@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(more videos): the panel darkens the video from its bottom up, fading out at its top. -->
+<!-- MEETUBE(more videos): the panel darkens the video from its bottom up, fading out at its top. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient

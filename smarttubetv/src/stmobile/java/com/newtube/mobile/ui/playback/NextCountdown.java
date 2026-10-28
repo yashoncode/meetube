@@ -17,7 +17,7 @@ import com.newtube.mobile.ui.common.Motion;
 import java.util.function.BooleanSupplier;
 
 /**
- * METUBE(up-next): the ten-second card over an ended video. It counts down "Up next in N" and then
+ * MEETUBE(up-next): the ten-second card over an ended video. It counts down "Up next in N" and then
  * opens the next video, unless the user taps Play now (at once), Replay (this video from the start)
  * or Cancel (stay on the ended video). It also gives up quietly when the video plays again under it
  * (a seek back) - the player's own controls won that race.

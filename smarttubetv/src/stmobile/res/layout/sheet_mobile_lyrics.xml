@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  METUBE(lyrics): the song's lyrics, opened from the watch page's Music pill. A title, provider and
+  MEETUBE(lyrics): the song's lyrics, opened from the watch page's Music pill. A title, provider and
   close header, then a loader until Lyrics answers: timed lines that follow the song (LyricsSheet), plain selectable
   text, or "not available". The frame is the frosted sheet glass; its height is capped from code so
   it stops under the video, like the Description panel.

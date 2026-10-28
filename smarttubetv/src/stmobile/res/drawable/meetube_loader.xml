@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(loader): the app's loading indicator - the icon's coral cookie, turning while it
+<!-- MEETUBE(loader): the app's loading indicator - the icon's coral cookie, turning while it
      morphs between the nine-lobe cookie and a four-leaf clover (Material 3 expressive's shape
      loader). Both shapes are the same 96-point polar outline (tools/: r = R(1 + a cos k0)), so
      the path morph is a straight point-for-point blend. Used by every circular ProgressBar via
-     the theme (Widget.MeTube.Loader). -->
+     the theme (Widget.MeeTube.Loader). -->
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt">
     <aapt:attr name="android:drawable">

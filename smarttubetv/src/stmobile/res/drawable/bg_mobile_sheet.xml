@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(glass): the content of a bottom sheet is see-through - the sheet's frame
+<!-- MEETUBE(glass): the content of a bottom sheet is see-through - the sheet's frame
      (Widget.NewTube.BottomSheet) paints the one glass surface; a second fill here would stack its
      alpha and the sheet would turn opaque again. Standalone sheets use bg_glass_sheet. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"

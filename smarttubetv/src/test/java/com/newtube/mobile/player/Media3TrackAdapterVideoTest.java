@@ -29,7 +29,7 @@ import org.robolectric.annotation.ConscryptMode;
 import java.util.Arrays;
 
 /**
- * METUBE(issue #58): a quality picked in the sheet carries to the next videos of the session. On a
+ * MEETUBE(issue #58): a quality picked in the sheet carries to the next videos of the session. On a
  * video without that exact stream (another codec, another frame rate, no such rung) it used to
  * leave Auto in place, which opened at 240p while the gear row still read "1080p".
  */

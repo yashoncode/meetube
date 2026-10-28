@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 
 /**
- * METUBE(search glow): the query glows in Siri's colours while it is typed - a gradient drifting
+ * MEETUBE(search glow): the query glows in Siri's colours while it is typed - a gradient drifting
  * through the letters with a soft halo, like iOS 27's Search or Ask bar - and settles back to plain
  * text a moment after the last keystroke.
  */

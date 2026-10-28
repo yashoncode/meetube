@@ -29,7 +29,7 @@ import com.newtube.mobile.ui.common.Haptics;
 import java.util.function.LongSupplier;
 
 /**
- * METUBE(lyrics): the playing song's lyrics (found by {@link Lyrics}) in a panel under the video, like
+ * MEETUBE(lyrics): the playing song's lyrics (found by {@link Lyrics}) in a panel under the video, like
  * YouTube Music's Lyrics tab. Timed lyrics light up line by line and keep the sung line in view;
  * plain ones are one selectable text, so any of it can be copied. Same frosted sheet and sizing as
  * the Description panel (DescriptionSheet), shown by the player (showPlayerSheet). The header names
@@ -85,7 +85,7 @@ final class LyricsSheet {
     }
 
     /**
-     * METUBE(lyrics): the minimize drag fades the lyrics out with the watch page, and back in if it is
+     * MEETUBE(lyrics): the minimize drag fades the lyrics out with the watch page, and back in if it is
      * let go, as it does the comments panel (MobilePlaybackActivity.applyMorph / resetMorph).
      */
     static void setMorphAlpha(@Nullable BottomSheetDialog sheet, float alpha) {
@@ -213,7 +213,7 @@ final class LyricsSheet {
     }
 
     /**
-     * METUBE(lyrics): BitChord's provider chooser (LyricsProviderSheet), in the player's single-choice
+     * MEETUBE(lyrics): BitChord's provider chooser (LyricsProviderSheet), in the player's single-choice
      * sheet: every provider with what it has for this song - the current one, lyrics found (tap to
      * use), none, being fetched, or not asked yet (tap to fetch). A pick with lyrics in hand switches
      * at once and closes the list; one not asked yet is fetched, and switched to when it answers with

@@ -39,10 +39,10 @@ import java.util.function.Supplier;
  * is removed only after foreground tracks arrive, not between setMediaSource and preparation.
  */
 final class Media3NextPreloader {
-    static final long TARGET_DURATION_MS = 4_000; // METUBE: a 4s head start (was 2s) - swipes land playing
+    static final long TARGET_DURATION_MS = 4_000; // MEETUBE: a 4s head start (was 2s) - swipes land playing
     static final long MIN_FOREGROUND_BUFFER_MS = 10_000;
     /**
-     * METUBE(shorts): a short (at most this long) is swiped away within seconds, so its next one
+     * MEETUBE(shorts): a short (at most this long) is swiped away within seconds, so its next one
      * preloads once it holds {@link #SHORT_CLIP_MIN_BUFFER_MS} - even while it still loads.
      */
     static final long SHORT_CLIP_MAX_MS = 3 * 60_000;
@@ -79,7 +79,7 @@ final class Media3NextPreloader {
     @Nullable private Slot mPending;
     @Nullable private Slot mAdopting;
     private boolean mTransitioning;
-    /** METUBE(shorts): the video a reset is opening; its own in-flight preload keeps loading. */
+    /** MEETUBE(shorts): the video a reset is opening; its own in-flight preload keeps loading. */
     @Nullable private String mOpeningVideoId;
     private boolean mReleased;
 
@@ -176,7 +176,7 @@ final class Media3NextPreloader {
     }
 
     /**
-     * Never return a failed source to the foreground. METUBE(shorts): a half-loaded one is handed
+     * Never return a failed source to the foreground. MEETUBE(shorts): a half-loaded one is handed
      * over as it is - media3's PreloadMediaSource lets the player take it at any stage and go on
      * from the samples it already holds (the short-form pattern of the media3 demo). Throwing it
      * away cost a swipe inside the preload's first seconds a fresh source build and fetch.
@@ -244,7 +244,7 @@ final class Media3NextPreloader {
 
     /**
      * A seek re-buffers the foreground: a sample still loading stops for it, a finished one stays.
-     * METUBE(shorts): a short loops by seeking to 0, which threw away the next short's ready
+     * MEETUBE(shorts): a short loops by seeking to 0, which threw away the next short's ready
      * sample and left the swipe a cold start.
      */
     void onSeek() {

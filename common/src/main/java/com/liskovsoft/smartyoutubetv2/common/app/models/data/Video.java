@@ -709,7 +709,7 @@ public final class Video {
     }
 
     /**
-     * METUBE(shorts): latched - the group is held weakly, and a Shorts feed refetch lets the queued
+     * MEETUBE(shorts): latched - the group is held weakly, and a Shorts feed refetch lets the queued
      * shorts' old group be collected; they then played as normal videos at random (after a GC).
      */
     private transient boolean mInShortsTab;
@@ -718,7 +718,7 @@ public final class Video {
         return mInShortsTab || (mInShortsTab = belongsToGroup(MediaGroup.TYPE_SHORTS));
     }
 
-    /** METUBE(shorts): a short listed outside the Shorts tab (search results) that plays as one. */
+    /** MEETUBE(shorts): a short listed outside the Shorts tab (search results) that plays as one. */
     public void markShorts() {
         mInShortsTab = true;
     }

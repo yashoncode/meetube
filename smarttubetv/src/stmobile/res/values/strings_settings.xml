@@ -3,7 +3,7 @@
      (com.newtube.mobile.ui.settings). Spanish in values-es. -->
 <resources>
     <!-- Shared -->
-    <string name="mobile_settings_restart_needed">Restart MeTube to apply this change</string>
+    <string name="mobile_settings_restart_needed">Restart MeeTube to apply this change</string>
     <string name="mobile_settings_restart">Restart</string>
     <string name="mobile_settings_off">Off</string>
     <string name="mobile_settings_more">More</string>
@@ -55,8 +55,8 @@
     <string name="mobile_settings_advanced_summary">Streaming, network and fixes</string>
     <string name="mobile_settings_about">About</string>
     <string name="mobile_settings_coffee">Buy me a coffee</string>
-    <string name="mobile_settings_coffee_summary">If you love MeTube and want to support it</string>
-    <string name="mobile_about_thanks">Thanks for using MeTube</string>
+    <string name="mobile_settings_coffee_summary">If you love MeeTube and want to support it</string>
+    <string name="mobile_about_thanks">Thanks for using MeeTube</string>
     <string name="mobile_about_thanks_support">Keep supporting · Buy me a coffee</string>
     <string name="mobile_settings_coffee_url" translatable="false">https://buymeacoffee.com/yashwynth</string>
 
@@ -154,9 +154,9 @@
     <string name="mobile_settings_watch_history_auto">Follow my YouTube setting</string>
     <string name="mobile_settings_watch_history_auto_desc">Saved if your YouTube account keeps history</string>
     <string name="mobile_settings_watch_history_on">Always save</string>
-    <string name="mobile_settings_watch_history_on_desc">Turns your YouTube watch history back on each time MeTube opens</string>
+    <string name="mobile_settings_watch_history_on_desc">Turns your YouTube watch history back on each time MeeTube opens</string>
     <string name="mobile_settings_watch_history_off">Don\'t save</string>
-    <string name="mobile_settings_watch_history_off_desc">MeTube stops telling YouTube what you watch</string>
+    <string name="mobile_settings_watch_history_off_desc">MeeTube stops telling YouTube what you watch</string>
     <string name="mobile_settings_clear_watch_history">Clear watch history</string>
     <string name="mobile_settings_clear_watch_history_summary">Deletes the videos you watched from your YouTube history</string>
     <string name="mobile_settings_clear_watch_history_confirm">Clear watch history?</string>
@@ -166,7 +166,7 @@
     <string name="mobile_settings_clear_search_history">Clear search history</string>
     <string name="mobile_settings_clear_search_history_summary">Deletes the searches saved on this phone</string>
     <string name="mobile_settings_clear_search_history_confirm">Clear search history?</string>
-    <string name="mobile_settings_clear_search_history_body">The searches MeTube saved on this phone are deleted. This can\'t be undone.</string>
+    <string name="mobile_settings_clear_search_history_body">The searches MeeTube saved on this phone are deleted. This can\'t be undone.</string>
 
     <!-- Backup -->
     <string name="mobile_settings_backup_now">Back up now</string>
@@ -176,33 +176,33 @@
     <string name="mobile_settings_restore_summary">From a backup in %1$s</string>
     <string name="mobile_settings_auto_backup">Automatic backup</string>
     <string name="mobile_settings_auto_backup_off">Never</string>
-    <string name="mobile_settings_backup_note">A backup holds everything you set up in MeTube. What belongs to your YouTube account, like subscriptions and history, stays there.</string>
+    <string name="mobile_settings_backup_note">A backup holds everything you set up in MeeTube. What belongs to your YouTube account, like subscriptions and history, stays there.</string>
 
-    <!-- METUBE(home-rows): General > Home layout (issue #4). -->
+    <!-- MEETUBE(home-rows): General > Home layout (issue #4). -->
     <string name="mobile_settings_home_layout">Home layout</string>
     <string name="mobile_settings_app_icon">App icon</string>
-    <string name="mobile_app_icon_default">MeTube (default)</string>
-    <string name="mobile_app_icon_classic">MeTube (Classic)</string>
-    <string name="mobile_app_icon_fantasy">MeTube (Fantasy)</string>
-    <string name="mobile_app_icon_pending">Restart MeTube to use the new icon everywhere, or it switches once you leave the app</string>
+    <string name="mobile_app_icon_default">MeeTube (default)</string>
+    <string name="mobile_app_icon_classic">MeeTube (Classic)</string>
+    <string name="mobile_app_icon_fantasy">MeeTube (Fantasy)</string>
+    <string name="mobile_app_icon_pending">Restart MeeTube to use the new icon everywhere, or it switches once you leave the app</string>
     <string name="mobile_settings_home_layout_feed">Feed</string>
     <string name="mobile_settings_home_layout_feed_desc">One list of videos, like YouTube</string>
     <string name="mobile_settings_home_layout_rows">Rows</string>
     <string name="mobile_settings_home_layout_rows_desc">A row you swipe sideways for each topic, like SmartTube</string>
-    <!-- METUBE(glass, issue #80) -->
+    <!-- MEETUBE(glass, issue #80) -->
     <string name="mobile_settings_player_frost">Frosted player buttons</string>
     <string name="mobile_settings_player_frost_summary">The buttons over a video and a short blur the picture under them. Uses more battery, and can stutter on slower phones</string>
-    <!-- METUBE(performance) -->
+    <!-- MEETUBE(performance) -->
     <string name="mobile_settings_performance">Performance</string>
     <string name="mobile_settings_high_refresh">High performance mode</string>
     <string name="mobile_settings_high_refresh_summary">Keeps the app at %1$d Hz for the smoothest motion. Uses more battery; Android may lower it when the phone is hot or the battery saver is on</string>
-    <!-- METUBE(nav lens, issue #46) -->
+    <!-- MEETUBE(nav lens, issue #46) -->
     <string name="mobile_settings_tab_motion">Tab switch animation</string>
     <string name="mobile_settings_tab_motion_summary">A glass lens glides to the tab and the bar wiggles. Off on slower phones until you turn it on</string>
-    <!-- METUBE(bar reset) -->
+    <!-- MEETUBE(bar reset) -->
     <string name="mobile_settings_tabs_reset">Reset bar to default</string>
     <string name="mobile_settings_tabs_reset_summary">Home, Shorts, Search, Subs, You</string>
-    <!-- METUBE(list layout, issue #82) -->
+    <!-- MEETUBE(list layout, issue #82) -->
     <string name="mobile_settings_video_layout">Video layout</string>
     <string name="mobile_settings_video_layout_cards">Cards</string>
     <string name="mobile_settings_video_layout_cards_desc">A big thumbnail for each video</string>
@@ -210,10 +210,10 @@
     <string name="mobile_settings_video_layout_list_desc">A small thumbnail beside the title, more videos on screen</string>
 
     <!-- Playback -->
-    <!-- METUBE(background): the battery-optimization exemption row (Playback). -->
+    <!-- MEETUBE(background): the battery-optimization exemption row (Playback). -->
     <string name="mobile_settings_screen_off">Keep playing with the screen off</string>
     <string name="mobile_settings_screen_off_on">Allowed: battery saver won\'t stop the audio</string>
-    <string name="mobile_settings_screen_off_off">Battery saver may stop the audio. Tap to allow MeTube in the background</string>
+    <string name="mobile_settings_screen_off_off">Battery saver may stop the audio. Tap to allow MeeTube in the background</string>
     <string name="mobile_settings_video_ends">When a video ends</string>
     <string name="mobile_settings_video_ends_next">Play the next video</string>
     <string name="mobile_settings_video_ends_repeat">Repeat the video</string>
@@ -230,7 +230,7 @@
     <string name="mobile_settings_remember_speed_video">For each video</string>
     <string name="mobile_settings_remember_speed_all">The same for every video</string>
     <string name="mobile_settings_remember_speed_none">Don\'t remember</string>
-    <string name="mobile_settings_remember_speed_none_desc">Back to 1x each time MeTube starts</string>
+    <string name="mobile_settings_remember_speed_none_desc">Back to 1x each time MeeTube starts</string>
     <string name="mobile_settings_speed_list">Speeds under More speeds</string>
     <string name="mobile_settings_speed_list_basic">A short list</string>
     <string name="mobile_settings_speed_list_fine">Fine steps</string>
@@ -259,11 +259,11 @@
     <!-- Video quality -->
     <string name="mobile_settings_quality_intro">The quality videos start in. You can change it for one video from the player\'s settings.</string>
     <string name="mobile_settings_default_quality">Default quality</string>
-    <!-- METUBE(quality-network): one default per network; "%1$s" are the two picks' labels. -->
+    <!-- MEETUBE(quality-network): one default per network; "%1$s" are the two picks' labels. -->
     <string name="mobile_settings_quality_wifi">On Wi-Fi</string>
     <string name="mobile_settings_quality_mobile">On mobile data</string>
     <string name="mobile_settings_quality_same">Same as Wi-Fi</string>
-    <!-- METUBE(shorts-quality): issue #26. -->
+    <!-- MEETUBE(shorts-quality): issue #26. -->
     <string name="mobile_settings_quality_shorts">Shorts</string>
     <string name="mobile_settings_quality_both">Wi-Fi: %1$s · Mobile data: %2$s</string>
     <string name="mobile_settings_quality_auto">Auto (up to %1$dp)</string>
@@ -278,7 +278,7 @@
     <string name="mobile_settings_loudness">Even out loudness</string>
     <string name="mobile_settings_loudness_summary">Turns loud videos down to YouTube\'s normal level</string>
     <string name="mobile_settings_player_volume">Player volume</string>
-    <string name="mobile_settings_quality_data_saver_note">With Android\'s Data Saver on, MeTube buffers less on mobile data.</string>
+    <string name="mobile_settings_quality_data_saver_note">With Android\'s Data Saver on, MeeTube buffers less on mobile data.</string>
 
     <!-- Captions -->
     <string name="mobile_settings_caption_style">Style</string>
@@ -314,7 +314,7 @@
     <string name="mobile_settings_dearrow_note">DeArrow receives the IDs of the videos you see in lists.</string>
 
     <!-- Advanced -->
-    <string name="mobile_settings_advanced_note">Most people never need these. They change how MeTube streams and connects.</string>
+    <string name="mobile_settings_advanced_note">Most people never need these. They change how MeeTube streams and connects.</string>
     <string name="mobile_settings_streaming">Streaming</string>
     <string name="mobile_settings_video_format">Video format</string>
     <string name="mobile_settings_buffer">Buffer</string>
@@ -346,7 +346,7 @@
     <string name="mobile_settings_chapter_popup_summary">Shows each chapter\'s name as it starts. Tap it to go to the next one</string>
     <string name="mobile_settings_network">Network</string>
     <string name="mobile_settings_proxy">Web proxy</string>
-    <string name="mobile_settings_proxy_summary">Sends MeTube\'s traffic through an HTTP or SOCKS proxy</string>
+    <string name="mobile_settings_proxy_summary">Sends MeeTube\'s traffic through an HTTP or SOCKS proxy</string>
     <string name="mobile_settings_dns">Finding YouTube\'s servers</string>
     <string name="mobile_settings_dns_ipv4">IPv4 first</string>
     <string name="mobile_settings_dns_ipv4_desc">The default. Fixes networks with broken IPv6</string>
@@ -363,7 +363,7 @@
     <!-- About -->
     <string name="mobile_settings_version">Version</string>
     <string name="mobile_settings_update_notify_summary">Tells you when a new version is out</string>
-    <!-- METUBE(customize): the Customization page's groups and its tiles' short names -->
+    <!-- MEETUBE(customize): the Customization page's groups and its tiles' short names -->
     <string name="mobile_settings_customize_look">Look</string>
     <string name="mobile_settings_customize_layout">Layout</string>
     <string name="mobile_settings_customize_effects">Glass and motion</string>
@@ -375,14 +375,14 @@
     <string name="mobile_settings_playlists_style_grid_short">Playlists</string>
     <string name="mobile_settings_playlists_style_rows_short">Videos</string>
     <string name="mobile_settings_interface_size_sample">How a video title looks at this size</string>
-    <string name="mobile_settings_interface_size_sample_meta">MeTube · 1.2M views · 2 days ago</string>
+    <string name="mobile_settings_interface_size_sample_meta">MeeTube · 1.2M views · 2 days ago</string>
     <string name="mobile_settings_tab_glow">Tab glow</string>
     <string name="mobile_settings_tab_glow_white">White</string>
     <string name="mobile_settings_tab_glow_white_desc">A plain white glow (dark grey in the light theme)</string>
     <string name="mobile_settings_tab_glow_tabs">Tab colors</string>
     <string name="mobile_settings_tab_glow_tabs_desc">Each tab glows in its own color</string>
     <string name="mobile_settings_tab_glow_accent">Accent</string>
-    <string name="mobile_settings_tab_glow_accent_desc">Every tab glows in MeTube red</string>
+    <string name="mobile_settings_tab_glow_accent_desc">Every tab glows in MeeTube red</string>
     <string name="mobile_settings_tab_glow_off">Off</string>
     <string name="mobile_settings_progress_glow">Progress glow</string>
     <string name="mobile_settings_progress_glow_summary">A soft light at the end of the seek bar and of the watched line on videos</string>

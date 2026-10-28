@@ -27,7 +27,7 @@ import com.newtube.mobile.ui.common.Motion;
 import com.newtube.mobile.ui.common.NavLens;
 
 /**
- * METUBE(nav bloom, issue #47): a soft glow behind the lit tab's icon, the bar's background. On a
+ * MEETUBE(nav bloom, issue #47): a soft glow behind the lit tab's icon, the bar's background. On a
  * switch it slides to the new tab, dimming as it travels and changing colour on the way. The lit
  * icon and its name take the glow's colour. Settings > Customization > Tab glow picks the colour
  * (plain white unless changed) or turns it off; it runs with or without Liquid glass.
@@ -37,7 +37,7 @@ public final class NavBloom extends Drawable {
     public static final int MODE_TABS = 1;
     public static final int MODE_ACCENT = 2;
     public static final int MODE_WHITE = 3;
-    private static final String PREFS = "metube_app";
+    private static final String PREFS = "meetube_app";
     private static final String KEY_MODE = "nav_bloom";
     private static final long GLIDE_MS = 360;
     private static final float RADIUS_DP = 30f;
@@ -174,7 +174,7 @@ public final class NavBloom extends Drawable {
             return ContextCompat.getColor(context, R.color.mobile_color_primary);
         }
         if (mode == MODE_WHITE) { // white on the dark glass; on the light glass white would vanish, so near-black
-            return ContextCompat.getColor(context, R.color.metube_nav_inactive) | 0xFF000000;
+            return ContextCompat.getColor(context, R.color.meetube_nav_inactive) | 0xFF000000;
         }
         if (itemId == MobileBrowseActivity.YOU_ITEM_ID) {
             return 0xFFBF5AF2; // purple

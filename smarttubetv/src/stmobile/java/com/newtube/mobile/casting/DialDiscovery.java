@@ -390,7 +390,7 @@ public class DialDiscovery {
         try {
             WifiManager wifi = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
             if (wifi != null) {
-                mMulticastLock = wifi.createMulticastLock("MeTubeCastDial");
+                mMulticastLock = wifi.createMulticastLock("MeeTubeCastDial");
                 mMulticastLock.setReferenceCounted(false);
                 mMulticastLock.acquire();
             }

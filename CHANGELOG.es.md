@@ -1,4 +1,4 @@
-# Registro de cambios de MeTube
+# Registro de cambios de MeeTube
 
 ## 2.9.6 — 2026-10-15 — Corrección
 
@@ -13,7 +13,7 @@
 - **Auriculares en el minirreproductor.** El minirreproductor de la app tiene un botón de auriculares para pasar a solo audio, y también su ventana flotante (imagen en imagen).
 - **Interruptores al estilo iOS.** Los interruptores de Ajustes son cápsulas compactas con un botón blanco que se vuelve cristal transparente al deslizarse.
 - **Búsqueda esmerilada en Ajustes.** La barra "Buscar en ajustes" es de cristal líquido y la lista se desliza por debajo. Sigue el ajuste Cristal líquido.
-- **Invítame a un café.** Si te gusta MeTube y quieres apoyarlo, hay un enlace en Ajustes y un pequeño agradecimiento al final de Acerca de.
+- **Invítame a un café.** Si te gusta MeeTube y quieres apoyarlo, hay un enlace en Ajustes y un pequeño agradecimiento al final de Acerca de.
 
 ### Cambios
 
@@ -106,7 +106,7 @@ Las siete últimas correcciones vienen de NewTube 1.15.1.
 
 ### Correcciones
 
-- **Imagen en imagen más fluida:** MeTube ya no reenvía los botones de la ventana cada vez que el vídeo carga.
+- **Imagen en imagen más fluida:** MeeTube ya no reenvía los botones de la ventana cada vez que el vídeo carga.
 
 ## 2.5.1 — 2026-10-09 — Solo audio, nuevo icono y correcciones
 
@@ -119,7 +119,7 @@ Las siete últimas correcciones vienen de NewTube 1.15.1.
 
 - **Sin cierres al volver de la imagen en imagen en alta calidad:** la memoria de vídeo ahora tiene un límite.
 - **Ajustes en pantalla completa:** los menús ya no muestran las barras del sistema ni un segundo panel.
-- **Los registros de diagnóstico se llaman metube-diagnostics.**
+- **Los registros de diagnóstico se llaman meetube-diagnostics.**
 
 ## 2.5.0 — 2026-10-09 — Cristal y Shorts más rápidos
 
@@ -128,7 +128,7 @@ Las siete últimas correcciones vienen de NewTube 1.15.1.
 - **Cuenta atrás para el siguiente vídeo:** al terminar un vídeo, una tarjeta cuenta diez segundos. Reproducir ya, Volver a reproducir o Cancelar.
 - **Un destello al dar me gusta o suscribirte.**
 - **Barra superior de cristal flotante:** el logo y los botones de enviar y buscar flotan como dos píldoras de cristal líquido.
-- **Una cita al tocar el logo de MeTube,** distinta en cada toque.
+- **Una cita al tocar el logo de MeeTube,** distinta en cada toque.
 - **Menús esmerilados:** los menús del reproductor y de las tarjetas muestran un cristal esmerilado sin desenfocar la página.
 - **Ajuste Cristal líquido:** desactívalo en Ajustes → General para un desenfoque simple que gasta menos batería.
 - **Cifras en K y M,** también con el teléfono en inglés (India). Ajuste Cifras en lakh y crore para volver al formato indio.
@@ -137,7 +137,7 @@ Las siete últimas correcciones vienen de NewTube 1.15.1.
 
 - **Los Shorts pasan más rápido:** se adelanta el short siguiente al siguiente y una precarga a medias ya no se descarta.
 - **Suscrito es una píldora de cristal;** el título y las visualizaciones son un solo botón; la barra de navegación rebota al cambiar de pestaña.
-- **Las descargas van a Movies/MeTube y Music/MeTube.**
+- **Las descargas van a Movies/MeeTube y Music/MeeTube.**
 
 ## 2.0.2 — 2026-10-08 — Pantalla completa vertical
 
@@ -183,7 +183,7 @@ Las siete últimas correcciones vienen de NewTube 1.15.1.
 
 - **Shorts.** Una pestaña Shorts con tarjetas verticales. Toca una y se reproduce a pantalla completa; desliza hacia arriba para el siguiente y hacia abajo para el anterior. Cada short se repite hasta que deslizas, y el siguiente se carga mientras lo ves.
 - **Brillo ambiental.** En la página del vídeo, los colores del vídeo se extienden bajo el reproductor y se funden con la página.
-- **Un icono nuevo de MeTube.** Una M redondeada sobre un fondo coral y magenta, con una burbuja de cristal.
+- **Un icono nuevo de MeeTube.** Una M redondeada sobre un fondo coral y magenta, con una burbuja de cristal.
 
 ### Cambios
 
@@ -196,4 +196,4 @@ Las siete últimas correcciones vienen de NewTube 1.15.1.
 
 - **Cristal flotante.** La barra de navegación inferior es ahora una cápsula de cristal esmerilado que flota sobre la página y difumina en vivo lo que pasa por debajo. En Android 13 y posteriores su borde curva el contenido como una lente.
 - **Un aspecto nuevo.** Una página más oscura, un acento rojo, títulos grandes, miniaturas redondeadas y botones y tarjetas de cristal en la página del vídeo.
-- **MeTube.** Un nombre y un id de app nuevos, así que se instala junto a NewTube. Las actualizaciones llegan desde github.com/yashoncode/metube.
+- **MeeTube.** Un nombre y un id de app nuevos, así que se instala junto a NewTube. Las actualizaciones llegan desde github.com/yashoncode/meetube.

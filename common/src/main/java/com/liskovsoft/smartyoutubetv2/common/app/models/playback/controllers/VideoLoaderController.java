@@ -86,7 +86,7 @@ public class VideoLoaderController extends BasePlayerController {
         loadNext();
     };
     /**
-     * METUBE(shorts): a swipe past the last loaded short waits for the feed's next page instead of
+     * MEETUBE(shorts): a swipe past the last loaded short waits for the feed's next page instead of
      * being dropped. Signed in, the Shorts tab opens on a partial first page (a subscription short
      * or two) and the rest of the feed lands seconds later, appended to the queue by the tab.
      */
@@ -247,7 +247,7 @@ public class VideoLoaderController extends BasePlayerController {
 
     @Override
     public boolean onNextClicked() {
-        mShortsNextTries = 0; // METUBE(shorts): a new swipe waits afresh
+        mShortsNextTries = 0; // MEETUBE(shorts): a new swipe waits afresh
         if (getGeneralData().isChildModeEnabled()) {
             onPlayEnd();
         } else {
@@ -386,7 +386,7 @@ public class VideoLoaderController extends BasePlayerController {
         if (player == null || getVideo() == null || getVideo().isLive || !player.isPlaying()) {
             return;
         }
-        // METUBE(shorts): the next swipe can come any second - warm the next short as soon as this
+        // MEETUBE(shorts): the next swipe can come any second - warm the next short as soon as this
         // one is playing (its own first media is in by then), not five seconds in.
         long delayMs = isShortsSwipe() ? Math.max(0, SHORTS_PREFETCH_AFTER_MS - playedWallMs())
                 : NextPrefetchPolicy.delayUntilDueMs(player.getDurationMs(),
@@ -467,7 +467,7 @@ public class VideoLoaderController extends BasePlayerController {
         }
 
         if (current.belongsToShorts()) {
-            // METUBE(shorts): past the loaded shorts - never the watch page's next (a normal video);
+            // MEETUBE(shorts): past the loaded shorts - never the watch page's next (a normal video);
             // keep asking while the feed's next page loads (mShortsNextRetry).
             if (current != mShortsNextWaitFor) {
                 mShortsNextWaitFor = current;
@@ -923,7 +923,7 @@ public class VideoLoaderController extends BasePlayerController {
         }
     }
 
-    /** METUBE(up-next): the end-of-video advance, which the view may hold behind its countdown. */
+    /** MEETUBE(up-next): the end-of-video advance, which the view may hold behind its countdown. */
     private void autoNext() {
         Video video = getVideo();
         if (video != null && !video.belongsToShorts()
@@ -986,7 +986,7 @@ public class VideoLoaderController extends BasePlayerController {
     }
 
     /**
-     * METUBE(issue #83): a stream that ended but is still being processed (hours, longer for long
+     * MEETUBE(issue #83): a stream that ended but is still being processed (hours, longer for long
      * streams). Its adaptive formats are live segments, so the generated MPD is a non-refreshing
      * dynamic one that opens at its live edge - the very end - and ends at once (zero media
      * fetched, Replay). Its manifest URL (often HLS only, no DASH url) plays it from the start.
@@ -1112,9 +1112,9 @@ public class VideoLoaderController extends BasePlayerController {
      * Skipped while paused (user browsing) and when the playback mode
      * won't auto-advance.
      */
-    /** METUBE(shorts): a short looping in the swipe player (its next one is a swipe away). */
+    /** MEETUBE(shorts): a short looping in the swipe player (its next one is a swipe away). */
     private static final long SHORTS_PREFETCH_AFTER_MS = 300;
-    /** METUBE(shorts): the last short-after-next whose /player was asked for (see prefetchShortAfterNext). */
+    /** MEETUBE(shorts): the last short-after-next whose /player was asked for (see prefetchShortAfterNext). */
     private String mShortAheadId;
 
     private boolean isShortsSwipe() {
@@ -1132,7 +1132,7 @@ public class VideoLoaderController extends BasePlayerController {
         }
 
         int playbackMode = getPlaybackMode();
-        // METUBE(shorts): a looping short still warms the next one - the next swipe is coming.
+        // MEETUBE(shorts): a looping short still warms the next one - the next swipe is coming.
         boolean shortsSwipe = playbackMode == PlayerConstants.PLAYBACK_MODE_ONE && getVideo().belongsToShorts();
         if (playbackMode != PlayerConstants.PLAYBACK_MODE_ALL
                 && playbackMode != PlayerConstants.PLAYBACK_MODE_SHUFFLE
@@ -1193,7 +1193,7 @@ public class VideoLoaderController extends BasePlayerController {
 
     /** The autoplay-next resolution itself; a seam so the deadline logic is testable offline. */
     /**
-     * METUBE(shorts): once the next short is resolved, the one after it gets its /player answer
+     * MEETUBE(shorts): once the next short is resolved, the one after it gets its /player answer
      * too - MediaServiceCore keeps four (the previous, this, next and that one), so a quick second
      * swipe skips the round trip, and that short's own next-prefetch finds its info cached and
      * goes straight to building and preloading the source. One request per target; a failure is

@@ -18,7 +18,7 @@ import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 /**
- * METUBE(tv): the remote's highlight (issue #21). Out of touch mode - a D-pad, a TV remote, a keyboard -
+ * MEETUBE(tv): the remote's highlight (issue #21). Out of touch mode - a D-pad, a TV remote, a keyboard -
  * the focused view of a window gets a ring around it, drawn in the window's overlay so no screen,
  * card or sheet row needs a focused state of its own. It follows the view as lists scroll and goes
  * the moment the screen is touched, so a phone used by touch never shows it. Every screen

@@ -40,9 +40,9 @@ public final class SettingsRow {
     public static final int KIND_CHOICE = 3;
     public static final int KIND_NOTE = 4;
     public static final int KIND_DIVIDER = 5;
-    /** METUBE(support): a centred thank-you at the foot of a page - icon, a line, a small link. */
+    /** MEETUBE(support): a centred thank-you at the foot of a page - icon, a line, a small link. */
     public static final int KIND_FOOTER = 6;
-    /** METUBE(bar editor): a row that is its own view (the Tabs page's drag-to-order bar). */
+    /** MEETUBE(bar editor): a row that is its own view (the Tabs page's drag-to-order bar). */
     public static final int KIND_CUSTOM = 7;
 
     /** What a toggle or a choice does after it has been applied. */
@@ -216,7 +216,7 @@ public final class SettingsRow {
     }
 
     /**
-     * METUBE(customize): this choice as a {@link #KIND_CUSTOM} row (its view set by the caller),
+     * MEETUBE(customize): this choice as a {@link #KIND_CUSTOM} row (its view set by the caller),
      * keeping title, options and pick, so search still finds it by them.
      */
     SettingsRow asCustom() {

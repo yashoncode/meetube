@@ -39,7 +39,7 @@ import java.util.function.LongSupplier;
 import okhttp3.Request;
 
 /**
- * METUBE(transcript): the video's transcript under it, like YouTube's panel. YouTube's own
+ * MEETUBE(transcript): the video's transcript under it, like YouTube's panel. YouTube's own
  * get_transcript refuses this app (LyricsSources), but its panel is the caption track, and the
  * player already holds those links: one is fetched as json3 (an event per caption) here. The
  * uploader's captions win over the automatic ones. The line being said lights up and stays in view

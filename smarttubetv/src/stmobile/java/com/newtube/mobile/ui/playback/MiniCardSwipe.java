@@ -15,7 +15,7 @@ import androidx.dynamicanimation.animation.SpringAnimation;
 import com.newtube.mobile.ui.common.Haptics;
 
 /**
- * METUBE(mini-float): the docked mini card floats free, like YouTube's Shorts mini player. Drag it
+ * MEETUBE(mini-float): the docked mini card floats free, like YouTube's Shorts mini player. Drag it
  * anywhere and it follows the finger; let go and it springs to the nearest corner of the screen,
  * the throw's direction counted. Flung hard sideways, or let go mostly past a side edge, it flies
  * off that side and the host closes the session (the old swipe to close). Taps are untouched: the
@@ -36,7 +36,7 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         /** Committed: fly the card to {@code toTranslationX} over {@code durationMs}, then close. */
         void onSwipedAway(float toTranslationX, long durationMs);
 
-        /** A finger came down on the card (METUBE(mini-controls): its buttons come back). */
+        /** A finger came down on the card (MEETUBE(mini-controls): its buttons come back). */
         default void onTouched() {
         }
     }

@@ -16,7 +16,7 @@ import androidx.annotation.DrawableRes;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 /**
- * METUBE(app icon): the launcher icon picked in Settings > Customization. Each icon is an
+ * MEETUBE(app icon): the launcher icon picked in Settings > Customization. Each icon is an
  * {@code activity-alias} of SplashActivity (stmobile AndroidManifest, com.newtube.mobile.icon.*) and
  * exactly one is enabled. The in-app marks (Home's brand pill, the launch splash, the update sheet)
  * follow the pick too.
@@ -28,13 +28,13 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
  * onTrimMemory(UI_HIDDEN)).
  */
 public final class AppIcon {
-    /** Alias names; the first is the default (the 2.9.9 icon). */
+    /** Alias names; the first is the default (the red heart on a white tile since 3.2.0; Fantasy is the 2.9.9 painted heart). */
     public static final String DEFAULT = "Default";
     public static final String CLASSIC = "Classic";
     public static final String FANTASY = "Fantasy";
     private static final String[] ICONS = {DEFAULT, CLASSIC, FANTASY};
     private static final String PREFIX = "com.newtube.mobile.icon.";
-    private static final String PREFS = "metube_app_icon";
+    private static final String PREFS = "meetube_app_icon";
     private static final String KEY_PENDING = "pending";
     /** Long enough for the relaunch to replace the old task's root before its alias goes. */
     private static final long DISABLE_DELAY_MS = 1_000;
@@ -64,8 +64,8 @@ public final class AppIcon {
     @DrawableRes
     public static int mark(Context context) {
         String icon = current(context);
-        return CLASSIC.equals(icon) ? R.drawable.ic_metube_mark
-                : FANTASY.equals(icon) ? R.drawable.ic_metube_mark_fantasy : R.drawable.ic_metube_mark_art;
+        return CLASSIC.equals(icon) ? R.drawable.ic_meetube_mark
+                : FANTASY.equals(icon) ? R.drawable.ic_meetube_mark_art : R.drawable.ic_meetube_mark_fantasy;
     }
 
     public static void set(Context context, String icon) {
@@ -136,8 +136,8 @@ public final class AppIcon {
     public static void syncSplash(Activity activity) {
         if (Build.VERSION.SDK_INT >= 33) {
             String icon = current(activity);
-            activity.getSplashScreen().setSplashScreenTheme(CLASSIC.equals(icon) ? R.style.Theme_MeTube_Splash_Classic
-                    : FANTASY.equals(icon) ? R.style.Theme_MeTube_Splash_Fantasy : R.style.Theme_MeTube_Splash_Beat);
+            activity.getSplashScreen().setSplashScreenTheme(CLASSIC.equals(icon) ? R.style.Theme_MeeTube_Splash_Classic
+                    : FANTASY.equals(icon) ? R.style.Theme_MeeTube_Splash_Beat : R.style.Theme_MeeTube_Splash_White);
         }
     }
 

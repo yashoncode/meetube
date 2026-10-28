@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * METUBE(shorts): the TikTok/YouTube-style vertical player, layered on the ordinary one. A video
+ * MEETUBE(shorts): the TikTok/YouTube-style vertical player, layered on the ordinary one. A video
  * from the Shorts tab ({@link Video#belongsToShorts()}) switches the watch screen into shorts mode:
  * the video fills the screen (the host resizes it), this overlay shows the channel row, title and
  * actions like YouTube's Shorts, and a vertical drag pages to the next / previous short. Tap
@@ -96,7 +96,7 @@ final class ShortsOverlay {
     /** No neighbour to page to: the drag gives a quarter of the finger's travel. */
     private static final float RUBBER_BAND = 0.25f;
     /**
-     * METUBE(shorts): at once - a swipe inside the old 1.2 s found no neighbour warmed. The
+     * MEETUBE(shorts): at once - a swipe inside the old 1.2 s found no neighbour warmed. The
      * thumbnails are small next to the short's first media chunks.
      */
     private static final long NEIGHBOUR_PRELOAD_DELAY_MS = 0;
@@ -186,7 +186,7 @@ final class ShortsOverlay {
         mOverlay.findViewById(R.id.mobile_shorts_back).setOnClickListener(v -> mHost.exitShorts());
         mOverlay.findViewById(R.id.mobile_shorts_search).setOnClickListener(v -> mHost.openShortsSearch());
         mOverlay.findViewById(R.id.mobile_shorts_mute).setOnClickListener(v -> showMuted(mHost.toggleShortsMute()));
-        // METUBE(glass): as on the player, the buttons over the short (and the play / pause flash)
+        // MEETUBE(glass): as on the player, the buttons over the short (and the play / pause flash)
         // sit on see-through tinted discs (frosted ones of the short with Frosted player buttons on);
         // the actions keep their 48dp discs, the labels their shadows.
         com.newtube.mobile.ui.common.GlassSource glass = com.newtube.mobile.ui.common.Glass.isPlayerFrost(
@@ -200,7 +200,7 @@ final class ShortsOverlay {
             GlassDrawable.apply(mOverlay.findViewById(id), glass,
                     Math.round(4 * root.getResources().getDisplayMetrics().density)); // the player's minimize disc
         }
-        // METUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
+        // MEETUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
         mTitle.setOnClickListener(v -> mHost.openShortsDescription());
 
         round(mAvatar);
@@ -286,7 +286,7 @@ final class ShortsOverlay {
         return mActive;
     }
 
-    /** METUBE(tv): one of the short's buttons has the remote's focus (Up and Down then move between them). */
+    /** MEETUBE(tv): one of the short's buttons has the remote's focus (Up and Down then move between them). */
     boolean holdsFocus() {
         View focus = mOverlay.findFocus();
         return focus != null && focus != mOverlay;
@@ -307,7 +307,7 @@ final class ShortsOverlay {
         mOverlay.setVisibility(mActive && !open && !mInPip ? View.VISIBLE : View.GONE);
     }
 
-    /** METUBE(shorts-pip): the PiP window shows only the short; the buttons come back on expand. */
+    /** MEETUBE(shorts-pip): the PiP window shows only the short; the buttons come back on expand. */
     void setInPip(boolean pip) {
         mInPip = pip;
         hidePeek();
@@ -379,7 +379,7 @@ final class ShortsOverlay {
         mSubscribe.setSelected(subscribed);
     }
 
-    /** METUBE(burst): where a like or a subscribe made in Shorts splashes. */
+    /** MEETUBE(burst): where a like or a subscribe made in Shorts splashes. */
     View likeIcon() {
         return mLikeIcon;
     }
@@ -497,7 +497,7 @@ final class ShortsOverlay {
         }
     }
 
-    /** METUBE(shorts): a held short shows only itself - every button and line fades until the finger lifts. */
+    /** MEETUBE(shorts): a held short shows only itself - every button and line fades until the finger lifts. */
     void setClean(boolean clean) {
         mOverlay.animate().cancel();
         mOverlay.animate().alpha(clean ? 0f : 1f).setDuration(150).start();
@@ -544,7 +544,7 @@ final class ShortsOverlay {
     }
 
     /**
-     * METUBE(shorts feed): this close to the queue's end, the Shorts tab fetches its next page, which
+     * MEETUBE(shorts feed): this close to the queue's end, the Shorts tab fetches its next page, which
      * joins the queue (MobileBrowseActivity.extendShortsQueue) well before the swipe gets there.
      * Before, the queue only grew while the hidden grid behind the player was short of cards.
      */
@@ -570,7 +570,7 @@ final class ShortsOverlay {
         }
     }
 
-    /** METUBE(card avatars): the channel's avatar at once, from ChannelAvatars, not the watch page. */
+    /** MEETUBE(card avatars): the channel's avatar at once, from ChannelAvatars, not the watch page. */
     private void showKnownAvatar(Video item) {
         android.content.Context context = mAvatar.getContext();
         String url = com.newtube.mobile.ui.common.ChannelAvatars.get(context, item.channelId, item.getAuthor());
@@ -632,7 +632,7 @@ final class ShortsOverlay {
     }
 
     /**
-     * METUBE(shorts counts): a short's count runs up from 0 to itself (fast, easing out) the first
+     * MEETUBE(shorts counts): a short's count runs up from 0 to itself (fast, easing out) the first
      * time it shows for that short, "2.7K" as 0.0K..2.7K; later changes (a like) just change.
      */
     private static final class CountUp {

@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-/** METUBE(lyrics): naming the song, choosing LRCLIB's answer and reading LRC. */
+/** MEETUBE(lyrics): naming the song, choosing LRCLIB's answer and reading LRC. */
 public class LyricsTest {
     private static final String VERSE = "one\ntwo\nthree\nfour";
     private static final String SYNCED = "[00:01.00]one\n[00:02.00]two\n[00:03.00]three\n[00:04.00]four";

@@ -71,7 +71,7 @@ public class Media3PlayerInitializer {
     // tracks the theoretical refill time of the removed 1000ms of media, so it generalizes.
     private static final int START_BUFFER_AFTER_REBUFFER_MS = 1_500;
     /**
-     * METUBE(oom): 20 s (was 120 s) - two double-tap seeks back stay instant. Further back reads
+     * MEETUBE(oom): 20 s (was 120 s) - two double-tap seeks back stay instant. Further back reads
      * from the 512 MB disk cache. At 1440p60 (~2.5 MB/s) 120 s alone was ~300 MB of Java heap.
      */
     private static final int BACK_BUFFER_MS = 20_000;
@@ -111,7 +111,7 @@ public class Media3PlayerInitializer {
         long deviceRam = DeviceHelpers.getDeviceRam(mContext);
         // Same RAM clamp as the legacy initializer (and its negative-overflow guard).
         long ramCap = deviceRam <= 0 ? 196_000_000 : deviceRam / 18;
-        // METUBE(oom): media samples live on the JAVA heap (the allocator's byte[]), and that heap
+        // MEETUBE(oom): media samples live on the JAVA heap (the allocator's byte[]), and that heap
         // is the app's limit - 512 MB with largeHeap - not the device's RAM: RAM/18 on a 12 GB
         // phone is 660 MB, which never bound anything, and a 1440p session filled the heap until
         // the next allocation (returning from PiP) crashed. A third of the heap is the budget.
@@ -120,7 +120,7 @@ public class Media3PlayerInitializer {
         alignBufferDefaultOnce();
     }
 
-    /** METUBE(oom): what the media buffers may hold - a third of the Java heap the app may grow to. */
+    /** MEETUBE(oom): what the media buffers may hold - a third of the Java heap the app may grow to. */
     static long heapBudgetBytes() {
         return Runtime.getRuntime().maxMemory() / 3;
     }
@@ -330,7 +330,7 @@ public class Media3PlayerInitializer {
     }
 
     public ExoPlayer createPlayer(DefaultTrackSelector trackSelector, BandwidthMeter bandwidthMeter) {
-        // METUBE(shorts): the preloader always exists - a swiped-to short starts from preloaded
+        // MEETUBE(shorts): the preloader always exists - a swiped-to short starts from preloaded
         // samples (Media3PlayerController.prebuildNextSource). Ordinary autoplay-next media stays
         // the debug experiment it was (preloadEveryNextMedia).
         return createPlayer(trackSelector, bandwidthMeter, true);
@@ -562,7 +562,7 @@ public class Media3PlayerInitializer {
         // Pause when headphones unplug / bluetooth drops - standard phone behavior.
         player.setHandleAudioBecomingNoisy(true);
 
-        // METUBE(background): a partial wake lock + Wi-Fi lock, held by media3 only while playing.
+        // MEETUBE(background): a partial wake lock + Wi-Fi lock, held by media3 only while playing.
         // Without them a screen-off stream lost the CPU/Wi-Fi between chunks, ran dry, and the
         // stalled app was then frozen or killed by the phone's battery manager (realme, 2.9.8).
         player.setWakeMode(C.WAKE_MODE_NETWORK);

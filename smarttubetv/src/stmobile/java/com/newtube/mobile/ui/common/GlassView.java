@@ -37,7 +37,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import java.util.Random;
 
 /**
- * METUBE(glass): iOS-style liquid glass over a {@link GlassSource} - BitChord's floating bar,
+ * MEETUBE(glass): iOS-style liquid glass over a {@link GlassSource} - BitChord's floating bar,
  * ported from Compose to plain RenderNodes, with its numbers:
  *
  * <ol>
@@ -241,7 +241,7 @@ public class GlassView extends FrameLayout {
     }
 
     /**
-     * METUBE(live chat, issue #32): this glass's specular rim alone, as a foreground for a rounded
+     * MEETUBE(live chat, issue #32): this glass's specular rim alone, as a foreground for a rounded
      * card that is not a GlassView (the landscape chat and comments cards).
      */
     public static Drawable rim(float cornerPx, float density) {
@@ -297,7 +297,7 @@ public class GlassView extends FrameLayout {
     public void setSource(@Nullable GlassSource source) {
         mSource = source;
         if (source != null && source.node != null && mNode == null) {
-            mNode = new RenderNode("MeTube glass");
+            mNode = new RenderNode("MeeTube glass");
         }
         mRecordedX = Integer.MIN_VALUE;
         invalidate();
@@ -336,7 +336,7 @@ public class GlassView extends FrameLayout {
         }
         canvas.drawRect(0, 0, getWidth(), getHeight(), mTintPaint);
         if (mLiquid) {
-            // METUBE(amoled): only the floating glass is grainy - the flat top bar stays true black.
+            // MEETUBE(amoled): only the floating glass is grainy - the flat top bar stays true black.
             canvas.drawRect(0, 0, getWidth(), getHeight(), mNoisePaint);
             float r = radius(getWidth(), getHeight());
             canvas.drawRoundRect(mRimRect, r, r, mRimPaint);

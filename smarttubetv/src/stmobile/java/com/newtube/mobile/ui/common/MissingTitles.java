@@ -23,7 +23,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * METUBE(issue #41): now and then a feed row reaches the app as bare video ids - a thumbnail and
+ * MEETUBE(issue #41): now and then a feed row reaches the app as bare video ids - a thumbnail and
  * nothing else, no title, channel or length (the same row upstream, yuliskov/SmartTube#6314).
  * Whatever shape YouTube sent it in, a card like that asks YouTube's oEmbed for its title and
  * channel by the id, and is filled in when they come. Debug builds log each one, so the row's

@@ -70,7 +70,7 @@ public final class MobileMiniPlayerController {
     private final MiniPlayerBridge.CardFold mCardFold = this::foldForPlayer;
 
     /**
-     * METUBE(glass): the mini card's buttons on the player's see-through discs (close and audio:
+     * MEETUBE(glass): the mini card's buttons on the player's see-through discs (close and audio:
      * 40dp in a 48dp target). They are ImageButtons: with no background they show the platform's
      * grey button box, so every screen with a card calls this (Home has its own card code).
      */
@@ -232,7 +232,7 @@ public final class MobileMiniPlayerController {
         mBar.setScaleX(1f);
         mBar.setScaleY(1f);
         mBar.setTranslationX(0f); // a card swiped away (MiniCardSwipe)
-        mBar.setTranslationY(0f); // or dragged to another corner (METUBE(mini-float))
+        mBar.setTranslationY(0f); // or dragged to another corner (MEETUBE(mini-float))
 
         mEntryAnimating = animateFromPlayer;
         mTextureHasFrame = false;
@@ -402,7 +402,7 @@ public final class MobileMiniPlayerController {
                     // The playback Activity owns the session texture. Release only a temporary
                     // TextureView-created surface that was never replaced by that session - checked
                     // against the one adopted too: the bridge hands out nothing once the player
-                    // took the session back (METUBE(issue #38)).
+                    // took the session back (MEETUBE(issue #38)).
                     return texture != mAdopted && texture != MiniPlayerBridge.getSessionTexture();
                 }
 

@@ -169,7 +169,7 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
     }
 
     /**
-     * METUBE(channel open): a feed card knows its video, not its channel, and naming the channel
+     * MEETUBE(channel open): a feed card knows its video, not its channel, and naming the channel
      * takes a /next of that video (~1 s). The page used to open only after it; now it opens at once
      * (the card's channel name, a spinner) and fills when the channel is known. The watch data is
      * kept on the card ({@link Video#sync}, as the card menu does), so the page's Subscribe reads
@@ -543,7 +543,7 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
         onSearchSettingsClicked(getChannelId());
     }
 
-    /** METUBE(channel sort): {@code channelId} = the UC id (a link-opened channel only knows its @handle). */
+    /** MEETUBE(channel sort): {@code channelId} = the UC id (a link-opened channel only knows its @handle). */
     public void onSearchSettingsClicked(String channelId) {
         Observable<List<MediaGroup>> sorting = getContentService().getChannelSortingOptionsObserve(channelId);
         Disposable result = sorting.subscribe(
@@ -554,7 +554,7 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
                     for (MediaGroup group : items) {
                         final int tempIdx = idx;
                         options.add(UiOptionItem.from(group.getTitle(), item -> {
-                            dialogPresenter.closeDialog(); // METUBE(channel sort): one tap picks
+                            dialogPresenter.closeDialog(); // MEETUBE(channel sort): one tap picks
                             Observable<MediaGroup> continuation = getContentService().continueGroupObserve(group);
                             Disposable result2 = continuation.subscribe(mediaGroup -> {
                                 if (getView() == null) {

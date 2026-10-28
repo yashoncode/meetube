@@ -68,13 +68,13 @@ public class PlayerTimeBar extends View implements TimeBar {
         void onReleaseToCancel(boolean armed);
     }
 
-    static final int PLAYED_COLOR = 0xFFFF453A; // METUBE accent
+    static final int PLAYED_COLOR = 0xFFFF453A; // MEETUBE accent
     static final int PLAYED_TAIL_COLOR = 0xFFFF2791;
     static final int BUFFERED_COLOR = 0x80FFFFFF;
     static final int UNPLAYED_COLOR = 0x33FFFFFF;
 
     private static final float TRACK_DP = 2f;
-    private static final float TRACK_DRAGGING_DP = 8f; // METUBE: a fat bar under the finger, like YouTube's
+    private static final float TRACK_DRAGGING_DP = 8f; // MEETUBE: a fat bar under the finger, like YouTube's
     private static final float GAP_DP = 2f;
     private static final float GAP_DRAGGING_DP = 3f;
     private static final float SCRUBBER_DP = 12f;
@@ -497,7 +497,7 @@ public class PlayerTimeBar extends View implements TimeBar {
             }
         }
 
-        // METUBE(progress glow): the played part's head glows, under the dot when it shows.
+        // MEETUBE(progress glow): the played part's head glows, under the dot when it shows.
         if (hasDuration && playedX > left && playedX < right) {
             // The head's colour is the tail's end of the played gradient.
             mGlow.draw(getContext(), canvas, playedX, (top + bottom) / 2f, dp(10), PLAYED_TAIL_COLOR);

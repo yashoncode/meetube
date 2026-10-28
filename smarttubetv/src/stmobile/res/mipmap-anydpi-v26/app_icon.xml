@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(app icon): the Fantasy launcher icon - the red heart on a white tile, picked in Settings > Customization. -->
+<!-- MEETUBE(app icon): the default launcher icon (since 3.2.0), the red heart on a white tile; overrides @mipmap/app_icon for stmobile. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@android:color/white" />
     <foreground android:drawable="@drawable/ic_launcher_foreground_fantasy" />

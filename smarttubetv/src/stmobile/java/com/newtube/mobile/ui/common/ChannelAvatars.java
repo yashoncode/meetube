@@ -26,14 +26,14 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * METUBE(card avatars, issue #6): channel avatar URLs for the feed cards. The feeds come from the
+ * MEETUBE(card avatars, issue #6): channel avatar URLs for the feed cards. The feeds come from the
  * TV client, whose tiles carry no avatar, so cards look avatars up here: filled from the
  * subscribed-channels list, the watch page and channel search results, and kept across launches.
  * Keyed by channel id and by channel name (TV tiles often have no id until opened).
  * ponytail: one prefs entry per channel, never pruned; a few hundred short strings at most.
  */
 public final class ChannelAvatars {
-    private static final String PREFS = "metube_channel_avatars";
+    private static final String PREFS = "meetube_channel_avatars";
     private static SharedPreferences sPrefs;
 
     public interface Callback {

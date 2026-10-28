@@ -1,7 +1,8 @@
-"""Draw the MeTube mark: a red heart with a black, round-cornered play triangle in it, on black.
+"""Draw the MeeTube mark: a red heart with a black, round-cornered play triangle in it, on black.
 
-One geometry: the themed-icon vector (ic_launcher_monochrome), the splash/in-app mark (ic_metube_mark)
-and ic_launcher_foreground. The launcher icon itself is the painted artwork (tools/icon_from_image.py).
+One geometry: the themed-icon vector (ic_launcher_monochrome), the splash/in-app mark (ic_meetube_mark)
+and ic_launcher_foreground, plus the default launcher icon (red heart, white triangle, white tile) and the
+README icons. The Fantasy icon is the painted artwork (tools/icon_from_image.py).
 The heart is Material's "favorite" outline (24-unit grid, Apache 2.0); everything is placed on that
 grid and scaled into the 108-unit adaptive-icon grid. Usage: python tools/render_icon.py
 """
@@ -156,24 +157,26 @@ def render(size, crop=18, ground=GROUND, triangle=GROUND):
 if __name__ == "__main__":
     drawable = RES / "drawable"
     (drawable / "ic_launcher_foreground.xml").write_text(vector(
-        "METUBE: the mark - a red heart with a black play triangle, inside the 66dp safe zone.",
+        "MEETUBE: the mark - a red heart with a black play triangle, inside the 66dp safe zone.",
         108, LAUNCHER, "#FF453A", "#000000", False), encoding="utf-8")
     (drawable / "ic_launcher_monochrome.xml").write_text(vector(
-        "METUBE: themed-icon (Android 13+) mark - the heart with the play triangle cut out.",
+        "MEETUBE: themed-icon (Android 13+) mark - the heart with the play triangle cut out.",
         108, LAUNCHER, "#FFFFFF", None, True), encoding="utf-8")
-    (drawable / "ic_metube_mark.xml").write_text(vector(
-        "METUBE: the in-app mark (brand pill) - the launcher heart and play triangle.",
+    (drawable / "ic_meetube_mark.xml").write_text(vector(
+        "MEETUBE: the in-app mark (brand pill) - the launcher heart and play triangle.",
         22, MARK, "#FF453A", "#000000", False), encoding="utf-8")
-    # The Fantasy icon (Settings > Customization > App icon): the red heart with a white play
+    # The default icon (since 3.2.0; named Fantasy before): the red heart with a white play
     # triangle on a white tile.
     white = (0xFF, 0xFF, 0xFF)
     (drawable / "ic_launcher_foreground_fantasy.xml").write_text(vector(
-        "METUBE(app icon): the Fantasy mark - the red heart with a white play triangle.",
+        "MEETUBE(app icon): the default mark - the red heart with a white play triangle.",
         108, LAUNCHER, "#FF453A", "#FFFFFF", False), encoding="utf-8")
-    (drawable / "ic_metube_mark_fantasy.xml").write_text(vector(
-        "METUBE(app icon): the Fantasy in-app mark (brand pill).",
+    (drawable / "ic_meetube_mark_fantasy.xml").write_text(vector(
+        "MEETUBE(app icon): the default in-app mark (brand pill), the Fantasy name is from before 3.2.0.",
         22, MARK, "#FF453A", "#FFFFFF", False), encoding="utf-8")
     for density, size in {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}.items():
-        render(size, ground=white, triangle=white).save(RES / ("mipmap-" + density) / "app_icon_fantasy.png")
-    # The launcher PNGs and README icon now come from the painted artwork: tools/icon_from_image.py.
+        render(size, ground=white, triangle=white).save(RES / ("mipmap-" + density) / "app_icon.png")
+    render(512, ground=white, triangle=white).save(ROOT / ".github" / "assets" / "icon.png")
+    render(256, ground=white, triangle=white).save(ROOT / ".github" / "assets" / "meetube" / "icon.png")
+    # The Fantasy launcher PNGs come from the painted artwork: tools/icon_from_image.py.
     print("ok")

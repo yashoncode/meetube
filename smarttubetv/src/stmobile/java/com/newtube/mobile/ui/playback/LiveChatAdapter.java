@@ -93,7 +93,7 @@ public class LiveChatAdapter extends RecyclerView.Adapter<LiveChatAdapter.VH> {
             SpannableStringBuilder sb = new SpannableStringBuilder();
             if (!author.isEmpty()) {
                 sb.append(author);
-                // METUBE(live chat, issue #32): YouTube's rows - the name in grey, the message white.
+                // MEETUBE(live chat, issue #32): YouTube's rows - the name in grey, the message white.
                 sb.setSpan(new android.text.style.ForegroundColorSpan(androidx.core.content.ContextCompat.getColor(
                         context, R.color.mobile_color_on_surface_secondary)), 0, author.length(),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

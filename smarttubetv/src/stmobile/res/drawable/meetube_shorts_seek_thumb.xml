@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(shorts): the scrub thumb; ShortsOverlay shows it only while a finger holds the line. -->
+<!-- MEETUBE(shorts): the scrub thumb; ShortsOverlay shows it only while a finger holds the line. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
     <size
         android:width="14dp"

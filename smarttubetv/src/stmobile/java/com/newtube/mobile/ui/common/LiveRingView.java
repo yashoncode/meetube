@@ -16,7 +16,7 @@ import android.widget.ImageView;
 import androidx.annotation.Nullable;
 
 /**
- * METUBE(issue #73): a live channel's avatar ring - YouTube's red-to-pink gradient, turning, with a
+ * MEETUBE(issue #73): a live channel's avatar ring - YouTube's red-to-pink gradient, turning, with a
  * soft red glow that breathes around it. It lies over the avatar, the same size; {@link #bind}
  * pads the avatar in by the ring's width, so nothing draws past the avatar's own bounds. Its sizes
  * scale with the avatar (a 36dp card avatar to the 76dp channel header). Runs only while shown.

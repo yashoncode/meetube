@@ -112,7 +112,7 @@ final class CommentComposer {
         mSend.setOnClickListener(v -> send());
         updateSend();
 
-        // METUBE(motion): the window fills the screen and the bar rides the keyboard inside it. A
+        // MEETUBE(motion): the window fills the screen and the bar rides the keyboard inside it. A
         // window that wrapped the bar grew with every frame of the keyboard's slide - a window
         // relayout each frame, which stuttered behind the keyboard. A tap above the bar closes it.
         FrameLayout screen = new FrameLayout(context);

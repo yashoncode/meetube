@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
- * METUBE(glass): {@link GlassView}'s frost as a background drawable, for controls whose visibility,
+ * MEETUBE(glass): {@link GlassView}'s frost as a background drawable, for controls whose visibility,
  * alpha and size the code already drives (the player's buttons) - it follows them with no wrapper
  * view. A disc (a pill, on a wide view) inset into the bounds: the {@link GlassSource} under it
  * (the video) saturated and blurred, a dark tint, grain and a light rim, with a ripple on press.
@@ -97,7 +97,7 @@ public final class GlassDrawable extends Drawable {
         mDensity = host.getResources().getDisplayMetrics().density;
         mLiquid = Glass.isLiquid(host.getContext());
         boolean live = GlassSource.HARDWARE && source != null;
-        mNode = live ? new RenderNode("MeTube glass button") : null;
+        mNode = live ? new RenderNode("MeeTube glass button") : null;
         mNoise.setShader(new BitmapShader(GlassView.noise(), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
         mNoise.setAlpha(NOISE_ALPHA);
         mRim.setStyle(Paint.Style.STROKE);

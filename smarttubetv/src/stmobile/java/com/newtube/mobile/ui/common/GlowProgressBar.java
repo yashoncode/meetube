@@ -18,13 +18,13 @@ import androidx.core.content.ContextCompat;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 /**
- * METUBE(progress glow): a progress bar whose head glows, a soft light where the played part ends.
+ * MEETUBE(progress glow): a progress bar whose head glows, a soft light where the played part ends.
  * The thin bars (a card's watched line, the mini player's) draw it past their own few dp, over
  * what is above them, so their parent draws them unclipped. Settings > Customization > Progress
  * glow turns it off everywhere; the player's seek bar (PlayerTimeBar) draws the same {@link Head}.
  */
 public class GlowProgressBar extends ProgressBar {
-    private static final String PREFS = "metube_app";
+    private static final String PREFS = "meetube_app";
     private static final String KEY_ON = "progress_glow";
     /** The glow's heart, ~70% of the bar's colour, fading out at its radius. */
     private static final int HEART_ALPHA = 0xB3;

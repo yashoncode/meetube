@@ -7,7 +7,7 @@ import android.view.View;
 import androidx.appcompat.widget.AppCompatImageButton;
 
 /**
- * METUBE(watch-look): a player button the person can hide in Customization. Hidden, it stays
+ * MEETUBE(watch-look): a player button the person can hide in Customization. Hidden, it stays
  * gone whatever the player code asks (cast found, a live stream's chat...), so that code needs no
  * check of its own. Read once per inflation: a change shows the next time the player opens.
  */

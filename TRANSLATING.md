@@ -1,6 +1,6 @@
-# Translating MeTube
+# Translating MeeTube
 
-MeTube is translated through pull requests on GitHub: edit the string files for your language and
+MeeTube is translated through pull requests on GitHub: edit the string files for your language and
 open a pull request in this repository. Merged translations ship in the next release.
 
 ## What to translate
@@ -20,7 +20,7 @@ them.
 - Match the tone of YouTube's own app in your language. If YouTube calls it "Watch later", use its
   translation of "Watch later". People recognise those words.
 - Keep it short. Most strings are buttons, menu items and one-line messages on a phone screen.
-- Keep **MeTube**, **SmartTube**, **YouTube**, **SponsorBlock**, **DeArrow** and **Return YouTube
+- Keep **MeeTube**, **SmartTube**, **YouTube**, **SponsorBlock**, **DeArrow** and **Return YouTube
   Dislike** as they are.
 - Keep placeholders such as `%1$s` and `%2$d` exactly as written. You can move them within the
   sentence.
@@ -30,11 +30,11 @@ them.
 ## Trying your translation
 
 Merged translations ship in the next release, and every release is on the
-[releases page](https://github.com/yashoncode/metube/releases).
+[releases page](https://github.com/yashoncode/meetube/releases).
 
 To have your language added, copy the English file into a new `values-<language>` folder and
 translate it. If you think a string is unclear or wrong in English,
-[open an issue](https://github.com/yashoncode/metube/issues/new/choose).
+[open an issue](https://github.com/yashoncode/meetube/issues/new/choose).
 
 ## For developers
 

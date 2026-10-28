@@ -25,7 +25,7 @@
         android:importantForAccessibility="no"
         android:src="@drawable/ic_watch_channel_placeholder" />
 
-    <!-- METUBE(glass): a liquid-glass pill (see-through tint, grain, specular rim) on the comments
+    <!-- MEETUBE(glass): a liquid-glass pill (see-through tint, grain, specular rim) on the comments
          sheet's frosted glass, which shows through it. -->
     <com.newtube.mobile.ui.common.GlassView
         android:layout_width="0dp"
@@ -35,7 +35,7 @@
         android:duplicateParentState="true"
         app:glassCornerRadius="22dp"
         app:glassOnGlass="true"
-        app:glassTint="@color/metube_glass_pill_tint">
+        app:glassTint="@color/meetube_glass_pill_tint">
 
         <TextView
             android:id="@+id/comment_compose_field"

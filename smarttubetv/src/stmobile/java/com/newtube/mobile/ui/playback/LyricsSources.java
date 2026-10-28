@@ -21,7 +21,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 /**
- * METUBE(lyrics): BitChord's lyrics sources (its data/lyrics package), the ones that answer without a
+ * MEETUBE(lyrics): BitChord's lyrics sources (its data/lyrics package), the ones that answer without a
  * key today, each asked by {@link Lyrics} for one recording. Every one returns null on a miss.
  * <ul>
  *   <li>lrc.red and BiniLyrics: Apple Music's TTML (word or line timing), by ISRC or by name;</li>

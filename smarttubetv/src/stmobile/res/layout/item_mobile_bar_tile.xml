@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(bar editor): one item of the bar in the Tabs page's stack (BarEditor): its icon, its
+<!-- MEETUBE(bar editor): one item of the bar in the Tabs page's stack (BarEditor): its icon, its
      name, a line on what it does, and the grip it is dragged by (a lock when it stays put). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"

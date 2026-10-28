@@ -10,12 +10,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * METUBE(shorts): the shorts played lately, so the Shorts queue never serves one twice (the reel
+ * MEETUBE(shorts): the shorts played lately, so the Shorts queue never serves one twice (the reel
  * feed repeats itself across pages, refreshes and days). Kept like the owner's YT client keeps
  * them: the last 3000, for 7 days, across restarts.
  */
 public final class ShortsSeen {
-    private static final String PREFS = "metube_shorts_seen";
+    private static final String PREFS = "meetube_shorts_seen";
     private static final String KEY = "seen";
     private static final int MAX = 3000;
     private static final long KEEP_MS = 7L * 24 * 60 * 60 * 1000;

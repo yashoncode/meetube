@@ -191,7 +191,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** NEWTUBE(issue #9): the last known video display aspect (pixel aspect included), 0 = none yet. */
     private float mVideoAspect;
     private TextView mTitleView;
-    /** METUBE(fullscreen): the channel, under the title in the vertical fullscreen. */
+    /** MEETUBE(fullscreen): the channel, under the title in the vertical fullscreen. */
     private TextView mPlayerAuthor;
     private ImageButton mBackButton;
     private ImageButton mPlayPauseButton;
@@ -207,7 +207,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** The row on the bar: time, current chapter, fullscreen. */
     @Nullable private View mBottomRow;
     /**
-     * METUBE(fullscreen-actions): like, dislike, comments, download and share on a pill under the
+     * MEETUBE(fullscreen-actions): like, dislike, comments, download and share on a pill under the
      * bar in fullscreen, and the chevron that hides or shows it. Shown until the chevron hides it, and
      * the choice is kept.
      */
@@ -217,19 +217,19 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable private ImageButton mPlayerDislike;
     @Nullable private ImageButton mPlayerDownload;
     @Nullable private View mPlayerComments;
-    @Nullable private View mPlayerChat; // METUBE(live chat, issue #32): chat from the fullscreen pill
+    @Nullable private View mPlayerChat; // MEETUBE(live chat, issue #32): chat from the fullscreen pill
     private boolean mActionsShown;
     /** The pill's comments button left fullscreen: open the panel once the page is back. */
     private boolean mCommentsAfterFullscreen;
     /** Landscape comments: the panel in a column beside the video (layOutCommentsSide). */
     private boolean mCommentsSide;
-    private boolean mChatSide; // METUBE(live chat, issue #32): the landscape video beside the chat column
+    private boolean mChatSide; // MEETUBE(live chat, issue #32): the landscape video beside the chat column
     private int mChatMargin; // the room the video gives the chat column (its end margin, once slid)
     @Nullable private android.animation.ValueAnimator mChatSlide;
-    private static final String PLAYER_UI_PREFS = "metube_player_ui";
+    private static final String PLAYER_UI_PREFS = "meetube_player_ui";
     private static final String KEY_ACTIONS_SHOWN = "fullscreen_actions";
     private static final String KEY_TIME_REMAINING = "time_remaining";
-    private boolean mTimeRemaining; // METUBE(issue #67): the time pill counts down, toggled by a tap
+    private boolean mTimeRemaining; // MEETUBE(issue #67): the time pill counts down, toggled by a tap
     /** Previous / play-pause / next, and the top-right options: they step aside while scrubbing. */
     @Nullable private View mTransport;
     @Nullable private View mOptionsRow;
@@ -246,7 +246,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private TextView mSetupHint;
     /** Persistent "why playback stopped" line (see {@link #showPlaybackNotice}). */
     private TextView mNoticeView;
-    /** METUBE(up-next): the "Up next in N" card over an ended video. */
+    /** MEETUBE(up-next): the "Up next in N" card over an ended video. */
     private NextCountdown mNextCountdown;
     private ImageButton mSubtitlesButton;
     private ImageButton mMoreButton;
@@ -287,9 +287,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private View mWatchContent;
     private TextView mWatchTitle;
     private TextView mWatchMeta;
-    /** METUBE(ambient): the YouTube-style glow behind the watch page. */
+    /** MEETUBE(ambient): the YouTube-style glow behind the watch page. */
     private AmbientGlow mAmbient;
-    /** METUBE(shorts): the vertical player mode for videos from the Shorts tab. */
+    /** MEETUBE(shorts): the vertical player mode for videos from the Shorts tab. */
     private ShortsOverlay mShorts;
     private TextView mWatchDescription;
     private View mWatchLike;
@@ -299,12 +299,12 @@ public class MobilePlaybackActivity extends MobileActivity
     private ImageView mWatchDislikeIcon;
     private TextView mWatchDislikeCount;
     private View mWatchShare;
-    /** METUBE(music): shown only once {@link MusicLink} says the video is in YouTube Music. */
+    /** MEETUBE(music): shown only once {@link MusicLink} says the video is in YouTube Music. */
     private View mWatchMusic;
-    /** METUBE(lyrics): the open lyrics panel, closed when another video starts (its lines are the last song's). */
+    /** MEETUBE(lyrics): the open lyrics panel, closed when another video starts (its lines are the last song's). */
     @Nullable
     private BottomSheetDialog mLyricsSheet;
-    /** METUBE(transcript): the open transcript, and the open video's caption links it is made from. */
+    /** MEETUBE(transcript): the open transcript, and the open video's caption links it is made from. */
     private BottomSheetDialog mTranscriptSheet;
     @Nullable
     private MediaItemFormatInfo mCaptionInfo;
@@ -320,7 +320,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private TextView mWatchSubs;
     private TextView mWatchSubscribe;
     /**
-     * METUBE(watch-look): on the compact page Subscribe shrinks to the app's mark while the actions
+     * MEETUBE(watch-look): on the compact page Subscribe shrinks to the app's mark while the actions
      * beside it are swiped, so they have the row (morphSubscribe). 0 = the label, 1 = the mark.
      */
     @Nullable
@@ -335,7 +335,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private RecyclerView mWatchRelated;
     private RelatedVideoAdapter mRelatedAdapter;
     /**
-     * METUBE(issue #74): the chips over the related list. "All" is the related list itself; "From
+     * MEETUBE(issue #74): the chips over the related list. "All" is the related list itself; "From
      * <channel>" shows that channel's uploads instead. YouTube's own topic chips come only to a
      * signed-in WEB /next, and WEB refuses the TV sign-in (see issue #79), so these are built here.
      * The chip's videos never enter mRelatedVideos: autoplay, the controller and the More videos
@@ -359,7 +359,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private static final long COMMENTS_PREFETCH_DELAY_MS = 2_000;
     private final Runnable mPrefetchComments = this::prefetchComments;
     /**
-     * METUBE(watch-look): the compact watch page (WatchLook) - its comments card shows the top
+     * MEETUBE(watch-look): the compact watch page (WatchLook) - its comments card shows the top
      * comments one at a time, the next every TOP_COMMENT_MS.
      */
     private boolean mWatchCompact;
@@ -431,7 +431,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private Video mWatchVideo;
     private String mWatchVideoId;
-    /** METUBE(description): the Description sheet's views and calendar date, from the metadata. */
+    /** MEETUBE(description): the Description sheet's views and calendar date, from the metadata. */
     @Nullable
     private String mDescriptionViews;
     @Nullable
@@ -447,7 +447,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 int width = right - left;
                 // Not in PiP: a portrait layout override (a landscape tablet that left
                 // fullscreen in place) outlives the PiP window, which must stay video-only.
-                // METUBE(pip): a square or vertical video's PiP window is itself "portrait";
+                // MEETUBE(pip): a square or vertical video's PiP window is itself "portrait";
                 // the 16:9 box here left it half black, the fullscreen FAB in the black.
                 if (width > 0 && !this.mIsInPip && !this.mPipEnterPending
                         && layoutOrientation()
@@ -512,12 +512,12 @@ public class MobilePlaybackActivity extends MobileActivity
     private final Runnable mOrientationSettleCheck = () -> onPhoneOrientation(mLastPhoneDegrees);
     /** True while in true background audio-only playback (video renderer dropped); see setBackgroundAudioMode. */
     private boolean mBackgroundAudioMode;
-    /** METUBE(audio-only): the headphones button is on - the video track stays dropped on screen too. */
+    /** MEETUBE(audio-only): the headphones button is on - the video track stays dropped on screen too. */
     private boolean mAudioOnly;
-    /** METUBE(audio-only): the live session's state, for the mini card's headphones button. */
+    /** MEETUBE(audio-only): the live session's state, for the mini card's headphones button. */
     static volatile boolean sAudioOnly;
     static final String EXTRA_AUDIO_TOGGLE = "toggle";
-    /** METUBE(shorts): onStop paused the short (no background play); onStart plays it again. */
+    /** MEETUBE(shorts): onStop paused the short (no background play); onStart plays it again. */
     private boolean mShortPausedByLeave;
     /** The PiP headphones closed the window: its exit is not a dismiss, the audio plays on. */
     private boolean mPipToAudio;
@@ -532,11 +532,11 @@ public class MobilePlaybackActivity extends MobileActivity
 
     // Picture-in-Picture play/pause RemoteAction wiring.
     static final String ACTION_PIP_TOGGLE = "com.newtube.mobile.action.PIP_TOGGLE";
-    /** METUBE(audio-only): the PiP window's headphones - close the window, keep the sound. */
+    /** MEETUBE(audio-only): the PiP window's headphones - close the window, keep the sound. */
     static final String ACTION_PIP_AUDIO = "com.newtube.mobile.action.PIP_AUDIO";
     private static final int PIP_REQUEST_TOGGLE = 700;
     private static final int PIP_REQUEST_AUDIO = 701;
-    /** METUBE(shorts-pip): a short's PiP window walks the feed like YouTube's - previous / next. */
+    /** MEETUBE(shorts-pip): a short's PiP window walks the feed like YouTube's - previous / next. */
     static final String ACTION_PIP_PREV = "com.newtube.mobile.action.PIP_PREV";
     static final String ACTION_PIP_NEXT = "com.newtube.mobile.action.PIP_NEXT";
     private static final int PIP_REQUEST_PREV = 702;
@@ -576,7 +576,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // overwrote the user's persisted global buffer preference. See createPlayerObjects().
 
         setContentView(R.layout.activity_mobile_playback);
-        // METUBE(watch-look): the watch page's top half, compact or classic, before any view is found.
+        // MEETUBE(watch-look): the watch page's top half, compact or classic, before any view is found.
         mWatchCompact = !WatchLook.isClassic(this);
         android.view.ViewStub details = findViewById(R.id.mobile_watch_details);
         details.setLayoutResource(mWatchCompact
@@ -719,8 +719,8 @@ public class MobilePlaybackActivity extends MobileActivity
         return !hasSavedState && !hasPendingTransition && !presenterHasVideo;
     }
 
-    private static final String STATE_VIDEO = "metube.playback.video";
-    private static final String STATE_POSITION_MS = "metube.playback.positionMs";
+    private static final String STATE_VIDEO = "meetube.playback.video";
+    private static final String STATE_POSITION_MS = "meetube.playback.positionMs";
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
@@ -889,7 +889,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mMoreButton = findViewById(R.id.mobile_player_more);
         mPrevButton = findViewById(R.id.mobile_player_previous);
         mNextButton = findViewById(R.id.mobile_player_next);
-        // METUBE(glass): every control over the video sits on a see-through tinted disc (time: a
+        // MEETUBE(glass): every control over the video sits on a see-through tinted disc (time: a
         // pill); with Frosted player buttons on, a frosted disc of the video instead. Over HDR's
         // SurfaceView (#35) there is nothing to frost, so the tint alone.
         com.newtube.mobile.ui.common.GlassSource videoGlass =
@@ -990,7 +990,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 if (held && dx < 0) {
                     dx = Math.min(0f, dx + slop + range);
                 }
-                // METUBE(watch-look): the bounce - where the row has nothing to scroll that way, its
+                // MEETUBE(watch-look): the bounce - where the row has nothing to scroll that way, its
                 // pills follow the finger a little (less the further it goes) and spring back on release.
                 View pills = ((ViewGroup) v).getChildAt(0);
                 boolean end = action == android.view.MotionEvent.ACTION_UP
@@ -1040,13 +1040,13 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchCommentsEntry = findViewById(R.id.mobile_watch_comments_entry);
         View shortsOverlay = findViewById(R.id.mobile_shorts_overlay);
         ViewCompat.setOnApplyWindowInsetsListener(shortsOverlay, (v, insets) -> {
-            // METUBE(shorts): the content is edge to edge only while a short fills the screen.
+            // MEETUBE(shorts): the content is edge to edge only while a short fills the screen.
             Insets bars = isShortsMode() ? insets.getInsets(WindowInsetsCompat.Type.systemBars()
                     | WindowInsetsCompat.Type.displayCutout()) : Insets.NONE;
             insetShortsOverlay((ViewGroup) v, bars.top, bars.bottom);
             // The short fills the screen between the bars (cropped, as before); the ambient fill
             // takes the bars' strips and the video's edges fade into it.
-            View glass = findViewById(R.id.mobile_player_glass); // the video's box (METUBE(glass))
+            View glass = findViewById(R.id.mobile_player_glass); // the video's box (MEETUBE(glass))
             FrameLayout.LayoutParams video = (FrameLayout.LayoutParams) glass.getLayoutParams();
             if (video.topMargin != bars.top || video.bottomMargin != bars.bottom) {
                 video.topMargin = bars.top;
@@ -1231,7 +1231,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 applyControlsInsets();
             }
             if (mShortsCommentsGone >= 0f) {
-                followShortsComments(mShortsCommentsGone); // METUBE(shorts): the box's new size
+                followShortsComments(mShortsCommentsGone); // MEETUBE(shorts): the box's new size
             }
         });
 
@@ -1251,7 +1251,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 return;
             }
             if (mMoreVideos != null && mMoreVideos.isShown()) {
-                mMoreVideos.close(); // METUBE(more videos): a tap on the video above it puts it away
+                mMoreVideos.close(); // MEETUBE(more videos): a tap on the video above it puts it away
                 return;
             }
             boolean reveal = !mControlsVisible;
@@ -1263,7 +1263,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // a seek puts the controls away (the seek ripple takes the screen), anything else undoes
         // the first tap's toggle.
         mPlayerView.setInstantSingleTap(true);
-        // METUBE(haptics): the video's own taps stay silent (a tap shows the controls); its
+        // MEETUBE(haptics): the video's own taps stay silent (a tap shows the controls); its
         // double-tap seeks click per seek (YouTubeOverlay), its hold buzzes (beginHoldSpeed).
         mPlayerView.setHapticFeedbackEnabled(false);
         // NEWTUBE(hold-speed): press and hold the video = 2x for as long as the finger stays,
@@ -1273,7 +1273,7 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override
             public boolean onHoldStart(float x, float y) {
                 if (isShortsMode() && mShorts != null) {
-                    // METUBE(shorts): a held short shows only itself; held in its top-right
+                    // MEETUBE(shorts): a held short shows only itself; held in its top-right
                     // quarter, also at 2x (where it can).
                     mShorts.setClean(true);
                     mShortsStayClean = !(x > mPlayerView.getWidth() / 2f && y < mPlayerView.getHeight() / 2f);
@@ -1308,7 +1308,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         // Tap on empty overlay space hides the controls (buttons/seek bar consume their own taps).
         mControlsRoot.setOnClickListener(v -> hideControls());
-        mControlsRoot.setHapticFeedbackEnabled(false); // METUBE(haptics): empty overlay space is the video's
+        mControlsRoot.setHapticFeedbackEnabled(false); // MEETUBE(haptics): empty overlay space is the video's
         // NEWTUBE(motion): empty overlay space passes its touches to the player's tap detector (the
         // two views cover the same box), so the first tap's controls do not swallow the second tap
         // of a double tap, and a double tap seeks with the controls up too. A single tap still
@@ -1457,7 +1457,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // start drawn in the same pass that hid the skeleton, and on a busy main thread (binding a
         // dozen rows while the video starts) that empty frame stayed up ~1 s.
         mWatchRelated.setItemAnimator(null);
-        // METUBE(list layout): Up next follows Customization > Video layout, like every feed.
+        // MEETUBE(list layout): Up next follows Customization > Video layout, like every feed.
         mRelatedAdapter.setCards(!com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this));
         mWatchRelated.setAdapter(mRelatedAdapter);
 
@@ -1471,7 +1471,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mQueueList.setMaxHeight(Math.round(getResources().getDisplayMetrics().heightPixels * 0.5f));
         mQueueHeader.setOnClickListener(v -> toggleQueueExpanded());
 
-        // Expandable description: tap the title or the views/date row (METUBE: no chevron).
+        // Expandable description: tap the title or the views/date row (MEETUBE: no chevron).
         findViewById(R.id.mobile_watch_header).setOnClickListener(v -> showDescriptionSheet());
 
         // Actions row. Like/Dislike/Subscribe go through the presenter's onButtonClicked vocabulary
@@ -1502,7 +1502,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchDownload.setOnClickListener(v -> onDownloadTapped());
         mWatchDownload.setOnLongClickListener(v -> onDownloadLongPressed());
         DownloadRegistry.instance(this).addListener(mDownloadsListener);
-        // METUBE(fullscreen-actions): the fullscreen pill taps the page's own buttons. Comments open
+        // MEETUBE(fullscreen-actions): the fullscreen pill taps the page's own buttons. Comments open
         // beside the landscape video; the vertical fullscreen has no room, so it leaves for the page.
         mPlayerLike.setOnClickListener(v -> mWatchLike.performClick());
         mPlayerDislike.setOnClickListener(v -> mWatchDislike.performClick());
@@ -1572,7 +1572,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(player): the page's small portrait player gets smaller buttons (40dp; the play / pause
+     * MEETUBE(player): the page's small portrait player gets smaller buttons (40dp; the play / pause
      * keeps its size) so they cover less of its picture; fullscreen keeps the full-size ones.
      */
     private void sizePlayerControls(boolean compact) {
@@ -1659,13 +1659,13 @@ public class MobilePlaybackActivity extends MobileActivity
                 setResizeMode(PlayerData.instance(this).getResizeMode());
             }
             if (width > 0) {
-                // METUBE(shorts): a short fills the portrait screen; the watch page steps aside.
+                // MEETUBE(shorts): a short fills the portrait screen; the watch page steps aside.
                 // So does any video in the vertical fullscreen (setPortraitFull).
                 lp.height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : inlineBoxHeight(width);
                 lp.weight = 0;
                 mVideoArea.setLayoutParams(lp);
             }
-            // METUBE(shorts): a short's comments sit over a black page, not the watch page - so
+            // MEETUBE(shorts): a short's comments sit over a black page, not the watch page - so
             // sliding them down never shows the short as an ordinary video.
             boolean shorts = mShorts != null && mShorts.isActive();
             if (mWatchScroll != null) {
@@ -1677,7 +1677,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mCommentsPanel != null) {
                 mCommentsPanel.setSuspended(isTallMode());
                 if (mCommentsAfterFullscreen && !isTallMode()) {
-                    mCommentsAfterFullscreen = false; // METUBE(fullscreen-actions)
+                    mCommentsAfterFullscreen = false; // MEETUBE(fullscreen-actions)
                     OneShotPreDrawListener.add(mWatchRoot, this::onCommentsEntryClicked);
                 }
             }
@@ -1692,7 +1692,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(fullscreen-actions): YouTube's landscape comments. While {@code side}, the page is a
+     * MEETUBE(fullscreen-actions): YouTube's landscape comments. While {@code side}, the page is a
      * row: the video on the left and, on the right, the watch area as a column that holds the
      * comments panel. Otherwise the usual column (in fullscreen the video takes all of it).
      */
@@ -1709,7 +1709,7 @@ public class MobilePlaybackActivity extends MobileActivity
         lp.width = side ? Math.round(width * 0.4f) : LinearLayout.LayoutParams.MATCH_PARENT;
         lp.height = side ? LinearLayout.LayoutParams.MATCH_PARENT : 0;
         lp.weight = side ? 0 : 1;
-        // METUBE(live chat, issue #32): beside the video the comments float as a rounded card, like
+        // MEETUBE(live chat, issue #32): beside the video the comments float as a rounded card, like
         // the live chat's, a margin in from the edges and the video.
         int margin = side ? LiveChatSheet.cardMarginPx(area) : 0;
         lp.setMargins(margin, margin, margin, margin);
@@ -1861,7 +1861,7 @@ public class MobilePlaybackActivity extends MobileActivity
             });
         }
         mPlayer.setPlayWhenReady(true);
-        // METUBE(sleep-timer): "End of video" pauses where autoplay would open the next one.
+        // MEETUBE(sleep-timer): "End of video" pauses where autoplay would open the next one.
         mPlayer.setPauseAtEndOfMediaItems(SleepTimer.isEndOfVideo());
         mPlayer.addListener(mSleepEndListener);
         SleepTimer.attach(mSleepPause);
@@ -1915,7 +1915,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
                     @Override
                     public Boolean shouldForward(Player player, DoubleTapPlayerView playerView, float posX) {
-                        // METUBE(double-tap seek, issue #6): Settings > Player picks the jump.
+                        // MEETUBE(double-tap seek, issue #6): Settings > Player picks the jump.
                         mYouTubeOverlay.seekSeconds(Math.max(1,
                                 PlayerData.instance(MobilePlaybackActivity.this).getSeekIncrementMs() / 1000));
                         Boolean forward = doubleTapSeekForward(player, posX);
@@ -2028,7 +2028,7 @@ public class MobilePlaybackActivity extends MobileActivity
     protected void onStart() {
         super.onStart();
         mIsStopped = false;
-        if (mShortPausedByLeave) { // METUBE(shorts): back in the app - the short plays on
+        if (mShortPausedByLeave) { // MEETUBE(shorts): back in the app - the short plays on
             mShortPausedByLeave = false;
             if (mShorts != null && mShorts.isActive() && mExoPlayerController != null) {
                 mExoPlayerController.setPlayWhenReady(true);
@@ -2048,7 +2048,7 @@ public class MobilePlaybackActivity extends MobileActivity
         PlayerTransitionBridge.LaunchSnapshot launch = PlayerTransitionBridge.take();
 
         mIsResumed = true;
-        applyAmbientSetting(); // METUBE(ambient): the Settings switch, read on every resume
+        applyAmbientSetting(); // MEETUBE(ambient): the Settings switch, read on every resume
         if (mControlsVisible && !isPlayerSheetShown()) {
             // NEWTUBE(sheet-landscape): back from a picker screen (Repeat, Zoom...) that held the
             // controls up. It only paused this screen, so onStart's countdown does not run.
@@ -2239,7 +2239,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // uninhibited means a real background (home without PiP, screen off, another screen on top).
         // Re-enabled at the top of onResume, before the texture reattach.
         if (mShorts != null && mShorts.isActive() && !mIsInPip && !isFinishing()) {
-            // METUBE(shorts): no background play for Shorts - leaving pauses, coming back plays.
+            // MEETUBE(shorts): no background play for Shorts - leaving pauses, coming back plays.
             // (Home with a short playing opens PiP instead; this is a paused short or the screen off.)
             if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
                 mExoPlayerController.setPlayWhenReady(false);
@@ -2431,7 +2431,7 @@ public class MobilePlaybackActivity extends MobileActivity
             logPip("leave-skip reason=internal-navigation");
             return;
         }
-        // METUBE(audio-only): leaving a playing video always opens PiP, unless the headphones are
+        // MEETUBE(audio-only): leaving a playing video always opens PiP, unless the headphones are
         // on - then onStop keeps the audio going.
         if (mAudioOnly) {
             logPip("leave-skip reason=audio-mode");
@@ -2467,7 +2467,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         applyWatchLayoutForOrientation(orientation);
         if (mShorts != null && mShorts.isActive()) {
-            applyShortsLayout(); // METUBE(issue #57): the short's zoom and glow for the new shape
+            applyShortsLayout(); // MEETUBE(issue #57): the short's zoom and glow for the new shape
         }
         applySystemBarsForOrientation(orientation);
         updateFullscreenIcon(orientation);
@@ -2544,12 +2544,12 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         if (mControlsVisible && com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
-            hideControls(); // METUBE(tv): the remote's Back closes the controls before it leaves the video
+            hideControls(); // MEETUBE(tv): the remote's Back closes the controls before it leaves the video
             return;
         }
         if (!mBackPreview && mMorphAnimator == null && !mMorphStartPending && !mMagnetDragging
                 && mMorphFraction != 0f) {
-            // METUBE(fullscreen): a morph left half-way with nothing moving it locks out Back, the
+            // MEETUBE(fullscreen): a morph left half-way with nothing moving it locks out Back, the
             // drags and the controls; Back puts the page back instead of closing the player.
             resetMorph();
             return;
@@ -2624,7 +2624,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         if (mPortraitFull && !isLandscape()) {
-            // METUBE(fullscreen): Back here only leaves the vertical fullscreen (handleBack), so no
+            // MEETUBE(fullscreen): Back here only leaves the vertical fullscreen (handleBack), so no
             // minimize preview - it was left mid-shrink with every gesture locked out.
             return;
         }
@@ -2727,13 +2727,13 @@ public class MobilePlaybackActivity extends MobileActivity
             mTimeBar.setAlpha(content);
         }
         if (mWatchFab != null) {
-            mWatchFab.setAlpha(content); // METUBE(fullscreen): the floating button goes with the page
+            mWatchFab.setAlpha(content); // MEETUBE(fullscreen): the floating button goes with the page
         }
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(content);
         }
-        LyricsSheet.setMorphAlpha(mLyricsSheet, content); // METUBE(lyrics)
-        LyricsSheet.setMorphAlpha(mTranscriptSheet, content); // METUBE(transcript)
+        LyricsSheet.setMorphAlpha(mLyricsSheet, content); // MEETUBE(lyrics)
+        LyricsSheet.setMorphAlpha(mTranscriptSheet, content); // MEETUBE(transcript)
         float backdrop = 1f - p;
         if (mWatchScroll != null && mWatchScroll.getBackground() != null) {
             mWatchScroll.getBackground().mutate().setAlpha(Math.round(255f * backdrop));
@@ -2800,14 +2800,14 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     protected boolean shouldInsetContentForSystemBars() {
-        // METUBE(shorts): a short runs under the status and navigation bars, edge to edge; its
+        // MEETUBE(shorts): a short runs under the status and navigation bars, edge to edge; its
         // overlay keeps clear of them itself (the listener on it in bindViews).
-        // METUBE(fullscreen): so does the vertical fullscreen, its bars hidden.
+        // MEETUBE(fullscreen): so does the vertical fullscreen, its bars hidden.
         return layoutOrientation() != Configuration.ORIENTATION_LANDSCAPE && !isTallMode();
     }
 
     /**
-     * METUBE(fullscreen): the bars' room whether they show yet or not (Android 11+). Leaving the
+     * MEETUBE(fullscreen): the bars' room whether they show yet or not (Android 11+). Leaving the
      * vertical fullscreen the page lays out while the bars are still hidden; their visible insets
      * put it at the very top, then dropped it by the status bar once they were back.
      */
@@ -2855,7 +2855,7 @@ public class MobilePlaybackActivity extends MobileActivity
             top = bars.top;
             bottom = bars.bottom;
         } else if (mPortraitFull) {
-            // METUBE(fullscreen): the video runs under the hidden status bar, so the top row
+            // MEETUBE(fullscreen): the video runs under the hidden status bar, so the top row
             // drops below the camera's band (the bars' room, visible or not) instead of flanking it.
             WindowInsetsCompat rootInsets = ViewCompat.getRootWindowInsets(mControlsRoot);
             if (rootInsets != null) {
@@ -2873,7 +2873,7 @@ public class MobilePlaybackActivity extends MobileActivity
         bleedScrim(mBottomScrim, left, 0, right, bottom);
         applySeekBarLayout(left, top, right, bottom);
         placeTitle();
-        // METUBE(lock, issue #98): fullscreen only, vertical or landscape; leaving it unlocks.
+        // MEETUBE(lock, issue #98): fullscreen only, vertical or landscape; leaving it unlocks.
         boolean full = isLandscape() || mPortraitFull;
         if (mPlayerLock != null) {
             mPlayerLock.setVisibility(full ? View.VISIBLE : View.GONE);
@@ -2891,7 +2891,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(fullscreen): the vertical fullscreen lays the top out like YouTube's: the title under
+     * MEETUBE(fullscreen): the vertical fullscreen lays the top out like YouTube's: the title under
      * the top row, the screen's width, and the channel under it. Elsewhere the title sits between
      * the top-left buttons and the options (landscape), or is gone (portrait: the page has it).
      */
@@ -2915,12 +2915,12 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mTimeBar == null) {
             return;
         }
-        // METUBE(fullscreen): the vertical fullscreen floats the bar like landscape does, just over
+        // MEETUBE(fullscreen): the vertical fullscreen floats the bar like landscape does, just over
         // the gesture bar (applyControlsInsets).
         boolean inline = !isLandscape() && !mPortraitFull;
         int side = inline ? 0 : dp(12);
         int lift = inline ? 0 : dp(8);
-        // METUBE(fullscreen-actions): the actions pill takes the bar's place and the bar, with
+        // MEETUBE(fullscreen-actions): the actions pill takes the bar's place and the bar, with
         // everything over it, rises above the pill. The chevron beside fullscreen flips it.
         boolean actions = !inline && mActionsShown;
         if (mActionsRow != null && mActionsToggle != null) {
@@ -2960,7 +2960,7 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean casting = mCastOverlay != null && mCastOverlay.getVisibility() == View.VISIBLE;
         boolean line = !isLandscape() && !mIsInPip && !mPipEnterPending && !casting
                 && (video == null || !video.isLive)
-                && !isShortsMode(); // METUBE(shorts): the overlay draws its own scrub line
+                && !isShortsMode(); // MEETUBE(shorts): the overlay draws its own scrub line
         if (line != mTimeBar.isLineWhenHidden()) {
             mTimeBar.setLineWhenHidden(line);
             if (!mControlsVisible) {
@@ -3217,7 +3217,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /**
      * The inline video box: the video's own shape across the window's width, like YouTube's
-     * (METUBE, issue #13: a square music video sat in a 16:9 box with bars at its sides). Never
+     * (MEETUBE, issue #13: a square music video sat in a 16:9 box with bars at its sides). Never
      * shorter than 16:9, so a wider film keeps the 16:9 box, and never taller than two thirds of
      * the window, YouTube's cap for a vertical video, so the title and buttons stay in sight. In a
      * landscape-shaped window (a tablet that left fullscreen without rotating), where a full-width
@@ -3237,7 +3237,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 return Math.min(height, Math.round(windowHeight * 0.6f));
             }
             if (mShorts != null && mShorts.isCommentsOpen()) {
-                // METUBE(shorts): YouTube's split for a short's comments - the short in the top
+                // MEETUBE(shorts): YouTube's split for a short's comments - the short in the top
                 // third, the comments under it. The two-thirds cap below left them a third (#27).
                 return windowHeight / 3;
             }
@@ -3249,11 +3249,11 @@ public class MobilePlaybackActivity extends MobileActivity
         return height;
     }
 
-    /** METUBE(issue #13): the playing video's shape for the inline box; 0 = not known, 16:9. */
+    /** MEETUBE(issue #13): the playing video's shape for the inline box; 0 = not known, 16:9. */
     private float mInlineAspect;
 
     /**
-     * METUBE(issue #13): the inline box takes {@code aspect}, growing or shrinking in place while
+     * MEETUBE(issue #13): the inline box takes {@code aspect}, growing or shrinking in place while
      * the page is on screen. Called with the tracks' shape as a video opens, before its first
      * frame, then with the decoded size. Elsewhere (fullscreen, PiP) the box picks it up when the
      * page lays out again.
@@ -3275,11 +3275,11 @@ public class MobilePlaybackActivity extends MobileActivity
         applyPortraitVideoHeight(mWatchRoot.getWidth());
     }
 
-    /** METUBE(issue #36): how much of a tall video's box the page has scrolled away, px. */
+    /** MEETUBE(issue #36): how much of a tall video's box the page has scrolled away, px. */
     private int mTallBoxCollapse;
 
     /**
-     * METUBE(issue #36): YouTube's page under a tall video - scrolled up, the page first shrinks
+     * MEETUBE(issue #36): YouTube's page under a tall video - scrolled up, the page first shrinks
      * the box down to 16:9, then moves; back at its top, pulled down, it grows the box again
      * before anything else. Returns the part of {@code dy} the box took.
      */
@@ -3305,7 +3305,7 @@ public class MobilePlaybackActivity extends MobileActivity
         return taken;
     }
 
-    /** METUBE(issue #13): the shape of the biggest video track, 0 without one. */
+    /** MEETUBE(issue #13): the shape of the biggest video track, 0 without one. */
     private static float tracksAspect(androidx.media3.common.Tracks tracks) {
         androidx.media3.common.Format biggest = null;
         for (androidx.media3.common.Tracks.Group group : tracks.getGroups()) {
@@ -3404,11 +3404,11 @@ public class MobilePlaybackActivity extends MobileActivity
     private void applyPipVideoOnlyLayout() {
         cancelAutoHide();
         hideControls();
-        // METUBE(lyrics): a sheet's window belongs to this activity, so it shrank into the pinned
+        // MEETUBE(lyrics): a sheet's window belongs to this activity, so it shrank into the pinned
         // window too (the lyrics panel left open over the launcher, issue #30).
         dismissPlayerSheets();
         if (mShorts != null) {
-            mShorts.setInPip(true); // METUBE(shorts-pip): only the short, no side buttons
+            mShorts.setInPip(true); // MEETUBE(shorts-pip): only the short, no side buttons
         }
         // NEWTUBE(hold-speed): a hold does not follow the video into PiP (no touch ends it there).
         cancelHoldSpeed();
@@ -3517,11 +3517,11 @@ public class MobilePlaybackActivity extends MobileActivity
                 && !mIsEnded
                 && mExoPlayerController != null
                 && mExoPlayerController.getPlayWhenReady()
-                && !mAudioOnly; // METUBE(audio-only): Home keeps the sound going, no PiP window
+                && !mAudioOnly; // MEETUBE(audio-only): Home keeps the sound going, no PiP window
     }
 
     /**
-     * METUBE(audio-only): the headphones button. On: the video track is dropped (no video
+     * MEETUBE(audio-only): the headphones button. On: the video track is dropped (no video
      * downloaded or decoded, as in background audio), the thumbnail takes the video's place, and
      * Home keeps the sound playing with the media notification instead of opening a PiP window.
      * Lasts for this player session, so the next video plays as audio too.
@@ -3588,7 +3588,7 @@ public class MobilePlaybackActivity extends MobileActivity
             width = mPlayer.getVideoFormat().width;
             height = mPlayer.getVideoFormat().height;
         } else if (mVideoAspect > 0) {
-            // METUBE(shorts pip): between videos (PiP next) the format is gone for a moment; the
+            // MEETUBE(shorts pip): between videos (PiP next) the format is gone for a moment; the
             // 16:9 default then turned the portrait window landscape. Keep the last known shape.
             width = Math.round(mVideoAspect * 1000);
             height = 1000;
@@ -3636,7 +3636,7 @@ public class MobilePlaybackActivity extends MobileActivity
         return new RemoteAction(Icon.createWithResource(this, iconRes), label, label, intent);
     }
 
-    /** METUBE(audio-only): headphones in the PiP window - the window closes, the sound plays on. */
+    /** MEETUBE(audio-only): headphones in the PiP window - the window closes, the sound plays on. */
     @RequiresApi(Build.VERSION_CODES.O)
     private RemoteAction buildAudioOnlyAction() {
         PendingIntent intent = PendingIntent.getBroadcast(this, PIP_REQUEST_AUDIO,
@@ -3662,7 +3662,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (isFinishing() || isDestroyed()) {
             return;
         }
-        // METUBE(pip-smooth): in PiP every push makes SystemUI reload the action icons on the thread
+        // MEETUBE(pip-smooth): in PiP every push makes SystemUI reload the action icons on the thread
         // that moves the PiP window (137 ms stalls logged on wmshell.main), and buffering flips
         // pushed twice each. Only a new play/pause icon or shape is worth a push there.
         if (mIsInPip) {
@@ -3805,7 +3805,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // dismiss ends with onStop. On the older PiP shell the dismissal onStop ran BEFORE this
             // callback, so if we're already stopped this exit can only be a dismissal - finish now.
             if (mPipToAudio) {
-                // METUBE(audio-only): the PiP headphones, not a dismiss. Already stopped: onStop ran
+                // MEETUBE(audio-only): the PiP headphones, not a dismiss. Already stopped: onStop ran
                 // while still pinned and skipped the background-audio switch, so make it here.
                 if (mIsStopped) {
                     setBackgroundAudioMode(true);
@@ -4021,7 +4021,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(tv): the remote on the player (issue #21). Hidden controls: OK plays or pauses and shows
+     * MEETUBE(tv): the remote on the player (issue #21). Hidden controls: OK plays or pauses and shows
      * them, Left and Right seek on the bar, Up and Down bring them up. Shown, the keys move between
      * them as focus does anywhere, and each one keeps them up. A short: Up and Down change it, OK
      * plays or pauses, unless one of its buttons has the focus.
@@ -4554,7 +4554,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private void showControlsInternal(boolean animate) {
         if (isShortsMode() || mPlayerLocked) {
-            return; // METUBE(shorts): the overlay is the chrome; METUBE(lock): nothing while locked
+            return; // MEETUBE(shorts): the overlay is the chrome; MEETUBE(lock): nothing while locked
         }
         mControlsVisible = true;
         mControlsRoot.setVisibility(View.VISIBLE);
@@ -4770,7 +4770,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (windowOrientation == Configuration.ORIENTATION_PORTRAIT && !isShortsMode()
                 && isVerticalVideo()) {
-            // METUBE(issue NewTube#69): a vertical video's fullscreen is upright, filling the
+            // MEETUBE(issue NewTube#69): a vertical video's fullscreen is upright, filling the
             // screen (the pull-down's vertical fullscreen); rotating it only pillarboxed it.
             setPortraitFull(!mPortraitFull);
             armAutoHide();
@@ -4904,7 +4904,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return true;
         }
         if (com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
-            return true; // METUBE(tv): a TV never turns - a portrait request only letterboxed the app
+            return true; // MEETUBE(tv): a TV never turns - a portrait request only letterboxed the app
         }
         return getApplicationContext().getResources().getConfiguration()
                 .smallestScreenWidthDp >= 600;
@@ -5076,7 +5076,7 @@ public class MobilePlaybackActivity extends MobileActivity
             addMenuRow(content, sheet, R.drawable.ic_player_pip, R.string.mobile_player_pip,
                     null, false, this::enterPipFromMenu);
         }
-        // METUBE(ambient): the video's colours around it - on unless turned off here or in Settings.
+        // MEETUBE(ambient): the video's colours around it - on unless turned off here or in Settings.
         addMenuRow(content, sheet, R.drawable.ic_player_brightness_high, R.string.mobile_settings_ambient,
                 stateLabel(AmbientGlow.isOn(this)), false, this::toggleAmbient);
         addMenuRow(content, sheet, R.drawable.ic_mobile_settings, R.string.mobile_menu_more,
@@ -5087,7 +5087,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(ambient): start or drop the glow (and the vertical fullscreen's fill) as the Ambient
+     * MEETUBE(ambient): start or drop the glow (and the vertical fullscreen's fill) as the Ambient
      * mode switch says - Settings, or the gear sheet's own row.
      */
     private void applyAmbientSetting() {
@@ -5109,7 +5109,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
     }
 
-    /** METUBE(autoplay): on unless "When a video ends" is Pause or Close the player. */
+    /** MEETUBE(autoplay): on unless "When a video ends" is Pause or Close the player. */
     private boolean isAutoplayOn() {
         int mode = PlayerData.instance(this).getPlaybackMode();
         return mode != PlayerConstants.PLAYBACK_MODE_PAUSE && mode != PlayerConstants.PLAYBACK_MODE_CLOSE;
@@ -5280,13 +5280,13 @@ public class MobilePlaybackActivity extends MobileActivity
         mShownSheets.add(new java.lang.ref.WeakReference<>(dialog));
         mSheetsOrientation = layoutOrientation();
         Window window = dialog.getWindow();
-        // METUBE(fullscreen): landscape and vertical fullscreen both hide the bars.
+        // MEETUBE(fullscreen): landscape and vertical fullscreen both hide the bars.
         androidx.core.view.WindowInsetsCompat pageInsets =
                 androidx.core.view.ViewCompat.getRootWindowInsets(getWindow().getDecorView());
         boolean landscape = mSheetsOrientation == Configuration.ORIENTATION_LANDSCAPE;
         boolean immersive = landscape || (pageInsets != null
                 && !pageInsets.isVisible(androidx.core.view.WindowInsetsCompat.Type.statusBars()));
-        // METUBE(tv): not on a TV - no bars to keep away, and the window sometimes never got the
+        // MEETUBE(tv): not on a TV - no bars to keep away, and the window sometimes never got the
         // focus back, so the remote's keys went on to the player under the sheet.
         boolean focusLater = immersive && !com.newtube.mobile.ui.common.FocusRing.isTv(this);
         if (focusLater && window != null) {
@@ -5378,7 +5378,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(glass): off while a sheet or a picker covers the controls - dimmed under it, their
+     * MEETUBE(glass): off while a sheet or a picker covers the controls - dimmed under it, their
      * frost cost the video its smoothness and showed nothing (#28). Back on as the last one goes.
      */
     private void setControlsGlassLive(boolean live) {
@@ -5641,7 +5641,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mTimeBar.setDuration(Math.max(duration, 0));
         mTimeBar.setPosition(position);
         if (shorts) {
-            mShorts.setProgress(position, Math.max(duration, 0)); // METUBE(shorts): its own scrub line
+            mShorts.setProgress(position, Math.max(duration, 0)); // MEETUBE(shorts): its own scrub line
         }
         Utils.postDelayed(mLineUpdateRunnable, shorts && isPlaying() ? 100
                 : isPlaying() ? barUpdateDelayMs(100, 1_000) : 1_000);
@@ -5705,7 +5705,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (isLive) {
             com.newtube.mobile.ui.common.LiveRingView.markLive(getVideo().channelId);
         }
-        if (mWatchAvatar != null) { // METUBE(issue #73): the channel's glowing live ring
+        if (mWatchAvatar != null) { // MEETUBE(issue #73): the channel's glowing live ring
             com.newtube.mobile.ui.common.LiveRingView.bind(findViewById(R.id.mobile_watch_avatar_live), mWatchAvatar, isLive, 0);
         }
         updateSeekBarLine();
@@ -5761,7 +5761,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         @Override
         public void onTracksChanged(androidx.media3.common.Tracks tracks) {
-            // METUBE(issue #13): the new video's shape before its first frame, so the box is
+            // MEETUBE(issue #13): the new video's shape before its first frame, so the box is
             // ready when the picture arrives instead of jumping under it.
             setInlineAspect(tracksAspect(tracks));
             mHdrTrack = isHdrSelected(tracks);
@@ -5775,7 +5775,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mPlayer != null) {
                 handleUiStateChange(playWhenReady, mPlayer.getPlaybackState());
             }
-            // METUBE(issue #101): a pause from outside the screen (earphones pulled, a headset or
+            // MEETUBE(issue #101): a pause from outside the screen (earphones pulled, a headset or
             // Bluetooth button, another app's sound) brings the controls up, so the paused state is
             // visible. They stay while paused, as after a tap (onAutoHideTick).
             if (!playWhenReady && reason != Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM
@@ -5882,7 +5882,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 finishHdrSwap();
             }
             if (mHdrOutput) {
-                // METUBE(issue #35): the frame went to the HDR SurfaceView, which the still-lift
+                // MEETUBE(issue #35): the frame went to the HDR SurfaceView, which the still-lift
                 // can't watch: count it as the texture's, and lift a hand-off still here.
                 mLastTextureFrameRealtimeMs = android.os.SystemClock.elapsedRealtime();
                 if (mStillAwaitFrame && !mStillAwaitReady) {
@@ -5937,7 +5937,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     // ---------------------------------------------------------------------------------
-    // METUBE(issue #35): HDR output. Android shows HDR only from a SurfaceView; the session
+    // MEETUBE(issue #35): HDR output. Android shows HDR only from a SurfaceView; the session
     // TextureView above tone-maps it to SDR (measured on a vivo V2404: SurfaceFlinger composites
     // the SurfaceView layer as BT2020_ITU_PQ, the window as sRGB/P3 even in COLOR_MODE_HDR). So
     // while an HDR track plays in the resting watch page or fullscreen, the codec draws into a
@@ -6066,11 +6066,11 @@ public class MobilePlaybackActivity extends MobileActivity
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
-    /** METUBE(shorts): the paged-away short's last frame, over the video while the next one opens. */
+    /** MEETUBE(shorts): the paged-away short's last frame, over the video while the next one opens. */
     private ImageView mShortFreeze;
 
     /**
-     * METUBE(shorts): a swipe opens the next short as the finger lifts, while the old one is still
+     * MEETUBE(shorts): a swipe opens the next short as the finger lifts, while the old one is still
      * sliding away. The old one keeps its last frame (half size is plenty for 200 ms of motion) over
      * whatever the new open draws - its still, its first frames - until the slide ends.
      */
@@ -6375,7 +6375,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // while a related row now draws a narrow one - so asking for one fixed size would put a
         // fresh ~114 KB download in the critical path for half of all opens. Ask for the wide one
         // FROM CACHE ONLY and let the narrow one (also cached, by the related row) serve the miss.
-        // METUBE(shorts): a short fills the screen - its portrait still, from the network if need be
+        // MEETUBE(shorts): a short fills the screen - its portrait still, from the network if need be
         // (the Shorts overlay has usually preloaded it into memory for its swipe peek already).
         mVideoStill.setScaleType(!item.belongsToShorts() ? ImageView.ScaleType.FIT_XY
                 : ShortsOverlay.fillsScreen(this) ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER);
@@ -6584,9 +6584,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private static final int SWIPE_BRIGHTNESS = 4;
     private static final int SWIPE_VOLUME = 5;
     private static final int SWIPE_SEEK = 6;
-    /** METUBE(shorts): a vertical drag that pages to the next / previous short. */
+    /** MEETUBE(shorts): a vertical drag that pages to the next / previous short. */
     private static final int SWIPE_SHORTS = 7;
-    /** METUBE(more videos, issue #24): the landscape panel of Up next cards, under the finger. */
+    /** MEETUBE(more videos, issue #24): the landscape panel of Up next cards, under the finger. */
     private static final int SWIPE_MORE_VIDEOS = 8;
 
     @Nullable
@@ -6625,7 +6625,7 @@ public class MobilePlaybackActivity extends MobileActivity
         return watch;
     }
 
-    /** METUBE(shorts): the top bar's mute, kept from short to short until it is tapped again or Shorts end. */
+    /** MEETUBE(shorts): the top bar's mute, kept from short to short until it is tapped again or Shorts end. */
     private boolean mShortsMuted;
     private float mShortsVolumeBeforeMute = 1f;
 
@@ -6644,12 +6644,12 @@ public class MobilePlaybackActivity extends MobileActivity
         return mShortsMuted;
     }
 
-    /** METUBE(shorts): how far a short's open comments are off the screen (0 open, 1 gone); -1 none. */
+    /** MEETUBE(shorts): how far a short's open comments are off the screen (0 open, 1 gone); -1 none. */
     private float mShortsCommentsGone = -1f;
     private final int[] mShortsBoxAt = new int[2];
 
     /**
-     * METUBE(shorts): the short above its comments grows and shrinks with the sheet a frame at a
+     * MEETUBE(shorts): the short above its comments grows and shrinks with the sheet a frame at a
      * time, like YouTube's (#27). Scaled from its top centre and lifted, the box reaches down to
      * the sheet's top edge; with the sheet gone it covers the whole window, where the full-screen
      * layout then puts it, so the switch at the end does not show. Re-applied after each layout
@@ -6676,7 +6676,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mVideoArea.setTranslationY(-top * gone);
     }
 
-    /** METUBE(shorts): a short's comments are gone - the short takes the full screen again. */
+    /** MEETUBE(shorts): a short's comments are gone - the short takes the full screen again. */
     private void onShortsCommentsClosed() {
         boolean followed = mShortsCommentsGone >= 0.99f;
         mShortsCommentsGone = -1f;
@@ -6702,7 +6702,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(shorts): leave the comments - the box takes the full screen at once and is scaled
+     * MEETUBE(shorts): leave the comments - the box takes the full screen at once and is scaled
      * down to where the short was, then grows into place (top-centre pivot), so the short swells
      * back instead of jumping.
      */
@@ -6729,7 +6729,7 @@ public class MobilePlaybackActivity extends MobileActivity
         });
     }
 
-    /** METUBE(shorts): a tap waits out a possible second tap - one pauses, two like. */
+    /** MEETUBE(shorts): a tap waits out a possible second tap - one pauses, two like. */
     private final Runnable mShortsSingleTap = () -> {
         togglePlayPause();
         if (mShorts != null && mPlayer != null) {
@@ -6746,7 +6746,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** Shorts filling the portrait screen (not while its comments are open, nor in landscape). */
     /**
-     * METUBE(fullscreen): YouTube's vertical fullscreen - the video fills the upright screen and
+     * MEETUBE(fullscreen): YouTube's vertical fullscreen - the video fills the upright screen and
      * the page steps aside, with the system bars hidden. Entered by pulling the page down from its
      * top (the title); left by Back, a swipe up or down on the video, or turning the phone sideways.
      */
@@ -6775,7 +6775,7 @@ public class MobilePlaybackActivity extends MobileActivity
             android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
                     new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED));
         }
-        // METUBE(fullscreen): the bars' room goes or comes back in this same layout, so the box moves
+        // MEETUBE(fullscreen): the bars' room goes or comes back in this same layout, so the box moves
         // once - it used to jump by the status bar when the bars' insets landed mid-move.
         refreshContentInsets();
         applyWatchLayoutForOrientation(Configuration.ORIENTATION_PORTRAIT);
@@ -6828,7 +6828,7 @@ public class MobilePlaybackActivity extends MobileActivity
     public boolean dispatchTouchEvent(android.view.MotionEvent event) {
         int action = event.getActionMasked();
         if (mPlayerLocked) {
-            // METUBE(lock, issue #98): a locked player answers only its unlock button - no swipe,
+            // MEETUBE(lock, issue #98): a locked player answers only its unlock button - no swipe,
             // tap, pinch or double tap reaches it. A tap anywhere else shows the button.
             if (action == android.view.MotionEvent.ACTION_DOWN) {
                 mUnlockTouch = mPlayerUnlock.getVisibility() == View.VISIBLE && isOn(mPlayerUnlock, event);
@@ -6842,7 +6842,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return true;
         }
         if (action == android.view.MotionEvent.ACTION_DOWN && mShortsStayClean) {
-            // METUBE(shorts): the touch after a clean hold only brings the buttons back
+            // MEETUBE(shorts): the touch after a clean hold only brings the buttons back
             mShortsStayClean = false;
             mShortsRevealTouch = true;
             if (mShorts != null) {
@@ -6858,7 +6858,7 @@ public class MobilePlaybackActivity extends MobileActivity
         return pullToPortraitFull(event) || super.dispatchTouchEvent(event);
     }
 
-    /** METUBE(lock, issue #98): the fullscreen lock, and whether this touch is the unlock button's. */
+    /** MEETUBE(lock, issue #98): the fullscreen lock, and whether this touch is the unlock button's. */
     private View mPlayerLock;
     private View mPlayerUnlock;
     private boolean mPlayerLocked;
@@ -6903,7 +6903,7 @@ public class MobilePlaybackActivity extends MobileActivity
         return x >= 0 && y >= 0 && x < view.getWidth() && y < view.getHeight();
     }
 
-    /** METUBE(shorts): a short held clean (not at 2x) stays clean after the finger lifts. */
+    /** MEETUBE(shorts): a short held clean (not at 2x) stays clean after the finger lifts. */
     private boolean mShortsStayClean;
     /** The gesture that brought a clean short's buttons back - swallowed whole. */
     private boolean mShortsRevealTouch;
@@ -6931,7 +6931,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     if (dy < 10 * density) {
                         return false;
                     }
-                    // METUBE(fullscreen): a pull from here on - the page follows the finger.
+                    // MEETUBE(fullscreen): a pull from here on - the page follows the finger.
                     mPullConsumed = true;
                     android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
                     cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
@@ -7019,7 +7019,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(shorts): keep the overlay's buttons and text clear of the system bars while its
+     * MEETUBE(shorts): keep the overlay's buttons and text clear of the system bars while its
      * scrims run on under them - padding the whole overlay cut each scrim off in a hard line at
      * the status bar and the navigation bar. The XML values are kept in each child's tag.
      */
@@ -7085,7 +7085,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private MagneticDrag mFullscreenMagnet;
     /** SWIPE_ENTER_FULLSCREEN / SWIPE_EXIT_FULLSCREEN while one is under the finger or settling. */
     private int mFullscreenSwipe;
-    /** METUBE(fullscreen): the vertical fullscreen is being left by a swipe UP - its pull goes up. */
+    /** MEETUBE(fullscreen): the vertical fullscreen is being left by a swipe UP - its pull goes up. */
     private boolean mFullscreenSwipeUp;
     @Nullable
     private ValueAnimator mFullscreenSettle;
@@ -7112,7 +7112,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (!isLandscape()) {
             if (mPortraitFull) {
-                // METUBE(fullscreen): up or down, a swipe on the vertical fullscreen goes back to the page.
+                // MEETUBE(fullscreen): up or down, a swipe on the vertical fullscreen goes back to the page.
                 int swipe = beginFullscreenSwipe(SWIPE_EXIT_FULLSCREEN);
                 mFullscreenSwipeUp = direction == PlayerContainerLayout.UP;
                 return swipe;
@@ -7133,7 +7133,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (direction == PlayerContainerLayout.DOWN) {
             return beginFullscreenSwipe(SWIPE_EXIT_FULLSCREEN);
         }
-        // METUBE(more videos): up, between the level zones, raises the Up next cards over the video.
+        // MEETUBE(more videos): up, between the level zones, raises the Up next cards over the video.
         if (mMoreVideos != null && !isCastOverlayShown() && mMoreVideos.begin()) {
             hideControls();
             return SWIPE_MORE_VIDEOS;
@@ -7360,7 +7360,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     + " detached=" + detached);
         }
         if (mPortraitFull && !isLandscape() && mFullscreenSwipe == SWIPE_EXIT_FULLSCREEN) {
-            // METUBE(fullscreen): the pull comes off in step with the box's shrink (same time, same
+            // MEETUBE(fullscreen): the pull comes off in step with the box's shrink (same time, same
             // curve), so the video moves one way only - an up swipe's pull used to dip down first.
             settleFullscreenPull(PORTRAIT_FULL_MS, Motion.STANDARD);
             setPortraitFull(false); // the vertical fullscreen leaves without a rotation
@@ -7547,7 +7547,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** Compute the video transform (pivot 0,0) that maps the video area onto the mini card. */
     private void computeMorphTarget() {
         float density = getResources().getDisplayMetrics().density;
-        float cardW = getResources().getDimension(R.dimen.metube_mini_width); // a tablet's is bigger
+        float cardW = getResources().getDimension(R.dimen.meetube_mini_width); // a tablet's is bigger
         float margin = 12 * density;
         // Card bottom offset comes from the DESTINATION host: Browse's card floats above its
         // 56dp bottom-nav row, Search/Channel overlay cards sit flush at the content bottom.
@@ -7559,7 +7559,7 @@ public class MobilePlaybackActivity extends MobileActivity
         video.set(0, 0, mVideoArea.getWidth(), mVideoArea.getHeight());
         mContainer.offsetDescendantRectToMyCoords(mVideoArea, video);
 
-        // METUBE(issue #13): the card is 16:9 and fits the video in it, so a box of another shape
+        // MEETUBE(issue #13): the card is 16:9 and fits the video in it, so a box of another shape
         // (a square or vertical video's) lands centred on the card, where the card shows its picture.
         float cardH = cardW * 9f / 16f;
         float scale = video.width() > 0 && video.height() > 0
@@ -7594,7 +7594,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(issue #99): the mini card letterboxes the video (issue #13), so a square or vertical
+     * MEETUBE(issue #99): the mini card letterboxes the video (issue #13), so a square or vertical
      * video's box lands centred on the card at one scale, as {@link #computeMorphTarget()} does for
      * the home corner, instead of stretched to the card's 16:9. Runs after computeMorphTarget(Rect).
      */
@@ -7663,7 +7663,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         float backdrop = morphBackdropAlpha(settled, mMorphOverOwnBackdrop); // NEWTUBE(no-host-minimize)
         if (setMorphBlur(settled)) {
-            // METUBE(minimize blur): Home shows through blurred, not under a black sheet - the black
+            // MEETUBE(minimize blur): Home shows through blurred, not under a black sheet - the black
             // goes in the first quarter, a light dim stays and clears with the blur.
             backdrop = Math.max(0f, 1f - 4f * settled) * 0.65f + 0.35f * (1f - settled);
         }
@@ -7679,12 +7679,12 @@ public class MobilePlaybackActivity extends MobileActivity
             mTimeBar.setAlpha(contentAlpha); // outside the controls since NEWTUBE(seek bar): fade it too
         }
         if (mWatchFab != null) {
-            mWatchFab.setAlpha(contentAlpha); // METUBE(fullscreen): the floating button goes with the page
+            mWatchFab.setAlpha(contentAlpha); // MEETUBE(fullscreen): the floating button goes with the page
         }
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(contentAlpha);
         }
-        LyricsSheet.setMorphAlpha(mLyricsSheet, contentAlpha); // METUBE(lyrics): fades like the comments
+        LyricsSheet.setMorphAlpha(mLyricsSheet, contentAlpha); // MEETUBE(lyrics): fades like the comments
         LyricsSheet.setMorphAlpha(mTranscriptSheet, contentAlpha);
     }
 
@@ -7705,7 +7705,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private static final float MORPH_BLUR_DP = 24f;
 
     /**
-     * METUBE(minimize blur): blur what is behind the window (Home) by the morph's progress, full at
+     * MEETUBE(minimize blur): blur what is behind the window (Home) by the morph's progress, full at
      * the start, none on the card; off (and false) at rest, over our own backdrop, or where the
      * system has no cross-window blur (before Android 12, battery saver, some devices).
      *
@@ -7737,7 +7737,7 @@ public class MobilePlaybackActivity extends MobileActivity
             backdrop.mutate().setAlpha(drawableAlpha);
         }
         View content = findViewById(android.R.id.content);
-        if (content != null && content.getBackground() != null) { // METUBE(ambient): the status bar glow
+        if (content != null && content.getBackground() != null) { // MEETUBE(ambient): the status bar glow
             content.getBackground().setAlpha(Math.round(255f * Math.max(0f, Math.min(1f, alpha))));
         }
     }
@@ -7810,12 +7810,12 @@ public class MobilePlaybackActivity extends MobileActivity
             mTimeBar.setAlpha(1f);
         }
         if (mWatchFab != null) {
-            mWatchFab.setAlpha(1f); // METUBE(fullscreen): the floating button goes with the page
+            mWatchFab.setAlpha(1f); // MEETUBE(fullscreen): the floating button goes with the page
         }
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(1f);
         }
-        LyricsSheet.setMorphAlpha(mLyricsSheet, 1f); // METUBE(lyrics)
+        LyricsSheet.setMorphAlpha(mLyricsSheet, 1f); // MEETUBE(lyrics)
         LyricsSheet.setMorphAlpha(mTranscriptSheet, 1f);
     }
 
@@ -7861,7 +7861,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private boolean canStartDismissDrag() {
         return !mScrubbing && mPlayer != null && mMorphAnimator == null
-                && !(mShorts != null && mShorts.isActive()); // METUBE(shorts): no mini card
+                && !(mShorts != null && mShorts.isActive()); // MEETUBE(shorts): no mini card
     }
 
     private void onDismissDrag(float dy) {
@@ -8103,7 +8103,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mPlayer == null) {
             return false;
         }
-        // METUBE(lyrics): the panel goes with the watch page. Left open, its window outlived the
+        // MEETUBE(lyrics): the panel goes with the watch page. Left open, its window outlived the
         // minimize and resetMorph faded it back in over the mini player (issue #30).
         if (mLyricsSheet != null) {
             mLyricsSheet.dismiss();
@@ -8122,8 +8122,8 @@ public class MobilePlaybackActivity extends MobileActivity
             // navigation still starts its destination animation at full width, so retain the
             // full-size capture for that path.
             Bitmap frame;
-            int width = Math.max(1, getResources().getDimensionPixelSize(R.dimen.metube_mini_width));
-            int height = Math.max(1, getResources().getDimensionPixelSize(R.dimen.metube_mini_height));
+            int width = Math.max(1, getResources().getDimensionPixelSize(R.dimen.meetube_mini_width));
+            int height = Math.max(1, getResources().getDimensionPixelSize(R.dimen.meetube_mini_height));
             if (mHdrOutput && mHdrSurface != null) { // the texture holds an old frame (#35)
                 frame = captureFullSizeStill
                         ? copyHdrFrame(Math.max(1, mHdrSurface.getWidth()), Math.max(1, mHdrSurface.getHeight()))
@@ -8151,8 +8151,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // The card shows this player's live frames at card size: cap NEW chunks to that window.
         // Card px use the app density on purpose - it is the density the card is laid out with.
         mExoPlayerController.setSmallWindowViewport("mini",
-                getResources().getDimensionPixelSize(R.dimen.metube_mini_width),
-                getResources().getDimensionPixelSize(R.dimen.metube_mini_height));
+                getResources().getDimensionPixelSize(R.dimen.meetube_mini_width),
+                getResources().getDimensionPixelSize(R.dimen.meetube_mini_height));
         // A deep-linked open arms ViewManager's player-only mode ("watch, then back to the
         // launcher"). Minimizing into an in-app host means the user is now USING the app, so
         // drop the flag - a stale one makes startParentView "exit to Home" on the next back
@@ -8267,7 +8267,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(up-next): hold autoplay behind the countdown card - only while someone is looking at
+     * MEETUBE(up-next): hold autoplay behind the countdown card - only while someone is looking at
      * this player (resumed, not PiP, not Shorts); otherwise the next video opens at once.
      */
     @Override
@@ -8284,7 +8284,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** NEWTUBE(motion): the buffering spinner's state, see showProgressBar. */
     private boolean mSpinnerShown;
     /**
-     * METUBE(shorts): a short opening shows its still, like YouTube's, not a spinner over it; the
+     * MEETUBE(shorts): a short opening shows its still, like YouTube's, not a spinner over it; the
      * spinner (white there) comes only for a load or stall longer than this.
      */
     private static final long SHORTS_SPINNER_DELAY_MS = 1000;
@@ -8314,7 +8314,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mSpinnerShown = show;
             mProgressBar.animate().cancel();
             if (show) {
-                // METUBE(issue #77): a soft white arc on the glass disc, not the brand red.
+                // MEETUBE(issue #77): a soft white arc on the glass disc, not the brand red.
                 mProgressBar.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(0xEBFFFFFF));
                 mProgressBar.setAlpha(0f);
                 mProgressBar.setVisibility(View.VISIBLE);
@@ -9511,7 +9511,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     // ---------------------------------------------------------------------------------
-    // METUBE(sleep-timer): gear -> Sleep timer (SleepTimer holds the countdown).
+    // MEETUBE(sleep-timer): gear -> Sleep timer (SleepTimer holds the countdown).
     // ---------------------------------------------------------------------------------
 
     private final Runnable mSleepPause = this::sleepNow;
@@ -9639,7 +9639,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * The comments row on the page, and its button on the fullscreen pill (METUBE(fullscreen-actions)),
+     * The comments row on the page, and its button on the fullscreen pill (MEETUBE(fullscreen-actions)),
      * which only shows once there are comments: the row's reserved space means nothing there.
      */
     private void setCommentsEntryVisibility(int visibility) {
@@ -9657,7 +9657,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // that resumed every queued watch-page image before the first frame. Avatars wait for the
         // hold's normal release like the rest of the page.
         Utils.removeCallbacks(mPrefetchComments);
-        // METUBE(issue #36): a tall video shrinks to 16:9, leaving the comments the room YouTube gives them.
+        // MEETUBE(issue #36): a tall video shrinks to 16:9, leaving the comments the room YouTube gives them.
         if (mWatchRoot != null && mIsResumed) {
             android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
                     new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED));
@@ -9684,7 +9684,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
     }
 
-    /** METUBE(watch-look): the next top comment on the compact page's card, faded across. */
+    /** MEETUBE(watch-look): the next top comment on the compact page's card, faded across. */
     private void showNextTopComment() {
         if (mCommentTeaser == null || mTopComments.isEmpty()) {
             return;
@@ -9743,20 +9743,20 @@ public class MobilePlaybackActivity extends MobileActivity
 
         @Override
         public void onCommentsPanelMoved(float gone) {
-            // METUBE(shorts): as the comments slide the short grows or shrinks with them.
+            // MEETUBE(shorts): as the comments slide the short grows or shrinks with them.
             followShortsComments(gone);
         }
 
         @Override
         public void onCommentsPanelShown(boolean shown) {
-            // METUBE(shorts): the comments of a short closed - it fills the screen again.
+            // MEETUBE(shorts): the comments of a short closed - it fills the screen again.
             if (!shown && mShorts != null && mShorts.isCommentsOpen()) {
                 onShortsCommentsClosed();
             } else if (!shown && mShortsCommentsGone >= 0f) { // Shorts left with the comments up
                 mShortsCommentsGone = -1f;
                 resetShortsBox();
             }
-            // METUBE(fullscreen-actions): the landscape comments closed - the video takes the screen back.
+            // MEETUBE(fullscreen-actions): the landscape comments closed - the video takes the screen back.
             if (!shown && mCommentsSide && mCommentsPanel != null && !mCommentsPanel.isOpen()) {
                 setCommentsSide(false);
             }
@@ -9947,7 +9947,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             line = line.replaceFirst("(?i)(published|premiered|streamed live) on ", "");
             if (mWatchCompact) {
-                line = line.split("\\s*[•·]\\s*")[0]; // METUBE(watch-look): the views alone
+                line = line.split("\\s*[•·]\\s*")[0]; // MEETUBE(watch-look): the views alone
             }
             mWatchMeta.setText(line);
         }
@@ -10087,7 +10087,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // line has, so the swap below doesn't jump. The absolute date is the fallback.
             String relativeDate = metadata.getRelativePublishedDate();
             String date = cleanPublishedDate(!TextUtils.isEmpty(relativeDate) ? relativeDate : metadata.getPublishedDate());
-            // METUBE(description): the Description sheet's row shows the calendar date, as YouTube's does.
+            // MEETUBE(description): the Description sheet's row shows the calendar date, as YouTube's does.
             if (!TextUtils.isEmpty(views)) {
                 mDescriptionViews = views;
             }
@@ -10097,7 +10097,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             String meta;
             if (mWatchCompact) {
-                meta = views; // METUBE(watch-look): channel, subscribers, views - the date is in the description
+                meta = views; // MEETUBE(watch-look): channel, subscribers, views - the date is in the description
             } else if (!TextUtils.isEmpty(views) && !TextUtils.isEmpty(date)) {
                 meta = views + com.newtube.mobile.ui.common.MetaSeparator.DOT + date;
             } else if (!TextUtils.isEmpty(views)) {
@@ -10134,7 +10134,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
             setChannelIcon(metadata.getAuthorImageUrl());
             com.newtube.mobile.ui.common.ChannelAvatars.put(this, metadata.getChannelId(),
-                    metadata.getAuthor(), metadata.getAuthorImageUrl()); // METUBE(card avatars)
+                    metadata.getAuthor(), metadata.getAuthorImageUrl()); // MEETUBE(card avatars)
 
             // Counts: prefer the real values already synced onto the Video; fall back to metadata.
             if (isCountUnset(mWatchLikeCount) && !TextUtils.isEmpty(metadata.getLikeCount())) {
@@ -10152,7 +10152,7 @@ public class MobilePlaybackActivity extends MobileActivity
             setButtonState(R.id.action_thumbs_down,
                     metadata.getLikeStatus() == MediaItemMetadata.LIKE_STATUS_DISLIKE ? BUTTON_ON : BUTTON_OFF);
             setButtonState(R.id.action_subscribe, metadata.isSubscribed() ? BUTTON_ON : BUTTON_OFF);
-            // METUBE(issue #45): YouTube's count holds the like it reports; a tap moves it from there.
+            // MEETUBE(issue #45): YouTube's count holds the like it reports; a tap moves it from there.
             mLikedInRaw = metadata.getLikeStatus() == MediaItemMetadata.LIKE_STATUS_LIKE ? 1 : 0;
             showLikeCount(true);
 
@@ -10212,7 +10212,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(description): the title opens YouTube's Description panel (DescriptionSheet) under the
+     * MEETUBE(description): the title opens YouTube's Description panel (DescriptionSheet) under the
      * video, instead of unfolding the description into the page.
      */
     private void showDescriptionSheet() {
@@ -10236,7 +10236,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 isLandscape() || shorts ? null : mVideoArea, extras));
     }
 
-    /** METUBE(transcript): the captions the open video's transcript is made from, or null. */
+    /** MEETUBE(transcript): the captions the open video's transcript is made from, or null. */
     @Nullable
     private com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle transcriptTrack() {
         Video video = getVideo();
@@ -10246,7 +10246,7 @@ public class MobilePlaybackActivity extends MobileActivity
         return TranscriptSheet.pick(mCaptionInfo.getSubtitles());
     }
 
-    /** METUBE(transcript): the transcript under the video (in fullscreen, a plain sheet). */
+    /** MEETUBE(transcript): the transcript under the video (in fullscreen, a plain sheet). */
     private void showTranscriptSheet() {
         com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle track = transcriptTrack();
         if (track == null || isFinishing()) {
@@ -10258,7 +10258,7 @@ public class MobilePlaybackActivity extends MobileActivity
         showPlayerSheet(mTranscriptSheet);
     }
 
-    /** METUBE(watch-look): Subscribe's label color, kept faded while it shows as the mark. */
+    /** MEETUBE(watch-look): Subscribe's label color, kept faded while it shows as the mark. */
     private void setSubscribeTextColor(int color) {
         mSubscribeTextColor = color;
         applySubscribeMorph(mSubscribeMorph, -1);
@@ -10371,7 +10371,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // NEWTUBE(haptics): the tap took effect - a click and a pop of the thumb, like YouTube's.
         boolean like = actionId == R.id.action_thumbs_up;
         Haptics.click(like ? mWatchLike : mWatchDislike);
-        // METUBE(burst): a like splashes - on the Shorts thumb or the fullscreen pill when the tap
+        // MEETUBE(burst): a like splashes - on the Shorts thumb or the fullscreen pill when the tap
         // came from there.
         boolean pill = mActionsRow != null && mActionsRow.isShown();
         View likeIcon = mShorts != null && mShorts.isActive() ? mShorts.likeIcon() : pill ? mPlayerLike : mWatchLikeIcon;
@@ -10383,7 +10383,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 undoRating(ratingBefore, ratingAfter));
     }
 
-    /** METUBE(issue #45): the like count as YouTube gave it, for {@link #showLikeCount}. */
+    /** MEETUBE(issue #45): the like count as YouTube gave it, for {@link #showLikeCount}. */
     @Nullable
     private CharSequence mLikeCountRaw;
     /** Whether {@link #mLikeCountRaw} holds this account's like: 1/0, -1 until metadata says. */
@@ -10509,7 +10509,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 mShorts.setSubscribed(on);
             }
             // NEWTUBE(theme): the main-action pill while not subscribed (white on the dark page,
-            // near-black on the light one). METUBE(glass): once subscribed, a glass pill like the
+            // near-black on the light one). MEETUBE(glass): once subscribed, a glass pill like the
             // action row's - bg_watch_subscribe's selected state.
             mWatchSubscribe.setSelected(on);
             setSubscribeTextColor(getColorInt(on
@@ -10558,7 +10558,7 @@ public class MobilePlaybackActivity extends MobileActivity
         return getString(R.string.mobile_download_badge_queued);
     }
 
-    /** METUBE(download-folder): a long press picks where downloads are saved. */
+    /** MEETUBE(download-folder): a long press picks where downloads are saved. */
     private boolean onDownloadLongPressed() {
         if (!DownloadFolder.isSupported()) {
             return false;
@@ -10614,7 +10614,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /**
-     * METUBE(share-at-time, issue #68): a tap shares the plain link, a long press shares it from
+     * MEETUBE(share-at-time, issue #68): a tap shares the plain link, a long press shares it from
      * the second playing now ({@code ?t=}); a live stream or the very start shares plain.
      */
     private boolean shareCurrentVideo(boolean atPosition) {
@@ -10638,7 +10638,7 @@ public class MobilePlaybackActivity extends MobileActivity
         return true;
     }
 
-    /** METUBE(music): the Music pill shows for videos YouTube Music has, and only those. */
+    /** MEETUBE(music): the Music pill shows for videos YouTube Music has, and only those. */
     private void updateMusicPill(@Nullable Video video) {
         String videoId = video != null ? video.videoId : null;
         if (mWatchMusic == null || Helpers.equals(videoId, mMusicPillVideoId)) {
@@ -10660,7 +10660,7 @@ public class MobilePlaybackActivity extends MobileActivity
         });
     }
 
-    /** METUBE(lyrics): the Music pill opens the song's lyrics (LyricsSheet) under the video. */
+    /** MEETUBE(lyrics): the Music pill opens the song's lyrics (LyricsSheet) under the video. */
     private void showLyricsSheet() {
         Video video = getVideo();
         if (video == null || TextUtils.isEmpty(video.videoId) || isFinishing()) {
@@ -10840,7 +10840,7 @@ public class MobilePlaybackActivity extends MobileActivity
         });
     }
 
-    /** METUBE(issue #74): a new video: "All" again, and no channel chip until its metadata names one. */
+    /** MEETUBE(issue #74): a new video: "All" again, and no channel chip until its metadata names one. */
     private void resetRelatedChips() {
         RxHelper.disposeActions(mChipAction);
         mChipMetadata = null;
@@ -11139,7 +11139,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void openSabr(MediaItemFormatInfo formatInfo) {
-        mCaptionInfo = formatInfo; // METUBE(transcript)
+        mCaptionInfo = formatInfo; // MEETUBE(transcript)
         mExoPlayerController.openSabr(formatInfo);
     }
 
@@ -11155,7 +11155,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void openDash(MediaItemFormatInfo formatInfo) {
-        mCaptionInfo = formatInfo; // METUBE(transcript)
+        mCaptionInfo = formatInfo; // MEETUBE(transcript)
         mExoPlayerController.openDash(formatInfo);
     }
 
@@ -11181,19 +11181,19 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void openHlsVod(MediaItemFormatInfo formatInfo) {
-        mCaptionInfo = formatInfo; // METUBE(transcript)
+        mCaptionInfo = formatInfo; // MEETUBE(transcript)
         mExoPlayerController.openHlsVod(formatInfo);
     }
 
     @Override
     public void openProgressive(MediaItemFormatInfo formatInfo) {
-        mCaptionInfo = formatInfo; // METUBE(transcript)
+        mCaptionInfo = formatInfo; // MEETUBE(transcript)
         mExoPlayerController.openProgressive(formatInfo);
     }
 
     @Override
     public void openMerged(MediaItemFormatInfo formatInfo, String hlsPlaylistUrl) {
-        mCaptionInfo = formatInfo; // METUBE(transcript)
+        mCaptionInfo = formatInfo; // MEETUBE(transcript)
         mExoPlayerController.openMerged(formatInfo, hlsPlaylistUrl);
     }
 
@@ -11417,9 +11417,9 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         } else if (mPortraitFull && !isLandscape() || mCommentsSide || mChatSide
                 || mShorts != null && mShorts.isCommentsOpen()) {
-            // METUBE(fullscreen): the whole picture, upright; ambient mode fills the bands. A pinch's
+            // MEETUBE(fullscreen): the whole picture, upright; ambient mode fills the bands. A pinch's
             // "fill" (landscape) would crop a 16:9 video to a sliver of its middle here - and to
-            // its middle beside the landscape comments (METUBE(fullscreen-actions)), and a short
+            // its middle beside the landscape comments (MEETUBE(fullscreen-actions)), and a short
             // to a band of its middle in the third above its comments (#27).
             mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
         }
@@ -11496,7 +11496,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             cancelHoldSpeed();
             if (mVideoArea != null) {
-                mVideoArea.resetZoom(); // METUBE(issue #55): each video starts whole
+                mVideoArea.resetZoom(); // MEETUBE(issue #55): each video starts whole
             }
             // NEWTUBE(gestures): a drag held across an autoplay would have seeked the new video to
             // the old one's spot (the bar's and a swipe's alike): it ends here, seeking nothing.
@@ -11515,7 +11515,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // (YouTube does exactly this). Also gives the very first open a thumbnail instead of black.
         runOnUiThread(() -> {
             maybeShowLoadingStill(item);
-            showAudioCover(item); // METUBE(audio-only): the next video's thumbnail
+            showAudioCover(item); // MEETUBE(audio-only): the next video's thumbnail
             updateMusicPill(item);
         });
 

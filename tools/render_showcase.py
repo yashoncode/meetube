@@ -1,8 +1,8 @@
-"""Renders the README showcase (bento, the one in use) from the app screenshots in .github/assets/metube/.
+"""Renders the README showcase (bento, the one in use) from the app screenshots in .github/assets/meetube/.
 
     python tools/render_showcase.py [bento|coverflow] [out path]
 
-Writes .github/assets/metube/showcase.webp by default. Re-run after retaking a screenshot.
+Writes .github/assets/meetube/showcase.webp by default. Re-run after retaking a screenshot.
 """
 import os
 import sys
@@ -10,7 +10,7 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-ASSETS = os.path.join(os.path.dirname(__file__), '..', '.github', 'assets', 'metube')
+ASSETS = os.path.join(os.path.dirname(__file__), '..', '.github', 'assets', 'meetube')
 FONTS = 'C:/Windows/Fonts/'
 RED = (255, 69, 58)
 
@@ -61,7 +61,7 @@ CARDS = [  # screen, caption, headline, col, row, col span, row span, layout, ti
     ('channel', 'Channels', 'Banner, Subscribe,\nShorts tab.', 4, 0, 1, 1, 'peek', (255, 70, 150)),
     ('home', 'Liquid glass', 'A tab bar\nthat floats.', 1, 1, 1, 1, 'peek', (70, 140, 255)),
     ('search', 'Search', "YouTube's chips\nand filters.", 2, 1, 1, 1, 'peek', (40, 200, 190)),
-    ('downloads', 'Offline', 'Save it\nin 1080p.', 4, 1, 1, 1, 'peek', (60, 210, 110)),
+    ('downloads', 'Offline', 'Save it\nin 4K.', 4, 1, 1, 1, 'peek', (60, 210, 110)),
 ]
 
 

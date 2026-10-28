@@ -81,7 +81,7 @@ public class MobileChannelActivity extends MobileActivity
          * for the next page, so a tab whose cards were all Shorts can still continue.
          */
         VideoGroup group;
-        /** METUBE(shorts): the channel's Shorts tab - its shorts stay, as tall cards. */
+        /** MEETUBE(shorts): the channel's Shorts tab - its shorts stay, as tall cards. */
         boolean shorts;
         /** Issue #50: where the tab was left; picking it again goes back there. */
         @Nullable
@@ -107,7 +107,7 @@ public class MobileChannelActivity extends MobileActivity
     /** The header holds a real channel name (from the card, or from the loaded videos). */
     private boolean mTitleFromCard;
     private ImageButton mBackButton;
-    /** METUBE(channel sort, issue #5): ChannelPresenter's sorted page arrives as this group id. */
+    /** MEETUBE(channel sort, issue #5): ChannelPresenter's sorted page arrives as this group id. */
     private static final int SORTED_GROUP_ID = 144;
     /** The tab the sort was asked from: the sorted videos replace its contents. */
     private int mSortTargetId = -1;
@@ -184,7 +184,7 @@ public class MobileChannelActivity extends MobileActivity
         mPresenter.onViewInitialized();
     }
 
-    /** METUBE(channel header, issue #10): the channel's UC id the header shows, once asked for. */
+    /** MEETUBE(channel header, issue #10): the channel's UC id the header shows, once asked for. */
     @Nullable
     private String mHeaderChannelId;
     /** A link-opened channel's "@handle" and, once resolved, its UC id. */
@@ -249,7 +249,7 @@ public class MobileChannelActivity extends MobileActivity
             com.newtube.mobile.ui.common.ChannelAvatars.put(this, channelId, info.title, info.avatarUrl);
             glide.load(info.avatarUrl).circleCrop().placeholder(avatar.getDrawable()).transition(fade).into(avatar);
         }
-        // METUBE(issue #73): live now - YouTube's red ring and badge; a tap on the avatar watches the stream.
+        // MEETUBE(issue #73): live now - YouTube's red ring and badge; a tap on the avatar watches the stream.
         boolean live = info.liveVideoId != null;
         if (live) {
             com.newtube.mobile.ui.common.LiveRingView.markLive(channelId);
@@ -282,7 +282,7 @@ public class MobileChannelActivity extends MobileActivity
         }
     }
 
-    /** METUBE(channel subscribe): the channel whose subscribed state was asked for, once. */
+    /** MEETUBE(channel subscribe): the channel whose subscribed state was asked for, once. */
     @Nullable
     private String mSubscribeStateFor;
     @Nullable
@@ -714,7 +714,7 @@ public class MobileChannelActivity extends MobileActivity
         });
     }
 
-    /** METUBE(channel nav): Browse's floating tab bar over the channel, as Search has it. None without a Browse. */
+    /** MEETUBE(channel nav): Browse's floating tab bar over the channel, as Search has it. None without a Browse. */
     private void setupNavPill() {
         View pill = findViewById(R.id.mobile_nav_glass);
         com.google.android.material.bottomnavigation.BottomNavigationView bar = findViewById(R.id.mobile_bottom_nav);
@@ -724,7 +724,7 @@ public class MobileChannelActivity extends MobileActivity
         Glass.blur(pill, findViewById(R.id.mobile_channel_glass_source));
         // The pill floats above the system bar already: the bar must not pad itself by it too.
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(bar, (v, insets) -> insets);
-        int clearance = getResources().getDimensionPixelSize(R.dimen.metube_nav_clearance);
+        int clearance = getResources().getDimensionPixelSize(R.dimen.meetube_nav_clearance);
         for (RecyclerView list : new RecyclerView[] {mGrid, findViewById(R.id.mobile_channel_peek)}) {
             list.setPadding(list.getPaddingLeft(), list.getPaddingTop(), list.getPaddingRight(), clearance);
         }
@@ -735,7 +735,7 @@ public class MobileChannelActivity extends MobileActivity
     }
 
     /**
-     * METUBE(glass): the top bar and the tabs frost the page scrolling under them. The tabs float
+     * MEETUBE(glass): the top bar and the tabs frost the page scrolling under them. The tabs float
      * outside the page (a GlassSource can't hold its own glass), so they follow their place in the
      * app bar; the header fades over its last stretch under the top bar, or its bottom strip would
      * stay there, blurred, over the cards going by.
@@ -877,7 +877,7 @@ public class MobileChannelActivity extends MobileActivity
     }
 
     /**
-     * METUBE(shorts): the channel's Shorts tab - its shorts open the Shorts player, as YouTube's
+     * MEETUBE(shorts): the channel's Shorts tab - its shorts open the Shorts player, as YouTube's
      * tab does (a tile that only opens a Shorts list still goes).
      */
     private static List<Video> shortsOf(@Nullable List<Video> videos) {
@@ -893,7 +893,7 @@ public class MobileChannelActivity extends MobileActivity
         return shorts;
     }
 
-    /** METUBE(shorts): the Shorts tab's view counts by video id, for {@link #mShortsViewsFor}. */
+    /** MEETUBE(shorts): the Shorts tab's view counts by video id, for {@link #mShortsViewsFor}. */
     private final Map<String, String> mShortsViews = new HashMap<>();
     @Nullable
     private String mShortsViewsFor;
@@ -929,7 +929,7 @@ public class MobileChannelActivity extends MobileActivity
         }
     }
 
-    /** METUBE(shorts): every column is three spans wide, so the Shorts tab's tiles sit three to a column. */
+    /** MEETUBE(shorts): every column is three spans wide, so the Shorts tab's tiles sit three to a column. */
     private static final int SHORTS_PER_COLUMN = 3;
 
     private static int cardSpan(VideoCardAdapter adapter, int position) {
@@ -1124,7 +1124,7 @@ public class MobileChannelActivity extends MobileActivity
             int id = group.getId();
             if (id == SORTED_GROUP_ID && group.getAction() != VideoGroup.ACTION_REPLACE
                     && mSections.containsKey(mSortTargetId)) {
-                id = mSortTargetId; // METUBE(channel sort): the sorted list's next pages
+                id = mSortTargetId; // MEETUBE(channel sort): the sorted list's next pages
             }
             Section section = mSections.get(id);
             boolean isNewSection = section == null;
@@ -1156,7 +1156,7 @@ public class MobileChannelActivity extends MobileActivity
             int shortsDropped = (group.getVideos() != null ? group.getVideos().size() : 0)
                     - (shown != null ? shown.size() : 0);
             mShortsEmptied |= content && shortsDropped > 0;
-            // The channel's Shorts section keeps its shorts (METUBE: the Shorts tab), unless the
+            // The channel's Shorts section keeps its shorts (MEETUBE: the Shorts tab), unless the
             // service already emptied it under a stored "Hide shorts from a channel". Any other
             // section keeps its tab while it has more to load, even if this page was all Shorts
             // (its last Short is the next page's anchor); one with nothing now and nothing more to

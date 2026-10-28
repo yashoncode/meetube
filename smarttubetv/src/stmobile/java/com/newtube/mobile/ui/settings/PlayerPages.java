@@ -115,7 +115,7 @@ final class PlayerPages {
                 tweaks::isAudioTimeStretchingEnabled, tweaks::setAudioTimeStretchingEnabled));
 
         rows.add(sleepTimer(context, playerData));
-        // METUBE(background): OEM battery managers kill an optimized app's screen-off audio.
+        // MEETUBE(background): OEM battery managers kill an optimized app's screen-off audio.
         rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_screen_off),
                 () -> context.getString(com.newtube.mobile.ui.playback.BackgroundPlay.isExempt(context)
                         ? R.string.mobile_settings_screen_off_on : R.string.mobile_settings_screen_off_off),
@@ -144,7 +144,7 @@ final class PlayerPages {
                 context.getString(R.string.mobile_settings_gesture_seek_summary),
                 () -> PlayerGesturePrefs.isSeekSwipeOn(context),
                 on -> PlayerGesturePrefs.setSeekSwipeOn(context, on)));
-        // METUBE(double-tap seek, issue #6): how far a double tap jumps; 10 s stays the default.
+        // MEETUBE(double-tap seek, issue #6): how far a double tap jumps; 10 s stays the default.
         SettingsRow.Choice<Integer> doubleTap = SettingsRow.choice(
                 context.getString(R.string.mobile_settings_double_tap_seek));
         for (int seconds : new int[] {3, 5, 10, 15, 30}) {
@@ -153,7 +153,7 @@ final class PlayerPages {
         rows.add(doubleTap.bind(playerData::getSeekIncrementMs, playerData::setSeekIncrementMs));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_watch_page)));
-        // METUBE(ambient): on by default.
+        // MEETUBE(ambient): on by default.
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_ambient),
                 context.getString(R.string.mobile_settings_ambient_summary),
                 () -> com.newtube.mobile.ui.playback.AmbientGlow.isOn(context),
@@ -250,7 +250,7 @@ final class PlayerPages {
         rows.add(defaultQuality(context, QUALITY_WIFI));
         rows.add(defaultQuality(context, QUALITY_MOBILE));
         rows.add(defaultQuality(context, QUALITY_SHORTS));
-        // METUBE(issue #35): only where the screen can show it.
+        // MEETUBE(issue #35): only where the screen can show it.
         if (com.newtube.mobile.player.Media3PlayerController.isHdrDisplay(context)) {
             rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_hdr),
                     context.getString(R.string.mobile_settings_hdr_summary),
@@ -297,8 +297,8 @@ final class PlayerPages {
      */
     private static SettingsRow defaultQuality(Context context, int which) {
         PlayerData playerData = PlayerData.instance(context);
-        // METUBE(quality-network): one row for Wi-Fi, one for mobile data ("Same as Wi-Fi" = none),
-        // METUBE(shorts-quality): and one for Shorts, Auto (up to 1080p) at first (issue #26).
+        // MEETUBE(quality-network): one row for Wi-Fi, one for mobile data ("Same as Wi-Fi" = none),
+        // MEETUBE(shorts-quality): and one for Shorts, Auto (up to 1080p) at first (issue #26).
         FormatItem current = which == QUALITY_MOBILE ? playerData.getCellularVideoFormat()
                 : which == QUALITY_SHORTS ? playerData.getShortsVideoFormat() : playerData.getWifiVideoFormat();
         SettingsRow.Pick<FormatItem> store = format -> {

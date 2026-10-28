@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 /**
- * METUBE(nav lens, issue #46): a tab switch as iOS 26's liquid glass tab bar plays it - the lit pill
+ * MEETUBE(nav lens, issue #46): a tab switch as iOS 26's liquid glass tab bar plays it - the lit pill
  * swells into a clear lens taller than the bar, glides to the picked tab (stretching with its speed,
  * landing with a little overshoot) magnifying and bending the bar under it through
  * {@link GlassView}'s lens shader, unblurred, and settles back down into the pill.
@@ -31,7 +31,7 @@ import androidx.annotation.RequiresApi;
  * ({@link #jiggle}), and with the setting off ({@link #enabled}) it just nudges.
  */
 public final class NavLens extends View {
-    private static final String PREFS = "metube_app";
+    private static final String PREFS = "meetube_app";
     private static final String KEY_MOTION = "tab_switch_motion";
     /** The lens swells in place this long before it glides (a switch's page swap lands then, not mid-glide). */
     private static final long GLIDE_DELAY_MS = 80;
@@ -142,7 +142,7 @@ public final class NavLens extends View {
     }
 
     /**
-     * METUBE(#90): the lens under a finger dragging the lit pill along the bar, centred at {@code x}
+     * MEETUBE(#90): the lens under a finger dragging the lit pill along the bar, centred at {@code x}
      * (bar coordinates); {@link #play} with {@code grown} glides it on from there when it is let go.
      */
     public void drag(GlassView bar, View tab, float x) {
@@ -297,7 +297,7 @@ public final class NavLens extends View {
         int w = getWidth();
         int h = getHeight();
         if (mNode == null) {
-            mNode = new RenderNode("MeTube nav lens");
+            mNode = new RenderNode("MeeTube nav lens");
         }
         mNode.setPosition(0, 0, w, h);
         if (w != mEffectW || h != mEffectH) {

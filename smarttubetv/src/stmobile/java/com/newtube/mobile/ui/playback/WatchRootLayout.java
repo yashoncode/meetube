@@ -21,7 +21,7 @@ import androidx.core.view.ViewCompat;
  * touch band, which straddles the video's edge: a {@link TouchRouter} claims those touches here,
  * before either child hit-tests them.</p>
  *
- * <p>METUBE(issue #36): it also sees the page's scrolls first, so a {@link PageScroll} can take
+ * <p>MEETUBE(issue #36): it also sees the page's scrolls first, so a {@link PageScroll} can take
  * them to shrink or grow the video box before the page moves.</p>
  */
 public class WatchRootLayout extends LinearLayout implements NestedScrollingParent2 {

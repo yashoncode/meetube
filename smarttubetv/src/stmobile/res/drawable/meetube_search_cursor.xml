@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(search glow): the search cursor in Siri's colours, as iOS 27's Search or Ask bar. -->
+<!-- MEETUBE(search glow): the search cursor in Siri's colours, as iOS 27's Search or Ask bar. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <size android:width="2dp" />

@@ -1,7 +1,7 @@
-# MeTube — Claude Code context
+# MeeTube — Claude Code context
 
-MeTube is a **phone-only fork of SmartTube** ("SmartTube for phones"): package
-`io.github.yashoncode.metube` (Java sources still live under `com.newtube.*`), single product flavor `stmobile`,
+MeeTube is a **phone-only fork of SmartTube** ("SmartTube for phones"): package
+`io.yash.meetube` (Java sources still live under `com.newtube.*`), single product flavor `stmobile`,
 touch UI in
 `smarttubetv/src/stmobile/`, playback on **androidx.media3 1.10.1** (Cronet media
 path). The TV flavors and the vendored ExoPlayer fork were deleted in the
@@ -17,7 +17,7 @@ screen in `ui/settings/`: a new setting is a row there (design and per-row audit
 `docs/settings/`), never a row in the TV `*SettingsPresenter`s, which Settings no longer opens.
 
 ## Repos & commit order
-- Main: `origin` = github.com/yashoncode/metube, branch `main` (pushed from local `metube-root`).
+- Main: `origin` = github.com/yashoncode/meetube, branch `main` (pushed from local `meetube-root`).
 - Submodules, branch `master`, `upstream` = yuliskov/<name>. `MediaServiceCore`:
   `origin` = yashoncode/MediaServiceCore (our fork, made 2026-10-18), `newtube` =
   aleixrodriala/MediaServiceCore (NewTube's, pull its fixes from there).
@@ -32,7 +32,7 @@ screen in `ui/settings/`: a new setting is a row there (design and per-row audit
 ```
 ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileDebug   # verification builds
 ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileRelease # distribution
-# -> smarttubetv/build/outputs/apk/stmobile/<type>/MeTube_<ver>_<abi>.apk
+# -> smarttubetv/build/outputs/apk/stmobile/<type>/MeeTube_<ver>_<abi>.apk
 ```
 On an x86_64 emulator add `-PemulatorAbi` (native Cronet/J2V8; without it every
 CPU-bound timing runs through ARM translation — see HANDOFF §29).
@@ -105,7 +105,7 @@ without auditing `LiveDashManifestParser` + `Helpers.setField` call sites).
 ## Code graph (codebase-memory MCP)
 
 `.mcp.json` registers `codebase-memory-mcp` (binary on PATH; project
-`C-Users-Yashwanth-MeTube`, includes both submodules; `.cbmignore` drops test fixtures and
+`C-Users-Yashwanth-MeeTube`, includes both submodules; `.cbmignore` drops test fixtures and
 native libs). Optional, not a required first step: when the file is already known, read it.
 Use it when the answer spans files you have not located:
 - callers/callees: `trace_path` (`direction` inbound/outbound, `depth` 1-2) — exact, ~150 tokens.

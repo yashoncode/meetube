@@ -101,7 +101,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
     private boolean mShortsEmptied;
     /** NEWTUBE(shorts): onDestroy has begun - the presenter's teardown must not page on. */
     private boolean mTornDown;
-    /** METUBE(#65): the playlist found to be the user's own (its cards swipe out of it), and its name. */
+    /** MEETUBE(#65): the playlist found to be the user's own (its cards swipe out of it), and its name. */
     @Nullable private String mOwnPlaylistId;
     @Nullable private String mOwnPlaylistTitle;
     /** The playlist already asked about, so each one is checked once. */
@@ -262,7 +262,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
                 applyToolbarTitleAlpha();
             }
         });
-        // METUBE(#65): in the user's own playlist a card swiped sideways leaves it (Undo on the snackbar).
+        // MEETUBE(#65): in the user's own playlist a card swiped sideways leaves it (Undo on the snackbar).
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START | ItemTouchHelper.END) {
             @Override
             public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder holder) {
@@ -293,7 +293,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
         return mOwnPlaylistId != null && mOwnPlaylistId.equals(openerPlaylistId());
     }
 
-    /** METUBE(#65): once per playlist, with its first video: the menu's own-playlist test. */
+    /** MEETUBE(#65): once per playlist, with its first video: the menu's own-playlist test. */
     private void checkOwnPlaylist() {
         String playlistId = openerPlaylistId();
         if (playlistId == null || playlistId.equals(mOwnCheckedFor)) {

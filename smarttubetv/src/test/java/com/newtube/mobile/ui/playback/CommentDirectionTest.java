@@ -6,7 +6,7 @@ import android.view.View;
 
 import org.junit.Test;
 
-/** METUBE(bidi): a comment's direction comes from its first letter, never from an invisible mark. */
+/** MEETUBE(bidi): a comment's direction comes from its first letter, never from an invisible mark. */
 public class CommentDirectionTest {
     @Test
     public void rtlMarkBeforeBareTimestampFollowsAppLanguage() {
