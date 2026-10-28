@@ -187,6 +187,10 @@ public final class SettingsPages {
         rows.add(SettingsRow.action(context.getString(R.string.about_source_code),
                 context.getString(R.string.about_source_code_url).replace("https://", ""),
                 page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_source_code_url))));
+        // MEETUBE(ci): release APKs come from .github/workflows/release.yml; this opens its runs.
+        rows.add(SettingsRow.action(context.getString(R.string.mobile_about_ci),
+                context.getString(R.string.mobile_about_ci_desc),
+                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.mobile_about_ci_url))));
         rows.add(SettingsRow.action(context.getString(R.string.about_license),
                 context.getString(R.string.about_license_name),
                 page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_license_url))));

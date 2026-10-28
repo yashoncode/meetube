@@ -76,6 +76,8 @@
     <string name="mobile_watch_related">即將播放</string>
     <string name="mobile_watch_chip_all">全部</string>
     <string name="mobile_watch_chip_channel">來自 %1$s</string>
+    <string name="mobile_watch_chip_new">未看過</string>
+    <string name="mobile_watch_chip_watched">繼續觀看</string>
     <string name="mobile_settings_watch_style">影片頁</string>
     <string name="mobile_settings_watch_style_compact">精簡</string>
     <string name="mobile_settings_watch_style_compact_desc">操作按鈕在訂閱旁，熱門留言逐則顯示</string>
@@ -575,6 +577,8 @@
     <string name="mobile_theme_dark">深色</string>
     <string name="mobile_about_star">在 GitHub 上給 MeeTube 加星</string>
     <string name="mobile_about_star_desc">免費且開放原始碼。加顆星能讓更多人找到它</string>
+    <string name="mobile_about_ci">公開建置</string>
+    <string name="mobile_about_ci_desc">每個版本都由 GitHub Actions 依這份原始碼建置並簽署</string>
     <string name="mobile_about_share">分享 MeeTube</string>
     <string name="mobile_about_share_desc">把連結發給需要的人</string>
     <string name="mobile_about_share_text">MeeTube — 建於 SmartTube 之上的手機 YouTube 客戶端：%1$s</string>

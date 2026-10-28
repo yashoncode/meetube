@@ -44,6 +44,8 @@
     <string name="mobile_watch_related">Urmează</string>
     <string name="mobile_watch_chip_all">Toate</string>
     <string name="mobile_watch_chip_channel">De la %1$s</string>
+    <string name="mobile_watch_chip_new">Noi pentru tine</string>
+    <string name="mobile_watch_chip_watched">Continuă vizionarea</string>
     <string name="mobile_settings_watch_style">Pagina videoclipului</string>
     <string name="mobile_settings_watch_style_compact">Compactă</string>
     <string name="mobile_settings_watch_style_compact_desc">Acțiuni lângă Abonează-te, comentariile de top pe rând</string>
@@ -380,6 +382,8 @@
     <string name="mobile_theme_dark">Întunecată</string>
     <string name="mobile_about_star">Marchează MeeTube pe GitHub</string>
     <string name="mobile_about_star_desc">Gratuit și cu sursă deschisă. O stea îi ajută pe ceilalți să o găsească</string>
+    <string name="mobile_about_ci">Compilat public</string>
+    <string name="mobile_about_ci_desc">Fiecare versiune este compilată și semnată de GitHub Actions din acest cod sursă</string>
     <string name="mobile_about_share">Distribuie MeeTube</string>
     <string name="mobile_about_share_desc">Trimite linkul cuiva căruia i-ar plăcea</string>
     <string name="mobile_about_share_text">MeeTube — un client YouTube pentru telefoane, bazat pe SmartTube: %1$s</string>

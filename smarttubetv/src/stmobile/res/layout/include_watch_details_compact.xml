@@ -175,12 +175,14 @@
             android:scrollbars="none">
 
             <!-- The 6dp gap after Subscribe is padding here, not the scroll's margin: swiped pills
-                 then fade out right at the mark instead of being cut off short of it. -->
+                 then fade out right at the mark instead of being cut off short of it. Start, not
+                 end: once Subscribe shrinks to the mark the row fits, and end-aligned pills left a
+                 gap between the mark and Like (issue #106); now they follow it in. -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="6dp"
-                android:gravity="end|center_vertical"
+                android:gravity="start|center_vertical"
                 android:orientation="horizontal">
 
                 <!-- Like | Dislike: one glass pill, the like count beside the thumb. -->

@@ -1009,33 +1009,35 @@
                     android:scrollbars="none"
                     android:visibility="gone">
 
-                    <com.google.android.material.chip.ChipGroup
+                    <!-- MEETUBE(issue #105): glass pills, as Search's chips (GlassDrawable, set from
+                         code with the picked one filled: syncRelatedChips). A Material Chip keeps its
+                         own background, so these are the search chip's TextView. -->
+                    <LinearLayout
                         android:id="@+id/mobile_watch_related_chip_group"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:checkedChip="@+id/mobile_watch_chip_all"
-                        app:selectionRequired="true"
-                        app:singleLine="true"
-                        app:singleSelection="true">
+                        android:paddingVertical="6dp"
+                        android:orientation="horizontal">
 
-                        <com.google.android.material.chip.Chip
+                        <include
                             android:id="@+id/mobile_watch_chip_all"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/mobile_watch_chip_all"
-                            android:textColor="@color/mobile_watch_chip_text"
-                            app:chipBackgroundColor="@color/mobile_watch_chip_bg" />
+                            layout="@layout/mobile_watch_chip" />
 
-                        <com.google.android.material.chip.Chip
+                        <include
                             android:id="@+id/mobile_watch_chip_channel"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/mobile_watch_chip_text"
-                            app:chipBackgroundColor="@color/mobile_watch_chip_bg" />
+                            layout="@layout/mobile_watch_chip" />
 
-                    </com.google.android.material.chip.ChipGroup>
+                        <include
+                            android:id="@+id/mobile_watch_chip_new"
+                            layout="@layout/mobile_watch_chip"
+                            android:visibility="gone" />
+
+                        <include
+                            android:id="@+id/mobile_watch_chip_watched"
+                            layout="@layout/mobile_watch_chip"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
 
                 </HorizontalScrollView>
 
