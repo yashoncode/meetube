@@ -2,9 +2,9 @@ package com.newtube.mobile.ui.common;
 
 import android.view.View;
 
-/** METUBE(glass): wires a {@link GlassView} to the {@link GlassSource} it frosts. */
+/** MEETUBE(glass): wires a {@link GlassView} to the {@link GlassSource} it frosts. */
 public final class Glass {
-    private static final String PREFS = "metube_app";
+    private static final String PREFS = "meetube_app";
     private static final String KEY_LIQUID = "liquid_glass";
     private static final String KEY_PLAYER_FROST = "player_frost";
 

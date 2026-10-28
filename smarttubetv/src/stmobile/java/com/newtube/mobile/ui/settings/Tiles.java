@@ -33,7 +33,7 @@ import com.newtube.mobile.ui.common.Haptics;
 import java.util.Locale;
 
 /**
- * METUBE(customize): Customization's pickers drawn on the page instead of behind a sheet: a choice
+ * MEETUBE(customize): Customization's pickers drawn on the page instead of behind a sheet: a choice
  * becomes a strip of tiles, each a little picture of what it does (a phone in that theme, Home as a
  * feed or as rows, the app icon itself), and a tap picks it with a bounce. Interface size is a
  * slider with a live preview. The row keeps its choice's title and options, so search still finds

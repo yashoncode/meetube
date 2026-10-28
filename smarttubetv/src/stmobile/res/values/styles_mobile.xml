@@ -24,15 +24,15 @@
       stays dark in both, like YouTube's: its chrome uses the fixed mobile_player_* colours.
     -->
     <style name="Theme.NewTube" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- METUBE(app icon): a task the system restores after killing the app (reopened from the
+        <!-- MEETUBE(app icon): a task the system restores after killing the app (reopened from the
              launcher or recents) gets its splash from this theme, not the per-icon one AppIcon
              persists - and without an icon here that splash showed the manifest's (default) icon
              whatever icon was picked. A blank splash is never the wrong icon. -->
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@android:color/transparent</item>
-        <!-- METUBE(loader): every circular spinner is the morphing cookie (metube_loader). -->
-        <item name="android:progressBarStyle">@style/Widget.MeTube.Loader</item>
-        <item name="android:progressBarStyleLarge">@style/Widget.MeTube.Loader.Large</item>
-        <item name="android:progressBarStyleSmall">@style/Widget.MeTube.Loader.Small</item>
+        <!-- MEETUBE(loader): every circular spinner is the morphing cookie (meetube_loader). -->
+        <item name="android:progressBarStyle">@style/Widget.MeeTube.Loader</item>
+        <item name="android:progressBarStyleLarge">@style/Widget.MeeTube.Loader.Large</item>
+        <item name="android:progressBarStyleSmall">@style/Widget.MeeTube.Loader.Small</item>
         <item name="colorPrimary">@color/mobile_color_primary</item>
         <item name="colorPrimaryDark">@color/mobile_color_primary_dark</item>
         <!-- Selection controls (checkbox, radio, switch, text caret) and any untinted
@@ -89,17 +89,17 @@
              light one) in the app's ink, not red - "Sign in" / "Undo" / "View" are choices,
              not alarms. -->
         <item name="snackbarButtonStyle">@style/Widget.NewTube.Snackbar.Action</item>
-        <!-- METUBE: no sharp corners - snackbars are rounded like the rest of the glass UI. -->
-        <item name="snackbarStyle">@style/Widget.MeTube.Snackbar</item>
-        <!-- METUBE: modern capsule switches everywhere (Settings rows, dialog rows). -->
-        <item name="switchStyle">@style/Widget.MeTube.Switch</item>
+        <!-- MEETUBE: no sharp corners - snackbars are rounded like the rest of the glass UI. -->
+        <item name="snackbarStyle">@style/Widget.MeeTube.Snackbar</item>
+        <!-- MEETUBE: modern capsule switches everywhere (Settings rows, dialog rows). -->
+        <item name="switchStyle">@style/Widget.MeeTube.Switch</item>
     </style>
 
-    <style name="Widget.MeTube.Snackbar" parent="Widget.MaterialComponents.Snackbar">
-        <item name="shapeAppearance">@style/ShapeAppearance.MeTube.Round</item>
+    <style name="Widget.MeeTube.Snackbar" parent="Widget.MaterialComponents.Snackbar">
+        <item name="shapeAppearance">@style/ShapeAppearance.MeeTube.Round</item>
     </style>
 
-    <style name="ShapeAppearance.MeTube.Round" parent="">
+    <style name="ShapeAppearance.MeeTube.Round" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">16dp</item>
     </style>
@@ -155,11 +155,11 @@
       the colour runs under the gesture bar to the display edge.
     -->
     <style name="Widget.NewTube.BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
-        <item name="backgroundTint">@color/metube_sheet_glass</item>
+        <item name="backgroundTint">@color/meetube_sheet_glass</item>
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.NewTube.BottomSheet</item>
-        <!-- METUBE: Material squares the top corners off once a sheet is expanded; keep them round. -->
+        <!-- MEETUBE: Material squares the top corners off once a sheet is expanded; keep them round. -->
         <item name="shouldRemoveExpandedCorners">false</item>
-        <item name="android:maxWidth">@dimen/metube_sheet_max_width</item>
+        <item name="android:maxWidth">@dimen/meetube_sheet_max_width</item>
     </style>
 
     <style name="ShapeAppearance.NewTube.BottomSheet" parent="">
@@ -390,7 +390,7 @@
         <item name="android:textSize">14sp</item>
     </style>
 
-    <!-- METUBE(fullscreen-actions): an action on the fullscreen pill - a size under the player's
+    <!-- MEETUBE(fullscreen-actions): an action on the fullscreen pill - a size under the player's
          48dp buttons. -->
     <style name="MobilePlayerAction">
         <item name="android:layout_width">38dp</item>
@@ -401,7 +401,7 @@
         <item name="android:tint">@color/mobile_player_on_video</item>
     </style>
 
-    <!-- METUBE(lock, issue #98): the fullscreen lock and unlock buttons, a dim round at the left. -->
+    <!-- MEETUBE(lock, issue #98): the fullscreen lock and unlock buttons, a dim round at the left. -->
     <style name="MobilePlayerLock">
         <item name="android:layout_width">44dp</item>
         <item name="android:layout_height">44dp</item>
@@ -413,7 +413,7 @@
         <item name="android:tint">@color/mobile_player_on_video</item>
     </style>
 
-    <!-- METUBE(watch-look): an icon-only glass pill on the compact watch page's action row. -->
+    <!-- MEETUBE(watch-look): an icon-only glass pill on the compact watch page's action row. -->
     <style name="MobileWatchIconPill">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -427,7 +427,7 @@
         <item name="android:paddingVertical">14dp</item>
     </style>
 
-    <!-- METUBE(description): a section heading in the Description panel (Transcript, Video details). -->
+    <!-- MEETUBE(description): a section heading in the Description panel (Transcript, Video details). -->
     <style name="MobileDescriptionHeading">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -443,7 +443,7 @@
         <item name="android:paddingTop">6dp</item>
         <item name="android:paddingBottom">6dp</item>
     </style>
-    <!-- METUBE(issue #91): a List layout feed row's ghost (item_video_row: margin card_spacing). -->
+    <!-- MEETUBE(issue #91): a List layout feed row's ghost (item_video_row: margin card_spacing). -->
     <style name="MobileSkeletonFeedRow" parent="MobileSkeletonRelatedRow">
         <item name="android:paddingTop">@dimen/mobile_card_spacing</item>
         <item name="android:paddingBottom">@dimen/mobile_card_spacing</item>
@@ -569,15 +569,15 @@
         <item name="android:background">@drawable/bg_skeleton_block</item>
     </style>
 
-    <!-- METUBE(shorts): the vertical player's action column (mobile_shorts_overlay). -->
-    <style name="MeTubeShortsAction">
+    <!-- MEETUBE(shorts): the vertical player's action column (mobile_shorts_overlay). -->
+    <style name="MeeTubeShortsAction">
         <item name="android:layout_width">42dp</item>
         <item name="android:layout_height">42dp</item>
         <item name="android:padding">10dp</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:tint">@android:color/white</item>
     </style>
-    <style name="MeTubeShortsActionLabel">
+    <style name="MeeTubeShortsActionLabel">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">2dp</item>
@@ -589,26 +589,26 @@
         <item name="android:textSize">12sp</item>
     </style>
 
-    <style name="Widget.MeTube.Loader" parent="android:Widget.Material.ProgressBar">
-        <item name="android:indeterminateDrawable">@drawable/metube_loader</item>
+    <style name="Widget.MeeTube.Loader" parent="android:Widget.Material.ProgressBar">
+        <item name="android:indeterminateDrawable">@drawable/meetube_loader</item>
     </style>
-    <style name="Widget.MeTube.Loader.Large" parent="android:Widget.Material.ProgressBar.Large">
-        <item name="android:indeterminateDrawable">@drawable/metube_loader</item>
+    <style name="Widget.MeeTube.Loader.Large" parent="android:Widget.Material.ProgressBar.Large">
+        <item name="android:indeterminateDrawable">@drawable/meetube_loader</item>
     </style>
-    <style name="Widget.MeTube.Loader.Small" parent="android:Widget.Material.ProgressBar.Small">
-        <item name="android:indeterminateDrawable">@drawable/metube_loader</item>
+    <style name="Widget.MeeTube.Loader.Small" parent="android:Widget.Material.ProgressBar.Small">
+        <item name="android:indeterminateDrawable">@drawable/meetube_loader</item>
     </style>
 
-    <style name="Widget.MeTube.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">
+    <style name="Widget.MeeTube.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">
         <item name="useMaterialThemeColors">false</item>
-        <item name="android:thumb">@drawable/metube_switch_thumb</item>
-        <item name="track">@drawable/metube_switch_track</item>
+        <item name="android:thumb">@drawable/meetube_switch_thumb</item>
+        <item name="track">@drawable/meetube_switch_track</item>
         <item name="thumbTint">@null</item>
         <item name="trackTint">@null</item>
         <item name="android:background">@null</item>
     </style>
-    <!-- METUBE(up-next): the countdown card's three pills. -->
-    <style name="MeTubeNextButton">
+    <!-- MEETUBE(up-next): the countdown card's three pills. -->
+    <style name="MeeTubeNextButton">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">32dp</item>
         <item name="android:drawablePadding">4dp</item>

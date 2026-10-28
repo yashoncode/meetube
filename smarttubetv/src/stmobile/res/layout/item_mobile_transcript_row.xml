@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(transcript): one caption: its time on a small glass chip, then the words. The line being
+<!-- MEETUBE(transcript): one caption: its time on a small glass chip, then the words. The line being
      said gets the rounded highlight (selected) and full-strength text (TranscriptSheet). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"

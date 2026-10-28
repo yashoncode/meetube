@@ -57,7 +57,7 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        return Haptics.watch(super.onCreateDialog(savedInstanceState)); // METUBE(haptics)
+        return Haptics.watch(super.onCreateDialog(savedInstanceState)); // MEETUBE(haptics)
     }
 
     private LiveChatAdapter mAdapter;
@@ -152,7 +152,7 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
     private final android.view.ViewTreeObserver.OnGlobalLayoutListener mPageLayout = this::placeBesideVideo;
 
     /**
-     * METUBE(live chat, issue #32): never over the video. Upright the window is only the room under
+     * MEETUBE(live chat, issue #32): never over the video. Upright the window is only the room under
      * the video; sideways it is a column on the right of it, YouTube's. Taps beside the window reach
      * the player (FLAG_NOT_TOUCH_MODAL), so the video stays playable while the chat runs.
      */
@@ -232,7 +232,7 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
     private static final float CARD_CORNER_DP = 24f;
 
     /**
-     * METUBE(live chat, issue #32): a landscape side panel as a card, every corner rounded (the
+     * MEETUBE(live chat, issue #32): a landscape side panel as a card, every corner rounded (the
      * live chat here, a video's comments in MobilePlaybackActivity); {@code false} undoes it.
      */
     static void roundCard(View view, boolean card) {

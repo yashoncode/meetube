@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(glass): the page is a GlassSource and the "Search settings" pill floats over it as
+<!-- MEETUBE(glass): the page is a GlassSource and the "Search settings" pill floats over it as
      frosted glass (Glass.blur), so the rows scroll under it. A GlassSource may not hold the glass
      that samples it, hence the FrameLayout around both. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -79,7 +79,7 @@
         android:foreground="?attr/selectableItemBackground"
         android:visibility="gone"
         app:glassCornerRadius="26dp"
-        app:glassTint="@color/metube_glass_tint"
+        app:glassTint="@color/meetube_glass_tint"
         tools:visibility="visible">
 
     <LinearLayout

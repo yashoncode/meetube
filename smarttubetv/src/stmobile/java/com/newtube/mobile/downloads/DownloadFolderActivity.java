@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
-/** METUBE(download-folder): an invisible host for the system folder picker, so any screen can open it. */
+/** MEETUBE(download-folder): an invisible host for the system folder picker, so any screen can open it. */
 public final class DownloadFolderActivity extends Activity {
     private static final int REQUEST_TREE = 1;
 

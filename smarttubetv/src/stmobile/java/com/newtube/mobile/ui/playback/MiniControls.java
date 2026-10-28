@@ -5,7 +5,7 @@ import android.view.View;
 import com.newtube.mobile.ui.common.Motion;
 
 /**
- * METUBE(mini-controls): the mini card's buttons fade out a few seconds after the card shows,
+ * MEETUBE(mini-controls): the mini card's buttons fade out a few seconds after the card shows,
  * leaving a bare picture; a finger on the card brings them back. A tap on the video still expands
  * at once: a first tap that only revealed the buttons read as "the card won't open" (issue #34).
  * Faded buttons are INVISIBLE, so a tap where one was reaches the video instead of pausing.

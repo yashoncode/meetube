@@ -1,26 +1,26 @@
-<p align="center"><img src=".github/assets/metube/icon.png" width="112" alt="MeTube logo"></p>
+<p align="center"><img src=".github/assets/meetube/icon.png" width="112" alt="MeeTube logo"></p>
 
-<h1 align="center">MeTube</h1>
+<h1 align="center">MeeTube</h1>
 
 **YouTube, reimagined. Different by design. Smooth by nature.** <br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
 
-<p align="center"><img src=".github/assets/metube/showcase.webp" width="100%" alt="MeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Shorts (full screen, swipe ready), Channels (banner, Subscribe, Shorts tab), Liquid glass (a tab bar that floats), Search (YouTube's chips and filters) and Offline (save it in 1080p)"></p>
+<p align="center"><img src=".github/assets/meetube/showcase.webp" width="100%" alt="MeeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Shorts (full screen, swipe ready), Channels (banner, Subscribe, Shorts tab), Liquid glass (a tab bar that floats), Search (YouTube's chips and filters) and Offline (save it in 4K)"></p>
 
-<p align="center"><a href="https://github.com/yashoncode/metube/releases/latest"><b>⬇ Download the latest MeTube</b></a></p>
+<p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
 
 ## Features
 
 <table>
 <tr>
 <td width="50%" valign="top">🚫 <b>No ads, no sponsors</b><br>Ads are gone, and SponsorBlock skips sponsors, intros and "like and subscribe" reminders.</td>
-<td width="50%" valign="top">💎 <b>Liquid glass</b><br>Frosted, lens-bending glass on the tab bar, the player and Shorts.</td>
+<td width="50%" valign="top">💎 <b>Liquid glass</b><br>Frosted, lens-bending glass on the tab bar, the player and Shorts, lit by GlowFlow: a glow that follows your tab, your progress and live channels.</td>
 </tr>
 <tr>
 <td valign="top">🎤 <b>Synced lyrics</b><br>Music videos get live, line-by-line lyrics. Pick your lyrics provider in one tap.</td>
 <td valign="top">🎧 <b>Background play and picture-in-picture</b><br>Lock the screen or switch apps and it keeps playing. Shorts float in their own portrait window.</td>
 </tr>
 <tr>
-<td valign="top">⬇️ <b>Offline downloads</b><br>Save videos up to 1080p for a flight, a train or a day without data.</td>
+<td valign="top">⬇️ <b>Offline downloads</b><br>Save videos up to 4K for a flight, a train or a day without data, in any folder you pick.</td>
 <td valign="top">📱 <b>Shorts done right</b><br>A clean full-screen player with glass like, comment and share buttons.</td>
 </tr>
 <tr>
@@ -43,46 +43,48 @@
 
 ## Download
 
-Get the APK for your phone from [Releases](https://github.com/yashoncode/metube/releases/latest):
+Get the APK for your phone from [Releases](https://github.com/yashoncode/meetube/releases/latest):
+
+> **Coming from MeTube?** MeTube is now MeeTube, with a new app id, so it installs as a separate app. Install MeeTube, then uninstall the old MeTube.
 
 | Your device | File |
 |:--|:--|
-| Most phones (64-bit) | `MeTube_<version>_arm64-v8a.apk` |
-| Older phones (32-bit) | `MeTube_<version>_armeabi-v7a.apk` |
-| Not sure | `MeTube_<version>_universal.apk` |
+| Most phones (64-bit) | `MeeTube_<version>_arm64-v8a.apk` |
+| Older phones (32-bit) | `MeeTube_<version>_armeabi-v7a.apk` |
+| Not sure | `MeeTube_<version>_universal.apk` |
 
 Android 7.0 or later.
 
-## MeTube and NewTube
+## MeeTube and NewTube
 
-MeTube is a heavily tweaked fork of [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala), and NewTube is built on [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov). MeTube follows NewTube's playback and network fixes, and adds its own design and features on top: lyrics, liquid glass, the Shorts player, channel photos, search chips and the rest of the list above. Beyond what you see:
+MeeTube is a heavily tweaked fork of [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala), and NewTube is built on [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov). MeeTube follows NewTube's playback and network fixes, and adds its own design and features on top: lyrics, liquid glass, the Shorts player, channel photos, search chips and the rest of the list above. Beyond what you see:
 
-- **Its own app.** A separate app id (`io.github.yashoncode.metube`), so it installs alongside NewTube or SmartTube, and an in-app updater that follows MeTube's releases.
+- **Its own app.** A separate app id (`io.yash.meetube`), so it installs alongside NewTube or SmartTube, and an in-app updater that follows MeeTube's releases.
 - **True black.** The dark theme is AMOLED black by default, with a red accent and rounded thumbnails. A light theme is in Settings.
 - **Quicker Shorts.** The next Short is fetched and buffered while you watch the current one, so a swipe starts playing right away.
 - **Lighter on memory.** Video buffers are sized to your phone's memory, so long sessions don't run out of it.
 
-MeTube is an independent project and is not endorsed by either upstream developer.
+MeeTube is an independent project and is not endorsed by either upstream developer.
 
 ## Build
 
 ```
 ./gradlew :smarttubetv:assembleStmobileDebug     # debug, for testing
 ./gradlew :smarttubetv:assembleStmobileRelease   # release, signed with keystore.properties if present
-# APKs: smarttubetv/build/outputs/renamed_apks/stmobile<Type>/MeTube_<version>_<abi>.apk
+# APKs: smarttubetv/build/outputs/renamed_apks/stmobile<Type>/MeeTube_<version>_<abi>.apk
 ```
 
 The glass is `smarttubetv/src/stmobile/java/com/newtube/mobile/ui/common/GlassView.java`; the README showcase comes from `python tools/render_showcase.py`. Clone with `--recurse-submodules`. The backend lives in the `MediaServiceCore` and `SharedModules` submodules (NewTube's forks). Add `-PemulatorAbi` to run on an x86_64 emulator. For upstream documentation, see [NewTube's README](https://github.com/aleixrodriala/newtube#readme) and [CLAUDE.md](CLAUDE.md).
 
-## Support MeTube
+## Support MeeTube
 
-MeTube is free, has no ads and always will. I build it in my spare time because I love using it.
+MeeTube is free, has no ads and always will. I build it in my spare time because I love using it.
 If it makes your YouTube a little nicer and you'd like to say thanks, you can buy me a coffee.
 It's completely optional, and every coffee is truly appreciated. ☕
 
 <p align="center"><a href="https://buymeacoffee.com/yashwynth"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy me a coffee"></a></p>
 
-A star on GitHub or sharing MeTube with a friend helps just as much. Thank you for using it! ❤️
+A star on GitHub or sharing MeeTube with a friend helps just as much. Thank you for using it! ❤️
 
 ## License
 

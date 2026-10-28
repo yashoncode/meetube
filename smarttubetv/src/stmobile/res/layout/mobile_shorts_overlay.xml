@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(shorts): the vertical player's overlay (ShortsOverlay), laid out like YouTube's Shorts:
+<!-- MEETUBE(shorts): the vertical player's overlay (ShortsOverlay), laid out like YouTube's Shorts:
      channel row (avatar, name, Subscribe), title and views bottom-left; like / dislike / comments /
      share bottom-right; a thin progress line at the very bottom; the play/pause flash and the
      double-tap heart in the middle. Text carries shadows over a light scrim; the buttons and the
-     flash are frosted discs of the video (METUBE(glass), set in ShortsOverlay). The actions
+     flash are frosted discs of the video (MEETUBE(glass), set in ShortsOverlay). The actions
      forward to the watch page's own buttons. The peek is the next (or previous) short's portrait
      thumbnail that follows a swipe in from the edge, outside this box (clipChildren off). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -231,52 +231,52 @@
 
         <ImageButton
             android:id="@+id/mobile_shorts_like"
-            style="@style/MeTubeShortsAction"
+            style="@style/MeeTubeShortsAction"
             android:contentDescription="@string/mobile_watch_like"
             android:src="@drawable/ic_watch_thumb_up_outline" />
 
         <TextView
             android:id="@+id/mobile_shorts_like_count"
-            style="@style/MeTubeShortsActionLabel"
+            style="@style/MeeTubeShortsActionLabel"
             android:text="@string/mobile_watch_like" />
 
         <ImageButton
             android:id="@+id/mobile_shorts_dislike"
-            style="@style/MeTubeShortsAction"
+            style="@style/MeeTubeShortsAction"
             android:layout_marginTop="14dp"
             android:contentDescription="@string/mobile_watch_dislike"
             android:src="@drawable/ic_watch_thumb_down_outline" />
 
         <TextView
-            style="@style/MeTubeShortsActionLabel"
+            style="@style/MeeTubeShortsActionLabel"
             android:text="@string/mobile_watch_dislike" />
 
         <ImageButton
             android:id="@+id/mobile_shorts_comments"
-            style="@style/MeTubeShortsAction"
+            style="@style/MeeTubeShortsAction"
             android:layout_marginTop="14dp"
             android:contentDescription="@string/mobile_comments_title"
             android:src="@drawable/ic_watch_comment" />
 
         <TextView
             android:id="@+id/mobile_shorts_comments_count"
-            style="@style/MeTubeShortsActionLabel"
+            style="@style/MeeTubeShortsActionLabel"
             android:text="@string/mobile_comments_title" />
 
         <ImageButton
             android:id="@+id/mobile_shorts_share"
-            style="@style/MeTubeShortsAction"
+            style="@style/MeeTubeShortsAction"
             android:layout_marginTop="14dp"
             android:contentDescription="@string/mobile_watch_share"
             android:src="@drawable/ic_watch_share" />
 
         <TextView
-            style="@style/MeTubeShortsActionLabel"
+            style="@style/MeeTubeShortsActionLabel"
             android:text="@string/mobile_watch_share" />
 
         <ImageButton
             android:id="@+id/mobile_shorts_more"
-            style="@style/MeTubeShortsAction"
+            style="@style/MeeTubeShortsAction"
             android:layout_marginTop="14dp"
             android:contentDescription="@string/mobile_menu_more"
             android:src="@drawable/ic_mobile_more_vert" />
@@ -311,9 +311,9 @@
         android:minHeight="3dp"
         android:paddingStart="0dp"
         android:paddingEnd="0dp"
-        android:progressDrawable="@drawable/metube_shorts_seek"
+        android:progressDrawable="@drawable/meetube_shorts_seek"
         android:splitTrack="false"
-        android:thumb="@drawable/metube_shorts_seek_thumb"
+        android:thumb="@drawable/meetube_shorts_seek_thumb"
         android:thumbOffset="0dp" />
 
 </FrameLayout>

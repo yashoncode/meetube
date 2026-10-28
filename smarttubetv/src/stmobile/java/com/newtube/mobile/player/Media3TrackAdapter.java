@@ -330,7 +330,7 @@ class Media3TrackAdapter {
     }
 
     /**
-     * METUBE(issue #35): HDR streams are in the manifest only with the HDR setting on, so Auto plays
+     * MEETUBE(issue #35): HDR streams are in the manifest only with the HDR setting on, so Auto plays
      * them when this device can: the HDR set with the tallest playable rung within the preset's
      * size ceiling (VP9 on a tie), adapting inside it. The preset's frame rate and codec are left
      * out - YouTube's HDR is 60 fps VP9.2 or AV1, so a "30fps avc" preset would always rule it out -
@@ -445,7 +445,7 @@ class Media3TrackAdapter {
             }
         }
 
-        // METUBE(issue #58): a pick carried to a video without that stream (another codec or
+        // MEETUBE(issue #58): a pick carried to a video without that stream (another codec or
         // frame rate, or no such rung) plays the nearest rung at or below it. Leaving Auto in
         // place opened at 240p while the Quality row kept reading the pick.
         return fallback != null ? fallback : nearest;

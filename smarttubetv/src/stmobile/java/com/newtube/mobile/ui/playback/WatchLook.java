@@ -4,11 +4,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * METUBE(watch-look): Settings > Customization - the watch page compact (default) or classic, and
+ * MEETUBE(watch-look): Settings > Customization - the watch page compact (default) or classic, and
  * which player buttons show (PlayerButton reads them).
  */
 public final class WatchLook {
-    private static final String PREFS = "metube_ui";
+    private static final String PREFS = "meetube_ui";
     private static final String KEY_CLASSIC = "watch_classic";
     private static final String KEY_HIDDEN = "player_button_hidden_";
 

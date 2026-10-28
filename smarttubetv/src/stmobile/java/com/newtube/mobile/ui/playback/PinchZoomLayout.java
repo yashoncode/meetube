@@ -32,7 +32,7 @@ import androidx.annotation.Nullable;
  * ratio, and the accumulator resets, so one long gesture can toggle fill -> original -> fill,
  * matching YouTube's mid-gesture snapping.</p>
  *
- * <p>METUBE(issue #55): past the snap (or where there is none: the portrait player, Shorts) the
+ * <p>MEETUBE(issue #55): past the snap (or where there is none: the portrait player, Shorts) the
  * pinch zooms the {@link #setZoomTarget target} freely, up to {@link #MAX_ZOOM}, around the
  * fingers, and two fingers pan it; it never shows more than the picture's own edges. Pinching
  * back to 1x lets a further pinch in snap to original again.</p>
@@ -77,7 +77,7 @@ public class PinchZoomLayout extends FrameLayout {
     private final Rect mZoomBox = new Rect();
     private boolean mSnapEnabled;
 
-    /** METUBE(shorts): the child whose picture's edges fade into this box's background. */
+    /** MEETUBE(shorts): the child whose picture's edges fade into this box's background. */
     @Nullable
     private View mFadeChild;
     /** The picture inside it (the video's frame), whose edges fade; null: the child's own. */
@@ -290,7 +290,7 @@ public class PinchZoomLayout extends FrameLayout {
         return true;
     }
     /**
-     * METUBE(shorts): fade the edges of {@code picture} (inside {@code child}) {@code px} into this
+     * MEETUBE(shorts): fade the edges of {@code picture} (inside {@code child}) {@code px} into this
      * box's background (the ambient fill), like Instagram's reels - no hard line where the video
      * meets the blur. A picture as big as the child (a zoomed short on a phone) fades at the
      * child's top and bottom; one narrower (a whole short on a tablet) fades at its sides too.

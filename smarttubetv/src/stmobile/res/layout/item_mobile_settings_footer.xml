@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(support): the thank-you at the foot of About - the coffee badge, one line, a small link. -->
+<!-- MEETUBE(support): the thank-you at the foot of About - the coffee badge, one line, a small link. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

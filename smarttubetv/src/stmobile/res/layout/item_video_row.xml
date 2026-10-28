@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  METUBE(list layout, issue #82): item_video_card as a compact row - a small 16:9 thumbnail on the
+  MEETUBE(list layout, issue #82): item_video_card as a compact row - a small 16:9 thumbnail on the
   left, title and meta on the right, YouTube's list. Same view ids as the card, so
   VideoCardAdapter.VideoViewHolder binds it unchanged; no avatar (the row has no room for one).
 -->

@@ -9,7 +9,7 @@ import android.view.View;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 /**
- * METUBE(refresh): a pull-to-refresh lets go with a light tick and a soft two-note pop
+ * MEETUBE(refresh): a pull-to-refresh lets go with a light tick and a soft two-note pop
  * (res/raw/refresh_pop.wav). The pop stays quiet while the phone is on silent or vibrate.
  */
 public final class RefreshFeedback {

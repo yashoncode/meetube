@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(shorts): a channel's Shorts tab tile, as in YouTube's app - three to a row with hairline
+<!-- MEETUBE(shorts): a channel's Shorts tab tile, as in YouTube's app - three to a row with hairline
      gaps, the portrait thumbnail with its view count over it and the menu in the corner. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

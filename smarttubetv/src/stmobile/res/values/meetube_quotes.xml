@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(quotes): what a tap on the brand pill shows (QuoteCard), as "quote|author", English
+<!-- MEETUBE(quotes): what a tap on the brand pill shows (QuoteCard), as "quote|author", English
      only. Add freely: every one is shown once before any comes back. -->
 <resources>
-    <string-array name="metube_quotes" translatable="false">
+    <string-array name="meetube_quotes" translatable="false">
         <item>The unexamined life is not worth living.|Socrates</item>
         <item>I think, therefore I am.|René Descartes</item>
         <item>Know thyself.|Inscription at Delphi</item>

@@ -11,7 +11,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
  * NEWTUBE(you-subscreen): Browse's top bar. On a bottom-nav tab it is the brand; a section opened
  * from a You row (Sports, Playlists, ...) is a sub-screen of You, so it gets a back arrow and the
  * section's name - like YouTube's You sub-pages - instead of a brand that gave no hint where the
- * user was or that back returns to You. METUBE(glass): both live in the floating brand pill.
+ * user was or that back returns to You. MEETUBE(glass): both live in the floating brand pill.
  */
 final class BrowseTopBar {
     private final TextView mTitle;
@@ -22,11 +22,11 @@ final class BrowseTopBar {
         mTitle = activity.findViewById(R.id.mobile_title_bar);
         mBack = activity.findViewById(R.id.mobile_title_back);
         mMark = activity.findViewById(R.id.mobile_brand_mark);
-        // METUBE(app icon): the brand and the launch splash follow the picked launcher icon.
+        // MEETUBE(app icon): the brand and the launch splash follow the picked launcher icon.
         ((ImageView) mMark).setImageResource(com.newtube.mobile.ui.common.AppIcon.mark(activity));
         com.newtube.mobile.ui.common.AppIcon.syncSplash(activity);
         mBack.setOnClickListener(v -> onBack.run());
-        // METUBE(quotes): on a tab the brand pill shows a quote; on a sub-screen it goes back.
+        // MEETUBE(quotes): on a tab the brand pill shows a quote; on a sub-screen it goes back.
         QuoteCard quote = new QuoteCard(activity);
         activity.findViewById(R.id.mobile_brand_glass).setOnClickListener(v -> {
             if (mBack.getVisibility() == View.VISIBLE) {

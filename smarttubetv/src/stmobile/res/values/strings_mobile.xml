@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- MeTube branding: override SmartTube's app_name for the mobile flavor only -->
-    <string name="app_name" translatable="false">MeTube</string>
+    <!-- MeeTube branding: override SmartTube's app_name for the mobile flavor only -->
+    <string name="app_name" translatable="false">MeeTube</string>
     <string name="mobile_player_back">Back</string>
     <string name="mobile_player_minimize">Minimize</string>
     <string name="mobile_player_audio_only">Audio only</string>
@@ -19,12 +19,12 @@
     <string name="mobile_player_audio_track">Audio track</string>
     <string name="mobile_player_subtitles">Subtitles</string>
     <string name="mobile_player_speed">Playback speed</string>
-    <!-- METUBE(sleep-timer): gear-sheet row + sheet title, and its states. -->
+    <!-- MEETUBE(sleep-timer): gear-sheet row + sheet title, and its states. -->
     <string name="mobile_player_sleep_timer">Sleep timer</string>
-    <!-- METUBE(feed-strip): the first chip on Home and the first avatar on Subscriptions. -->
+    <!-- MEETUBE(feed-strip): the first chip on Home and the first avatar on Subscriptions. -->
     <string name="mobile_feed_all">All</string>
     <string name="mobile_feed_show_filters">Show filters</string>
-    <!-- METUBE(autoplay): gear-sheet switch over Settings > When a video ends (on = next, off = pause). -->
+    <!-- MEETUBE(autoplay): gear-sheet switch over Settings > When a video ends (on = next, off = pause). -->
     <string name="mobile_player_autoplay">Autoplay</string>
     <string name="mobile_sleep_end_of_video">End of video</string>
     <string name="mobile_sleep_left">%1$d min left</string>
@@ -78,7 +78,7 @@
     <string name="mobile_lyrics">Lyrics</string>
     <string name="mobile_lyrics_none">Lyrics aren\'t available for this song</string>
     <string name="mobile_lyrics_source">Source: %1$s</string>
-    <!-- METUBE(lyrics): the lyrics provider chooser (LyricsSheet), in BitChord's words -->
+    <!-- MEETUBE(lyrics): the lyrics provider chooser (LyricsSheet), in BitChord's words -->
     <string name="mobile_lyrics_provider_description">Lyrics provider: %1$s</string>
     <string name="mobile_lyrics_provider_choose">Choose lyrics provider</string>
     <string name="mobile_lyrics_provider_current">Current provider</string>
@@ -290,8 +290,8 @@
     <string name="mobile_signin_step1_title">Tap \u201cContinue with Google\u201d</string>
     <string name="mobile_signin_step1_caption">Google\'s sign-in page opens right here.</string>
     <string name="mobile_signin_step2_title">Choose your account and allow access</string>
-    <string name="mobile_signin_step2_caption">The page may mention a TV or another device \u2014 that\'s normal: MeTube signs in the same way a TV does, so your password never touches the app.</string>
-    <string name="mobile_signin_step3_title">Come back to MeTube</string>
+    <string name="mobile_signin_step2_caption">The page may mention a TV or another device \u2014 that\'s normal: MeeTube signs in the same way a TV does, so your password never touches the app.</string>
+    <string name="mobile_signin_step3_title">Come back to MeeTube</string>
     <string name="mobile_signin_step3_caption">Sign-in finishes by itself \u2014 nothing else to do.</string>
     <string name="mobile_signin_code_label">Google will show this code \u2014 check it matches:</string>
     <string name="mobile_signin_copy_hint">Tap the code to copy it</string>
@@ -327,7 +327,7 @@
     <string name="action_signin">Sign in</string>
     <string name="mobile_empty_generic">Nothing to show here yet</string>
     <string name="mobile_empty_subscriptions">Videos from channels you subscribe to show up here</string>
-    <string name="mobile_empty_my_videos">Your public uploads show up here. YouTube keeps private and unlisted videos out of the TV sign-in MeTube uses.</string>
+    <string name="mobile_empty_my_videos">Your public uploads show up here. YouTube keeps private and unlisted videos out of the TV sign-in MeeTube uses.</string>
     <!-- Same empty state, but the device has no working network: say so instead of blaming the feed. -->
     <string name="mobile_empty_no_connection">No connection. Check your network and try again.</string>
     <!-- Channel / uploads / playlist pages (MobileChannel*Activity): the first page failed with a
@@ -502,7 +502,7 @@
     <string name="mobile_download_retry">Retry download</string>
     <string name="mobile_download_folder">Download folder</string>
     <string name="mobile_download_folder_title">Saving to: %1$s</string>
-    <string name="mobile_download_folder_default">Movies/MeTube and Music/MeTube</string>
+    <string name="mobile_download_folder_default">Movies/MeeTube and Music/MeeTube</string>
     <string name="mobile_download_folder_internal">Internal storage</string>
     <string name="mobile_download_folder_choose">Choose a folder</string>
     <string name="mobile_download_folder_use_default">Use the default folder</string>
@@ -523,13 +523,13 @@
     <!-- NEWTUBE(update-flow): the update sheet (Settings > About > Check for updates, the You tab's
          update row) and the notices around it. -->
     <string name="mobile_update_checking">Checking for updates…</string>
-    <string name="mobile_update_up_to_date">MeTube is up to date</string>
+    <string name="mobile_update_up_to_date">MeeTube is up to date</string>
     <string name="mobile_update_version">Version %1$s</string>
     <string name="mobile_update_check_failed_title">Couldn\'t check for updates</string>
     <string name="mobile_update_check_failed_body">Check your connection and try again.</string>
     <string name="mobile_update_available_title">Update available</string>
-    <string name="mobile_update_app_version">MeTube %1$s</string>
-    <string name="mobile_update_app_version_size">MeTube %1$s · %2$s</string>
+    <string name="mobile_update_app_version">MeeTube %1$s</string>
+    <string name="mobile_update_app_version_size">MeeTube %1$s · %2$s</string>
     <string name="mobile_update_metered">You\'re on mobile data.</string>
     <string name="mobile_update_whats_new_in">What\'s new in %1$s</string>
     <string name="mobile_update_release_notes">Full release notes</string>
@@ -543,26 +543,26 @@
     <string name="mobile_update_progress">%1$s of %2$s</string>
     <string name="mobile_update_cancel">Cancel</string>
     <string name="mobile_update_download_failed_title">The download didn\'t finish</string>
-    <string name="mobile_update_download_failed_body">Try again, or get MeTube %1$s from GitHub.</string>
+    <string name="mobile_update_download_failed_body">Try again, or get MeeTube %1$s from GitHub.</string>
     <string name="mobile_update_install_failed_title">Couldn\'t open the installer</string>
     <string name="mobile_update_github">Open GitHub</string>
     <string name="mobile_update_try_again">Try again</string>
     <string name="mobile_update_ready_title">Ready to install</string>
     <string name="mobile_update_install">Install</string>
-    <string name="mobile_update_permission_title">Allow MeTube to install updates</string>
+    <string name="mobile_update_permission_title">Allow MeeTube to install updates</string>
     <string name="mobile_update_permission_body">Android asks this once. On the next screen, turn on “Allow from this source”, then come back: the update installs right away.</string>
     <string name="mobile_update_open_settings">Open settings</string>
     <string name="mobile_update_not_now">Not now</string>
     <string name="mobile_update_done">Done</string>
     <string name="mobile_update_whats_new">What\'s new</string>
-    <string name="mobile_update_updated">Updated to MeTube %1$s</string>
+    <string name="mobile_update_updated">Updated to MeeTube %1$s</string>
     <string name="mobile_update_downloaded">Update downloaded</string>
     <string name="mobile_update_row_available">Update available</string>
     <string name="mobile_update_row_downloading">Downloading update</string>
-    <string name="mobile_update_row_downloading_percent">MeTube %1$s · %2$d%%</string>
+    <string name="mobile_update_row_downloading_percent">MeeTube %1$s · %2$d%%</string>
     <string name="mobile_update_row_ready">Update ready to install</string>
     <string name="mobile_update_channel_name">App updates</string>
-    <string name="mobile_update_channel_desc">Downloading a MeTube update</string>
+    <string name="mobile_update_channel_desc">Downloading a MeeTube update</string>
     <!-- NEWTUBE(theme): Settings > User interface > Theme. -->
     <string name="mobile_theme">Theme</string>
     <string name="mobile_theme_system">System default</string>
@@ -571,17 +571,17 @@
 
     <!-- NEWTUBE(about-growth): the last two rows of Settings > About. Tap-only: no prompt, badge
          or counter. Never "ad-free" wording. -->
-    <string name="mobile_about_star">Star MeTube on GitHub</string>
+    <string name="mobile_about_star">Star MeeTube on GitHub</string>
     <string name="mobile_about_star_desc">Free and open source. A star helps others find it</string>
-    <string name="mobile_about_share">Share MeTube</string>
+    <string name="mobile_about_share">Share MeeTube</string>
     <string name="mobile_about_share_desc">Send the link to someone who\'d like it</string>
-    <string name="mobile_about_share_text">MeTube — a YouTube client for phones, built on SmartTube: %1$s</string>
-    <string name="mobile_about_repo_url" translatable="false">https://github.com/yashoncode/metube</string>
-    <string name="mobile_about_site_url" translatable="false">https://github.com/yashoncode/metube</string>
+    <string name="mobile_about_share_text">MeeTube — a YouTube client for phones, built on SmartTube: %1$s</string>
+    <string name="mobile_about_repo_url" translatable="false">https://github.com/yashoncode/meetube</string>
+    <string name="mobile_about_site_url" translatable="false">https://github.com/yashoncode/meetube</string>
     <!-- Experimental SABR playback (was strings_sabr.xml) -->
     <string name="sabr_vod_option">Prefer SABR even when links work (experimental; next VOD)</string>
     <string name="sabr_vod_stopped">Experimental SABR playback stopped. Tap play to retry, or disable SABR in Settings.</string>
-    <!-- METUBE(up-next): the countdown card over an ended video. %1$d = seconds left. -->
+    <!-- MEETUBE(up-next): the countdown card over an ended video. %1$d = seconds left. -->
     <string name="mobile_next_in">Up next in %1$d</string>
     <string name="mobile_next_play">Play now</string>
     <string name="mobile_next_cancel">Cancel</string>

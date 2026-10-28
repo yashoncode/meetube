@@ -110,7 +110,7 @@ public final class SettingsPages {
     private static Page root(Context context) {
         List<SettingsRow> rows = new ArrayList<>();
 
-        // METUBE: no account or coffee rows here - the You tab switches accounts, About thanks.
+        // MEETUBE: no account or coffee rows here - the You tab switches accounts, About thanks.
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_app)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_general, context.getString(R.string.mobile_settings_general),
                 context.getString(R.string.mobile_settings_general_summary), GENERAL));
@@ -170,7 +170,7 @@ public final class SettingsPages {
             rows.add(SettingsRow.toggle(context.getString(R.string.check_updates_auto),
                     context.getString(R.string.mobile_settings_update_notify_summary),
                     checker::isUpdateCheckEnabled, checker::setUpdateCheckEnabled));
-            // METUBE(update pop-up): "Don't ask again" on the pop-up turns this off.
+            // MEETUBE(update pop-up): "Don't ask again" on the pop-up turns this off.
             com.newtube.mobile.update.AppUpdates updates = com.newtube.mobile.update.AppUpdates.instance(context);
             rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_update_prompt),
                     context.getString(R.string.mobile_settings_update_prompt_summary),
@@ -190,7 +190,7 @@ public final class SettingsPages {
         rows.add(SettingsRow.action(context.getString(R.string.about_license),
                 context.getString(R.string.about_license_name),
                 page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_license_url))));
-        // METUBE(support): a quiet thank-you at the foot of About, not another row.
+        // MEETUBE(support): a quiet thank-you at the foot of About, not another row.
         rows.add(SettingsRow.footer(R.drawable.ic_settings_coffee,
                 context.getString(R.string.mobile_about_thanks),
                 context.getString(R.string.mobile_about_thanks_support),

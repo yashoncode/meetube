@@ -16,7 +16,7 @@
     android:paddingHorizontal="16dp"
     android:paddingVertical="14dp">
 
-    <!-- METUBE(issue #73): a channel seen live gets the glowing red ring. -->
+    <!-- MEETUBE(issue #73): a channel seen live gets the glowing red ring. -->
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">

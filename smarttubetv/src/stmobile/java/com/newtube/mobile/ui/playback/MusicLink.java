@@ -24,7 +24,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * METUBE(music): whether a video has a YouTube Music page - a song, an art track, a music video or
+ * MEETUBE(music): whether a video has a YouTube Music page - a song, an art track, a music video or
  * a podcast episode. YouTube Music's own /player answers with {@code videoDetails.musicVideoType}
  * only for those; the field mask trims the answer to that one field (about 120 bytes).
  * ponytail: a fixed WEB_REMIX client version; bump it if YouTube ever starts refusing it (the pill

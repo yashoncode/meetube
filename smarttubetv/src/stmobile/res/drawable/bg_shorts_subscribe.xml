@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(shorts): Subscribe is a white pill; once subscribed, a quiet outlined one. -->
+<!-- MEETUBE(shorts): Subscribe is a white pill; once subscribed, a quiet outlined one. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_selected="true">
         <shape android:shape="rectangle">

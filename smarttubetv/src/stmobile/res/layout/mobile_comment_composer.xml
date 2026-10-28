@@ -3,7 +3,7 @@
   NEWTUBE(write-comments): the composer (CommentComposer), docked above the keyboard: the person's
   avatar, the text (up to 6 lines, then it scrolls), and Post. While a post is on its way the arrow
   gives way to a small spinner.
-  METUBE(glass): the text and Post sit in the same liquid-glass pill as the "Add a comment…" row
+  MEETUBE(glass): the text and Post sit in the same liquid-glass pill as the "Add a comment…" row
   (item_mobile_comment_compose), which steps aside while this is open.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -36,7 +36,7 @@
         android:layout_weight="1"
         app:glassCornerRadius="22dp"
         app:glassOnGlass="true"
-        app:glassTint="@color/metube_glass_pill_tint">
+        app:glassTint="@color/meetube_glass_pill_tint">
 
         <LinearLayout
             android:layout_width="match_parent"

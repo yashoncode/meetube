@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * METUBE(nav hide, issue #37): YouTube's bottom bar. Scrolling a list down slides the floating nav
+ * MEETUBE(nav hide, issue #37): YouTube's bottom bar. Scrolling a list down slides the floating nav
  * pill off the bottom; scrolling back up, or reaching the top, brings it back. Only a translation:
  * the pill keeps its layout, so nothing under it moves and its taps and gestures stay as they were.
  */

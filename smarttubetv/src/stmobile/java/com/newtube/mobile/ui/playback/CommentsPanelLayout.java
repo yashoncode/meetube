@@ -48,11 +48,11 @@ public class CommentsPanelLayout extends FrameLayout implements NestedScrollingP
         /** The sheet has left the screen: a drag, the close button or back finished closing it. */
         void onPanelClosed();
 
-        /** METUBE(shorts): the sheet has started leaving (it is gone {@code durationMs} from now). */
+        /** MEETUBE(shorts): the sheet has started leaving (it is gone {@code durationMs} from now). */
         default void onPanelClosing(long durationMs) {
         }
 
-        /** METUBE(shorts): the sheet moved; {@code gone} is how far off the screen it is (0 open, 1 gone). */
+        /** MEETUBE(shorts): the sheet moved; {@code gone} is how far off the screen it is (0 open, 1 gone). */
         default void onPanelMoved(float gone) {
         }
     }

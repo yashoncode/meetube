@@ -9,13 +9,13 @@ import android.os.PowerManager;
 import android.provider.Settings;
 
 /**
- * METUBE(background): the battery-optimization exemption that keeps background audio alive with
+ * MEETUBE(background): the battery-optimization exemption that keeps background audio alive with
  * the screen off. A media foreground service is enough on stock Android, but OEM battery managers
  * (realme/ColorOS, Xiaomi, ...) still freeze or kill an "optimized" app a few minutes after the
  * screen goes off. The system dialog asked here is the one switch those managers honour.
  */
 public final class BackgroundPlay {
-    private static final String PREFS = "metube_background";
+    private static final String PREFS = "meetube_background";
     private static final String KEY_ASKED = "battery_asked";
 
     /** A player session ended in this process: Home asks once, after the first video. */

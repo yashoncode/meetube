@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * METUBE(feed-strip, 2.9.8): the horizontal strip at the top of a browse feed, YouTube-style. Home
+ * MEETUBE(feed-strip, 2.9.8): the horizontal strip at the top of a browse feed, YouTube-style. Home
  * shows topic chips (issue #4: All / Music / Gaming / ...), Subscriptions shows the subscribed
  * channels' avatars (issue #2: All first, a tap filters the feed to that channel). The avatars are
  * the grid's first row (a ConcatAdapter header, full span) and scroll away with the feed; the chips
@@ -60,7 +60,7 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
     private final ItemAdapter mItems = new ItemAdapter();
     private int mMode = MODE_NONE;
     private long mSelected;
-    /** METUBE(all subscriptions): long-press on the avatars' "All". */
+    /** MEETUBE(all subscriptions): long-press on the avatars' "All". */
     @Nullable private Runnable mOnAllLongPressed;
 
     FeedStrip(Listener listener, @Nullable GlassSource glass) {
@@ -197,7 +197,7 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                 ImageView avatar = new ImageView(context);
                 avatar.setId(android.R.id.icon);
                 avatar.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                // METUBE(issue #73): a channel seen live gets the glowing red ring over its avatar.
+                // MEETUBE(issue #73): a channel seen live gets the glowing red ring over its avatar.
                 android.widget.FrameLayout avatarBox = new android.widget.FrameLayout(context);
                 avatarBox.addView(avatar, new android.widget.FrameLayout.LayoutParams(dp(context, 56), dp(context, 56)));
                 com.newtube.mobile.ui.common.LiveRingView ring = new com.newtube.mobile.ui.common.LiveRingView(context, null);
@@ -229,7 +229,7 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                 lp.rightMargin = dp(context, 8);
                 chip.setLayoutParams(lp);
                 chip.setElevation(dp(context, 4));
-                // METUBE(glass): frosted, saturated feed under each pill (liquid: grain + rim too);
+                // MEETUBE(glass): frosted, saturated feed under each pill (liquid: grain + rim too);
                 // made once per cell - apply() hooks a pre-draw listener.
                 GlassDrawable.apply(chip, mGlass, 0);
                 chip.setTag(R.id.mobile_feed_strip, chip.getBackground());

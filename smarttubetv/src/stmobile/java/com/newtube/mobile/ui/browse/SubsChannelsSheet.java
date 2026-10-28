@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * METUBE(all subscriptions): long-press "All" on the Subscriptions strip - every subscribed channel,
+ * MEETUBE(all subscriptions): long-press "All" on the Subscriptions strip - every subscribed channel,
  * A-Z as a list of rows, as YouTube's "All subscriptions"; a tap opens the channel. The channels are the strip's
  * own (one fetch for both).
  */

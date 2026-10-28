@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * METUBE(bar editor): Settings > Customization > Tabs shows the bars as a stack you drag: a live
+ * MEETUBE(bar editor): Settings > Customization > Tabs shows the bars as a stack you drag: a live
  * preview of the top and bottom bars, then a tile per item. Home and You stay put; Search and the
  * two tabs slide between them, and Search can go up into the top bar. A tap on a tab picks what it
  * shows, a tap on Search picks its bar. Each drop saves the whole order ({@link NavTabs#setLayout});

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * METUBE(home-rows, 2.9.8, issue #4): Home as SmartTube shows it - one titled carousel per shelf
+ * MEETUBE(home-rows, 2.9.8, issue #4): Home as SmartTube shows it - one titled carousel per shelf
  * (Settings > General > Home layout > Rows). It mirrors the feed list the grid adapter holds
  * ({@link #submit}), grouping consecutive cards by the shelf they came from, so loading, paging and
  * filtering stay the feed's own; only the drawing differs.

@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * METUBE(quotes): a tap on the brand pill shows a quote on a glass card for three seconds (a tap on
+ * MEETUBE(quotes): a tap on the brand pill shows a quote on a glass card for three seconds (a tap on
  * the card closes it sooner). The quotes come in a shuffled order that is saved, so none comes
  * back until every one has been shown; then a new order starts.
  */
 final class QuoteCard {
     private static final long SHOW_MS = 3000;
-    private static final String PREFS = "metube_app";
+    private static final String PREFS = "meetube_app";
     private static final String KEY_SEED = "quote_seed";
     private static final String KEY_POS = "quote_pos";
 
@@ -35,7 +35,7 @@ final class QuoteCard {
         mCard = activity.findViewById(R.id.mobile_quote_card);
         mText = activity.findViewById(R.id.mobile_quote_text);
         mAuthor = activity.findViewById(R.id.mobile_quote_author);
-        mQuotes = activity.getResources().getStringArray(R.array.metube_quotes);
+        mQuotes = activity.getResources().getStringArray(R.array.meetube_quotes);
         mPrefs = activity.getSharedPreferences(PREFS, Activity.MODE_PRIVATE);
         mCard.setOnClickListener(v -> hide());
     }

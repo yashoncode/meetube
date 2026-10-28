@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(watch-look): the compact watch page (the default; Settings > Customization > Watch
+<!-- MEETUBE(watch-look): the compact watch page (the default; Settings > Customization > Watch
      page): a two-line title, one line of channel and numbers, then avatar, Subscribe and the
      actions as glass icons on one row, and the comments card showing the top comments one at a
      time (MobilePlaybackActivity.showNextTopComment). Same ids as include_watch_details_classic. -->

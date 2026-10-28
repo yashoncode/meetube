@@ -166,11 +166,11 @@ public class MobileMainApplication extends MainApplication {
         // Keep ALL existing TV init: Conscrypt, GlobalPreferences, multidex, the
         // global exception handler and every other View->Activity mapping.
         super.onCreate();
-        com.newtube.mobile.player.Media3PlayerController.applyHdrSetting(this); // METUBE(issue #35)
-        // METUBE(glass): which screen a sheet in its own activity frosts.
+        com.newtube.mobile.player.Media3PlayerController.applyHdrSetting(this); // MEETUBE(issue #35)
+        // MEETUBE(glass): which screen a sheet in its own activity frosts.
         com.newtube.mobile.ui.common.SheetGlass.track(this, com.newtube.mobile.ui.dialog.MobileAppDialogActivity.class);
         com.newtube.mobile.ui.common.SheetGlass.liveOver(com.newtube.mobile.ui.playback.MobilePlaybackActivity.class);
-        com.newtube.mobile.ui.common.CountStyle.install(this); // METUBE(counts): K/M or lakh/crore
+        com.newtube.mobile.ui.common.CountStyle.install(this); // MEETUBE(counts): K/M or lakh/crore
 
         // Release-visible launch milestones + the "first frame drawn" hook used below.
         LaunchMilestones.install(this);
@@ -702,7 +702,7 @@ public class MobileMainApplication extends MainApplication {
         // NO NOTIFICATIONS (mobile-only): YouTube refuses the notification inbox to the TV sign-in
         // (HTTP 400 signed in and out, 2026-09-30), so the phone shows no Notifications section: not
         // in the You panel, Set-up sections or Boot to section (SidebarService). Prefs untouched.
-        // Re-checked 2026-10-18 (MeTube issue #6) on a signed-in phone: every client - TV,
+        // Re-checked 2026-10-18 (MeeTube issue #6) on a signed-in phone: every client - TV,
         // TVLegacy, TV_UA, Kids ("Precondition check failed"), Android, MWeb, Web ("invalid
         // argument") - gets 400 with the TV OAuth token. The inbox wants a web cookie sign-in.
         com.liskovsoft.smartyoutubetv2.common.app.presenters.service.SidebarService.setNotificationsSectionHidden(true);
@@ -1086,7 +1086,7 @@ public class MobileMainApplication extends MainApplication {
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
 
-        // METUBE(app icon): a new launcher icon is applied once nothing of the app is on screen;
+        // MEETUBE(app icon): a new launcher icon is applied once nothing of the app is on screen;
         // not while a player plays on in the background (the alias switch closes its task).
         if (level == TRIM_MEMORY_UI_HIDDEN
                 && com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter.instance(this).getView() == null) {

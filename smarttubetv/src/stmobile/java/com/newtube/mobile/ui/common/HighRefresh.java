@@ -9,14 +9,14 @@ import android.view.Window;
 import android.view.WindowManager;
 
 /**
- * METUBE(performance): High performance mode - every screen asks for the display's highest refresh
+ * MEETUBE(performance): High performance mode - every screen asks for the display's highest refresh
  * rate (120 Hz where the phone has it) instead of letting Android drop to 60 Hz between touches.
  * A request, not a lock: Android still lowers it when the phone is hot or the battery saver is on.
  * BitChord's way: the window's preferred rate, and from Android 15 no power-saving frame rate and
  * the root view's requested rate.
  */
 public final class HighRefresh {
-    private static final String PREFS = "metube_performance";
+    private static final String PREFS = "meetube_performance";
     private static final String KEY = "high_refresh";
 
     private HighRefresh() {

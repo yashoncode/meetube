@@ -204,7 +204,7 @@ public final class MobileSheets {
     public static final int LANDSCAPE_TOP_GAP_DP = 48;
 
     /**
-     * METUBE(sheet-landscape): {@link #capHeight}'s fit for a sheet that is not a BottomSheetDialog
+     * MEETUBE(sheet-landscape): {@link #capHeight}'s fit for a sheet that is not a BottomSheetDialog
      * (the picker screen): the max height for {@code list} that stops {@code frame} at {@code cap}
      * with the last row cut about in half, and the same fade over the cut.
      */
@@ -214,7 +214,7 @@ public final class MobileSheets {
     }
 
     /**
-     * METUBE(sheet-landscape): the cut row fades into the sheet instead of ending on a hard edge,
+     * MEETUBE(sheet-landscape): the cut row fades into the sheet instead of ending on a hard edge,
      * which read as missing bottom padding. Gone once scrolled to the end.
      */
     private static void fadeCutEdge(View list) {

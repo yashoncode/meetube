@@ -77,7 +77,7 @@ public final class AppUpdates implements AppUpdateCheckerListener {
      */
     private static final long AUTO_CHECK_MS = 60 * 60 * 1_000L;
     /**
-     * METUBE(update pop-up): a found update opens its sheet by itself on Home. "Later" brings it back
+     * MEETUBE(update pop-up): a found update opens its sheet by itself on Home. "Later" brings it back
      * after this long for the same version (a newer version asks at once); "Don't ask again" turns
      * the pop-up off - the You tab's row and dot and Settings > About still offer the update.
      */
@@ -473,7 +473,7 @@ public final class AppUpdates implements AppUpdateCheckerListener {
         return mChecker.isUpdateCheckEnabled() && mPrefs.getInt(KEY_KNOWN_CODE, 0) > mInstalledCode;
     }
 
-    /** METUBE(update pop-up): a freshly found update the user hasn't been asked about lately. */
+    /** MEETUBE(update pop-up): a freshly found update the user hasn't been asked about lately. */
     public boolean shouldPrompt() {
         if (!BuildConfig.IN_APP_UPDATES || isPromptOff() || mPhase != Phase.AVAILABLE || !hasUpdate()) {
             return false;

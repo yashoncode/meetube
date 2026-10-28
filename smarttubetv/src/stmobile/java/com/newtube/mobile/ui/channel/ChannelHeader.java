@@ -22,7 +22,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * METUBE(channel header, issue #10): the top of a channel page - banner, avatar, name, handle,
+ * MEETUBE(channel header, issue #10): the top of a channel page - banner, avatar, name, handle,
  * "subscribers • videos" and description. The TV client's channel browse carries none of it, so
  * this reads the header of an anonymous MWEB browse of the channel (~70 KB gzipped) on a plain
  * client: the shared one adds the TV sign-in, which WEB endpoints refuse (as ChannelAvatars).
@@ -35,7 +35,7 @@ final class ChannelHeader {
         String description;
         String avatarUrl;
         String bannerUrl;
-        /** METUBE(issue #73): the avatar's "LIVE" badge (YouTube's wording) and the stream, when live. */
+        /** MEETUBE(issue #73): the avatar's "LIVE" badge (YouTube's wording) and the stream, when live. */
         String liveBadge;
         String liveVideoId;
     }
@@ -84,7 +84,7 @@ final class ChannelHeader {
     private static final String SHORTS_TAB_PARAMS = "EgZzaG9ydHPyBgUKA5oBAA==";
 
     /**
-     * METUBE(shorts): "26K views" for each short on the channel's Shorts tab, by video id - the TV
+     * MEETUBE(shorts): "26K views" for each short on the channel's Shorts tab, by video id - the TV
      * client's Shorts tiles carry only the handle. One anonymous MWEB browse of that tab: its first
      * page, ~48 shorts; later ones go without. Main thread; {@code callback} on it, when found.
      */

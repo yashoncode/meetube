@@ -115,7 +115,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
         if (SettingsPages.ROOT.equals(mPageId)) {
             View search = view.findViewById(R.id.settings_search_field);
             search.setVisibility(View.VISIBLE);
-            // METUBE(glass): frosted over the page; the rows start below it and scroll under it.
+            // MEETUBE(glass): frosted over the page; the rows start below it and scroll under it.
             com.newtube.mobile.ui.common.Glass.blur(search, view.findViewById(R.id.settings_blur_target));
             ((ViewGroup.MarginLayoutParams) search.getLayoutParams()).topMargin += Math.round(4 * getResources().getDisplayMetrics().density);
             mList.setPadding(mList.getPaddingLeft(),
@@ -236,7 +236,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
     }
 
     /**
-     * The choice sheet (METUBE: was a centred dialog): the options as a radio list, the current one
+     * The choice sheet (MEETUBE: was a centred dialog): the options as a radio list, the current one
      * marked, in the app's frosted bottom sheet; a tap applies that option and closes the sheet.
      */
     private void showChoiceDialog(SettingsRow row) {
@@ -274,7 +274,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
             list.addView(view);
         }
         sheet.setContentView(content);
-        com.newtube.mobile.ui.common.FocusRing.install(sheet.getWindow()); // METUBE(tv)
+        com.newtube.mobile.ui.common.FocusRing.install(sheet.getWindow()); // MEETUBE(tv)
         com.newtube.mobile.ui.common.FocusRing.focusFirstRow(sheet.getWindow());
         // A long list (UI scale, quality) opens whole rather than half-peeked.
         sheet.getBehavior().setSkipCollapsed(true);

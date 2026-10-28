@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  METUBE(transcript): the video's transcript under it, like YouTube's panel: a search field, then a
+  MEETUBE(transcript): the video's transcript under it, like YouTube's panel: a search field, then a
   line per caption with its time. The line being said lights up and stays in view; a tap plays from
   it (TranscriptSheet). The frosted sheet glass, sized to stop under the video like Lyrics.
 -->

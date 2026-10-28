@@ -4,7 +4,7 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 /**
- * METUBE(feed-strip): how Home's floating chip row behaves while the feed scrolls. At the top the
+ * MEETUBE(feed-strip): how Home's floating chip row behaves while the feed scrolls. At the top the
  * chips show; scrolling down slides them away; scrolling back up (still down the feed) brings only
  * a small glass arrow, and a tap on it brings the chips. The row keeps its layout height while
  * hidden (INVISIBLE, never GONE) so the feed never jumps under it.

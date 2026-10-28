@@ -7,7 +7,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
 import com.liskovsoft.smartyoutubetv2.common.misc.VideoDownloads;
 
 /**
- * METUBE(nav tabs, issue #7): the bottom bar is Home | tab | tab | You with Search before, between
+ * MEETUBE(nav tabs, issue #7): the bottom bar is Home | tab | tab | You with Search before, between
  * or after the two tabs ({@link #searchPosition}), or up in the top bar ({@link #searchOnTop}).
  * Home and You are fixed; the tabs are picked and the order dragged in Settings > Customization >
  * Tabs (BarEditor), each tab one of {@link #CHOICES} or {@link #NONE}. Picking the tab the other
@@ -20,7 +20,7 @@ public final class NavTabs {
     /** What a slot can hold, in the order Settings lists them. */
     public static final int[] CHOICES = {MediaGroup.TYPE_SHORTS, MediaGroup.TYPE_SUBSCRIPTIONS,
             VideoDownloads.SECTION_ID, MediaGroup.TYPE_HISTORY};
-    private static final String PREFS = "metube_nav_tabs";
+    private static final String PREFS = "meetube_nav_tabs";
     private static final String[] KEYS = {"before_search", "after_search"}; // the names from when Search sat between
     private static final String KEY_LABELS = "labels";
     private static final String KEY_SEARCH_ON_TOP = "search_on_top";
@@ -45,7 +45,7 @@ public final class NavTabs {
         editor.apply();
     }
 
-    /** METUBE(nav labels): Settings > Customization > Tab names - the names under the bar's icons. */
+    /** MEETUBE(nav labels): Settings > Customization > Tab names - the names under the bar's icons. */
     public static boolean showLabels(Context context) {
         return prefs(context).getBoolean(KEY_LABELS, true);
     }
@@ -54,7 +54,7 @@ public final class NavTabs {
         prefs(context).edit().putBoolean(KEY_LABELS, show).apply();
     }
 
-    /** METUBE(search place): Settings > Customization > Tabs - Search in the top bar instead of the bottom one. */
+    /** MEETUBE(search place): Settings > Customization > Tabs - Search in the top bar instead of the bottom one. */
     public static boolean searchOnTop(Context context) {
         return prefs(context).getBoolean(KEY_SEARCH_ON_TOP, false);
     }

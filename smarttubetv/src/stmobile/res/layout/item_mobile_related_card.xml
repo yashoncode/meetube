@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  METUBE(list layout): Up next as cards, when Customization > Video layout is Cards - the full-width
+  MEETUBE(list layout): Up next as cards, when Customization > Video layout is Cards - the full-width
   thumbnail with the title and "Channel • views • date" under it, like the feeds' cards. Same ids
   as item_mobile_related_video, so RelatedVideoAdapter binds either.
 -->

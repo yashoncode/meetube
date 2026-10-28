@@ -26,7 +26,7 @@ public interface PlaybackView extends PlayerManager {
     default void showPlaybackNotice(String message) {}
 
     /**
-     * METUBE(up-next): the video ended and autoplay is about to open {@code next} (null while the
+     * MEETUBE(up-next): the video ended and autoplay is about to open {@code next} (null while the
      * suggestions are still loading). Return true to hold the advance behind the view's own
      * countdown, which runs {@code playNext} when it is done (or the user taps Play now); false
      * (the default, or a player nobody is looking at) advances at once.

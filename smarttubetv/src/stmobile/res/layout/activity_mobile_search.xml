@@ -24,7 +24,7 @@
     android:background="@color/mobile_color_background"
     android:orientation="vertical">
 
-    <!-- METUBE(glass): the results scroll under the floating search pill, which frosts them. -->
+    <!-- MEETUBE(glass): the results scroll under the floating search pill, which frosts them. -->
     <com.newtube.mobile.ui.common.GlassSource
         android:id="@+id/mobile_search_glass_source"
         android:layout_width="match_parent"
@@ -35,7 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- METUBE(glass): the results alone, which the chips below frost (a glass may not sit
+        <!-- MEETUBE(glass): the results alone, which the chips below frost (a glass may not sit
              in the source it samples). -->
         <com.newtube.mobile.ui.common.GlassSource
             android:id="@+id/mobile_search_chips_source"
@@ -74,7 +74,7 @@
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/mobile_search_results_top" />
 
-        <!-- METUBE(search chips): YouTube's chip row over the results - All, Videos, Shorts, Live,
+        <!-- MEETUBE(search chips): YouTube's chip row over the results - All, Videos, Shorts, Live,
              Recently uploaded - shortcuts to the filter dialog's own flags. Shown from the first
              search on; the suggestions list below covers it while the query is edited. -->
         <HorizontalScrollView
@@ -118,7 +118,7 @@
 
 </LinearLayout>
 
-    <!-- METUBE(glass): back + a floating liquid-glass search pill (the query, clear and voice
+    <!-- MEETUBE(glass): back + a floating liquid-glass search pill (the query, clear and voice
          inside it) + filters. The results and suggestions scroll under it. -->
     <LinearLayout
         android:id="@+id/mobile_search_toolbar"
@@ -145,7 +145,7 @@
             android:layout_weight="1"
             android:elevation="6dp"
             app:glassCornerRadius="22dp"
-            app:glassTint="@color/metube_search_glass_tint">
+            app:glassTint="@color/meetube_search_glass_tint">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -169,7 +169,7 @@
                     android:singleLine="true"
                     android:textColor="@color/mobile_color_on_surface"
                     android:textColorHint="@color/mobile_color_on_surface_secondary"
-                    android:textCursorDrawable="@drawable/metube_search_cursor"
+                    android:textCursorDrawable="@drawable/meetube_search_cursor"
                     android:textSize="18sp" />
 
                 <!-- Clear the query; visible only while the field has text. -->
@@ -198,7 +198,7 @@
 
         </com.newtube.mobile.ui.common.GlassView>
 
-        <!-- METUBE(search filters): upload date, duration, type, features, sort. -->
+        <!-- MEETUBE(search filters): upload date, duration, type, features, sort. -->
         <ImageButton
             android:id="@+id/mobile_search_filters"
             android:layout_width="48dp"
@@ -210,7 +210,7 @@
 
     </LinearLayout>
 
-    <!-- METUBE(search nav): Browse's floating nav pill over the results, Search lit
+    <!-- MEETUBE(search nav): Browse's floating nav pill over the results, Search lit
          (MobileBrowseActivity.copyNavTabs); hidden while the query is being typed. -->
     <com.newtube.mobile.ui.common.GlassView
         android:id="@+id/mobile_nav_glass"
@@ -223,7 +223,7 @@
         android:padding="6dp"
         android:visibility="gone"
         app:glassCornerRadius="34dp"
-        app:glassTint="@color/metube_glass_tint">
+        app:glassTint="@color/meetube_glass_tint">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/mobile_bottom_nav"

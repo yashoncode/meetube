@@ -45,7 +45,7 @@
                 android:contentDescription="@null"
                 android:scaleType="centerCrop" />
 
-            <!-- METUBE(shorts): a search Short's title sits on its thumbnail, as on YouTube. -->
+            <!-- MEETUBE(shorts): a search Short's title sits on its thumbnail, as on YouTube. -->
             <TextView
                 android:id="@+id/video_short_title"
                 android:layout_width="match_parent"
@@ -92,7 +92,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- METUBE(card avatars, issue #6): the channel, like YouTube; a tap opens it. Shown only
+        <!-- MEETUBE(card avatars, issue #6): the channel, like YouTube; a tap opens it. Shown only
              where the adapter asks for it (feeds and search, not a channel's own page). -->
         <ImageView
             android:id="@+id/video_avatar"
@@ -104,7 +104,7 @@
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/video_thumbnail_frame" />
-        <!-- METUBE(collab avatars): a collab's second channel, overlapping the first (shrunk). -->
+        <!-- MEETUBE(collab avatars): a collab's second channel, overlapping the first (shrunk). -->
         <ImageView
             android:id="@+id/video_avatar_2"
             android:layout_width="26dp"
@@ -116,7 +116,7 @@
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="@id/video_avatar"
             app:layout_constraintTop_toTopOf="@id/video_avatar" />
-        <!-- METUBE(issue #73): a live video's channel avatar gets the glowing red ring. -->
+        <!-- MEETUBE(issue #73): a live video's channel avatar gets the glowing red ring. -->
         <com.newtube.mobile.ui.common.LiveRingView
             android:id="@+id/video_avatar_live"
             android:layout_width="36dp"

@@ -63,12 +63,12 @@ public abstract class MobileActivity extends MotherActivity {
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        FocusRing.install(getWindow()); // METUBE(tv): the remote's highlight, on every screen
+        FocusRing.install(getWindow()); // MEETUBE(tv): the remote's highlight, on every screen
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        Haptics.onTouch(getWindow().peekDecorView(), event); // METUBE(haptics): every tap clicks
+        Haptics.onTouch(getWindow().peekDecorView(), event); // MEETUBE(haptics): every tap clicks
         return super.dispatchTouchEvent(event);
     }
 
@@ -284,7 +284,7 @@ public abstract class MobileActivity extends MotherActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        HighRefresh.apply(this); // METUBE(performance): back from Settings with it changed
+        HighRefresh.apply(this); // MEETUBE(performance): back from Settings with it changed
 
         // Mandatory: keeps the ViewManager back-stack/parent lookup correct.
         if (isBackStackScreen()) {

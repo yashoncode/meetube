@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE: modern switch thumb - a white disc riding inside the track. -->
+<!-- MEETUBE: modern switch thumb - a white disc riding inside the track. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:bottom="2dp"

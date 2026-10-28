@@ -109,7 +109,7 @@ public class CommentTextView extends AppCompatTextView {
             }
 
             @Override
-            public boolean onSingleTapConfirmed(@NonNull MotionEvent e) { // METUBE(issue #78): not half a double tap
+            public boolean onSingleTapConfirmed(@NonNull MotionEvent e) { // MEETUBE(issue #78): not half a double tap
                 // "Read more" is painted over the end of the last folded line; whatever text (a
                 // link, a timestamp) lies under it is hidden, so the label wins there.
                 ClickableSpan span = isOnReadMore(e) ? null : spanAt(e);
@@ -263,7 +263,7 @@ public class CommentTextView extends AppCompatTextView {
             return;
         }
         // "Read more" sits at the end of the last folded line, where the text fades out (end side;
-        // mirrored for right-to-left text). METUBE(glass): the text itself is faded - erased in a
+        // mirrored for right-to-left text). MEETUBE(glass): the text itself is faded - erased in a
         // layer - not covered with a page-coloured patch, which showed as a block on the glass.
         int layer = canvas.saveLayer(0, 0, getWidth(), getHeight(), null);
         super.onDraw(canvas);

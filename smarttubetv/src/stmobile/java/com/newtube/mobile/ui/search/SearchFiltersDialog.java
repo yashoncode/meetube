@@ -20,7 +20,7 @@ import com.newtube.mobile.ui.common.Haptics;
 import java.util.function.IntConsumer;
 
 /**
- * METUBE(search filters, #11): YouTube's own "Search filters" dialog - Type, Duration, Upload date
+ * MEETUBE(search filters, #11): YouTube's own "Search filters" dialog - Type, Duration, Upload date
  * and Prioritize dropdowns, then the Features chips - with YouTube's current choices. It replaces
  * the TV presenter's radio list, which still offered filters YouTube has dropped (last hour, sort by
  * upload date or rating).
@@ -119,7 +119,7 @@ final class SearchFiltersDialog {
                     onApply.accept(result);
                 })
                 .show());
-        // METUBE(glass): frosted with the results under it, like the sheets (the 28dp card's corners).
+        // MEETUBE(glass): frosted with the results under it, like the sheets (the 28dp card's corners).
         View panel = filters.findViewById(androidx.appcompat.R.id.parentPanel);
         if (panel != null) {
             panel.post(() -> com.newtube.mobile.ui.common.SheetGlass.frost(panel, activity.getWindow(),

@@ -337,7 +337,7 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
         if (player == null || playerView == null) return
 
         val shouldForward = performListener?.shouldForward(player!!, playerView!!, posX)
-        // METUBE(haptics): every double-tap seek step (forward or rewind) clicks.
+        // MEETUBE(haptics): every double-tap seek step (forward or rewind) clicks.
         if (shouldForward != null) performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
 
         // YouTube behavior: show overlay on MOTION_UP

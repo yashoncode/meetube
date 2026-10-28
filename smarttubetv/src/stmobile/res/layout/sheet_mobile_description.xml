@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  METUBE(description): YouTube's Description panel, opened from the watch page's title. A title +
+  MEETUBE(description): YouTube's Description panel, opened from the watch page's title. A title +
   close header, then the video title, a Likes / Views / date row (DescriptionSheet fills it) and the
   description. Title and description are selectable: long-press to copy; links still open on a tap.
   The frame is the frosted sheet glass; its height is capped from code so it stops under the video.
@@ -99,7 +99,7 @@
                 android:textSize="14sp"
                 tools:text="The official video for Never Gonna Give You Up by Rick Astley." />
 
-            <!-- METUBE(transcript): YouTube's Transcript section; only for a video with captions. -->
+            <!-- MEETUBE(transcript): YouTube's Transcript section; only for a video with captions. -->
             <LinearLayout
                 android:id="@+id/description_sheet_transcript"
                 android:layout_width="match_parent"
@@ -137,7 +137,7 @@
 
             </LinearLayout>
 
-            <!-- METUBE(description): the channel - Subscribe mirrors the watch page's, Videos opens it. -->
+            <!-- MEETUBE(description): the channel - Subscribe mirrors the watch page's, Videos opens it. -->
             <LinearLayout
                 android:id="@+id/description_sheet_channel"
                 android:layout_width="match_parent"
@@ -229,7 +229,7 @@
 
             </LinearLayout>
 
-            <!-- METUBE(description): Date / Views / Likes in full, on one glass card (DescriptionSheet). -->
+            <!-- MEETUBE(description): Date / Views / Likes in full, on one glass card (DescriptionSheet). -->
             <LinearLayout
                 android:id="@+id/description_sheet_details"
                 android:layout_width="match_parent"

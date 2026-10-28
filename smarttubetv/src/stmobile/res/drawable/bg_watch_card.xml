@@ -5,9 +5,9 @@
     android:color="?android:attr/colorControlHighlight">
     <item>
         <shape android:shape="rectangle">
-            <!-- METUBE(glass) -->
+            <!-- MEETUBE(glass) -->
             <solid android:color="@color/mobile_color_card" />
-            <stroke android:width="0.5dp" android:color="@color/metube_glass_stroke" />
+            <stroke android:width="0.5dp" android:color="@color/meetube_glass_stroke" />
             <corners android:radius="22dp" />
         </shape>
     </item>

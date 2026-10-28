@@ -256,7 +256,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     /**
-     * METUBE: the "Add a comment…" row leaves while the composer is open (one bar on screen, no
+     * MEETUBE: the "Add a comment…" row leaves while the composer is open (one bar on screen, no
      * gap where it was) and comes back after.
      */
     void setComposeHidden(boolean hidden) {
@@ -498,12 +498,12 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
-    /** METUBE(bidi): Unicode first-strong isolate and its end. */
+    /** MEETUBE(bidi): Unicode first-strong isolate and its end. */
     private static final String FSI = "⁨";
     private static final String PDI = "⁩";
 
     /**
-     * METUBE(bidi): a comment reads in the direction of its first letter. Invisible direction marks
+     * MEETUBE(bidi): a comment reads in the direction of its first letter. Invisible direction marks
      * (LRM/RLM/ALM) are skipped: an "RLM 0:16" reply right-aligned itself though it has no letters.
      * No letter at all: the app language's direction.
      */
@@ -641,7 +641,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 }
                 return false;
             });
-            // METUBE(issue #78): like YouTube - a tap opens the replies, a double tap likes.
+            // MEETUBE(issue #78): like YouTube - a tap opens the replies, a double tap likes.
             android.view.GestureDetector rowGestures = new android.view.GestureDetector(context,
                     new android.view.GestureDetector.SimpleOnGestureListener() {
                         @Override
@@ -854,7 +854,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         /**
          * "@handle • 2 days ago"; the video's creator gets their handle on a quiet pill.
-         * METUBE(bidi): the handle is a Unicode isolate (FSI...PDI), so a right-to-left name keeps to
+         * MEETUBE(bidi): the handle is a Unicode isolate (FSI...PDI), so a right-to-left name keeps to
          * itself - it no longer drags the date's number across it ("days ago 4 •").
          */
         private CharSequence buildMeta(CommentItem item, @Nullable String creatorHandle) {

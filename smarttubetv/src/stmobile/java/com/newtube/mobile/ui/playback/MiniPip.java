@@ -30,7 +30,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import java.util.Arrays;
 
 /**
- * METUBE(mini-pip): leaving the app (Home, Recents) while a screen's mini card plays floats that
+ * MEETUBE(mini-pip): leaving the app (Home, Recents) while a screen's mini card plays floats that
  * card in a PiP window, like leaving the full player does. The player Activity sits stopped behind
  * the card's screen and cannot enter PiP itself, so the HOST does: its window becomes the video
  * (the card blown up to fill it, its buttons hidden) until the window expands back or closes.

@@ -283,8 +283,8 @@
     <string name="mobile_signin_step1_title">點一下「使用 Google 繼續」</string>
     <string name="mobile_signin_step1_caption">Google 的登入頁面會直接在這裡開啟。</string>
     <string name="mobile_signin_step2_title">選擇你的帳號並允許存取</string>
-    <string name="mobile_signin_step2_caption">頁面可能提到電視或其他裝置，這是正常的：MeTube 的登入方式跟電視一樣，你的密碼不會經過這個應用程式。</string>
-    <string name="mobile_signin_step3_title">回到 MeTube</string>
+    <string name="mobile_signin_step2_caption">頁面可能提到電視或其他裝置，這是正常的：MeeTube 的登入方式跟電視一樣，你的密碼不會經過這個應用程式。</string>
+    <string name="mobile_signin_step3_title">回到 MeeTube</string>
     <string name="mobile_signin_step3_caption">登入會自己完成，不需要再做其他事。</string>
     <string name="mobile_signin_code_label">Google 會顯示這組代碼，請確認內容相符：</string>
     <string name="mobile_signin_copy_hint">點一下代碼即可複製</string>
@@ -462,7 +462,7 @@
         正在檢查更新…
     </string>
     <string name="mobile_update_up_to_date">
-        MeTube 已是最新版本
+        MeeTube 已是最新版本
     </string>
     <string name="mobile_update_version">
         版本 %1$s
@@ -477,10 +477,10 @@
         有可用的更新
     </string>
     <string name="mobile_update_app_version">
-        MeTube %1$s
+        MeeTube %1$s
     </string>
     <string name="mobile_update_app_version_size">
-        MeTube %1$s · %2$s
+        MeeTube %1$s · %2$s
     </string>
     <string name="mobile_update_metered">
         你正在使用行動數據。
@@ -510,7 +510,7 @@
         下載未完成
     </string>
     <string name="mobile_update_download_failed_body">
-        請再試一次，或改從 GitHub 取得 MeTube %1$s。
+        請再試一次，或改從 GitHub 取得 MeeTube %1$s。
     </string>
     <string name="mobile_update_install_failed_title">
         無法開啟安裝程式
@@ -528,7 +528,7 @@
         安裝
     </string>
     <string name="mobile_update_permission_title">
-        允許 MeTube 安裝更新
+        允許 MeeTube 安裝更新
     </string>
     <string name="mobile_update_permission_body">
         Android 只會問這一次。在下一個畫面開啟「允許來自這個來源」，然後回到這裡：更新會立即安裝。
@@ -546,7 +546,7 @@
         新功能
     </string>
     <string name="mobile_update_updated">
-        已更新為 MeTube %1$s
+        已更新為 MeeTube %1$s
     </string>
     <string name="mobile_update_downloaded">
         更新已下載完成
@@ -558,7 +558,7 @@
         正在下載更新
     </string>
     <string name="mobile_update_row_downloading_percent">
-        MeTube %1$s · %2$d%%
+        MeeTube %1$s · %2$d%%
     </string>
     <string name="mobile_update_row_ready">
         更新可供安裝
@@ -567,23 +567,23 @@
         應用程式更新
     </string>
     <string name="mobile_update_channel_desc">
-        正在下載 MeTube 更新
+        正在下載 MeeTube 更新
     </string>
     <string name="mobile_theme">主題</string>
     <string name="mobile_theme_system">跟隨系統</string>
     <string name="mobile_theme_light">淺色</string>
     <string name="mobile_theme_dark">深色</string>
-    <string name="mobile_about_star">在 GitHub 上給 MeTube 加星</string>
+    <string name="mobile_about_star">在 GitHub 上給 MeeTube 加星</string>
     <string name="mobile_about_star_desc">免費且開放原始碼。加顆星能讓更多人找到它</string>
-    <string name="mobile_about_share">分享 MeTube</string>
+    <string name="mobile_about_share">分享 MeeTube</string>
     <string name="mobile_about_share_desc">把連結發給需要的人</string>
-    <string name="mobile_about_share_text">MeTube — 建於 SmartTube 之上的手機 YouTube 客戶端：%1$s</string>
+    <string name="mobile_about_share_text">MeeTube — 建於 SmartTube 之上的手機 YouTube 客戶端：%1$s</string>
     <string name="sabr_vod_option">即使連結可用也偏好 SABR（實驗功能；下一支點播影片生效）</string>
     <string name="sabr_vod_stopped">已停止實驗性 SABR 播放。點播放可重試，或在設定中關閉 SABR。</string>
     <string name="mobile_next_in">%1$d 秒後播放下一支</string>
     <string name="mobile_next_play">立即播放</string>
     <string name="mobile_next_cancel">取消</string>
-    <string name="app_name">MeTube</string>
+    <string name="app_name">MeeTube</string>
     <string name="mobile_player_time_default">0:00</string>
     <string name="mobile_player_live">直播</string>
     <string name="mobile_player_sleep_timer">睡眠計時器</string>
@@ -616,8 +616,8 @@
     <string name="mobile_update_dont_ask_done">知道了。之後可從「你」分頁或「設定 › 關於」更新。</string>
     <string name="mobile_settings_update_prompt">更新提示</string>
     <string name="mobile_settings_update_prompt_summary">有新版本時詢問是否更新</string>
-    <string name="mobile_about_repo_url">https://github.com/yashoncode/metube</string>
-    <string name="mobile_about_site_url">https://github.com/yashoncode/metube</string>
+    <string name="mobile_about_repo_url">https://github.com/yashoncode/meetube</string>
+    <string name="mobile_about_site_url">https://github.com/yashoncode/meetube</string>
     <string name="mobile_shorts_mute">靜音</string>
     <string name="mobile_shorts_unmute">取消靜音</string>
 </resources>

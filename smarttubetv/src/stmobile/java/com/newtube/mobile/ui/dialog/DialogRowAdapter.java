@@ -130,7 +130,7 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     /**
-     * METUBE(menu-sheet): the menu actions' icons, by title (the menus are the TV presenters', which
+     * MEETUBE(menu-sheet): the menu actions' icons, by title (the menus are the TV presenters', which
      * name an action only by its text). A format string ("Remove from %s") matches on its fixed
      * start. An action without one keeps the icon column empty, so the titles stay in one line.
      */

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- METUBE(launch): the routing screen's theme; Android 12+ gives it the beating heart
+    <!-- MEETUBE(launch): the routing screen's theme; Android 12+ gives it the beating heart
          (values-v31). -->
-    <style name="Theme.MeTube.Splash" parent="Theme.NewTube" />
-    <!-- METUBE(app icon): the splash per icon (AppIcon.syncSplash, Android 13+). -->
-    <style name="Theme.MeTube.Splash.Beat" />
-    <style name="Theme.MeTube.Splash.Classic" />
-    <style name="Theme.MeTube.Splash.Fantasy" />
+    <style name="Theme.MeeTube.Splash" parent="Theme.NewTube" />
+    <!-- MEETUBE(app icon): the splash per icon (AppIcon.syncSplash, Android 13+). -->
+    <style name="Theme.MeeTube.Splash.Beat" />
+    <style name="Theme.MeeTube.Splash.Classic" />
+    <style name="Theme.MeeTube.Splash.White" />
 </resources>

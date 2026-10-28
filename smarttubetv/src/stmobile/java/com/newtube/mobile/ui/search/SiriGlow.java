@@ -19,7 +19,7 @@ import android.view.WindowInsets;
 import android.view.animation.LinearInterpolator;
 
 /**
- * METUBE(search glow): opening Search lights the screen's edges in Siri's colours - a glow that
+ * MEETUBE(search glow): opening Search lights the screen's edges in Siri's colours - a glow that
  * turns once around the display and fades, the way Apple Intelligence's Siri wakes. Drawn over the
  * whole window (the decor, not the inset content) and removed when it is done.
  */

@@ -6,8 +6,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_mini_player"
     android:contentDescription="@string/mobile_mini_expand"
-    android:layout_width="@dimen/metube_mini_width"
-    android:layout_height="@dimen/metube_mini_height"
+    android:layout_width="@dimen/meetube_mini_width"
+    android:layout_height="@dimen/meetube_mini_height"
     android:layout_gravity="bottom|end"
     android:layout_marginEnd="12dp"
     android:layout_marginBottom="12dp"
@@ -17,7 +17,7 @@
     app:cardBackgroundColor="@android:color/black"
     app:cardCornerRadius="18dp"
     app:cardElevation="8dp"
-    app:strokeColor="@color/metube_glass_stroke"
+    app:strokeColor="@color/meetube_glass_stroke"
     app:strokeWidth="1dp"
     tools:visibility="visible">
 

@@ -16,7 +16,7 @@ public interface PlayerEngine extends PlayerConstants {
      */
     default void prebuildNextSource(MediaItemFormatInfo formatInfo) {}
     /**
-     * METUBE(shorts): as above; {@code preloadMedia} also asks for the first seconds of its media
+     * MEETUBE(shorts): as above; {@code preloadMedia} also asks for the first seconds of its media
      * (a swiped-to short), not just the built source.
      */
     default void prebuildNextSource(MediaItemFormatInfo formatInfo, boolean preloadMedia) {

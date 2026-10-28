@@ -71,28 +71,28 @@
          YouTube's: controls and chips over the video, the mini player, the cast overlays. -->
     <color name="mobile_player_on_video">#FFFFFF</color>
     <color name="mobile_player_pill">#6B18181C</color>
-    <!-- METUBE(fullscreen): the watch page's fullscreen button, see-through like the controls'
+    <!-- MEETUBE(fullscreen): the watch page's fullscreen button, see-through like the controls'
          discs (GlassDrawable's tint), with a dark ring to stand out on light thumbnails (#29). -->
     <color name="mobile_watch_fab_tint">#47000000</color>
     <color name="mobile_watch_fab_ring">#59000000</color>
     <color name="mobile_player_cast_active">#64D2FF</color>
 
-    <!-- METUBE(glass): the floating-glass surfaces (light side; dark in values-night). -->
-    <color name="metube_glass_tint">#66FAFAFA</color>
-    <!-- METUBE(search): the search pill stays visible over a plain page, frosted over results. -->
-    <color name="metube_search_glass_tint">#14000000</color>
-    <!-- METUBE(glass): a pill on a frosted sheet ("Add a comment"): a see-through lift. -->
-    <color name="metube_glass_pill_tint">#14000000</color>
-    <!-- METUBE(glass): sheet surfaces - the surface, a little see-through over the blurred page. -->
-    <color name="metube_sheet_glass">#D6FFFFFF</color>
-    <color name="metube_glass_fill">#0D000000</color>
-    <color name="metube_glass_stroke">#1A000000</color>
-    <color name="metube_glass_selected">#14000000</color>
-    <color name="metube_nav_inactive">#99000000</color>
-    <!-- METUBE(glass): the frosted top bar - the page colour at ~75%. -->
-    <color name="metube_bar_tint">#C7FFFFFF</color>
-    <color name="metube_switch_off">#E3E3E8</color>
-    <!-- METUBE(accent): the app's accent - switches and choice radios (a picker can come later). -->
-    <color name="metube_accent">#D7372D</color>
-    <color name="metube_switch_on">@color/metube_accent</color>
+    <!-- MEETUBE(glass): the floating-glass surfaces (light side; dark in values-night). -->
+    <color name="meetube_glass_tint">#66FAFAFA</color>
+    <!-- MEETUBE(search): the search pill stays visible over a plain page, frosted over results. -->
+    <color name="meetube_search_glass_tint">#14000000</color>
+    <!-- MEETUBE(glass): a pill on a frosted sheet ("Add a comment"): a see-through lift. -->
+    <color name="meetube_glass_pill_tint">#14000000</color>
+    <!-- MEETUBE(glass): sheet surfaces - the surface, a little see-through over the blurred page. -->
+    <color name="meetube_sheet_glass">#D6FFFFFF</color>
+    <color name="meetube_glass_fill">#0D000000</color>
+    <color name="meetube_glass_stroke">#1A000000</color>
+    <color name="meetube_glass_selected">#14000000</color>
+    <color name="meetube_nav_inactive">#99000000</color>
+    <!-- MEETUBE(glass): the frosted top bar - the page colour at ~75%. -->
+    <color name="meetube_bar_tint">#C7FFFFFF</color>
+    <color name="meetube_switch_off">#E3E3E8</color>
+    <!-- MEETUBE(accent): the app's accent - switches and choice radios (a picker can come later). -->
+    <color name="meetube_accent">#D7372D</color>
+    <color name="meetube_switch_on">@color/meetube_accent</color>
 </resources>

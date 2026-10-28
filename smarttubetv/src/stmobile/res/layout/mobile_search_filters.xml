@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- METUBE(search filters, #11): YouTube's own "Search filters" dialog - four dropdown rows
+<!-- MEETUBE(search filters, #11): YouTube's own "Search filters" dialog - four dropdown rows
      (SearchFiltersDialog fills them) and the Features chips. -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"

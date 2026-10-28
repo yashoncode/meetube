@@ -36,7 +36,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import java.lang.ref.WeakReference;
 
 /**
- * METUBE(glass): frosted sheets. A sheet lives in its own window, so it cannot sample the page live
+ * MEETUBE(glass): frosted sheets. A sheet lives in its own window, so it cannot sample the page live
  * the way {@link GlassView} does; instead the page's window is copied once as the sheet opens
  * (PixelCopy, video frame included), blurred small, and painted only inside the sheet - lined up
  * with the screen, so it stays put under the sheet while it is dragged. The page itself stays sharp.
@@ -62,7 +62,7 @@ public final class SheetGlass {
     private static Class<? extends Activity> sLivePage;
 
     /**
-     * METUBE(glass): sheets over {@code page} (the player) keep copying it while they show, so the
+     * MEETUBE(glass): sheets over {@code page} (the player) keep copying it while they show, so the
      * video plays on under the frost instead of freezing on the frame it had when the sheet opened.
      * A live copy is not blurred on the CPU (16 ms a copy on a 2024 phone): the GPU blurs it as the
      * sheet draws (RenderEffect, API 31), so the main thread only asks for a 1/8 copy each frame.
@@ -147,7 +147,7 @@ public final class SheetGlass {
     }
 
     /**
-     * METUBE(glass): a sheet in its own activity over {@code page} (the picker screen) - live over
+     * MEETUBE(glass): a sheet in its own activity over {@code page} (the picker screen) - live over
      * the player like the player's own sheets: a copy of another window never holds the sheet.
      */
     public static void frost(@NonNull View target, @Nullable Activity page) {
@@ -326,7 +326,7 @@ public final class SheetGlass {
             mTarget = target;
             mCover = cover;
             if (live && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                mBlurNode = new android.graphics.RenderNode("MeTube sheet glass");
+                mBlurNode = new android.graphics.RenderNode("MeeTube sheet glass");
                 mBlurNode.setRenderEffect(android.graphics.RenderEffect.createBlurEffect(
                         LIVE_BLUR_PX / SCALE, LIVE_BLUR_PX / SCALE, Shader.TileMode.CLAMP));
             } else {
@@ -335,7 +335,7 @@ public final class SheetGlass {
             ColorMatrix saturate = new ColorMatrix();
             saturate.setSaturation(1.4f);
             mPage.setColorFilter(new ColorMatrixColorFilter(saturate));
-            mTint.setColor(ContextCompat.getColor(target.getContext(), R.color.metube_sheet_glass));
+            mTint.setColor(ContextCompat.getColor(target.getContext(), R.color.meetube_sheet_glass));
             mCorner = corner;
             // A drag moves the sheet without redrawing it: redraw so the page stays put underneath.
             target.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {

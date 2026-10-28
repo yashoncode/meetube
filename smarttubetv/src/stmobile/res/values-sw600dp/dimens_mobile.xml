@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- METUBE(tablet): the floating mini player as big as Android's picture-in-picture window
+    <!-- MEETUBE(tablet): the floating mini player as big as Android's picture-in-picture window
          here, 0.6 of the short side less 16dp edges: 341dp wide on a 600dp-wide screen. -->
-    <dimen name="metube_mini_width">341dp</dimen>
-    <dimen name="metube_mini_height">192dp</dimen>
-    <!-- METUBE(tablet): the nav pill centred and as wide as its five items need. -->
-    <dimen name="metube_nav_max_width">480dp</dimen>
+    <dimen name="meetube_mini_width">341dp</dimen>
+    <dimen name="meetube_mini_height">192dp</dimen>
+    <!-- MEETUBE(tablet): the nav pill centred and as wide as its five items need. -->
+    <dimen name="meetube_nav_max_width">480dp</dimen>
 </resources>

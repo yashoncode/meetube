@@ -55,7 +55,7 @@ public final class DownloadOptions {
             }
         }
 
-        // METUBE(4k-download): the VP9 rungs taller than every MP4 one go on top, tallest first.
+        // MEETUBE(4k-download): the VP9 rungs taller than every MP4 one go on top, tallest first.
         MediaFormat opus = pickAudio(adaptiveFormats, null, null, true);
         if (opus != null) {
             int tallestMp4 = result.isEmpty() ? 0 : result.get(0).height;

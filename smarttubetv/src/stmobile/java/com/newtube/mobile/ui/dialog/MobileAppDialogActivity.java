@@ -306,7 +306,7 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
     }
 
     /**
-     * METUBE(sheet-landscape): over the fullscreen video a picker is the gear sheet's twin
+     * MEETUBE(sheet-landscape): over the fullscreen video a picker is the gear sheet's twin
      * (MobilePlaybackActivity.showPlayerSheet): it stops short of the top, the video in sight above
      * it, and when its list does not fit the last row shows cut about in half, fading out. The 72%
      * cap let a sheet with a title run into the top edge, its handle cut off.
@@ -422,7 +422,7 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
         mScrim.setVisibility(View.VISIBLE);
         mHandle.setVisibility(View.VISIBLE);
         mContent.setBackgroundResource(R.drawable.bg_glass_sheet);
-        // METUBE(glass): frosted with the screen under this one, once laid out.
+        // MEETUBE(glass): frosted with the screen under this one, once laid out.
         mContent.post(() -> {
             android.app.Activity page = com.newtube.mobile.ui.common.SheetGlass.backdrop();
             com.newtube.mobile.ui.common.SheetGlass.frost(mContent, page);

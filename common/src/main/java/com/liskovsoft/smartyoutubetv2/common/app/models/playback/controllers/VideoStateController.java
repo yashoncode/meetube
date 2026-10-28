@@ -86,7 +86,7 @@ public class VideoStateController extends BasePlayerController {
             return false;
         }
 
-        // METUBE(shorts): a swipe down in the Shorts player always means the previous short.
+        // MEETUBE(shorts): a swipe down in the Shorts player always means the previous short.
         boolean shorts = getVideo() != null && getVideo().belongsToShorts();
         // NEWTUBE(prev-restart): seek to the start on prev, but only once the user has watched
         // this video for a while since it (re)started - see PreviousRestartGate. The raw position
@@ -292,7 +292,7 @@ public class VideoStateController extends BasePlayerController {
 
     @Override
     public void onSourceChanged(Video item) {
-        // METUBE(shorts-quality): a short opens in the Shorts quality, if one is set (issue #26).
+        // MEETUBE(shorts-quality): a short opens in the Shorts quality, if one is set (issue #26).
         getPlayerData().setShortsPlaying(item != null && item.belongsToShorts());
         // At this stage video isn't loaded yet. So format switch isn't take any resources.
         restoreFormats();

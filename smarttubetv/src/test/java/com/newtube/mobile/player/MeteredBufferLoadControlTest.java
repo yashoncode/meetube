@@ -374,7 +374,7 @@ public class MeteredBufferLoadControlTest {
         assertEquals(Arrays.asList("onPrepared", "onTracksSelected", "getAllocator",
                 "getBackBufferDurationUs", "retainBackBufferFromKeyframe", "shouldStartPlayback",
                 "shouldContinuePreloading", "shouldContinueLoading",
-                "getAllocator", // METUBE(oom): the heap ceiling reads the allocator's total
+                "getAllocator", // MEETUBE(oom): the heap ceiling reads the allocator's total
                 "onStopped", "onReleased"), calls);
     }
 

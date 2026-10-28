@@ -16,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
- * METUBE(burst): the splash a like or a subscribe makes - a ring that grows out of the button and
+ * MEETUBE(burst): the splash a like or a subscribe makes - a ring that grows out of the button and
  * fades, and a spray of confetti dots flying off its edge. Drawn on the window's overlay, so a
  * clipping parent (the action row's scroll view) cannot cut it, and gone when it ends.
  */
