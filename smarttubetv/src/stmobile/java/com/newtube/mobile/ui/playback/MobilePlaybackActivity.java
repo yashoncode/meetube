@@ -956,19 +956,33 @@ public class MobilePlaybackActivity extends MobileActivity
             // A swipe that starts with the full Subscribe only shrinks it: the row stays put rather
             // than sliding the Like pill under Subscribe's edge (the room it gets is what it needed).
             boolean[] hold = {false};
+            int[] labelW = {0};
             actionsScroll.setOnTouchListener((v, event) -> {
                 int action = event.getActionMasked();
                 if (Float.isNaN(downX[0])) {
                     downX[0] = event.getRawX();
-                    hold[0] = !mSubscribeCollapsed;
+                    hold[0] = !mSubscribeCollapsed
+                            && (mSubscribeAnimator == null || !mSubscribeAnimator.isRunning());
+                    labelW[0] = mWatchSubscribe.getWidth();
                 }
                 float dx = event.getRawX() - downX[0];
-                if (dx < -slop) {
+                boolean held = hold[0];
+                // A held swipe shrinks the pill under the finger, so it tracks it frame by frame.
+                float range = Math.max(1, labelW[0] - dp(36));
+                if (held) {
+                    float t = Math.max(0f, Math.min(1f, (-dx - slop) / range));
+                    if (t > 0f || mSubscribeMorph > 0f) {
+                        applySubscribeMorph(t, Math.round(labelW[0] - range * t));
+                    }
+                } else if (dx < -slop) {
                     morphSubscribe(true); // swiping the actions in
                 } else if (dx > slop && v.getScrollX() == 0) {
                     morphSubscribe(false); // pulled back to the start
                 }
-                boolean held = hold[0];
+                // Held, only the pull past a fully shrunk pill bounces the row.
+                if (held && dx < 0) {
+                    dx = Math.min(0f, dx + slop + range);
+                }
                 // METUBE(watch-look): the bounce - where the row has nothing to scroll that way, its
                 // pills follow the finger a little (less the further it goes) and spring back on release.
                 View pills = ((ViewGroup) v).getChildAt(0);
@@ -986,6 +1000,12 @@ public class MobilePlaybackActivity extends MobileActivity
                     }
                     downX[0] = Float.NaN;
                     hold[0] = false;
+                    if (held && mWatchSubscribe.getLayoutParams().width != ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        // Settles from where the finger left it: past a third, into the mark.
+                        boolean in = mSubscribeMorph > 0.33f;
+                        mSubscribeCollapsed = !in; // so morphSubscribe runs even back to the label
+                        morphSubscribe(in);
+                    }
                     if (held) {
                         // Ends the row's drag without the fling its few early moves would make.
                         android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
@@ -10268,10 +10288,23 @@ public class MobilePlaybackActivity extends MobileActivity
         mSubscribeIcon.setAlpha(mark);
         mSubscribeIcon.setScaleX(0.6f + 0.4f * mark);
         mSubscribeIcon.setScaleY(0.6f + 0.4f * mark);
-        if (width >= 0) {
-            ViewGroup.LayoutParams lp = mWatchSubscribe.getLayoutParams();
+        ViewGroup.LayoutParams lp = mWatchSubscribe.getLayoutParams();
+        if (width >= 0 && lp.width != width) {
             lp.width = width;
-            mWatchSubscribe.setLayoutParams(lp);
+            // The row's own size never changes, so it lays itself out here: a requestLayout made the
+            // whole watch page measure every frame (3-13 ms on a 120 Hz phone), and the morph stuttered.
+            View box = (View) mWatchSubscribe.getParent();
+            View row = (View) box.getParent();
+            if (row.getWidth() > 0 && !row.isLayoutRequested()) {
+                mWatchSubscribe.forceLayout();
+                box.forceLayout();
+                row.forceLayout();
+                row.measure(View.MeasureSpec.makeMeasureSpec(row.getWidth(), View.MeasureSpec.EXACTLY),
+                        View.MeasureSpec.makeMeasureSpec(row.getHeight(), View.MeasureSpec.EXACTLY));
+                row.layout(row.getLeft(), row.getTop(), row.getRight(), row.getBottom());
+            } else {
+                mWatchSubscribe.setLayoutParams(lp);
+            }
         }
     }
 

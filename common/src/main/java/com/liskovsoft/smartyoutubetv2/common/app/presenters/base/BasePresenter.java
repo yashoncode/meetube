@@ -131,7 +131,7 @@ public abstract class BasePresenter<T> implements Presenter<T> {
         }
     }
 
-    protected void removeItem(Video item) {
+    public void removeItem(Video item) {
         removeItem(Collections.singletonList(item), VideoGroup.ACTION_REMOVE);
     }
 

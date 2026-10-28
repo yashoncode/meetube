@@ -1097,6 +1097,34 @@ public class MobileBrowseActivity extends MobileActivity
         //noinspection InvalidSetHasFixedSize - match_parent in the layout; lint mixes it up with the chip row
         mContentGrid.setHasFixedSize(true);
         mContentGrid.setItemViewCacheSize(8);
+        // METUBE(#71): on History a card swiped sideways leaves the watch history, as on a playlist page.
+        new androidx.recyclerview.widget.ItemTouchHelper(new androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+                0, androidx.recyclerview.widget.ItemTouchHelper.START | androidx.recyclerview.widget.ItemTouchHelper.END) {
+            @Override
+            public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder holder) {
+                return mCurrentSectionId == MediaGroup.TYPE_HISTORY && holder.getBindingAdapter() == mAdapter
+                        ? super.getSwipeDirs(recyclerView, holder) : 0;
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder holder,
+                    @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder holder, int direction) {
+                int position = holder.getBindingAdapterPosition();
+                Video video = position >= 0 && position < mAdapter.getItemCount() ? mAdapter.getCurrentList().get(position) : null;
+                if (video == null || mPresenter == null) {
+                    mAdapter.notifyItemChanged(position); // slide it back
+                    return;
+                }
+                com.newtube.mobile.ui.common.Haptics.click(mContentGrid);
+                mPresenter.removeItem(video);
+                com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.VideoMenuPresenter.instance(MobileBrowseActivity.this).removeFromHistory(video);
+            }
+        }).attachToRecyclerView(mContentGrid);
         // Next cards' thumbnails decoded before they scroll in (no grey card + fade on a fling).
         com.newtube.mobile.ui.common.FeedThumbnailPreloader.attach(mContentGrid, position -> {
             int card = mRowsShown ? -1 : position - stripRows();
@@ -1310,7 +1338,10 @@ public class MobileBrowseActivity extends MobileActivity
                 || to.getWidth() == 0 || !(bar instanceof com.newtube.mobile.ui.common.GlassView)) {
             return false;
         }
-        com.newtube.mobile.ui.common.NavLens.jiggle(bar, to.getLeft() > from.getLeft() ? 1 : -1);
+        boolean dragged = !Float.isNaN(mNavDragFromX); // METUBE(#90): from where the finger let go
+        float fromX = dragged ? mNavDragFromX : com.newtube.mobile.ui.common.NavLens.centreInBar(from, bar);
+        com.newtube.mobile.ui.common.NavLens.jiggle(bar,
+                com.newtube.mobile.ui.common.NavLens.centreInBar(to, bar) > fromX ? 1 : -1);
         if (lens == null || !com.newtube.mobile.ui.common.NavLens.supported(this)) {
             return true;
         }
@@ -1319,12 +1350,125 @@ public class MobileBrowseActivity extends MobileActivity
         }
         mBottomNav.setItemBackground(null);
         mNavLensGliding = true;
-        lens.play((com.newtube.mobile.ui.common.GlassView) bar, from, to, () -> {
+        lens.play((com.newtube.mobile.ui.common.GlassView) bar, fromX, to, dragged, () -> {
             mBottomNav.setItemBackground(mNavPill);
             mNavLensGliding = false;
             mBottomNav.post(this::maybeLaunchShorts); // held while the lens glided
         });
         return true;
+    }
+
+    // METUBE(#90): the lit tab's pill dragged along the bar - the lens follows the finger (a tick per
+    // tab it crosses) and the tab it is let go on opens, the lens gliding on from there.
+    private float mNavDownX = Float.NaN;
+    private boolean mNavDragging;
+    private boolean mNavDragLens;
+    private int mNavDragOver;
+    /** Where a dragged lens was let go (bar coordinates) while its switch plays; NaN otherwise. */
+    private float mNavDragFromX = Float.NaN;
+
+    @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent event) {
+        return onNavDrag(event) || super.dispatchTouchEvent(event);
+    }
+
+    private boolean onNavDrag(android.view.MotionEvent event) {
+        int action = event.getActionMasked();
+        if (action == android.view.MotionEvent.ACTION_DOWN) {
+            mNavDragging = false;
+            View lit = mBottomNav != null ? mBottomNav.findViewById(mBottomNav.getSelectedItemId()) : null;
+            mNavDownX = lit != null && lit.isShown() && isOn(lit, event) ? event.getRawX() : Float.NaN;
+            return false;
+        }
+        if (Float.isNaN(mNavDownX)) {
+            return false;
+        }
+        boolean end = action == android.view.MotionEvent.ACTION_UP || action == android.view.MotionEvent.ACTION_CANCEL;
+        View bar = findViewById(R.id.mobile_nav_glass);
+        if (!mNavDragging) {
+            if (end) {
+                mNavDownX = Float.NaN;
+            }
+            if (action != android.view.MotionEvent.ACTION_MOVE
+                    || Math.abs(event.getRawX() - mNavDownX) < android.view.ViewConfiguration.get(this).getScaledTouchSlop()) {
+                return false;
+            }
+            // A drag now, not a tap: the tab under the finger lets go of the press.
+            mNavDragging = true;
+            mNavDragOver = mBottomNav.getSelectedItemId();
+            android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
+            cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
+            super.dispatchTouchEvent(cancel);
+            cancel.recycle();
+            mNavDragLens = com.newtube.mobile.ui.common.NavLens.enabled(this)
+                    && com.newtube.mobile.ui.common.NavLens.supported(this)
+                    && bar instanceof com.newtube.mobile.ui.common.GlassView;
+            if (mNavDragLens) {
+                if (mNavPill == null) {
+                    mNavPill = mBottomNav.getItemBackground();
+                }
+                mBottomNav.setItemBackground(null);
+            }
+        }
+        // The finger in the bar's coordinates, kept between the first and last tabs' centres.
+        int[] at = new int[2];
+        bar.getLocationOnScreen(at);
+        float x = event.getRawX() - at[0];
+        float min = Float.MAX_VALUE;
+        float max = -Float.MAX_VALUE;
+        int over = mNavDragOver;
+        float nearest = Float.MAX_VALUE;
+        for (int i = 0; i < mBottomNav.getMenu().size(); i++) {
+            android.view.MenuItem item = mBottomNav.getMenu().getItem(i);
+            View tab = mBottomNav.findViewById(item.getItemId());
+            if (!item.isVisible() || tab == null) {
+                continue;
+            }
+            float centre = com.newtube.mobile.ui.common.NavLens.centreInBar(tab, bar);
+            min = Math.min(min, centre);
+            max = Math.max(max, centre);
+            if (Math.abs(centre - x) < nearest) {
+                nearest = Math.abs(centre - x);
+                over = item.getItemId();
+            }
+        }
+        x = Math.max(min, Math.min(max, x));
+        if (over != mNavDragOver) {
+            mNavDragOver = over;
+            com.newtube.mobile.ui.common.Haptics.tick(mBottomNav);
+        }
+        com.newtube.mobile.ui.common.NavLens lens = findViewById(R.id.mobile_nav_lens);
+        View lit = mBottomNav.findViewById(mBottomNav.getSelectedItemId());
+        if (!end) {
+            if (mNavDragLens && lit != null) {
+                lens.drag((com.newtube.mobile.ui.common.GlassView) bar, lit, x);
+            }
+            return true;
+        }
+        mNavDownX = Float.NaN;
+        mNavDragging = false;
+        int target = action == android.view.MotionEvent.ACTION_UP ? over : mBottomNav.getSelectedItemId();
+        if (target == SEARCH_ITEM_ID) {
+            // Search is a button, not a place: it opens, and the lens goes back to the lit tab.
+            SearchPresenter.instance(this).startSearch(null);
+            target = mBottomNav.getSelectedItemId();
+        }
+        if (target != mBottomNav.getSelectedItemId()) {
+            mNavDragFromX = mNavDragLens ? x : Float.NaN;
+            mBottomNav.setSelectedItemId(target); // the usual switch, its lens from x
+            mNavDragFromX = Float.NaN;
+        } else if (mNavDragLens && lit != null) {
+            lens.play((com.newtube.mobile.ui.common.GlassView) bar, x, lit, true,
+                    () -> mBottomNav.setItemBackground(mNavPill)); // back home
+        }
+        return true;
+    }
+
+    private static boolean isOn(View view, android.view.MotionEvent event) {
+        int[] at = new int[2];
+        view.getLocationOnScreen(at);
+        return event.getRawX() >= at[0] && event.getRawX() < at[0] + view.getWidth()
+                && event.getRawY() >= at[1] && event.getRawY() < at[1] + view.getHeight();
     }
 
     private void onNavItemChosen(int itemId) {

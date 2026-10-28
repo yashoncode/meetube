@@ -137,24 +137,41 @@ public final class NavLens extends View {
      * when a newer switch takes over first).
      */
     public void play(GlassView bar, View from, View to, Runnable onSettled) {
-        if (mAnimator != null) {
-            mAnimator.removeAllListeners();
-            mAnimator.cancel();
-        }
-        mBar = bar;
         // The tabs' centres in the bar's own coordinates (their layout, untouched by any wiggle).
-        float fromX = centreInBar(from, bar);
+        play(bar, centreInBar(from, bar), to, false, onSettled);
+    }
+
+    /**
+     * METUBE(#90): the lens under a finger dragging the lit pill along the bar, centred at {@code x}
+     * (bar coordinates); {@link #play} with {@code grown} glides it on from there when it is let go.
+     */
+    public void drag(GlassView bar, View tab, float x) {
+        stop();
+        mBar = bar;
+        mCy = bar.getHeight() / 2f;
+        mCx = x;
+        mMagnify = MAGNIFY;
+        int w = fit(tab);
+        int h = getLayoutParams().height;
+        if (getVisibility() != VISIBLE) { // it swells out of the pill
+            setScaleX((tab.getWidth() - 4 * mDensity) / w);
+            setScaleY((float) tab.getHeight() / h);
+            setAlpha(1f);
+            setVisibility(VISIBLE);
+            animate().scaleX(1f).scaleY(1f).setDuration((long) GROW_MS)
+                    .setInterpolator(Motion.EMPHASIZED_DECELERATE).start();
+        }
+        place(bar, w, h);
+        invalidate();
+    }
+
+    public void play(GlassView bar, float fromX, View to, boolean grown, Runnable onSettled) {
+        stop();
+        mBar = bar;
         float toX = centreInBar(to, bar);
         mCy = bar.getHeight() / 2f;
-
-        int w = Math.round(to.getWidth() + GROW_W_DP * mDensity);
-        int h = Math.round(to.getHeight() + GROW_H_DP * mDensity);
-        ViewGroup.LayoutParams lp = getLayoutParams();
-        if (lp.width != w || lp.height != h) {
-            lp.width = w;
-            lp.height = h;
-            setLayoutParams(lp);
-        }
+        int w = fit(to);
+        int h = getLayoutParams().height;
         // The pill it grows out of and settles into: the tab, 2dp in on each side (bg_nav_item).
         float restX = (to.getWidth() - 4 * mDensity) / w;
         float restY = (float) to.getHeight() / h;
@@ -180,7 +197,7 @@ public final class NavLens extends View {
         animator.setInterpolator(new LinearInterpolator());
         animator.addUpdateListener(a -> {
             float ms = (float) a.getAnimatedValue();
-            float grow = Motion.EMPHASIZED_DECELERATE.getInterpolation(clamp(ms / GROW_MS));
+            float grow = grown ? 1f : Motion.EMPHASIZED_DECELERATE.getInterpolation(clamp(ms / GROW_MS));
             float travel = clamp((ms - GLIDE_DELAY_MS) / glideMs);
             float settle = Motion.STANDARD.getInterpolation(clamp((ms - settleAt) / SETTLE_MS));
             float presence = grow * (1f - settle);
@@ -194,11 +211,7 @@ public final class NavLens extends View {
             setScaleX(lerp(restX, 1f, presence) * (1f + STRETCH * speed));
             setScaleY(lerp(restY, 1f, presence) * (1f - STRETCH / 3f * speed));
             setAlpha(clamp(presence * 1.6f));
-            // Where that point of the bar is now, the bar's wiggle (scale about its centre) included.
-            float px = bar.getPivotX();
-            float py = bar.getPivotY();
-            setTranslationX(bar.getLeft() + bar.getTranslationX() + px + (mCx - px) * bar.getScaleX() - getLeft() - w / 2f);
-            setTranslationY(bar.getTop() + bar.getTranslationY() + py + (mCy - py) * bar.getScaleY() - getTop() - h / 2f);
+            place(bar, w, h);
             invalidate();
         });
         animator.addListener(new AnimatorListenerAdapter() {
@@ -215,8 +228,38 @@ public final class NavLens extends View {
         animator.start();
     }
 
+    private void stop() {
+        animate().cancel();
+        if (mAnimator != null) {
+            mAnimator.removeAllListeners();
+            mAnimator.cancel();
+            mAnimator = null;
+        }
+    }
+
+    /** Sizes the lens to {@code tab} swollen; returns its width (the height is in its layout params). */
+    private int fit(View tab) {
+        int w = Math.round(tab.getWidth() + GROW_W_DP * mDensity);
+        int h = Math.round(tab.getHeight() + GROW_H_DP * mDensity);
+        ViewGroup.LayoutParams lp = getLayoutParams();
+        if (lp.width != w || lp.height != h) {
+            lp.width = w;
+            lp.height = h;
+            setLayoutParams(lp);
+        }
+        return w;
+    }
+
+    /** Over the point (mCx, mCy) of the bar as it is now, the bar's wiggle (scale about its centre) included. */
+    private void place(View bar, int w, int h) {
+        float px = bar.getPivotX();
+        float py = bar.getPivotY();
+        setTranslationX(bar.getLeft() + bar.getTranslationX() + px + (mCx - px) * bar.getScaleX() - getLeft() - w / 2f);
+        setTranslationY(bar.getTop() + bar.getTranslationY() + py + (mCy - py) * bar.getScaleY() - getTop() - h / 2f);
+    }
+
     /** The horizontal centre of {@code tab} in {@code bar}'s layout coordinates (no transforms). */
-    private static float centreInBar(View tab, View bar) {
+    public static float centreInBar(View tab, View bar) {
         float x = tab.getWidth() / 2f;
         View view = tab;
         while (view != bar && view.getParent() instanceof View) {
