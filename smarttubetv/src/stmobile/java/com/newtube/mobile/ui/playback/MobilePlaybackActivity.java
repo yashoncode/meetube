@@ -65,6 +65,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
 import com.liskovsoft.mediaserviceinterfaces.LiveChatService;
+import com.liskovsoft.mediaserviceinterfaces.data.CommentItem;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
 import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.youtubeapi.service.YouTubeServiceManager;
@@ -318,10 +319,36 @@ public class MobilePlaybackActivity extends MobileActivity
     private TextView mWatchChannelName;
     private TextView mWatchSubs;
     private TextView mWatchSubscribe;
+    /**
+     * METUBE(watch-look): on the compact page Subscribe shrinks to the app's mark while the actions
+     * beside it are swiped, so they have the row (morphSubscribe). 0 = the label, 1 = the mark.
+     */
+    @Nullable
+    private ImageView mSubscribeIcon;
+    private int mSubscribeTextColor;
+    private float mSubscribeMorph;
+    private boolean mSubscribeCollapsed;
+    @Nullable
+    private android.animation.ValueAnimator mSubscribeAnimator;
     private TextView mWatchRelatedLabel;
     private View mRelatedSkeleton;
     private RecyclerView mWatchRelated;
     private RelatedVideoAdapter mRelatedAdapter;
+    /**
+     * METUBE(issue #74): the chips over the related list. "All" is the related list itself; "From
+     * <channel>" shows that channel's uploads instead. YouTube's own topic chips come only to a
+     * signed-in WEB /next, and WEB refuses the TV sign-in (see issue #79), so these are built here.
+     * The chip's videos never enter mRelatedVideos: autoplay, the controller and the More videos
+     * panel keep reading the real suggestions.
+     */
+    private View mRelatedChips;
+    private com.google.android.material.chip.ChipGroup mRelatedChipGroup;
+    private com.google.android.material.chip.Chip mChannelChip;
+    @Nullable private MediaItemMetadata mChipMetadata;
+    /** The channel chip's videos; null while "All" is on. */
+    @Nullable private List<Video> mChipVideos;
+    @Nullable private com.liskovsoft.mediaserviceinterfaces.data.MediaGroup mChipPage;
+    @Nullable private Disposable mChipAction;
 
     // Comments + live chat entries. Keys come from the loaded metadata. Comments open the panel
     // over the watch page (CommentsPanel); live chat opens its bottom sheet.
@@ -331,6 +358,18 @@ public class MobilePlaybackActivity extends MobileActivity
     /** NEWTUBE(comments-panel): best effort, a little after the video starts, so the panel opens full. */
     private static final long COMMENTS_PREFETCH_DELAY_MS = 2_000;
     private final Runnable mPrefetchComments = this::prefetchComments;
+    /**
+     * METUBE(watch-look): the compact watch page (WatchLook) - its comments card shows the top
+     * comments one at a time, the next every TOP_COMMENT_MS.
+     */
+    private boolean mWatchCompact;
+    private View mCommentTeaser;
+    private ImageView mCommentTeaserAvatar;
+    private TextView mCommentTeaserText;
+    private final List<CommentItem> mTopComments = new ArrayList<>();
+    private int mTopCommentIndex;
+    private static final long TOP_COMMENT_MS = 10_000;
+    private final Runnable mNextTopComment = this::showNextTopComment;
     /** Chapters of the current video (Video.isChapter items from the suggestions pipeline). */
     private final List<Video> mChapterVideos = new ArrayList<>();
     /** Shown above the seek bar ONLY while scrubbing: a pill with the time and chapter under the finger. */
@@ -537,6 +576,12 @@ public class MobilePlaybackActivity extends MobileActivity
         // overwrote the user's persisted global buffer preference. See createPlayerObjects().
 
         setContentView(R.layout.activity_mobile_playback);
+        // METUBE(watch-look): the watch page's top half, compact or classic, before any view is found.
+        mWatchCompact = !WatchLook.isClassic(this);
+        android.view.ViewStub details = findViewById(R.id.mobile_watch_details);
+        details.setLayoutResource(mWatchCompact
+                ? R.layout.include_watch_details_compact : R.layout.include_watch_details_classic);
+        details.inflate();
 
         // NEWTUBE(motion): Back minimizes like YouTube, and the back gesture previews it (the video
         // shrinks toward the mini card with the finger). Added here, before the comments panel's
@@ -894,9 +939,67 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchChannelName = findViewById(R.id.mobile_watch_channel_name);
         mWatchSubs = findViewById(R.id.mobile_watch_subs);
         mWatchSubscribe = findViewById(R.id.mobile_watch_subscribe);
+        mSubscribeTextColor = mWatchSubscribe.getCurrentTextColor();
+        mSubscribeIcon = findViewById(R.id.mobile_watch_subscribe_icon);
+        View actionsScroll = findViewById(R.id.mobile_watch_actions_scroll);
+        if (actionsScroll != null && mSubscribeIcon != null) {
+            // By the finger's way, not the scroll position: the pill's own resize moves the scroll (a
+            // narrow Subscribe can leave nothing to scroll), which flipped it back and forth.
+            int slop = android.view.ViewConfiguration.get(this).getScaledTouchSlop();
+            // A press on a pill (most of the row) keeps the down from this listener: the row only
+            // hears the drag once it takes it over, so the first event it hears is the start.
+            float[] downX = {Float.NaN};
+            // A swipe that starts with the full Subscribe only shrinks it: the row stays put rather
+            // than sliding the Like pill under Subscribe's edge (the room it gets is what it needed).
+            boolean[] hold = {false};
+            actionsScroll.setOnTouchListener((v, event) -> {
+                int action = event.getActionMasked();
+                if (Float.isNaN(downX[0])) {
+                    downX[0] = event.getRawX();
+                    hold[0] = !mSubscribeCollapsed;
+                }
+                float dx = event.getRawX() - downX[0];
+                if (dx < -slop) {
+                    morphSubscribe(true); // swiping the actions in
+                } else if (dx > slop && v.getScrollX() == 0) {
+                    morphSubscribe(false); // pulled back to the start
+                }
+                boolean held = hold[0];
+                // METUBE(watch-look): the bounce - where the row has nothing to scroll that way, its
+                // pills follow the finger a little (less the further it goes) and spring back on release.
+                View pills = ((ViewGroup) v).getChildAt(0);
+                boolean end = action == android.view.MotionEvent.ACTION_UP
+                        || action == android.view.MotionEvent.ACTION_CANCEL;
+                if (!end && pills != null && (held || !v.canScrollHorizontally(dx < 0 ? 1 : -1))) {
+                    float max = dp(28);
+                    pills.animate().cancel();
+                    pills.setTranslationX(max * dx / (Math.abs(dx) + max * 3));
+                }
+                if (end) {
+                    if (pills != null && pills.getTranslationX() != 0f) {
+                        pills.animate().translationX(0f).setDuration(420)
+                                .setInterpolator(new android.view.animation.OvershootInterpolator(2.4f)).start();
+                    }
+                    downX[0] = Float.NaN;
+                    hold[0] = false;
+                    if (held) {
+                        // Ends the row's drag without the fling its few early moves would make.
+                        android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
+                        cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
+                        v.onTouchEvent(cancel);
+                        cancel.recycle();
+                    }
+                }
+                return held;
+            });
+        }
         mWatchRelatedLabel = findViewById(R.id.mobile_watch_related_label);
         mRelatedSkeleton = findViewById(R.id.mobile_watch_related_skeleton);
         mWatchRelated = findViewById(R.id.mobile_watch_related);
+        mRelatedChips = findViewById(R.id.mobile_watch_related_chips);
+        mRelatedChipGroup = findViewById(R.id.mobile_watch_related_chip_group);
+        mChannelChip = findViewById(R.id.mobile_watch_chip_channel);
+        mRelatedChipGroup.setOnCheckedStateChangeListener((group, ids) -> onRelatedChip(mChannelChip.isChecked()));
         mQueueCard = findViewById(R.id.mobile_watch_queue_card);
         mQueueHeader = findViewById(R.id.mobile_watch_queue_header);
         mQueueTitle = findViewById(R.id.mobile_watch_queue_title);
@@ -1009,6 +1112,9 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }, shortsWatchViews());
         mWatchCommentsCount = findViewById(R.id.mobile_watch_comments_count);
+        mCommentTeaser = findViewById(R.id.mobile_watch_comment_teaser);
+        mCommentTeaserAvatar = findViewById(R.id.mobile_watch_comment_avatar);
+        mCommentTeaserText = findViewById(R.id.mobile_watch_comment_text);
         mWatchChatEntry = findViewById(R.id.mobile_watch_chat_entry);
         mScrubChapterView = findViewById(R.id.mobile_player_scrub_chapter);
         mChapterButton = findViewById(R.id.mobile_player_chapter);
@@ -2174,6 +2280,7 @@ public class MobilePlaybackActivity extends MobileActivity
         Utils.removeCallbacks(mReleaseImageRequests);
         Utils.removeCallbacks(mReleaseWatchMetadata);
         Utils.removeCallbacks(mPrefetchComments);
+        Utils.removeCallbacks(mNextTopComment);
         if (mCommentsPanel != null) {
             mCommentsPanel.release();
         }
@@ -8250,6 +8357,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mQueueVideos.clear();
             mLastPagedVideo = null;
             mRelatedWindow = RELATED_WINDOW_INITIAL; // new video: back to one screenful of thumbnails
+            resetRelatedChips();
             setChapters(null);
             if (mRelatedAdapter != null) {
                 mRelatedAdapter.submitList(new ArrayList<>());
@@ -9437,7 +9545,63 @@ public class MobilePlaybackActivity extends MobileActivity
         mCommentsPanel.prefetch();
     }
 
+    private void clearTopComments() {
+        Utils.removeCallbacks(mNextTopComment);
+        mTopComments.clear();
+        mTopCommentIndex = 0;
+        if (mCommentTeaser != null) {
+            mCommentTeaser.animate().cancel();
+            mCommentTeaser.setVisibility(View.GONE);
+        }
+    }
+
+    /** METUBE(watch-look): the next top comment on the compact page's card, faded across. */
+    private void showNextTopComment() {
+        if (mCommentTeaser == null || mTopComments.isEmpty()) {
+            return;
+        }
+        Utils.postDelayed(mNextTopComment, TOP_COMMENT_MS);
+        if (mIsStopped && mCommentTeaser.getVisibility() == View.VISIBLE) {
+            return; // nobody is looking: no new comment, no work, until the page shows again
+        }
+        CommentItem comment = mTopComments.get(mTopCommentIndex++ % mTopComments.size());
+        Runnable bind = () -> {
+            CommentsAdapter.loadAvatar(mCommentTeaserAvatar, comment.getAuthorPhoto(),
+                    mCommentTeaserAvatar.getLayoutParams().width);
+            mCommentTeaserText.setText(comment.getMessage());
+            mCommentTeaser.setTranslationY(6 * getResources().getDisplayMetrics().density);
+            mCommentTeaser.animate().alpha(1f).translationY(0f)
+                    .setDuration(Motion.FADE_IN_MS).setInterpolator(Motion.STANDARD).start();
+        };
+        mCommentTeaser.animate().cancel();
+        if (mCommentTeaser.getVisibility() != View.VISIBLE) {
+            mCommentTeaser.setAlpha(0f);
+            mCommentTeaser.setVisibility(View.VISIBLE);
+            bind.run();
+        } else {
+            mCommentTeaser.animate().alpha(0f).setDuration(Motion.FADE_OUT_MS)
+                    .setInterpolator(Motion.STANDARD).withEndAction(bind).start();
+        }
+    }
+
     private final CommentsPanel.Host mCommentsHost = new CommentsPanel.Host() {
+        @Override
+        public void onTopComments(List<CommentItem> comments) {
+            if (mCommentTeaser == null) {
+                return; // classic watch page: no teaser
+            }
+            clearTopComments();
+            for (CommentItem comment : comments) {
+                if (comment != null && !TextUtils.isEmpty(comment.getMessage())) {
+                    mTopComments.add(comment);
+                }
+                if (mTopComments.size() == 10) {
+                    break;
+                }
+            }
+            showNextTopComment();
+        }
+
         @Override
         public void onCommentTimestamp(long positionMs) {
             seekFromList(positionMs, null);
@@ -9651,7 +9815,11 @@ public class MobilePlaybackActivity extends MobileActivity
                     line = stripped;
                 }
             }
-            mWatchMeta.setText(line.replaceFirst("(?i)(published|premiered|streamed live) on ", ""));
+            line = line.replaceFirst("(?i)(published|premiered|streamed live) on ", "");
+            if (mWatchCompact) {
+                line = line.split("\\s*[•·]\\s*")[0]; // METUBE(watch-look): the views alone
+            }
+            mWatchMeta.setText(line);
         }
 
         if (!TextUtils.isEmpty(item.likeCount)) {
@@ -9703,6 +9871,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mWatchCommentsCount != null) {
             mWatchCommentsCount.setText(null);
         }
+        clearTopComments();
         if (mTranscriptSheet != null) {
             mTranscriptSheet.dismiss(); // the last video's words
             mTranscriptSheet = null;
@@ -9768,6 +9937,8 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
 
+        bindRelatedChips(metadata);
+
         {
             // Clean "views • date" line. YouTube's raw date string arrives as "Published on
             // Jan 14, 2024" / "Premiered ..." - drop the wordy prefix, keep just the date.
@@ -9795,7 +9966,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 mDescriptionDate = !TextUtils.isEmpty(calendarDate) ? calendarDate : date;
             }
             String meta;
-            if (!TextUtils.isEmpty(views) && !TextUtils.isEmpty(date)) {
+            if (mWatchCompact) {
+                meta = views; // METUBE(watch-look): channel, subscribers, views - the date is in the description
+            } else if (!TextUtils.isEmpty(views) && !TextUtils.isEmpty(date)) {
                 meta = views + com.newtube.mobile.ui.common.MetaSeparator.DOT + date;
             } else if (!TextUtils.isEmpty(views)) {
                 meta = views;
@@ -9808,7 +9981,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // absolute-only answer fills just an empty line: swapping a card's "4 days ago" for
             // "Sep 20, 2026" a second after opening was the jump UX-14 removed.
             if (!TextUtils.isEmpty(meta)
-                    && (!TextUtils.isEmpty(relativeDate) || mWatchMeta.length() == 0)) {
+                    && (mWatchCompact || !TextUtils.isEmpty(relativeDate) || mWatchMeta.length() == 0)) {
                 setWatchTextFaded(mWatchMeta, meta);
             }
 
@@ -9953,6 +10126,73 @@ public class MobilePlaybackActivity extends MobileActivity
                 () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1,
                 positionMs -> seekFromList(positionMs, null));
         showPlayerSheet(mTranscriptSheet);
+    }
+
+    /** METUBE(watch-look): Subscribe's label color, kept faded while it shows as the mark. */
+    private void setSubscribeTextColor(int color) {
+        mSubscribeTextColor = color;
+        applySubscribeMorph(mSubscribeMorph, -1);
+    }
+
+    /** The label gives way to the app's mark (collapsed), or comes back, the pill resizing between. */
+    private void morphSubscribe(boolean collapsed) {
+        if (collapsed == mSubscribeCollapsed || mSubscribeIcon == null) {
+            return;
+        }
+        mSubscribeCollapsed = collapsed;
+        if (mSubscribeAnimator != null) {
+            mSubscribeAnimator.cancel();
+        }
+        // The label's own width now (it may have changed to "Subscribed" meanwhile), and the round mark's.
+        ViewGroup.LayoutParams lp = mWatchSubscribe.getLayoutParams();
+        int current = mWatchSubscribe.getWidth();
+        mWatchSubscribe.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        int label = mWatchSubscribe.getMeasuredWidth();
+        int round = dp(36);
+        float from = mSubscribeMorph;
+        float to = collapsed ? 1f : 0f;
+        // The size overshoots and settles (the bounce); the label and mark fade without it.
+        android.animation.ValueAnimator animator = android.animation.ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(380);
+        android.view.animation.Interpolator bounce = new android.view.animation.OvershootInterpolator(1.6f);
+        animator.addUpdateListener(a -> {
+            float fraction = a.getAnimatedFraction();
+            float t = from + (to - from) * Motion.STANDARD.getInterpolation(Math.min(1f, fraction * 1.4f));
+            int target = collapsed ? round : label;
+            float size = bounce.getInterpolation(fraction);
+            applySubscribeMorph(t, Math.max(round / 2, Math.round(current + (target - current) * size)));
+        });
+        animator.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                if (mSubscribeAnimator == animation && !mSubscribeCollapsed) {
+                    lp.width = ViewGroup.LayoutParams.WRAP_CONTENT; // a new label sizes itself again
+                    mWatchSubscribe.setLayoutParams(lp);
+                }
+            }
+        });
+        mSubscribeAnimator = animator;
+        animator.start();
+    }
+
+    /** {@code width} < 0 keeps the pill's width. The label fades out in the first half, the mark in, in the second. */
+    private void applySubscribeMorph(float t, int width) {
+        mSubscribeMorph = t;
+        int alpha = Math.round(android.graphics.Color.alpha(mSubscribeTextColor) * Math.max(0f, 1f - 2f * t));
+        mWatchSubscribe.setTextColor(androidx.core.graphics.ColorUtils.setAlphaComponent(mSubscribeTextColor, alpha));
+        if (mSubscribeIcon == null) {
+            return;
+        }
+        float mark = Math.max(0f, 2f * t - 1f);
+        mSubscribeIcon.setColorFilter(mSubscribeTextColor);
+        mSubscribeIcon.setAlpha(mark);
+        mSubscribeIcon.setScaleX(0.6f + 0.4f * mark);
+        mSubscribeIcon.setScaleY(0.6f + 0.4f * mark);
+        if (width >= 0) {
+            ViewGroup.LayoutParams lp = mWatchSubscribe.getLayoutParams();
+            lp.width = width;
+            mWatchSubscribe.setLayoutParams(lp);
+        }
     }
 
     /** Route Like / Dislike / Subscribe through the presenter's onButtonClicked vocabulary. */
@@ -10129,7 +10369,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // near-black on the light one). METUBE(glass): once subscribed, a glass pill like the
             // action row's - bg_watch_subscribe's selected state.
             mWatchSubscribe.setSelected(on);
-            mWatchSubscribe.setTextColor(getColorInt(on
+            setSubscribeTextColor(getColorInt(on
                     ? R.color.mobile_color_on_surface : R.color.mobile_color_on_inverse_surface));
         }
     }
@@ -10223,6 +10463,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 mWatchDownloadLabel.setText(R.string.mobile_download_badge_queued);
             } else {
                 mWatchDownloadLabel.setText(R.string.dialog_download);
+            }
+            if (mWatchCompact) {
+                mWatchDownloadLabel.setVisibility(item != null && item.isActive() ? View.VISIBLE : View.GONE);
             }
         });
     }
@@ -10356,6 +10599,15 @@ public class MobilePlaybackActivity extends MobileActivity
         if (!mRelatedRenderGate.isReleased()) {
             return;
         }
+        if (mChipVideos != null) {
+            if (mRelatedWindow < mChipVideos.size()) {
+                mRelatedWindow += RELATED_WINDOW_STEP;
+                submitRelatedWindow();
+            } else if (mChipPage != null) {
+                loadChannelChip(mChipPage);
+            }
+            return;
+        }
         if (mPresenter == null || mRelatedVideos.isEmpty()) {
             return;
         }
@@ -10445,6 +10697,76 @@ public class MobilePlaybackActivity extends MobileActivity
         });
     }
 
+    /** METUBE(issue #74): a new video: "All" again, and no channel chip until its metadata names one. */
+    private void resetRelatedChips() {
+        RxHelper.disposeActions(mChipAction);
+        mChipMetadata = null;
+        mChipVideos = null; // before check(): the listener then has nothing to switch
+        mChipPage = null;
+        if (mRelatedChips != null) {
+            mRelatedChips.setVisibility(View.GONE);
+            mRelatedChipGroup.check(R.id.mobile_watch_chip_all);
+            mRelatedChips.scrollTo(0, 0);
+        }
+    }
+
+    private void bindRelatedChips(MediaItemMetadata metadata) {
+        if (mRelatedChips == null || isShortsMode()
+                || TextUtils.isEmpty(metadata.getAuthor()) || TextUtils.isEmpty(metadata.getChannelId())) {
+            return;
+        }
+        mChipMetadata = metadata;
+        mChannelChip.setText(getString(R.string.mobile_watch_chip_channel, metadata.getAuthor()));
+        mRelatedChips.setVisibility(View.VISIBLE);
+    }
+
+    private void onRelatedChip(boolean channel) {
+        if (channel == (mChipVideos != null)) {
+            return;
+        }
+        RxHelper.disposeActions(mChipAction);
+        mChipPage = null;
+        mChipVideos = channel ? new ArrayList<>() : null;
+        mRelatedWindow = RELATED_WINDOW_INITIAL;
+        submitRelatedWindow();
+        if (channel) {
+            loadChannelChip(null);
+        }
+    }
+
+    /** The channel's uploads: the first page when {@code page} is null, else the one after it. */
+    private void loadChannelChip(@Nullable com.liskovsoft.mediaserviceinterfaces.data.MediaGroup page) {
+        MediaItemMetadata metadata = mChipMetadata;
+        List<Video> target = mChipVideos;
+        if (metadata == null || target == null || (page != null && page.getNextPageKey() == null)) {
+            return;
+        }
+        mChipPage = null; // one request per page
+        com.liskovsoft.mediaserviceinterfaces.ContentService content =
+                YouTubeServiceManager.instance().getContentService();
+        // A channel item without a reload key or a bare playlist resolves to the channel's uploads grid.
+        mChipAction = RxHelper.execute(page == null
+                        ? content.getGroupObserve(com.liskovsoft.smartyoutubetv2.common.app.models.data.SimpleMediaItem.from(metadata))
+                        : content.continueGroupObserve(page),
+                group -> runOnUiThread(() -> onChannelChipPage(target, group)),
+                error -> android.util.Log.w("MobilePlayback", "Channel chip: " + error));
+    }
+
+    private void onChannelChipPage(List<Video> target, @Nullable com.liskovsoft.mediaserviceinterfaces.data.MediaGroup group) {
+        if (mChipVideos != target || group == null || isDestroyed()) {
+            return;
+        }
+        mChipPage = group;
+        Video current = getVideo();
+        for (Video v : VideoGroup.from(group).getVideos()) {
+            if (v != null && !com.newtube.mobile.ui.common.ShortsFilter.isShort(v)
+                    && (current == null || !Helpers.equals(current.videoId, v.videoId))) {
+                target.add(v);
+            }
+        }
+        submitRelatedWindow();
+    }
+
     /**
      * How many Up-next rows are bound on open, and how many more each scroll-to-bottom reveals.
      * Bound rows are NOT a preview: this list never recycles, so a bound row is a thumbnail
@@ -10463,8 +10785,9 @@ public class MobilePlaybackActivity extends MobileActivity
     /** As {@link #submitRelatedWindow()}; {@code onCommitted} runs once the list shows the slice. */
     private void submitRelatedWindow(Runnable onCommitted) {
         if (mRelatedAdapter != null) {
-            int end = Math.min(mRelatedWindow, mRelatedVideos.size());
-            mRelatedAdapter.submitList(new ArrayList<>(mRelatedVideos.subList(0, end)), onCommitted);
+            List<Video> shown = mChipVideos != null ? mChipVideos : mRelatedVideos;
+            int end = Math.min(mRelatedWindow, shown.size());
+            mRelatedAdapter.submitList(new ArrayList<>(shown.subList(0, end)), onCommitted);
         } else if (onCommitted != null) {
             onCommitted.run();
         }

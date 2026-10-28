@@ -97,6 +97,10 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         /** METUBE(shorts): the sheet moved, {@code gone} of the way off the screen (0 open, 1 gone). */
         default void onCommentsPanelMoved(float gone) {
         }
+
+        /** METUBE(watch-look): the top comments' first page arrived (the watch page shows them one by one). */
+        default void onTopComments(List<CommentItem> comments) {
+        }
     }
 
     private static final int NO_FAILURE = -1;
@@ -768,6 +772,13 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         feed.nextKey = nextKey(group, feed.firstKey);
         if (!feed.replies) {
             learnCreator(feed.entries);
+        }
+        if (feed == mTop) {
+            List<CommentItem> top = new ArrayList<>();
+            for (CommentsAdapter.Entry entry : feed.entries) {
+                top.add(entry.item);
+            }
+            mHost.onTopComments(top);
         }
         if (feed == pendingSortFeed()) {
             finishSortSwitch(feed);

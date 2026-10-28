@@ -38,6 +38,7 @@ public final class SettingsPages {
     public static final String FEEDS_TABS = "feeds_tabs";
     public static final String FEEDS_HIDDEN = "feeds_hidden";
     public static final String FEEDS_MENU = "feeds_menu";
+    public static final String PLAYER_BUTTONS = "player_buttons";
     public static final String PRIVACY = "privacy";
     public static final String PLAYBACK = "playback";
     public static final String QUALITY = "quality";
@@ -78,6 +79,8 @@ public final class SettingsPages {
                 return AppPages.hidden(context);
             case FEEDS_MENU:
                 return AppPages.videoMenu(context);
+            case PLAYER_BUTTONS:
+                return AppPages.playerButtons(context);
             case PRIVACY:
                 return AppPages.privacy(context);
             case PLAYBACK:
