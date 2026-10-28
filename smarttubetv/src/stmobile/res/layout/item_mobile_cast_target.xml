@@ -52,13 +52,9 @@
     </LinearLayout>
 
     <ProgressBar
+        style="@style/Widget.MeeTube.GlassSpinner.Small"
         android:id="@+id/cast_target_progress"
-        style="?android:attr/progressBarStyleSmall"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
         android:layout_marginStart="8dp"
-        android:indeterminateTint="@color/mobile_color_primary"
-        android:indeterminateTintMode="src_in"
         android:visibility="gone" />
 
     <!-- Cast-device rows only: opens the explicit mode chooser (row tap itself one-tap connects). -->

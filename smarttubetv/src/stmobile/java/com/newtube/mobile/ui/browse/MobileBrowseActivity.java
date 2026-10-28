@@ -1281,15 +1281,10 @@ public class MobileBrowseActivity extends MobileActivity
             }
             if (!mSuppressNavCallback) {
                 int itemId = item.getItemId();
-                if (itemId == toMenuItemId(MediaGroup.TYPE_SHORTS) && playNavLens(itemId)) {
-                    // MEETUBE(shorts): the lens and the bar's wiggle play alone, then the player rises in.
-                    // The Shorts tab's layout and the player's start take ~250 ms of the main thread
-                    // (gfxinfo: 56 + 162 ms frames), which froze the wiggle's last stretch.
-                    mBottomNav.postDelayed(() -> {
-                        if (mBottomNav.getSelectedItemId() == itemId) { // not left for another tab meanwhile
-                            onNavItemChosen(itemId);
-                        }
-                    }, com.newtube.mobile.ui.common.NavLens.JIGGLE_MS);
+                if (itemId == toMenuItemId(MediaGroup.TYPE_SHORTS) && Float.isNaN(mNavDragFromX)) {
+                    // MEETUBE(shorts, issue #107): like Search, Shorts opens from the tap - no lens or
+                    // wiggle to wait out (it held the switch 700 ms); the bar slides away instead.
+                    onNavItemChosen(itemId);
                 } else if (playNavLens(itemId)) {
                     // The page swaps a frame later: its heaviest frames land while the lens swells in place.
                     mBottomNav.postOnAnimation(() -> onNavItemChosen(itemId));
@@ -1480,6 +1475,7 @@ public class MobileBrowseActivity extends MobileActivity
         mShortsLaunchPending = shorts;
         if (!shorts) {
             mLastNonShortsNavItem = itemId;
+            holdNav(false); // You never passes through showShortsTab
         }
         if (itemId == YOU_ITEM_ID) {
             showYouPanel();
@@ -1536,9 +1532,21 @@ public class MobileBrowseActivity extends MobileActivity
     private final Runnable mLeaveShortsTab = () -> {
         if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && !mShortsLaunchPending && !mYouShowing
                 && mBottomNav.getMenu().findItem(mLastNonShortsNavItem) != null) {
+            // MEETUBE(issue #107): one move back - the player has slid down, the tab is just there
+            // (no lens or wiggle) and the bar rises from the bottom (showShortsTab -> holdNav).
+            mSuppressNavCallback = true;
             mBottomNav.setSelectedItemId(mLastNonShortsNavItem);
+            mSuppressNavCallback = false;
+            onNavItemChosen(mLastNonShortsNavItem);
         }
     };
+
+    /**
+     * MEETUBE(issue #107): set by the Shorts player as it slides itself away, so the resume that
+     * follows leaves the Shorts tab at once - a resume without it (one while the player is still
+     * opening) waits, and the onPause after it cancels the leave.
+     */
+    public static boolean sShortsClosed;
 
     /** Pages asked for while the Shorts tab looked for an unseen short. */
     private int mShortsLaunchPages;
@@ -1561,6 +1569,14 @@ public class MobileBrowseActivity extends MobileActivity
         View loading = findViewById(R.id.mobile_shorts_loading);
         if (loading != null) {
             loading.setVisibility(shorts ? View.VISIBLE : View.GONE);
+        }
+        holdNav(shorts);
+    }
+
+    /** MEETUBE(shorts, issue #107): the Shorts tab slides the nav bar down; leaving it slides it back. */
+    private void holdNav(boolean held) {
+        if (mNavHider != null) {
+            mNavHider.hold(held);
         }
     }
 
@@ -2898,12 +2914,18 @@ public class MobileBrowseActivity extends MobileActivity
         // MEETUBE(nav tabs): the tabs may have been changed in Settings (a no-op when they weren't).
         rebuildNavigation();
 
-        // MEETUBE(shorts): back from the Shorts player - return to the tab before Shorts, once the
-        // player's close (player_close_exit, 200 ms) is over: the lens and the tab's load ran
-        // inside that window animation and stuttered.
+        // MEETUBE(shorts): back from the Shorts player - return to the tab before Shorts once the
+        // player's close (player_close_exit, 200 ms) is over. Posted, not run: a resume while the
+        // player is still opening is cancelled by the onPause that follows it.
         mBottomNav.removeCallbacks(mLeaveShortsTab);
+        boolean shortsClosed = sShortsClosed;
+        sShortsClosed = false;
         if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && !mShortsLaunchPending && !mYouShowing) {
-            mBottomNav.postDelayed(mLeaveShortsTab, 240);
+            if (shortsClosed) {
+                mLeaveShortsTab.run();
+            } else {
+                mBottomNav.postDelayed(mLeaveShortsTab, 240);
+            }
         } else {
             maybeLaunchShorts();
         }

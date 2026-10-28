@@ -575,14 +575,8 @@
                 <!-- MEETUBE(issue #77): a frosted glass disc with a thin white arc, like the
                      player's other glass, instead of a bare red spinner. -->
                 <ProgressBar
-                    android:id="@+id/mobile_player_progress"
-                    style="?android:attr/progressBarStyleLarge"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:background="@drawable/bg_player_spinner"
-                    android:indeterminateTint="#EBFFFFFF"
-                    android:indeterminateTintMode="src_in"
-                    android:padding="13dp" />
+                    style="@style/Widget.MeeTube.GlassSpinner"
+                    android:id="@+id/mobile_player_progress" />
 
                 <TextView
                     android:id="@+id/mobile_player_setup_hint"

@@ -94,9 +94,8 @@
         android:minHeight="160dp">
 
         <ProgressBar
+            style="@style/Widget.MeeTube.GlassSpinner"
             android:id="@+id/lyrics_sheet_loading"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
             android:layout_gravity="center" />
 
         <TextView

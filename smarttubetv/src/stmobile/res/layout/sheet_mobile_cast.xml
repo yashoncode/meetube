@@ -64,11 +64,7 @@
                 android:paddingVertical="12dp">
 
                 <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:indeterminateTint="@color/mobile_color_primary"
-                    android:indeterminateTintMode="src_in" />
+                    style="@style/Widget.MeeTube.GlassSpinner.Small" />
 
                 <TextView
                     android:layout_width="wrap_content"
