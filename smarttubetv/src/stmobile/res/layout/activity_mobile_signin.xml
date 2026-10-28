@@ -70,11 +70,9 @@
             android:layout_height="match_parent">
 
             <ProgressBar
+                style="@style/Widget.MeeTube.GlassSpinner"
                 android:id="@+id/mobile_signin_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:indeterminateTint="@color/mobile_color_primary" />
+                android:layout_gravity="center" />
 
             <!--
               Error state: a human-readable headline + "Try again" (restarts the flow with a
@@ -386,9 +384,7 @@
                 tools:visibility="gone">
 
                 <ProgressBar
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:indeterminateTint="@color/mobile_color_primary" />
+                    style="@style/Widget.MeeTube.GlassSpinner" />
 
                 <TextView
                     android:layout_width="wrap_content"

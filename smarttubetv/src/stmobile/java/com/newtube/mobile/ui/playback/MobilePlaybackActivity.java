@@ -2570,14 +2570,14 @@ public class MobilePlaybackActivity extends MobileActivity
                 mCommentsPanel.close();
                 return;
             }
-            if (canAnimateClose()) {
-                animateCloseThenFinish();
-                return;
-            }
+            // MEETUBE(issue #107): a short slides down off the screen as a window animation - the
+            // system composes it, so the tab opening beneath (sShortsClosed) can't drop its frames.
+            com.newtube.mobile.ui.browse.MobileBrowseActivity.sShortsClosed = true;
             if (mPresenter != null) {
                 mPresenter.onFinish();
             }
             finish();
+            overridePendingTransition(0, R.anim.shorts_close_exit);
             return;
         }
         if (mBackPreview || canMinimizeByBack()) {
@@ -8314,8 +8314,6 @@ public class MobilePlaybackActivity extends MobileActivity
             mSpinnerShown = show;
             mProgressBar.animate().cancel();
             if (show) {
-                // MEETUBE(issue #77): a soft white arc on the glass disc, not the brand red.
-                mProgressBar.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(0xEBFFFFFF));
                 mProgressBar.setAlpha(0f);
                 mProgressBar.setVisibility(View.VISIBLE);
                 mProgressBar.animate().alpha(1f).setDuration(Motion.FADE_IN_MS)

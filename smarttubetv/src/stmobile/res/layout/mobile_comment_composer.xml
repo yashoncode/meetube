@@ -80,16 +80,11 @@
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_comment_send" />
 
-                <com.google.android.material.progressindicator.CircularProgressIndicator
+                <ProgressBar
+                    style="@style/Widget.MeeTube.GlassSpinner.Small"
                     android:id="@+id/comment_composer_progress"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:indeterminate="true"
-                    android:visibility="gone"
-                    app:indicatorColor="@color/mobile_color_on_surface"
-                    app:indicatorSize="20dp"
-                    app:trackThickness="2dp" />
+                    android:visibility="gone" />
 
             </FrameLayout>
 

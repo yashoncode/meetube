@@ -18,6 +18,7 @@ public final class NavHider extends RecyclerView.OnScrollListener {
     private final View mBar;
     private final int mSlopPx;
     private boolean mHidden;
+    private boolean mHeld;
     private int mTravel; // signed scroll distance since the last change of direction
 
     public NavHider(View bar) {
@@ -42,10 +43,20 @@ public final class NavHider extends RecyclerView.OnScrollListener {
         }
     }
 
+    /** MEETUBE(shorts, issue #107): held, the bar stays down whatever the list does. */
+    public void hold(boolean held) {
+        mHeld = held;
+        if (held) {
+            hide();
+        } else {
+            show();
+        }
+    }
+
     /** A new page, or the list back at its top: the bar again. */
     public void show() {
         mTravel = 0;
-        if (!mHidden) {
+        if (mHeld || !mHidden) {
             return;
         }
         mHidden = false;

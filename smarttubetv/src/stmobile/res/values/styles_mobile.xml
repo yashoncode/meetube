@@ -104,6 +104,24 @@
         <item name="cornerSize">16dp</item>
     </style>
 
+    <!-- MEETUBE(issue #107): the one loader - a neon glow ring (avd_neon_ring), on every page,
+         sheet and button. Layouts set no size or tint of their own. -->
+    <style name="Widget.MeeTube.GlassSpinner" parent="android:Widget.Material.ProgressBar.Large">
+        <item name="android:layout_width">60dp</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:indeterminateDrawable">@drawable/avd_neon_ring</item>
+    </style>
+
+    <style name="Widget.MeeTube.GlassSpinner.Small" parent="Widget.MeeTube.GlassSpinner">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:padding">1dp</item>
+    </style>
+
+    <!-- The neon loader's ring, radius 8 (its widest glow stays inside the 24 box), from the top. -->
+    <string name="neon_ring_path" translatable="false">M12,4 A8,8 0 1,1 12,20 A8,8 0 1,1 12,4</string>
+
     <style name="Widget.NewTube.Snackbar.Action" parent="Widget.MaterialComponents.Button.TextButton.Snackbar">
         <item name="android:textColor">@color/mobile_color_background</item>
         <item name="android:fontFamily">sans-serif-medium</item>

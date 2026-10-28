@@ -329,8 +329,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ProgressBar
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                style="@style/Widget.MeeTube.GlassSpinner"
                 android:layout_gravity="center" />
 
         </FrameLayout>
