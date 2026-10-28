@@ -306,4 +306,12 @@
     <!-- About -->
     <string name="mobile_settings_version">Versión</string>
     <string name="mobile_settings_update_notify_summary">Te avisa cuando sale una versión nueva</string>
+    <string name="mobile_settings_tab_glow">Brillo de la pestaña</string>
+    <string name="mobile_settings_tab_glow_white">Blanco</string>
+    <string name="mobile_settings_tab_glow_white_desc">Un brillo blanco sencillo (gris oscuro en el tema claro)</string>
+    <string name="mobile_settings_tab_glow_tabs">Colores por pestaña</string>
+    <string name="mobile_settings_tab_glow_tabs_desc">Cada pestaña brilla en su propio color</string>
+    <string name="mobile_settings_tab_glow_accent">Acento</string>
+    <string name="mobile_settings_tab_glow_accent_desc">Todas las pestañas brillan en el rojo de MeTube</string>
+    <string name="mobile_settings_tab_glow_off">Desactivado</string>
 </resources>

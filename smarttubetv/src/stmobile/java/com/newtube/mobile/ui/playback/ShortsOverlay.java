@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewOutlineProvider;
@@ -25,6 +26,7 @@ import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.GlassDrawable;
 import com.newtube.mobile.ui.common.ShortsSeen;
@@ -102,6 +104,8 @@ final class ShortsOverlay {
     private static final long PEEK_COVER_MAX_MS = 2500;
     private static final int PORTRAIT_W = 720;
     private static final int PORTRAIT_H = 1280;
+    /** Shorts left in the queue when the next page is asked for. */
+    private static final int QUEUE_LOW = 8;
 
     private final View mOverlay;
     private final View mVideo;
@@ -127,6 +131,9 @@ final class ShortsOverlay {
     private final Runnable mHidePeek = this::hidePeek;
     @Nullable
     private Video mCurrent;
+    /** The queue's last short when the next page was asked for. */
+    @Nullable
+    private Video mPagedFrom;
     @Nullable
     private Video mPeekVideo;
     private int mPeekDir;
@@ -226,11 +233,14 @@ final class ShortsOverlay {
             }
         });
 
-        mirror(watch.likeCount, text -> mLikes.setText(isCount(text) ? text
-                : mLikes.getContext().getString(R.string.mobile_watch_like)));
-        mirror(watch.commentsCount, text -> mComments.setText(isCount(text) ? text
-                : mComments.getContext().getString(R.string.mobile_comments_title)));
-        mirror(watch.meta, mMeta::setText);
+        CountUp likes = new CountUp(mLikes);
+        CountUp comments = new CountUp(mComments);
+        CountUp meta = new CountUp(mMeta);
+        mirror(watch.likeCount, text -> likes.show(isCount(text) ? text
+                : mLikes.getContext().getString(R.string.mobile_watch_like), currentId()));
+        mirror(watch.commentsCount, text -> comments.show(isCount(text) ? text
+                : mComments.getContext().getString(R.string.mobile_comments_title), currentId()));
+        mirror(watch.meta, text -> meta.show(text, currentId()));
         mirror(watch.subscribeLabel, mSubscribe::setText);
     }
 
@@ -332,6 +342,7 @@ final class ShortsOverlay {
                 showKnownAvatar(item);
                 mOverlay.removeCallbacks(mPreloadNeighbours);
                 mOverlay.postDelayed(mPreloadNeighbours, NEIGHBOUR_PRELOAD_DELAY_MS);
+                pageQueueIfLow();
                 if (mPeek.getVisibility() == View.VISIBLE && mPeekDir == 0) {
                     mOverlay.removeCallbacks(mHidePeek);
                     mOverlay.postDelayed(mHidePeek, 60); // the host's still has drawn by then
@@ -532,6 +543,20 @@ final class ShortsOverlay {
         return at >= 0 && to >= 0 && to < queue.size() ? queue.get(to) : null;
     }
 
+    /**
+     * METUBE(shorts feed): this close to the queue's end, the Shorts tab fetches its next page, which
+     * joins the queue (MobileBrowseActivity.extendShortsQueue) well before the swipe gets there.
+     * Before, the queue only grew while the hidden grid behind the player was short of cards.
+     */
+    private void pageQueueIfLow() {
+        List<Video> queue = Playlist.instance().getAll();
+        Video last = queue.isEmpty() ? null : queue.get(queue.size() - 1);
+        if (last != null && last != mPagedFrom && last.belongsToShorts() && neighbour(QUEUE_LOW) == null) {
+            mPagedFrom = last; // one request per page
+            BrowsePresenter.instance(mOverlay.getContext().getApplicationContext()).onScrollEnd(last);
+        }
+    }
+
     /** Warm Glide's memory cache with the shorts a swipe can reach, so the peek is there at once. */
     private void preloadNeighbours() {
         if (!mActive) {
@@ -599,6 +624,74 @@ final class ShortsOverlay {
 
     private interface OnText {
         void set(CharSequence text);
+    }
+
+    @Nullable
+    private String currentId() {
+        return mCurrent != null ? mCurrent.videoId : null;
+    }
+
+    /**
+     * METUBE(shorts counts): a short's count runs up from 0 to itself (fast, easing out) the first
+     * time it shows for that short, "2.7K" as 0.0K..2.7K; later changes (a like) just change.
+     */
+    private static final class CountUp {
+        private static final long DURATION_MS = 600;
+        private static final java.util.regex.Pattern NUMBER = java.util.regex.Pattern.compile("\\d+(?:[.,]\\d+)*");
+
+        private final TextView mView;
+        @Nullable
+        private String mShownFor;
+        @Nullable
+        private ValueAnimator mRun;
+        @Nullable
+        private CharSequence mTarget;
+
+        CountUp(TextView view) {
+            mView = view;
+        }
+
+        void show(@Nullable CharSequence text, @Nullable String videoId) {
+            // the player re-sets the like count with the same text (bind, metadata, rating): keep counting
+            if (mRun != null && mRun.isRunning() && TextUtils.equals(text, mTarget)) {
+                return;
+            }
+            mTarget = text;
+            if (mRun != null) {
+                mRun.cancel();
+                mRun = null;
+            }
+            java.util.regex.Matcher m = text != null ? NUMBER.matcher(text) : null;
+            if (m == null || !m.find() || videoId == null || videoId.equals(mShownFor)) {
+                mView.setText(text);
+                return;
+            }
+            mShownFor = videoId;
+            String num = m.group();
+            // the last separator is a decimal mark unless three digits follow it ("1,234" vs "2,7")
+            int sep = Math.max(num.lastIndexOf('.'), num.lastIndexOf(','));
+            int decimals = sep >= 0 && num.length() - sep - 1 != 3 ? num.length() - sep - 1 : 0;
+            char point = decimals > 0 ? num.charAt(sep) : '.';
+            char group = decimals == 0 && sep >= 0 ? num.charAt(sep) : point == '.' ? ',' : '.';
+            double target = Double.parseDouble(num.replace(String.valueOf(group), "").replace(point, '.'));
+            String format = (num.indexOf(group) >= 0 ? "%,." : "%.") + decimals + "f";
+            CharSequence before = text.subSequence(0, m.start());
+            CharSequence after = text.subSequence(m.end(), text.length());
+            mRun = ValueAnimator.ofFloat(0f, 1f).setDuration(DURATION_MS);
+            mRun.setInterpolator(new DecelerateInterpolator(2f));
+            mRun.addUpdateListener(a -> {
+                if (a.getAnimatedFraction() >= 1f) {
+                    mView.setText(text); // exactly the source's text at the end
+                    return;
+                }
+                char[] digits = String.format(Locale.US, format, target * a.getAnimatedFraction()).toCharArray();
+                for (int i = 0; i < digits.length; i++) {
+                    digits[i] = digits[i] == ',' ? group : digits[i] == '.' ? point : digits[i];
+                }
+                mView.setText(before + new String(digits) + after);
+            });
+            mRun.start();
+        }
     }
 
     private static void mirror(@Nullable TextView source, OnText target) {

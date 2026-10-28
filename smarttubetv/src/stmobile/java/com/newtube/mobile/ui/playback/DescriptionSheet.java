@@ -232,11 +232,13 @@ final class DescriptionSheet {
         int size = Math.round(20 * density);
         row.addView(image, new LinearLayout.LayoutParams(size, size));
         TextView name = stat(rows, context.getString(label), 14, R.color.mobile_color_on_surface_secondary, false);
+        name.setGravity(Gravity.START | Gravity.CENTER_VERTICAL); // by its icon, not centered like a stat
         LinearLayout.LayoutParams nameLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         nameLp.setMarginStart(Math.round(14 * density));
         row.addView(name, nameLp);
         TextView text = stat(rows, value, 14, R.color.mobile_color_on_surface, true);
         text.setFontFeatureSettings("tnum");
+        text.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
         row.addView(text);
         rows.addView(row);
     }

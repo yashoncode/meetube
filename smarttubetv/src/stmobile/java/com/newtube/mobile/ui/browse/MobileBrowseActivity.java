@@ -104,7 +104,7 @@ import java.util.List;
 public class MobileBrowseActivity extends MobileActivity
         implements BrowseView, MiniPlayerBridge.MiniHost {
     /** BottomNavigationView item ids must be non-zero; BrowseSection ids start at 0. */
-    private static final int ITEM_ID_OFFSET = 1_000_000;
+    static final int ITEM_ID_OFFSET = 1_000_000;
     private static final int SCROLL_END_THRESHOLD_ITEMS = 6;
     /**
      * NEWTUBE(lazy-home): Home's next section page is requested when the last visible card is this
@@ -118,9 +118,9 @@ public class MobileBrowseActivity extends MobileActivity
      * Menu item id of the synthetic "You" tab (account + extra sections + settings). Far above
      * {@link #ITEM_ID_OFFSET} + any real section id, so it can never collide with one.
      */
-    private static final int YOU_ITEM_ID = 2_000_000;
+    static final int YOU_ITEM_ID = 2_000_000;
     /** METUBE(search): the Search tab - opens the search screen, never stays selected. */
-    private static final int SEARCH_ITEM_ID = 2_000_001;
+    static final int SEARCH_ITEM_ID = 2_000_001;
     private static final int REQUEST_POST_NOTIFICATIONS = 1;
     /** Intent action (download notifications) that lands on the Downloads tab. */
     public static final String ACTION_OPEN_DOWNLOADS = "com.newtube.mobile.OPEN_DOWNLOADS";
@@ -1271,6 +1271,7 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void setupBottomNav() {
+        NavBloom.attach(mBottomNav); // METUBE(nav bloom, issue #47)
         mBottomNav.setOnItemSelectedListener(item -> {
             if (item.getItemId() == SEARCH_ITEM_ID) {
                 if (!mSuppressNavCallback) {
@@ -2127,8 +2128,15 @@ public class MobileBrowseActivity extends MobileActivity
         }
         if (!more.isEmpty()) {
             playlist.addAll(more);
+            mShortsEmptyPages = 0;
+        } else if (mShortsEmptyPages++ < 3 && mPresenter != null && !mCurrentVideos.isEmpty()) {
+            // A page of only watched shorts: the next one, or the swipe would stop at the queue's end.
+            mPresenter.onScrollEnd(mCurrentVideos.get(mCurrentVideos.size() - 1));
         }
     }
+
+    /** Shorts pages in a row that added nothing to the playing queue. */
+    private int mShortsEmptyPages;
 
     /** METUBE(shorts): the Shorts tab's cards around {@code tapped} become the playback queue. */
     private void queueShorts(Video tapped) {
@@ -3112,6 +3120,7 @@ public class MobileBrowseActivity extends MobileActivity
             menu.add(Menu.NONE, item.getItemId(), item.getOrder(), item.getTitle()).setIcon(icon);
         }
         bar.setLabelVisibilityMode(browse.mBottomNav.getLabelVisibilityMode());
+        NavBloom.attach(bar);
         // Search in the top bar (METUBE(search place)): the tab Browse is on stays lit, and a tap on it goes back too.
         boolean hasSearch = searchLit && source.findItem(SEARCH_ITEM_ID) != null;
         bar.setSelectedItemId(hasSearch ? SEARCH_ITEM_ID : browse.mBottomNav.getSelectedItemId());

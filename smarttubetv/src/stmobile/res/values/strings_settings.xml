@@ -376,4 +376,12 @@
     <string name="mobile_settings_playlists_style_rows_short">Videos</string>
     <string name="mobile_settings_interface_size_sample">How a video title looks at this size</string>
     <string name="mobile_settings_interface_size_sample_meta">MeTube · 1.2M views · 2 days ago</string>
+    <string name="mobile_settings_tab_glow">Tab glow</string>
+    <string name="mobile_settings_tab_glow_white">White</string>
+    <string name="mobile_settings_tab_glow_white_desc">A plain white glow (dark grey in the light theme)</string>
+    <string name="mobile_settings_tab_glow_tabs">Tab colors</string>
+    <string name="mobile_settings_tab_glow_tabs_desc">Each tab glows in its own color</string>
+    <string name="mobile_settings_tab_glow_accent">Accent</string>
+    <string name="mobile_settings_tab_glow_accent_desc">Every tab glows in MeTube red</string>
+    <string name="mobile_settings_tab_glow_off">Off</string>
 </resources>

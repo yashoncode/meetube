@@ -5940,7 +5940,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mHdrSwapPending;
 
     private void updateHdrOutput() {
-        boolean want = mPlayer != null && mHdrTrack && mMorphFraction == 0f && !MiniPlayerBridge.isActive();
+        // Shorts stay on the texture (SDR): the SurfaceView fought the overlay's glass, peek and paging
+        boolean want = mPlayer != null && mHdrTrack && mMorphFraction == 0f && !MiniPlayerBridge.isActive()
+                && (mShorts == null || !mShorts.isActive());
         if (want == mHdrOutput) {
             return;
         }
@@ -5957,6 +5959,7 @@ public class MobilePlaybackActivity extends MobileActivity
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
             mHdrSurface.setVisibility(View.VISIBLE);
+            setVideoGlassSampling(false);
             mPlayer.setVideoSurfaceView(mHdrSurface);
         } else if (mPlayer != null && mSessionSurface != null) {
             mPlayer.setVideoSurface(mSessionSurface);
@@ -5973,6 +5976,15 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (!mHdrOutput && mHdrSurface != null) {
             mHdrSurface.setVisibility(View.GONE);
+            setVideoGlassSampling(true);
+        }
+    }
+
+    /** Over HDR's SurfaceView the controls' glass is the tint alone (GlassSource#setSampling). */
+    private void setVideoGlassSampling(boolean on) {
+        View glass = findViewById(R.id.mobile_player_glass);
+        if (glass instanceof com.newtube.mobile.ui.common.GlassSource) {
+            ((com.newtube.mobile.ui.common.GlassSource) glass).setSampling(on);
         }
     }
 
@@ -9862,6 +9874,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mShorts != null) {
             mShorts.bind(item);
+            updateHdrOutput(); // Shorts never use the HDR SurfaceView (#35)
         }
 
         mWatchVideo = item;
