@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
 
 /**
- * One row of the download picker: a video rung (H.264 video track + AAC audio track, muxed on
+ * One row of the download picker: a video rung (H.264 + AAC, or VP9 + Opus above 1080p, muxed on
  * the device) or the audio track alone. Built by {@link DownloadOptions} from the same format
  * info the player uses, so every URL here is already deciphered and ready to fetch.
  */
@@ -36,6 +36,12 @@ public final class DownloadOption {
 
     public boolean isAudioOnly() {
         return kind == KIND_AUDIO;
+    }
+
+    /** A VP9 + Opus rung (1440p and up), saved as WebM instead of MP4. */
+    public boolean isWebm() {
+        String mime = video != null ? video.getMimeType() : null;
+        return mime != null && mime.startsWith("video/webm");
     }
 
     /** A progressive stream: one file that already carries both tracks. */

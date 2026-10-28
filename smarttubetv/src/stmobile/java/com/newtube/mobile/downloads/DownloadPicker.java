@@ -94,7 +94,7 @@ public final class DownloadPicker {
             String label = option.isAudioOnly()
                     ? context.getString(R.string.mobile_download_audio_only)
                     : option.qualityLabel;
-            String format = option.isAudioOnly() ? "M4A" : "MP4";
+            String format = option.isAudioOnly() ? "M4A" : option.isWebm() ? "WEBM" : "MP4";
             String size = DownloadOptions.formatBytes(option.totalBytes);
             String description = size.isEmpty() ? format : format + MetaSeparator.DOT + size;
 

@@ -24,26 +24,62 @@ public class DownloadOptionsTest {
 
     @Test
     public void offersOneAvcRungPerHeightTallestFirstPlusAudio() {
+        FakeMediaFormat opus = FakeMediaFormat.opus("251", 140_000, 6_000_000);
         List<MediaFormat> adaptive = Arrays.asList(
                 FakeMediaFormat.video("134", 360, 400_000, 20_000_000),
                 FakeMediaFormat.video("137", 1080, 2_500_000, 120_000_000),
                 FakeMediaFormat.video("136", 720, 1_200_000, 60_000_000),
                 FakeMediaFormat.vp9("248", 1080, 2_000_000, 100_000_000),
+                FakeMediaFormat.vp9("313", 2160, 18_000_000, 900_000_000),
                 FakeMediaFormat.vp9("271", 1440, 5_000_000, 300_000_000),
-                FakeMediaFormat.opus("251", 140_000, 6_000_000),
+                opus,
                 AAC);
 
         List<DownloadOption> options = DownloadOptions.build(adaptive, null);
 
-        assertEquals(4, options.size());
-        assertEquals("1080p", options.get(0).qualityLabel);
-        assertEquals("720p", options.get(1).qualityLabel);
-        assertEquals("360p", options.get(2).qualityLabel);
-        assertTrue(options.get(3).isAudioOnly());
-        assertEquals(125_000_000L, options.get(0).totalBytes);
-        assertEquals(5_000_000L, options.get(3).totalBytes);
-        assertSame(AAC, options.get(0).audio);
-        assertFalse(options.get(0).isProgressive());
+        // Above 1080p only VP9 exists: those rungs come first, paired with Opus for WebM.
+        assertEquals(6, options.size());
+        assertEquals("2160p", options.get(0).qualityLabel);
+        assertEquals("1440p", options.get(1).qualityLabel);
+        assertTrue(options.get(0).isWebm());
+        assertSame(opus, options.get(0).audio);
+        assertEquals(906_000_000L, options.get(0).totalBytes);
+        assertEquals("1080p", options.get(2).qualityLabel);
+        assertFalse(options.get(2).isWebm());
+        assertEquals("720p", options.get(3).qualityLabel);
+        assertEquals("360p", options.get(4).qualityLabel);
+        assertTrue(options.get(5).isAudioOnly());
+        assertEquals(125_000_000L, options.get(2).totalBytes);
+        assertEquals(5_000_000L, options.get(5).totalBytes);
+        assertSame(AAC, options.get(2).audio);
+        assertFalse(options.get(2).isProgressive());
+    }
+
+    @Test
+    public void hdrVp9IsNotOffered() {
+        List<MediaFormat> adaptive = Arrays.asList(
+                FakeMediaFormat.video("137", 1080, 2_500_000, 120_000_000),
+                new FakeMediaFormat("337", "video/webm; codecs=\"vp09.02.51.10.01.09.16.09.00\"", 2160, 30_000_000, 1),
+                FakeMediaFormat.opus("251", 140_000, 6_000_000),
+                AAC);
+
+        assertEquals("1080p", DownloadOptions.build(adaptive, null).get(0).qualityLabel);
+    }
+
+    @Test
+    public void webmPartIsRecognizedByItsMagic() throws IOException {
+        File webm = mTmp.newFile("v.webm");
+        try (FileOutputStream out = new FileOutputStream(webm)) {
+            out.write(new byte[]{0x1A, 0x45, (byte) 0xDF, (byte) 0xA3, 0});
+        }
+        File mp4 = mTmp.newFile("v.mp4");
+        try (FileOutputStream out = new FileOutputStream(mp4)) {
+            out.write(new byte[]{0, 0, 0, 0x18, 'f', 't', 'y', 'p'});
+        }
+
+        assertTrue(DownloadOptions.isWebmFile(webm));
+        assertFalse(DownloadOptions.isWebmFile(mp4));
+        assertFalse(DownloadOptions.isWebmFile(null));
     }
 
     @Test

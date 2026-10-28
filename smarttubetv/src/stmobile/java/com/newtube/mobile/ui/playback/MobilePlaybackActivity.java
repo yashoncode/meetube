@@ -121,6 +121,7 @@ import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.common.misc.VideoDownloads;
+import com.newtube.mobile.downloads.DownloadFolder;
 import com.newtube.mobile.downloads.DownloadItem;
 import com.newtube.mobile.downloads.DownloadMenu;
 import com.newtube.mobile.downloads.DownloadOption;
@@ -1356,12 +1357,14 @@ public class MobilePlaybackActivity extends MobileActivity
         });
         // Download: the quality picker, or the download's own menu once it is on the device.
         mWatchDownload.setOnClickListener(v -> onDownloadTapped());
+        mWatchDownload.setOnLongClickListener(v -> onDownloadLongPressed());
         DownloadRegistry.instance(this).addListener(mDownloadsListener);
         // METUBE(fullscreen-actions): the fullscreen pill taps the page's own buttons. Comments open
         // beside the landscape video; the vertical fullscreen has no room, so it leaves for the page.
         mPlayerLike.setOnClickListener(v -> mWatchLike.performClick());
         mPlayerDislike.setOnClickListener(v -> mWatchDislike.performClick());
         mPlayerDownload.setOnClickListener(v -> onDownloadTapped());
+        mPlayerDownload.setOnLongClickListener(v -> onDownloadLongPressed());
         View playerShare = findViewById(R.id.mobile_player_share);
         playerShare.setOnClickListener(v -> shareCurrentVideo(false));
         playerShare.setOnLongClickListener(v -> shareCurrentVideo(true));
@@ -10100,6 +10103,16 @@ public class MobilePlaybackActivity extends MobileActivity
             return getString(R.string.mobile_download_retry);
         }
         return getString(R.string.mobile_download_badge_queued);
+    }
+
+    /** METUBE(download-folder): a long press picks where downloads are saved. */
+    private boolean onDownloadLongPressed() {
+        if (!DownloadFolder.isSupported()) {
+            return false;
+        }
+        Haptics.longPress(mWatchDownload);
+        DownloadFolder.showOptions(this);
+        return true;
     }
 
     private void onDownloadTapped() {

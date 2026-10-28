@@ -23,6 +23,7 @@ import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.newtube.mobile.CardMenuMigration;
+import com.newtube.mobile.downloads.DownloadFolder;
 import com.newtube.mobile.ui.browse.NavTabs;
 import com.newtube.mobile.ui.common.CountStyle;
 import com.newtube.mobile.ui.common.MobileSnackbar;
@@ -72,6 +73,13 @@ final class AppPages {
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_indian_counts),
                 context.getString(R.string.mobile_settings_indian_counts_summary),
                 () -> CountStyle.isIndian(context), on -> CountStyle.setIndian(context, on)).needsRestart());
+
+        // METUBE(download-folder): also a long press on any Download button.
+        if (DownloadFolder.isSupported()) {
+            rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_folder),
+                    () -> DownloadFolder.label(context),
+                    page -> page.showDialog(DownloadFolder.showOptions(page.requireActivity()))));
+        }
 
         // METUBE(performance): every screen at the display's top refresh rate (BitChord's setting).
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_performance)));
