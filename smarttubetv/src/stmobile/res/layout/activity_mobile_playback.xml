@@ -314,8 +314,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="7dp">
+                        android:paddingHorizontal="9dp"
+                        android:paddingVertical="4dp">
 
                     <TextView
                         android:id="@+id/mobile_player_position"
@@ -326,7 +326,7 @@
                         android:shadowRadius="3"
                         android:text="@string/mobile_player_time_default"
                         android:textColor="@android:color/white"
-                        android:textSize="@dimen/mobile_player_time_text" />
+                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/mobile_player_duration"
@@ -336,7 +336,7 @@
                         android:shadowColor="#80000000"
                         android:shadowRadius="3"
                         android:textColor="@android:color/white"
-                        android:textSize="@dimen/mobile_player_time_text"
+                        android:textSize="12sp"
                         tools:text=" / 4:26:52" />
 
                     </LinearLayout>
