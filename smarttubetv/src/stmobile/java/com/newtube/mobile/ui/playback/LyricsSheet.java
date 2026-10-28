@@ -101,7 +101,7 @@ final class LyricsSheet {
      * (FLAG_NOT_TOUCH_MODAL): the video takes taps as usual - controls, seek, fullscreen - and the
      * lyrics stay open. They close by the X, a drag down or Back.
      */
-    private static void leaveVideoFree(Window window, View video) {
+    static void leaveVideoFree(Window window, View video) {
         window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
         View decor = window.getDecorView();
         int[] at = new int[2];

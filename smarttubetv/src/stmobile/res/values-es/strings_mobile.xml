@@ -99,6 +99,12 @@
     <string name="mobile_watch_subscribe">Suscribirse</string>
     <string name="mobile_watch_subscribed">Suscrito</string>
     <string name="mobile_watch_related">A continuación</string>
+    <string name="mobile_transcript">Transcripción</string>
+    <string name="mobile_transcript_follow">Sigue el video con la transcripción.</string>
+    <string name="mobile_transcript_show">Mostrar transcripción</string>
+    <string name="mobile_transcript_search">Buscar en la transcripción</string>
+    <string name="mobile_transcript_none">Este video no tiene transcripción.</string>
+    <string name="mobile_transcript_failed">No se pudo cargar la transcripción.</string>
     <string name="mobile_player_more_videos">Más videos</string>
     <string name="mobile_watch_offline">Sin conexión</string>
     <string name="mobile_watch_description">Descripción</string>

@@ -303,6 +303,10 @@ public class MobilePlaybackActivity extends MobileActivity
     /** METUBE(lyrics): the open lyrics panel, closed when another video starts (its lines are the last song's). */
     @Nullable
     private BottomSheetDialog mLyricsSheet;
+    /** METUBE(transcript): the open transcript, and the open video's caption links it is made from. */
+    private BottomSheetDialog mTranscriptSheet;
+    @Nullable
+    private MediaItemFormatInfo mCaptionInfo;
     @Nullable private String mMusicPillVideoId;
     private View mWatchSave;
     private ImageView mWatchSaveIcon;
@@ -2589,6 +2593,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mCommentsPanel.setMorphAlpha(content);
         }
         LyricsSheet.setMorphAlpha(mLyricsSheet, content); // METUBE(lyrics)
+        LyricsSheet.setMorphAlpha(mTranscriptSheet, content); // METUBE(transcript)
         float backdrop = 1f - p;
         if (mWatchScroll != null && mWatchScroll.getBackground() != null) {
             mWatchScroll.getBackground().mutate().setAlpha(Math.round(255f * backdrop));
@@ -4901,6 +4906,10 @@ public class MobilePlaybackActivity extends MobileActivity
         // Captions: the native captions sheet (same target as long-pressing the overlay CC button).
         addMenuRow(content, sheet, R.drawable.ic_player_cc, R.string.mobile_player_subtitles,
                 currentCaptionsLabel(), true, this::showCaptionsSheet);
+        if (transcriptTrack() != null) {
+            addMenuRow(content, sheet, R.drawable.ic_player_transcript, R.string.mobile_transcript,
+                    null, true, this::showTranscriptSheet);
+        }
         // Speed: the native preset sheet; the exhaustive TV dialog nests behind its "More speeds".
         addMenuRow(content, sheet, R.drawable.ic_player_speed, R.string.mobile_player_speed,
                 currentSpeedLabel(), true, this::showSpeedSheet);
@@ -7440,6 +7449,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mCommentsPanel.setMorphAlpha(contentAlpha);
         }
         LyricsSheet.setMorphAlpha(mLyricsSheet, contentAlpha); // METUBE(lyrics): fades like the comments
+        LyricsSheet.setMorphAlpha(mTranscriptSheet, contentAlpha);
     }
 
     /**
@@ -7570,6 +7580,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mCommentsPanel.setMorphAlpha(1f);
         }
         LyricsSheet.setMorphAlpha(mLyricsSheet, 1f); // METUBE(lyrics)
+        LyricsSheet.setMorphAlpha(mTranscriptSheet, 1f);
     }
 
     private void animateMorph(float to, long durationMs, @Nullable Runnable endAction) {
@@ -9692,6 +9703,10 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mWatchCommentsCount != null) {
             mWatchCommentsCount.setText(null);
         }
+        if (mTranscriptSheet != null) {
+            mTranscriptSheet.dismiss(); // the last video's words
+            mTranscriptSheet = null;
+        }
         setChatEntryVisible(false);
         mChatItems.clear();
         RxHelper.disposeActions(mLiveChatAction);
@@ -9906,6 +9921,28 @@ public class MobilePlaybackActivity extends MobileActivity
                 mDescriptionDate, mWatchDescription.getText(),
                 // A short fills the screen: a plain sheet over it, not one sized to under the video.
                 isLandscape() || (mShorts != null && mShorts.isActive()) ? null : mVideoArea));
+    }
+
+    /** METUBE(transcript): the captions the open video's transcript is made from, or null. */
+    @Nullable
+    private com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle transcriptTrack() {
+        Video video = getVideo();
+        if (mCaptionInfo == null || video == null || !Helpers.equals(video.videoId, mCaptionInfo.getVideoId())) {
+            return null;
+        }
+        return TranscriptSheet.pick(mCaptionInfo.getSubtitles());
+    }
+
+    /** METUBE(transcript): the transcript under the video (in fullscreen, a plain sheet). */
+    private void showTranscriptSheet() {
+        com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle track = transcriptTrack();
+        if (track == null || isFinishing()) {
+            return;
+        }
+        mTranscriptSheet = TranscriptSheet.create(this, track, isLandscape() ? null : mVideoArea,
+                () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1,
+                positionMs -> seekFromList(positionMs, null));
+        showPlayerSheet(mTranscriptSheet);
     }
 
     /** Route Like / Dislike / Subscribe through the presenter's onButtonClicked vocabulary. */
@@ -10626,6 +10663,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void openSabr(MediaItemFormatInfo formatInfo) {
+        mCaptionInfo = formatInfo; // METUBE(transcript)
         mExoPlayerController.openSabr(formatInfo);
     }
 
@@ -10641,6 +10679,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void openDash(MediaItemFormatInfo formatInfo) {
+        mCaptionInfo = formatInfo; // METUBE(transcript)
         mExoPlayerController.openDash(formatInfo);
     }
 
@@ -10666,16 +10705,19 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void openHlsVod(MediaItemFormatInfo formatInfo) {
+        mCaptionInfo = formatInfo; // METUBE(transcript)
         mExoPlayerController.openHlsVod(formatInfo);
     }
 
     @Override
     public void openProgressive(MediaItemFormatInfo formatInfo) {
+        mCaptionInfo = formatInfo; // METUBE(transcript)
         mExoPlayerController.openProgressive(formatInfo);
     }
 
     @Override
     public void openMerged(MediaItemFormatInfo formatInfo, String hlsPlaylistUrl) {
+        mCaptionInfo = formatInfo; // METUBE(transcript)
         mExoPlayerController.openMerged(formatInfo, hlsPlaylistUrl);
     }
 
