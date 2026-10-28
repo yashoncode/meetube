@@ -401,6 +401,15 @@
         <item name="android:tint">@color/mobile_player_on_video</item>
     </style>
 
+    <!-- METUBE(description): a section heading in the Description panel (Transcript, Video details). -->
+    <style name="MobileDescriptionHeading">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/mobile_color_on_surface</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="MobileSkeletonRelatedRow">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
