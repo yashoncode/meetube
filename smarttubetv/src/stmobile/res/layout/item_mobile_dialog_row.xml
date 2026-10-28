@@ -4,18 +4,32 @@
   supports (button / radio / checkbox / switch / read-only text). DialogRowAdapter toggles
   which trailing control (if any) is visible and whether the row is clickable per row type,
   instead of maintaining five near-identical layouts.
+
+  METUBE(menu-sheet): an action leads with its icon (DialogRowAdapter.iconFor), and a press lights
+  a rounded highlight inset from the sheet's edges, as in YouTube's own menus.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/dialog_row_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
+    android:layout_marginHorizontal="8dp"
+    android:background="@drawable/bg_mobile_menu_row"
     android:gravity="center_vertical"
-    android:minHeight="56dp"
+    android:minHeight="52dp"
     android:orientation="horizontal"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp">
+
+    <ImageView
+        android:id="@+id/dialog_row_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="20dp"
+        android:importantForAccessibility="no"
+        android:visibility="gone"
+        tools:src="@drawable/ic_watch_share"
+        tools:visibility="visible" />
 
     <LinearLayout
         android:layout_width="0dp"

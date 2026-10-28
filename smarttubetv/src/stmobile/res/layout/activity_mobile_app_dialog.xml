@@ -49,7 +49,9 @@
         <LinearLayout
             android:id="@+id/mobile_dialog_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/mobile_title_bar_height"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/mobile_title_bar_height"
+            android:paddingVertical="6dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -69,12 +71,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ellipsize="end"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:paddingStart="4dp"
-                android:paddingEnd="16dp"
+                android:paddingEnd="20dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineSpacingMultiplier="1.1"
                 android:textColor="@color/mobile_color_on_surface"
-                android:textSize="18sp"
-                android:textStyle="bold"
+                android:textSize="17sp"
                 tools:text="Settings" />
 
         </LinearLayout>
@@ -85,7 +88,8 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:scrollbars="vertical"
+            android:paddingBottom="8dp"
+            android:scrollbars="none"
             tools:listitem="@layout/item_mobile_dialog_row" />
 
     </LinearLayout>

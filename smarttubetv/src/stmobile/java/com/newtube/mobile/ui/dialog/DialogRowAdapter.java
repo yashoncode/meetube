@@ -122,7 +122,85 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     void submit(List<OptionCategory> categories, Map<OptionCategory, OptionItem> radioOverrides,
                 @Nullable CharSequence sheetTitle) {
         mRows = build(categories, radioOverrides, sheetTitle);
+        mIconColumn = false;
+        for (Row row : mRows) {
+            mIconColumn |= row.viewType == TYPE_BUTTON && iconFor(row.title) != 0;
+        }
         notifyDataSetChanged();
+    }
+
+    /**
+     * METUBE(menu-sheet): the menu actions' icons, by title (the menus are the TV presenters', which
+     * name an action only by its text). A format string ("Remove from %s") matches on its fixed
+     * start. An action without one keeps the icon column empty, so the titles stay in one line.
+     */
+    private static final int[][] ICONS = {
+            {R.string.add_video_to_watch_later, R.drawable.ic_menu_watch_later},
+            {R.string.dialog_add_to_playlist, R.drawable.ic_player_playlist_add},
+            {R.string.add_video_to_new_playlist, R.drawable.ic_mobile_add},
+            {R.string.dialog_add_to, R.drawable.ic_player_playlist_add},
+            {R.string.dialog_remove_from, R.drawable.ic_menu_delete},
+            {R.string.dialog_download, R.drawable.ic_watch_download},
+            {R.string.share_link, R.drawable.ic_watch_share},
+            {R.string.not_interested, R.drawable.ic_menu_block},
+            {R.string.not_recommend_channel, R.drawable.ic_menu_remove},
+            {R.string.play_next, R.drawable.ic_player_queue},
+            {R.string.add_to_playback_queue, R.drawable.ic_player_queue},
+            {R.string.remove_from_playback_queue, R.drawable.ic_menu_delete},
+            {R.string.action_playback_queue, R.drawable.ic_player_queue},
+            {R.string.dialog_block_channel, R.drawable.ic_menu_block},
+            {R.string.dialog_unblock_channel, R.drawable.ic_menu_block},
+            {R.string.open_channel, R.drawable.ic_mobile_account},
+            {R.string.open_channel_uploads, R.drawable.ic_mobile_account},
+            {R.string.subscribe_unsubscribe_from_channel, R.drawable.ic_nav_subscriptions_outline},
+            {R.string.subscribe_to_channel, R.drawable.ic_nav_subscriptions_outline},
+            {R.string.unsubscribe_from_channel, R.drawable.ic_nav_subscriptions_outline},
+            {R.string.remove_from_subscriptions, R.drawable.ic_menu_remove},
+            {R.string.open_comments, R.drawable.ic_watch_comment},
+            {R.string.open_playlist, R.drawable.ic_player_queue},
+            {R.string.playlist_order, R.drawable.ic_mobile_tune},
+            {R.string.mark_as_watched, R.drawable.ic_mobile_check},
+            {R.string.remove_from_history, R.drawable.ic_mobile_history},
+            {R.string.play_video, R.drawable.ic_player_play},
+            {R.string.play_from_start, R.drawable.ic_player_replay},
+            {R.string.play_video_incognito, R.drawable.ic_settings_privacy},
+            {R.string.return_to_background_video, R.drawable.ic_player_background},
+            {R.string.action_video_info, R.drawable.ic_settings_about},
+            {R.string.set_stream_reminder, R.drawable.ic_menu_bell},
+            {R.string.unset_stream_reminder, R.drawable.ic_menu_bell},
+    };
+    @Nullable private Map<String, Integer> mIcons;
+    private final List<String[]> mIconPrefixes = new ArrayList<>(); // {fixed start, drawable id}
+    /** Some action in this sheet has an icon: every action row keeps the icon's room. */
+    private boolean mIconColumn;
+
+    private int iconFor(@Nullable CharSequence title) {
+        if (title == null) {
+            return 0;
+        }
+        if (mIcons == null) {
+            mIcons = new java.util.HashMap<>();
+            for (int[] pair : ICONS) {
+                String text = mContext.getString(pair[0]);
+                int format = text.indexOf('%');
+                if (format > 0) {
+                    mIconPrefixes.add(new String[]{text.substring(0, format), String.valueOf(pair[1])});
+                } else {
+                    mIcons.put(text, pair[1]);
+                }
+            }
+        }
+        String text = title.toString().trim();
+        Integer icon = mIcons.get(text);
+        if (icon != null) {
+            return icon;
+        }
+        for (String[] prefix : mIconPrefixes) {
+            if (text.startsWith(prefix[0])) {
+                return Integer.parseInt(prefix[1]);
+            }
+        }
+        return 0;
     }
 
     private List<Row> build(List<OptionCategory> categories, Map<OptionCategory, OptionItem> radioOverrides,
@@ -222,7 +300,8 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (holder instanceof HeaderViewHolder) {
             ((HeaderViewHolder) holder).bind(row);
         } else if (holder instanceof RowViewHolder) {
-            ((RowViewHolder) holder).bind(row, mListener);
+            int icon = row.viewType == TYPE_BUTTON ? iconFor(row.title) : 0;
+            ((RowViewHolder) holder).bind(row, mListener, icon, row.viewType == TYPE_BUTTON && mIconColumn);
         }
     }
 
@@ -275,6 +354,7 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private static class RowViewHolder extends RecyclerView.ViewHolder {
+        private final android.widget.ImageView icon;
         private final TextView title;
         private final TextView subtitle;
         private final RadioButton radio;
@@ -283,6 +363,7 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         RowViewHolder(@NonNull View itemView) {
             super(itemView);
+            icon = itemView.findViewById(R.id.dialog_row_icon);
             title = itemView.findViewById(R.id.dialog_row_title);
             subtitle = itemView.findViewById(R.id.dialog_row_subtitle);
             radio = itemView.findViewById(R.id.dialog_row_radio);
@@ -290,8 +371,14 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             switchControl = itemView.findViewById(R.id.dialog_row_switch);
         }
 
-        void bind(Row row, Listener listener) {
+        void bind(Row row, Listener listener, int iconRes, boolean iconColumn) {
             title.setText(sizeInlineIcons(row.title, title));
+            if (iconRes != 0) {
+                icon.setImageResource(iconRes);
+            } else {
+                icon.setImageDrawable(null);
+            }
+            icon.setVisibility(iconColumn ? View.VISIBLE : View.GONE);
 
             if (row.subtitle != null && row.subtitle.length() > 0) {
                 subtitle.setText(row.subtitle);
