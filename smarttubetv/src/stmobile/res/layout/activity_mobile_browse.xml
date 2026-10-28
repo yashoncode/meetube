@@ -613,7 +613,7 @@
                 android:src="@drawable/ic_player_headphones"
                 android:tint="@color/mobile_player_on_video" />
 
-            <ProgressBar
+            <com.newtube.mobile.ui.common.GlowProgressBar
                 android:id="@+id/mobile_mini_progress"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"

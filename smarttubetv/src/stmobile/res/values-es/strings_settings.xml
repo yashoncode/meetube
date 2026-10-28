@@ -314,4 +314,6 @@
     <string name="mobile_settings_tab_glow_accent">Acento</string>
     <string name="mobile_settings_tab_glow_accent_desc">Todas las pestañas brillan en el rojo de MeTube</string>
     <string name="mobile_settings_tab_glow_off">Desactivado</string>
+    <string name="mobile_settings_progress_glow">Brillo del progreso</string>
+    <string name="mobile_settings_progress_glow_summary">Una luz suave al final de la barra de reproducción y de la línea de visto en los videos</string>
 </resources>

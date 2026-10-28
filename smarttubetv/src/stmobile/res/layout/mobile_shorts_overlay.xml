@@ -300,7 +300,7 @@
         tools:visibility="visible" />
 
     <!-- A thin line that scrubs: the thumb shows while a finger holds it, the seek lands on release. -->
-    <SeekBar
+    <view class="com.newtube.mobile.ui.common.GlowProgressBar$Seek"
         android:id="@+id/mobile_shorts_progress"
         android:layout_width="match_parent"
         android:layout_height="24dp"

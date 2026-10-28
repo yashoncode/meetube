@@ -128,6 +128,8 @@ public class PlayerTimeBar extends View implements TimeBar {
     private final Paint mPlayedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Matrix mTailMatrix = new Matrix();
+    private final com.newtube.mobile.ui.common.GlowProgressBar.Head mGlow =
+            new com.newtube.mobile.ui.common.GlowProgressBar.Head();
     private final CopyOnWriteArraySet<OnScrubListener> mListeners = new CopyOnWriteArraySet<>();
     private final List<SeekBarSegment> mSegments = new ArrayList<>();
     private final StringBuilder mFormatBuilder = new StringBuilder();
@@ -493,6 +495,13 @@ public class PlayerTimeBar extends View implements TimeBar {
                     }
                 }
             }
+        }
+
+        // METUBE(progress glow): the played part's head glows, under the dot when it shows.
+        if (hasDuration && playedX > left && playedX < right) {
+            // The head's colour is the tail's end of the played gradient.
+            mGlow.draw(getContext(), canvas, playedX, (top + bottom) / 2f, dp(10), PLAYED_TAIL_COLOR);
+            mGlow.cap(canvas, playedX, (top + bottom) / 2f, track, PLAYED_TAIL_COLOR);
         }
 
         // The dot grows in with the controls and a little more under the finger.
