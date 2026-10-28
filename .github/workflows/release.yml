@@ -1,0 +1,86 @@
+# Builds the signed MeeTube APKs.
+# - Push a tag vX.Y.Z (matching build.gradle's stmobile versionName "X.Y.Z Name" and the top
+#   CHANGELOG.md entry): publishes the GitHub release "MeeTube X.Y.Z Name" with the APKs,
+#   meetube.json for the in-app updater, and metube.json, the same file under the name MeTube
+#   (before 3.2.0) installs still look for.
+# - Run it by hand (Actions > Release > Run workflow): builds and keeps the APKs as artifacts only.
+# Secrets: SIGNING_KEY (the .jks, base64), KEY_STORE_PASSWORD, ALIAS, KEY_PASSWORD. Every release
+# must use the same key or installed apps refuse the update.
+name: Release
+
+on:
+  push:
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Signing key
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          ALIAS: ${{ secrets.ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$SIGNING_KEY" ]; then echo "::error::SIGNING_KEY secret is missing"; exit 1; fi
+          echo "$SIGNING_KEY" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          {
+            echo "storeFile=$RUNNER_TEMP/release.jks"
+            echo "storePassword=$KEY_STORE_PASSWORD"
+            echo "keyAlias=$ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Build
+        run: |
+          chmod +x gradlew
+          ./gradlew :smarttubetv:assembleStmobileRelease
+
+      - name: Collect APKs
+        id: meta
+        run: |
+          mkdir dist
+          cp smarttubetv/build/outputs/renamed_apks/stmobileRelease/*.apk dist/
+          ls -l dist
+          # The stmobile flavor's versionName, e.g. "3.2.0 Rebirth" (defaultConfig's comes first).
+          echo "name=$(grep -oP 'versionName "\K[0-9]+\.[0-9]+\.[0-9]+[^"]*' smarttubetv/build.gradle | tail -n 1)" >> "$GITHUB_OUTPUT"
+
+      - name: Keep APKs
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: MeeTube ${{ steps.meta.outputs.name }}
+          path: dist/*.apk
+          if-no-files-found: error
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          NAME: ${{ steps.meta.outputs.name }}
+        run: |
+          # Fails unless the tag, build.gradle and CHANGELOG.md agree on the version.
+          python3 tools/update_manifest.py --tag "$TAG" --dist dist --out dist/meetube.json
+          cp dist/meetube.json dist/metube.json
+          # Release notes: this version's CHANGELOG.md section, without its heading.
+          awk -v h="## $NAME" '$0 == h {on=1; next} on && /^## / {exit} on' CHANGELOG.md > notes.md
+          test -s notes.md
+          gh release create "$TAG" dist/* --title "MeeTube $NAME" --notes-file notes.md --target "$GITHUB_SHA"
