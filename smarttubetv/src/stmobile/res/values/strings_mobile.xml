@@ -93,6 +93,12 @@
     <string name="mobile_watch_subscribe">Subscribe</string>
     <string name="mobile_watch_subscribed">Subscribed</string>
     <string name="mobile_watch_related">Up next</string>
+    <string name="mobile_transcript">Transcript</string>
+    <string name="mobile_transcript_follow">Follow along using the transcript.</string>
+    <string name="mobile_transcript_show">Show transcript</string>
+    <string name="mobile_transcript_search">Search transcript</string>
+    <string name="mobile_transcript_none">This video has no transcript.</string>
+    <string name="mobile_transcript_failed">Couldn\'t load the transcript.</string>
     <string name="mobile_player_more_videos">More videos</string>
     <!-- In place of "Up next" when nothing loaded because there is no network (e.g. a download). -->
     <string name="mobile_watch_offline">You\'re offline</string>

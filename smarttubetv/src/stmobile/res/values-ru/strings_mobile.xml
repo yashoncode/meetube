@@ -42,6 +42,12 @@
     <string name="mobile_watch_subscribe">Подписаться</string>
     <string name="mobile_watch_subscribed">Вы подписаны</string>
     <string name="mobile_watch_related">Далее</string>
+    <string name="mobile_transcript">Расшифровка</string>
+    <string name="mobile_transcript_follow">Следите за видео по расшифровке.</string>
+    <string name="mobile_transcript_show">Показать расшифровку</string>
+    <string name="mobile_transcript_search">Поиск по расшифровке</string>
+    <string name="mobile_transcript_none">У этого видео нет расшифровки.</string>
+    <string name="mobile_transcript_failed">Не удалось загрузить расшифровку.</string>
     <string name="mobile_player_more_videos">Другие видео</string>
     <string name="mobile_watch_offline">Вы офлайн</string>
     <string name="mobile_watch_queue_from">Воспроизведение из %1$s</string>
