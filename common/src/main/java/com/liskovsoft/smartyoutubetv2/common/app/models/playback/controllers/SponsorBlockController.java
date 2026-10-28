@@ -285,6 +285,15 @@ public class SponsorBlockController extends BasePlayerController {
             return;
         }
 
+        // MEETUBE(sponsorblock): the phone offers it on a pill, the video playing on under it.
+        long leftMs = (long) ((skipPosMs - getPlayer().getPositionMs()) / getPlayer().getEffectiveSpeed());
+        if (getPlayer().showSkipSegment(category, () -> {
+            getPlayer().hideSkipSegment();
+            setPositionMs(skipPosMs);
+        }, leftMs)) {
+            return;
+        }
+
         AppDialogPresenter dialogPresenter = AppDialogPresenter.instance(getContext());
 
         if (dialogPresenter.isDialogShown() || getPlayer().isSuggestionsShown()) {
@@ -415,6 +424,9 @@ public class SponsorBlockController extends BasePlayerController {
     }
 
     private void closeTransparentDialog() {
+        if (getPlayer() != null) {
+            getPlayer().hideSkipSegment();
+        }
         AppDialogPresenter dialogPresenter = AppDialogPresenter.instance(getContext());
 
         if (dialogPresenter.isDialogShown() && dialogPresenter.getId() == CONTENT_BLOCK_ID) {

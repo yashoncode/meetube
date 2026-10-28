@@ -121,6 +121,10 @@ final class PlayerPages {
                         ? R.string.mobile_settings_screen_off_on : R.string.mobile_settings_screen_off_off),
                 page -> com.newtube.mobile.ui.playback.BackgroundPlay.request(page.requireActivity())));
 
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_auto_pip),
+                context.getString(R.string.mobile_settings_auto_pip_summary),
+                () -> com.newtube.mobile.ui.playback.MiniPip.isAutoEnabled(context),
+                on -> com.newtube.mobile.ui.playback.MiniPip.setAutoEnabled(context, on)));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_audio_focus),
                 context.getString(R.string.mobile_settings_audio_focus_summary),
                 tweaks::isAudioFocusEnabled, tweaks::setAudioFocusEnabled));
@@ -292,7 +296,7 @@ final class PlayerPages {
     /**
      * YouTube-style quality choice: Auto plus one cap per resolution. Each cap is a preset (a
      * ceiling the automatic selection stays under, 60 fps where the phone decodes it); the exact
-     * codec presets stay one level down, under Advanced > Video format. A preset picked there shows
+     * codec presets are the player quality sheet's full list. A preset picked there shows
      * here under its own name.
      */
     private static SettingsRow defaultQuality(Context context, int which) {
@@ -353,7 +357,7 @@ final class PlayerPages {
             }
         }
         if (currentKey == null) {
-            // A preset chosen under Advanced (another codec or frame rate): show it by name.
+            // A preset chosen in the player's full list (another codec or frame rate): show it by name.
             choice.option(presetLabel(presetName(current)), QUALITY_OTHER);
             currentKey = QUALITY_OTHER;
         }
@@ -371,14 +375,6 @@ final class PlayerPages {
                 }
             }
         });
-    }
-
-    /** Same as the TV presets list: a pick also clears "Force legacy codecs". */
-    private static void setFormat(PlayerData playerData, FormatItem format) {
-        if (playerData.isLegacyCodecsForced()) {
-            playerData.setLegacyCodecsForced(false);
-        }
-        playerData.setFormat(format);
     }
 
     /** The phone's best preset at a height: 60 fps first, then VP9 > AV1 > AVC, SDR only. */
@@ -632,7 +628,6 @@ final class PlayerPages {
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_advanced_note)));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_streaming)));
-        rows.add(videoFormat(context, playerData, tweaks));
         rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_buffer))
                 .option(context.getString(R.string.video_buffer_size_low), context.getString(R.string.mobile_settings_buffer_low_desc), PlayerData.BUFFER_LOW)
                 .option(context.getString(R.string.video_buffer_size_med), context.getString(R.string.mobile_settings_buffer_med_desc), PlayerData.BUFFER_MEDIUM)
@@ -710,30 +705,5 @@ final class PlayerPages {
                 serviceData::isLegacyUIEnabled, serviceData::setLegacyUIEnabled));
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_advanced), rows);
-    }
-
-    /** Every preset, labelled "1080p60 · VP9", as the exact format the automatic quality stays under. */
-    private static SettingsRow videoFormat(Context context, PlayerData playerData, PlayerTweaksData tweaks) {
-        FormatItem current = playerData.getFormat(FormatItem.TYPE_VIDEO);
-        boolean presetSelected = current != null && current.isPreset();
-        SettingsRow.Choice<Object> choice = SettingsRow.choice(context.getString(R.string.mobile_settings_video_format));
-        Object auto = new Object();
-        choice.option(context.getString(R.string.mobile_settings_quality_auto,
-                playerData.getDefaultVideoFormat().getHeight()), auto);
-        Object selected = auto;
-        VideoPreset[] presets = AppDataSourceManager.instance().getVideoPresets();
-        for (int i = presets.length - 1; i >= 0; i--) {
-            VideoPreset preset = presets[i];
-            if (!tweaks.isAllFormatsUnlocked() && !Utils.isPresetSupported(preset)) {
-                continue;
-            }
-            choice.option(presetLabel(preset.name), preset);
-            if (presetSelected && preset.format.equals(current)) {
-                selected = preset;
-            }
-        }
-        Object currentValue = selected;
-        return choice.bind(() -> currentValue, value -> setFormat(playerData,
-                value instanceof VideoPreset ? ((VideoPreset) value).format : playerData.getDefaultVideoFormat()));
     }
 }

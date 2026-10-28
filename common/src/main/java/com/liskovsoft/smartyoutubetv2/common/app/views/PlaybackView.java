@@ -34,4 +34,15 @@ public interface PlaybackView extends PlayerManager {
     default boolean showNextCountdown(com.liskovsoft.smartyoutubetv2.common.app.models.data.Video next, Runnable playNext) {
         return false;
     }
+
+    /**
+     * MEETUBE(sponsorblock): offer a SponsorBlock skip as a small pill on the player for
+     * {@code timeoutMs}, {@code skip} on a tap. Return false (the default) for the TV's dialog.
+     */
+    default boolean showSkipSegment(String category, Runnable skip, long timeoutMs) {
+        return false;
+    }
+
+    /** MEETUBE(sponsorblock): take the skip pill down (skipped, or the segment is over). */
+    default void hideSkipSegment() {}
 }

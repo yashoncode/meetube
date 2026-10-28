@@ -246,6 +246,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private TextView mSetupHint;
     /** Persistent "why playback stopped" line (see {@link #showPlaybackNotice}). */
     private TextView mNoticeView;
+    /** MEETUBE(sponsorblock): "Skip Sponsor" by the fullscreen button (showSkipSegment). */
+    private TextView mSkipSegmentPill;
+    private final Runnable mHideSkipSegment = this::hideSkipSegment;
     /** MEETUBE(up-next): the "Up next in N" card over an ended video. */
     private NextCountdown mNextCountdown;
     private ImageButton mSubtitlesButton;
@@ -876,6 +879,7 @@ public class MobilePlaybackActivity extends MobileActivity
         syncPlayPauseWithSpinner();
         mSetupHint = findViewById(R.id.mobile_player_setup_hint);
         mNoticeView = findViewById(R.id.mobile_player_notice);
+        mSkipSegmentPill = findViewById(R.id.mobile_player_skip_segment);
         mNextCountdown = new NextCountdown(findViewById(R.id.mobile_next_countdown), this::isPlaying, () -> {
             setPositionMs(0);
             setPlayWhenReady(true);
@@ -2439,6 +2443,10 @@ public class MobilePlaybackActivity extends MobileActivity
             logPip("leave-skip reason=unsupported");
             return;
         }
+        if (!MiniPip.isAutoEnabled(this)) { // MEETUBE(issue #103): onStop carries on as audio
+            logPip("leave-skip reason=off");
+            return;
+        }
         // Only auto-enter PiP while actually playing (matches YouTube; avoids PiP on a paused pre-roll).
         if (mPlayer == null || !isPlaying()) {
             logPip("leave-skip reason=not-playing");
@@ -2964,6 +2972,9 @@ public class MobilePlaybackActivity extends MobileActivity
         setMargins(mLevelPill, 0, top + dp(12), 0, 0);
         // The playback notice sits just over the row (60 dp in portrait, as in the layout).
         setMargins(mNoticeView, 0, 0, 0, dp(60) + bottom + lift);
+        // The skip pill: left of fullscreen (and its chevron outside portrait), centered on the row.
+        setMargins(mSkipSegmentPill, 0, 0, right + dp(inline ? 56 : 96), bottom + lift
+                + getResources().getDimensionPixelSize(R.dimen.mobile_player_bottom_row_margin) + dp(8));
     }
 
     /**
@@ -3544,7 +3555,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 && !mIsEnded
                 && mExoPlayerController != null
                 && mExoPlayerController.getPlayWhenReady()
-                && !mAudioOnly; // MEETUBE(audio-only): Home keeps the sound going, no PiP window
+                && !mAudioOnly // MEETUBE(audio-only): Home keeps the sound going, no PiP window
+                && MiniPip.isAutoEnabled(this); // MEETUBE(issue #103)
     }
 
     /**
@@ -8327,6 +8339,27 @@ public class MobilePlaybackActivity extends MobileActivity
         return true;
     }
 
+    @Override
+    public boolean showSkipSegment(String category, Runnable skip, long timeoutMs) {
+        if (mSkipSegmentPill == null || isInPictureInPictureMode() || (mShorts != null && mShorts.isActive())) {
+            return false;
+        }
+        mSkipSegmentPill.setText(R.string.mobile_player_skip_segment);
+        mSkipSegmentPill.setOnClickListener(v -> skip.run());
+        mSkipSegmentPill.setVisibility(View.VISIBLE);
+        mSkipSegmentPill.removeCallbacks(mHideSkipSegment);
+        mSkipSegmentPill.postDelayed(mHideSkipSegment, Math.max(timeoutMs, 3_000));
+        return true;
+    }
+
+    @Override
+    public void hideSkipSegment() {
+        if (mSkipSegmentPill != null) {
+            mSkipSegmentPill.removeCallbacks(mHideSkipSegment);
+            mSkipSegmentPill.setVisibility(View.GONE);
+        }
+    }
+
     /** NEWTUBE(motion): the buffering spinner's state, see showProgressBar. */
     private boolean mSpinnerShown;
     /**
@@ -10292,14 +10325,20 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** MEETUBE(transcript): the transcript under the video (in fullscreen, a plain sheet). */
     private void showTranscriptSheet() {
+        showTranscriptSheet(false);
+    }
+
+    /** {@code noLyrics}: in place of the Lyrics panel, which found none. False when there is no transcript. */
+    private boolean showTranscriptSheet(boolean noLyrics) {
         com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle track = transcriptTrack();
         if (track == null || isFinishing()) {
-            return;
+            return false;
         }
         mTranscriptSheet = TranscriptSheet.create(this, track, isLandscape() ? null : mVideoArea,
                 () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1,
-                positionMs -> seekFromList(positionMs, null));
+                positionMs -> seekFromList(positionMs, null), noLyrics);
         showPlayerSheet(mTranscriptSheet);
+        return true;
     }
 
     /** MEETUBE(watch-look): Subscribe's label color, kept faded while it shows as the mark. */
@@ -10713,7 +10752,8 @@ public class MobilePlaybackActivity extends MobileActivity
         mLyricsSheet = LyricsSheet.create(this, video.videoId, video.getTitle(), video.getAuthor(),
                 isLandscape() ? null : mVideoArea,
                 () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1,
-                this::showPlayerSheet);
+                this::showPlayerSheet,
+                transcriptTrack() != null ? this::showTranscriptSheet : null);
         showPlayerSheet(mLyricsSheet);
     }
 
@@ -11590,6 +11630,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (!sameVideo) {
             mVideoShapePending = true; // NEWTUBE(issue #69): known again at its first frame
             showPlaybackNotice(null);
+            hideSkipSegment();
             if (mNextCountdown != null) {
                 mNextCountdown.hide();
             }

@@ -100,6 +100,8 @@ final class ShortsOverlay {
      * thumbnails are small next to the short's first media chunks.
      */
     private static final long NEIGHBOUR_PRELOAD_DELAY_MS = 0;
+    /** MEETUBE(shorts-rest): this long in Shorts without a break, and the next swipe gets a nudge. */
+    private static final long REST_NUDGE_MS = 30 * 60 * 1000;
     /** The peek stays over a paged-to short until it is bound, or this long at most. */
     private static final long PEEK_COVER_MAX_MS = 2500;
     private static final int PORTRAIT_W = 720;
@@ -138,6 +140,8 @@ final class ShortsOverlay {
     private Video mPeekVideo;
     private int mPeekDir;
     private boolean mActive;
+    /** MEETUBE(shorts-rest): when this run of Shorts began (or the last nudge). */
+    private long mShortsSince;
     private boolean mCommentsOpen;
     private boolean mScrubbing;
     private long mDurationMs;
@@ -340,6 +344,7 @@ final class ShortsOverlay {
                 mAvatar.setImageDrawable(mAvatarOrb); // the Home cards' breathing orb until it lands
                 mAvatarKnown = false;
                 showKnownAvatar(item);
+                maybeNudgeRest();
                 mOverlay.removeCallbacks(mPreloadNeighbours);
                 mOverlay.postDelayed(mPreloadNeighbours, NEIGHBOUR_PRELOAD_DELAY_MS);
                 pageQueueIfLow();
@@ -359,6 +364,7 @@ final class ShortsOverlay {
         }
         if (on != mActive) {
             mActive = on;
+            mShortsSince = android.os.SystemClock.elapsedRealtime();
             mCommentsOpen = false;
             mOverlay.setVisibility(on && !mInPip ? View.VISIBLE : View.GONE);
             if (!on) {
@@ -369,6 +375,21 @@ final class ShortsOverlay {
             }
             mHost.onShortsModeChanged(on);
         }
+    }
+
+    // ponytail: counts from entering Shorts, app in the background included; track resumed time if that nags.
+    private void maybeNudgeRest() {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (!mActive || now - mShortsSince < REST_NUDGE_MS) {
+            return;
+        }
+        mShortsSince = now; // once per half hour
+        com.newtube.mobile.ui.common.Haptics.watch(new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+                mOverlay.getContext(), R.style.MobileAlertDialog)
+                .setTitle(R.string.mobile_shorts_rest_title)
+                .setMessage(R.string.mobile_shorts_rest_message)
+                .setPositiveButton(R.string.mobile_shorts_rest_ok, null)
+                .show());
     }
 
     void setLiked(boolean liked) {

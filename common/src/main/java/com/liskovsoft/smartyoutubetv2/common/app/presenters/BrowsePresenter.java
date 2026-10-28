@@ -553,14 +553,8 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
             return;
         }
 
-        if (belongsToChannelUploadsMultiGrid(item)) {
-            if (getMainUIData().isUploadsAutoLoadEnabled()) {
-                updateChannelUploadsMultiGrid(item);
-            } else {
-                updateChannelUploadsMultiGrid(null); // clear
-            }
-        }
-
+        // MEETUBE(issue #84): no TV multi-grid here - selecting (tapping) a channel in Channels used
+        // to swap the whole list for its uploads, which then stayed after Back from the channel.
         mCurrentVideo = item;
     }
 

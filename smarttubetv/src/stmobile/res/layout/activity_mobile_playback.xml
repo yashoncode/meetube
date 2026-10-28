@@ -616,6 +616,24 @@
                 android:textSize="14sp"
                 android:visibility="gone" />
 
+            <!-- MEETUBE(sponsorblock): "Skip Sponsor" left of the fullscreen button while a segment
+                 that asks first plays; stays up with the controls hidden (applySeekBarLayout). -->
+            <TextView
+                android:id="@+id/mobile_player_skip_segment"
+                style="@style/MobilePlayerPill"
+                android:layout_gravity="bottom|end"
+                android:drawableEnd="@drawable/ic_player_chapter_chevron"
+                android:drawablePadding="2dp"
+                android:maxWidth="220dp"
+                android:minHeight="32dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="12dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:text="Skip" />
+
             <!-- "Stats for nerds" debug overlay. DebugInfoManager inflates R.layout.debug_view into
                  this group and toggles its visibility; it must not eat player taps, so it is not
                  clickable. Offset below the top scrim so it clears the back button / title. -->
