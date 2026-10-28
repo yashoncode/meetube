@@ -5611,6 +5611,15 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mPlayer != null) {
                 handleUiStateChange(playWhenReady, mPlayer.getPlaybackState());
             }
+            // METUBE(issue #101): a pause from outside the screen (earphones pulled, a headset or
+            // Bluetooth button, another app's sound) brings the controls up, so the paused state is
+            // visible. They stay while paused, as after a tap (onAutoHideTick).
+            if (!playWhenReady && reason != Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM
+                    && !mControlsVisible && !mIsInPip
+                    && (mCastSessionManager == null || !mCastSessionManager.isConnected())
+                    && getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+                showControlsInternal(true);
+            }
         }
 
         @Override
