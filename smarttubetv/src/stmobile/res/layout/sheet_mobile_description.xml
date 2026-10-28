@@ -6,6 +6,7 @@
   The frame is the frosted sheet glass; its height is capped from code so it stops under the video.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -97,6 +98,162 @@
                 android:textIsSelectable="true"
                 android:textSize="14sp"
                 tools:text="The official video for Never Gonna Give You Up by Rick Astley." />
+
+            <!-- METUBE(transcript): YouTube's Transcript section; only for a video with captions. -->
+            <LinearLayout
+                android:id="@+id/description_sheet_transcript"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    style="@style/MobileDescriptionHeading"
+                    android:text="@string/mobile_transcript" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/mobile_transcript_follow"
+                    android:textColor="@color/mobile_color_on_surface_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/description_sheet_transcript_show"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_watch_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:text="@string/mobile_transcript_show"
+                    android:textColor="@color/mobile_color_on_surface"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <!-- METUBE(description): the channel - Subscribe mirrors the watch page's, Videos opens it. -->
+            <LinearLayout
+                android:id="@+id/description_sheet_channel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/description_sheet_channel_avatar"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_watch_channel_placeholder" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/description_sheet_channel_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:fontFamily="sans-serif-medium"
+                            android:maxLines="1"
+                            android:textColor="@color/mobile_color_on_surface"
+                            android:textSize="15sp"
+                            tools:text="KSI+" />
+
+                        <TextView
+                            android:id="@+id/description_sheet_channel_subs"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="@color/mobile_color_on_surface_secondary"
+                            android:textSize="13sp"
+                            tools:text="776K subscribers" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/description_sheet_subscribe"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_watch_subscribe"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:fontFamily="sans-serif-medium"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:minHeight="44dp"
+                        android:paddingHorizontal="16dp"
+                        android:text="@string/mobile_watch_subscribe"
+                        android:textColor="@color/mobile_color_on_inverse_surface"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/description_sheet_channel_videos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_watch_card"
+                    android:clickable="true"
+                    android:drawablePadding="8dp"
+                    android:focusable="true"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:text="@string/mobile_description_videos"
+                    android:textColor="@color/mobile_color_on_surface"
+                    android:textSize="14sp"
+                    app:drawableStartCompat="@drawable/ic_desc_videos"
+                    app:drawableTint="@color/mobile_color_on_surface" />
+
+            </LinearLayout>
+
+            <!-- METUBE(description): Date / Views / Likes in full, on one glass card (DescriptionSheet). -->
+            <LinearLayout
+                android:id="@+id/description_sheet_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    style="@style/MobileDescriptionHeading"
+                    android:text="@string/mobile_description_details" />
+
+                <LinearLayout
+                    android:id="@+id/description_sheet_details_rows"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_watch_card"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="4dp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

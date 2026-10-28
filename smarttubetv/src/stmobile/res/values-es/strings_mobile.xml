@@ -105,6 +105,9 @@
     <string name="mobile_transcript_search">Buscar en la transcripción</string>
     <string name="mobile_transcript_none">Este video no tiene transcripción.</string>
     <string name="mobile_transcript_failed">No se pudo cargar la transcripción.</string>
+    <string name="mobile_description_videos">Videos</string>
+    <string name="mobile_description_details">Detalles del video</string>
+    <string name="mobile_description_date">Fecha</string>
     <string name="mobile_player_more_videos">Más videos</string>
     <string name="mobile_watch_offline">Sin conexión</string>
     <string name="mobile_watch_description">Descripción</string>

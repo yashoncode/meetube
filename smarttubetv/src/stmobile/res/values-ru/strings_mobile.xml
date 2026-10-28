@@ -48,6 +48,9 @@
     <string name="mobile_transcript_search">Поиск по расшифровке</string>
     <string name="mobile_transcript_none">У этого видео нет расшифровки.</string>
     <string name="mobile_transcript_failed">Не удалось загрузить расшифровку.</string>
+    <string name="mobile_description_videos">Видео</string>
+    <string name="mobile_description_details">Сведения о видео</string>
+    <string name="mobile_description_date">Дата</string>
     <string name="mobile_player_more_videos">Другие видео</string>
     <string name="mobile_watch_offline">Вы офлайн</string>
     <string name="mobile_watch_queue_from">Воспроизведение из %1$s</string>

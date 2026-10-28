@@ -36,13 +36,31 @@ final class DescriptionSheet {
     private DescriptionSheet() {
     }
 
+    /** METUBE(description): the sections under the description; any left null is not shown. */
+    static final class Extras {
+        /** Opens the transcript; null for a video without captions. */
+        @Nullable
+        Runnable transcript;
+        @Nullable
+        CharSequence channel;
+        @Nullable
+        CharSequence subscribers;
+        @Nullable
+        android.graphics.drawable.Drawable avatar;
+        /** The watch page's Subscribe: the sheet's one taps it and follows its label and state. */
+        @Nullable
+        TextView subscribe;
+        @Nullable
+        Runnable openChannel;
+    }
+
     /**
      * Empty parts are left out. With {@code video} (the portrait page) the sheet fills the screen
      * under it exactly, however short the text; without it (fullscreen) it is a plain sheet.
      */
     static BottomSheetDialog create(@NonNull Activity activity, CharSequence title, @Nullable CharSequence likes,
                                     @Nullable String views, @Nullable String date, CharSequence description,
-                                    @Nullable View video) {
+                                    @Nullable View video, @NonNull Extras extras) {
         BottomSheetDialog dialog = Haptics.watch(new BottomSheetDialog(activity));
         View content = LayoutInflater.from(activity).inflate(R.layout.sheet_mobile_description, null);
         dialog.setContentView(content);
@@ -73,6 +91,29 @@ final class DescriptionSheet {
             addStat(stats, m.matches() ? m.group(1) : date, m.matches() ? m.group(2) : null);
         }
         stats.setVisibility(stats.getChildCount() > 0 ? View.VISIBLE : View.GONE);
+
+        if (extras.transcript != null) {
+            content.findViewById(R.id.description_sheet_transcript).setVisibility(View.VISIBLE);
+            content.findViewById(R.id.description_sheet_transcript_show).setOnClickListener(v -> {
+                dialog.dismiss();
+                extras.transcript.run();
+            });
+        }
+        bindChannel(dialog, content, extras);
+
+        LinearLayout details = content.findViewById(R.id.description_sheet_details_rows);
+        if (!TextUtils.isEmpty(date)) {
+            addDetail(details, R.drawable.ic_desc_calendar, R.string.mobile_description_date, date);
+        }
+        if (!TextUtils.isEmpty(views)) {
+            Matcher m = VIEWS.matcher(views.trim());
+            addDetail(details, R.drawable.ic_desc_videos, R.string.mobile_description_views, m.matches() ? m.group(1) : views);
+        }
+        if (!TextUtils.isEmpty(likes)) {
+            addDetail(details, R.drawable.ic_watch_thumb_up_outline, R.string.mobile_description_likes, likes);
+        }
+        content.findViewById(R.id.description_sheet_details)
+                .setVisibility(details.getChildCount() > 0 ? View.VISIBLE : View.GONE);
         return dialog;
     }
 
@@ -105,6 +146,99 @@ final class DescriptionSheet {
                 return false; // laid out again at that height before anything is drawn
             }
         });
+    }
+
+    private static void bindChannel(BottomSheetDialog dialog, View content, Extras extras) {
+        if (TextUtils.isEmpty(extras.channel)) {
+            return;
+        }
+        content.findViewById(R.id.description_sheet_channel).setVisibility(View.VISIBLE);
+        ((TextView) content.findViewById(R.id.description_sheet_channel_name)).setText(extras.channel);
+        TextView subs = content.findViewById(R.id.description_sheet_channel_subs);
+        subs.setText(extras.subscribers);
+        subs.setVisibility(TextUtils.isEmpty(extras.subscribers) ? View.GONE : View.VISIBLE);
+        if (extras.avatar != null && extras.avatar.getConstantState() != null) {
+            ((android.widget.ImageView) content.findViewById(R.id.description_sheet_channel_avatar))
+                    .setImageDrawable(extras.avatar.getConstantState().newDrawable().mutate());
+        }
+        View videos = content.findViewById(R.id.description_sheet_channel_videos);
+        if (extras.openChannel != null) {
+            View.OnClickListener open = v -> {
+                dialog.dismiss();
+                extras.openChannel.run();
+            };
+            videos.setOnClickListener(open);
+            content.findViewById(R.id.description_sheet_channel_avatar).setOnClickListener(open);
+        } else {
+            videos.setVisibility(View.GONE);
+        }
+        TextView subscribe = content.findViewById(R.id.description_sheet_subscribe);
+        TextView source = extras.subscribe;
+        if (source == null || source.getVisibility() != View.VISIBLE) {
+            subscribe.setVisibility(View.GONE);
+            return;
+        }
+        Runnable mirror = () -> {
+            subscribe.setText(source.getText());
+            subscribe.setSelected(source.isSelected());
+            subscribe.setTextColor(source.getCurrentTextColor());
+        };
+        mirror.run();
+        subscribe.setOnClickListener(v -> source.performClick());
+        // The watch page's pill changes when YouTube answers (or after a confirm): follow it.
+        View.OnLayoutChangeListener follow = (v, l, t, r, b, ol, ot, or, ob) -> mirror.run();
+        android.text.TextWatcher watcher = new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                subscribe.post(mirror);
+            }
+        };
+        source.addTextChangedListener(watcher);
+        source.addOnLayoutChangeListener(follow);
+        // Not setOnDismissListener: showPlayerSheet owns the dialog's.
+        content.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(@NonNull View v) {
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(@NonNull View v) {
+                source.removeTextChangedListener(watcher);
+                source.removeOnLayoutChangeListener(follow);
+            }
+        });
+    }
+
+    /** A Video details row: icon, what it is, then the value at the end. */
+    private static void addDetail(LinearLayout rows, int icon, int label, CharSequence value) {
+        android.content.Context context = rows.getContext();
+        float density = context.getResources().getDisplayMetrics().density;
+        LinearLayout row = new LinearLayout(context);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        int pad = Math.round(12 * density);
+        row.setPadding(0, pad, 0, pad);
+        android.widget.ImageView image = new android.widget.ImageView(context);
+        image.setImageResource(icon);
+        image.setColorFilter(ContextCompat.getColor(context, R.color.mobile_color_on_surface_secondary));
+        int size = Math.round(20 * density);
+        row.addView(image, new LinearLayout.LayoutParams(size, size));
+        TextView name = stat(rows, context.getString(label), 14, R.color.mobile_color_on_surface_secondary, false);
+        LinearLayout.LayoutParams nameLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        nameLp.setMarginStart(Math.round(14 * density));
+        row.addView(name, nameLp);
+        TextView text = stat(rows, value, 14, R.color.mobile_color_on_surface, true);
+        text.setFontFeatureSettings("tnum");
+        row.addView(text);
+        rows.addView(row);
     }
 
     /** One column: the number big and bold, what it counts small beneath. */

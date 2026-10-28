@@ -9917,10 +9917,20 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         CharSequence likes = isCountUnset(mWatchLikeCount) ? null : mWatchLikeCount.getText();
+        boolean shorts = mShorts != null && mShorts.isActive();
+        DescriptionSheet.Extras extras = new DescriptionSheet.Extras();
+        extras.transcript = !shorts && transcriptTrack() != null ? this::showTranscriptSheet : null;
+        if (!shorts) {
+            extras.channel = mWatchChannelName.getText();
+            extras.subscribers = mWatchSubs.getText();
+            extras.avatar = mWatchAvatar.getDrawable();
+            extras.subscribe = mWatchSubscribe;
+            extras.openChannel = this::openCurrentChannel;
+        }
         showPlayerSheet(DescriptionSheet.create(this, mWatchTitle.getText(), likes, mDescriptionViews,
                 mDescriptionDate, mWatchDescription.getText(),
                 // A short fills the screen: a plain sheet over it, not one sized to under the video.
-                isLandscape() || (mShorts != null && mShorts.isActive()) ? null : mVideoArea));
+                isLandscape() || shorts ? null : mVideoArea, extras));
     }
 
     /** METUBE(transcript): the captions the open video's transcript is made from, or null. */
