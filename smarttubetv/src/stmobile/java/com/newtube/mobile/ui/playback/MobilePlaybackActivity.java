@@ -342,8 +342,13 @@ public class MobilePlaybackActivity extends MobileActivity
      * panel keep reading the real suggestions.
      */
     private View mRelatedChips;
-    private com.google.android.material.chip.ChipGroup mRelatedChipGroup;
-    private com.google.android.material.chip.Chip mChannelChip;
+    private TextView mAllChip;
+    private TextView mChannelChip;
+    private TextView mNewChip;
+    private TextView mWatchedChip;
+    private TextView[] mRelatedChipViews;
+    /** The Up next chip whose videos show (mAllChip: the related list itself). */
+    private TextView mPickedChip;
     @Nullable private MediaItemMetadata mChipMetadata;
     /** The channel chip's videos; null while "All" is on. */
     @Nullable private List<Video> mChipVideos;
@@ -1028,9 +1033,22 @@ public class MobilePlaybackActivity extends MobileActivity
         mRelatedSkeleton = findViewById(R.id.mobile_watch_related_skeleton);
         mWatchRelated = findViewById(R.id.mobile_watch_related);
         mRelatedChips = findViewById(R.id.mobile_watch_related_chips);
-        mRelatedChipGroup = findViewById(R.id.mobile_watch_related_chip_group);
+        mAllChip = findViewById(R.id.mobile_watch_chip_all);
         mChannelChip = findViewById(R.id.mobile_watch_chip_channel);
-        mRelatedChipGroup.setOnCheckedStateChangeListener((group, ids) -> onRelatedChip(mChannelChip.isChecked()));
+        mNewChip = findViewById(R.id.mobile_watch_chip_new);
+        mWatchedChip = findViewById(R.id.mobile_watch_chip_watched);
+        mAllChip.setText(R.string.mobile_watch_chip_all);
+        mNewChip.setText(R.string.mobile_watch_chip_new);
+        mWatchedChip.setText(R.string.mobile_watch_chip_watched);
+        mRelatedChipViews = new TextView[] {mAllChip, mChannelChip, mNewChip, mWatchedChip};
+        mPickedChip = mAllChip;
+        for (TextView chip : mRelatedChipViews) {
+            // MEETUBE(issue #105): glass, as Search's chips; the page's own colours behind it.
+            com.newtube.mobile.ui.common.GlassDrawable.apply(chip, null, 0);
+            chip.setTag(R.id.mobile_watch_related_chips, chip.getBackground());
+            chip.setOnClickListener(v -> onRelatedChip((TextView) v));
+        }
+        syncRelatedChips();
         mQueueCard = findViewById(R.id.mobile_watch_queue_card);
         mQueueHeader = findViewById(R.id.mobile_watch_queue_header);
         mQueueTitle = findViewById(R.id.mobile_watch_queue_title);
@@ -3301,6 +3319,15 @@ public class MobilePlaybackActivity extends MobileActivity
         if (taken != 0) {
             mTallBoxCollapse = collapse;
             applyPortraitVideoHeight(width);
+            // The page moves up with the box now, not at the next frame's layout: the scroll view
+            // reads the finger against where the page stands, and one that moved a frame late took
+            // a slow pull up for a push down, so the box shrank, grew back and shrank again.
+            View root = mWatchRoot;
+            if (root.getHeight() > 0) {
+                root.measure(View.MeasureSpec.makeMeasureSpec(root.getWidth(), View.MeasureSpec.EXACTLY),
+                        View.MeasureSpec.makeMeasureSpec(root.getHeight(), View.MeasureSpec.EXACTLY));
+                root.layout(root.getLeft(), root.getTop(), root.getRight(), root.getBottom());
+            }
         }
         return taken;
     }
@@ -10842,11 +10869,12 @@ public class MobilePlaybackActivity extends MobileActivity
     private void resetRelatedChips() {
         RxHelper.disposeActions(mChipAction);
         mChipMetadata = null;
-        mChipVideos = null; // before check(): the listener then has nothing to switch
+        mChipVideos = null;
         mChipPage = null;
+        mPickedChip = mAllChip;
         if (mRelatedChips != null) {
             mRelatedChips.setVisibility(View.GONE);
-            mRelatedChipGroup.check(R.id.mobile_watch_chip_all);
+            syncRelatedChips();
             mRelatedChips.scrollTo(0, 0);
         }
     }
@@ -10861,17 +10889,70 @@ public class MobilePlaybackActivity extends MobileActivity
         mRelatedChips.setVisibility(View.VISIBLE);
     }
 
-    private void onRelatedChip(boolean channel) {
-        if (channel == (mChipVideos != null)) {
+    private void onRelatedChip(TextView chip) {
+        if (chip == mPickedChip) {
             return;
         }
         RxHelper.disposeActions(mChipAction);
         mChipPage = null;
-        mChipVideos = channel ? new ArrayList<>() : null;
+        mPickedChip = chip;
+        mChipVideos = chip == mAllChip ? null : chip == mChannelChip ? new ArrayList<>() : relatedSeen(chip == mWatchedChip);
         mRelatedWindow = RELATED_WINDOW_INITIAL;
         submitRelatedWindow();
-        if (channel) {
+        if (chip == mChannelChip) {
             loadChannelChip(null);
+        }
+    }
+
+    /**
+     * MEETUBE(issue #104): the related videos you have watched ({@code watched}) or not - by your
+     * history: YouTube's progress on the card, this phone's resume points and the History feed.
+     */
+    private List<Video> relatedSeen(boolean watched) {
+        java.util.Set<String> history = new java.util.HashSet<>();
+        List<Video> feed = com.newtube.mobile.ui.common.FeedCache.get(
+                com.liskovsoft.mediaserviceinterfaces.data.MediaGroup.TYPE_HISTORY);
+        if (feed != null) {
+            for (Video v : feed) {
+                if (v != null) {
+                    history.add(v.videoId);
+                }
+            }
+        }
+        VideoStateService states = VideoStateService.instance(this);
+        List<Video> picked = new ArrayList<>();
+        for (Video v : mRelatedVideos) {
+            boolean seen = v.percentWatched > 0 || history.contains(v.videoId) || states.getByVideoId(v.videoId) != null;
+            if (seen == watched) {
+                picked.add(v);
+            }
+        }
+        return picked;
+    }
+
+    /**
+     * MEETUBE(issue #105): the picked chip is a solid pill in the text colour, the rest glass.
+     * New to you and Watched show only while the related list has some of each.
+     */
+    private void syncRelatedChips() {
+        if (mRelatedChipViews == null) {
+            return;
+        }
+        boolean split = mPickedChip == mNewChip || mPickedChip == mWatchedChip
+                || (!relatedSeen(true).isEmpty() && !relatedSeen(false).isEmpty());
+        mNewChip.setVisibility(split ? View.VISIBLE : View.GONE);
+        mWatchedChip.setVisibility(split ? View.VISIBLE : View.GONE);
+        for (TextView chip : mRelatedChipViews) {
+            boolean picked = chip == mPickedChip;
+            if (picked) {
+                android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+                bg.setCornerRadius(18 * getResources().getDisplayMetrics().density);
+                bg.setColor(getColorInt(R.color.mobile_color_on_surface));
+                chip.setBackground(bg);
+            } else {
+                chip.setBackground((android.graphics.drawable.Drawable) chip.getTag(R.id.mobile_watch_related_chips));
+            }
+            chip.setTextColor(getColorInt(picked ? R.color.mobile_color_background : R.color.mobile_color_on_surface));
         }
     }
 
@@ -10932,6 +11013,7 @@ public class MobilePlaybackActivity extends MobileActivity
         } else if (onCommitted != null) {
             onCommitted.run();
         }
+        syncRelatedChips();
         if (mWatchRelatedLabel != null && !mRelatedVideos.isEmpty()) {
             mWatchRelatedLabel.setText(R.string.mobile_watch_related);
             mWatchRelatedLabel.setVisibility(View.VISIBLE);

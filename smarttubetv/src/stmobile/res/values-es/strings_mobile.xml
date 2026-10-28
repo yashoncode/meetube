@@ -101,6 +101,8 @@
     <string name="mobile_watch_related">A continuación</string>
     <string name="mobile_watch_chip_all">Todo</string>
     <string name="mobile_watch_chip_channel">De %1$s</string>
+    <string name="mobile_watch_chip_new">Nuevos para ti</string>
+    <string name="mobile_watch_chip_watched">Seguir viendo</string>
     <string name="mobile_settings_watch_style">Página del video</string>
     <string name="mobile_settings_watch_style_compact">Compacta</string>
     <string name="mobile_settings_watch_style_compact_desc">Acciones junto a Suscribirse, comentarios destacados uno a uno</string>
@@ -485,6 +487,8 @@
 
     <string name="mobile_about_star">Dale una estrella a MeeTube en GitHub</string>
     <string name="mobile_about_star_desc">Libre y de código abierto. Una estrella ayuda a que otros lo encuentren</string>
+    <string name="mobile_about_ci">Compilado en público</string>
+    <string name="mobile_about_ci_desc">Cada versión la compila y firma GitHub Actions a partir de este código fuente</string>
     <string name="mobile_about_share">Compartir MeeTube</string>
     <string name="mobile_about_share_desc">Envía el enlace a quien le pueda gustar</string>
     <string name="mobile_about_share_text">MeeTube, un cliente de YouTube para móviles basado en SmartTube: %1$s</string>

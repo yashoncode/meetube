@@ -95,6 +95,8 @@
     <string name="mobile_watch_related">Up next</string>
     <string name="mobile_watch_chip_all">All</string>
     <string name="mobile_watch_chip_channel">From %1$s</string>
+    <string name="mobile_watch_chip_new">New to you</string>
+    <string name="mobile_watch_chip_watched">Continue watching</string>
     <string name="mobile_settings_watch_style">Watch page</string>
     <string name="mobile_settings_watch_style_compact">Compact</string>
     <string name="mobile_settings_watch_style_compact_desc">Actions beside Subscribe, top comments one by one</string>
@@ -573,6 +575,9 @@
          or counter. Never "ad-free" wording. -->
     <string name="mobile_about_star">Star MeeTube on GitHub</string>
     <string name="mobile_about_star_desc">Free and open source. A star helps others find it</string>
+    <string name="mobile_about_ci">Built in public</string>
+    <string name="mobile_about_ci_desc">Every release is built and signed by GitHub Actions from this source code</string>
+    <string name="mobile_about_ci_url" translatable="false">https://github.com/yashoncode/meetube/actions/workflows/release.yml</string>
     <string name="mobile_about_share">Share MeeTube</string>
     <string name="mobile_about_share_desc">Send the link to someone who\'d like it</string>
     <string name="mobile_about_share_text">MeeTube — a YouTube client for phones, built on SmartTube: %1$s</string>
