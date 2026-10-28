@@ -22,6 +22,10 @@
     <string name="mobile_player_more">Ещё</string>
     <string name="mobile_menu_more">Ещё</string>
     <string name="mobile_menu_watch_regular">Смотреть в обычном плеере</string>
+    <string name="mobile_player_skip_segment">Пропустить</string>
+    <string name="mobile_shorts_rest_title">Ну что, сынок, побеждаешь??</string>
+    <string name="mobile_shorts_rest_message">30 минут Shorts. Отдохни немного :)</string>
+    <string name="mobile_shorts_rest_ok">Ладно, ладно</string>
     <string name="mobile_quality_auto_current">Авто (%1$s)</string>
     <string name="mobile_quality_auto_short">Авто</string>
     <string name="mobile_menu_repeat">Режим повтора</string>

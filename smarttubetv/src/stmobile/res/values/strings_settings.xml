@@ -214,6 +214,8 @@
     <string name="mobile_settings_screen_off">Keep playing with the screen off</string>
     <string name="mobile_settings_screen_off_on">Allowed: battery saver won\'t stop the audio</string>
     <string name="mobile_settings_screen_off_off">Battery saver may stop the audio. Tap to allow MeeTube in the background</string>
+    <string name="mobile_settings_auto_pip">Picture-in-picture</string>
+    <string name="mobile_settings_auto_pip_summary">Leaving the app with a video playing shrinks it into a small window. Off, only the sound keeps playing</string>
     <string name="mobile_settings_video_ends">When a video ends</string>
     <string name="mobile_settings_video_ends_next">Play the next video</string>
     <string name="mobile_settings_video_ends_repeat">Repeat the video</string>
@@ -316,7 +318,6 @@
     <!-- Advanced -->
     <string name="mobile_settings_advanced_note">Most people never need these. They change how MeeTube streams and connects.</string>
     <string name="mobile_settings_streaming">Streaming</string>
-    <string name="mobile_settings_video_format">Video format</string>
     <string name="mobile_settings_buffer">Buffer</string>
     <string name="mobile_settings_buffer_low_desc">About 25 seconds ahead. Uses the least memory</string>
     <string name="mobile_settings_buffer_med_desc">About 50 seconds ahead</string>

@@ -189,6 +189,8 @@
     <string name="mobile_settings_natural_voice_summary">Mantiene el tono normal de las voces al acelerar o ralentizar</string>
     <string name="mobile_settings_sleep_timer">Temporizador</string>
     <string name="mobile_settings_sleep_timer_summary">Pausa %1$s después de abrir un vídeo</string>
+    <string name="mobile_settings_auto_pip">Imagen en imagen</string>
+    <string name="mobile_settings_auto_pip_summary">Al salir de la app con un video en curso, se reduce a una ventana pequeña. Desactivado, solo sigue el sonido</string>
     <string name="mobile_settings_audio_focus">Pausar con otros sonidos</string>
     <string name="mobile_settings_audio_focus_summary">Pausa con las llamadas y el audio de otras apps. Se aplica al próximo vídeo que abras</string>
     <string name="mobile_settings_resume">Continuar</string>
@@ -259,7 +261,6 @@
     <!-- Advanced -->
     <string name="mobile_settings_advanced_note">La mayoría nunca los necesita. Cambian cómo MeeTube reproduce y se conecta.</string>
     <string name="mobile_settings_streaming">Streaming</string>
-    <string name="mobile_settings_video_format">Formato de vídeo</string>
     <string name="mobile_settings_buffer">Búfer</string>
     <string name="mobile_settings_buffer_low_desc">Unos 25 segundos por adelantado. Usa la menor memoria</string>
     <string name="mobile_settings_buffer_med_desc">Unos 50 segundos por adelantado</string>

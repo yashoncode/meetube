@@ -89,8 +89,9 @@ final class TranscriptSheet {
         return auto;
     }
 
+    /** {@code noLyrics}: opened by the Lyrics panel in its place, so the header says the song has none. */
     static BottomSheetDialog create(@NonNull Activity activity, @NonNull MediaSubtitle track, @Nullable View video,
-                                    @NonNull LongSupplier position, @NonNull LongConsumer seek) {
+                                    @NonNull LongSupplier position, @NonNull LongConsumer seek, boolean noLyrics) {
         BottomSheetDialog dialog = Haptics.watch(new BottomSheetDialog(activity));
         View content = LayoutInflater.from(activity).inflate(R.layout.sheet_mobile_transcript, null);
         dialog.setContentView(content);
@@ -108,9 +109,15 @@ final class TranscriptSheet {
         }
         content.findViewById(R.id.transcript_sheet_close).setOnClickListener(v -> dialog.dismiss());
         TextView language = content.findViewById(R.id.transcript_sheet_language);
-        if (!TextUtils.isEmpty(track.getName())) {
-            // Without the auto marker (TranslatedCaptionTrack.TRANSLATE_MARKER).
-            language.setText(track.getName().replace("*", "").trim());
+        // Without the auto marker (TranslatedCaptionTrack.TRANSLATE_MARKER).
+        String name = TextUtils.isEmpty(track.getName()) ? "" : track.getName().replace("*", "").trim();
+        if (noLyrics) {
+            String none = activity.getString(R.string.mobile_lyrics_none);
+            name = name.isEmpty() ? none : none + " · " + name;
+            language.setMaxLines(2);
+        }
+        if (!name.isEmpty()) {
+            language.setText(name);
             language.setVisibility(View.VISIBLE);
         }
 

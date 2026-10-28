@@ -2103,6 +2103,8 @@ public class MobileBrowseActivity extends MobileActivity
         // so a swipe up plays the next one (and down the previous) - see ShortsOverlay.
         if (video.belongsToShorts() && video.hasVideo()) {
             queueShorts(video);
+        } else if (video.belongsToHistory() && video.hasVideo() && ShortsFilter.isShort(video)) {
+            video = queueHistoryShorts(video);
         }
 
         // Cards without a videoId (playlists, mixes, channels) don't open the player - they kick
@@ -2155,6 +2157,32 @@ public class MobileBrowseActivity extends MobileActivity
     private int mShortsEmptyPages;
 
     /** MEETUBE(shorts): the Shorts tab's cards around {@code tapped} become the playback queue. */
+    /**
+     * MEETUBE(shorts): History lists Shorts as ordinary cards; a tapped one plays in the Shorts
+     * player with History's other Shorts as its queue. Marked copies, so the grid's cards stay.
+     */
+    private Video queueHistoryShorts(Video tapped) {
+        List<Video> shorts = new ArrayList<>();
+        Video opened = null;
+        for (Video video : mCurrentVideos) {
+            if (video.hasVideo() && ShortsFilter.isShort(video)) {
+                Video copy = video.copy();
+                copy.isShorts = true;
+                copy.author = video.author; // copy() leaves it, and the overlay names the channel
+                copy.markShorts();
+                shorts.add(copy);
+                if (video == tapped) {
+                    opened = copy;
+                }
+            }
+        }
+        if (opened == null) {
+            return tapped;
+        }
+        ShortsFilter.queueAround(shorts, opened);
+        return opened;
+    }
+
     private void queueShorts(Video tapped) {
         java.util.LinkedHashMap<String, Video> unique = new java.util.LinkedHashMap<>();
         for (Video video : mCurrentVideos) {
@@ -3731,8 +3759,9 @@ public class MobileBrowseActivity extends MobileActivity
 
     private static boolean isVisibleFeedItem(Video video) {
         return video != null
-                // MEETUBE(shorts): Shorts still stay out of every feed but their own tab.
-                && (!ShortsFilter.isShort(video) || video.belongsToShorts())
+                // MEETUBE(shorts): Shorts still stay out of every feed but their own tab, and
+                // History: it lists what you watched, Shorts included.
+                && (!ShortsFilter.isShort(video) || video.belongsToShorts() || video.belongsToHistory())
                 && (!video.isChannel() || video.isPlaylistAsChannel())
                 && !isSearchQueryTile(video);
     }

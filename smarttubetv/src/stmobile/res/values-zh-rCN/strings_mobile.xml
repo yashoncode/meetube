@@ -22,6 +22,10 @@
     <string name="mobile_player_more">更多选项</string>
     <string name="mobile_menu_more">更多</string>
     <string name="mobile_menu_watch_regular">在普通播放器中观看</string>
+    <string name="mobile_player_skip_segment">跳过</string>
+    <string name="mobile_shorts_rest_title">孩子，你赢麻了吗？？</string>
+    <string name="mobile_shorts_rest_message">已经刷了 30 分钟 Shorts，休息一下吧 :)</string>
+    <string name="mobile_shorts_rest_ok">好吧好吧</string>
     <string name="mobile_quality_auto_current">自动（%1$s）</string>
     <string name="mobile_quality_auto_short">自动</string>
     <string name="mobile_menu_repeat">循环模式</string>

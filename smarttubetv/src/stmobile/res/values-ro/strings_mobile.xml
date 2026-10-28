@@ -22,6 +22,10 @@
     <string name="mobile_player_more">Mai multe opțiuni</string>
     <string name="mobile_menu_more">Mai multe</string>
     <string name="mobile_menu_watch_regular">Vezi în playerul normal</string>
+    <string name="mobile_player_skip_segment">Sari peste</string>
+    <string name="mobile_shorts_rest_title">Nu câștigi, fiule??</string>
+    <string name="mobile_shorts_rest_message">30 de minute de Shorts. Odihnește-te puțin :)</string>
+    <string name="mobile_shorts_rest_ok">Bine, bine</string>
     <string name="mobile_quality_auto_current">Automat (%1$s)</string>
     <string name="mobile_quality_auto_short">Automat</string>
     <string name="mobile_menu_repeat">Mod repetare</string>

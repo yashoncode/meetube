@@ -65,6 +65,22 @@ public final class MiniPip {
         mChrome = chrome;
     }
 
+    private static final String PREFS = "mini_pip";
+    private static final String KEY_AUTO = "auto_pip";
+
+    /**
+     * MEETUBE(issue #103): leaving the app with a video playing floats it in a PiP window (on, the
+     * default); off, it goes on as audio like Background playback says. The player's menu still
+     * opens PiP on purpose.
+     */
+    public static boolean isAutoEnabled(android.content.Context context) {
+        return context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).getBoolean(KEY_AUTO, true);
+    }
+
+    public static void setAutoEnabled(android.content.Context context, boolean on) {
+        context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).edit().putBoolean(KEY_AUTO, on).apply();
+    }
+
     private static boolean supported(Activity host) {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && Helpers.isPictureInPictureSupported(host);
     }
@@ -72,7 +88,8 @@ public final class MiniPip {
     /** A mini session is showing and playing: what Home floats. */
     private boolean canFloat() {
         ExoPlayer player = MiniPlayerBridge.getPlayer();
-        return player != null && player.getPlayWhenReady() && mCard.getVisibility() == View.VISIBLE;
+        return player != null && player.getPlayWhenReady() && mCard.getVisibility() == View.VISIBLE
+                && isAutoEnabled(mHost);
     }
 
     /** Re-arm (or disarm) the window's auto-enter and refresh the PiP window's action. */
