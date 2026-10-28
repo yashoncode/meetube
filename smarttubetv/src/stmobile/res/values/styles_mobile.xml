@@ -401,6 +401,18 @@
         <item name="android:tint">@color/mobile_player_on_video</item>
     </style>
 
+    <!-- METUBE(lock, issue #98): the fullscreen lock and unlock buttons, a dim round at the left. -->
+    <style name="MobilePlayerLock">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:background">@drawable/bg_player_lock</item>
+        <item name="android:padding">11dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:src">@drawable/ic_bar_lock</item>
+        <item name="android:tint">@color/mobile_player_on_video</item>
+    </style>
+
     <!-- METUBE(watch-look): an icon-only glass pill on the compact watch page's action row. -->
     <style name="MobileWatchIconPill">
         <item name="android:layout_width">wrap_content</item>
@@ -430,6 +442,11 @@
         <item name="android:orientation">horizontal</item>
         <item name="android:paddingTop">6dp</item>
         <item name="android:paddingBottom">6dp</item>
+    </style>
+    <!-- METUBE(issue #91): a List layout feed row's ghost (item_video_row: margin card_spacing). -->
+    <style name="MobileSkeletonFeedRow" parent="MobileSkeletonRelatedRow">
+        <item name="android:paddingTop">@dimen/mobile_card_spacing</item>
+        <item name="android:paddingBottom">@dimen/mobile_card_spacing</item>
     </style>
     <style name="MobileSkeletonRelatedThumb">
         <item name="android:layout_width">@dimen/mobile_watch_related_thumb_width</item>

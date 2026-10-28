@@ -113,6 +113,8 @@
     <string name="mobile_settings_player_buttons_center">Centro</string>
     <string name="mobile_settings_player_buttons_fullscreen">Acciones en pantalla completa</string>
     <string name="mobile_settings_player_prev_next">Anterior y siguiente</string>
+    <string name="mobile_player_lock">Bloqueo de pantalla</string>
+    <string name="mobile_player_unlock">Desbloquear</string>
     <string name="mobile_transcript">Transcripción</string>
     <string name="mobile_transcript_follow">Sigue el video con la transcripción.</string>
     <string name="mobile_transcript_show">Mostrar transcripción</string>

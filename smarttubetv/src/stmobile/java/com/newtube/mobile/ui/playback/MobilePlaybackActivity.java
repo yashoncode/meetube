@@ -847,6 +847,10 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerDownload = findViewById(R.id.mobile_player_download);
         mPlayerComments = findViewById(R.id.mobile_player_comments);
         mPlayerChat = findViewById(R.id.mobile_player_chat);
+        mPlayerLock = findViewById(R.id.mobile_player_lock);
+        mPlayerUnlock = findViewById(R.id.mobile_player_unlock);
+        mPlayerLock.setOnClickListener(v -> setPlayerLocked(true));
+        mPlayerUnlock.setOnClickListener(v -> setPlayerLocked(false));
         mActionsShown = getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).getBoolean(KEY_ACTIONS_SHOWN, true);
         mTimeRemaining = getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).getBoolean(KEY_TIME_REMAINING, false);
         findViewById(R.id.mobile_player_time).setOnClickListener(v -> {
@@ -1426,6 +1430,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // start drawn in the same pass that hid the skeleton, and on a busy main thread (binding a
         // dozen rows while the video starts) that empty frame stayed up ~1 s.
         mWatchRelated.setItemAnimator(null);
+        // METUBE(list layout): Up next follows Customization > Video layout, like every feed.
+        mRelatedAdapter.setCards(!com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this));
         mWatchRelated.setAdapter(mRelatedAdapter);
 
         // Queue list: same row layout and same click routing as Up next, but it scrolls INSIDE the
@@ -2840,6 +2846,21 @@ public class MobilePlaybackActivity extends MobileActivity
         bleedScrim(mBottomScrim, left, 0, right, bottom);
         applySeekBarLayout(left, top, right, bottom);
         placeTitle();
+        // METUBE(lock, issue #98): fullscreen only, vertical or landscape; leaving it unlocks.
+        boolean full = isLandscape() || mPortraitFull;
+        if (mPlayerLock != null) {
+            mPlayerLock.setVisibility(full ? View.VISIBLE : View.GONE);
+            if (!full) {
+                setPlayerLocked(false);
+            }
+            // The unlock sits in the unpadded video box, where the lock is in the padded controls.
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) mPlayerUnlock.getLayoutParams();
+            if (lp.getMarginStart() != left + dp(16)) {
+                lp.setMarginStart(left + dp(16));
+                mPlayerUnlock.setLayoutParams(lp);
+            }
+            mPlayerUnlock.setTranslationY((top - bottom) / 2f);
+        }
     }
 
     /**
@@ -4505,8 +4526,8 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void showControlsInternal(boolean animate) {
-        if (isShortsMode()) {
-            return; // METUBE(shorts): the overlay is the chrome
+        if (isShortsMode() || mPlayerLocked) {
+            return; // METUBE(shorts): the overlay is the chrome; METUBE(lock): nothing while locked
         }
         mControlsVisible = true;
         mControlsRoot.setVisibility(View.VISIBLE);
@@ -6757,6 +6778,20 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent event) {
         int action = event.getActionMasked();
+        if (mPlayerLocked) {
+            // METUBE(lock, issue #98): a locked player answers only its unlock button - no swipe,
+            // tap, pinch or double tap reaches it. A tap anywhere else shows the button.
+            if (action == android.view.MotionEvent.ACTION_DOWN) {
+                mUnlockTouch = mPlayerUnlock.getVisibility() == View.VISIBLE && isOn(mPlayerUnlock, event);
+            }
+            if (mUnlockTouch) {
+                return super.dispatchTouchEvent(event);
+            }
+            if (action == android.view.MotionEvent.ACTION_UP) {
+                flashUnlock();
+            }
+            return true;
+        }
         if (action == android.view.MotionEvent.ACTION_DOWN && mShortsStayClean) {
             // METUBE(shorts): the touch after a clean hold only brings the buttons back
             mShortsStayClean = false;
@@ -6772,6 +6807,51 @@ public class MobilePlaybackActivity extends MobileActivity
             return true;
         }
         return pullToPortraitFull(event) || super.dispatchTouchEvent(event);
+    }
+
+    /** METUBE(lock, issue #98): the fullscreen lock, and whether this touch is the unlock button's. */
+    private View mPlayerLock;
+    private View mPlayerUnlock;
+    private boolean mPlayerLocked;
+    private boolean mUnlockTouch;
+    private final Runnable mHideUnlock = () -> mPlayerUnlock.animate().alpha(0f).setDuration(150)
+            .withEndAction(() -> mPlayerUnlock.setVisibility(View.GONE)).start();
+
+    private void setPlayerLocked(boolean locked) {
+        if (mPlayerLocked == locked) {
+            return;
+        }
+        mPlayerLocked = locked;
+        Haptics.threshold(mContainer, locked);
+        if (locked) {
+            hideControls();
+            flashUnlock();
+        } else {
+            mPlayerUnlock.removeCallbacks(mHideUnlock);
+            mPlayerUnlock.animate().cancel();
+            mPlayerUnlock.setVisibility(View.GONE);
+            showControlsInternal(true);
+        }
+    }
+
+    /** The unlock button for a few seconds, then it fades away again. */
+    private void flashUnlock() {
+        mPlayerUnlock.removeCallbacks(mHideUnlock);
+        mPlayerUnlock.animate().cancel();
+        if (mPlayerUnlock.getVisibility() != View.VISIBLE) {
+            mPlayerUnlock.setAlpha(0f);
+            mPlayerUnlock.setVisibility(View.VISIBLE);
+        }
+        mPlayerUnlock.animate().alpha(1f).setDuration(150).start();
+        mPlayerUnlock.postDelayed(mHideUnlock, 2500);
+    }
+
+    private static boolean isOn(View view, android.view.MotionEvent event) {
+        int[] at = new int[2];
+        view.getLocationOnScreen(at);
+        float x = event.getRawX() - at[0];
+        float y = event.getRawY() - at[1];
+        return x >= 0 && y >= 0 && x < view.getWidth() && y < view.getHeight();
     }
 
     /** METUBE(shorts): a short held clean (not at 2x) stays clean after the finger lifts. */
@@ -8185,8 +8265,8 @@ public class MobilePlaybackActivity extends MobileActivity
             mSpinnerShown = show;
             mProgressBar.animate().cancel();
             if (show) {
-                mProgressBar.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(
-                        isShortsMode() ? Color.WHITE : getColorInt(R.color.mobile_color_primary)));
+                // METUBE(issue #77): a soft white arc on the glass disc, not the brand red.
+                mProgressBar.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(0xEBFFFFFF));
                 mProgressBar.setAlpha(0f);
                 mProgressBar.setVisibility(View.VISIBLE);
                 mProgressBar.animate().alpha(1f).setDuration(Motion.FADE_IN_MS)

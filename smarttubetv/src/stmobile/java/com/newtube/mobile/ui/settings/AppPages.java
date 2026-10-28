@@ -239,6 +239,7 @@ final class AppPages {
         playerButton(context, rows, R.string.mobile_live_chat_entry, "mobile_player_chat");
         playerButton(context, rows, R.string.dialog_download, "mobile_player_download");
         playerButton(context, rows, R.string.mobile_watch_share, "mobile_player_share");
+        playerButton(context, rows, R.string.mobile_player_lock, "mobile_player_lock"); // issue #98
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_player_buttons), rows);
     }
