@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.2.1** Sublime](#321-sublime) | 2026-10-28 | Shorts open instantly, a SponsorBlock skip pill, transcripts for songs without lyrics |
 | [**3.2.0** Rebirth](#320-rebirth) | 2026-10-28 | MeTube is now MeeTube, downloads up to 4K, GlowFlow everywhere |
 | [**3.1.8** Lora](#318-lora) | 2026-10-27 | Live rings, a playful Customization page, zoom anywhere |
 | [**3.1.7** Clozone](#317-clozone) | 2026-10-26 | Your bars your way, live chat beside the video, share from the second |
@@ -36,6 +37,37 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.2.1 Sublime
+
+> **Shorts that open instantly, a SponsorBlock skip pill, transcripts for songs without lyrics**<br>
+> 📅 2026-10-28 · closes #84, #103, #104, #105, #106, #107, #108 and #109
+
+### ✨ New
+
+- **SponsorBlock skip pill.** A sponsor or other skippable segment shows a small Skip pill on the player while the video plays on; tap it to jump past the segment.
+- **Transcript when there are no lyrics.** A song without lyrics opens its transcript in the Lyrics panel, which says lyrics aren't available. Transcript is also the last choice in the lyrics provider list.
+- **Watch Shorts in the normal player.** A short's More menu has Watch in normal player, which opens it in the regular player with Up next (#108).
+- **New to you and Continue watching.** Up next chips that split the related videos into ones you haven't seen and ones you started (#104, #105).
+- **Picture-in-picture when you leave, your choice.** Settings > Playback > Picture-in-picture: off, leaving the app with a video playing goes on as audio. The player menu still opens picture-in-picture (#103).
+- **Shorts in History.** History lists the Shorts you watched, and a tapped one plays in the Shorts player with your other watched Shorts.
+- **A rest nudge.** After half an hour of swiping Shorts, MeeTube suggests a break.
+- **Built in public.** About and the README link to the workflow that builds every release.
+
+### 🛠️ Changed
+
+- **Shorts open instantly** from the tab, like Search. The bottom bar slides away and stays away while Shorts is up (#107).
+- **Slide down to close Shorts.** Back slides the player down off the screen, with the tab you came from already beneath it.
+- **One neon ring loader.** A cyan to magenta glow ring is the loader on every page, sheet and button.
+- **Up next chips are glass pills** like Search's.
+- **A tidier watch page.** The page moves with a tall video on the same frame, and the action pills line up right after Subscribe (#106).
+- **One place for video quality.** The Video format row is gone from Settings; every format is in the player's quality sheet.
+
+### 🐛 Fixed
+
+- **Skipping no longer stops playback** with SABR streaming, and a SABR failure picks up the video over DASH where it was instead of stopping (#109).
+- **Tapping a channel in Channels** no longer swaps the list for its uploads, which then stayed after Back (#84).
+- **No empty strip above the Lyrics and Transcript panels.** The panels' handle sits right under the video again.
 
 ## 3.2.0 Rebirth
 
