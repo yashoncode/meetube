@@ -626,8 +626,27 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
 
-        if (!shouldFinishWithoutVideo(savedInstanceState != null,
-                PlayerTransitionBridge.hasPending(), mPresenter.getVideo() != null)) {
+        boolean presenterHasVideo = mPresenter.getVideo() != null;
+
+        // NEWTUBE(process-death-restore): saved state WITHOUT a presenter video is not a configuration
+        // recreate (the presenter is process-wide and would still hold it) but a task restore after the
+        // OS killed us in the background - a video paused ~20 min on a realme came back as a frozen
+        // watch page (state=IDLE, video=?) until a manual refresh. Reopen what was on screen.
+        if (savedInstanceState != null && !presenterHasVideo && !PlayerTransitionBridge.hasPending()) {
+            Video restored = Video.fromString(savedInstanceState.getString(STATE_VIDEO));
+            if (restored != null && restored.hasVideo()) {
+                restored.pendingPosMs = savedInstanceState.getLong(STATE_POSITION_MS, -1);
+                NetPath.log("playback-activity restore=process-death video=" + restored.videoId
+                        + " posMs=" + restored.pendingPosMs);
+                mPresenter.onNewVideo(restored); // loads now, or pends until the engine initializes
+                return;
+            }
+        }
+
+        // Saved state only proves a config recreate when the presenter still has the video; a
+        // process-death restore we could not reopen is as dead as a bare launch.
+        if (!shouldFinishWithoutVideo(savedInstanceState != null && presenterHasVideo,
+                PlayerTransitionBridge.hasPending(), presenterHasVideo)) {
             return;
         }
 
@@ -648,6 +667,20 @@ public class MobilePlaybackActivity extends MobileActivity
     static boolean shouldFinishWithoutVideo(boolean hasSavedState, boolean hasPendingTransition,
             boolean presenterHasVideo) {
         return !hasSavedState && !hasPendingTransition && !presenterHasVideo;
+    }
+
+    private static final String STATE_VIDEO = "metube.playback.video";
+    private static final String STATE_POSITION_MS = "metube.playback.positionMs";
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Video video = mPresenter != null ? mPresenter.getVideo() : null;
+        // Local downloads carry their file URI outside toString(), so they cannot be rebuilt from it.
+        if (video != null && video.hasVideo() && !video.isLocal()) {
+            outState.putString(STATE_VIDEO, video.toString());
+            outState.putLong(STATE_POSITION_MS, getPositionMs());
+        }
     }
 
     @Override
