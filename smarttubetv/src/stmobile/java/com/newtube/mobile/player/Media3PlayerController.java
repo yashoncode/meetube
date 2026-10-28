@@ -111,6 +111,11 @@ public class Media3PlayerController implements Player.Listener {
     private boolean mSabrSourceActive;
     /** Whether the active SABR source is the automatic fallback rather than the opt-in preference. */
     private boolean mSabrWasFallback;
+    /**
+     * MEETUBE(issue #109): the video whose preferred SABR source failed; its reloads play DASH.
+     * One slot: only another SABR failure overwrites it, and that video is then the one to spare.
+     */
+    @Nullable private String mSabrDeclinedVideoId;
     private Runnable mOnVideoLoaded;
     /** NEWTUBE(readiness): the answer the last generated-DASH open played (see getMediaReadinessHoldMs). */
     @Nullable
@@ -271,6 +276,11 @@ public class Media3PlayerController implements Player.Listener {
                 openMediaSource(mMediaSourceFactory.fromSabrFormatInfo(formatInfo), "sabr-vod");
             } catch (RuntimeException failure) {
                 NetPath.log("sabr source-build stopped reason=" + failure.getClass().getSimpleName());
+                if (!mSabrWasFallback && formatInfo.containsDashFormats()) {
+                    mSabrDeclinedVideoId = formatInfo.getVideoId(); // the preference never costs the video
+                    openDash(formatInfo);
+                    return;
+                }
                 if (mPlayer != null) mPlayer.stop();
                 mEventListener.onEngineError(ExoPlaybackException.TYPE_SOURCE, -1, sabrTerminalError());
             }
@@ -313,7 +323,8 @@ public class Media3PlayerController implements Player.Listener {
     public void openDash(MediaItemFormatInfo formatInfo) {
         // Only the opt-in experiment displaces working DASH links. The default-on fallback never
         // reaches this route: it exists for responses that have no links to displace.
-        if (SabrSourcePreference.isPreferred(mContext) && SabrFormatAdapter.eligible(formatInfo)) {
+        if (SabrSourcePreference.isPreferred(mContext) && SabrFormatAdapter.eligible(formatInfo)
+                && !java.util.Objects.equals(formatInfo.getVideoId(), mSabrDeclinedVideoId)) {
             openSabr(formatInfo);
             return;
         }
@@ -1542,21 +1553,21 @@ public class Media3PlayerController implements Player.Listener {
             DebugMediaShaper.disarmOneShotPoisonForRecovery();
         }
         if (mSabrSourceActive) {
-            if (mSabrWasFallback) {
-                noteRecoveryResume(); // its recovery may land on DASH
+            if (!mSabrWasFallback) {
+                // MEETUBE(issue #109): the opt-in preference failing used to stop the video ("SABR
+                // playback stopped"). Now the reload below plays this video over DASH (openDash
+                // skips SABR for it), from where it was.
+                mSabrDeclinedVideoId = getVideoId();
             }
+            noteRecoveryResume(); // its recovery may land on DASH
             int type = error instanceof ExoPlaybackException
                     ? ((ExoPlaybackException) error).type : ExoPlaybackException.TYPE_UNEXPECTED;
-            if (mSabrWasFallback) {
-                // The response carried no URL formats, so there is nothing to retry here. Hand the
-                // real cause to the shared fixer and let it remint/reload onto another client -
-                // the same recovery a plain source error gets. Its own attempt caps bound the loop.
-                NetPath.log(NetPath.context() + " sabr-fallback failed; deferring to client recovery");
-                mEventListener.onEngineError(type, -1,
-                        error.getCause() != null ? error.getCause() : error);
-            } else {
-                mEventListener.onEngineError(type, -1, sabrTerminalError());
-            }
+            // Hand the real cause to the shared fixer and let it reload: a fallback source's
+            // answer carried no URL formats, so that reload remints onto another client - the same
+            // recovery a plain source error gets. Its own attempt caps bound the loop.
+            NetPath.log(NetPath.context() + " sabr " + (mSabrWasFallback ? "fallback" : "preferred")
+                    + " failed; deferring to recovery");
+            mEventListener.onEngineError(type, -1, error.getCause() != null ? error.getCause() : error);
             return;
         }
 
