@@ -1999,6 +1999,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 mMorphStartPending = false;
                 if (miniBounds != null) {
                     computeMorphTarget(miniBounds);
+                    fitMorphInto(miniBounds);
                 } else {
                     computeMorphTarget();
                 }
@@ -7336,6 +7337,19 @@ public class MobilePlaybackActivity extends MobileActivity
                 ? (float) sourceBounds.height() / video.height() : mMorphScaleX;
         mMorphTx = sourceLeft - video.left;
         mMorphTy = sourceTop - video.top;
+    }
+
+    /**
+     * METUBE(issue #99): the mini card letterboxes the video (issue #13), so a square or vertical
+     * video's box lands centred on the card at one scale, as {@link #computeMorphTarget()} does for
+     * the home corner, instead of stretched to the card's 16:9. Runs after computeMorphTarget(Rect).
+     */
+    private void fitMorphInto(Rect card) {
+        float scale = Math.min(mMorphScaleX, mMorphScaleY);
+        mMorphTx += (card.width() - mVideoArea.getWidth() * scale) / 2f;
+        mMorphTy += (card.height() - mVideoArea.getHeight() * scale) / 2f;
+        mMorphScaleX = scale;
+        mMorphScaleY = scale;
     }
 
     /** Start with the player hidden, reveal it exactly over the tapped card, then expand. */

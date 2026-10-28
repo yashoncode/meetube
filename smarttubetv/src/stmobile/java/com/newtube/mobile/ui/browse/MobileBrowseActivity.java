@@ -2834,6 +2834,12 @@ public class MobileBrowseActivity extends MobileActivity
             finishMiniClose();
             detachMiniTexture();
             if (mMiniPlayerBar.getVisibility() == View.VISIBLE && MiniPlayerBridge.isActive()) {
+                // METUBE(issue #99): where the card really is (it may have been dragged to another
+                // corner): the expanding player grows from there, not from the home corner.
+                int[] at = new int[2];
+                mMiniPlayerBar.getLocationOnScreen(at);
+                MiniPlayerBridge.setMiniBounds(new android.graphics.Rect(at[0], at[1],
+                        at[0] + mMiniPlayerBar.getWidth(), at[1] + mMiniPlayerBar.getHeight()));
                 MiniPlayerBridge.setPendingCardFold(mMiniCardFold);
             } else {
                 hideMiniPlayer();
