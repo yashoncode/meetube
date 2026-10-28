@@ -735,18 +735,30 @@ public class VideoMenuPresenter extends BaseMenuPresenter {
 
         mDialogPresenter.appendSingleButton(
                 UiOptionItem.from(getContext().getString(R.string.remove_from_history), optionItem -> {
-                    if (mVideo.mediaItem == null || mVideo.mediaItem.getFeedbackToken() == null) {
-                        onRemoveFromHistoryDone();
-                    } else {
-                        mNotInterestedAction = mMediaItemService.markAsNotInterestedObserve(mVideo.mediaItem.getFeedbackToken())
-                                .subscribe(
-                                        var -> {},
-                                        error -> Log.e(TAG, "Remove from history error: %s", error.getMessage()),
-                                        this::onRemoveFromHistoryDone
-                                );
-                    }
+                    removeFromHistory();
                     mDialogPresenter.closeDialog();
                 }));
+    }
+
+    /** METUBE(#71): the menu's "Remove from history" without the menu, for a swipe on the History page. */
+    public void removeFromHistory(Video video) {
+        RxHelper.disposeActions(mNotInterestedAction);
+        mVideo = video;
+        mCallback = null; // the card is already gone: the "Removed from history" message instead
+        removeFromHistory();
+    }
+
+    private void removeFromHistory() {
+        if (mVideo.mediaItem == null || mVideo.mediaItem.getFeedbackToken() == null) {
+            onRemoveFromHistoryDone();
+        } else {
+            mNotInterestedAction = mMediaItemService.markAsNotInterestedObserve(mVideo.mediaItem.getFeedbackToken())
+                    .subscribe(
+                            var -> {},
+                            error -> Log.e(TAG, "Remove from history error: %s", error.getMessage()),
+                            this::onRemoveFromHistoryDone
+                    );
+        }
     }
 
     private void onRemoveFromHistoryDone() {
