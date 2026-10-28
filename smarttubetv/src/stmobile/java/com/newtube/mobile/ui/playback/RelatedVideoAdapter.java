@@ -57,6 +57,14 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
      * Up-next list the playing video isn't present at all.
      */
     private String mCurrentVideoId;
+    /** METUBE(list layout): full-width cards (item_mobile_related_card) instead of rows. */
+    private boolean mCards;
+
+    /** Set before the list binds (Customization > Video layout: Cards). */
+    public RelatedVideoAdapter setCards(boolean cards) {
+        mCards = cards;
+        return this;
+    }
 
     public RelatedVideoAdapter(OnRelatedClickListener clickListener) {
         this(clickListener, null, 0);
@@ -104,7 +112,7 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
     @Override
     public RelatedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_mobile_related_video, parent, false);
+                .inflate(mCards ? R.layout.item_mobile_related_card : R.layout.item_mobile_related_video, parent, false);
         return new RelatedViewHolder(view, mClickListener, mPressListener, mPressIntentMs);
     }
 

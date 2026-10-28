@@ -479,7 +479,24 @@
                     android:src="@drawable/ic_chips_expand"
                     android:visibility="gone" />
 
+                <!-- METUBE(lock, issue #98): fullscreen only (applyControlsInsets); locks out every
+                     gesture until mobile_player_unlock is tapped. Hideable in Player buttons. -->
+                <com.newtube.mobile.ui.playback.PlayerButton
+                    android:id="@+id/mobile_player_lock"
+                    style="@style/MobilePlayerLock"
+                    android:layout_gravity="center_vertical|start"
+                    android:contentDescription="@string/mobile_player_lock"
+                    android:visibility="gone" />
+
             </FrameLayout>
+
+            <!-- METUBE(lock): the one thing a locked player answers; a tap anywhere shows it. -->
+            <ImageButton
+                android:id="@+id/mobile_player_unlock"
+                style="@style/MobilePlayerLock"
+                android:layout_gravity="center_vertical|start"
+                android:contentDescription="@string/mobile_player_unlock"
+                android:visibility="gone" />
 
             <!-- NEWTUBE(seek bar): the seek bar, YouTube-style - outside the controls overlay so that
                  in portrait it stays on the video's bottom edge as a thin progress line while the
@@ -555,13 +572,17 @@
                 android:gravity="center_horizontal"
                 android:orientation="vertical">
 
+                <!-- METUBE(issue #77): a frosted glass disc with a thin white arc, like the
+                     player's other glass, instead of a bare red spinner. -->
                 <ProgressBar
                     android:id="@+id/mobile_player_progress"
                     style="?android:attr/progressBarStyleLarge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:indeterminateTint="@color/mobile_color_primary"
-                    android:indeterminateTintMode="src_in" />
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:background="@drawable/bg_player_spinner"
+                    android:indeterminateTint="#EBFFFFFF"
+                    android:indeterminateTintMode="src_in"
+                    android:padding="13dp" />
 
                 <TextView
                     android:id="@+id/mobile_player_setup_hint"

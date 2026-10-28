@@ -56,6 +56,8 @@
     <string name="mobile_settings_player_buttons_center">Центр</string>
     <string name="mobile_settings_player_buttons_fullscreen">Действия в полноэкранном режиме</string>
     <string name="mobile_settings_player_prev_next">Предыдущее и следующее</string>
+    <string name="mobile_player_lock">Блокировка экрана</string>
+    <string name="mobile_player_unlock">Разблокировать</string>
     <string name="mobile_transcript">Расшифровка</string>
     <string name="mobile_transcript_follow">Следите за видео по расшифровке.</string>
     <string name="mobile_transcript_show">Показать расшифровку</string>

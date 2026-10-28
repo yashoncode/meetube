@@ -130,6 +130,33 @@ public class MobileBrowseActivity extends MobileActivity
     private RecyclerView mContentGrid;
     private SwipeRefreshLayout mContentSwipe;
     private View mFeedSkeleton;
+    /** METUBE(issue #91): the skeleton's card ghosts, kept while List layout's rows stand in. */
+    @Nullable
+    private List<View> mSkeletonCards;
+    private boolean mSkeletonRows;
+
+    /** METUBE(issue #91): a load or refresh's ghosts take the feed's shape - cards, or rows. */
+    private void applyFeedSkeletonShape(boolean rows) {
+        ViewGroup skeleton = (ViewGroup) mFeedSkeleton;
+        if (mSkeletonCards == null) {
+            mSkeletonCards = new ArrayList<>();
+            for (int i = 0; i < skeleton.getChildCount(); i++) {
+                mSkeletonCards.add(skeleton.getChildAt(i));
+            }
+        }
+        if (mSkeletonRows == rows) {
+            return;
+        }
+        mSkeletonRows = rows;
+        skeleton.removeAllViews();
+        if (rows) {
+            getLayoutInflater().inflate(R.layout.mobile_feed_skeleton_rows, skeleton, true);
+        } else {
+            for (View card : mSkeletonCards) {
+                skeleton.addView(card);
+            }
+        }
+    }
     /** NEWTUBE(motion): last session's cards for the current section, shown only if its load fails. */
     @androidx.annotation.Nullable
     private List<Video> mLastSessionFallback;
@@ -430,6 +457,7 @@ public class MobileBrowseActivity extends MobileActivity
         mContentSwipe.setColorSchemeColors(getColorInt(R.color.mobile_color_on_surface));
         mContentSwipe.setProgressBackgroundColorSchemeColor(getColorInt(R.color.mobile_color_surface));
         mContentSwipe.setOnRefreshListener(() -> {
+            com.newtube.mobile.ui.common.RefreshFeedback.play(mContentSwipe);
             if (mCurrentSectionId == MediaGroup.TYPE_HOME) {
                 rememberSeenHome();
             }
@@ -1310,7 +1338,9 @@ public class MobileBrowseActivity extends MobileActivity
         }
         if (itemId == YOU_ITEM_ID) {
             showYouPanel();
-            Motion.frostIn(mYouPanel); // METUBE(frost)
+            // METUBE(frost): the page frosts in on the panel's opaque background, which covers the
+            // last tab at once - frosting the whole panel faded that tab through it for a moment.
+            Motion.frostIn(((ViewGroup) mYouPanel).getChildAt(0));
         } else {
             boolean fromYou = mYouShowing;
             mSectionFromYou = false;
@@ -2731,6 +2761,7 @@ public class MobileBrowseActivity extends MobileActivity
         if (mAdapter != null) {
             mAdapter.setListRows(HomeLayout.isVideoList(this)); // METUBE(list layout, issue #82)
         }
+        applyFeedSkeletonShape(HomeLayout.isVideoList(this));
         getWindow().getDecorView().postDelayed(mUpdateCheckIfDue, UPDATE_CHECK_DELAY_MS);
         // METUBE(background): not over a live mini player - the dialog would push it into PiP.
         if (!MiniPlayerBridge.isActive()) {

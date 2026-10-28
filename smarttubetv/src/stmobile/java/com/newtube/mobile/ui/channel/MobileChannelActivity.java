@@ -702,6 +702,7 @@ public class MobileChannelActivity extends MobileActivity
         mSwipe.setColorSchemeColors(getResources().getColor(R.color.mobile_color_on_surface));
         mSwipe.setProgressBackgroundColorSchemeColor(getResources().getColor(R.color.mobile_color_surface));
         mSwipe.setOnRefreshListener(() -> {
+            com.newtube.mobile.ui.common.RefreshFeedback.play(mSwipe);
             boolean hasContent = hasContent();
             Section active = mSections.get(mActiveSectionId);
             // The refresh rebuilds the tabs; land back on the one being read.

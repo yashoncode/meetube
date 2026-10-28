@@ -107,6 +107,8 @@
     <string name="mobile_settings_player_buttons_center">Center</string>
     <string name="mobile_settings_player_buttons_fullscreen">Fullscreen actions</string>
     <string name="mobile_settings_player_prev_next">Previous and next</string>
+    <string name="mobile_player_lock">Screen lock</string>
+    <string name="mobile_player_unlock">Unlock</string>
     <string name="mobile_transcript">Transcript</string>
     <string name="mobile_transcript_follow">Follow along using the transcript.</string>
     <string name="mobile_transcript_show">Show transcript</string>

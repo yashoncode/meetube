@@ -347,6 +347,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
         mSwipe.setColorSchemeColors(getResources().getColor(R.color.mobile_color_on_surface));
         mSwipe.setProgressBackgroundColorSchemeColor(getResources().getColor(R.color.mobile_color_surface));
         mSwipe.setOnRefreshListener(() -> {
+            com.newtube.mobile.ui.common.RefreshFeedback.play(mSwipe);
             if (mPresenter == null || !mPresenter.reload(!mVideos.isEmpty())) {
                 mSwipe.setRefreshing(false);
             }
