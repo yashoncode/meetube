@@ -55,7 +55,7 @@
                 android:visibility="gone"
                 tools:text="12:34" />
 
-            <ProgressBar
+            <com.newtube.mobile.ui.common.GlowProgressBar
                 android:id="@+id/related_watch_progress"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"

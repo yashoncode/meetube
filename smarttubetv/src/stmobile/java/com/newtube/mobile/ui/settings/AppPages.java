@@ -217,6 +217,12 @@ final class AppPages {
                 .option(context.getString(R.string.mobile_settings_tab_glow_off), null, com.newtube.mobile.ui.browse.NavBloom.MODE_OFF)
                 .bind(() -> com.newtube.mobile.ui.browse.NavBloom.mode(context), mode -> com.newtube.mobile.ui.browse.NavBloom.setMode(context, mode)));
 
+        // METUBE(progress glow): the light at the head of the seek bar and the cards' watched line.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_progress_glow),
+                context.getString(R.string.mobile_settings_progress_glow_summary),
+                () -> com.newtube.mobile.ui.common.GlowProgressBar.enabled(context),
+                on -> com.newtube.mobile.ui.common.GlowProgressBar.setEnabled(context, on)));
+
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_nav_labels),
                 context.getString(R.string.mobile_settings_nav_labels_summary),
                 () -> NavTabs.showLabels(context), on -> NavTabs.setShowLabels(context, on)));

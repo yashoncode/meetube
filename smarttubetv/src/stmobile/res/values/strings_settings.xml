@@ -384,4 +384,6 @@
     <string name="mobile_settings_tab_glow_accent">Accent</string>
     <string name="mobile_settings_tab_glow_accent_desc">Every tab glows in MeTube red</string>
     <string name="mobile_settings_tab_glow_off">Off</string>
+    <string name="mobile_settings_progress_glow">Progress glow</string>
+    <string name="mobile_settings_progress_glow_summary">A soft light at the end of the seek bar and of the watched line on videos</string>
 </resources>

@@ -957,6 +957,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // than sliding the Like pill under Subscribe's edge (the room it gets is what it needed).
             boolean[] hold = {false};
             int[] labelW = {0};
+            boolean[] ticked = {false};
             actionsScroll.setOnTouchListener((v, event) -> {
                 int action = event.getActionMasked();
                 if (Float.isNaN(downX[0])) {
@@ -964,6 +965,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     hold[0] = !mSubscribeCollapsed
                             && (mSubscribeAnimator == null || !mSubscribeAnimator.isRunning());
                     labelW[0] = mWatchSubscribe.getWidth();
+                    ticked[0] = false;
                 }
                 float dx = event.getRawX() - downX[0];
                 boolean held = hold[0];
@@ -973,6 +975,11 @@ public class MobilePlaybackActivity extends MobileActivity
                     float t = Math.max(0f, Math.min(1f, (-dx - slop) / range));
                     if (t > 0f || mSubscribeMorph > 0f) {
                         applySubscribeMorph(t, Math.round(labelW[0] - range * t));
+                    }
+                    // One light tick per swipe, where letting go starts settling into the mark.
+                    if (!ticked[0] && t > 0.33f) {
+                        ticked[0] = true;
+                        Haptics.tick(v);
                     }
                 } else if (dx < -slop) {
                     morphSubscribe(true); // swiping the actions in
@@ -5782,6 +5789,16 @@ public class MobilePlaybackActivity extends MobileActivity
         @Override
         public void onPlaybackStateChanged(int playbackState) {
             handleUiStateChange(mPlayer != null && mPlayer.getPlayWhenReady(), playbackState);
+        }
+
+        @Override
+        public void onPositionDiscontinuity(Player.PositionInfo oldPosition, Player.PositionInfo newPosition,
+                int reason) {
+            // A seek (a double tap's jump) shows on the bar now, not at the loop's next tick, which
+            // is up to a second away (more while the seek buffers).
+            if (reason == Player.DISCONTINUITY_REASON_SEEK) {
+                startProgressUpdates();
+            }
         }
 
         private void handleUiStateChange(boolean playWhenReady, int playbackState) {
