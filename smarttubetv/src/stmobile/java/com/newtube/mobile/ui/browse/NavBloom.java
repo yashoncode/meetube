@@ -95,7 +95,7 @@ public final class NavBloom extends Drawable {
         if (mode != mTintedMode || mTintDirty) {
             tint(mode);
         }
-        if (mode == MODE_OFF) {
+        if (mode == MODE_OFF || mFollowing) {
             return;
         }
         int itemId = mBar.getSelectedItemId();
@@ -119,6 +119,29 @@ public final class NavBloom extends Drawable {
         }
         mItemId = itemId;
     }
+
+    /**
+     * MEETUBE(#90): the glow under a finger dragging along the bar, at {@code x} (bar coordinates) in
+     * the colour of the tab it is over; NaN lets go, and it glides to the lit tab from there.
+     */
+    void follow(float x, int itemId) {
+        if (Float.isNaN(x)) {
+            mFollowing = false;
+            mItemId = View.NO_ID; // the next frame glides it home (or on to the newly picked tab)
+            return;
+        }
+        if (mAnimator != null) {
+            mAnimator.cancel();
+            mAnimator = null;
+        }
+        mFollowing = true;
+        mCx = x;
+        mColor = colorFor(mBar.getContext(), mode(mBar.getContext()), itemId);
+        mSwell = 1f;
+        invalidateSelf();
+    }
+
+    private boolean mFollowing;
 
     private void glide(float toX, float toY, int toColor) {
         if (mAnimator != null) {

@@ -59,7 +59,9 @@
                 android:id="@+id/mobile_watch_subs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="6dp"
+                android:drawablePadding="6dp"
+                android:drawableStart="@drawable/meta_dot"
                 android:maxLines="1"
                 android:textColor="@color/mobile_color_on_surface_secondary"
                 android:textSize="13sp"
@@ -71,13 +73,15 @@
                 android:id="@+id/mobile_watch_meta"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="6dp"
+                android:drawablePadding="6dp"
+                android:drawableStart="@drawable/meta_dot"
                 android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@color/mobile_color_on_surface_secondary"
                 android:textSize="13sp"
-                tools:text="1.2M views" />
+                tools:text="1.2M views · 3 days ago" />
 
         </LinearLayout>
 

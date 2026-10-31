@@ -108,6 +108,8 @@ public final class NavLens extends View {
         if (running instanceof Animator) {
             ((Animator) running).cancel();
         }
+        float fromX = bar.getScaleX(); // a dragged bar's pop (#90) settles into the wiggle
+        float fromY = bar.getScaleY();
         float lean = JIGGLE_LEAN_DP * bar.getResources().getDisplayMetrics().density * direction;
         ValueAnimator jiggle = ValueAnimator.ofFloat(0f, 1f);
         jiggle.setDuration(JIGGLE_MS);
@@ -115,8 +117,9 @@ public final class NavLens extends View {
         jiggle.addUpdateListener(a -> {
             float t = (float) a.getAnimatedValue();
             float wobble = (float) (Math.exp(-4.2 * t) * Math.sin(2 * Math.PI * 2.25 * t));
-            bar.setScaleX(1f + 0.028f * wobble);
-            bar.setScaleY(1f - 0.04f * wobble);
+            float popped = (float) Math.exp(-6 * t);
+            bar.setScaleX((1f + (fromX - 1f) * popped) * (1f + 0.028f * wobble));
+            bar.setScaleY((1f + (fromY - 1f) * popped) * (1f - 0.04f * wobble));
             bar.setTranslationX(lean * (float) (Math.exp(-3.5 * t) * Math.sin(2 * Math.PI * 1.4 * t)));
         });
         jiggle.addListener(new AnimatorListenerAdapter() {
@@ -146,16 +149,20 @@ public final class NavLens extends View {
      * (bar coordinates); {@link #play} with {@code grown} glides it on from there when it is let go.
      */
     public void drag(GlassView bar, View tab, float x) {
-        stop();
         mBar = bar;
         mCy = bar.getHeight() / 2f;
         mCx = x;
         mMagnify = MAGNIFY;
         int w = fit(tab);
         int h = getLayoutParams().height;
-        if (getVisibility() != VISIBLE) { // it swells out of the pill
-            setScaleX((tab.getWidth() - 4 * mDensity) / w);
-            setScaleY((float) tab.getHeight() / h);
+        if (!mDragging) { // it swells out of the pill (or out of a glide it takes over)
+            mDragging = true;
+            stop();
+            clipTo(bar);
+            if (getVisibility() != VISIBLE) {
+                setScaleX((tab.getWidth() - 4 * mDensity) / w);
+                setScaleY((float) tab.getHeight() / h);
+            }
             setAlpha(1f);
             setVisibility(VISIBLE);
             animate().scaleX(1f).scaleY(1f).setDuration((long) GROW_MS)
@@ -165,8 +172,17 @@ public final class NavLens extends View {
         invalidate();
     }
 
+    private boolean mDragging;
+
+    private void clipTo(GlassView bar) {
+        float corner = bar.corner();
+        mBarClip.reset();
+        mBarClip.addRoundRect(0, 0, bar.getWidth(), bar.getHeight(), corner, corner, Path.Direction.CW);
+    }
+
     public void play(GlassView bar, float fromX, View to, boolean grown, Runnable onSettled) {
         stop();
+        mDragging = false;
         mBar = bar;
         float toX = centreInBar(to, bar);
         mCy = bar.getHeight() / 2f;
@@ -175,9 +191,7 @@ public final class NavLens extends View {
         // The pill it grows out of and settles into: the tab, 2dp in on each side (bg_nav_item).
         float restX = (to.getWidth() - 4 * mDensity) / w;
         float restY = (float) to.getHeight() / h;
-        float corner = bar.corner();
-        mBarClip.reset();
-        mBarClip.addRoundRect(0, 0, bar.getWidth(), bar.getHeight(), corner, corner, Path.Direction.CW);
+        clipTo(bar);
 
         // The glide is a spring (a ~4% overshoot as it lands); its stretch follows its real speed.
         Motion.Spring glide = new Motion.Spring(0f, 1f, 0f, GLIDE_STIFFNESS, GLIDE_DAMPING, 0.004f);

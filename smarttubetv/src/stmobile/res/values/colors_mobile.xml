@@ -95,4 +95,9 @@
     <!-- MEETUBE(accent): the app's accent - switches and choice radios (a picker can come later). -->
     <color name="meetube_accent">#D7372D</color>
     <color name="meetube_switch_on">@color/meetube_accent</color>
+    <!-- MEETUBE(launch): the launch animation in black and white (avd_splash_glass): the solid play
+         symbol, then its glass - darkest top-left, see-through bottom-right. White on night. -->
+    <color name="splash_mono">#FF000000</color>
+    <color name="splash_glass_start">#D9000000</color>
+    <color name="splash_glass_end">#59000000</color>
 </resources>

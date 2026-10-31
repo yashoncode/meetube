@@ -24,11 +24,10 @@
       stays dark in both, like YouTube's: its chrome uses the fixed mobile_player_* colours.
     -->
     <style name="Theme.NewTube" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- MEETUBE(app icon): a task the system restores after killing the app (reopened from the
-             launcher or recents) gets its splash from this theme, not the per-icon one AppIcon
-             persists - and without an icon here that splash showed the manifest's (default) icon
-             whatever icon was picked. A blank splash is never the wrong icon. -->
-        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@android:color/transparent</item>
+        <!-- MEETUBE(launch): the system splash shows the launch animation's first frame, still, from
+             the tap; the animation itself plays in-app over Home (LaunchSplash), since vivo's splash
+             never animates. The same on every phone and for every app icon. -->
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@drawable/splash_play_still</item>
         <!-- MEETUBE(loader): every circular spinner is the loader picked in Settings > Customization
              (meetubeLoader; Loader applies the pick's overlay to each screen's theme). -->
         <item name="meetubeLoader">@drawable/avd_neon_ring</item>
@@ -123,6 +122,8 @@
 
     <!-- The neon loader's ring, radius 8 (its widest glow stays inside the 24 box), from the top. -->
     <string name="neon_ring_path" translatable="false">M12,4 A8,8 0 1,1 12,20 A8,8 0 1,1 12,4</string>
+    <!-- The launch animation's play symbol (avd_splash_glass), round-cornered, centred in 240. -->
+    <string name="splash_play_path" translatable="false">M96,88 L96,152 Q96,162 104.64,156.96 L159.36,125.04 Q168,120 159.36,114.96 L104.64,83.04 Q96,78 96,88 Z</string>
 
     <style name="Widget.NewTube.Snackbar.Action" parent="Widget.MaterialComponents.Button.TextButton.Snackbar">
         <item name="android:textColor">@color/mobile_color_background</item>

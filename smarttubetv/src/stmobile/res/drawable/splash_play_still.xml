@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(launch): the system splash's icon - avd_splash_glass's first frame, still, so the play
+     symbol is up the moment the app is tapped and LaunchSplash carries on from it once Home draws. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    <group
+        android:pivotX="120"
+        android:pivotY="120"
+        android:scaleX="0.6"
+        android:scaleY="0.6">
+        <path
+            android:fillColor="@color/splash_mono"
+            android:pathData="@string/splash_play_path" />
+    </group>
+</vector>

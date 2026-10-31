@@ -19,9 +19,9 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 /**
  * MEETUBE(app icon): the launcher icon picked in Settings > Customization. Each icon is an
  * {@code activity-alias} of SplashActivity (stmobile AndroidManifest, com.newtube.mobile.icon.*) and
- * exactly one is enabled. The in-app marks (Home's brand pill, the launch splash, the update sheet)
- * follow the pick too. Only icons built into the APK can be a launcher icon, so there is no
- * upload-your-own (tried: it could only ever be a shortcut beside the real icon).
+ * exactly one is enabled. The in-app marks (Home's brand pill, the update sheet) follow the pick too;
+ * the launch animation is the same for every icon (LaunchSplash). Only icons built into the APK can
+ * be a launcher icon, so there is no upload-your-own (tried: it could only ever be a shortcut beside the real icon).
  *
  * <p>Disabling an alias makes Android close the task it started, and the system then refuses to
  * reopen the app from the background. So a pick is remembered here and applied either by the
@@ -30,7 +30,10 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
  * onTrimMemory(UI_HIDDEN)).
  */
 public final class AppIcon {
-    /** Alias names; the first is the default (the red heart on a white tile since 3.2.0; Fantasy is the 2.9.9 painted heart). */
+    /**
+     * Alias names; the first is the default. The aliases keep their first names so a pick survives
+     * updates; Settings shows the icons' own names (tools/icons_from_pngs.py has the mapping).
+     */
     public static final String DEFAULT = "Default";
     public static final String CLASSIC = "Classic";
     public static final String FANTASY = "Fantasy";
@@ -40,16 +43,13 @@ public final class AppIcon {
     public static final String PLAY_DARK = "PlayDark";
     public static final String BLAZE = "Blaze";
     private static final String[] ICONS = {DEFAULT, CLASSIC, FANTASY, GLASS_HEART, RUBY, PLAY, PLAY_DARK, BLAZE};
-    // Per icon, in ICONS' order: launcher icon, brand-pill mark, splash theme (Android 13+).
+    // Per icon, in ICONS' order: launcher icon, brand-pill mark.
     private static final int[] LAUNCHERS = {R.mipmap.app_icon, R.mipmap.app_icon_classic, R.mipmap.app_icon_fantasy,
             R.mipmap.app_icon_glass_heart, R.mipmap.app_icon_ruby, R.mipmap.app_icon_play,
             R.mipmap.app_icon_play_dark, R.mipmap.app_icon_blaze};
-    private static final int[] MARKS = {R.drawable.ic_meetube_mark_fantasy, R.drawable.ic_meetube_mark,
+    private static final int[] MARKS = {R.drawable.ic_meetube_mark_default, R.drawable.ic_meetube_mark_classic,
             R.drawable.ic_meetube_mark_art, R.drawable.ic_meetube_mark_glass_heart, R.drawable.ic_meetube_mark_ruby,
             R.drawable.ic_meetube_mark_play, R.drawable.ic_meetube_mark_play_dark, R.drawable.ic_meetube_mark_blaze};
-    private static final int[] SPLASHES = {R.style.Theme_MeeTube_Splash_White, R.style.Theme_MeeTube_Splash_Classic,
-            R.style.Theme_MeeTube_Splash_Beat, R.style.Theme_MeeTube_Splash_GlassHeart, R.style.Theme_MeeTube_Splash_Ruby,
-            R.style.Theme_MeeTube_Splash_Play, R.style.Theme_MeeTube_Splash_PlayDark, R.style.Theme_MeeTube_Splash_Blaze};
     private static final String PREFIX = "com.newtube.mobile.icon.";
     private static final String PREFS = "meetube_app_icon";
     private static final String KEY_PENDING = "pending";
@@ -89,7 +89,6 @@ public final class AppIcon {
         String pending = icon.equals(enabled(context)) ? null : icon;
         prefs(context).edit().putString(KEY_PENDING, pending).apply();
         if (context instanceof Activity) {
-            syncSplash((Activity) context);
             syncTask((Activity) context);
         }
         if (pending != null && context instanceof Activity) {
@@ -140,16 +139,6 @@ public final class AppIcon {
                 pm.setComponentEnabledSetting(component(context, other),
                         PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
             }
-        }
-    }
-
-    /**
-     * The launch splash shows the picked mark. An alias can't carry a theme, but Android 13+
-     * remembers a splash theme per app for every launch; Android 12 shows the tapped alias's icon.
-     */
-    public static void syncSplash(Activity activity) {
-        if (Build.VERSION.SDK_INT >= 33) {
-            activity.getSplashScreen().setSplashScreenTheme(SPLASHES[index(current(activity))]);
         }
     }
 
