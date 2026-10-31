@@ -51,6 +51,9 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     /** SystemUI's snap-back spring for a notification that did not go. */
     private static final float SNAP_STIFFNESS = 550f;
     private static final float SNAP_DAMPING = 0.75f;
+    /** MEETUBE(issue #125): riding the nav bar, a bouncier spring - a small overshoot, then rest. */
+    private static final float FOLLOW_STIFFNESS = 500f;
+    private static final float FOLLOW_DAMPING = 0.55f;
     private static final long FLY_MIN_MS = 110;
     private static final long FLY_MAX_MS = 240;
 
@@ -112,6 +115,7 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                 || mCard.getTop() + mCard.getHeight() / 2f + mCard.getTranslationY() <= parent.getHeight() / 2f) {
             return;
         }
+        mSnapY.getSpring().setStiffness(FOLLOW_STIFFNESS).setDampingRatio(FOLLOW_DAMPING);
         mSnapY.animateToFinalPosition(homeY);
     }
 
@@ -265,6 +269,7 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         mCard.setAlpha(1f);
         mSnapX.setStartVelocity(velocityX);
         mSnapX.animateToFinalPosition(x);
+        mSnapY.getSpring().setStiffness(SNAP_STIFFNESS).setDampingRatio(SNAP_DAMPING); // after a nav ride's bounce
         mSnapY.setStartVelocity(velocityY);
         mSnapY.animateToFinalPosition(y);
     }

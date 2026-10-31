@@ -1123,6 +1123,16 @@ public class Media3PlayerController implements Player.Listener {
         return mTrackAdapter != null ? mTrackAdapter.getFormats(TrackSelectorManager.RENDERER_INDEX_VIDEO) : null;
     }
 
+    /** MEETUBE(issue #85): the video rungs the decoder reports beyond it (Media3TrackAdapter). */
+    public List<FormatItem> getVideoFormatsBeyondDecoder() {
+        return mTrackAdapter != null ? mTrackAdapter.getVideoFormatsBeyondDecoder() : null;
+    }
+
+    /** MEETUBE(issue #85): lets the next {@link #selectFormat} of {@code item} pin a rung beyond the decoder. */
+    public void allowBeyondDecoder(FormatItem item) {
+        Media3TrackAdapter.allowBeyondDecoder(item);
+    }
+
     public List<FormatItem> getAudioFormats() {
         return mTrackAdapter != null ? mTrackAdapter.getFormats(TrackSelectorManager.RENDERER_INDEX_AUDIO) : null;
     }

@@ -216,13 +216,14 @@
         android:id="@+id/mobile_nav_glass"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:layout_gravity="bottom|center_horizontal"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="12dp"
         android:elevation="6dp"
         android:padding="6dp"
         android:visibility="gone"
         app:glassCornerRadius="34dp"
+        app:glassMaxWidth="@dimen/meetube_nav_max_width"
         app:glassTint="@color/meetube_glass_tint">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView

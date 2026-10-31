@@ -48,6 +48,14 @@ class Media3TrackAdapter {
     private Tracks mTracks = Tracks.EMPTY;
     /** NEWTUBE(mobile): default multi-audio videos to the untranslated ("original") track. */
     private boolean mPreferOriginalAudio;
+    /**
+     * MEETUBE(issue #85): the quality sheet's pick of a rung this phone's decoder reports it can't
+     * play ({@link #getVideoFormatsBeyondDecoder}); only this exact item may pin such a track, so
+     * Auto, Settings and every other pick still see supported tracks only. Static: it outlives an
+     * engine restart, like the per-video pick it is (PlayerData.setVideoVideoFormat).
+     */
+    @Nullable
+    private static volatile FormatItem sBeyondDecoderPick;
 
     Media3TrackAdapter(DefaultTrackSelector trackSelector) {
         mTrackSelector = trackSelector;
@@ -148,30 +156,64 @@ class Media3TrackAdapter {
         }
 
         if (rendererIndex == TrackSelectorManager.RENDERER_INDEX_VIDEO) {
-            // The pickers expect quality-descending order ("first of each rung is its best variant").
-            // Rungs by class, not height: a vertical video's 608x1080 is a 480p stream.
-            Collections.sort(result, (item1, item2) -> {
-                int rung1 = VideoRung.classHeight(item1.getWidth(), item1.getHeight());
-                int rung2 = VideoRung.classHeight(item2.getWidth(), item2.getHeight());
-                if (rung2 != rung1) {
-                    return rung2 - rung1;
-                }
-                if (item2.getFrameRate() != item1.getFrameRate()) {
-                    return Float.compare(item2.getFrameRate(), item1.getFrameRate());
-                }
-                MediaTrack track1 = item1.getTrack();
-                MediaTrack track2 = item2.getTrack();
-                int codec = MediaTrack.getCodecWeight(track2) - MediaTrack.getCodecWeight(track1);
-                if (codec != 0) {
-                    return codec;
-                }
-                int bitrate1 = track1 != null && track1.format != null ? track1.format.bitrate : -1;
-                int bitrate2 = track2 != null && track2.format != null ? track2.format.bitrate : -1;
-                return bitrate2 - bitrate1;
-            });
+            sortVideoFormats(result);
         }
 
         return result;
+    }
+
+    /**
+     * MEETUBE(issue #85): the video tracks {@link #getFormats} leaves out because the decoder
+     * reports their size or frame rate beyond it (a 2160p60 on a 2K30 decoder) - not those of a
+     * codec it has no decoder for. YouTube offers these anyway, and many decoders understate
+     * themselves; a pick of one goes through {@link #allowBeyondDecoder}. Same order as getFormats.
+     */
+    List<FormatItem> getVideoFormatsBeyondDecoder() {
+        List<FormatItem> result = new ArrayList<>();
+        for (Tracks.Group group : mTracks.getGroups()) {
+            if (group.getType() != C.TRACK_TYPE_VIDEO) {
+                continue;
+            }
+            for (int i = 0; i < group.length; i++) {
+                if (group.getTrackSupport(i) == C.FORMAT_EXCEEDS_CAPABILITIES) {
+                    result.add(toFormatItem(TrackSelectorManager.RENDERER_INDEX_VIDEO, group, i,
+                            group.isTrackSelected(i)));
+                }
+            }
+        }
+        sortVideoFormats(result);
+        return result;
+    }
+
+    /** The next {@link #selectFormat} of exactly this item may pin a track beyond the decoder. */
+    static void allowBeyondDecoder(FormatItem item) {
+        sBeyondDecoderPick = item;
+    }
+
+    /**
+     * The pickers expect quality-descending order ("first of each rung is its best variant").
+     * Rungs by class, not height: a vertical video's 608x1080 is a 480p stream.
+     */
+    private static void sortVideoFormats(List<FormatItem> formats) {
+        Collections.sort(formats, (item1, item2) -> {
+            int rung1 = VideoRung.classHeight(item1.getWidth(), item1.getHeight());
+            int rung2 = VideoRung.classHeight(item2.getWidth(), item2.getHeight());
+            if (rung2 != rung1) {
+                return rung2 - rung1;
+            }
+            if (item2.getFrameRate() != item1.getFrameRate()) {
+                return Float.compare(item2.getFrameRate(), item1.getFrameRate());
+            }
+            MediaTrack track1 = item1.getTrack();
+            MediaTrack track2 = item2.getTrack();
+            int codec = MediaTrack.getCodecWeight(track2) - MediaTrack.getCodecWeight(track1);
+            if (codec != 0) {
+                return codec;
+            }
+            int bitrate1 = track1 != null && track1.format != null ? track1.format.bitrate : -1;
+            int bitrate2 = track2 != null && track2.format != null ? track2.format.bitrate : -1;
+            return bitrate2 - bitrate1;
+        });
     }
 
     // ---------------------------------------------------------------------------------
@@ -424,7 +466,11 @@ class Media3TrackAdapter {
                 continue;
             }
             for (int i = 0; i < group.length; i++) {
-                if (!group.isTrackSupported(i)) {
+                // MEETUBE(issue #85): a track beyond the decoder only for the sheet's pick of it,
+                // and only by its exact id - never as a fallback or nearest rung.
+                boolean beyond = !group.isTrackSupported(i);
+                if (beyond && !(video && item == sBeyondDecoderPick
+                        && group.getTrackSupport(i) == C.FORMAT_EXCEEDS_CAPABILITIES)) {
                     continue;
                 }
                 androidx.media3.common.Format format = group.getTrackFormat(i);
@@ -434,6 +480,9 @@ class Media3TrackAdapter {
                 // same "1:", so the id alone matched the group's first variant (240p for a 1080p pick).
                 if (targetId != null && targetId.equals(format.id) && (!video || loose)) {
                     return new TrackLocation(group, i);
+                }
+                if (beyond) {
+                    continue;
                 }
 
                 if (fallback == null && loose) {

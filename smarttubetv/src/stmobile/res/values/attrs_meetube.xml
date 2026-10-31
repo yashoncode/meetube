@@ -10,5 +10,7 @@
         <!-- On a surface that is already glass (a frosted sheet): no backdrop of its own, and the
              tint stays see-through instead of the near-opaque no-backdrop fallback. -->
         <attr name="glassOnGlass" format="boolean" />
+        <!-- MEETUBE(issue #118): the widest it grows; centre it with its layout gravity. -->
+        <attr name="glassMaxWidth" format="dimension" />
     </declare-styleable>
 </resources>

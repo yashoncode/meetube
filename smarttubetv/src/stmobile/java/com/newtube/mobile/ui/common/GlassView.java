@@ -182,6 +182,8 @@ public class GlassView extends FrameLayout {
     @Nullable private GlassSource mSource;
     /** Sits on glass already (glassOnGlass): its tint is drawn as given, see-through. */
     private final boolean mOnGlass;
+    /** The widest it grows (glassMaxWidth), 0: no limit. */
+    private final int mMaxWidth;
     @Nullable private RenderNode mNode;
 
     private final ViewTreeObserver.OnPreDrawListener mTrackPosition = () -> {
@@ -203,6 +205,7 @@ public class GlassView extends FrameLayout {
         mTint = a.getColor(R.styleable.GlassView_glassTint, 0x66121212);
         mLiquid = a.getBoolean(R.styleable.GlassView_glassLiquid, true) && Glass.isLiquid(context);
         mOnGlass = a.getBoolean(R.styleable.GlassView_glassOnGlass, false);
+        mMaxWidth = a.getDimensionPixelSize(R.styleable.GlassView_glassMaxWidth, 0);
         a.recycle();
 
         setWillNotDraw(false);
@@ -301,6 +304,14 @@ public class GlassView extends FrameLayout {
         }
         mRecordedX = Integer.MIN_VALUE;
         invalidate();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if (mMaxWidth > 0 && MeasureSpec.getSize(widthMeasureSpec) > mMaxWidth) {
+            widthMeasureSpec = MeasureSpec.makeMeasureSpec(mMaxWidth, MeasureSpec.getMode(widthMeasureSpec));
+        }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override

@@ -728,7 +728,13 @@ public class MobileChannelActivity extends MobileActivity
         }
         ((android.view.ViewGroup.MarginLayoutParams) findViewById(R.id.mobile_mini_player).getLayoutParams())
                 .bottomMargin = clearance;
-        mGrid.addOnScrollListener(new com.newtube.mobile.ui.common.NavHider(pill));
+        com.newtube.mobile.ui.common.NavHider navHider = new com.newtube.mobile.ui.common.NavHider(pill);
+        navHider.setOnSlide(navY -> { // MEETUBE(issue #125): the mini card rides the nav bar, as on Home
+            if (mMiniPlayer != null) { // null-safe, as Search's (whose pill comes first)
+                mMiniPlayer.followNav(navY);
+            }
+        });
+        mGrid.addOnScrollListener(navHider);
         pill.setVisibility(View.VISIBLE);
     }
 
@@ -1053,7 +1059,9 @@ public class MobileChannelActivity extends MobileActivity
         // pill and it jumped up on landing.
         View card = findViewById(R.id.mobile_mini_player);
         int margin = ((android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams()).bottomMargin;
-        return Math.max(0, margin - Math.round(12 * getResources().getDisplayMetrics().density));
+        // MEETUBE(issue #125): lower by the card's home offset while a scroll has the nav away.
+        float homeY = mMiniPlayer != null ? mMiniPlayer.homeY() : 0f;
+        return Math.max(0, margin - Math.round(12 * getResources().getDisplayMetrics().density + homeY));
     }
 
     @Override
