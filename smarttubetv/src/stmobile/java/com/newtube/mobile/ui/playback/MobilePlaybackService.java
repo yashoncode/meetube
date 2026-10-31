@@ -95,6 +95,8 @@ public class MobilePlaybackService extends Service {
      * startForeground from the background (API 31+ crash).
      */
     private boolean mReattaching;
+    /** MEETUBE(issue #121): told of a play from outside the screen (see {@link #notifyPlayClicked}). */
+    @Nullable private Runnable mOnExternalPlay;
 
     private final NotificationArtwork<Bitmap> mArtwork = new NotificationArtwork<>();
     // Held so it can be cleared from Glide on release (avoids the leaked SIZE_ORIGINAL target).
@@ -216,6 +218,15 @@ public class MobilePlaybackService extends Service {
         if (mPresenter != null) {
             Utils.post(() -> mPresenter.onPlayClicked());
         }
+        Runnable onExternalPlay = mOnExternalPlay;
+        if (onExternalPlay != null) {
+            Utils.post(onExternalPlay);
+        }
+    }
+
+    /** MEETUBE(issue #121): the activity shows its controls on a headset, lock screen or notification play. */
+    public void setOnExternalPlay(@Nullable Runnable onExternalPlay) {
+        mOnExternalPlay = onExternalPlay;
     }
 
     private void notifyPauseClicked() {

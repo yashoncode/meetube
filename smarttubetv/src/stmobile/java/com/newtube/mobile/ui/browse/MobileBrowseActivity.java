@@ -733,7 +733,8 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayerBar.setScaleX(1f);
         mMiniPlayerBar.setScaleY(1f);
         mMiniPlayerBar.setTranslationX(0f);
-        mMiniPlayerBar.setTranslationY(0f); // MEETUBE(mini-float): back home from the corner it was dragged to
+        // MEETUBE(mini-float): back home from the corner it was dragged to (issue #125: lower while the nav is away)
+        mMiniPlayerBar.setTranslationY(mMiniSwipe != null ? mMiniSwipe.homeY() : 0f);
         mMiniPlayerBar.setVisibility(View.VISIBLE);
         mMiniControls.show();
         updateMiniPlayPauseIcon(player);
@@ -1147,6 +1148,11 @@ public class MobileBrowseActivity extends MobileActivity
         });
         if (!com.newtube.mobile.ui.common.FocusRing.isTv(this)) { // a remote needs the tabs in reach
             mNavHider = new com.newtube.mobile.ui.common.NavHider(findViewById(R.id.mobile_nav_glass));
+            mNavHider.setOnSlide(navY -> { // MEETUBE(issue #125): the mini card follows the nav bar down
+                if (mMiniSwipe != null && (mMiniPip == null || !mMiniPip.isPinned())) {
+                    mMiniSwipe.setHomeY(navY);
+                }
+            });
             mContentGrid.addOnScrollListener(mNavHider);
         }
         if (com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
