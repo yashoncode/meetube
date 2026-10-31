@@ -371,6 +371,8 @@ public class MobilePlaybackActivity extends MobileActivity
      * comments one at a time, the next every TOP_COMMENT_MS.
      */
     private boolean mWatchCompact;
+    /** Between the compact line's views and date: a middle dot spaced like the meta_dot before them. */
+    private static final String COMPACT_DOT = " · ";
     private View mCommentTeaser;
     private ImageView mCommentTeaserAvatar;
     private TextView mCommentTeaserText;
@@ -10057,7 +10059,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             line = line.replaceFirst("(?i)(published|premiered|streamed live) on ", "");
             if (mWatchCompact) {
-                line = line.split("\\s*[•·]\\s*")[0]; // MEETUBE(watch-look): the views alone
+                line = line.replaceAll("\\s*[•·]\\s*", COMPACT_DOT);
             }
             mWatchMeta.setText(line);
         }
@@ -10206,10 +10208,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 mDescriptionDate = !TextUtils.isEmpty(calendarDate) ? calendarDate : date;
             }
             String meta;
-            if (mWatchCompact) {
-                meta = views; // MEETUBE(watch-look): channel, subscribers, views - the date is in the description
-            } else if (!TextUtils.isEmpty(views) && !TextUtils.isEmpty(date)) {
-                meta = views + com.newtube.mobile.ui.common.MetaSeparator.DOT + date;
+            if (!TextUtils.isEmpty(views) && !TextUtils.isEmpty(date)) {
+                meta = views + (mWatchCompact ? COMPACT_DOT : com.newtube.mobile.ui.common.MetaSeparator.DOT) + date;
             } else if (!TextUtils.isEmpty(views)) {
                 meta = views;
             } else {
@@ -10221,7 +10221,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // absolute-only answer fills just an empty line: swapping a card's "4 days ago" for
             // "Sep 20, 2026" a second after opening was the jump UX-14 removed.
             if (!TextUtils.isEmpty(meta)
-                    && (mWatchCompact || !TextUtils.isEmpty(relativeDate) || mWatchMeta.length() == 0)) {
+                    && (!TextUtils.isEmpty(relativeDate) || mWatchMeta.length() == 0)) {
                 setWatchTextFaded(mWatchMeta, meta);
             }
 

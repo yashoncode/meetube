@@ -306,6 +306,7 @@ public class MobileBrowseActivity extends MobileActivity
         // mini card; ordinary navigation still uses BrowseWindowAnimation's quick fade.
 
         setContentView(R.layout.activity_mobile_browse);
+        com.newtube.mobile.ui.common.LaunchSplash.play(this);
 
         registerBackHandler(this::handleBack);
         sLive = new java.lang.ref.WeakReference<>(this);
@@ -1287,7 +1288,10 @@ public class MobileBrowseActivity extends MobileActivity
                     // The page swaps a frame later: its heaviest frames land while the lens swells in place.
                     mBottomNav.postOnAnimation(() -> onNavItemChosen(itemId));
                 } else {
-                    Motion.nudge(findViewById(R.id.mobile_nav_glass)); // MEETUBE(motion): the bar acknowledges the switch
+                    View glass = findViewById(R.id.mobile_nav_glass);
+                    if (glass != null && glass.getScaleX() == 1f) { // not while a drag's pop settles (#90)
+                        Motion.nudge(glass); // MEETUBE(motion): the bar acknowledges the switch
+                    }
                     onNavItemChosen(itemId);
                 }
             }
@@ -1352,8 +1356,8 @@ public class MobileBrowseActivity extends MobileActivity
         return true;
     }
 
-    // MEETUBE(#90): the lit tab's pill dragged along the bar - the lens follows the finger (a tick per
-    // tab it crosses) and the tab it is let go on opens, the lens gliding on from there.
+    // MEETUBE(#90): a finger dragged along the bar - the lens follows it from wherever it started (a
+    // tick and a pop per tab it crosses) and the tab it is let go on opens, the lens gliding on from there.
     private float mNavDownX = Float.NaN;
     private boolean mNavDragging;
     private boolean mNavDragLens;
@@ -1370,8 +1374,7 @@ public class MobileBrowseActivity extends MobileActivity
         int action = event.getActionMasked();
         if (action == android.view.MotionEvent.ACTION_DOWN) {
             mNavDragging = false;
-            View lit = mBottomNav != null ? mBottomNav.findViewById(mBottomNav.getSelectedItemId()) : null;
-            mNavDownX = lit != null && lit.isShown() && isOn(lit, event) ? event.getRawX() : Float.NaN;
+            mNavDownX = mBottomNav != null && mBottomNav.isShown() && isOn(mBottomNav, event) ? event.getRawX() : Float.NaN;
             return false;
         }
         if (Float.isNaN(mNavDownX)) {
@@ -1389,11 +1392,12 @@ public class MobileBrowseActivity extends MobileActivity
             }
             // A drag now, not a tap: the tab under the finger lets go of the press.
             mNavDragging = true;
-            mNavDragOver = mBottomNav.getSelectedItemId();
+            mNavDragOver = View.NO_ID; // the tab under the finger pops out (and ticks) below
             android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
             cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
             super.dispatchTouchEvent(cancel);
             cancel.recycle();
+            popNavBar(bar, true);
             mNavDragLens = com.newtube.mobile.ui.common.NavLens.enabled(this)
                     && com.newtube.mobile.ui.common.NavLens.supported(this)
                     && bar instanceof com.newtube.mobile.ui.common.GlassView;
@@ -1407,7 +1411,7 @@ public class MobileBrowseActivity extends MobileActivity
         // The finger in the bar's coordinates, kept between the first and last tabs' centres.
         int[] at = new int[2];
         bar.getLocationOnScreen(at);
-        float x = event.getRawX() - at[0];
+        float x = (event.getRawX() - at[0]) / bar.getScaleX(); // the bar is popped out while dragged
         float min = Float.MAX_VALUE;
         float max = -Float.MAX_VALUE;
         int over = mNavDragOver;
@@ -1428,17 +1432,27 @@ public class MobileBrowseActivity extends MobileActivity
         }
         x = Math.max(min, Math.min(max, x));
         if (over != mNavDragOver) {
+            popNavTab(mNavDragOver, false);
+            popNavTab(over, true);
             mNavDragOver = over;
             com.newtube.mobile.ui.common.Haptics.tick(mBottomNav);
+        }
+        if (mBottomNav.getBackground() instanceof NavBloom) { // the glow rides under the finger too
+            int[] nav = new int[2];
+            mBottomNav.getLocationOnScreen(nav);
+            ((NavBloom) mBottomNav.getBackground()).follow(end ? Float.NaN : x - (nav[0] - at[0]) / bar.getScaleX(), over);
         }
         com.newtube.mobile.ui.common.NavLens lens = findViewById(R.id.mobile_nav_lens);
         View lit = mBottomNav.findViewById(mBottomNav.getSelectedItemId());
         if (!end) {
-            if (mNavDragLens && lit != null) {
-                lens.drag((com.newtube.mobile.ui.common.GlassView) bar, lit, x);
+            View under = mBottomNav.findViewById(over);
+            if (mNavDragLens && under != null) {
+                lens.drag((com.newtube.mobile.ui.common.GlassView) bar, under, x);
             }
             return true;
         }
+        popNavTab(over, false);
+        popNavBar(bar, false); // a switch's wiggle takes it over from wherever it is
         mNavDownX = Float.NaN;
         mNavDragging = false;
         int target = action == android.view.MotionEvent.ACTION_UP ? over : mBottomNav.getSelectedItemId();
@@ -1456,6 +1470,35 @@ public class MobileBrowseActivity extends MobileActivity
                     () -> mBottomNav.setItemBackground(mNavPill)); // back home
         }
         return true;
+    }
+
+    /** The tab under a dragged lens pops out, and back in once the lens moves on. */
+    private void popNavTab(int itemId, boolean out) {
+        View tab = itemId != View.NO_ID ? mBottomNav.findViewById(itemId) : null;
+        if (tab != null) {
+            float scale = out ? 1.3f : 1f;
+            tab.animate().scaleX(scale).scaleY(scale).setDuration(out ? 240 : 180)
+                    .setInterpolator(out ? new android.view.animation.OvershootInterpolator(2f) : Motion.STANDARD).start();
+        }
+    }
+
+    /** The whole bar bounces out while a finger drags along it, and bounces back when it lets go. */
+    private static void popNavBar(View bar, boolean out) {
+        Object running = bar.getTag(R.id.mobile_jiggle_animator);
+        if (running instanceof android.animation.Animator) {
+            ((android.animation.Animator) running).cancel();
+        }
+        android.animation.ValueAnimator pop = android.animation.ValueAnimator.ofFloat(bar.getScaleX(), out ? 1.06f : 1f);
+        // A loose spring both ways: it bounces out past its size, and back in past rest, a few times.
+        Motion.Spring spring = new Motion.Spring(0f, 1f, 0f, 420f, 0.38f, 0.002f);
+        pop.setDuration(Math.max(1, spring.durationMs));
+        pop.setInterpolator(spring);
+        pop.addUpdateListener(a -> {
+            bar.setScaleX((float) a.getAnimatedValue());
+            bar.setScaleY((float) a.getAnimatedValue());
+        });
+        bar.setTag(R.id.mobile_jiggle_animator, pop);
+        pop.start();
     }
 
     private static boolean isOn(View view, android.view.MotionEvent event) {

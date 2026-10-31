@@ -181,14 +181,14 @@
     <!-- MEETUBE(home-rows): General > Home layout (issue #4). -->
     <string name="mobile_settings_home_layout">Home layout</string>
     <string name="mobile_settings_app_icon">App icon</string>
-    <string name="mobile_app_icon_default">MeeTube (default)</string>
-    <string name="mobile_app_icon_classic">MeeTube (Classic)</string>
-    <string name="mobile_app_icon_fantasy">MeeTube (Fantasy)</string>
-    <string name="mobile_app_icon_glass_heart">MeeTube (Glass Heart)</string>
-    <string name="mobile_app_icon_ruby">MeeTube (Ruby)</string>
-    <string name="mobile_app_icon_play">MeeTube (Play)</string>
-    <string name="mobile_app_icon_play_dark">MeeTube (Play Dark)</string>
-    <string name="mobile_app_icon_blaze">MeeTube (Blaze)</string>
+    <string name="mobile_app_icon_default">Classic (Default)</string>
+    <string name="mobile_app_icon_classic">Black Heart</string>
+    <string name="mobile_app_icon_fantasy">Fantasy</string>
+    <string name="mobile_app_icon_glass_heart">Glass Heart</string>
+    <string name="mobile_app_icon_ruby">OG Glass</string>
+    <string name="mobile_app_icon_play">OG Play</string>
+    <string name="mobile_app_icon_play_dark">OG Neon</string>
+    <string name="mobile_app_icon_blaze">Fiery Blaze</string>
     <string name="mobile_settings_loader">Loading spinner</string>
     <string name="mobile_loader_neon">Neon ring</string>
     <string name="mobile_loader_frosted">Frosted glass</string>

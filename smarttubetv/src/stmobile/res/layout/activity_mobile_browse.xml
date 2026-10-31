@@ -391,7 +391,7 @@
                     android:layout_height="22dp"
                     android:layout_marginEnd="8dp"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/ic_meetube_mark_fantasy" />
+                    android:src="@drawable/ic_meetube_mark_default" />
 
                 <TextView
                     android:id="@+id/mobile_title_bar"

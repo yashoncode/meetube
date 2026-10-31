@@ -36,10 +36,9 @@ final class BrowseTopBar {
         });
     }
 
-    /** MEETUBE(app icon): the brand and the launch splash follow the picked icon (on resume: Settings may have changed it). */
+    /** MEETUBE(app icon): the brand follows the picked icon (on resume: Settings may have changed it). */
     void syncMark(Activity activity) {
         com.newtube.mobile.ui.common.AppIcon.show((ImageView) mMark, true);
-        com.newtube.mobile.ui.common.AppIcon.syncSplash(activity);
     }
 
     /**

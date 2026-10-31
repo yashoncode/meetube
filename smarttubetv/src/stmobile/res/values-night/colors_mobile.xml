@@ -54,4 +54,7 @@
     <color name="meetube_switch_off">#3A3A3F</color>
     <color name="meetube_accent">#FF453A</color>
     <color name="meetube_switch_on">@color/meetube_accent</color>
+    <color name="splash_mono">#FFFFFFFF</color>
+    <color name="splash_glass_start">#E6FFFFFF</color>
+    <color name="splash_glass_end">#59FFFFFF</color>
 </resources>

@@ -1,20 +1,13 @@
-"""Draw the MeeTube mark: a red heart with a black, round-cornered play triangle in it, on black.
+"""Draw the themed-icon (Android 13+ monochrome) layer: the MeeTube heart with the play triangle cut out.
 
-One geometry: the themed-icon vector (ic_launcher_monochrome), the splash/in-app mark (ic_meetube_mark)
-and ic_launcher_foreground, plus the default launcher icon (red heart, white triangle, white tile) and the
-README icons. The Fantasy icon is the painted artwork (tools/icon_from_image.py).
-The heart is Material's "favorite" outline (24-unit grid, Apache 2.0); everything is placed on that
-grid and scaled into the 108-unit adaptive-icon grid. Usage: python tools/render_icon.py
+Every coloured icon is a PNG built by tools/icons_from_pngs.py. The heart is Material's "favorite"
+outline (24-unit grid, Apache 2.0); everything is placed on that grid and scaled into the 108-unit
+adaptive-icon grid. Usage: python tools/render_icon.py
 """
 import pathlib
 
-from PIL import Image, ImageDraw
-
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 RES = ROOT / "smarttubetv" / "src" / "stmobile" / "res"
-GROUND = (0x00, 0x00, 0x00)
-RED = (0xFF, 0x45, 0x3A)
-SS = 4  # supersampling
 
 # Material "favorite", absolute segments on the 24 grid.
 HEART_START = (12, 21.35)
@@ -32,10 +25,8 @@ HEART = [
 TRIANGLE = [(9.6, 7.45), (9.6, 14.5), (15.9, 10.97)]
 CORNER = 0.95  # triangle corner rounding, 24 grid
 
-# 24 grid -> 108 grid: the launcher heart spans x 27..81 inside the 66-unit safe zone; the in-app
-# mark fills its whole box.
+# 24 grid -> 108 grid: the heart spans x 27..81 inside the 66-unit safe zone.
 LAUNCHER = (2.7, 21.6, 22.9)
-MARK = (5.0, -6.0, -6.9)
 
 
 def rounded_triangle():
@@ -99,84 +90,8 @@ def vector(comment, size_dp, transform, heart_color, triangle_color, cutout):
             f'{body}    </group>\n</vector>\n')
 
 
-def cubic(p0, p1, p2, p3, n=48):
-    pts = []
-    for i in range(1, n + 1):
-        t = i / n
-        u = 1 - t
-        pts.append((u ** 3 * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t ** 3 * p3[0],
-                    u ** 3 * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t ** 3 * p3[1]))
-    return pts
-
-
-def quad(p0, p1, p2, n=16):
-    return [((1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0],
-             (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1])
-            for t in (i / n for i in range(n + 1))]
-
-
-def heart_points():
-    pts = [HEART_START]
-    for seg in HEART:
-        if seg[0] == "L":
-            pts.append(seg[1])
-        else:
-            pts += cubic(pts[-1], *seg[1:])
-    return pts
-
-
-def triangle_points():
-    pts = []
-    for a, corner, b in rounded_triangle():
-        pts += quad(a, corner, b)
-    return pts
-
-
-def render(size, crop=18, ground=GROUND, triangle=GROUND):
-    """The adaptive icon as a legacy launcher shows it: the centre 72 units, squircle-masked."""
-    full = size * 108 // (108 - 2 * crop) * SS
-    u = full / 108
-    scale, tx, ty = LAUNCHER
-
-    def place(points):
-        return [((x * scale + tx) * u, (y * scale + ty) * u) for x, y in points]
-
-    img = Image.new("RGBA", (full, full), ground + (255,))
-    d = ImageDraw.Draw(img)
-    d.polygon(place(heart_points()), fill=RED)
-    d.polygon(place(triangle_points()), fill=triangle)
-    c = round(crop * u)
-    img = img.crop((c, c, full - c, full - c))
-    mask = Image.new("L", img.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, img.size[0] - 1, img.size[1] - 1],
-                                           radius=img.size[0] * 0.23, fill=255)
-    img.putalpha(mask)
-    return img.resize((size, size), Image.LANCZOS)
-
-
 if __name__ == "__main__":
-    drawable = RES / "drawable"
-    (drawable / "ic_launcher_foreground.xml").write_text(vector(
-        "MEETUBE: the mark - a red heart with a black play triangle, inside the 66dp safe zone.",
-        108, LAUNCHER, "#FF453A", "#000000", False), encoding="utf-8")
-    (drawable / "ic_launcher_monochrome.xml").write_text(vector(
+    (RES / "drawable" / "ic_launcher_monochrome.xml").write_text(vector(
         "MEETUBE: themed-icon (Android 13+) mark - the heart with the play triangle cut out.",
         108, LAUNCHER, "#FFFFFF", None, True), encoding="utf-8")
-    (drawable / "ic_meetube_mark.xml").write_text(vector(
-        "MEETUBE: the in-app mark (brand pill) - the launcher heart and play triangle.",
-        22, MARK, "#FF453A", "#000000", False), encoding="utf-8")
-    # The default icon (since 3.2.0; named Fantasy before): the red heart with a white play
-    # triangle on a white tile.
-    white = (0xFF, 0xFF, 0xFF)
-    (drawable / "ic_launcher_foreground_fantasy.xml").write_text(vector(
-        "MEETUBE(app icon): the default mark - the red heart with a white play triangle.",
-        108, LAUNCHER, "#FF453A", "#FFFFFF", False), encoding="utf-8")
-    (drawable / "ic_meetube_mark_fantasy.xml").write_text(vector(
-        "MEETUBE(app icon): the default in-app mark (brand pill), the Fantasy name is from before 3.2.0.",
-        22, MARK, "#FF453A", "#FFFFFF", False), encoding="utf-8")
-    for density, size in {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}.items():
-        render(size, ground=white, triangle=white).save(RES / ("mipmap-" + density) / "app_icon.png")
-    render(512, ground=white, triangle=white).save(ROOT / ".github" / "assets" / "icon.png")
-    render(256, ground=white, triangle=white).save(ROOT / ".github" / "assets" / "meetube" / "icon.png")
-    # The Fantasy launcher PNGs come from the painted artwork: tools/icon_from_image.py.
     print("ok")
