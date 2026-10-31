@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
@@ -20,6 +21,7 @@ public final class NavHider extends RecyclerView.OnScrollListener {
     private boolean mHidden;
     private boolean mHeld;
     private int mTravel; // signed scroll distance since the last change of direction
+    @Nullable private java.util.function.Consumer<Float> mOnSlide;
 
     public NavHider(View bar) {
         mBar = bar;
@@ -43,6 +45,11 @@ public final class NavHider extends RecyclerView.OnScrollListener {
         }
     }
 
+    /** MEETUBE(issue #125): told where the bar slides to (0 back, its travel away), for what rides on it. */
+    public void setOnSlide(@Nullable java.util.function.Consumer<Float> onSlide) {
+        mOnSlide = onSlide;
+    }
+
     /** MEETUBE(shorts, issue #107): held, the bar stays down whatever the list does. */
     public void hold(boolean held) {
         mHeld = held;
@@ -63,6 +70,9 @@ public final class NavHider extends RecyclerView.OnScrollListener {
         mBar.animate().cancel();
         mBar.animate().translationY(0f).alpha(1f).setDuration(DURATION_MS)
                 .setInterpolator(new DecelerateInterpolator()).start();
+        if (mOnSlide != null) {
+            mOnSlide.accept(0f);
+        }
     }
 
     private void hide() {
@@ -72,8 +82,12 @@ public final class NavHider extends RecyclerView.OnScrollListener {
         mHidden = true;
         int margin = mBar.getLayoutParams() instanceof ViewGroup.MarginLayoutParams
                 ? ((ViewGroup.MarginLayoutParams) mBar.getLayoutParams()).bottomMargin : 0;
+        float travel = mBar.getHeight() + margin;
         mBar.animate().cancel();
-        mBar.animate().translationY(mBar.getHeight() + margin).alpha(0f).setDuration(DURATION_MS)
+        mBar.animate().translationY(travel).alpha(0f).setDuration(DURATION_MS)
                 .setInterpolator(new DecelerateInterpolator()).start();
+        if (mOnSlide != null) {
+            mOnSlide.accept(travel);
+        }
     }
 }

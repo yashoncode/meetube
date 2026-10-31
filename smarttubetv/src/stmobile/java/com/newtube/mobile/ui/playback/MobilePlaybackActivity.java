@@ -3978,6 +3978,7 @@ public class MobilePlaybackActivity extends MobileActivity
         public void onServiceConnected(ComponentName name, IBinder binder) {
             mPlaybackService = ((MobilePlaybackService.LocalBinder) binder).getService();
             mServiceBound = true;
+            mPlaybackService.setOnExternalPlay(MobilePlaybackActivity.this::onExternalPlay);
             if (mPlayer != null) {
                 mPlaybackService.attachPlayer(mPlayer, mPresenter, buildContentIntent());
             }
@@ -4004,6 +4005,9 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void unbindPlaybackService() {
+        if (mPlaybackService != null) {
+            mPlaybackService.setOnExternalPlay(null);
+        }
         if (mServiceBound) {
             try {
                 unbindService(mServiceConnection);
@@ -4725,6 +4729,19 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     private boolean isHoldingSeekBar() {
         return mScrubbing || (mTimeBar != null && mTimeBar.isHeld());
+    }
+
+    /**
+     * MEETUBE(issue #121): a play from outside the screen (a headset or Bluetooth button, the lock
+     * screen, the notification) brings the controls up, as a pause from outside does (issue #101),
+     * so the resumed state is visible. They hide on the usual timer once it plays (onAutoHideTick).
+     */
+    private void onExternalPlay() {
+        if (!mControlsVisible && !mIsInPip
+                && (mCastSessionManager == null || !mCastSessionManager.isConnected())
+                && getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+            showControlsInternal(true);
+        }
     }
 
     private void onAutoHideTick() {
@@ -8675,6 +8692,14 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void showRelatedSkeleton() {
+        if (isRelatedHidden()) {
+            // MEETUBE(issue #122): Settings > Hide Up next - no list is coming, so no label or
+            // placeholder rows for one. Runs on every new video, the first open included.
+            if (mWatchRelatedLabel != null) {
+                mWatchRelatedLabel.setVisibility(View.GONE);
+            }
+            return;
+        }
         if (mRelatedSkeleton == null) {
             return;
         }
@@ -10312,6 +10337,11 @@ public class MobilePlaybackActivity extends MobileActivity
         view.animate().alpha(1f).setDuration(Motion.FADE_IN_MS).setInterpolator(Motion.STANDARD).start();
     }
 
+    /** Settings > Hide Up next: SuggestionsController sends no related rows (the queue still comes). */
+    private boolean isRelatedHidden() {
+        return PlayerTweaksData.instance(this).isSuggestionsDisabled();
+    }
+
     private boolean showsDislikeCount() {
         return PlayerTweaksData.instance(this).isReturnYouTubeDislikeEnabled();
     }
@@ -10972,7 +11002,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void bindRelatedChips(MediaItemMetadata metadata) {
-        if (mRelatedChips == null || isShortsMode()
+        if (mRelatedChips == null || isShortsMode() || isRelatedHidden()
                 || TextUtils.isEmpty(metadata.getAuthor()) || TextUtils.isEmpty(metadata.getChannelId())) {
             return;
         }

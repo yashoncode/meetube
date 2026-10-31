@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- MEETUBE(up-next): the small card over an ended video (NextCountdown) - "Up next in N", the next
      title, Cancel / Replay / Play now, and a bar that drains over the ten seconds. Clickable so a
-     tap on it never reaches the player's tap-to-toggle-controls. Fits the ~200dp portrait box. -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     tap on it never reaches the player's tap-to-toggle-controls. Fits the ~200dp portrait box.
+     A vertical LinearLayout, not a FrameLayout: a match_parent bar in a wrap_content FrameLayout
+     measures to the whole screen width and stretched the card edge to edge (issue #123). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_next_countdown"
     android:layout_width="wrap_content"
@@ -12,6 +14,7 @@
     android:background="@drawable/bg_next_countdown"
     android:clickable="true"
     android:focusable="false"
+    android:orientation="vertical"
     android:visibility="gone"
     tools:visibility="visible">
 
@@ -21,7 +24,7 @@
         android:orientation="vertical"
         android:paddingHorizontal="14dp"
         android:paddingTop="12dp"
-        android:paddingBottom="14dp">
+        android:paddingBottom="11dp">
 
         <TextView
             android:id="@+id/mobile_next_label"
@@ -80,7 +83,6 @@
         android:id="@+id/mobile_next_bar"
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:layout_gravity="bottom"
         android:background="@color/mobile_color_primary" />
 
-</FrameLayout>
+</LinearLayout>

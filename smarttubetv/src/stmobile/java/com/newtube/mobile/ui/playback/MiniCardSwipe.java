@@ -65,6 +65,8 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     private float mStartX;
     private float mStartY;
     private boolean mDragging;
+    /** MEETUBE(issue #125): home's translation, below its laid-out place while the nav bar is away. */
+    private float mHomeY;
     /** The touch stopped being a drag (a second finger): consume it to the end. */
     private boolean mIgnoring;
     @Nullable
@@ -93,6 +95,24 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         }
         mSnapX.cancel();
         mSnapY.cancel();
+    }
+
+    public float homeY() {
+        return mHomeY;
+    }
+
+    /**
+     * MEETUBE(issue #125): home moves with the nav bar under it (slid off by a scroll, NavHider). A
+     * card resting at a bottom corner rides along; one at the top, held, or closing stays put.
+     */
+    public void setHomeY(float homeY) {
+        mHomeY = homeY;
+        View parent = (View) mCard.getParent();
+        if (mDragging || parent == null || mCard.getVisibility() != View.VISIBLE || !mCallback.canSwipe()
+                || mCard.getTop() + mCard.getHeight() / 2f + mCard.getTranslationY() <= parent.getHeight() / 2f) {
+            return;
+        }
+        mSnapY.animateToFinalPosition(homeY);
     }
 
     private MiniCardSwipe(View card, Callback callback) {
@@ -240,7 +260,7 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         float centerY = mCard.getTop() + mCard.getHeight() / 2f + mCard.getTranslationY() + velocityY * THROW_S;
         float homeCenterX = homeLeft + mCard.getWidth() / 2f;
         float x = Math.abs(centerX - homeCenterX) < Math.abs(centerX - (homeCenterX + otherSide)) ? 0f : otherSide;
-        float y = centerY > parent.getHeight() / 2f || top >= 0f ? 0f : top;
+        float y = centerY > parent.getHeight() / 2f || top >= 0f ? mHomeY : top;
 
         mCard.setAlpha(1f);
         mSnapX.setStartVelocity(velocityX);
