@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.2.3** Mirage](#323-mirage) | 2026-10-31 | Pick your spinner and icon, Shorts autoscroll, a mini player that rides the bottom bar |
 | [**3.2.1** Sublime](#321-sublime) | 2026-10-28 | Shorts open instantly, a SponsorBlock skip pill, transcripts for songs without lyrics |
 | [**3.2.0** Rebirth](#320-rebirth) | 2026-10-28 | MeTube is now MeeTube, downloads up to 4K, GlowFlow everywhere |
 | [**3.1.8** Lora](#318-lora) | 2026-10-27 | Live rings, a playful Customization page, zoom anywhere |
@@ -37,6 +38,66 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.2.3 Mirage
+
+> **Pick your spinner and icon, Shorts autoscroll, a mini player that rides the bottom bar**<br>
+> 📅 2026-10-31 · closes #85, #114, #117, #118, #120, #121, #122, #123, #124, #125, #127, #129, #130, #132 and #134
+
+### ✨ New
+
+- **Pick your loading spinner.** Customization has Neon ring, Frosted glass, Cookie, Frosted cookie and a liquid glass set: Liquid ring, Glass orb, Liquid blob and Glass orbit. One choice changes every spinner in the app, the pull to refresh circle included (#114).
+- **More app icons.** Eight icons named by look: Classic, Black Heart, Fantasy, Glass Heart, OG Glass, OG Play, OG Neon and Fiery Blaze. Each is its shape alone on a clear background, on the home screen, in Settings and on the splash.
+- **A launch animation.** A play symbol grows in and melts into frosted glass over Home, the same for every icon, in under a second.
+- **Shorts autoscroll.** When a short ends, play it again or move on to the next one, which slides up as a swipe does. Auto-scroll is also in a short's menu (#134).
+- **Save, share and import your settings.** Settings > Backup saves them to a file or shares them with a friend. Only settings travel, never accounts, linked devices, history, caches or passwords, and an import keeps this phone's passwords.
+- **Hide the red watched line** on thumbnails with a switch in Customization (#132).
+- **A hint on a held tab.** Holding a bottom bar tab shows a glass pill: "Tabs customization" with tab names on, or the tab's name and "Change" with them off. A tap opens Settings > Tabs (#130).
+- **Tap the open tab to refresh.** With its feed at the top, tapping the tab you are on refreshes it like a pull. A scrolled feed still glides to the top.
+- **Upload date on the watch page.** Channel, subscribers, views and when it went up ("3 days ago"), on one line.
+- **More qualities on more phones.** The quality sheet also lists the rungs your phone's decoder reports beyond it, such as 2160p60, as YouTube does. If one really can't play, the video drops back to 1080p (#85).
+
+### 🛠️ Changed
+
+- **The player lock is glass.** The lock button and the locked state sit on the player's glass like its other buttons. Locked reads "Locked · tap to unlock" with a shut padlock, and both drag anywhere over the video and keep their spot (#124, #127).
+- **The mini player rides the bottom bar.** On Home, Search and channel pages a card at a bottom corner slides down with a small bounce when a scroll hides the bar, and back up with it. Swiping the player down lands straight on it (#125).
+- **The refresh sound is off by default.** Switch it on in Customization (#120).
+- **A bouncier bottom bar drag.** A drag starts anywhere on the bar, the bar bounces out under your finger, the tab under the lens pops and the tab glow follows the finger.
+- **A linear brightness swipe** in fullscreen: half way up is half the brightness (#129).
+- **Controls after a play from outside.** A play from headphones, the lock screen or the notification brings up the controls (#121).
+- **A quality pick is for one video.** A pick in the player's quality sheet holds for that video; the next one opens at your Settings quality, and Auto in the sheet goes back to it.
+- **A softer Shorts edge fade.** Half as wide, eased at both ends, and on a zoomed or moved short it stays on the video's real edges (#117).
+- **The pull to refresh disc is see-through glass.**
+- **The diagnostic log** lists the last three reasons the app closed.
+
+### 🐛 Fixed
+
+- **The bottom bar in landscape** sits centred at a comfortable width instead of across the whole screen, on Search and channel pages too (#118).
+- **Picking 1080p no longer plays 240p** on videos played from HLS (#58).
+- **Hide Up next hides the whole section,** with no label, placeholder rows or chips (#122).
+- **The Up next card in fullscreen** sizes to its content instead of spanning the screen (#123).
+- **Home after a minimize** no longer stays in two columns in portrait after the phone was turned, and the Shorts tab keeps its two columns when it turns.
+- **The first launch after an install** shows no splash icon instead of the wrong one.
+
+### ✅ Issues resolved
+
+| Issue | Asked for | In 3.2.3 |
+| :-- | :-- | :-- |
+| [#85](https://github.com/yashoncode/meetube/issues/85) | 4K, 2K and 60 fps qualities on every phone | Rungs the decoder doubts are listed too |
+| [#114](https://github.com/yashoncode/meetube/issues/114) | The frosted loading spinner back | Spinner picker with Frosted glass and more |
+| [#117](https://github.com/yashoncode/meetube/issues/117) | A smoother Shorts edge fade | Half as wide, eased, follows a zoomed short |
+| [#118](https://github.com/yashoncode/meetube/issues/118) | A nav bar that fits landscape | Centred, at most 480dp wide |
+| [#120](https://github.com/yashoncode/meetube/issues/120) | Turn off the refresh sound | Off by default, a switch in Customization |
+| [#121](https://github.com/yashoncode/meetube/issues/121) | Controls after a play from outside | Headphones, lock screen and notification show them |
+| [#122](https://github.com/yashoncode/meetube/issues/122) | Hide Up next hides it all | No label, placeholder rows or chips |
+| [#123](https://github.com/yashoncode/meetube/issues/123) | A smaller Up next card in fullscreen | The card sizes to its content |
+| [#124](https://github.com/yashoncode/meetube/issues/124) | A glass lock button that moves | Lock on the player glass, drag it anywhere |
+| [#125](https://github.com/yashoncode/meetube/issues/125) | Mini player down with the bottom bar | It rides the bar on Home, Search and channels |
+| [#127](https://github.com/yashoncode/meetube/issues/127) | A clear locked state | "Locked · tap to unlock" pill with a shut padlock |
+| [#129](https://github.com/yashoncode/meetube/issues/129) | A linear brightness swipe | Half way up is half the brightness |
+| [#130](https://github.com/yashoncode/meetube/issues/130) | A new bottom bar long press | A glass hint that opens Tabs customization |
+| [#132](https://github.com/yashoncode/meetube/issues/132) | Hide the red watched line | A switch in Customization |
+| [#134](https://github.com/yashoncode/meetube/issues/134) | Autoscroll in Shorts | Replay or move to the next short when one ends |
 
 ## 3.2.1 Sublime
 
