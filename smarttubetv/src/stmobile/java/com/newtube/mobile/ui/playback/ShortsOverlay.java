@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.animation.DecelerateInterpolator;
@@ -24,10 +25,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.player.Media3PlayerController;
+import com.newtube.mobile.player.ShortsPeekPlayer;
 import com.newtube.mobile.ui.common.GlassDrawable;
 import com.newtube.mobile.ui.common.ShortsSeen;
 
@@ -123,6 +127,15 @@ final class ShortsOverlay {
     private final ImageView mFlash;
     private final ImageView mHeart;
     private final ImageView mPeek;
+    /** MEETUBE(shorts peek): the next short's real first frame, over its thumbnail (ShortsPeekPlayer). */
+    private final TextureView mPeekFrame;
+    private final ShortsPeekPlayer mPeekPlayer;
+    /** The paged-to short whose first frame the peek still shows, until the player's own lands. */
+    @Nullable
+    private String mPeekCoverId;
+    private final Runnable mUncover = this::uncover;
+    /** Where the peek's frame waits while unused: far off screen, but laid out and drawn. */
+    private static final float PARKED = 100_000f;
     private final SeekBar mProgress;
     private final Watch mWatch;
     private final Host mHost;
@@ -173,6 +186,9 @@ final class ShortsOverlay {
         mFlash = root.findViewById(R.id.mobile_shorts_flash);
         mHeart = root.findViewById(R.id.mobile_shorts_heart);
         mPeek = root.findViewById(R.id.mobile_shorts_peek);
+        mPeekFrame = root.findViewById(R.id.mobile_shorts_peek_video);
+        mPeekFrame.setTranslationY(PARKED);
+        mPeekPlayer = new ShortsPeekPlayer(root.getContext(), mPeekFrame, this::onPeekFrame);
         mProgress = root.findViewById(R.id.mobile_shorts_progress);
         ShortsSeen.load(root.getContext());
 
@@ -283,7 +299,37 @@ final class ShortsOverlay {
             lp.topMargin = top;
             lp.bottomMargin = bottom;
             mPeek.setLayoutParams(lp);
+            FrameLayout.LayoutParams frame = (FrameLayout.LayoutParams) mPeekFrame.getLayoutParams();
+            frame.topMargin = top;
+            frame.bottomMargin = bottom;
+            mPeekFrame.setLayoutParams(frame);
         }
+    }
+
+    /** MEETUBE(shorts peek): decode the next short's first frame into the peek, ahead of the swipe. */
+    void preparePeek(@NonNull MediaItemFormatInfo formatInfo, @NonNull Media3PlayerController controller) {
+        if (mActive) {
+            uncover();
+            mPeekPlayer.prepare(formatInfo, controller);
+        }
+    }
+
+    /**
+     * The player's own first frame of {@code videoId} is on screen: the peek's stand-in goes.
+     * True when it stood in (the caller drops its thumbnail at once, not in a fade over the video).
+     */
+    boolean onPictureVisible(@Nullable String videoId) {
+        if (mPeekCoverId != null && mPeekCoverId.equals(videoId)) {
+            uncover();
+            return true;
+        }
+        return false;
+    }
+
+    /** Frees the peek's decoder (the app left, or Shorts did). */
+    void releasePeek() {
+        uncover();
+        mPeekPlayer.release();
     }
 
     boolean isActive() {
@@ -314,6 +360,7 @@ final class ShortsOverlay {
     /** MEETUBE(shorts-pip): the PiP window shows only the short; the buttons come back on expand. */
     void setInPip(boolean pip) {
         mInPip = pip;
+        uncover();
         hidePeek();
         mOverlay.setVisibility(mActive && !mCommentsOpen && !pip ? View.VISIBLE : View.GONE);
     }
@@ -369,6 +416,7 @@ final class ShortsOverlay {
             mOverlay.setVisibility(on && !mInPip ? View.VISIBLE : View.GONE);
             if (!on) {
                 mCurrent = null;
+                releasePeek();
                 hidePeek();
                 mVideo.setTranslationY(0f);
                 mVideo.setAlpha(1f);
@@ -521,6 +569,16 @@ final class ShortsOverlay {
         // until the new one is bound (bind hides it) - by now usually already playing under it.
         mPeekDir = 0;
         mPeek.setTranslationY(0f);
+        // MEETUBE(shorts peek): a real frame that came in with the swipe stays over the paged-to
+        // short until the player's own first frame of it (onPictureVisible). A frame still standing
+        // in for the LAST paged-to short (a swipe inside its open) is not this one: park it.
+        boolean frame = mPeekCoverId == null && mPeekVideo != null && mPeekFrame.getTranslationY() != PARKED;
+        mOverlay.removeCallbacks(mUncover);
+        mPeekCoverId = frame ? mPeekVideo.videoId : null;
+        mPeekFrame.setTranslationY(frame ? 0f : PARKED);
+        if (frame) {
+            mOverlay.postDelayed(mUncover, PEEK_COVER_MAX_MS);
+        }
         mVideo.setTranslationY(0f);
         mOverlay.removeCallbacks(mHidePeek);
         mOverlay.postDelayed(mHidePeek, PEEK_COVER_MAX_MS);
@@ -552,16 +610,43 @@ final class ShortsOverlay {
         if (mPeekVideo == null || mPeekVideo.videoId == null) {
             mPeekVideo = null;
             mPeek.setVisibility(View.GONE);
+            syncPeekFrame();
             return;
         }
         mOverlay.removeCallbacks(mHidePeek);
         // Whole where the video is whole (#25), and the phone can turn under a short (#57).
-        mPeek.setScaleType(fillsScreen(mPeek.getContext()) ? ImageView.ScaleType.CENTER_CROP
-                : ImageView.ScaleType.FIT_CENTER);
+        boolean fill = fillsScreen(mPeek.getContext());
+        mPeek.setScaleType(fill ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER);
+        mPeekPlayer.setCrop(fill);
         float height = mVideo.getHeight();
         mPeek.setTranslationY(dir > 0 ? height : -height);
         mPeek.setVisibility(View.VISIBLE);
         portrait(mPeek.getContext(), mPeekVideo.videoId).into(mPeek);
+        syncPeekFrame();
+    }
+
+    /** The neighbour's real frame rides in over its thumbnail when the peek player holds it. */
+    private void syncPeekFrame() {
+        if (mPeekCoverId != null) {
+            return; // still standing in for the short on screen (the same picture as under it)
+        }
+        boolean show = mPeekVideo != null && mPeekPlayer.hasFrame(mPeekVideo.videoId);
+        mPeekFrame.setTranslationY(show ? mPeek.getTranslationY() : PARKED);
+    }
+
+    /** A frame landed mid-swipe: it takes over from the thumbnail at once. */
+    private void onPeekFrame(@NonNull String videoId) {
+        if (mPeekDir != 0 && mPeekVideo != null && videoId.equals(mPeekVideo.videoId)) {
+            syncPeekFrame();
+        }
+    }
+
+    private void uncover() {
+        mOverlay.removeCallbacks(mUncover);
+        if (mPeekCoverId != null) {
+            mPeekCoverId = null;
+            syncPeekFrame();
+        }
     }
 
     private void hidePeek() {
@@ -569,6 +654,7 @@ final class ShortsOverlay {
         mPeekDir = 0;
         mPeekVideo = null;
         mPeek.setVisibility(View.GONE);
+        syncPeekFrame(); // parks the frame, unless it stands in for the paged-to short
     }
 
     /** The short {@code step} places from this one in the queue the Shorts tab built, or null. */

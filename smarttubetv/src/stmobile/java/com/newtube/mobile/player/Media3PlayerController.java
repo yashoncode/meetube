@@ -414,6 +414,29 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     /**
+     * MEETUBE(shorts peek): a fresh DASH source for {@code formatInfo}, built on the prebuild
+     * executor like {@link #prebuildNextSource}, handed to {@code onMain} on main (null when SABR
+     * would play it instead, or the build failed). Not stashed: the caller owns it.
+     */
+    public void buildSourceAsync(MediaItemFormatInfo formatInfo, java.util.function.Consumer<MediaSource> onMain) {
+        if (SabrSourcePreference.isPreferred(mContext) || formatInfo.isLive()) {
+            onMain.accept(null);
+            return;
+        }
+        SOURCE_BUILD_EXECUTOR.execute(() -> {
+            MediaSource source;
+            try {
+                source = mMediaSourceFactory.fromDashFormatInfo(formatInfo);
+            } catch (Throwable e) { // never kill the build thread
+                Log.e(TAG, "buildSourceAsync: build failed: " + e);
+                source = null;
+            }
+            MediaSource result = source;
+            mMainHandler.post(() -> onMain.accept(result));
+        });
+    }
+
+    /**
      * Consume-at-most-once stash read (id match required). Logs the NetPath consult line only
      * when an entry exists - at most one {@code prepare-stash hit|miss} line per open.
      */
