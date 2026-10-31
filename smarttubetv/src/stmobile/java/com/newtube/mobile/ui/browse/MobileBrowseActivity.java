@@ -755,7 +755,9 @@ public class MobileBrowseActivity extends MobileActivity
         float density = getResources().getDisplayMetrics().density;
         View pill = findViewById(R.id.mobile_nav_glass);
         int pillPx = pill != null && pill.getHeight() > 0 ? pill.getHeight() : Math.round(68 * density);
-        return pillPx + Math.round(10 * density);
+        // MEETUBE(issue #125): lower by the card's home offset while a scroll has the nav away.
+        float homeY = mMiniSwipe != null ? mMiniSwipe.homeY() : 0f;
+        return Math.max(0, pillPx + Math.round(10 * density - homeY));
     }
 
     /**

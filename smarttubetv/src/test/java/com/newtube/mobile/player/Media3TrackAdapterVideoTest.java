@@ -139,4 +139,26 @@ public class Media3TrackAdapterVideoTest {
 
         assertEquals("247", videoOverride().id);
     }
+
+    /** Issue #85: a 2160p60 the decoder reports beyond it - listed apart, pinned only when picked from that list. */
+    @Test
+    public void aRungBeyondTheDecoderPinsOnlyWhenPickedAsSuch() {
+        Format vp9_2160_60 = video("315", "vp09.00.51.08", 2160, 60, 18_000_000);
+        Format vp9_1080_60 = video("303", "vp09.00.41.08", 1080, 60, 4_000_000);
+        TrackGroup group = new TrackGroup("video", vp9_2160_60, vp9_1080_60);
+        Tracks tracks = new Tracks(ImmutableList.of(new Tracks.Group(group, true,
+                new int[] {C.FORMAT_EXCEEDS_CAPABILITIES, C.FORMAT_HANDLED}, new boolean[2])));
+        adapter.onTracksChanged(tracks);
+
+        assertEquals(1, adapter.getFormats(TrackSelectorManager.RENDERER_INDEX_VIDEO).size());
+        assertEquals("315", adapter.getVideoFormatsBeyondDecoder().get(0).getFormatId());
+
+        adapter.selectFormat(picked(vp9_2160_60)); // any other 2160p60 pick: the nearest playable rung
+        assertEquals("303", videoOverride().id);
+
+        FormatItem pick = adapter.getVideoFormatsBeyondDecoder().get(0);
+        Media3TrackAdapter.allowBeyondDecoder(pick);
+        adapter.selectFormat(pick);
+        assertEquals("315", videoOverride().id);
+    }
 }

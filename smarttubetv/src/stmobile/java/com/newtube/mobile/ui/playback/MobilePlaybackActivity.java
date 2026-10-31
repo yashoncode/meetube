@@ -1095,7 +1095,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             mVideoArea.setEdgeFade(isShortsMode() ? glass : null,
                     mPlayerView != null ? mPlayerView.getContentFrame() : null,
-                    dp(48));
+                    dp(24));
             return insets;
         });
         mShorts = new ShortsOverlay(getWindow().getDecorView(), mVideoArea, new ShortsOverlay.Host() {
@@ -9321,6 +9321,29 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
 
+        // MEETUBE(issue #85): the rungs this phone's decoder reports beyond it (a 2160p60 on a 2K30
+        // decoder), which YouTube offers anyway - each in its place by size and frame rate.
+        // A rung already offered in a playable codec is not repeated.
+        java.util.ArrayDeque<java.util.Map.Entry<String, FormatItem>> beyond = new java.util.ArrayDeque<>();
+        List<FormatItem> beyondFormats = mExoPlayerController != null
+                ? mExoPlayerController.getVideoFormatsBeyondDecoder() : null;
+        if (beyondFormats != null) {
+            java.util.LinkedHashMap<String, FormatItem> beyondRungs = new java.util.LinkedHashMap<>();
+            for (FormatItem item : beyondFormats) {
+                String label = item.getHeight() > 0 ? qualityLabel(item) : null;
+                if (label == null || rungs.containsKey(label)) {
+                    continue;
+                }
+                if (!beyondRungs.containsKey(label)) {
+                    beyondRungs.put(label, item);
+                }
+                if (!autoActive && item.isSelected()) {
+                    selectedRung = label;
+                }
+            }
+            beyond.addAll(beyondRungs.entrySet());
+        }
+
         // MEETUBE(quality): neither row writes the Settings quality - a pick here is this video's
         // only, and the next video opens at Settings' again. Each also drops the error fixer's
         // session override, which restoreVideoFormat would otherwise re-apply over the pick.
@@ -9332,20 +9355,47 @@ public class MobilePlaybackActivity extends MobileActivity
             dialog.dismiss();
         });
         for (java.util.Map.Entry<String, FormatItem> rung : rungs.entrySet()) {
-            FormatItem item = rung.getValue();
-            addQualityRow(qualityList, rung.getKey(), rung.getKey().equals(selectedRung), () -> {
-                dialog.dismiss();
-                Video now = getVideo();
-                if (!TextUtils.equals(openedForId, now != null ? now.videoId : null)) {
-                    return; // autoplay moved on under the open sheet: these rows are another video's
-                }
-                setFormat(item);
-                playerData.setTempVideoFormat(null);
-                playerData.setVideoVideoFormat(openedForId, item);
-            });
+            while (!beyond.isEmpty() && isRungAbove(beyond.peek().getValue(), rung.getValue())) {
+                addRungRow(qualityList, dialog, openedForId, beyond.poll(), selectedRung, true);
+            }
+            addRungRow(qualityList, dialog, openedForId, rung, selectedRung, false);
+        }
+        while (!beyond.isEmpty()) {
+            addRungRow(qualityList, dialog, openedForId, beyond.poll(), selectedRung, true);
         }
 
         showPlayerSheet(dialog);
+    }
+
+    /**
+     * One rung row of the Quality sheet: a pick is this video's only. {@code beyondDecoder}: a
+     * rung the decoder reports beyond it (issue #85), unmarked like YouTube; if it really can't, the error fixer
+     * drops the video to 1080p as for any decoder failure.
+     */
+    private void addRungRow(LinearLayout list, android.app.Dialog dialog, String openedForId,
+            java.util.Map.Entry<String, FormatItem> rung, String selectedRung, boolean beyondDecoder) {
+        FormatItem item = rung.getValue();
+        addQualityRow(list, rung.getKey(), rung.getKey().equals(selectedRung), () -> {
+            dialog.dismiss();
+            Video now = getVideo();
+            if (!TextUtils.equals(openedForId, now != null ? now.videoId : null)) {
+                return; // autoplay moved on under the open sheet: these rows are another video's
+            }
+            if (beyondDecoder) {
+                mExoPlayerController.allowBeyondDecoder(item);
+            }
+            setFormat(item);
+            PlayerData playerData = PlayerData.instance(this);
+            playerData.setTempVideoFormat(null);
+            playerData.setVideoVideoFormat(openedForId, item);
+        });
+    }
+
+    /** Whether rung {@code a} sits above {@code b} in the sheet: a bigger class, or the same at 60 fps against 30. */
+    private static boolean isRungAbove(FormatItem a, FormatItem b) {
+        int classA = com.newtube.mobile.player.VideoRung.classHeight(a.getWidth(), a.getHeight());
+        int classB = com.newtube.mobile.player.VideoRung.classHeight(b.getWidth(), b.getHeight());
+        return classA != classB ? classA > classB : a.getFrameRate() > 40 && b.getFrameRate() <= 40;
     }
 
     /** The current video's audio language variants, one per row ({@link AudioTrackChoices}). */

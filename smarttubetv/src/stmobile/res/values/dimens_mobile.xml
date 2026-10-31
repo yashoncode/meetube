@@ -57,9 +57,9 @@
     <dimen name="mobile_settings_header_size">14sp</dimen>
     <!-- MEETUBE(glass): room under a list for the floating nav pill (68dp pill + 12dp margin + 12dp gap). -->
     <dimen name="meetube_nav_clearance">92dp</dimen>
-    <!-- MEETUBE(tablet): the pill's widest; a phone's spans the screen, a tablet's fits its five
-         items (values-sw600dp). -->
-    <dimen name="meetube_nav_max_width">100000dp</dimen>
+    <!-- MEETUBE(issue #118): the pill's widest, room for its five items: a phone in portrait is
+         narrower, so it spans the screen; in landscape and on a tablet it sits centred. -->
+    <dimen name="meetube_nav_max_width">480dp</dimen>
     <!-- MEETUBE: the floating mini player, a size up from 180x102 (16:9); bigger on tablets
          (values-sw600dp, -sw720dp, -sw800dp). -->
     <dimen name="meetube_mini_width">216dp</dimen>

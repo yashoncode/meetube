@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -88,6 +89,7 @@ public class PinchZoomLayout extends FrameLayout {
     /** Where the fades were last laid out: the picture's box clipped to the child's. */
     private final Rect mFadeEdges = new Rect();
     private final Rect mFadeAt = new Rect();
+    private final RectF mFadePictureAt = new RectF();
     private LinearGradient mFadeTopShader;
     private LinearGradient mFadeBottomShader;
     private LinearGradient mFadeLeftShader;
@@ -216,6 +218,7 @@ public class PinchZoomLayout extends FrameLayout {
             mZoomTarget.setTranslationX(0f);
             mZoomTarget.setTranslationY(0f);
         }
+        invalidate(); // the edge fade follows the picture
     }
 
     /**
@@ -247,6 +250,7 @@ public class PinchZoomLayout extends FrameLayout {
         target.setScaleY(zoom);
         target.setTranslationX(zoom == 1f ? 0f : Math.max(-maxX, Math.min(maxX, tx)));
         target.setTranslationY(zoom == 1f ? 0f : Math.max(-maxY, Math.min(maxY, ty)));
+        invalidate(); // the edge fade follows the picture
         if (zoom != mZoom) {
             mZoom = zoom;
             if (mListener != null) {
@@ -323,21 +327,28 @@ public class PinchZoomLayout extends FrameLayout {
         int bottom = child.getBottom();
         mFadeAt.set(left, top, right, bottom);
         if (mFadePicture != null && mFadePicture.getWidth() > 0 && mFadePicture.isAttachedToWindow()) {
-            Rect picture = new Rect(0, 0, mFadePicture.getWidth(), mFadePicture.getHeight());
-            offsetDescendantRectToMyCoords(mFadePicture, picture);
-            if (!mFadeAt.intersect(picture)) {
+            // MEETUBE(issue #117): through each view's matrix, so a zoomed or panned picture fades
+            // at its real edges (offsetDescendantRectToMyCoords ignores scale and translation).
+            RectF picture = mFadePictureAt;
+            picture.set(0, 0, mFadePicture.getWidth(), mFadePicture.getHeight());
+            for (View v = mFadePicture; v != this && v.getParent() instanceof View; v = (View) v.getParent()) {
+                v.getMatrix().mapRect(picture);
+                picture.offset(v.getLeft() - v.getScrollX(), v.getTop() - v.getScrollY());
+            }
+            if (!mFadeAt.intersect(Math.round(picture.left), Math.round(picture.top),
+                    Math.round(picture.right), Math.round(picture.bottom))) {
                 mFadeAt.set(left, top, right, bottom);
             }
         }
-        int fadeY = Math.min(mFadePx, mFadeAt.height() / 4);
-        int fadeX = Math.min(mFadePx, mFadeAt.width() / 4);
+        int fadeY = Math.min(mFadePx, mFadeAt.height() / 8);
+        int fadeX = Math.min(mFadePx, mFadeAt.width() / 8);
         if (!mFadeAt.equals(mFadeEdges)) {
             mFadeEdges.set(mFadeAt);
             Rect e = mFadeEdges;
-            mFadeTopShader = new LinearGradient(0, e.top, 0, e.top + fadeY, 0xFF000000, 0, Shader.TileMode.CLAMP);
-            mFadeBottomShader = new LinearGradient(0, e.bottom - fadeY, 0, e.bottom, 0, 0xFF000000, Shader.TileMode.CLAMP);
-            mFadeLeftShader = new LinearGradient(e.left, 0, e.left + fadeX, 0, 0xFF000000, 0, Shader.TileMode.CLAMP);
-            mFadeRightShader = new LinearGradient(e.right - fadeX, 0, e.right, 0, 0, 0xFF000000, Shader.TileMode.CLAMP);
+            mFadeTopShader = fade(0, e.top, 0, e.top + fadeY);
+            mFadeBottomShader = fade(0, e.bottom, 0, e.bottom - fadeY);
+            mFadeLeftShader = fade(e.left, 0, e.left + fadeX, 0);
+            mFadeRightShader = fade(e.right, 0, e.right - fadeX, 0);
         }
         Rect e = mFadeEdges;
         int save = canvas.saveLayer(left, top, right, bottom, null);
@@ -356,5 +367,12 @@ public class PinchZoomLayout extends FrameLayout {
         }
         canvas.restoreToCount(save);
         return more;
+    }
+
+    /** Erases fully at the edge (x0, y0) and not at all at (x1, y1), eased at both ends so no line shows. */
+    private static LinearGradient fade(float x0, float y0, float x1, float y1) {
+        return new LinearGradient(x0, y0, x1, y1,
+                new int[] {0xFF000000, 0xD8000000, 0x80000000, 0x28000000, 0},
+                new float[] {0f, 0.25f, 0.5f, 0.75f, 1f}, Shader.TileMode.CLAMP);
     }
 }

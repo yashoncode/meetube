@@ -217,6 +217,19 @@ public final class MobileMiniPlayerController {
         hide();
     }
 
+    /**
+     * MEETUBE(issue #125): the nav bar under the card slid to {@code navY} (NavHider.setOnSlide):
+     * a card at a bottom corner follows it down and back up, as Home's does.
+     */
+    public void followNav(float navY) {
+        mSwipe.setHomeY(navY);
+    }
+
+    /** How far below its laid-out place the card rests now (the nav bar away), for the minimize morph. */
+    public float homeY() {
+        return mSwipe.homeY();
+    }
+
     /** Show the live mini session. Optionally animate it down from the watch-page video box. */
     public void sync(boolean animateFromPlayer) {
         finishClose(); // a card closing when this runs is closed, not brought back
@@ -232,7 +245,7 @@ public final class MobileMiniPlayerController {
         mBar.setScaleX(1f);
         mBar.setScaleY(1f);
         mBar.setTranslationX(0f); // a card swiped away (MiniCardSwipe)
-        mBar.setTranslationY(0f); // or dragged to another corner (MEETUBE(mini-float))
+        mBar.setTranslationY(mSwipe.homeY()); // or dragged to another corner (MEETUBE(mini-float)); lower while the nav is away
 
         mEntryAnimating = animateFromPlayer;
         mTextureHasFrame = false;
@@ -444,14 +457,14 @@ public final class MobileMiniPlayerController {
         mBar.setScaleX(sourceWidth / width);
         mBar.setScaleY(sourceHeight / height);
         mBar.setTranslationX(contentLocation[0] - cardLocation[0]);
-        mBar.setTranslationY(contentLocation[1] - cardLocation[1]);
+        mBar.setTranslationY(mSwipe.homeY() + contentLocation[1] - cardLocation[1]); // the card's place counts home's offset
 
         setControlsAlpha(0f);
         mBar.animate()
                 .scaleX(1f)
                 .scaleY(1f)
                 .translationX(0f)
-                .translationY(0f)
+                .translationY(mSwipe.homeY())
                 .setDuration(ENTRY_DURATION_MS)
                 .setInterpolator(new DecelerateInterpolator())
                 .withEndAction(() -> {
@@ -478,7 +491,7 @@ public final class MobileMiniPlayerController {
         mBar.setScaleX(1f);
         mBar.setScaleY(1f);
         mBar.setTranslationX(0f);
-        mBar.setTranslationY(0f);
+        mBar.setTranslationY(mSwipe.homeY());
         setControlsAlpha(1f);
     }
 
