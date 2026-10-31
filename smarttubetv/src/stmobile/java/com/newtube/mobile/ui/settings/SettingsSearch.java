@@ -92,6 +92,7 @@ final class SettingsSearch {
             {R.string.mobile_settings_app_icon, R.string.mobile_settings_search_kw_app_icon},
             {R.string.mobile_settings_loader, R.string.mobile_settings_search_kw_loader},
             {R.string.mobile_settings_watched_bar, R.string.mobile_settings_search_kw_watched_bar},
+            {R.string.mobile_settings_refresh_sound, R.string.mobile_settings_search_kw_refresh_sound},
             {R.string.mobile_settings_short_ends, R.string.mobile_settings_search_kw_short_ends},
             {R.string.mobile_settings_quality_wifi, R.string.mobile_settings_search_kw_quality},
             {R.string.mobile_settings_quality_mobile, R.string.mobile_settings_search_kw_quality},

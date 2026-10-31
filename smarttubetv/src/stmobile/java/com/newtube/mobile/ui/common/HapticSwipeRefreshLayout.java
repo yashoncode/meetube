@@ -2,14 +2,20 @@ package com.newtube.mobile.ui.common;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Animatable;
+import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.liskovsoft.smartyoutubetv2.tv.R;
 
 import java.lang.reflect.Field;
 
@@ -23,6 +29,10 @@ import java.lang.reflect.Field;
  * after each step of the pull (swiperefreshlayout 1.2.0: {@code mTotalUnconsumed} for a pull that
  * comes through the list's nested scrolling, {@code mInitialMotionY} for one it catches itself).
  * If a later version renames them, the pull just goes back to being silent.</p>
+ *
+ * <p>MEETUBE(loader): the circle that comes down shows the loader picked in Settings (the theme's
+ * {@code meetubeLoader}, as every other spinner) on a dark disc, in place of the stock arrow;
+ * SwipeRefreshLayout still animates its own arrow drawable, which is just no longer drawn.</p>
  */
 public class HapticSwipeRefreshLayout extends SwipeRefreshLayout {
     /** SwipeRefreshLayout.DRAG_RATE: its own touch pull moves the spinner at half the finger. */
@@ -41,17 +51,43 @@ public class HapticSwipeRefreshLayout extends SwipeRefreshLayout {
     private static Field sInitialMotionY;
     @Nullable
     private static Field sActivePointerId;
+    /** Pull-to-refresh disc: the night surface, in both themes, as the loaders are drawn for dark. */
+    private static final int DISC_COLOR = 0xFF1C1C21;
 
     /** The pull is past the refresh point: letting go now refreshes. */
     private boolean mEngaged;
     private long mLastClickAt;
 
     public HapticSwipeRefreshLayout(@NonNull Context context) {
-        super(context);
+        this(context, null);
     }
 
     public HapticSwipeRefreshLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        setProgressBackgroundColorSchemeColor(DISC_COLOR);
+        useLoader(context);
+    }
+
+    /** Puts the picked loader into SwipeRefreshLayout's circle; left as the arrow if that fails. */
+    private void useLoader(Context context) {
+        TypedArray a = context.obtainStyledAttributes(new int[] {R.attr.meetubeLoader});
+        Drawable loader = a.getDrawable(0);
+        a.recycle();
+        Field circleField = field("mCircleView");
+        if (loader == null || circleField == null) {
+            return;
+        }
+        try {
+            ImageView circle = (ImageView) circleField.get(this);
+            int pad = Math.round(4 * getResources().getDisplayMetrics().density);
+            circle.setPadding(pad, pad, pad, pad);
+            circle.setImageDrawable(loader);
+            if (loader instanceof Animatable) {
+                ((Animatable) loader).start(); // loops forever; drawn only while the circle shows
+            }
+        } catch (IllegalAccessException | RuntimeException e) {
+            // keep the stock arrow
+        }
     }
 
     @Override

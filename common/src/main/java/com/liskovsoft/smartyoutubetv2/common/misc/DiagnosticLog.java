@@ -1,7 +1,9 @@
 package com.liskovsoft.smartyoutubetv2.common.misc;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Application;
+import android.app.ApplicationExitInfo;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.Context;
@@ -305,6 +307,7 @@ public final class DiagnosticLog {
         header.append("Process uptime: ")
                 .append((SystemClock.elapsedRealtime() - android.os.Process.getStartElapsedRealtime()) / 1000)
                 .append(" s\n");
+        header.append(lastExits(context));
         header.append("Account: ").append(signedInState()).append('\n');
         header.append("Network: ").append(NetPath.networkSnapshot(context)).append('\n');
         header.append("Player: ").append(playerState(context)).append('\n');
@@ -315,6 +318,29 @@ public final class DiagnosticLog {
         header.append(", ").append(lineCount).append(" lines (").append(source).append(", max ")
                 .append(MAX_LINES).append(")\n");
         return header.toString();
+    }
+
+    /** Why the previous processes died (force-stop, low memory, freezer, crash...). Issue #126. */
+    private static String lastExits(Context context) {
+        if (Build.VERSION.SDK_INT < 30) {
+            return "";
+        }
+        StringBuilder out = new StringBuilder();
+        try {
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            SimpleDateFormat time = new SimpleDateFormat("MM-dd HH:mm:ss", Locale.US);
+            for (ApplicationExitInfo info : am.getHistoricalProcessExitReasons(null, 0, 3)) {
+                out.append("Exit: ").append(time.format(new Date(info.getTimestamp())))
+                        .append(" reason=").append(info.getReason())
+                        .append(" status=").append(info.getStatus())
+                        .append(" importance=").append(info.getImportance())
+                        .append(" pss=").append(info.getPss() / 1024).append("MB")
+                        .append(" desc=").append(info.getDescription()).append('\n');
+            }
+        } catch (RuntimeException e) {
+            out.append("Exit: unavailable (").append(e.getClass().getSimpleName()).append(")\n");
+        }
+        return out.toString();
     }
 
     private static String signedInState() {
