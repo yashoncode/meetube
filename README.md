@@ -2,17 +2,17 @@
 
 <h1 align="center">MeeTube</h1>
 
-**YouTube, reimagined. Different by design. Smooth by nature.** <br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
-
-<p align="center"><img src=".github/assets/meetube/showcase.webp" width="100%" alt="MeeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Shorts (full screen, swipe ready), Channels (banner, Subscribe, Shorts tab), Liquid glass (a tab bar that floats), Search (YouTube's chips and filters) and Offline (save it in 4K)"></p>
-
-<p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
-
 <p align="center">
 <a href="https://github.com/yashoncode/meetube/releases/latest"><img src="https://img.shields.io/github/v/release/yashoncode/meetube?style=for-the-badge&label=Release&color=0e75b6" alt="Release"></a>
 <a href="LICENSE"><img src="https://img.shields.io/github/license/yashoncode/meetube?style=for-the-badge&label=License&color=e8743b" alt="License"></a>
 <a href="https://github.com/yashoncode/meetube/releases"><img src="https://img.shields.io/github/downloads/yashoncode/meetube/total?style=for-the-badge&label=Downloads&color=4c1" alt="Downloads"></a>
 </p>
+
+**YouTube, reimagined. Different by design. Smooth by nature.** <br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
+
+<p align="center"><img src=".github/assets/meetube/showcase.webp" width="100%" alt="MeeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Shorts (full screen, swipe ready), Channels (banner, Subscribe, Shorts tab), Liquid glass (a tab bar that floats), Search (YouTube's chips and filters) and Offline (save it in 4K)"></p>
+
+<p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
 
 > [!IMPORTANT]
 > MeeTube is not affiliated with, endorsed by, or connected to YouTube or Google in any way. Use it at your own discretion.
