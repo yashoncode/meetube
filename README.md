@@ -8,6 +8,12 @@
 
 <p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
 
+<p align="center">
+<a href="https://github.com/yashoncode/meetube/releases/latest"><img src="https://img.shields.io/github/v/release/yashoncode/meetube?style=for-the-badge&label=Release&color=0e75b6" alt="Release"></a>
+<a href="LICENSE"><img src="https://img.shields.io/github/license/yashoncode/meetube?style=for-the-badge&label=License&color=e8743b" alt="License"></a>
+<a href="https://github.com/yashoncode/meetube/releases"><img src="https://img.shields.io/github/downloads/yashoncode/meetube/total?style=for-the-badge&label=Downloads&color=4c1" alt="Downloads"></a>
+</p>
+
 <p align="center"><a href="https://github.com/yashoncode/meetube/actions/workflows/release.yml"><img src="https://github.com/yashoncode/meetube/actions/workflows/release.yml/badge.svg" alt="Release build"></a></p>
 
 ## Features
@@ -93,3 +99,6 @@ A star on GitHub or sharing MeeTube with a friend helps just as much. Thank you 
 ## License
 
 MIT, see [LICENSE](LICENSE). The original NewTube and SmartTube copyright notices are kept. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+> [!IMPORTANT]
+> MeeTube is not affiliated with, endorsed by, or connected to YouTube or Google in any way. Use it at your own discretion.
