@@ -406,6 +406,8 @@
     <string name="mobile_settings_short_ends_next">Scroll to the next short</string>
     <string name="mobile_settings_watched_bar">Red watched line on thumbnails</string>
     <string name="mobile_settings_watched_bar_summary">How much of a video you have watched, under its thumbnail</string>
+    <string name="mobile_settings_refresh_sound">Refresh sound</string>
+    <string name="mobile_settings_refresh_sound_summary">A soft pop when you pull a page to refresh it</string>
     <!-- MEETUBE(settings-transfer): Backup > Share or move your settings. -->
     <string name="mobile_settings_transfer">Share or move your settings</string>
     <string name="mobile_settings_transfer_export">Save settings to a file</string>

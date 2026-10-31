@@ -30,6 +30,7 @@ import com.newtube.mobile.ui.common.AppIcon;
 import com.newtube.mobile.ui.common.CountStyle;
 import com.newtube.mobile.ui.common.Loader;
 import com.newtube.mobile.ui.common.MobileSnackbar;
+import com.newtube.mobile.ui.common.RefreshFeedback;
 import com.newtube.mobile.ui.common.ThemeMode;
 import com.newtube.mobile.ui.common.WatchedBar;
 import com.newtube.mobile.ui.playback.WatchLook;
@@ -160,6 +161,11 @@ final class AppPages {
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_watched_bar),
                 context.getString(R.string.mobile_settings_watched_bar_summary),
                 () -> WatchedBar.isShown(context), on -> WatchedBar.setShown(context, on)).needsRestart());
+
+        // MEETUBE(issue #120): the pop when a pull-to-refresh lets go; off by default.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_refresh_sound),
+                context.getString(R.string.mobile_settings_refresh_sound_summary),
+                () -> RefreshFeedback.isSoundOn(context), on -> RefreshFeedback.setSoundOn(context, on)));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_layout)));
 

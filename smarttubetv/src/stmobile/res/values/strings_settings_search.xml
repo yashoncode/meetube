@@ -43,5 +43,6 @@
     <string name="mobile_settings_search_kw_double_tap_seek">double tap seek skip forward rewind seconds jump interval</string>
     <string name="mobile_settings_search_kw_loader">loader loading spinner progress neon frosted glass cookie liquid ring orb blob orbit</string>
     <string name="mobile_settings_search_kw_watched_bar">watched progress red line bar history seen thumbnail</string>
+    <string name="mobile_settings_search_kw_refresh_sound">refresh sound pop audio pull swipe noise mute</string>
     <string name="mobile_settings_search_kw_short_ends">shorts loop repeat autoscroll auto scroll next swipe</string>
 </resources>

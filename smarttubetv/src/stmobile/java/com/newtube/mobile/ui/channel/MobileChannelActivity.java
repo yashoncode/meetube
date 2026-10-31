@@ -699,8 +699,6 @@ public class MobileChannelActivity extends MobileActivity
     }
 
     private void setupSwipeRefresh() {
-        mSwipe.setColorSchemeColors(getResources().getColor(R.color.mobile_color_on_surface));
-        mSwipe.setProgressBackgroundColorSchemeColor(getResources().getColor(R.color.mobile_color_surface));
         mSwipe.setOnRefreshListener(() -> {
             com.newtube.mobile.ui.common.RefreshFeedback.play(mSwipe);
             boolean hasContent = hasContent();
