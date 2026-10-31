@@ -480,23 +480,34 @@
                     android:visibility="gone" />
 
                 <!-- MEETUBE(lock, issue #98): fullscreen only (applyControlsInsets); locks out every
-                     gesture until mobile_player_unlock is tapped. Hideable in Player buttons. -->
+                     gesture until mobile_player_unlock is tapped. Hideable in Player buttons.
+                     Top-left: FloatingLock moves it to wherever it was dragged (issue #124). -->
                 <com.newtube.mobile.ui.playback.PlayerButton
                     android:id="@+id/mobile_player_lock"
                     style="@style/MobilePlayerLock"
-                    android:layout_gravity="center_vertical|start"
+                    android:layout_gravity="top|left"
                     android:contentDescription="@string/mobile_player_lock"
                     android:visibility="gone" />
 
             </FrameLayout>
 
-            <!-- MEETUBE(lock): the one thing a locked player answers; a tap anywhere shows it. -->
-            <ImageButton
+            <!-- MEETUBE(lock): the one thing a locked player answers; a tap anywhere shows it. It
+                 says so, where the lock button is only a padlock. Placed by FloatingLock too. -->
+            <TextView
                 android:id="@+id/mobile_player_unlock"
-                style="@style/MobilePlayerLock"
-                android:layout_gravity="center_vertical|start"
-                android:contentDescription="@string/mobile_player_unlock"
-                android:visibility="gone" />
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_gravity="top|left"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:paddingStart="12dp"
+                android:paddingEnd="16dp"
+                android:text="@string/mobile_player_locked"
+                android:textColor="@color/mobile_player_on_video"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_player_locked" />
 
             <!-- NEWTUBE(seek bar): the seek bar, YouTube-style - outside the controls overlay so that
                  in portrait it stays on the video's bottom edge as a thin progress line while the

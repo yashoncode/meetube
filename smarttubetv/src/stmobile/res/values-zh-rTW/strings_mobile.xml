@@ -96,7 +96,7 @@
     <string name="mobile_settings_player_buttons_fullscreen">全螢幕操作</string>
     <string name="mobile_settings_player_prev_next">上一部和下一部</string>
     <string name="mobile_player_lock">鎖定畫面</string>
-    <string name="mobile_player_unlock">解鎖</string>
+    <string name="mobile_player_locked">已鎖定 · 輕觸解鎖</string>
     <string name="mobile_transcript">轉錄稿</string>
     <string name="mobile_transcript_follow">透過轉錄稿跟著看。</string>
     <string name="mobile_transcript_show">顯示轉錄稿</string>

@@ -64,7 +64,7 @@
     <string name="mobile_settings_player_buttons_fullscreen">Acțiuni pe tot ecranul</string>
     <string name="mobile_settings_player_prev_next">Anterior și următor</string>
     <string name="mobile_player_lock">Blocare ecran</string>
-    <string name="mobile_player_unlock">Deblocare</string>
+    <string name="mobile_player_locked">Blocat · atinge pentru deblocare</string>
     <string name="mobile_transcript">Transcriere</string>
     <string name="mobile_transcript_follow">Urmărește cu ajutorul transcrierii.</string>
     <string name="mobile_transcript_show">Arată transcrierea</string>

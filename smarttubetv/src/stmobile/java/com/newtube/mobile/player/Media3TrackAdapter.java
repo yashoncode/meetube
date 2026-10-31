@@ -429,11 +429,14 @@ class Media3TrackAdapter {
                 }
                 androidx.media3.common.Format format = group.getTrackFormat(i);
 
-                if (targetId != null && targetId.equals(format.id)) {
+                boolean loose = matchesLoosely(rendererIndex, item, format);
+                // An id is a video's itag only on DASH: dash-mpd+hls gives every HLS variant the
+                // same "1:", so the id alone matched the group's first variant (240p for a 1080p pick).
+                if (targetId != null && targetId.equals(format.id) && (!video || loose)) {
                     return new TrackLocation(group, i);
                 }
 
-                if (fallback == null && matchesLoosely(rendererIndex, item, format)) {
+                if (fallback == null && loose) {
                     fallback = new TrackLocation(group, i);
                 }
 

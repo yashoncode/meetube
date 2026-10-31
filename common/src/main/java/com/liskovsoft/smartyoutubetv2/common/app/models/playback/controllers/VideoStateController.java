@@ -451,8 +451,15 @@ public class VideoStateController extends BasePlayerController {
             return;
         }
 
+        // The error fixer's rescue first (a failing pick must not come back on its reload), then
+        // MEETUBE(quality): a pick in the player's sheet, which holds for its own video (and its
+        // reloads) only - every other video follows the Settings quality.
+        FormatItem videoPick = getPlayerData().getVideoVideoFormat(
+                getVideo() != null ? getVideo().videoId : null);
         if (getPlayerData().getTempVideoFormat() != null) {
             getPlayer().setFormat(getPlayerData().getTempVideoFormat());
+        } else if (videoPick != null) {
+            getPlayer().setFormat(videoPick);
         } else {
             getPlayer().setFormat(getPlayerData().getFormat(FormatItem.TYPE_VIDEO));
         }

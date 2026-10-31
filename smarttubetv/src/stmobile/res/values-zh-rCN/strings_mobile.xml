@@ -64,7 +64,7 @@
     <string name="mobile_settings_player_buttons_fullscreen">全屏操作</string>
     <string name="mobile_settings_player_prev_next">上一个和下一个</string>
     <string name="mobile_player_lock">锁屏</string>
-    <string name="mobile_player_unlock">解锁</string>
+    <string name="mobile_player_locked">已锁定 · 点按解锁</string>
     <string name="mobile_transcript">转写文稿</string>
     <string name="mobile_transcript_follow">借助转写文稿跟着看。</string>
     <string name="mobile_transcript_show">显示转写文稿</string>

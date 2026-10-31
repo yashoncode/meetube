@@ -859,6 +859,18 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerUnlock = findViewById(R.id.mobile_player_unlock);
         mPlayerLock.setOnClickListener(v -> setPlayerLocked(true));
         mPlayerUnlock.setOnClickListener(v -> setPlayerLocked(false));
+        // the lock floats anywhere but over a control: every one in the overlay, and the seek bar
+        java.util.List<View> lockObstacles = new java.util.ArrayList<>();
+        lockObstacles.add(mTimeBar);
+        ViewGroup controls = (ViewGroup) mControlsRoot;
+        for (int i = 0; i < controls.getChildCount(); i++) {
+            View child = controls.getChildAt(i);
+            if (child != mTopScrim && child != mBottomScrim && child != mPlayerLock) {
+                lockObstacles.add(child);
+            }
+        }
+        mFloatingLock = new FloatingLock(getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE),
+                lockObstacles.toArray(new View[0]), mPlayerLock, mPlayerUnlock);
         mActionsShown = getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).getBoolean(KEY_ACTIONS_SHOWN, true);
         mTimeRemaining = getSharedPreferences(PLAYER_UI_PREFS, MODE_PRIVATE).getBoolean(KEY_TIME_REMAINING, false);
         findViewById(R.id.mobile_player_time).setOnClickListener(v -> {
@@ -908,12 +920,13 @@ public class MobilePlaybackActivity extends MobileActivity
             com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, dp(4));
         }
         View time = findViewById(R.id.mobile_player_time);
-        for (View control : new View[] {mPlayPauseButton, time, mActionsRow}) {
+        for (View control : new View[] {mPlayPauseButton, time, mActionsRow, mPlayerLock, mPlayerUnlock}) {
             com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, 0);
         }
         if (videoGlass != null) {
             mGlassControls = new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
-                    mPrevButton, mNextButton, mFullscreenButton, mActionsToggle, mPlayPauseButton, time, mActionsRow};
+                    mPrevButton, mNextButton, mFullscreenButton, mActionsToggle, mPlayPauseButton, time, mActionsRow,
+                    mPlayerLock, mPlayerUnlock};
         }
         mDebugViewGroup = findViewById(R.id.mobile_player_debug);
 
@@ -2906,13 +2919,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (!full) {
                 setPlayerLocked(false);
             }
-            // The unlock sits in the unpadded video box, where the lock is in the padded controls.
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) mPlayerUnlock.getLayoutParams();
-            if (lp.getMarginStart() != left + dp(16)) {
-                lp.setMarginStart(left + dp(16));
-                mPlayerUnlock.setLayoutParams(lp);
-            }
-            mPlayerUnlock.setTranslationY((top - bottom) / 2f);
+            mFloatingLock.setInsets(left, top, right, bottom);
         }
     }
 
@@ -5292,10 +5299,17 @@ public class MobilePlaybackActivity extends MobileActivity
      * ceiling preset: every video read "Auto (1080p60)", a 30 fps one whose list stops at 720p
      * too.</p>
      */
-    private String currentQualityLabel() {
+    /** The video quality asked for, in VideoStateController.restoreVideoFormat's order. */
+    private FormatItem chosenVideoFormat() {
         PlayerData playerData = PlayerData.instance(this);
-        FormatItem tempOverride = playerData.getTempVideoFormat();
-        FormatItem chosen = tempOverride != null ? tempOverride : playerData.getFormat(FormatItem.TYPE_VIDEO);
+        Video video = getVideo();
+        FormatItem pick = playerData.getVideoVideoFormat(video != null ? video.videoId : null);
+        return playerData.getTempVideoFormat() != null ? playerData.getTempVideoFormat()
+                : pick != null ? pick : playerData.getFormat(FormatItem.TYPE_VIDEO);
+    }
+
+    private String currentQualityLabel() {
+        FormatItem chosen = chosenVideoFormat();
 
         if (!isAutoFormat(chosen) && chosen.getHeight() > 0) {
             return qualityLabel(chosen);
@@ -6900,7 +6914,14 @@ public class MobilePlaybackActivity extends MobileActivity
                 mUnlockTouch = mPlayerUnlock.getVisibility() == View.VISIBLE && isOn(mPlayerUnlock, event);
             }
             if (mUnlockTouch) {
-                return super.dispatchTouchEvent(event);
+                // the pill stays up while it is being dragged (FloatingLock)
+                mPlayerUnlock.removeCallbacks(mHideUnlock);
+                boolean handled = super.dispatchTouchEvent(event);
+                if (mPlayerLocked && (action == android.view.MotionEvent.ACTION_UP
+                        || action == android.view.MotionEvent.ACTION_CANCEL)) {
+                    flashUnlock();
+                }
+                return handled;
             }
             if (action == android.view.MotionEvent.ACTION_UP) {
                 flashUnlock();
@@ -6927,6 +6948,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** MEETUBE(lock, issue #98): the fullscreen lock, and whether this touch is the unlock button's. */
     private View mPlayerLock;
     private View mPlayerUnlock;
+    private FloatingLock mFloatingLock;
     private boolean mPlayerLocked;
     private boolean mUnlockTouch;
     private final Runnable mHideUnlock = () -> mPlayerUnlock.animate().alpha(0f).setDuration(150)
@@ -9248,13 +9270,12 @@ public class MobilePlaybackActivity extends MobileActivity
         LinearLayout qualityList = content.findViewById(R.id.quality_sheet_quality_list);
 
         // ---- Quality: Auto + one row per distinct resolution rung (best track of each rung). ----
-        // The ACTIVE choice is the per-session override when one is set (explicit rung picked
-        // while the persisted default stays Auto), else the persisted format - otherwise the
-        // sheet would keep check-marking Auto right after the user picked a rung.
+        // The ACTIVE choice is this video's pick when there is one, else the Settings quality -
+        // otherwise the sheet would keep check-marking Auto right after the user picked a rung.
         PlayerData playerData = PlayerData.instance(this);
-        FormatItem tempOverride = playerData.getTempVideoFormat();
-        FormatItem persisted = tempOverride != null ? tempOverride : playerData.getFormat(FormatItem.TYPE_VIDEO);
-        boolean autoActive = isAutoFormat(persisted);
+        Video openedFor = getVideo();
+        String openedForId = openedFor != null ? openedFor.videoId : null;
+        boolean autoActive = isAutoFormat(chosenVideoFormat());
 
         // Rung -> representative track. Formats arrive quality-descending; the first of each rung
         // is its best variant. An explicitly selected non-preset track marks its rung instead.
@@ -9273,28 +9294,27 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
 
+        // MEETUBE(quality): neither row writes the Settings quality - a pick here is this video's
+        // only, and the next video opens at Settings' again. Each also drops the error fixer's
+        // session override, which restoreVideoFormat would otherwise re-apply over the pick.
         addQualityRow(qualityList, getString(R.string.mobile_quality_auto), autoActive, () -> {
-            // Back to the smart default: ABR under the mobile 1080p ceiling. The session override
-            // must also go - VideoStateController restores tempVideoFormat FIRST on every new
-            // video, so a stale explicit rung would silently out-vote Auto from the next video on.
+            // Back to the Settings quality (Auto under its ceiling).
             playerData.setTempVideoFormat(null);
-            FormatItem auto = playerData.getDefaultVideoFormat();
-            setFormat(auto);
-            playerData.setFormat(auto);
+            playerData.setVideoVideoFormat(null, null);
+            setFormat(playerData.getFormat(FormatItem.TYPE_VIDEO));
             dialog.dismiss();
         });
         for (java.util.Map.Entry<String, FormatItem> rung : rungs.entrySet()) {
             FormatItem item = rung.getValue();
             addQualityRow(qualityList, rung.getKey(), rung.getKey().equals(selectedRung), () -> {
-                // Mirrors HQDialogController.selectFormatOption: while the preset (Auto) is the
-                // persisted default, an explicit rung is a per-session override, like YouTube.
-                setFormat(item);
-                if (isAutoFormat(playerData.getFormat(FormatItem.TYPE_VIDEO))) {
-                    playerData.setTempVideoFormat(item);
-                } else {
-                    playerData.setFormat(item);
-                }
                 dialog.dismiss();
+                Video now = getVideo();
+                if (!TextUtils.equals(openedForId, now != null ? now.videoId : null)) {
+                    return; // autoplay moved on under the open sheet: these rows are another video's
+                }
+                setFormat(item);
+                playerData.setTempVideoFormat(null);
+                playerData.setVideoVideoFormat(openedForId, item);
             });
         }
 
