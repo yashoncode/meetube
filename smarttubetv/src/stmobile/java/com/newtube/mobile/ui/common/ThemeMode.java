@@ -162,6 +162,7 @@ public final class ThemeMode {
             int themeRes = manifestTheme(activity);
             if (themeRes != 0) {
                 activity.getTheme().applyStyle(themeRes, true);
+                Loader.applyTo(activity, activity.getTheme()); // MEETUBE(loader): the manifest theme reset it
             }
         }
     }

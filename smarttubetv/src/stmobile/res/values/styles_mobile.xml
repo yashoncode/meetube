@@ -29,7 +29,9 @@
              persists - and without an icon here that splash showed the manifest's (default) icon
              whatever icon was picked. A blank splash is never the wrong icon. -->
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@android:color/transparent</item>
-        <!-- MEETUBE(loader): every circular spinner is the morphing cookie (meetube_loader). -->
+        <!-- MEETUBE(loader): every circular spinner is the loader picked in Settings > Customization
+             (meetubeLoader; Loader applies the pick's overlay to each screen's theme). -->
+        <item name="meetubeLoader">@drawable/avd_neon_ring</item>
         <item name="android:progressBarStyle">@style/Widget.MeeTube.Loader</item>
         <item name="android:progressBarStyleLarge">@style/Widget.MeeTube.Loader.Large</item>
         <item name="android:progressBarStyleSmall">@style/Widget.MeeTube.Loader.Small</item>
@@ -104,13 +106,13 @@
         <item name="cornerSize">16dp</item>
     </style>
 
-    <!-- MEETUBE(issue #107): the one loader - a neon glow ring (avd_neon_ring), on every page,
-         sheet and button. Layouts set no size or tint of their own. -->
+    <!-- MEETUBE(issue #107): the one loader - the one picked in Settings (meetubeLoader, the neon
+         ring by default), on every page, sheet and button. Layouts set no size or tint of their own. -->
     <style name="Widget.MeeTube.GlassSpinner" parent="android:Widget.Material.ProgressBar.Large">
         <item name="android:layout_width">60dp</item>
         <item name="android:layout_height">60dp</item>
         <item name="android:padding">8dp</item>
-        <item name="android:indeterminateDrawable">@drawable/avd_neon_ring</item>
+        <item name="android:indeterminateDrawable">?attr/meetubeLoader</item>
     </style>
 
     <style name="Widget.MeeTube.GlassSpinner.Small" parent="Widget.MeeTube.GlassSpinner">
@@ -607,14 +609,37 @@
         <item name="android:textSize">12sp</item>
     </style>
 
+    <!-- MEETUBE(loader): the other loaders of the picker (Loader), over the default neon ring. -->
+    <style name="ThemeOverlay.MeeTube.Loader.Frosted" parent="">
+        <item name="meetubeLoader">@drawable/avd_frosted_ring</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Loader.Cookie" parent="">
+        <item name="meetubeLoader">@drawable/meetube_loader</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Loader.FrostedCookie" parent="">
+        <item name="meetubeLoader">@drawable/avd_frosted_cookie</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Loader.LiquidRing" parent="">
+        <item name="meetubeLoader">@drawable/avd_liquid_ring</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Loader.GlassOrb" parent="">
+        <item name="meetubeLoader">@drawable/avd_glass_orb</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Loader.MorphingBlob" parent="">
+        <item name="meetubeLoader">@drawable/avd_morphing_blob</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Loader.GlassOrbit" parent="">
+        <item name="meetubeLoader">@drawable/avd_glass_orbit</item>
+    </style>
+
     <style name="Widget.MeeTube.Loader" parent="android:Widget.Material.ProgressBar">
-        <item name="android:indeterminateDrawable">@drawable/meetube_loader</item>
+        <item name="android:indeterminateDrawable">?attr/meetubeLoader</item>
     </style>
     <style name="Widget.MeeTube.Loader.Large" parent="android:Widget.Material.ProgressBar.Large">
-        <item name="android:indeterminateDrawable">@drawable/meetube_loader</item>
+        <item name="android:indeterminateDrawable">?attr/meetubeLoader</item>
     </style>
     <style name="Widget.MeeTube.Loader.Small" parent="android:Widget.Material.ProgressBar.Small">
-        <item name="android:indeterminateDrawable">@drawable/meetube_loader</item>
+        <item name="android:indeterminateDrawable">?attr/meetubeLoader</item>
     </style>
 
     <style name="Widget.MeeTube.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">

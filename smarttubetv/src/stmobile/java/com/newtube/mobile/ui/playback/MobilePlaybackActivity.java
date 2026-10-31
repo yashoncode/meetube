@@ -5122,6 +5122,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mShorts != null && mShorts.isActive()) {
             addMenuRow(content, sheet, R.drawable.ic_player_fullscreen, R.string.mobile_menu_watch_regular,
                     null, false, this::openShortAsVideo);
+            // MEETUBE(issue #134): Settings > Playback > When a short ends, here too.
+            addMenuRow(content, sheet, R.drawable.ic_player_autoplay, R.string.mobile_shorts_autoscroll,
+                    stateLabel(!PlayerTweaksData.instance(this).isLoopShortsEnabled()), false, this::toggleShortsAutoscroll);
         }
         addMenuRow(content, sheet, R.drawable.ic_mobile_settings, R.string.mobile_menu_more,
                 null, true, this::openPlayerMoreMenu);
@@ -5176,6 +5179,11 @@ public class MobilePlaybackActivity extends MobileActivity
         Video regular = item.copy();
         regular.setGroup(null);
         mPresenter.openVideo(regular);
+    }
+
+    private void toggleShortsAutoscroll() {
+        PlayerTweaksData tweaks = PlayerTweaksData.instance(this);
+        tweaks.setLoopShortsEnabled(!tweaks.isLoopShortsEnabled());
     }
 
     private void toggleAmbient() {
@@ -8326,12 +8334,17 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /**
      * MEETUBE(up-next): hold autoplay behind the countdown card - only while someone is looking at
-     * this player (resumed, not PiP, not Shorts); otherwise the next video opens at once.
+     * this player (resumed, not PiP, not Shorts); otherwise the next video opens at once. A short
+     * that ended (Loop shorts off, issue #134) slides on to the next one, as a swipe up does.
      */
     @Override
     public boolean showNextCountdown(Video next, Runnable playNext) {
-        if (mNextCountdown == null || isInPictureInPictureMode() || (mShorts != null && mShorts.isActive())
-                || !getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+        boolean watched = !isInPictureInPictureMode()
+                && getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED);
+        if (mShorts != null && mShorts.isActive()) {
+            return watched && mShorts.pageNext();
+        }
+        if (mNextCountdown == null || !watched) {
             return false;
         }
         showControls(false);

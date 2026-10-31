@@ -179,6 +179,7 @@
     <!-- Player menu -->
     <string name="mobile_menu_more">Más</string>
     <string name="mobile_menu_watch_regular">Ver en el reproductor normal</string>
+    <string name="mobile_shorts_autoscroll">Desplazamiento automático</string>
     <string name="mobile_player_skip_segment">Saltar</string>
     <string name="mobile_shorts_rest_title">¿No estás ganando, hijo??</string>
     <string name="mobile_shorts_rest_message">30 minutos de Shorts. Descansa un poco :)</string>

@@ -16,10 +16,31 @@
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="android:windowSplashScreenAnimationDuration">0</item>
     </style>
-    <!-- MEETUBE(app icon): the default icon (since 3.2.0) - its mark on its white tile. -->
+    <!-- MEETUBE(app icon): the default icon (since 3.2.0) - its mark, no tile. -->
     <style name="Theme.MeeTube.Splash.White">
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground_fantasy</item>
-        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/white</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+    <!-- MEETUBE(app icon): the Glass Heart icon, still. -->
+    <style name="Theme.MeeTube.Splash.GlassHeart">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_glass_heart</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+    <!-- MEETUBE(app icon): the built-in icons from 3.2.2 - each one's shape alone, still. -->
+    <style name="Theme.MeeTube.Splash.Ruby">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_ruby</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+    <style name="Theme.MeeTube.Splash.Play">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_play</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+    <style name="Theme.MeeTube.Splash.PlayDark">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_play_dark</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+    <style name="Theme.MeeTube.Splash.Blaze">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_blaze</item>
         <item name="android:windowSplashScreenAnimationDuration">0</item>
     </style>
 </resources>

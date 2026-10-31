@@ -926,8 +926,8 @@ public class VideoLoaderController extends BasePlayerController {
     /** MEETUBE(up-next): the end-of-video advance, which the view may hold behind its countdown. */
     private void autoNext() {
         Video video = getVideo();
-        if (video != null && !video.belongsToShorts()
-                && getPlayer().showNextCountdown(mSuggestionsController.getNext(), mLoadNext)) {
+        // MEETUBE(issue #134): for a short the player pages on instead of counting down (and opens it).
+        if (video != null && getPlayer().showNextCountdown(mSuggestionsController.getNext(), mLoadNext)) {
             return;
         }
         loadNext();
@@ -1073,8 +1073,11 @@ public class VideoLoaderController extends BasePlayerController {
 
         if (video != null && video.finishOnEnded) {
             playbackMode = PlayerConstants.PLAYBACK_MODE_CLOSE;
-        } else if (video != null && video.belongsToShortsGroup() && getPlayerTweaksData().isLoopShortsEnabled()) {
-            playbackMode = PlayerConstants.PLAYBACK_MODE_ONE;
+        } else if (video != null && video.belongsToShortsGroup()) {
+            // MEETUBE(issue #134): a short loops, or with Loop shorts off scrolls on to the next one -
+            // whatever the long-video autoplay mode says.
+            playbackMode = getPlayerTweaksData().isLoopShortsEnabled()
+                    ? PlayerConstants.PLAYBACK_MODE_ONE : PlayerConstants.PLAYBACK_MODE_ALL;
         }
         return playbackMode;
     }

@@ -1016,6 +1016,15 @@ public class Utils {
         postDelayed(() -> restartTheAppInt(context), 1_000);
     }
 
+    /**
+     * MEETUBE(settings-transfer): restarts with the settings files as they are on disk now -
+     * {@link #restartTheApp(Context)} first writes the in-memory settings back over them, which
+     * would undo an import.
+     */
+    public static void restartTheAppAsStored(Context context) {
+        restartTheAppInt(context);
+    }
+
     private static void restartTheAppInt(Context context) {
         try {
             Intent intent = new Intent(context, Class.forName(BOOTSTRAP_ACTIVITY_CLASS_NAME));
