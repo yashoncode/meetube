@@ -152,6 +152,76 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity-alias>
+        <activity-alias
+            android:name="com.newtube.mobile.icon.GlassHeart"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/app_icon_glass_heart"
+            android:targetActivity="com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- MEETUBE(tv): the TV home screen's entry (the application's banner). -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.newtube.mobile.icon.Ruby"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/app_icon_ruby"
+            android:targetActivity="com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- MEETUBE(tv): the TV home screen's entry (the application's banner). -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.newtube.mobile.icon.Play"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/app_icon_play"
+            android:targetActivity="com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- MEETUBE(tv): the TV home screen's entry (the application's banner). -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.newtube.mobile.icon.PlayDark"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/app_icon_play_dark"
+            android:targetActivity="com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- MEETUBE(tv): the TV home screen's entry (the application's banner). -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="com.newtube.mobile.icon.Blaze"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/app_icon_blaze"
+            android:targetActivity="com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- MEETUBE(tv): the TV home screen's entry (the application's banner). -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <activity
             android:name="com.newtube.mobile.ui.browse.MobileBrowseActivity"
@@ -225,6 +295,12 @@
             android:name="com.newtube.mobile.update.UpdateDownloadService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <!-- MEETUBE(settings-transfer): invisible host for the settings file's save / open pickers. -->
+        <activity
+            android:name="com.newtube.mobile.ui.settings.SettingsTransferActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <!-- MEETUBE(download-folder): invisible host for the system folder picker. -->
         <activity

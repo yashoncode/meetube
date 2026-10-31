@@ -7,4 +7,9 @@
     <style name="Theme.MeeTube.Splash.Beat" />
     <style name="Theme.MeeTube.Splash.Classic" />
     <style name="Theme.MeeTube.Splash.White" />
+    <style name="Theme.MeeTube.Splash.GlassHeart" />
+    <style name="Theme.MeeTube.Splash.Ruby" />
+    <style name="Theme.MeeTube.Splash.Play" />
+    <style name="Theme.MeeTube.Splash.PlayDark" />
+    <style name="Theme.MeeTube.Splash.Blaze" />
 </resources>

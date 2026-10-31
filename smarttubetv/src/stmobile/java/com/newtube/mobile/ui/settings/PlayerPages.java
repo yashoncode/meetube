@@ -68,6 +68,12 @@ final class PlayerPages {
                 .option(context.getString(R.string.mobile_settings_video_ends_close), PlayerConstants.PLAYBACK_MODE_CLOSE)
                 .bind(playerData::getPlaybackMode, playerData::setPlaybackMode));
 
+        // MEETUBE(issue #134): Shorts loop or scroll on by themselves, apart from the mode above.
+        rows.add(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_short_ends))
+                .option(context.getString(R.string.mobile_settings_short_ends_loop), true)
+                .option(context.getString(R.string.mobile_settings_short_ends_next), false)
+                .bind(tweaks::isLoopShortsEnabled, tweaks::setLoopShortsEnabled));
+
         rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_remember_speed))
                 .option(context.getString(R.string.mobile_settings_remember_speed_channel), SPEED_PER_CHANNEL)
                 .option(context.getString(R.string.mobile_settings_remember_speed_video), SPEED_PER_VIDEO)

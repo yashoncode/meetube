@@ -24,7 +24,7 @@
     <string name="mobile_settings_search_kw_hide_related">suggestions related recommendations</string>
     <string name="mobile_settings_search_kw_dislikes">return youtube dislike ryd</string>
     <string name="mobile_settings_search_kw_home_layout">rows shelves carousel feed grid smarttube</string>
-    <string name="mobile_settings_search_kw_app_icon">launcher logo home screen old classic fantasy white</string>
+    <string name="mobile_settings_search_kw_app_icon">launcher logo home screen old classic fantasy white glass heart ruby play dark blaze fire</string>
     <string name="mobile_settings_search_kw_quality">resolution 4k 1080p 720p hd data saver mobile data</string>
     <string name="mobile_settings_search_kw_loudness">volume normalization auto volume quiet loud</string>
     <string name="mobile_settings_search_kw_player_volume">quiet loud sound</string>
@@ -41,4 +41,7 @@
     <string name="mobile_settings_search_kw_gesture_levels">gestures brightness volume</string>
     <string name="mobile_settings_search_kw_gesture_seek">gestures scrub skip forward rewind</string>
     <string name="mobile_settings_search_kw_double_tap_seek">double tap seek skip forward rewind seconds jump interval</string>
+    <string name="mobile_settings_search_kw_loader">loader loading spinner progress neon frosted glass cookie liquid ring orb blob orbit</string>
+    <string name="mobile_settings_search_kw_watched_bar">watched progress red line bar history seen thumbnail</string>
+    <string name="mobile_settings_search_kw_short_ends">shorts loop repeat autoscroll auto scroll next swipe</string>
 </resources>

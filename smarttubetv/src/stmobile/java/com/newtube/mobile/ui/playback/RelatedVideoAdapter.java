@@ -242,7 +242,7 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
         private void bindProgress(Video video) {
             int progress = video.percentWatched > 0 && video.percentWatched < 1 ? 1 : Math.round(video.percentWatched);
 
-            if (progress > 0 && progress <= 100) {
+            if (progress > 0 && progress <= 100 && com.newtube.mobile.ui.common.WatchedBar.isShown(itemView.getContext())) {
                 mWatchProgress.setProgress(progress);
                 mWatchProgress.setVisibility(View.VISIBLE);
             } else {

@@ -478,6 +478,22 @@ final class ShortsOverlay {
                 .withEndAction(this::endPaging).start();
     }
 
+    /**
+     * MEETUBE(issue #134): the short ended with Loop shorts off - the next one slides up as if
+     * swiped (it opens from the slide). False with no next short queued: the caller opens it.
+     */
+    boolean pageNext() {
+        if (mPaging) {
+            return true;
+        }
+        showPeek(1);
+        if (mPeekVideo == null) {
+            return false;
+        }
+        release(-Math.max(1, mVideo.getHeight()), 0);
+        return true;
+    }
+
     /** The paged-to short opens, under the paged-away one's frozen last frame. */
     private void openPaged() {
         if (!mPaging || mPagedOpen) {

@@ -1,6 +1,7 @@
 package com.newtube.mobile.ui.common;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -50,6 +51,16 @@ public abstract class MobileActivity extends MotherActivity {
      * NEWTUBE(theme): the night bits this screen's views were built with (see {@link #checkTheme}).
      */
     private int mThemedNight;
+
+    /** MEETUBE(loader): the loader this screen's theme was given (see {@link #onResume}). */
+    private String mLoader;
+
+    @Override
+    protected void onApplyThemeResource(Resources.Theme theme, int resid, boolean first) {
+        super.onApplyThemeResource(theme, resid, first);
+        mLoader = Loader.current(this);
+        Loader.applyTo(this, theme);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -300,6 +311,13 @@ public abstract class MobileActivity extends MotherActivity {
         // theme changed.
         mResumed = true;
         checkTheme();
+        // MEETUBE(loader): Settings picked another loader while this screen was open. Not the
+        // player: it keeps playing, and its spinner changes the next time it opens.
+        if (mLoader != null && !mLoader.equals(Loader.current(this)) && !mRecreating
+                && !(this instanceof com.newtube.mobile.ui.playback.MobilePlaybackActivity)) {
+            mRecreating = true;
+            recreate();
+        }
     }
 
     @Override

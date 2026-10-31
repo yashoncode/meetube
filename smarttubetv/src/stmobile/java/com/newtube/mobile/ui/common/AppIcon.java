@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
 
@@ -19,7 +20,8 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
  * MEETUBE(app icon): the launcher icon picked in Settings > Customization. Each icon is an
  * {@code activity-alias} of SplashActivity (stmobile AndroidManifest, com.newtube.mobile.icon.*) and
  * exactly one is enabled. The in-app marks (Home's brand pill, the launch splash, the update sheet)
- * follow the pick too.
+ * follow the pick too. Only icons built into the APK can be a launcher icon, so there is no
+ * upload-your-own (tried: it could only ever be a shortcut beside the real icon).
  *
  * <p>Disabling an alias makes Android close the task it started, and the system then refuses to
  * reopen the app from the background. So a pick is remembered here and applied either by the
@@ -32,7 +34,22 @@ public final class AppIcon {
     public static final String DEFAULT = "Default";
     public static final String CLASSIC = "Classic";
     public static final String FANTASY = "Fantasy";
-    private static final String[] ICONS = {DEFAULT, CLASSIC, FANTASY};
+    public static final String GLASS_HEART = "GlassHeart";
+    public static final String RUBY = "Ruby";
+    public static final String PLAY = "Play";
+    public static final String PLAY_DARK = "PlayDark";
+    public static final String BLAZE = "Blaze";
+    private static final String[] ICONS = {DEFAULT, CLASSIC, FANTASY, GLASS_HEART, RUBY, PLAY, PLAY_DARK, BLAZE};
+    // Per icon, in ICONS' order: launcher icon, brand-pill mark, splash theme (Android 13+).
+    private static final int[] LAUNCHERS = {R.mipmap.app_icon, R.mipmap.app_icon_classic, R.mipmap.app_icon_fantasy,
+            R.mipmap.app_icon_glass_heart, R.mipmap.app_icon_ruby, R.mipmap.app_icon_play,
+            R.mipmap.app_icon_play_dark, R.mipmap.app_icon_blaze};
+    private static final int[] MARKS = {R.drawable.ic_meetube_mark_fantasy, R.drawable.ic_meetube_mark,
+            R.drawable.ic_meetube_mark_art, R.drawable.ic_meetube_mark_glass_heart, R.drawable.ic_meetube_mark_ruby,
+            R.drawable.ic_meetube_mark_play, R.drawable.ic_meetube_mark_play_dark, R.drawable.ic_meetube_mark_blaze};
+    private static final int[] SPLASHES = {R.style.Theme_MeeTube_Splash_White, R.style.Theme_MeeTube_Splash_Classic,
+            R.style.Theme_MeeTube_Splash_Beat, R.style.Theme_MeeTube_Splash_GlassHeart, R.style.Theme_MeeTube_Splash_Ruby,
+            R.style.Theme_MeeTube_Splash_Play, R.style.Theme_MeeTube_Splash_PlayDark, R.style.Theme_MeeTube_Splash_Blaze};
     private static final String PREFIX = "com.newtube.mobile.icon.";
     private static final String PREFS = "meetube_app_icon";
     private static final String KEY_PENDING = "pending";
@@ -56,16 +73,13 @@ public final class AppIcon {
 
     @DrawableRes
     public static int launcherIcon(String icon) {
-        return CLASSIC.equals(icon) ? R.mipmap.app_icon_classic
-                : FANTASY.equals(icon) ? R.mipmap.app_icon_fantasy : R.mipmap.app_icon;
+        return LAUNCHERS[index(icon)];
     }
 
-    /** The picked icon's mark without its tile, for the brand pill. */
-    @DrawableRes
-    public static int mark(Context context) {
-        String icon = current(context);
-        return CLASSIC.equals(icon) ? R.drawable.ic_meetube_mark
-                : FANTASY.equals(icon) ? R.drawable.ic_meetube_mark_art : R.drawable.ic_meetube_mark_fantasy;
+    /** Puts the picked icon in {@code view}: its mark ({@code mark}, the brand pill) or the launcher icon. */
+    public static void show(ImageView view, boolean mark) {
+        int i = index(current(view.getContext()));
+        view.setImageResource(mark ? MARKS[i] : LAUNCHERS[i]);
     }
 
     public static void set(Context context, String icon) {
@@ -135,9 +149,7 @@ public final class AppIcon {
      */
     public static void syncSplash(Activity activity) {
         if (Build.VERSION.SDK_INT >= 33) {
-            String icon = current(activity);
-            activity.getSplashScreen().setSplashScreenTheme(CLASSIC.equals(icon) ? R.style.Theme_MeeTube_Splash_Classic
-                    : FANTASY.equals(icon) ? R.style.Theme_MeeTube_Splash_Beat : R.style.Theme_MeeTube_Splash_White);
+            activity.getSplashScreen().setSplashScreenTheme(SPLASHES[index(current(activity))]);
         }
     }
 
@@ -150,6 +162,21 @@ public final class AppIcon {
         if (Build.VERSION.SDK_INT >= 28) {
             activity.setTaskDescription(new ActivityManager.TaskDescription(null, launcherIcon(activity)));
         }
+    }
+
+    /** True for one of the built-in icons (an imported settings file names one). */
+    public static boolean exists(String icon) {
+        return java.util.Arrays.asList(ICONS).contains(icon);
+    }
+
+    /** {@code icon}'s place in ICONS; an unknown name (a pick from a later version) is the default. */
+    private static int index(String icon) {
+        for (int i = 0; i < ICONS.length; i++) {
+            if (ICONS[i].equals(icon)) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     private static String enabled(Context context) {

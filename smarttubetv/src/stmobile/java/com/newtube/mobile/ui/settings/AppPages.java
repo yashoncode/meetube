@@ -3,6 +3,7 @@ package com.newtube.mobile.ui.settings;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
@@ -25,9 +26,12 @@ import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.newtube.mobile.CardMenuMigration;
 import com.newtube.mobile.downloads.DownloadFolder;
 import com.newtube.mobile.ui.browse.NavTabs;
+import com.newtube.mobile.ui.common.AppIcon;
 import com.newtube.mobile.ui.common.CountStyle;
+import com.newtube.mobile.ui.common.Loader;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 import com.newtube.mobile.ui.common.ThemeMode;
+import com.newtube.mobile.ui.common.WatchedBar;
 import com.newtube.mobile.ui.playback.WatchLook;
 
 import java.util.ArrayList;
@@ -122,11 +126,40 @@ final class AppPages {
                         com.newtube.mobile.ui.common.AppIcon.CLASSIC)
                 .option(context.getString(R.string.mobile_app_icon_fantasy), R.mipmap.app_icon_fantasy,
                         com.newtube.mobile.ui.common.AppIcon.FANTASY)
-                .bind(() -> com.newtube.mobile.ui.common.AppIcon.current(context),
-                        icon -> com.newtube.mobile.ui.common.AppIcon.set(context, icon)),
-                88, Tiles.ICON, Tiles.ICON, Tiles.ICON));
+                .option(context.getString(R.string.mobile_app_icon_glass_heart), R.mipmap.app_icon_glass_heart,
+                        com.newtube.mobile.ui.common.AppIcon.GLASS_HEART)
+                .option(context.getString(R.string.mobile_app_icon_ruby), R.mipmap.app_icon_ruby, AppIcon.RUBY)
+                .option(context.getString(R.string.mobile_app_icon_play), R.mipmap.app_icon_play, AppIcon.PLAY)
+                .option(context.getString(R.string.mobile_app_icon_play_dark), R.mipmap.app_icon_play_dark, AppIcon.PLAY_DARK)
+                .option(context.getString(R.string.mobile_app_icon_blaze), R.mipmap.app_icon_blaze, AppIcon.BLAZE)
+                .bind(() -> AppIcon.current(context), icon -> AppIcon.set(context, icon)),
+                88, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON));
+
+        // MEETUBE(loader): every spinner in the app, from this list; each tile spins its own.
+        rows.add(Tiles.of(SettingsRow.<String>choice(context.getString(R.string.mobile_settings_loader))
+                .option(context.getString(R.string.mobile_loader_neon), Loader.drawable(Loader.NEON), Loader.NEON)
+                .option(context.getString(R.string.mobile_loader_frosted), Loader.drawable(Loader.FROSTED), Loader.FROSTED)
+                .option(context.getString(R.string.mobile_loader_cookie), Loader.drawable(Loader.COOKIE), Loader.COOKIE)
+                .option(context.getString(R.string.mobile_loader_frosted_cookie), Loader.drawable(Loader.FROSTED_COOKIE),
+                        Loader.FROSTED_COOKIE)
+                .option(context.getString(R.string.mobile_loader_liquid_ring), Loader.drawable(Loader.LIQUID_RING),
+                        Loader.LIQUID_RING)
+                .option(context.getString(R.string.mobile_loader_glass_orb), Loader.drawable(Loader.GLASS_ORB), Loader.GLASS_ORB)
+                .option(context.getString(R.string.mobile_loader_morphing_blob), Loader.drawable(Loader.MORPHING_BLOB),
+                        Loader.MORPHING_BLOB)
+                .option(context.getString(R.string.mobile_loader_glass_orbit), Loader.drawable(Loader.GLASS_ORBIT),
+                        Loader.GLASS_ORBIT)
+                .bind(() -> Loader.current(context), loader -> Loader.set(context, loader)),
+                80, Tiles.LOADER, Tiles.LOADER, Tiles.LOADER, Tiles.LOADER,
+                Tiles.LOADER, Tiles.LOADER, Tiles.LOADER, Tiles.LOADER));
 
         rows.add(Tiles.slider(interfaceSize(context, mainUIData), mainUIData));
+
+        // MEETUBE(issue #132): the red watched line on thumbnails, which YouTube keeps sending even
+        // with watch history paused.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_watched_bar),
+                context.getString(R.string.mobile_settings_watched_bar_summary),
+                () -> WatchedBar.isShown(context), on -> WatchedBar.setShown(context, on)).needsRestart());
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_layout)));
 
@@ -690,6 +723,20 @@ final class AppPages {
                         }));
 
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_backup_note)));
+
+        // MEETUBE(settings-transfer): settings only, as a file to keep, send a friend, or load.
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_transfer)));
+        rows.add(SettingsRow.action(context.getString(R.string.mobile_settings_transfer_export),
+                context.getString(R.string.mobile_settings_transfer_export_summary),
+                page -> SettingsTransferActivity.export(page.requireContext())));
+        rows.add(SettingsRow.action(context.getString(R.string.mobile_settings_transfer_share),
+                context.getString(R.string.mobile_settings_transfer_share_summary),
+                page -> SettingsTransferActivity.share(page.requireContext())));
+        rows.add(SettingsRow.action(context.getString(R.string.mobile_settings_transfer_import),
+                context.getString(R.string.mobile_settings_transfer_import_summary),
+                page -> confirm(page, R.string.mobile_settings_transfer_import, R.string.mobile_settings_transfer_import_confirm,
+                        R.string.mobile_settings_transfer_import_button,
+                        () -> SettingsTransferActivity.importFile(page.requireContext()))));
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_backup), rows);
     }

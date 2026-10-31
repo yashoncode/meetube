@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- MEETUBE(loader): the picked loader drawable (Widget.MeeTube.GlassSpinner, Widget.MeeTube.Loader). -->
+    <attr name="meetubeLoader" format="reference" />
     <!-- MEETUBE(glass): GlassView's shape and tint. -->
     <declare-styleable name="GlassView">
         <attr name="glassCornerRadius" format="dimension" />

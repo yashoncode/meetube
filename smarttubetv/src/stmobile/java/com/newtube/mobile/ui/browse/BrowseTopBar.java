@@ -22,9 +22,7 @@ final class BrowseTopBar {
         mTitle = activity.findViewById(R.id.mobile_title_bar);
         mBack = activity.findViewById(R.id.mobile_title_back);
         mMark = activity.findViewById(R.id.mobile_brand_mark);
-        // MEETUBE(app icon): the brand and the launch splash follow the picked launcher icon.
-        ((ImageView) mMark).setImageResource(com.newtube.mobile.ui.common.AppIcon.mark(activity));
-        com.newtube.mobile.ui.common.AppIcon.syncSplash(activity);
+        syncMark(activity);
         mBack.setOnClickListener(v -> onBack.run());
         // MEETUBE(quotes): on a tab the brand pill shows a quote; on a sub-screen it goes back.
         QuoteCard quote = new QuoteCard(activity);
@@ -36,6 +34,12 @@ final class BrowseTopBar {
                 quote.show();
             }
         });
+    }
+
+    /** MEETUBE(app icon): the brand and the launch splash follow the picked icon (on resume: Settings may have changed it). */
+    void syncMark(Activity activity) {
+        com.newtube.mobile.ui.common.AppIcon.show((ImageView) mMark, true);
+        com.newtube.mobile.ui.common.AppIcon.syncSplash(activity);
     }
 
     /**

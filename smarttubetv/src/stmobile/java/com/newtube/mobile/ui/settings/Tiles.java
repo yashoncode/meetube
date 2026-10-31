@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -54,6 +55,8 @@ final class Tiles {
     static final int THUMB_END = 10;
     /** The option's own icon (the app icon picker). */
     static final int ICON = 11;
+    /** The option's own loader, spinning on a dark stage (white loaders vanish on a light card). */
+    static final int LOADER = 12;
 
     private Tiles() {
     }
@@ -70,8 +73,11 @@ final class Tiles {
         LinearLayout root = column(context);
         TextView summary = heading(root, row.title);
 
-        LinearLayout strip = new LinearLayout(context);
-        strip.setOrientation(LinearLayout.HORIZONTAL);
+        // Four tiles a row at most: the loader picker has eight.
+        int count = row.options.size();
+        int columns = Math.min(4, count);
+        GridLayout strip = new GridLayout(context);
+        strip.setColumnCount(columns);
         strip.setClipChildren(false);
         root.setClipChildren(false);
         LinearLayout.LayoutParams stripParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -79,7 +85,6 @@ final class Tiles {
         stripParams.topMargin = dp(context, 12);
         root.addView(strip, stripParams);
 
-        int count = row.options.size();
         for (int i = 0; i < count; i++) {
             SettingsRow.Option option = row.options.get(i);
             LinearLayout tile = new LinearLayout(context);
@@ -89,11 +94,21 @@ final class Tiles {
 
             FrameLayout frame = new FrameLayout(context);
             ImageView picture = new ImageView(context);
-            int picturePad = dp(context, pictures[i] == ICON ? 14 : 8);
+            boolean own = pictures[i] == ICON || pictures[i] == LOADER;
+            int picturePad = dp(context, own ? 14 : 8);
             picture.setPadding(picturePad, picturePad, picturePad, picturePad);
             picture.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            picture.setImageDrawable(pictures[i] == ICON ? ContextCompat.getDrawable(context, option.icon)
-                    : new Picture(context, pictures[i]));
+            Drawable drawable = own ? ContextCompat.getDrawable(context, option.icon) : new Picture(context, pictures[i]);
+            picture.setImageDrawable(drawable);
+            if (pictures[i] == LOADER) {
+                GradientDrawable stage = new GradientDrawable();
+                stage.setCornerRadius(dp(context, 12));
+                stage.setColor(0xFF1C1C1E);
+                picture.setBackground(new android.graphics.drawable.InsetDrawable(stage, dp(context, 6)));
+                if (drawable instanceof android.graphics.drawable.Animatable) {
+                    ((android.graphics.drawable.Animatable) drawable).start();
+                }
+            }
             frame.addView(picture, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
             ImageView check = new ImageView(context);
@@ -121,9 +136,13 @@ final class Tiles {
             labelParams.topMargin = dp(context, 6);
             tile.addView(label, labelParams);
 
-            LinearLayout.LayoutParams tileParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-            tileParams.setMarginStart(i == 0 ? 0 : dp(context, 5));
-            tileParams.setMarginEnd(i == count - 1 ? 0 : dp(context, 5));
+            int column = i % columns;
+            GridLayout.LayoutParams tileParams = new GridLayout.LayoutParams(GridLayout.spec(i / columns),
+                    GridLayout.spec(column, 1f));
+            tileParams.width = 0;
+            tileParams.setMarginStart(column == 0 ? 0 : dp(context, 5));
+            tileParams.setMarginEnd(column == columns - 1 ? 0 : dp(context, 5));
+            tileParams.topMargin = i < columns ? 0 : dp(context, 12);
             strip.addView(tile, tileParams);
 
             int which = i;
@@ -149,7 +168,7 @@ final class Tiles {
     }
 
     /** Lights the picked tile: a red ring, a check that pops in, its name in red. */
-    private static void select(LinearLayout strip, int index, SettingsRow row, TextView summary, boolean animate) {
+    private static void select(ViewGroup strip, int index, SettingsRow row, TextView summary, boolean animate) {
         Context context = strip.getContext();
         for (int i = 0; i < strip.getChildCount(); i++) {
             ViewGroup tile = (ViewGroup) strip.getChildAt(i);
