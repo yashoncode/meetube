@@ -455,33 +455,36 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void setupSwipeRefresh() {
-        mContentSwipe.setOnRefreshListener(() -> {
-            com.newtube.mobile.ui.common.RefreshFeedback.play(mContentSwipe);
-            if (mCurrentSectionId == MediaGroup.TYPE_HOME) {
-                rememberSeenHome();
-            }
-            if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
-                mSubsChannels = null; // new subscriptions show up in the strip too
-                updateStrip();
-            }
-            if (isHomeChip(mCurrentSectionId) && mHomeChip == null) {
-                mHomeChips = null; // MEETUBE(issue #79): the chips follow the watch history
-                updateStrip();
-            }
-            if (mHomeChip != null) {
-                loadHomeChip(mHomeChip);
-                return;
-            }
-            if (mSubsChannel != null) {
-                loadSubsChannel(mSubsChannel);
-                return;
-            }
-            if (mPresenter != null) {
-                mPresenter.refresh(false);
-            } else {
-                mContentSwipe.setRefreshing(false);
-            }
-        });
+        mContentSwipe.setOnRefreshListener(this::refreshFeed);
+    }
+
+    /** A pull to refresh, or (issue #130) a tap on the tab you are on with its feed at the top. */
+    private void refreshFeed() {
+        com.newtube.mobile.ui.common.RefreshFeedback.play(mContentSwipe);
+        if (mCurrentSectionId == MediaGroup.TYPE_HOME) {
+            rememberSeenHome();
+        }
+        if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
+            mSubsChannels = null; // new subscriptions show up in the strip too
+            updateStrip();
+        }
+        if (isHomeChip(mCurrentSectionId) && mHomeChip == null) {
+            mHomeChips = null; // MEETUBE(issue #79): the chips follow the watch history
+            updateStrip();
+        }
+        if (mHomeChip != null) {
+            loadHomeChip(mHomeChip);
+            return;
+        }
+        if (mSubsChannel != null) {
+            loadSubsChannel(mSubsChannel);
+            return;
+        }
+        if (mPresenter != null) {
+            mPresenter.refresh(false);
+        } else {
+            mContentSwipe.setRefreshing(false);
+        }
     }
 
     /** MEETUBE(refresh): every Home card down to the last one on screen counts as seen. */
@@ -1298,7 +1301,8 @@ public class MobileBrowseActivity extends MobileActivity
             return true;
         });
         // NEWTUBE(motion): tapping the tab you are on glides a scrolled feed back to the top, like
-        // YouTube; at the top it does what it always did (repaint + refresh the section).
+        // YouTube; at the top it refreshes as a pull does, the spinner showing (issue #130, as X
+        // does). You, and a page with no pull to refresh, repaint as they always did.
         mBottomNav.setOnItemReselectedListener(item -> {
             if (mSuppressNavCallback) {
                 return;
@@ -1306,6 +1310,10 @@ public class MobileBrowseActivity extends MobileActivity
             if (item.getItemId() != YOU_ITEM_ID && mContentGrid != null
                     && mContentGrid.getVisibility() == View.VISIBLE && mContentGrid.canScrollVertically(-1)) {
                 smoothScrollGridToTop();
+            } else if (item.getItemId() != YOU_ITEM_ID && !mYouShowing && mContentSwipe.isEnabled()
+                    && !mContentSwipe.isRefreshing() && mContentGrid != null && mContentGrid.getVisibility() == View.VISIBLE) {
+                mContentSwipe.setRefreshing(true);
+                refreshFeed();
             } else {
                 onNavItemChosen(item.getItemId());
             }
@@ -1373,6 +1381,10 @@ public class MobileBrowseActivity extends MobileActivity
     private boolean onNavDrag(android.view.MotionEvent event) {
         int action = event.getActionMasked();
         if (action == android.view.MotionEvent.ACTION_DOWN) {
+            View hint = findViewById(R.id.mobile_nav_hint);
+            if (hint != null && hint.getVisibility() == View.VISIBLE && !isOn(hint, event)) {
+                hideNavHint(); // a touch anywhere else lets it go
+            }
             mNavDragging = false;
             mNavDownX = mBottomNav != null && mBottomNav.isShown() && isOn(mBottomNav, event) ? event.getRawX() : Float.NaN;
             return false;
@@ -1398,6 +1410,7 @@ public class MobileBrowseActivity extends MobileActivity
             super.dispatchTouchEvent(cancel);
             cancel.recycle();
             popNavBar(bar, true);
+            hideNavHint();
             mNavDragLens = com.newtube.mobile.ui.common.NavLens.enabled(this)
                     && com.newtube.mobile.ui.common.NavLens.supported(this)
                     && bar instanceof com.newtube.mobile.ui.common.GlassView;
@@ -1499,6 +1512,94 @@ public class MobileBrowseActivity extends MobileActivity
         });
         bar.setTag(R.id.mobile_jiggle_animator, pop);
         pop.start();
+    }
+
+    // MEETUBE(issue #130): a held tab's glass hint over the bar. With the tab names on, the whole bar
+    // offers Tabs customization; with them off a tab shows its name (lit in the glow's colour if it is
+    // the open tab), and a tab Settings can swap adds "Change". Either opens Settings > Tabs after a
+    // confirmation. It goes after a few seconds, on a touch elsewhere, or as a drag starts.
+    private static final long NAV_HINT_MS = 3000;
+    private final Runnable mHideNavHint = this::hideNavHint;
+
+    private boolean showNavHint(View tab, int itemId) {
+        View hint = findViewById(R.id.mobile_nav_hint);
+        View bar = findViewById(R.id.mobile_nav_glass);
+        if (hint == null || bar == null) {
+            return false;
+        }
+        TextView name = hint.findViewById(R.id.mobile_nav_hint_name);
+        View change = hint.findViewById(R.id.mobile_nav_hint_change);
+        boolean labels = NavTabs.showLabels(this);
+        boolean swappable = false;
+        for (int section : NavTabs.CHOICES) {
+            swappable |= toMenuItemId(section) == itemId;
+        }
+        int lit = mBottomNav.getSelectedItemId();
+        int glow = NavBloom.colorOf(this, labels ? lit : itemId);
+        int plain = androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_on_surface);
+        if (labels) {
+            name.setText(R.string.mobile_nav_hint_tabs);
+            name.setTextColor(glow != 0 ? glow : plain);
+        } else {
+            android.view.MenuItem item = mBottomNav.getMenu().findItem(itemId);
+            name.setText(item != null ? item.getTitle() : null);
+            name.setTextColor(itemId == lit && glow != 0 ? glow : plain);
+        }
+        change.setVisibility(!labels && swappable ? View.VISIBLE : View.GONE);
+        boolean opens = labels || swappable;
+        hint.setOnClickListener(v -> {
+            hideNavHint();
+            if (opens) {
+                confirmTabsCustomization();
+            }
+        });
+        com.newtube.mobile.ui.common.Glass.blur(hint, findViewById(R.id.mobile_blur_target));
+        hint.animate().cancel();
+        hint.setAlpha(0f);
+        hint.setVisibility(View.VISIBLE);
+        // Placed once laid out with its new text: centred over the tab, kept over the bar.
+        hint.getViewTreeObserver().addOnPreDrawListener(new android.view.ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                hint.getViewTreeObserver().removeOnPreDrawListener(this);
+                float centre = bar.getLeft() + com.newtube.mobile.ui.common.NavLens.centreInBar(tab, bar);
+                float x = Math.max(bar.getLeft(), Math.min(bar.getRight() - hint.getWidth(), centre - hint.getWidth() / 2f));
+                hint.setTranslationX(x - hint.getLeft());
+                hint.setTranslationY(bar.getTop() - hint.getHeight() - 10 * getResources().getDisplayMetrics().density - hint.getTop());
+                hint.setPivotX(centre - x); // it grows out of the tab
+                hint.setPivotY(hint.getHeight());
+                hint.setScaleX(0.8f);
+                hint.setScaleY(0.8f);
+                hint.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(240)
+                        .setInterpolator(new android.view.animation.OvershootInterpolator(1.5f)).start();
+                return true;
+            }
+        });
+        hint.removeCallbacks(mHideNavHint);
+        hint.postDelayed(mHideNavHint, NAV_HINT_MS);
+        return true;
+    }
+
+    private void hideNavHint() {
+        View hint = findViewById(R.id.mobile_nav_hint);
+        if (hint == null || hint.getVisibility() != View.VISIBLE) {
+            return;
+        }
+        hint.removeCallbacks(mHideNavHint);
+        hint.animate().alpha(0f).scaleX(0.9f).scaleY(0.9f).setDuration(150).setInterpolator(Motion.STANDARD)
+                .withEndAction(() -> hint.setVisibility(View.GONE)).start();
+    }
+
+    private void confirmTabsCustomization() {
+        com.newtube.mobile.ui.common.Haptics.watch(new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+                this, R.style.MobileAlertDialog)
+                .setTitle(R.string.mobile_nav_hint_confirm_title)
+                .setMessage(R.string.mobile_nav_hint_confirm_body)
+                .setPositiveButton(R.string.mobile_nav_hint_confirm_open, (dialog, which) -> startActivity(
+                        com.newtube.mobile.ui.settings.MobileSettingsActivity.intent(this,
+                                com.newtube.mobile.ui.settings.SettingsPages.FEEDS_TABS)))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show());
     }
 
     private static boolean isOn(View view, android.view.MotionEvent event) {
@@ -2810,25 +2911,21 @@ public class MobileBrowseActivity extends MobileActivity
 
         refreshUpdateBadge();
 
-        // Long-press on a section tab opens the section-management menu (Refresh / Rename /
-        // Move / Mark watched / Clear history, ...) - the touch equivalent of the TV D-pad
-        // section long-press, formerly the drawer rows' "..." overflow. Item views exist only
-        // after the menu inflates into the bar, hence the post.
+        // MEETUBE(issue #130): holding any tab shows its hint (showNavHint) - the section menu it
+        // opened (Refresh / Move up / Move down) no longer worked on the phone's fixed bar. Item
+        // views exist only after the menu inflates into the bar, hence the post.
         mBottomNav.post(() -> {
             for (BrowseSection section : navSections) {
                 View itemView = mBottomNav.findViewById(toMenuItemId(section.getId()));
                 if (itemView != null) {
                     fitNavLabel(itemView);
-                    int sectionId = section.getId();
-                    if (sectionId == MediaGroup.TYPE_HOME) {
-                        continue; // MEETUBE: Home has no menu on long-press, as the You tab
-                    }
-                    itemView.setOnLongClickListener(v -> {
-                        if (mPresenter != null) {
-                            mPresenter.onSectionLongPressed(sectionId);
-                        }
-                        return true;
-                    });
+                }
+            }
+            for (int i = 0; i < mBottomNav.getMenu().size(); i++) {
+                int itemId = mBottomNav.getMenu().getItem(i).getItemId();
+                View itemView = mBottomNav.findViewById(itemId);
+                if (itemView != null) {
+                    itemView.setOnLongClickListener(v -> showNavHint(v, itemId)); // in place of the tooltip
                 }
             }
         });

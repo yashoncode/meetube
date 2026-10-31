@@ -191,6 +191,12 @@ public final class NavBloom extends Drawable {
         invalidateSelf();
     }
 
+    /** MEETUBE(issue #130): the glow's colour for a tab, or 0 with the glow off (the held tab's hint). */
+    public static int colorOf(Context context, int itemId) {
+        int mode = mode(context);
+        return mode == MODE_OFF ? 0 : colorFor(context, mode, itemId);
+    }
+
     /** The tab's colour; per tab, Apple's system palette, which reads on the dark and the light glass alike. */
     private static int colorFor(Context context, int mode, int itemId) {
         if (mode == MODE_ACCENT) {

@@ -675,4 +675,51 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- MEETUBE(issue #130): a held tab's glass hint above the bar - "Tabs customization" with the
+         tab names on; with them off the tab's name, and "Change" on a tab Settings can swap.
+         Placed in code (showNavHint). -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/mobile_nav_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:elevation="8dp"
+        android:focusable="true"
+        android:visibility="gone"
+        app:glassCornerRadius="22dp"
+        app:glassTint="@color/meetube_glass_tint"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="44dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="18dp">
+
+            <TextView
+                android:id="@+id/mobile_nav_hint_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textSize="15sp"
+                tools:text="Downloads" />
+
+            <TextView
+                android:id="@+id/mobile_nav_hint_change"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:maxLines="1"
+                android:text="@string/mobile_nav_hint_change"
+                android:textColor="@color/mobile_color_on_surface_secondary"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+    </com.newtube.mobile.ui.common.GlassView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
