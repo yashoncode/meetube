@@ -91,10 +91,33 @@ open class DoubleTapPlayerViewImpl @JvmOverloads constructor(
         addView(contentFrame, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
             .apply { gravity = Gravity.CENTER })
 
-        // Subtitles live inside the content frame so they track the video box, not the letterbox.
+        // MEETUBE(issue #138): subtitles sit over the content frame, not in it - a fill (resize
+        // ZOOM) or a pinch zoom makes the frame bigger than this view and carried their bottom line
+        // off the screen. Padded to the part of the picture that shows, they still track the video
+        // box where it is letterboxed, and stop at this view's edge where it is cropped.
         subtitleView.setUserDefaultStyle()
         subtitleView.setUserDefaultTextSize()
-        contentFrame.addView(subtitleView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        addView(subtitleView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        subtitleView.viewTreeObserver.addOnPreDrawListener {
+            fitSubtitles()
+            true
+        }
+    }
+
+    /** The content frame as drawn (a pinch scales it about its centre), clipped to this view. */
+    private fun fitSubtitles() {
+        val halfW = contentFrame.width * contentFrame.scaleX / 2f
+        val halfH = contentFrame.height * contentFrame.scaleY / 2f
+        val cx = contentFrame.left + contentFrame.translationX + contentFrame.width / 2f
+        val cy = contentFrame.top + contentFrame.translationY + contentFrame.height / 2f
+        val left = maxOf(0, Math.round(cx - halfW))
+        val top = maxOf(0, Math.round(cy - halfH))
+        val right = maxOf(0, Math.round(width - cx - halfW))
+        val bottom = maxOf(0, Math.round(height - cy - halfH))
+        if (left != subtitleView.paddingLeft || top != subtitleView.paddingTop
+            || right != subtitleView.paddingRight || bottom != subtitleView.paddingBottom) {
+            subtitleView.setPadding(left, top, right, bottom)
+        }
     }
 
     // ------------------------------------------------------------------------------
