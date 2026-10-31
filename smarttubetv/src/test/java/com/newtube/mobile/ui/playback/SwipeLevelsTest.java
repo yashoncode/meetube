@@ -58,16 +58,6 @@ public class SwipeLevelsTest {
     }
 
     @Test
-    public void theCurveIsTheQuickSettingsSlider() {
-        assertEquals(0f, SwipeLevels.gammaToLinear(0f), 1e-6f);
-        assertEquals(1f, SwipeLevels.gammaToLinear(1f), 1e-3f);
-        assertEquals(1f / 12f, SwipeLevels.gammaToLinear(0.5f), 1e-6f); // half the slider = 8% of the light
-        for (float p = 0f; p <= 1f; p += 0.05f) {
-            assertEquals(p, SwipeLevels.linearToGamma(SwipeLevels.gammaToLinear(p)), 1e-3f);
-        }
-    }
-
-    @Test
     public void theRangeIsThreeQuartersOfTheVideo() {
         assertEquals(750f, SwipeLevels.rangePxFor(1000f), 1e-3f);
     }
@@ -97,7 +87,7 @@ public class SwipeLevelsTest {
         mLevels.move(75f); // a tenth of the range
         assertEquals(Math.min(1f, start + 0.1f), mShown.get(mShown.size() - 1), 1e-4f);
         float window = mActivity.getWindow().getAttributes().screenBrightness;
-        assertEquals(SwipeLevels.gammaToLinear(mShown.get(mShown.size() - 1)), window, 1e-4f);
+        assertEquals(mShown.get(mShown.size() - 1), window, 1e-4f); // linear (#129): the level is the window's
 
         mLevels.end();
         mLevels.setBrightnessActive(false); // portrait, PiP, another screen: the phone's own level

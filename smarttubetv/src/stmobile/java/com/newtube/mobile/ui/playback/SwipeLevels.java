@@ -25,9 +25,10 @@ import com.newtube.mobile.ui.common.Haptics;
  * <ul>
  *   <li><b>Brightness</b> is this window's own ({@link WindowManager.LayoutParams#screenBrightness}),
  *   never the phone's setting: it holds while the player is fullscreen and the phone's own level
- *   comes back as soon as it is not (portrait, PiP, another screen). The swipe moves along the
- *   phone's own slider curve (AOSP BrightnessUtils), so half way up looks like half way up the
- *   quick-settings slider, not like the near-full glare a linear half is.</li>
+ *   comes back as soon as it is not (portrait, PiP, another screen). The swipe is linear (issue
+ *   #129): half way up is half the window's brightness. It followed AOSP's slider curve until
+ *   then, but OPPO/OnePlus panels map the window value through their own curve, and on top of
+ *   AOSP's that left nearly all the change in the top of the stroke.</li>
  *   <li><b>Volume</b> is the media stream's, in the phone's own steps, without the system's
  *   volume panel (this pill replaces it). Each step ticks, as a chapter line does on the seek bar.</li>
  * </ul>
@@ -57,7 +58,7 @@ final class SwipeLevels {
         void hideLevel();
     }
 
-    /** The level the swipes last set (perceptual 0..1) and when, for the whole app session. */
+    /** The level the swipes last set (0..1) and when, for the whole app session. */
     private static float sBrightness = -1f;
     private static long sBrightnessAt;
 
@@ -158,7 +159,7 @@ final class SwipeLevels {
     void setBrightnessActive(boolean active) {
         mBrightnessActive = active;
         float level = rememberedBrightness();
-        applyWindowBrightness(active && level >= 0f ? gammaToLinear(level)
+        applyWindowBrightness(active && level >= 0f ? level
                 : WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE);
     }
 
@@ -216,7 +217,7 @@ final class SwipeLevels {
         sBrightness = level;
         sBrightnessAt = SystemClock.elapsedRealtime();
         if (mBrightnessActive) {
-            applyWindowBrightness(gammaToLinear(level));
+            applyWindowBrightness(level);
         }
         if (bookend) {
             Haptics.tick(mHapticView); // the darkest and the brightest are boundaries, like a seek bar's ends
@@ -231,14 +232,13 @@ final class SwipeLevels {
         }
         float window = mWindow.getAttributes().screenBrightness;
         if (window >= 0f) {
-            return linearToGamma(window);
+            return window;
         }
-        // The phone's setting is linear 0..255 since Android 9 (its slider writes it through the
-        // same curve). With adaptive brightness on it is the last manual level, not the live one -
+        // The phone's setting is linear 0..255 since Android 9. With adaptive brightness on it is the last manual level, not the live one -
         // there is no public API for that - so the first swipe may start a little off.
         int setting = Settings.System.getInt(mWindow.getContext().getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS, 128);
-        return linearToGamma(setting / 255f);
+        return clamp(setting / 255f);
     }
 
     private static float rememberedBrightness() {
@@ -254,27 +254,6 @@ final class SwipeLevels {
             params.screenBrightness = value;
             mWindow.setAttributes(params);
         }
-    }
-
-    // AOSP com.android.settingslib.display.BrightnessUtils: the quick-settings slider's curve
-    // (hybrid log-gamma), slider position 0..1 <-> linear brightness 0..1.
-    private static final float HLG_R = 0.5f;
-    private static final float HLG_A = 0.17883277f;
-    private static final float HLG_B = 0.28466892f;
-    private static final float HLG_C = 0.55991073f;
-
-    @VisibleForTesting
-    static float gammaToLinear(float position) {
-        float p = clamp(position);
-        float ret = p <= HLG_R ? (p / HLG_R) * (p / HLG_R) : (float) Math.exp((p - HLG_C) / HLG_A) + HLG_B;
-        return clamp(ret / 12f);
-    }
-
-    @VisibleForTesting
-    static float linearToGamma(float linear) {
-        float v = clamp(linear) * 12f;
-        float ret = v <= 1f ? (float) Math.sqrt(v) * HLG_R : HLG_A * (float) Math.log(v - HLG_B) + HLG_C;
-        return clamp(ret);
     }
 
     // ---------------------------------------------------------------------------------
