@@ -643,7 +643,7 @@ public class VideoLoaderController extends BasePlayerController {
         } else if (acceptAdaptiveFormats(formatInfo) && formatInfo.containsDashFormats()) {
             Log.d(TAG, "Loading regular video in dash format...");
 
-            if (getPlayerTweaksData().isHighBitrateFormatsEnabled() && formatInfo.hasExtendedHlsFormats()) {
+            if (mergesHls(formatInfo)) {
                 player.openMerged(formatInfo, formatInfo.getHlsManifestUrl());
             } else {
                 player.openDash(formatInfo);
@@ -1115,14 +1115,19 @@ public class VideoLoaderController extends BasePlayerController {
      * Skipped while paused (user browsing) and when the playback mode
      * won't auto-advance.
      */
-    /** MEETUBE(shorts): a short looping in the swipe player (its next one is a swipe away). */
+    /** MEETUBE(shorts): a short in the swipe player (its next one is a swipe away). */
     private static final long SHORTS_PREFETCH_AFTER_MS = 300;
     /** MEETUBE(shorts): the last short-after-next whose /player was asked for (see prefetchShortAfterNext). */
     private String mShortAheadId;
 
+    /**
+     * Looping or not: with Loop shorts off (PLAYBACK_MODE_ALL) a short fell to the long-video
+     * deadline (5 s played, 20 s from the end), so a swipe never found its next short warmed.
+     */
     private boolean isShortsSwipe() {
+        int mode = getPlaybackMode();
         return getVideo() != null && getVideo().belongsToShorts()
-                && getPlaybackMode() == PlayerConstants.PLAYBACK_MODE_ONE;
+                && (mode == PlayerConstants.PLAYBACK_MODE_ONE || mode == PlayerConstants.PLAYBACK_MODE_ALL);
     }
 
     private void preloadNextVideoIfNeeded() {
@@ -1135,8 +1140,8 @@ public class VideoLoaderController extends BasePlayerController {
         }
 
         int playbackMode = getPlaybackMode();
-        // MEETUBE(shorts): a looping short still warms the next one - the next swipe is coming.
-        boolean shortsSwipe = playbackMode == PlayerConstants.PLAYBACK_MODE_ONE && getVideo().belongsToShorts();
+        // MEETUBE(shorts): a short warms the next one at once - the next swipe is coming.
+        boolean shortsSwipe = isShortsSwipe();
         if (playbackMode != PlayerConstants.PLAYBACK_MODE_ALL
                 && playbackMode != PlayerConstants.PLAYBACK_MODE_SHUFFLE
                 && playbackMode != PlayerConstants.PLAYBACK_MODE_LIST
@@ -1230,6 +1235,17 @@ public class VideoLoaderController extends BasePlayerController {
                 && !formatInfo.isLive()
                 && acceptAdaptiveFormats(formatInfo)
                 && formatInfo.containsDashFormats()
-                && !(getPlayerTweaksData().isHighBitrateFormatsEnabled() && formatInfo.hasExtendedHlsFormats());
+                && !mergesHls(formatInfo);
+    }
+
+    /**
+     * High bitrate formats: the HLS variants join the DASH ones. MEETUBE(shorts): never for a short -
+     * a merged open can't be prebuilt, preloaded or peeked, so those shorts opened cold (902 ms
+     * average to the picture vs 184 preloaded, 18 swipes on the vivo, 2026-10-31); plain DASH
+     * already reaches a short's 1080p60.
+     */
+    private boolean mergesHls(MediaItemFormatInfo formatInfo) {
+        return getPlayerTweaksData().isHighBitrateFormatsEnabled() && formatInfo.hasExtendedHlsFormats()
+                && !(getVideo() != null && getVideo().belongsToShorts());
     }
 }

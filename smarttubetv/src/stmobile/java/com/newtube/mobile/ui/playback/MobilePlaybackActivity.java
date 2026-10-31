@@ -2250,6 +2250,9 @@ public class MobilePlaybackActivity extends MobileActivity
         applyKeepScreenOn(false); // a hidden window must not hold the screen; onStart re-applies
         stopProgressUpdates();
         cancelAutoHide();
+        if (mShorts != null) {
+            mShorts.releasePeek(); // MEETUBE(shorts peek): no idle decoder in the background
+        }
         if (mExoPlayerController != null && mExoPlayerController.isHoldSpeedOn()) {
             endHoldSpeed(); // the finger's lift can't reach a stopped window
         }
@@ -2340,6 +2343,9 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     protected void onDestroy() {
+        if (mShorts != null) {
+            mShorts.releasePeek();
+        }
         SleepTimer.detach(mSleepPause);
         DownloadRegistry.instance(this).removeListener(mDownloadsListener);
         MobileSheets.setPlayerShown(false, false);
@@ -6250,6 +6256,14 @@ public class MobilePlaybackActivity extends MobileActivity
     };
 
     private void liftLoadingStill(String lift) {
+        // MEETUBE(shorts peek): the peek's real frame stood over this short - it goes in this
+        // frame, and so does the thumbnail under it (a fade showed the thumbnail between the
+        // peek's frame and the video: a twitch on every swipe).
+        if (mNewVideoStill && mShorts != null && mShorts.onPictureVisible(mStillVideoId)
+                && hideLoadingStillImmediately(mVideoStill)) {
+            NetPath.log(NetPath.context() + " picture-visible +" + NetPath.elapsedMs()
+                    + " state=ready-texture-overlay-gone lift=peek");
+        }
         hideVideoStill(mNewVideoStill, lift);
         // The persistent Surface can deliver the previous video's queued renderer event
         // after a new selection. Reuse the still's new-stream READY + texture-frame gate
@@ -11387,6 +11401,9 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     public void prebuildNextSource(MediaItemFormatInfo formatInfo, boolean preloadMedia) {
         mExoPlayerController.prebuildNextSource(formatInfo, preloadMedia);
+        if (preloadMedia && mShorts != null && !mBackgroundAudioMode) {
+            mShorts.preparePeek(formatInfo, mExoPlayerController); // MEETUBE(shorts peek)
+        }
     }
 
     @Override

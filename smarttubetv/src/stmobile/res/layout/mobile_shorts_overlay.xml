@@ -24,6 +24,15 @@
         android:scaleType="centerCrop"
         android:visibility="gone" />
 
+    <!-- MEETUBE(shorts peek): the next short's real first frame (ShortsPeekPlayer), over the
+         thumbnail. Always laid out (a TextureView only gets its surface by drawing), parked a
+         screen below while unused; transparent until it holds a frame. -->
+    <TextureView
+        android:id="@+id/mobile_shorts_peek_video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="120dp"
