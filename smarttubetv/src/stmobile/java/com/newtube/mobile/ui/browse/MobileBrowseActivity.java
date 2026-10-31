@@ -2251,7 +2251,10 @@ public class MobileBrowseActivity extends MobileActivity
 
         // MEETUBE(shorts): a short opens the vertical player with the tab's shorts as its queue,
         // so a swipe up plays the next one (and down the previous) - see ShortsOverlay.
-        if (video.belongsToShorts() && video.hasVideo()) {
+        List<Video> shelf = shelfOf(video);
+        if (shelf != null) {
+            ShortsFilter.queueAround(shelf, video); // MEETUBE(issue #43): Home pages add theirs (extendShortsQueue)
+        } else if (video.belongsToShorts() && video.hasVideo()) {
             queueShorts(video);
         } else if (video.belongsToHistory() && video.hasVideo() && ShortsFilter.isShort(video)) {
             video = queueHistoryShorts(video);
@@ -3610,7 +3613,7 @@ public class MobileBrowseActivity extends MobileActivity
                     staleSwap = mAwaitingFreshContent;
                     mCurrentVideos.clear();
                     if (!emptyReplace) {
-                        mCurrentVideos.addAll(visibleFeedItems(group.getVideos()));
+                        mCurrentVideos.addAll(visibleFeedItems(withShortsShelf(group.getVideos())));
                     }
                     mAwaitingFreshContent = false;
                     if (emptyReplace) {
@@ -3618,7 +3621,7 @@ public class MobileBrowseActivity extends MobileActivity
                     }
                     break;
                 case VideoGroup.ACTION_PREPEND:
-                    mCurrentVideos.addAll(0, visibleFeedItems(group.getVideos()));
+                    mCurrentVideos.addAll(0, visibleFeedItems(withShortsShelf(group.getVideos())));
                     break;
                 case VideoGroup.ACTION_REMOVE:
                     mCurrentVideos.removeAll(group.getVideos());
@@ -3635,7 +3638,7 @@ public class MobileBrowseActivity extends MobileActivity
                         mAwaitingFreshContent = false;
                         staleSwap = true;
                     }
-                    appendNew(group.getVideos());
+                    appendNew(withShortsShelf(group.getVideos()));
                     extendShortsQueue(group.getVideos());
                     break;
             }
@@ -3910,11 +3913,58 @@ public class MobileBrowseActivity extends MobileActivity
         return visible;
     }
 
+    /**
+     * MEETUBE(issue #43): on Home and its topics a shelf's Shorts (the TV Home's Shorts rows) fold
+     * into ONE full-width card at the first one's place, a row you swipe sideways (Settings > Shorts
+     * on Home). Fewer than two make no shelf; they stay out, like every other stray Short.
+     */
+    private List<Video> withShortsShelf(List<Video> videos) {
+        if (videos == null || !isHomeChip(mCurrentSectionId) || !HomeLayout.isShortsShelf(this)) {
+            return videos;
+        }
+        List<Video> shorts = new ArrayList<>();
+        int at = -1;
+        List<Video> result = new ArrayList<>(videos.size());
+        for (Video video : videos) {
+            if (video != null && video.hasVideo() && ShortsFilter.isShort(video)) {
+                if (at < 0) {
+                    at = result.size();
+                }
+                shorts.add(video);
+            } else {
+                result.add(video);
+            }
+        }
+        if (shorts.size() < 2) {
+            return videos;
+        }
+        for (Video video : shorts) {
+            video.markShorts(); // plays in the Shorts player, and drawn as a tile
+        }
+        Video shelf = shorts.get(0).copy(); // equal to its first short: a reload finds the same card
+        shelf.isShorts = true; // a disk snapshot (no shelf field) brings it back as a Short: left out
+        shelf.shortsShelf = shorts;
+        result.add(at, shelf);
+        return result;
+    }
+
+    /** MEETUBE(issue #43): the Home shelf {@code video} is on, or null. */
+    @Nullable
+    private List<Video> shelfOf(Video video) {
+        for (Video card : mCurrentVideos) {
+            if (card.shortsShelf != null && card.shortsShelf.contains(video)) {
+                return card.shortsShelf;
+            }
+        }
+        return null;
+    }
+
     private static boolean isVisibleFeedItem(Video video) {
         return video != null
                 // MEETUBE(shorts): Shorts still stay out of every feed but their own tab, and
-                // History: it lists what you watched, Shorts included.
-                && (!ShortsFilter.isShort(video) || video.belongsToShorts() || video.belongsToHistory())
+                // History: it lists what you watched, Shorts included. And a Home shelf (issue #43).
+                && (!ShortsFilter.isShort(video) || video.belongsToShorts() || video.belongsToHistory()
+                    || video.shortsShelf != null)
                 && (!video.isChannel() || video.isPlaylistAsChannel())
                 && !isSearchQueryTile(video);
     }
@@ -3933,7 +3983,7 @@ public class MobileBrowseActivity extends MobileActivity
     private void syncVideos(List<Video> videos) {
         for (Video video : videos) {
             int idx = mCurrentVideos.indexOf(video);
-            if (idx >= 0) {
+            if (idx >= 0 && mCurrentVideos.get(idx).shortsShelf == null) { // a shelf equals its first short
                 mCurrentVideos.set(idx, video);
             }
         }

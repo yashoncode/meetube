@@ -124,6 +124,8 @@ public final class Video {
     private long durationMs = -1;
     private WeakReference<VideoGroup> group; // Memory leak fix. Used to get next page when scrolling.
     public List<NotificationState> notificationStates;
+    /** MEETUBE(issue #43): Home's Shorts row folded into one card - the shorts it holds; null on any other card. */
+    public List<Video> shortsShelf;
 
     public Video() {
        // NOP
