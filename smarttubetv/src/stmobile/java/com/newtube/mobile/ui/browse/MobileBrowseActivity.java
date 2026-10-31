@@ -2550,8 +2550,11 @@ public class MobileBrowseActivity extends MobileActivity
     };
 
     private int computeSpanCount() {
-        int span = com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this);
-        // MEETUBE(shorts): the Shorts tab is a grid of tall 9:16 cards, two to a phone row.
+        return computeSpanCount(com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this));
+    }
+
+    /** MEETUBE(shorts): the Shorts tab is a grid of tall 9:16 cards, two to a phone row. */
+    private int computeSpanCount(int span) {
         return mCurrentSectionId == MediaGroup.TYPE_SHORTS ? span * 2 : span;
     }
 
@@ -3225,11 +3228,14 @@ public class MobileBrowseActivity extends MobileActivity
         // MEETUBE(fullscreen): the fullscreen player turns Home with it, under its window. Following
         // it there re-laid the grid twice out of sight (two columns, then one), so Home came back
         // scrolled elsewhere with its cards rebinding as the player minimized. onResume squares
-        // the grid with Home's own configuration when Home is next on screen.
-        if (com.newtube.mobile.ui.playback.MobilePlaybackActivity.isCoveringScreens()) {
+        // the grid with Home's own configuration when Home is next on screen. Once Home is
+        // resumed it is on screen: minimizing from landscape delivers portrait here after
+        // onResume but before the player stops, and skipping it then left two columns.
+        if (com.newtube.mobile.ui.playback.MobilePlaybackActivity.isCoveringScreens()
+                && !getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
             return;
         }
-        updateGridSpanCount(com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig));
+        updateGridSpanCount(computeSpanCount(com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig)));
     }
 
     // NEWTUBE(ui-mode): a recreated Browse (any config change the manifest doesn't absorb, or

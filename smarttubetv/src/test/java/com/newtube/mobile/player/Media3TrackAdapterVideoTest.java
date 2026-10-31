@@ -116,6 +116,20 @@ public class Media3TrackAdapterVideoTest {
         assertEquals("399", videoOverride().id);
     }
 
+    /** An HLS group behind dash-mpd+hls: every variant has the same id ("1:"), the 240p first. */
+    @Test
+    public void aSharedIdIsNotAnExactMatch() {
+        Format hls1080 = video("1:", "vp09.00.40.08", 1080, 24, 2_934_892);
+        adapter.selectFormat(picked(hls1080));
+        adapter.onTracksChanged(tracks(
+                video("1:", "avc1.4D4015", 240, 24, 310_506),
+                video("1:", "avc1.640028", 1080, 24, 4_706_990),
+                video("1:", "vp09.00.20.08", 240, 24, 270_097),
+                hls1080));
+
+        assertEquals(1080, videoOverride().height);
+    }
+
     @Test
     public void aPickAboveTheVideosBestPlaysItsBest() {
         adapter.selectFormat(picked(VP9_1080_30));
