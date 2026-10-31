@@ -179,6 +179,12 @@ final class AppPages {
                         rowsOn -> com.newtube.mobile.ui.browse.HomeLayout.setRows(context, rowsOn)),
                 132, Tiles.FEED, Tiles.SHELVES));
 
+        // MEETUBE(issue #43): Home's Shorts rows as a sideways shelf, or left out as before.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_shorts),
+                context.getString(R.string.mobile_settings_home_shorts_summary),
+                () -> com.newtube.mobile.ui.browse.HomeLayout.isShortsShelf(context),
+                on -> com.newtube.mobile.ui.browse.HomeLayout.setShortsShelf(context, on)));
+
         // MEETUBE(list layout, issue #82): feeds, channels, playlists and search as cards or as rows.
         rows.add(Tiles.of(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_video_layout))
                 .option(context.getString(R.string.mobile_settings_video_layout_cards),

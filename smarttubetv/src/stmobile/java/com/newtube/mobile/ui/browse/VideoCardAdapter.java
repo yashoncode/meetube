@@ -42,6 +42,10 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     private static final int VIEW_TYPE_SHORT_TILE = 2;
     /** MEETUBE(list layout, issue #82): a video as a compact row (item_video_row), see {@link #setListRows}. */
     private static final int VIEW_TYPE_VIDEO_ROW = 3;
+    /** MEETUBE(issue #43): Home's Shorts row, one card of sideways tiles ({@link Video#shortsShelf}). */
+    private static final int VIEW_TYPE_SHORTS_SHELF = 4;
+    /** A shelf tile's width: two and a bit show on a phone, so the row reads as one to swipe. */
+    static final int SHELF_TILE_WIDTH_DP = 156;
 
     public interface OnVideoClickListener {
         void onVideoClick(Video video);
@@ -78,6 +82,14 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     /** MEETUBE(shorts): Shorts as YouTube's channel Shorts tab draws them, not as search's cards. */
     public VideoCardAdapter shortsTiles() {
         mShortsTiles = true;
+        return this;
+    }
+
+    private boolean mStrip;
+
+    /** MEETUBE(issue #43): cards in one sideways row - a Short spaced evenly, not as half of a two-up row. */
+    public VideoCardAdapter strip() {
+        mStrip = true;
         return this;
     }
 
@@ -124,6 +136,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         // (videoId/playlistId null + a VL... channelId — the standard shape of the user
         // Playlists section): those must stay thumbnail cards, not round-avatar channel rows.
         Video item = getItem(position);
+        if (item.shortsShelf != null) {
+            return VIEW_TYPE_SHORTS_SHELF;
+        }
         if (mShortsTiles && item.belongsToShorts()) {
             return VIEW_TYPE_SHORT_TILE;
         }
@@ -135,7 +150,11 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
 
     /** Full-span rows (channel results) for the grid's SpanSizeLookup in multi-column layouts. */
     public boolean isFullSpan(int position) {
-        return position >= 0 && position < getItemCount() && getItemViewType(position) == VIEW_TYPE_CHANNEL;
+        if (position < 0 || position >= getItemCount()) {
+            return false;
+        }
+        int type = getItemViewType(position);
+        return type == VIEW_TYPE_CHANNEL || type == VIEW_TYPE_SHORTS_SHELF;
     }
 
     /**
@@ -146,6 +165,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     private int shortsColumn(int position) {
         if (!isShort(position)) {
             return -1;
+        }
+        if (mStrip) {
+            return 2;
         }
         int run = 0;
         while (isShort(position - 1 - run)) {
@@ -170,6 +192,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             return new ShortTileHolder(inflater.inflate(R.layout.item_mobile_shorts_tile, parent, false),
                     mClickListener, mLongClickListener);
         }
+        if (viewType == VIEW_TYPE_SHORTS_SHELF) {
+            return new ShortsShelfHolder(parent.getContext(), mClickListener, mLongClickListener);
+        }
         VideoViewHolder holder = new VideoViewHolder(inflater.inflate(viewType == VIEW_TYPE_VIDEO_ROW
                 ? R.layout.item_video_row : R.layout.item_video_card, parent, false), mClickListener);
         holder.mShowAvatar = mShowAvatars;
@@ -182,6 +207,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             ((ChannelViewHolder) holder).bind(getItem(position), mLongClickListener);
         } else if (holder instanceof ShortTileHolder) {
             ((ShortTileHolder) holder).bind(getItem(position));
+        } else if (holder instanceof ShortsShelfHolder) {
+            ((ShortsShelfHolder) holder).bind(getItem(position));
         } else {
             ((VideoViewHolder) holder).bind(getItem(position), mLongClickListener);
             ((VideoViewHolder) holder).bindShortsColumn(shortsColumn(position));
@@ -197,6 +224,59 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             ((ChannelViewHolder) holder).unbind();
         } else if (holder instanceof ShortTileHolder) {
             ((ShortTileHolder) holder).unbind();
+        }
+    }
+
+    /** MEETUBE(issue #43): the shelf's title over a sideways strip of Shorts tiles. */
+    static class ShortsShelfHolder extends RecyclerView.ViewHolder {
+        private final TextView mTitle;
+        private final VideoCardAdapter mTiles;
+
+        ShortsShelfHolder(Context context, OnVideoClickListener clickListener,
+                @Nullable OnVideoLongClickListener longClickListener) {
+            super(new android.widget.LinearLayout(context));
+            float density = context.getResources().getDisplayMetrics().density;
+            android.widget.LinearLayout root = (android.widget.LinearLayout) itemView;
+            root.setOrientation(android.widget.LinearLayout.VERTICAL);
+            root.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            root.setPadding(0, Math.round(8 * density), 0, Math.round(16 * density));
+
+            mTitle = new TextView(context);
+            mTitle.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 18);
+            mTitle.setTextColor(ContextCompat.getColor(context, R.color.mobile_color_on_surface));
+            mTitle.setTypeface(mTitle.getTypeface(), android.graphics.Typeface.BOLD);
+            mTitle.setSingleLine();
+            int side = Math.round(16 * density);
+            mTitle.setPadding(side, 0, side, Math.round(8 * density));
+            root.addView(mTitle);
+
+            int tileWidth = Math.round(SHELF_TILE_WIDTH_DP * density);
+            // Search's Shorts card (rounded, title and views under it), not the Shorts tab's tile.
+            mTiles = new VideoCardAdapter(clickListener, longClickListener) {
+                @NonNull
+                @Override
+                public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                    RecyclerView.ViewHolder tile = super.onCreateViewHolder(parent, viewType);
+                    tile.itemView.getLayoutParams().width = tileWidth;
+                    return tile;
+                }
+            }.strip();
+            RecyclerView strip = new RecyclerView(context);
+            strip.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
+            strip.setNestedScrollingEnabled(false);
+            strip.setClipToPadding(false);
+            int edge = Math.round(13 * density); // + a card's 3dp margin: in line with the title
+            strip.setPadding(edge, 0, edge, 0);
+            strip.setAdapter(mTiles);
+            root.addView(strip, new android.widget.LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+
+        void bind(Video shelf) {
+            String title = shelf.getGroupTitle();
+            mTitle.setText(title != null && !title.trim().isEmpty() ? title : itemView.getContext().getString(R.string.header_shorts));
+            mTiles.submitList(new java.util.ArrayList<>(shelf.shortsShelf));
         }
     }
 
@@ -569,7 +649,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) itemView.getLayoutParams();
             // left/right, not start/end: RecyclerView lays out with the resolved margins.
             int left = !shortCard ? edge : column == 0 ? edge : inner;
-            int right = !shortCard ? edge : column == 0 ? inner : edge;
+            int right = !shortCard ? edge : column == 1 ? edge : inner; // 2: in a sideways strip
             int vertical = shortCard ? Math.round(4 * dp) : edge;
             if (lp.leftMargin != left || lp.rightMargin != right || lp.topMargin != vertical) {
                 lp.setMargins(left, vertical, right, vertical);

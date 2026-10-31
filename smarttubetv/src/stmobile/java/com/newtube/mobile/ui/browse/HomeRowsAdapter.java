@@ -30,6 +30,8 @@ final class HomeRowsAdapter extends RecyclerView.Adapter<HomeRowsAdapter.RowHold
     private static final class Row {
         final String title;
         final List<Video> videos = new ArrayList<>();
+        /** Feed cards behind the row: a Shorts shelf (issue #43) is one, however many tiles it shows. */
+        int feedCards;
 
         Row(String title) {
             this.title = title;
@@ -52,11 +54,20 @@ final class HomeRowsAdapter extends RecyclerView.Adapter<HomeRowsAdapter.RowHold
         Row row = null;
         for (Video video : videos) {
             String title = video.getGroupTitle();
+            if (video.shortsShelf != null) {
+                Row shelf = new Row(title);
+                shelf.videos.addAll(video.shortsShelf);
+                shelf.feedCards = 1;
+                rows.add(shelf);
+                row = null;
+                continue;
+            }
             if (row == null || !TextUtils.equals(row.title, title)) {
                 row = new Row(title);
                 rows.add(row);
             }
             row.videos.add(video);
+            row.feedCards++;
         }
         mRows = rows;
         notifyDataSetChanged();
@@ -66,7 +77,7 @@ final class HomeRowsAdapter extends RecyclerView.Adapter<HomeRowsAdapter.RowHold
     int cardsThrough(int row) {
         int cards = 0;
         for (int i = 0; i <= row && i < mRows.size(); i++) {
-            cards += mRows.get(i).videos.size();
+            cards += mRows.get(i).feedCards;
         }
         return cards - 1;
     }
@@ -121,6 +132,7 @@ final class HomeRowsAdapter extends RecyclerView.Adapter<HomeRowsAdapter.RowHold
             root.addView(title);
 
             int cardWidth = Math.round(CARD_WIDTH_DP * density);
+            int shortWidth = Math.round(VideoCardAdapter.SHELF_TILE_WIDTH_DP * density);
             cards = new VideoCardAdapter(mClick, mLongClick) {
                 @NonNull
                 @Override
@@ -131,7 +143,14 @@ final class HomeRowsAdapter extends RecyclerView.Adapter<HomeRowsAdapter.RowHold
                     card.itemView.setLayoutParams(lp);
                     return card;
                 }
-            };
+
+                @Override
+                public void onBindViewHolder(@NonNull RecyclerView.ViewHolder card, int position) {
+                    super.onBindViewHolder(card, position);
+                    // A Shorts shelf's cards (issue #43) are narrow and tall; Home's other cards are not Shorts.
+                    card.itemView.getLayoutParams().width = isShort(position) ? shortWidth : cardWidth;
+                }
+            }.strip();
             RecyclerView strip = new RecyclerView(context);
             strip.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
             strip.setRecycledViewPool(mCardPool);
