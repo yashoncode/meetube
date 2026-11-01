@@ -22,6 +22,17 @@ public final class NavHider extends RecyclerView.OnScrollListener {
     private boolean mHeld;
     private int mTravel; // signed scroll distance since the last change of direction
     @Nullable private java.util.function.Consumer<Float> mOnSlide;
+    @Nullable private Morph mMorph;
+
+    /**
+     * MEETUBE(search fab): plays the bar's going and coming itself (the bar shrinking into a
+     * Search bubble and back); false = not this time, the usual slide runs.
+     */
+    public interface Morph {
+        boolean hide(float travel);
+
+        boolean show();
+    }
 
     public NavHider(View bar) {
         mBar = bar;
@@ -50,6 +61,10 @@ public final class NavHider extends RecyclerView.OnScrollListener {
         mOnSlide = onSlide;
     }
 
+    public void setMorph(@Nullable Morph morph) {
+        mMorph = morph;
+    }
+
     /** MEETUBE(shorts, issue #107): held, the bar stays down whatever the list does. */
     public void hold(boolean held) {
         mHeld = held;
@@ -68,8 +83,10 @@ public final class NavHider extends RecyclerView.OnScrollListener {
         }
         mHidden = false;
         mBar.animate().cancel();
-        mBar.animate().translationY(0f).alpha(1f).setDuration(DURATION_MS)
-                .setInterpolator(new DecelerateInterpolator()).start();
+        if (mMorph == null || !mMorph.show()) {
+            mBar.animate().translationY(0f).alpha(1f).setDuration(DURATION_MS)
+                    .setInterpolator(new DecelerateInterpolator()).start();
+        }
         if (mOnSlide != null) {
             mOnSlide.accept(0f);
         }
@@ -84,8 +101,10 @@ public final class NavHider extends RecyclerView.OnScrollListener {
                 ? ((ViewGroup.MarginLayoutParams) mBar.getLayoutParams()).bottomMargin : 0;
         float travel = mBar.getHeight() + margin;
         mBar.animate().cancel();
-        mBar.animate().translationY(travel).alpha(0f).setDuration(DURATION_MS)
-                .setInterpolator(new DecelerateInterpolator()).start();
+        if (mMorph == null || !mMorph.hide(travel)) {
+            mBar.animate().translationY(travel).alpha(0f).setDuration(DURATION_MS)
+                    .setInterpolator(new DecelerateInterpolator()).start();
+        }
         if (mOnSlide != null) {
             mOnSlide.accept(travel);
         }

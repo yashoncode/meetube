@@ -25,6 +25,7 @@ public final class NavTabs {
     private static final String KEY_LABELS = "labels";
     private static final String KEY_SEARCH_ON_TOP = "search_on_top";
     private static final String KEY_SEARCH_POSITION = "search_position";
+    private static final String KEY_SEARCH_FAB_LEFT = "search_fab_left";
     /** The bar as it was before the tabs could be picked. */
     private static final int[] DEFAULTS = {MediaGroup.TYPE_SHORTS, VideoDownloads.SECTION_ID};
 
@@ -57,6 +58,15 @@ public final class NavTabs {
     /** MEETUBE(search place): Settings > Customization > Tabs - Search in the top bar instead of the bottom one. */
     public static boolean searchOnTop(Context context) {
         return prefs(context).getBoolean(KEY_SEARCH_ON_TOP, false);
+    }
+
+    /** MEETUBE(search fab): the floating Search, out while the bar is slid away, at the left corner (else the right). */
+    public static boolean searchFabLeft(Context context) {
+        return prefs(context).getBoolean(KEY_SEARCH_FAB_LEFT, false);
+    }
+
+    public static void setSearchFabLeft(Context context, boolean left) {
+        prefs(context).edit().putBoolean(KEY_SEARCH_FAB_LEFT, left).apply();
     }
 
     /** Where Search sits in the bottom bar: how many of the two tabs come before it (0 to 2). */

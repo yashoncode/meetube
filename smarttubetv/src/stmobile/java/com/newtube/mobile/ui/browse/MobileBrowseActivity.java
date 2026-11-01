@@ -170,6 +170,14 @@ public class MobileBrowseActivity extends MobileActivity
     private ChipBar mChipBar;
     // MEETUBE(nav hide, issue #37): the floating nav pill slides away while a feed scrolls down.
     private com.newtube.mobile.ui.common.NavHider mNavHider;
+    // MEETUBE(search fab): Search floated out of the slid-away bar; out = shown in its corner.
+    private View mSearchFab;
+    private boolean mSearchFabOut;
+    private boolean mNavHeld;
+    private float mNavY; // how far NavHider has the bar slid down
+    @Nullable
+    private android.animation.ValueAnimator mSearchMorphAnim;
+
     // MEETUBE(home-rows): Home drawn as SmartTube's shelves (HomeLayout), mirroring mAdapter's list.
     private HomeRowsAdapter mRows;
     private androidx.recyclerview.widget.ConcatAdapter mFeedAdapter;
@@ -374,6 +382,9 @@ public class MobileBrowseActivity extends MobileActivity
         // blur via RenderNode on API 31+, BlurView's own fallback below that).
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_nav_glass),
                 findViewById(R.id.mobile_blur_target));
+        mSearchFab = findViewById(R.id.mobile_search_fab);
+        com.newtube.mobile.ui.common.Glass.blur(mSearchFab, findViewById(R.id.mobile_blur_target));
+        mSearchFab.setOnClickListener(v -> SearchPresenter.instance(this).startSearch(null));
         // The pill floats above the system bar (content is already inset), so the bar must not
         // pad itself by that inset too - Material does, whatever paddingBottomSystemWindowInsets says.
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(mBottomNav, (v, insets) -> insets);
@@ -1151,10 +1162,10 @@ public class MobileBrowseActivity extends MobileActivity
         if (!com.newtube.mobile.ui.common.FocusRing.isTv(this)) { // a remote needs the tabs in reach
             mNavHider = new com.newtube.mobile.ui.common.NavHider(findViewById(R.id.mobile_nav_glass));
             mNavHider.setOnSlide(navY -> { // MEETUBE(issue #125): the mini card follows the nav bar down
-                if (mMiniSwipe != null && (mMiniPip == null || !mMiniPip.isPinned())) {
-                    mMiniSwipe.setHomeY(navY);
-                }
+                mNavY = navY;
+                followNav();
             });
+            mNavHider.setMorph(mSearchMorph); // MEETUBE(search fab)
             mContentGrid.addOnScrollListener(mNavHider);
         }
         if (com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
@@ -1725,9 +1736,158 @@ public class MobileBrowseActivity extends MobileActivity
 
     /** MEETUBE(shorts, issue #107): the Shorts tab slides the nav bar down; leaving it slides it back. */
     private void holdNav(boolean held) {
+        mNavHeld = held;
+        if (held && mSearchFabOut) { // Shorts has no Search: the bubble just goes, the bar stays down
+            mSearchFabOut = false;
+            cancelSearchMorph();
+            mSearchFab.animate().alpha(0f).setDuration(Motion.FADE_OUT_MS)
+                    .withEndAction(() -> mSearchFab.setVisibility(View.INVISIBLE)).start();
+            followNav();
+        }
         if (mNavHider != null) {
             mNavHider.hold(held);
         }
+    }
+
+    /**
+     * MEETUBE(search fab): NavHider's Morph. A scroll down shrinks the bar into a Search bubble at its
+     * end on the side Settings picked; a scroll up stretches the bubble back out into the bar. Only
+     * with Search in the bottom bar and not on Shorts; otherwise the usual slide.
+     */
+    private final com.newtube.mobile.ui.common.NavHider.Morph mSearchMorph = new com.newtube.mobile.ui.common.NavHider.Morph() {
+        @Override
+        public boolean hide(float travel) {
+            if (mSearchFab == null || mNavHeld || mBottomNav.getMenu().findItem(SEARCH_ITEM_ID) == null) {
+                return false;
+            }
+            mSearchFabOut = true;
+            morphSearch(true, travel);
+            return true;
+        }
+
+        @Override
+        public boolean show() {
+            if (!mSearchFabOut) {
+                return false;
+            }
+            mSearchFabOut = false;
+            morphSearch(false, 0f);
+            return true;
+        }
+    };
+
+    /**
+     * One glass changing shape between the bar and the Search bubble (its corners always round, so
+     * it stays a capsule), on a spring that bulges a touch past and settles. The tabs dissolve as it
+     * shrinks and come back as it reaches the bar's size; the Search icon the other way round. A
+     * morph cut short turns round from the shape it had reached.
+     */
+    private void morphSearch(boolean toButton, float travel) {
+        View fab = mSearchFab;
+        View bar = findViewById(R.id.mobile_nav_glass);
+        View icon = ((ViewGroup) fab).getChildAt(0);
+        boolean shown = fab.getVisibility() == View.VISIBLE;
+        cancelSearchMorph();
+        fab.animate().cancel();
+        android.graphics.Rect button = searchButtonRect();
+        android.graphics.Rect whole = new android.graphics.Rect(bar.getLeft(), bar.getTop(), bar.getRight(), bar.getBottom());
+        android.graphics.Rect from = shown ? new android.graphics.Rect(fab.getLeft(), fab.getTop(), fab.getRight(), fab.getBottom())
+                : toButton ? whole : button;
+        android.graphics.Rect to = toButton ? button : whole;
+        float barFrom = bar.getAlpha();
+        float iconFrom = shown ? icon.getAlpha() : 0f;
+        fab.setAlpha(1f);
+        icon.setAlpha(iconFrom);
+        fab.setVisibility(View.VISIBLE);
+        bar.setTranslationY(0f);
+        bar.setTranslationZ(1f); // the tabs fade over the glass, not under it
+
+        Motion.Spring spring = toButton ? new Motion.Spring(0f, 1f, 0f, 300f, 0.68f, 0.002f)
+                : new Motion.Spring(0f, 1f, 0f, 340f, 0.72f, 0.002f);
+        android.animation.ValueAnimator morph = android.animation.ValueAnimator.ofFloat(0f, 1f);
+        morph.setDuration(Math.max(1, spring.durationMs));
+        morph.setInterpolator(spring);
+        morph.addUpdateListener(a -> {
+            float t = (float) a.getAnimatedValue();
+            fab.layout(lerp(from.left, to.left, t), lerp(from.top, to.top, t),
+                    lerp(from.right, to.right, t), lerp(from.bottom, to.bottom, t));
+            float f = a.getAnimatedFraction();
+            if (toButton) {
+                bar.setAlpha(barFrom * (1f - clamp01(f / 0.3f)));
+                icon.setAlpha(iconFrom + (1f - iconFrom) * clamp01((f - 0.25f) / 0.4f));
+            } else {
+                bar.setAlpha(barFrom + (1f - barFrom) * clamp01((f - 0.35f) / 0.35f));
+                icon.setAlpha(iconFrom * (1f - clamp01(f / 0.2f)));
+            }
+        });
+        morph.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                if (mSearchMorphAnim != animation) {
+                    return; // turned round: the new morph owns the views
+                }
+                mSearchMorphAnim = null;
+                bar.setTranslationZ(0f);
+                if (toButton) {
+                    bar.setAlpha(0f);
+                    bar.setTranslationY(travel); // out of the way of taps, as NavHider's slide leaves it
+                } else {
+                    bar.setAlpha(1f);
+                    fab.setVisibility(View.INVISIBLE);
+                    fab.requestLayout(); // back to its own corner for next time
+                }
+            }
+        });
+        mSearchMorphAnim = morph;
+        morph.start();
+        followNav();
+    }
+
+    private void cancelSearchMorph() {
+        android.animation.ValueAnimator morph = mSearchMorphAnim;
+        mSearchMorphAnim = null;
+        if (morph != null) {
+            morph.cancel();
+        }
+    }
+
+    /** Where the bubble rests: its corner, by its layout params (its bounds move while it morphs). */
+    private android.graphics.Rect searchButtonRect() {
+        View fab = mSearchFab;
+        View root = (View) fab.getParent();
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) fab.getLayoutParams();
+        int size = params.width;
+        int bottom = root.getHeight() - params.bottomMargin;
+        int left = NavTabs.searchFabLeft(this) ? params.leftMargin : root.getWidth() - params.rightMargin - size;
+        return new android.graphics.Rect(left, bottom - size, left + size, bottom);
+    }
+
+    private static int lerp(int from, int to, float t) {
+        return Math.round(from + (to - from) * t);
+    }
+
+    private static float clamp01(float value) {
+        return Math.max(0f, Math.min(1f, value));
+    }
+
+    /**
+     * The mini card rides with the bar (issue #125); with Search out in its corner it stops above
+     * the button instead: the button's height and bottom margin higher than the bar's slide.
+     */
+    private void followNav() {
+        if (mMiniSwipe == null || (mMiniPip != null && mMiniPip.isPinned())) {
+            return;
+        }
+        float lift = 0f;
+        View mini = mMiniPlayerBar;
+        if (mSearchFabOut && mSearchFab != null && mini != null) {
+            android.graphics.Rect button = searchButtonRect();
+            float left = mini.getLeft() + mini.getTranslationX();
+            if (left < button.right && left + mini.getWidth() > button.left) {
+                lift = button.height() + ((ViewGroup.MarginLayoutParams) mSearchFab.getLayoutParams()).bottomMargin;
+            }
+        }
+        mMiniSwipe.setHomeY(mNavY - lift);
     }
 
     /** A long way down, jump most of it first: the glide covers the last few rows only. */
@@ -3080,6 +3240,20 @@ public class MobileBrowseActivity extends MobileActivity
         mSearchButton.setVisibility(searchOnTop ? View.VISIBLE : View.GONE);
         if (searchOnTop == (mBottomNav.getMenu().findItem(SEARCH_ITEM_ID) != null)) {
             rebuildNavigation();
+        }
+        // MEETUBE(search fab): its corner, as Settings > Customization says.
+        androidx.constraintlayout.widget.ConstraintLayout.LayoutParams fabParams =
+                (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) mSearchFab.getLayoutParams();
+        boolean fabLeft = NavTabs.searchFabLeft(this);
+        if (fabLeft != (fabParams.startToStart == androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID)) {
+            fabParams.startToStart = fabLeft ? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
+                    : androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+            fabParams.endToEnd = fabLeft ? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+                    : androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
+            mSearchFab.setLayoutParams(fabParams);
+        }
+        if (searchOnTop && mSearchFabOut) {
+            showNav(); // Search went up top: the bubble opens back into the bar
         }
         if (mMiniPip != null) {
             mMiniPip.onResume();

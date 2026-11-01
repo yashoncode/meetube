@@ -664,6 +664,35 @@
 
     </com.newtube.mobile.ui.common.GlassView>
 
+    <!-- MEETUBE(search fab): a scroll down shrinks the nav bar into this Search bubble in a bottom
+         corner, a scroll up stretches it back into the bar (MobileBrowseActivity.morphSearch; the
+         corner is Settings > Customization's, set in code). Corners always round: a capsule at any size. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/mobile_search_fab"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:contentDescription="@string/mobile_search_button"
+        android:elevation="6dp"
+        android:focusable="true"
+        android:visibility="invisible"
+        app:glassCornerRadius="999dp"
+        app:glassTint="@color/meetube_glass_tint"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_mobile_search"
+            android:tint="@color/mobile_color_on_surface" />
+
+    </com.newtube.mobile.ui.common.GlassView>
+
     <!-- MEETUBE(nav lens, issue #46): the liquid glass lens a tab switch glides across the bar;
          sized and placed in code (NavLens.play), there only while it moves. -->
     <com.newtube.mobile.ui.common.NavLens

@@ -89,6 +89,27 @@
             app:lineHeight="20sp"
             tools:text="This is a great comment that might wrap across several lines of text." />
 
+        <!-- MEETUBE(issue #139): YouTube's "Translate to English" / "See original", shown under a
+             comment in another language (CommentsAdapter.bindMessage). -->
+        <TextView
+            android:id="@+id/comment_translate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-4dp"
+            android:background="?attr/selectableItemBackground"
+            android:drawableStart="@drawable/ic_comment_translate"
+            android:drawablePadding="6dp"
+            android:drawableTint="@color/mobile_color_on_surface_secondary"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:minHeight="32dp"
+            android:paddingHorizontal="4dp"
+            android:textColor="@color/mobile_color_on_surface_secondary"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="Translate to English"
+            tools:visibility="visible" />
+
         <LinearLayout
             android:id="@+id/comment_actions"
             android:layout_width="wrap_content"

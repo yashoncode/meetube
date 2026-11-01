@@ -270,6 +270,9 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
     private boolean mUiTest;
     @Nullable
     private PopupWindow mCommentMenu;
+    /** MEETUBE(issue #139): comments whose translation is on its way (a second tap waits for it). */
+    private final Set<CommentsAdapter.Entry> mTranslating = new HashSet<>();
+    private final Set<CommentsAdapter.Entry> mDetecting = new HashSet<>();
 
     CommentsPanel(FragmentActivity activity, CommentsPanelLayout layout, Host host) {
         mActivity = activity;
@@ -1984,6 +1987,68 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         content.animate().scaleX(1f).scaleY(1f).setStartDelay(0).setDuration(MENU_GROW_MS)
                 .setInterpolator(CommentsPanelLayout.EMPHASIZED_DECELERATE).start();
         content.animate().alpha(1f).setStartDelay(0).setDuration(MENU_FADE_MS).setInterpolator(null).start();
+    }
+
+    /**
+     * MEETUBE(issue #139): the comment in the app's language, in place; again, the original. A
+     * translation is fetched once per comment and kept on its entry.
+     */
+    @Override
+    public void onTranslateClicked(CommentsAdapter.Entry entry) {
+        if (entry.translated || entry.translation != null) {
+            entry.translated = !entry.translated;
+            notifyEntry(entry, CommentsAdapter.PAYLOAD_TRANSLATE);
+            return;
+        }
+        String text = entry.item.getMessage();
+        if (TextUtils.isEmpty(text) || mTranslating.contains(entry)) {
+            return;
+        }
+        mTranslating.add(entry);
+        String target = CommentTranslator.targetLanguage(mActivity);
+        RxHelper.execute(RxHelper.fromCallable(() -> {
+            String translation = CommentTranslator.translate(text, target);
+            return translation != null ? translation : "";
+        }), translation -> {
+            mTranslating.remove(entry);
+            if (mReleased) {
+                return;
+            }
+            if (translation.isEmpty()) { // the device's guess was wrong: the line goes
+                entry.foreign = false;
+                notifyEntry(entry, CommentsAdapter.PAYLOAD_TRANSLATE);
+                MobileSnackbar.show(mActivity, R.string.mobile_comments_already_translated);
+                return;
+            }
+            entry.translation = translation;
+            entry.translated = true;
+            notifyEntry(entry, CommentsAdapter.PAYLOAD_TRANSLATE);
+        }, error -> {
+            mTranslating.remove(entry);
+            android.util.Log.w("CommentsPanel", "translate failed", error);
+            if (!mReleased) {
+                MobileSnackbar.show(mActivity, R.string.mobile_comments_translate_failed);
+            }
+        });
+    }
+
+    /** MEETUBE(issue #139): whether a comment gets "Translate to …" under it, asked once per comment, on the device. */
+    @Override
+    public void onDetectLanguage(CommentsAdapter.Entry entry) {
+        String text = entry.item.getMessage();
+        if (entry.foreign != null || TextUtils.isEmpty(text) || !mDetecting.add(entry)) {
+            return;
+        }
+        RxHelper.execute(RxHelper.fromCallable(() -> CommentTranslator.isForeign(mActivity, text)), foreign -> {
+            mDetecting.remove(entry);
+            entry.foreign = foreign;
+            if (foreign && !mReleased) {
+                notifyEntry(entry, CommentsAdapter.PAYLOAD_TRANSLATE);
+            }
+        }, error -> {
+            mDetecting.remove(entry);
+            entry.foreign = false;
+        });
     }
 
     private void dismissCommentMenu() {
