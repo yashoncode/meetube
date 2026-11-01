@@ -391,8 +391,6 @@
     <string name="mobile_theme_dark">Тёмная</string>
     <string name="mobile_about_star">Поставить звезду MeeTube на GitHub</string>
     <string name="mobile_about_star_desc">Бесплатно и с открытым исходным кодом. Звезда помогает другим найти его</string>
-    <string name="mobile_about_ci">Собрано открыто</string>
-    <string name="mobile_about_ci_desc">Каждый выпуск собирается и подписывается GitHub Actions из этого исходного кода</string>
     <string name="mobile_about_share">Поделиться MeeTube</string>
     <string name="mobile_about_share_desc">Отправить ссылку тому, кому она понравится</string>
     <string name="mobile_about_share_text">MeeTube — клиент YouTube для телефонов на базе SmartTube: %1$s</string>

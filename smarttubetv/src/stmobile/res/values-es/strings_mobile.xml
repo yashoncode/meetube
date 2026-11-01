@@ -501,9 +501,28 @@
     <string name="mobile_theme_dark">Oscuro</string>
 
     <string name="mobile_about_star">Dale una estrella a MeeTube en GitHub</string>
+    <string name="mobile_about_made_by">Hecho por %1$s</string>
+    <string name="mobile_about_star_short">Estrella</string>
+    <string name="mobile_about_share_short">Compartir</string>
+    <string name="mobile_about_log_short">Enviar registro</string>
+    <string name="mobile_about_reporters">Quienes reportaron problemas</string>
+    <string name="mobile_about_reporters_summary">Todas las personas que reportaron un error o pidieron una función</string>
+    <string name="mobile_about_reporters_note">Gracias a todas las personas que abrieron un issue. Cada reporte e idea hizo mejor a MeeTube.</string>
+    <string name="mobile_about_reporters_loading">Cargando desde GitHub…</string>
+    <string name="mobile_about_reporters_failed">No se pudo cargar la lista desde GitHub. Revisa tu conexión y vuelve a abrir esta página.</string>
+    <plurals name="mobile_about_reporters_count">
+        <item quantity="one">%d issue</item>
+        <item quantity="other">%d issues</item>
+    </plurals>
+    <string name="mobile_about_contributors">Colaboradores</string>
+    <string name="mobile_about_contributors_summary">Quiénes ayudaron a crear MeeTube y qué hicieron</string>
+    <string name="mobile_about_contributors_code">Código y traducciones</string>
+    <string name="mobile_about_contributors_built_on">Basado en</string>
+    <string name="mobile_about_credit_zh_tw">Traducción al chino tradicional (#14)</string>
+    <string name="mobile_about_credit_smarttube">SmartTube: el reproductor y el backend de YouTube sobre los que funciona MeeTube</string>
+    <string name="mobile_about_credit_newtube">NewTube: la app para teléfonos de la que nació MeeTube</string>
+    <string name="mobile_about_credit_backdrop">Backdrop: la lente de vidrio líquido de las barras</string>
     <string name="mobile_about_star_desc">Libre y de código abierto. Una estrella ayuda a que otros lo encuentren</string>
-    <string name="mobile_about_ci">Compilado en público</string>
-    <string name="mobile_about_ci_desc">Cada versión la compila y firma GitHub Actions a partir de este código fuente</string>
     <string name="mobile_about_share">Compartir MeeTube</string>
     <string name="mobile_about_share_desc">Envía el enlace a quien le pueda gustar</string>
     <string name="mobile_about_share_text">MeeTube, un cliente de YouTube para móviles basado en SmartTube: %1$s</string>

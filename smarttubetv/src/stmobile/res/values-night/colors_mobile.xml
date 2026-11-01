@@ -47,6 +47,9 @@
     <color name="meetube_sheet_glass">#C71C1C21</color>
     <color name="meetube_glass_fill">#17FFFFFF</color>
     <color name="meetube_glass_stroke">#24FFFFFF</color>
+    <!-- MEETUBE(glass): the lit rim and top sheen of glass with nothing to blur (sheets, icon circles). -->
+    <color name="meetube_glass_rim">#3DFFFFFF</color>
+    <color name="meetube_glass_sheen">#1AFFFFFF</color>
     <color name="meetube_glass_selected">#24FFFFFF</color>
     <color name="meetube_nav_inactive">#ADFFFFFF</color>
     <!-- MEETUBE(glass): the frosted top bar - the page colour at ~75%. -->
