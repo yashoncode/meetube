@@ -446,6 +446,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private String mDescriptionViews;
     @Nullable
     private String mDescriptionDate;
+    /** MEETUBE(exact counts): the likes as a whole number, -1 when YouTube sent only "144K". */
+    private long mLikeCountExact = -1;
 
     /**
      * Keep the portrait video box tied to the width the watch page actually receives. Display
@@ -10177,6 +10179,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchDescription.setText(null);
         mDescriptionViews = null;
         mDescriptionDate = null;
+        mLikeCountExact = -1;
         mWatchMeta.setText(null);
         mWatchLikeCount.setText(R.string.mobile_watch_count_placeholder);
         mLikeCountRaw = null;
@@ -10339,6 +10342,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (isCountUnset(mWatchLikeCount) && !TextUtils.isEmpty(metadata.getLikeCount())) {
                 mLikeCountRaw = metadata.getLikeCount();
             }
+            mLikeCountExact = metadata.getLikeCountNumber(); // counted with mLikedInRaw's like, as below
             // NEWTUBE(ryd-opt-in): metadata's dislike count is only an estimate from the likes.
             if (showsDislikeCount() && isCountUnset(mWatchDislikeCount)
                     && !TextUtils.isEmpty(metadata.getDislikeCount())) {
@@ -10433,6 +10437,16 @@ public class MobilePlaybackActivity extends MobileActivity
             extras.avatar = mWatchAvatar.getDrawable();
             extras.subscribe = mWatchSubscribe;
             extras.openChannel = this::openCurrentChannel;
+        }
+        // MEETUBE(exact counts): Video details in whole numbers - the likes moved by the person's
+        // own tap like the short count (showLikeCount), the views from this video's /player reply.
+        if (mLikeCountExact > 0 && mLikedInRaw != -1) {
+            int likedNow = getButtonState(R.id.action_thumbs_up) == BUTTON_ON ? 1 : 0;
+            extras.likes = mLikeCountExact + likedNow - mLikedInRaw;
+        }
+        Video video = getVideo();
+        if (mCaptionInfo != null && video != null && Helpers.equals(video.videoId, mCaptionInfo.getVideoId())) {
+            extras.views = Helpers.parseLong(mCaptionInfo.getViewCount());
         }
         showPlayerSheet(DescriptionSheet.create(this, mWatchTitle.getText(), likes, mDescriptionViews,
                 mDescriptionDate, mWatchDescription.getText(),

@@ -249,6 +249,10 @@
     <string name="mobile_comments_sign_in_to_comment">Inicia sesión para comentar</string>
     <string name="mobile_comments_more">Más acciones</string>
     <string name="mobile_comments_delete">Eliminar</string>
+    <string name="mobile_comments_translate_to">Traducir al %1$s</string>
+    <string name="mobile_comments_show_original">Ver original</string>
+    <string name="mobile_comments_already_translated">Ya está en tu idioma</string>
+    <string name="mobile_comments_translate_failed">No se pudo traducir el comentario</string>
     <string name="mobile_comments_delete_title">¿Eliminar el comentario?</string>
     <string name="mobile_comments_delete_reply_title">¿Eliminar la respuesta?</string>
     <string name="mobile_comments_delete_message">Se eliminará para todos.</string>

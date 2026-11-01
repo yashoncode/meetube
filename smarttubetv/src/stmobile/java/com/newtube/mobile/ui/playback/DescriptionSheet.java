@@ -52,6 +52,9 @@ final class DescriptionSheet {
         TextView subscribe;
         @Nullable
         Runnable openChannel;
+        /** MEETUBE(exact counts): Video details' whole numbers ("12,345,678"); -1 = the short form above. */
+        long views = -1;
+        long likes = -1;
     }
 
     /**
@@ -105,11 +108,16 @@ final class DescriptionSheet {
         if (!TextUtils.isEmpty(date)) {
             addDetail(details, R.drawable.ic_desc_calendar, R.string.mobile_description_date, date);
         }
-        if (!TextUtils.isEmpty(views)) {
+        java.text.NumberFormat whole = java.text.NumberFormat.getIntegerInstance();
+        if (extras.views > 0) {
+            addDetail(details, R.drawable.ic_desc_videos, R.string.mobile_description_views, whole.format(extras.views));
+        } else if (!TextUtils.isEmpty(views)) {
             Matcher m = VIEWS.matcher(views.trim());
             addDetail(details, R.drawable.ic_desc_videos, R.string.mobile_description_views, m.matches() ? m.group(1) : views);
         }
-        if (!TextUtils.isEmpty(likes)) {
+        if (extras.likes > 0) {
+            addDetail(details, R.drawable.ic_watch_thumb_up_outline, R.string.mobile_description_likes, whole.format(extras.likes));
+        } else if (!TextUtils.isEmpty(likes)) {
             addDetail(details, R.drawable.ic_watch_thumb_up_outline, R.string.mobile_description_likes, likes);
         }
         content.findViewById(R.id.description_sheet_details)

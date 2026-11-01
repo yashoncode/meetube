@@ -178,6 +178,10 @@
     <string name="mobile_comments_sign_in_to_comment">Sign in to comment</string>
     <string name="mobile_comments_more">More actions</string>
     <string name="mobile_comments_delete">Delete</string>
+    <string name="mobile_comments_translate_to">Translate to %1$s</string>
+    <string name="mobile_comments_show_original">See original</string>
+    <string name="mobile_comments_already_translated">Already in your language</string>
+    <string name="mobile_comments_translate_failed">Couldn\'t translate the comment</string>
     <string name="mobile_comments_delete_title">Delete comment?</string>
     <string name="mobile_comments_delete_reply_title">Delete reply?</string>
     <string name="mobile_comments_delete_message">It will be removed for everyone.</string>

@@ -272,6 +272,12 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_nav_labels_summary),
                 () -> NavTabs.showLabels(context), on -> NavTabs.setShowLabels(context, on)));
 
+        // MEETUBE(search fab): the corner Search floats to while a scroll has the bar slid away.
+        rows.add(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_search_fab))
+                .option(context.getString(R.string.mobile_settings_search_fab_right), false)
+                .option(context.getString(R.string.mobile_settings_search_fab_left), true)
+                .bind(() -> NavTabs.searchFabLeft(context), left -> NavTabs.setSearchFabLeft(context, left)));
+
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_tabs_menus)));
         rows.add(SettingsRow.page(context.getString(R.string.mobile_settings_tabs),
                 () -> context.getString(R.string.mobile_settings_tabs_summary), SettingsPages.FEEDS_TABS));
