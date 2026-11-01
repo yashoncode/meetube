@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A search result: the icon of its section, its title (the matched words in bold) and where it
+<!-- A search result: the icon of its section in a glass bead (as the settings rows), its title (the matched words in bold) and where it
      is ("Tabs and feeds › Hidden videos"). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,12 +14,14 @@
 
     <ImageView
         android:id="@+id/settings_result_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginEnd="@dimen/mobile_settings_icon_gap"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_glass_circle"
         android:importantForAccessibility="no"
+        android:padding="8dp"
         android:scaleType="fitCenter"
-        android:tint="@color/mobile_color_on_surface_secondary" />
+        android:tint="@color/mobile_color_on_surface" />
 
     <LinearLayout
         android:layout_width="0dp"

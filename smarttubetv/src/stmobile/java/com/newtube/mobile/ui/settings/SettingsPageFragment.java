@@ -112,6 +112,8 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // MEETUBE(glass): the top bar frosts the rows scrolling under it.
+        com.newtube.mobile.ui.common.Glass.blur(view.findViewById(R.id.settings_bar), view.findViewById(R.id.settings_blur_target));
         if (SettingsPages.ROOT.equals(mPageId)) {
             View search = view.findViewById(R.id.settings_search_field);
             search.setVisibility(View.VISIBLE);
@@ -119,7 +121,8 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
             com.newtube.mobile.ui.common.Glass.blur(search, view.findViewById(R.id.settings_blur_target));
             ((ViewGroup.MarginLayoutParams) search.getLayoutParams()).topMargin += Math.round(4 * getResources().getDisplayMetrics().density);
             mList.setPadding(mList.getPaddingLeft(),
-                    getResources().getDimensionPixelSize(R.dimen.mobile_settings_search_room),
+                    getResources().getDimensionPixelSize(R.dimen.mobile_settings_bar_height)
+                            + getResources().getDimensionPixelSize(R.dimen.mobile_settings_search_room),
                     mList.getPaddingRight(), mList.getPaddingBottom());
             search.setOnClickListener(v -> {
                 if (getActivity() instanceof MobileSettingsActivity) {

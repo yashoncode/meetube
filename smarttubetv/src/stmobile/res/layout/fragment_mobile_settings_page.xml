@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(glass): the page is a GlassSource and the "Search settings" pill floats over it as
-     frosted glass (Glass.blur), so the rows scroll under it. A GlassSource may not hold the glass
-     that samples it, hence the FrameLayout around both. -->
+<!-- MEETUBE(glass): the page is a GlassSource and the top bar and "Search settings" pill float
+     over it as frosted glass (Glass.blur), so the rows scroll under them. A GlassSource may not
+     hold the glass that samples it, hence the FrameLayout around both. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,10 +14,28 @@
     android:layout_height="match_parent"
     android:background="@color/mobile_color_background">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/settings_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="@dimen/mobile_settings_list_top"
+        android:paddingBottom="16dp"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/item_mobile_settings_row" />
+
+</com.newtube.mobile.ui.common.GlassSource>
+
+    <!-- The top bar: frosted over the rows, thinning out to nothing at its bottom edge
+         (glassFadeBottom), with the back arrow in a glass bead like the rows' icons. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/settings_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/mobile_settings_list_top"
+        app:glassCornerRadius="0dp"
+        app:glassFadeBottom="@dimen/mobile_settings_bar_fade"
+        app:glassLiquid="false"
+        app:glassTint="@color/meetube_glass_tint">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,12 +45,13 @@
 
         <ImageButton
             android:id="@+id/settings_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/bg_glass_circle"
             android:contentDescription="@string/mobile_dialog_back"
-            android:padding="12dp"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
             android:src="@drawable/ic_mobile_back_arrow" />
 
         <TextView
@@ -51,19 +70,7 @@
 
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/settings_list"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingBottom="16dp"
-        android:scrollbars="vertical"
-        tools:listitem="@layout/item_mobile_settings_row" />
-
-</LinearLayout>
-
-</com.newtube.mobile.ui.common.GlassSource>
+    </com.newtube.mobile.ui.common.GlassView>
 
     <!-- "Search settings" on the top level, pinned under the title: a tap opens the search page
          (SettingsSearchFragment). Gone on every other page. -->

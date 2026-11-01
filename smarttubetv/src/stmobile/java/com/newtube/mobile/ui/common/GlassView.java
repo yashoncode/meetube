@@ -184,6 +184,9 @@ public class GlassView extends FrameLayout {
     private final boolean mOnGlass;
     /** The widest it grows (glassMaxWidth), 0: no limit. */
     private final int mMaxWidth;
+    /** The frost fades out over this much of the bottom (glassFadeBottom), 0: a hard edge. */
+    private final int mFadeBottom;
+    private final Paint mFadePaint = new Paint();
     @Nullable private RenderNode mNode;
 
     private final ViewTreeObserver.OnPreDrawListener mTrackPosition = () -> {
@@ -206,7 +209,9 @@ public class GlassView extends FrameLayout {
         mLiquid = a.getBoolean(R.styleable.GlassView_glassLiquid, true) && Glass.isLiquid(context);
         mOnGlass = a.getBoolean(R.styleable.GlassView_glassOnGlass, false);
         mMaxWidth = a.getDimensionPixelSize(R.styleable.GlassView_glassMaxWidth, 0);
+        mFadeBottom = a.getDimensionPixelSize(R.styleable.GlassView_glassFadeBottom, 0);
         a.recycle();
+        mFadePaint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.DST_IN));
 
         setWillNotDraw(false);
         setOutlineProvider(new ViewOutlineProvider() {
@@ -331,12 +336,18 @@ public class GlassView extends FrameLayout {
         super.onSizeChanged(w, h, oldw, oldh);
         mRimRect.set(0, 0, w, h);
         mRimPaint.setShader(rimShader(w, h, radius(w, h)));
+        if (mFadeBottom > 0) {
+            mFadePaint.setShader(new LinearGradient(0, h - mFadeBottom, 0, h,
+                    0xFF000000, 0x00000000, Shader.TileMode.CLAMP));
+        }
     }
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         boolean live = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && mNode != null && mSource != null
                 && mSource.node != null && canvas.isHardwareAccelerated() && getWidth() > 0 && getHeight() > 0;
+        // The frost (not the bar's children) in a layer, so its bottom can be faded out below.
+        int faded = mFadeBottom > 0 ? canvas.saveLayer(0, 0, getWidth(), getHeight(), null) : -1;
         if (live) {
             drawBackdrop(canvas);
             mTintPaint.setColor(mTint);
@@ -351,6 +362,10 @@ public class GlassView extends FrameLayout {
             canvas.drawRect(0, 0, getWidth(), getHeight(), mNoisePaint);
             float r = radius(getWidth(), getHeight());
             canvas.drawRoundRect(mRimRect, r, r, mRimPaint);
+        }
+        if (faded >= 0) {
+            canvas.drawRect(0, getHeight() - mFadeBottom, getWidth(), getHeight(), mFadePaint);
+            canvas.restoreToCount(faded);
         }
         super.onDraw(canvas);
     }

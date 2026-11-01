@@ -533,4 +533,13 @@
     <string name="mobile_next_cancel">Cancelar</string>
     <string name="mobile_shorts_mute">Silenciar</string>
     <string name="mobile_shorts_unmute">Activar sonido</string>
+    <!-- MEETUBE(greeting): the held brand pill's greeting, by the time of day. -->
+    <string name="mobile_greet_morning">Buenos días</string>
+    <string name="mobile_greet_afternoon">Buenas tardes</string>
+    <string name="mobile_greet_evening">Buenas tardes</string>
+    <string name="mobile_greet_night">Buenas noches</string>
+    <string name="mobile_greet_morning_line">Empieza el día con algo bueno</string>
+    <string name="mobile_greet_afternoon_line">¿Un pequeño descanso?</string>
+    <string name="mobile_greet_evening_line">Relájate con un par de vídeos</string>
+    <string name="mobile_greet_night_line">Un vídeo más y a dormir</string>
 </resources>

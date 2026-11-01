@@ -751,4 +751,56 @@
 
     </com.newtube.mobile.ui.common.GlassView>
 
+    <!-- MEETUBE(greeting): a held brand pill frosts the whole screen with a greeting for the time
+         of day and three glass shortcuts (GreetingOverlay). A tap off the shortcuts closes it. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/mobile_greet_overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:elevation="20dp"
+        android:focusable="true"
+        android:visibility="gone"
+        app:glassCornerRadius="0dp"
+        app:glassLiquid="false"
+        app:glassTint="@color/meetube_glass_tint"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/mobile_greet_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="40dp">
+
+            <TextView
+                android:id="@+id/mobile_greet_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="cursive"
+                android:gravity="center"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textSize="44sp"
+                android:textStyle="bold"
+                tools:text="Good evening" />
+
+            <TextView
+                android:id="@+id/mobile_greet_line"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="28dp"
+                android:gravity="center"
+                android:textColor="@color/mobile_color_on_surface_secondary"
+                android:textSize="16sp"
+                tools:text="Wind down with something good" />
+
+        </LinearLayout>
+
+    </com.newtube.mobile.ui.common.GlassView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,5 +12,7 @@
         <attr name="glassOnGlass" format="boolean" />
         <!-- MEETUBE(issue #118): the widest it grows; centre it with its layout gravity. -->
         <attr name="glassMaxWidth" format="dimension" />
+        <!-- A flat bar's frost thins out to nothing over this much of its bottom (Settings' top bar). -->
+        <attr name="glassFadeBottom" format="dimension" />
     </declare-styleable>
 </resources>
