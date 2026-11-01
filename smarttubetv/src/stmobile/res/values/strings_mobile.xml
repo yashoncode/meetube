@@ -630,4 +630,13 @@
     <string name="mobile_next_cancel">Cancel</string>
     <string name="mobile_shorts_mute">Mute</string>
     <string name="mobile_shorts_unmute">Unmute</string>
+    <!-- MEETUBE(greeting): the held brand pill's greeting, by the time of day. -->
+    <string name="mobile_greet_morning">Good morning</string>
+    <string name="mobile_greet_afternoon">Good afternoon</string>
+    <string name="mobile_greet_evening">Good evening</string>
+    <string name="mobile_greet_night">Good night</string>
+    <string name="mobile_greet_morning_line">Start the day with something good</string>
+    <string name="mobile_greet_afternoon_line">Time for a little break?</string>
+    <string name="mobile_greet_evening_line">Wind down with a video or two</string>
+    <string name="mobile_greet_night_line">One more video, then sleep</string>
 </resources>

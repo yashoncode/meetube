@@ -34,6 +34,14 @@ final class BrowseTopBar {
                 quote.show();
             }
         });
+        // MEETUBE(greeting): held, on a tab or a sub-screen, it greets with three shortcuts.
+        com.newtube.mobile.ui.common.Glass.blur(activity.findViewById(R.id.mobile_greet_overlay),
+                activity.findViewById(R.id.mobile_blur_target));
+        GreetingOverlay greeting = new GreetingOverlay((androidx.activity.ComponentActivity) activity);
+        activity.findViewById(R.id.mobile_brand_glass).setOnLongClickListener(v -> {
+            greeting.show();
+            return true;
+        });
     }
 
     /** MEETUBE(app icon): the brand follows the picked icon (on resume: Settings may have changed it). */

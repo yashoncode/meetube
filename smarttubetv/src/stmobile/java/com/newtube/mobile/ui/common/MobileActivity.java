@@ -83,6 +83,21 @@ public abstract class MobileActivity extends MotherActivity {
         return super.dispatchTouchEvent(event);
     }
 
+    /**
+     * MEETUBE(issue #143): opening one of our own screens is not the user leaving the app. Without
+     * this flag Android sends this screen onUserLeaveHint, which before Android 12 is the PiP entry
+     * (MiniPip, the player) - Home with a docked card opening Search went to PiP on Android 8 and the
+     * card was gone, audio playing. ViewManager.isNewViewPending() guarded it only by a 1 s window.
+     */
+    @SuppressWarnings("deprecation")
+    @Override
+    public void startActivityForResult(android.content.Intent intent, int requestCode, @Nullable Bundle options) {
+        if (intent.getComponent() != null && getPackageName().equals(intent.getComponent().getPackageName())) {
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+        }
+        super.startActivityForResult(intent, requestCode, options);
+    }
+
     @Override
     protected void onDestroy() {
         ThemeMode.unregister(this);

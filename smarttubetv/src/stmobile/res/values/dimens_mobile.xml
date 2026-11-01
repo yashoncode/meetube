@@ -46,6 +46,9 @@
     <!-- Settings (issue #2): YouTube's measured list geometry - 16dp side inset, 24dp icons with
          the text at 60dp, 56dp one-line rows, a 64dp bar with the title at 72dp. -->
     <dimen name="mobile_settings_bar_height">64dp</dimen>
+    <!-- The bar's frost fading out under it, and where the rows start: clear of both. -->
+    <dimen name="mobile_settings_bar_fade">20dp</dimen>
+    <dimen name="mobile_settings_list_top">84dp</dimen>
     <dimen name="mobile_settings_title_inset">20dp</dimen>
     <dimen name="mobile_settings_title_size">20sp</dimen>
     <dimen name="mobile_settings_row_min_height">56dp</dimen>
