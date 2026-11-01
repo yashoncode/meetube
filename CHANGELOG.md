@@ -66,6 +66,14 @@ Every MeeTube release, newest first.<br>
 - **The comment like press** is no longer cut on the left (#141).
 - **Home no longer jumps into picture-in-picture** when you open Settings on Android 8 to 11 (#143).
 
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @sushi1579, @AshUchiha3, @KrishnakantShedge and @karthick4568. Keep them coming.
+
+### Coming soon
+
+**MeeTube for TV.**
+
 ## 3.2.3 Mirage
 
 > **Pick your spinner and icon, Shorts autoscroll, a mini player that rides the bottom bar**<br>
