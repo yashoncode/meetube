@@ -145,6 +145,8 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
 
             mThumbnail = itemView.findViewById(R.id.related_thumbnail);
             mBadge = itemView.findViewById(R.id.related_badge);
+            // MEETUBE(glass): the duration pill frosts the thumbnail, as on the Home cards.
+            com.newtube.mobile.ui.common.GlassDrawable.apply(mBadge, itemView.findViewById(R.id.related_thumbnail_glass), 0);
             mWatchProgress = itemView.findViewById(R.id.related_watch_progress);
             mTitle = itemView.findViewById(R.id.related_title);
             mSubtitle = itemView.findViewById(R.id.related_subtitle);
