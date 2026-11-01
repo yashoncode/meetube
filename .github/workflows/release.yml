@@ -1,8 +1,7 @@
 # Builds the signed MeeTube APKs.
 # - Push a tag vX.Y.Z (matching build.gradle's stmobile versionName "X.Y.Z Name" and the top
-#   CHANGELOG.md entry): publishes the GitHub release "MeeTube X.Y.Z Name" with the APKs,
-#   meetube.json for the in-app updater, and metube.json, the same file under the name MeTube
-#   (before 3.2.0) installs still look for.
+#   CHANGELOG.md entry): publishes the GitHub release "MeeTube X.Y.Z Name" with the APKs and
+#   meetube.json for the in-app updater. Its notes are a download table, then the changelog entry.
 # - Run it by hand (Actions > Release > Run workflow): builds and keeps the APKs as artifacts only.
 # Secrets: SIGNING_KEY (the .jks, base64), KEY_STORE_PASSWORD, ALIAS, KEY_PASSWORD. Every release
 # must use the same key or installed apps refuse the update.
@@ -79,8 +78,19 @@ jobs:
         run: |
           # Fails unless the tag, build.gradle and CHANGELOG.md agree on the version.
           python3 tools/update_manifest.py --tag "$TAG" --dist dist --out dist/meetube.json
-          cp dist/meetube.json dist/metube.json
-          # Release notes: this version's CHANGELOG.md section, without its heading.
-          awk -v h="## $NAME" '$0 == h {on=1; next} on && /^## / {exit} on' CHANGELOG.md > notes.md
-          test -s notes.md
+          # Release notes: which APK to pick, then this version's CHANGELOG.md section without its heading.
+          awk -v h="## $NAME" '$0 == h {on=1; next} on && /^## / {exit} on' CHANGELOG.md > changes.md
+          test -s changes.md
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/MeeTube_${TAG#v}"
+          {
+            echo "### Download"
+            echo
+            echo "| Your phone | APK |"
+            echo "| :-- | :-- |"
+            echo "| **Most phones** | [arm64-v8a](${url}_arm64-v8a.apk) |"
+            echo "| **Low end phones** (older or 32-bit) | [armeabi-v7a](${url}_armeabi-v7a.apk) |"
+            echo "| **Universal** (not sure? this one works on all) | [universal](${url}_universal.apk) |"
+            echo
+            cat changes.md
+          } > notes.md
           gh release create "$TAG" dist/* --title "MeeTube $NAME" --notes-file notes.md --target "$GITHUB_SHA"
