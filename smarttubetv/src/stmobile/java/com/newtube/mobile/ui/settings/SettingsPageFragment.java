@@ -198,7 +198,6 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
     public void onRowClicked(@NonNull SettingsRow row) {
         switch (row.kind) {
             case SettingsRow.KIND_LINK:
-            case SettingsRow.KIND_FOOTER:
                 if (row.page != null) {
                     openPage(row.page);
                 } else if (row.action != null) {

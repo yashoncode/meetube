@@ -56,8 +56,6 @@
     <string name="mobile_settings_about">About</string>
     <string name="mobile_settings_coffee">Buy me a coffee</string>
     <string name="mobile_settings_coffee_summary">If you love MeeTube and want to support it</string>
-    <string name="mobile_about_thanks">Thanks for using MeeTube</string>
-    <string name="mobile_about_thanks_support">Keep supporting · Buy me a coffee</string>
     <string name="mobile_settings_coffee_url" translatable="false">https://buymeacoffee.com/yashwynth</string>
 
     <!-- General -->

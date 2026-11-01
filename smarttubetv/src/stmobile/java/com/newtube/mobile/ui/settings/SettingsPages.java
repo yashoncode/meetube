@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 
 import com.liskovsoft.appupdatechecker2.AppUpdateChecker;
 import com.liskovsoft.sharedutils.helpers.AppInfoHelpers;
-import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionItem;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AppUpdatePresenter;
 import com.liskovsoft.smartyoutubetv2.common.misc.DiagnosticLog;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
@@ -49,6 +48,8 @@ public final class SettingsPages {
     public static final String BACKUP = "backup";
     public static final String ADVANCED = "advanced";
     public static final String ABOUT = "about";
+    public static final String ABOUT_REPORTERS = "about_reporters";
+    public static final String ABOUT_CONTRIBUTORS = "about_contributors";
 
     /** A built page: its title and rows. */
     public static final class Page {
@@ -101,6 +102,10 @@ public final class SettingsPages {
                 return PlayerPages.advanced(context);
             case ABOUT:
                 return about(context);
+            case ABOUT_REPORTERS:
+                return AboutPeople.reporters(context);
+            case ABOUT_CONTRIBUTORS:
+                return AboutPeople.contributors(context);
             case ROOT:
             default:
                 return root(context);
@@ -159,47 +164,66 @@ public final class SettingsPages {
 
     private static Page about(Context context) {
         List<SettingsRow> rows = new ArrayList<>();
+        rows.add(SettingsRow.custom(context.getString(R.string.mobile_about_dev_name), SettingsPages::aboutCard));
 
         if (AppUpdatePresenter.isInAppUpdatesDisabled()) {
             // Store build (-Pfdroid): the version stays, the update row and switch go.
-            rows.add(SettingsRow.action(context.getString(R.string.mobile_settings_version), versionLine(context), page -> { }));
+            rows.add(icon(R.drawable.ic_mobile_update,
+                    SettingsRow.action(context.getString(R.string.mobile_settings_version), versionLine(context), page -> { })));
         } else {
-            rows.add(SettingsRow.action(context.getString(R.string.check_for_updates), versionLine(context),
-                    page -> AppUpdatePresenter.instance(page.requireContext()).start(true)));
+            rows.add(icon(R.drawable.ic_mobile_update, SettingsRow.action(context.getString(R.string.check_for_updates),
+                    versionLine(context), page -> AppUpdatePresenter.instance(page.requireContext()).start(true))));
             AppUpdateChecker checker = new AppUpdateChecker(context, null);
-            rows.add(SettingsRow.toggle(context.getString(R.string.check_updates_auto),
+            rows.add(icon(R.drawable.ic_about_notifications, SettingsRow.toggle(context.getString(R.string.check_updates_auto),
                     context.getString(R.string.mobile_settings_update_notify_summary),
-                    checker::isUpdateCheckEnabled, checker::setUpdateCheckEnabled));
+                    checker::isUpdateCheckEnabled, checker::setUpdateCheckEnabled)));
             // MEETUBE(update pop-up): "Don't ask again" on the pop-up turns this off.
             com.newtube.mobile.update.AppUpdates updates = com.newtube.mobile.update.AppUpdates.instance(context);
-            rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_update_prompt),
+            rows.add(icon(R.drawable.ic_about_campaign, SettingsRow.toggle(context.getString(R.string.mobile_settings_update_prompt),
                     context.getString(R.string.mobile_settings_update_prompt_summary),
-                    () -> !updates.isPromptOff(), on -> updates.setPromptOff(!on)));
+                    () -> !updates.isPromptOff(), on -> updates.setPromptOff(!on))));
         }
 
         rows.add(SettingsRow.divider());
-        rows.add(SettingsRow.action(context.getString(R.string.diagnostic_log_send),
-                context.getString(R.string.diagnostic_log_send_desc),
-                page -> DiagnosticLog.share(page.requireContext())));
-        for (OptionItem item : AboutShareRows.create(context)) {
-            rows.add(SettingsRow.action(item.getTitle(), item.getDescription(), page -> item.onSelect(true)));
-        }
-        rows.add(SettingsRow.action(context.getString(R.string.about_source_code),
+        rows.add(SettingsRow.page(R.drawable.ic_about_groups, context.getString(R.string.mobile_about_reporters),
+                context.getString(R.string.mobile_about_reporters_summary), ABOUT_REPORTERS));
+        rows.add(SettingsRow.page(R.drawable.ic_about_handshake, context.getString(R.string.mobile_about_contributors),
+                context.getString(R.string.mobile_about_contributors_summary), ABOUT_CONTRIBUTORS));
+        rows.add(icon(R.drawable.ic_about_code, SettingsRow.action(context.getString(R.string.about_source_code),
                 context.getString(R.string.about_source_code_url).replace("https://", ""),
-                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_source_code_url))));
-        // MEETUBE(ci): release APKs come from .github/workflows/release.yml; this opens its runs.
-        rows.add(SettingsRow.action(context.getString(R.string.mobile_about_ci),
-                context.getString(R.string.mobile_about_ci_desc),
-                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.mobile_about_ci_url))));
-        rows.add(SettingsRow.action(context.getString(R.string.about_license),
+                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_source_code_url)))));
+        rows.add(icon(R.drawable.ic_about_gavel, SettingsRow.action(context.getString(R.string.about_license),
                 context.getString(R.string.about_license_name),
-                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_license_url))));
-        // MEETUBE(support): a quiet thank-you at the foot of About, not another row.
-        rows.add(SettingsRow.footer(R.drawable.ic_settings_coffee,
-                context.getString(R.string.mobile_about_thanks),
-                context.getString(R.string.mobile_about_thanks_support),
-                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.mobile_settings_coffee_url))));
+                page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_license_url)))));
 
         return new Page(context.getString(R.string.about_app, context.getString(R.string.app_name)), rows);
+    }
+
+    /** MEETUBE(about): an About row's icon, in the same glass bead as the top level's. */
+    private static SettingsRow icon(@androidx.annotation.DrawableRes int icon, SettingsRow row) {
+        row.icon = icon;
+        return row;
+    }
+
+    /**
+     * MEETUBE(about): who makes MeeTube - the GitHub photo, name and handle (each opens the profile),
+     * the coffee pill, and Star, Share and Send log as glass buttons.
+     */
+    private static android.view.View aboutCard(@NonNull android.view.ViewGroup parent, @NonNull SettingsAdapter.Listener page) {
+        Context context = parent.getContext();
+        android.view.View card = android.view.LayoutInflater.from(context)
+                .inflate(R.layout.item_mobile_about_header, parent, false);
+        android.view.View.OnClickListener profile = v -> Utils.openLinkExt(context, context.getString(R.string.mobile_about_dev_url));
+        for (int id : new int[] {R.id.about_avatar, R.id.about_name, R.id.about_handle}) {
+            card.findViewById(id).setOnClickListener(profile);
+        }
+        card.findViewById(R.id.about_avatar).setContentDescription(context.getString(R.string.mobile_about_made_by,
+                context.getString(R.string.mobile_about_dev_name)));
+        card.findViewById(R.id.about_coffee).setOnClickListener(
+                v -> Utils.openLinkExt(context, context.getString(R.string.mobile_settings_coffee_url)));
+        card.findViewById(R.id.about_star).setOnClickListener(v -> AboutShareRows.star(context));
+        card.findViewById(R.id.about_share).setOnClickListener(v -> AboutShareRows.share(context));
+        card.findViewById(R.id.about_log).setOnClickListener(v -> DiagnosticLog.share(context));
+        return card;
     }
 }

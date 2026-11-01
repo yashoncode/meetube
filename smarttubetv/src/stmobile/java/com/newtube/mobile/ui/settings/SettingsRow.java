@@ -40,8 +40,6 @@ public final class SettingsRow {
     public static final int KIND_CHOICE = 3;
     public static final int KIND_NOTE = 4;
     public static final int KIND_DIVIDER = 5;
-    /** MEETUBE(support): a centred thank-you at the foot of a page - icon, a line, a small link. */
-    public static final int KIND_FOOTER = 6;
     /** MEETUBE(bar editor): a row that is its own view (the Tabs page's drag-to-order bar). */
     public static final int KIND_CUSTOM = 7;
 
@@ -115,16 +113,6 @@ public final class SettingsRow {
 
     public static SettingsRow divider() {
         return new SettingsRow(KIND_DIVIDER);
-    }
-
-    public static SettingsRow footer(@DrawableRes int icon, CharSequence title, CharSequence summary,
-                                     @NonNull Action action) {
-        SettingsRow row = new SettingsRow(KIND_FOOTER);
-        row.icon = icon;
-        row.title = title;
-        row.summary = () -> summary;
-        row.action = action;
-        return row;
     }
 
     public static SettingsRow note(CharSequence text) {

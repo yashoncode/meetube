@@ -591,13 +591,35 @@
          or counter. Never "ad-free" wording. -->
     <string name="mobile_about_star">Star MeeTube on GitHub</string>
     <string name="mobile_about_star_desc">Free and open source. A star helps others find it</string>
-    <string name="mobile_about_ci">Built in public</string>
-    <string name="mobile_about_ci_desc">Every release is built and signed by GitHub Actions from this source code</string>
-    <string name="mobile_about_ci_url" translatable="false">https://github.com/yashoncode/meetube/actions/workflows/release.yml</string>
     <string name="mobile_about_share">Share MeeTube</string>
     <string name="mobile_about_share_desc">Send the link to someone who\'d like it</string>
     <string name="mobile_about_share_text">MeeTube — a YouTube client for phones, built on SmartTube: %1$s</string>
     <string name="mobile_about_repo_url" translatable="false">https://github.com/yashoncode/meetube</string>
+    <!-- MEETUBE(about): the card at the top of About. -->
+    <string name="mobile_about_dev_name" translatable="false">Yashwanth</string>
+    <string name="mobile_about_dev_handle" translatable="false">github.com/yashoncode</string>
+    <string name="mobile_about_dev_url" translatable="false">https://github.com/yashoncode</string>
+    <string name="mobile_about_made_by">Made by %1$s</string>
+    <string name="mobile_about_star_short">Star</string>
+    <string name="mobile_about_share_short">Share</string>
+    <string name="mobile_about_log_short">Send log</string>
+    <string name="mobile_about_reporters">Issue reporters</string>
+    <string name="mobile_about_reporters_summary">Everyone who reported a bug or asked for a feature</string>
+    <string name="mobile_about_reporters_note">Thank you to everyone who opened an issue. Every report and idea made MeeTube better.</string>
+    <string name="mobile_about_reporters_loading">Loading from GitHub…</string>
+    <string name="mobile_about_reporters_failed">Couldn\'t load the list from GitHub. Check your connection and open this page again.</string>
+    <plurals name="mobile_about_reporters_count">
+        <item quantity="one">%d issue</item>
+        <item quantity="other">%d issues</item>
+    </plurals>
+    <string name="mobile_about_contributors">Contributors</string>
+    <string name="mobile_about_contributors_summary">Who helped build MeeTube, and what they did</string>
+    <string name="mobile_about_contributors_code">Code and translations</string>
+    <string name="mobile_about_contributors_built_on">Built on</string>
+    <string name="mobile_about_credit_zh_tw">Traditional Chinese translation (#14)</string>
+    <string name="mobile_about_credit_smarttube">SmartTube: the player and the YouTube backend MeeTube runs on</string>
+    <string name="mobile_about_credit_newtube">NewTube: the phone app MeeTube grew from</string>
+    <string name="mobile_about_credit_backdrop">Backdrop: the liquid glass lens on the bars</string>
     <string name="mobile_about_site_url" translatable="false">https://github.com/yashoncode/meetube</string>
     <!-- Experimental SABR playback (was strings_sabr.xml) -->
     <string name="sabr_vod_option">Prefer SABR even when links work (experimental; next VOD)</string>

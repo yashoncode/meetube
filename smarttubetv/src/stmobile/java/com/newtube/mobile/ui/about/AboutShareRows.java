@@ -32,7 +32,7 @@ public final class AboutShareRows {
         rows.add(UiOptionItem.from(
                 context.getString(R.string.mobile_about_star),
                 context.getString(R.string.mobile_about_star_desc),
-                option -> Utils.openLinkExt(context, context.getString(R.string.mobile_about_repo_url))));
+                option -> star(context)));
 
         rows.add(UiOptionItem.from(
                 context.getString(R.string.mobile_about_share),
@@ -42,7 +42,12 @@ public final class AboutShareRows {
         return rows;
     }
 
-    private static void share(Context context) {
+    /** The repository on GitHub, where the star button is. */
+    public static void star(Context context) {
+        Utils.openLinkExt(context, context.getString(R.string.mobile_about_repo_url));
+    }
+
+    public static void share(Context context) {
         Intent send = new Intent(Intent.ACTION_SEND)
                 .setType("text/plain")
                 .putExtra(Intent.EXTRA_TEXT, context.getString(R.string.mobile_about_share_text,

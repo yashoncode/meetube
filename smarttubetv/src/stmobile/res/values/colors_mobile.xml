@@ -87,6 +87,8 @@
     <color name="meetube_sheet_glass">#D6FFFFFF</color>
     <color name="meetube_glass_fill">#0D000000</color>
     <color name="meetube_glass_stroke">#1A000000</color>
+    <color name="meetube_glass_rim">#1F000000</color>
+    <color name="meetube_glass_sheen">#80FFFFFF</color>
     <color name="meetube_glass_selected">#14000000</color>
     <color name="meetube_nav_inactive">#99000000</color>
     <!-- MEETUBE(glass): the frosted top bar - the page colour at ~75%. -->

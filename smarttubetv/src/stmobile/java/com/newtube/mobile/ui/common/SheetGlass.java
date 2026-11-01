@@ -165,11 +165,42 @@ public final class SheetGlass {
     /** As above, filling {@code cover} - {@code target} itself or its direct parent. */
     private static void frost(@NonNull View target, @Nullable Window page, @NonNull View cover, float cornerPx,
             boolean live) {
+        if (cornerPx > 0) {
+            rim(cover, cornerPx);
+        }
         View decor = page != null ? page.peekDecorView() : null;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || decor == null) {
             return;
         }
         new Feed(target, page, decor, cover, cornerPx, live).copy();
+    }
+
+    /**
+     * The frosted edge, over everything the sheet holds: a hairline rim lit along the rounded corners
+     * and a faint sheen fading down from the top. An overlay, not a foreground, so the frame's
+     * padding for the system bars does not inset it from the glass.
+     */
+    private static void rim(@NonNull View cover, float cornerPx) {
+        if (cover.getTag(R.id.mobile_sheet_rim) != null) {
+            return;
+        }
+        Context context = cover.getContext();
+        float density = context.getResources().getDisplayMetrics().density;
+        android.graphics.drawable.GradientDrawable sheen = new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[] {ContextCompat.getColor(context, R.color.meetube_glass_sheen), 0});
+        sheen.setCornerRadii(new float[] {cornerPx, cornerPx, cornerPx, cornerPx, 0, 0, 0, 0});
+        android.graphics.drawable.GradientDrawable line = new android.graphics.drawable.GradientDrawable();
+        line.setCornerRadius(cornerPx);
+        line.setStroke(Math.max(1, Math.round(density)), ContextCompat.getColor(context, R.color.meetube_glass_rim));
+        android.graphics.drawable.LayerDrawable rim = new android.graphics.drawable.LayerDrawable(new Drawable[] {sheen, line});
+        rim.setLayerHeight(0, Math.round(72 * density));
+        rim.setLayerGravity(0, android.view.Gravity.TOP | android.view.Gravity.FILL_HORIZONTAL);
+        rim.setBounds(0, 0, cover.getWidth(), cover.getHeight());
+        cover.getOverlay().add(rim);
+        cover.setTag(R.id.mobile_sheet_rim, rim);
+        cover.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
+                rim.setBounds(0, 0, right - left, bottom - top));
     }
 
     /**
