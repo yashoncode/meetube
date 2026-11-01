@@ -48,7 +48,7 @@ Every MeeTube release, newest first.<br>
 ### New
 
 - **Shorts shelf on Home.** Each Shorts row is one card you swipe sideways. Turn it off in Settings > Customize layout (#43).
-- **A greeting.** Hold the brand pill for Good morning, afternoon, evening or night, with shortcuts to Settings, Customization and Check for updates.
+- **Long press Easter egg.** Long press the brand pill to check it out.
 - **Search bubble.** Scrolling down shrinks the bottom bar into a Search button in a corner, scrolling up brings it back.
 - **Translate comments** right under the comment (#139).
 - **A new About page.** A glass card with Star, Share and Send log buttons, plus Issue reporters and Contributors pages.
