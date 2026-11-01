@@ -27,12 +27,20 @@
         app:cardCornerRadius="14dp"
         app:cardElevation="0dp">
 
-        <ImageView
-            android:id="@+id/related_thumbnail"
+        <!-- MEETUBE(glass): what the badge frosts. -->
+        <com.newtube.mobile.ui.common.GlassSource
+            android:id="@+id/related_thumbnail_glass"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@null"
-            android:scaleType="centerCrop" />
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/related_thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop" />
+
+        </com.newtube.mobile.ui.common.GlassSource>
 
         <TextView
             android:id="@+id/related_badge"

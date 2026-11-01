@@ -399,6 +399,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         private final ImageView mThumbnail;
         private final View mThumbnailFrame;
         private final TextView mBadge;
+        private final android.graphics.drawable.Drawable mBadgeGlass;
         private final ProgressBar mWatchProgress;
         private final TextView mTitle;
         private final TextView mMeta;
@@ -419,6 +420,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mThumbnail = itemView.findViewById(R.id.video_thumbnail);
             mThumbnailFrame = itemView.findViewById(R.id.video_thumbnail_frame);
             mBadge = itemView.findViewById(R.id.video_badge);
+            // MEETUBE(glass): the duration pill frosts the thumbnail, as the Home chips frost the feed.
+            com.newtube.mobile.ui.common.GlassDrawable.apply(mBadge, itemView.findViewById(R.id.video_thumbnail_glass), 0);
+            mBadgeGlass = mBadge.getBackground();
             mWatchProgress = itemView.findViewById(R.id.video_watch_progress);
             mTitle = itemView.findViewById(R.id.video_title);
             mMeta = itemView.findViewById(R.id.video_meta);
@@ -708,13 +712,14 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 mBadge.setVisibility(View.GONE);
             } else {
                 mBadge.setText(badgeText);
-                int badgeColor = ContextCompat.getColor(context,
-                        video.isLive || video.isUpcoming ? R.color.mobile_color_badge_live_bg : R.color.mobile_color_badge_bg);
-                // MEETUBE: recolour the rounded glass badge, not replace it with a square fill.
-                if (mBadge.getBackground() instanceof android.graphics.drawable.GradientDrawable) {
-                    ((android.graphics.drawable.GradientDrawable) mBadge.getBackground().mutate()).setColor(badgeColor);
-                } else {
-                    mBadge.setBackgroundColor(badgeColor);
+                // a live / upcoming badge stays a solid red pill; everything else is the glass
+                if (video.isLive || video.isUpcoming) {
+                    android.graphics.drawable.GradientDrawable live = (android.graphics.drawable.GradientDrawable)
+                            ContextCompat.getDrawable(context, R.drawable.bg_video_badge).mutate();
+                    live.setColor(ContextCompat.getColor(context, R.color.mobile_color_badge_live_bg));
+                    mBadge.setBackground(live);
+                } else if (mBadge.getBackground() != mBadgeGlass) {
+                    mBadge.setBackground(mBadgeGlass);
                 }
                 mBadge.setVisibility(View.VISIBLE);
             }
