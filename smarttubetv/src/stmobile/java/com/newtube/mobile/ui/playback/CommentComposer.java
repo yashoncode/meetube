@@ -259,9 +259,17 @@ final class CommentComposer {
     private void applyInsets(WindowInsetsCompat insets) {
         int ime = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
         int bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
-        int bottom = mBottomPadding + Math.max(ime, bars);
+        int bottom = mBottomPadding + bars;
         if (mRoot.getPaddingBottom() != bottom) {
             mRoot.setPadding(mRoot.getPaddingLeft(), mRoot.getPaddingTop(), mRoot.getPaddingRight(), bottom);
+        }
+        // Issue #144: the keyboard's share is a margin, not padding, so the bar's opaque background
+        // ends at the keyboard and a see-through keyboard shows the page, not a slab of the bar.
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mRoot.getLayoutParams();
+        int margin = Math.max(0, ime - bars);
+        if (params != null && params.bottomMargin != margin) {
+            params.bottomMargin = margin;
+            mRoot.setLayoutParams(params);
         }
     }
 }

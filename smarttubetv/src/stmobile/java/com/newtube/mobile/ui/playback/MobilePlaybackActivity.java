@@ -714,8 +714,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         NetPath.log("playback-activity abort=no-video reason=bare-launch");
 
-        // Land the user on Home instead of a dead player. startDefaultView picks the stack top, or
-        // the root (Browse) when the stack is empty - which is exactly the cold-process case here.
+        // Land the user on Home instead of a dead player: startDefaultView opens the root (Browse).
         getViewManager().startDefaultView();
         finishReally();
     }
@@ -2109,6 +2108,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // over a black page with no controls.
             logPip("enter-aborted-restored inPip=" + (isInPipModeNow() ? "y" : "n"));
             mPipStateStale = isInPipModeNow();
+            mPipEnterPending = false; // before showControlsInternal, which refuses a pending entry
             int orientation = layoutOrientation();
             applyWatchLayoutForOrientation(orientation);
             applySystemBarsForOrientation(orientation);
@@ -4615,6 +4615,13 @@ public class MobilePlaybackActivity extends MobileActivity
     private void showControlsInternal(boolean animate) {
         if (isShortsMode() || mPlayerLocked) {
             return; // MEETUBE(shorts): the overlay is the chrome; MEETUBE(lock): nothing while locked
+        }
+        if (mIsInPip || mPipEnterPending) {
+            // The pinned window is all video. Most callers checked mIsInPip on their own, the
+            // presenter's showOverlay did not: right after a home-gesture PiP the full controls
+            // came up inside the window until the auto-hide timer took them away.
+            logPip("controls-blocked by=" + new Throwable().getStackTrace()[1]);
+            return;
         }
         mControlsVisible = true;
         mControlsRoot.setVisibility(View.VISIBLE);

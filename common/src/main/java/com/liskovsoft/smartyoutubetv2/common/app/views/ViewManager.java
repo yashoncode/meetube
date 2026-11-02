@@ -217,9 +217,12 @@ public class ViewManager {
         // Check that PIP window isn't closed by the user
         if (mDefaultTop != null && PlaybackPresenter.instance(mContext).isRunningInBackground()) {
             lastActivity = mDefaultTop;
-        } else if (!mActivityStack.isEmpty()) {
-            lastActivity = mActivityStack.peek();
         } else {
+            // MEETUBE(issue #148): Home, as YouTube does. The TV app reopened the screen on top of
+            // this stack, which outlives the task: swiped out of recents while the process lived on
+            // (a service, or a vendor keeping it warm), the next launch came back on that channel
+            // or playlist. A live task never gets here: the launcher just brings it forward.
+            mActivityStack.clear();
             lastActivity = mRootActivity;
         }
 

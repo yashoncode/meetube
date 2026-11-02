@@ -73,6 +73,18 @@
     <!-- Background audio with the screen off: OEM battery managers kill optimized apps (BackgroundPlay). -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!-- TV leftovers the phone never uses, dropped from the merged manifest: Play Protect scored
+         "draw over other apps + record audio + uninstall apps + autostart on boot/screen on/charger"
+         as a banking trojan (3.2.5), and banking apps then refused to open while MeeTube was
+         installed. Overlay was only for TV remote control (device link is forced off on the phone),
+         voice search is RecognizerIntent (the recognizer app records, not us), uninstall was the TV
+         bridge. RECEIVE_BOOT_COMPLETED stays: WorkManager's reschedule receiver needs it. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" tools:node="remove" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" tools:node="remove" />
+    <uses-permission android:name="android.permission.QUICKBOOT_POWERON" tools:node="remove" />
+
     <!-- LAUNCH MODES: every touch activity is singleTop (NOT the TV's singleInstance) so ALL
          screens share ONE task, like a normal phone app. singleInstance put each screen in its
          own task, and Android 12+ plays a non-overridable system slide/zoom for every cross-TASK
@@ -92,6 +104,12 @@
         android:banner="@drawable/meetube_tv_banner"
         android:theme="@style/Theme.NewTube"
         tools:replace="android:name,android:theme">
+
+        <!-- TV autostart (boot, screen on, charger, shutdown...) for the remote control service,
+             which the phone keeps off: an exported wake-on-everything receiver reads as malware. -->
+        <receiver
+            android:name="com.liskovsoft.smartyoutubetv2.common.misc.RemoteControlReceiver"
+            tools:node="remove" />
 
         <!-- The TV manifest makes Splash singleInstance, which puts it in a separate task and
              forces Android's non-overridable cross-task slide when it routes into mobile Home.
@@ -431,6 +449,7 @@
             android:launchMode="singleTop"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|keyboardHidden|uiMode"
             android:screenOrientation="unspecified"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.NewTube" />
 
         <activity
