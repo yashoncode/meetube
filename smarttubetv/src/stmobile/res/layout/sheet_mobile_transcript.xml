@@ -114,7 +114,7 @@
             android:clipToPadding="false"
             android:paddingHorizontal="8dp"
             android:paddingBottom="24dp"
-            android:scrollbars="vertical"
+            android:scrollbars="none"
             android:visibility="gone" />
 
     </FrameLayout>

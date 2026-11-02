@@ -75,6 +75,7 @@ public abstract class MobileActivity extends MotherActivity {
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         FocusRing.install(getWindow()); // MEETUBE(tv): the remote's highlight, on every screen
+        BounceOverscroll.install(getWindow()); // MEETUBE(bounce): lists bounce at their ends
     }
 
     @Override

@@ -603,8 +603,11 @@
     <string name="mobile_about_star_short">Star</string>
     <string name="mobile_about_share_short">Share</string>
     <string name="mobile_about_log_short">Send log</string>
+    <string name="mobile_about_creator">Creator</string>
+    <string name="mobile_about_coffee_note"><![CDATA[<font color="#FF5F56">●</font> <font color="#FFBD2E">●</font> <font color="#27C93F">●</font><br><br><font color="#4ADE80">$</font> meetube --thank-you<br><font color="#E6EDF3">&#160;&#160;ads: 0 | sponsors: skipped</font><br><font color="#8B949E">// built at 3am on pure caffeine<br>// refill? totally optional :)</font>]]></string>
+    <string name="mobile_about_coffee_cta" translatable="false">sudo brew coffee</string>
     <string name="mobile_about_reporters">Issue reporters</string>
-    <string name="mobile_about_reporters_summary">Everyone who reported a bug or asked for a feature</string>
+    <string name="mobile_about_reporters_summary">Thanks to all issue reporters</string>
     <string name="mobile_about_reporters_note">Thank you to everyone who opened an issue. Every report and idea made MeeTube better.</string>
     <string name="mobile_about_reporters_loading">Loading from GitHub…</string>
     <string name="mobile_about_reporters_failed">Couldn\'t load the list from GitHub. Check your connection and open this page again.</string>

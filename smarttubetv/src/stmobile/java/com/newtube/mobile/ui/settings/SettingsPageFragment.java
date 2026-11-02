@@ -87,8 +87,12 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
         View view = inflater.inflate(R.layout.fragment_mobile_settings_page, container, false);
         mTitle = view.findViewById(R.id.settings_title);
         mList = view.findViewById(R.id.settings_list);
-        view.findViewById(R.id.settings_back).setOnClickListener(
-                v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+        // MEETUBE(settings back): a beat for the button's press (animator/press_3d) to show before the page goes.
+        view.findViewById(R.id.settings_back).setOnClickListener(v -> v.postDelayed(() -> {
+            if (isResumed()) {
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
+            }
+        }, 140));
 
         mAdapter = new SettingsAdapter(this);
         mList.setLayoutManager(new LinearLayoutManager(requireContext()));

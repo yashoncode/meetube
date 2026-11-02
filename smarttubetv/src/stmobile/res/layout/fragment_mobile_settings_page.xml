@@ -21,7 +21,7 @@
         android:clipToPadding="false"
         android:paddingTop="@dimen/mobile_settings_list_top"
         android:paddingBottom="16dp"
-        android:scrollbars="vertical"
+        android:scrollbars="none"
         tools:listitem="@layout/item_mobile_settings_row" />
 
 </com.newtube.mobile.ui.common.GlassSource>
@@ -50,9 +50,9 @@
             android:layout_marginStart="12dp"
             android:background="@drawable/bg_glass_circle"
             android:contentDescription="@string/mobile_dialog_back"
-            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:padding="8dp"
-            android:src="@drawable/ic_mobile_back_arrow" />
+            android:src="@drawable/ic_mobile_back_arrow"
+            android:stateListAnimator="@animator/press_3d" />
 
         <TextView
             android:id="@+id/settings_title"

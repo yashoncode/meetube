@@ -54,7 +54,7 @@
                 android:paddingHorizontal="@dimen/mobile_card_spacing"
                 android:paddingTop="104dp"
                 android:paddingBottom="@dimen/mobile_card_spacing"
-                android:scrollbars="vertical"
+                android:scrollbars="none"
                 tools:listitem="@layout/item_video_card" />
 
         </com.newtube.mobile.ui.common.HapticSwipeRefreshLayout>
