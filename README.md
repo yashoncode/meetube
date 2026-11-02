@@ -11,6 +11,7 @@
 **YouTube, reimagined. Different by design. Smooth by nature.** <br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
 
 <p align="center"><img src=".github/assets/meetube/showcase.webp" width="100%" alt="MeeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Shorts (full screen, swipe ready), Channels (banner, Subscribe, Shorts tab), Liquid glass (a tab bar that floats), Search (YouTube's chips and filters) and Offline (save it in 4K)"></p>
+<p align="center"><img src=".github/assets/meetube/collage.gif" width="100%" alt="MeeTube on a phone: the liquid glass tab bar switching tabs, the player with comments, synced lyrics, search and Shorts"></p>
 
 <p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
 
