@@ -267,14 +267,21 @@ android {
     }
 
     packagingOptions {
-        // openvpn module fix: More than one file was found with OS independent path 'META-INF/com.android.tools/proguard/coroutines.pro'
-        //exclude 'META-INF/com.android.tools/proguard/coroutines.pro'
-        // Not working!
-        // exclude '**/SearchOrbView.class'
+        // MEETUBE(size): native libs go into the APK compressed (extracted at install), not stored
+        // raw: J2V8 alone is 32 MB raw and 9 MB compressed, so the arm64 APK drops from 62 MB to ~33.
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 
-        // Remove unneeded arches from universal apk here because 'splits' cannot do this
-        // exclude "lib/x86_64/**"
-        // exclude "lib/armeabi/**"
+    // MEETUBE(size): only the languages MeeTube itself is translated into. The libraries (Material,
+    // AppCompat, media3) carry ~80 more, whose strings would sit next to English app text anyway.
+    // A new translation adds its locale here.
+    androidResources {
+        localeFilters += ['en', 'ar', 'az', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'es', 'et', 'fa-rIR',
+                'fi', 'fr', 'gl-rES', 'he', 'hi', 'hr', 'hu', 'hy', 'in', 'it', 'iw', 'ja', 'ko', 'lt',
+                'lv', 'mo', 'nb', 'nl', 'pl', 'pt', 'pt-rBR', 'pt-rPT', 'ro', 'ru', 'sk', 'sl', 'sq',
+                'sr', 'sv', 'te', 'th', 'tr', 'uk', 'vi', 'zh', 'zh-rCN', 'zh-rTW']
     }
 
     lint {
