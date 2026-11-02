@@ -244,6 +244,17 @@ public abstract class MobileActivity extends MotherActivity {
         return true;
     }
 
+    /**
+     * MEETUBE(issue #144): a screen that moves its own content clear of the keyboard (IME insets)
+     * says so here, and keeps drawing behind it. A fitted window (the edge-to-edge opt-out, up to
+     * Android 15) is otherwise shrunk above the keyboard by the system, and what a see-through
+     * keyboard showed behind it was the bare window background: a black slab. From Android 16 every
+     * window already works this way. installContentInsets keeps the content off the bars either way.
+     */
+    protected boolean drawsUnderKeyboard() {
+        return false;
+    }
+
     /** Re-evaluates content padding after an in-place orientation/configuration change. */
     protected final void refreshContentInsets() {
         View content = findViewById(android.R.id.content);
@@ -464,7 +475,7 @@ public abstract class MobileActivity extends MotherActivity {
                 // #68, MobilePlaybackActivity.applyImmersiveSystemBars): clear them first.
                 window.getDecorView().setSystemUiVisibility(legacyFlags);
             }
-            window.setDecorFitsSystemWindows(true);
+            window.setDecorFitsSystemWindows(!drawsUnderKeyboard());
             WindowInsetsController controller = window.getInsetsController();
             if (controller != null) {
                 controller.show(WindowInsets.Type.systemBars());

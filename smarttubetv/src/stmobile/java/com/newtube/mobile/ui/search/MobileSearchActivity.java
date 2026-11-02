@@ -243,10 +243,11 @@ public class MobileSearchActivity extends MobileActivity
     /**
      * NEWTUBE(motion): the results area ends at the keyboard's top edge and follows it frame by
      * frame as it slides. Under enforced edge-to-edge (Android 15+ for this target) adjustResize no
-     * longer resizes the window, so the keyboard simply covered the lower suggestions and results;
-     * where the window is still resized for it (the opt-out, up to Android 15) the keyboard's inset
-     * arrives already absorbed and this adds nothing. The content container already keeps clear of
-     * the navigation bar, which the keyboard's inset includes.
+     * longer resizes the window, so the keyboard simply covered the lower suggestions and results.
+     * Up to Android 15 the window is not resized either (drawsUnderKeyboard, issue #144). The
+     * suggestions keep drawing behind the keyboard, for a see-through one to show, and only their
+     * scroll room grows. The content container already keeps clear of the navigation bar, which the
+     * keyboard's inset includes.
      */
     private boolean mImeAnimating;
 
@@ -286,13 +287,22 @@ public class MobileSearchActivity extends MobileActivity
                 });
     }
 
-    private static void applyImePadding(View area, WindowInsetsCompat insets) {
+    private void applyImePadding(View area, WindowInsetsCompat insets) {
         int ime = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
         int bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
         int bottom = Math.max(0, ime - bars);
         if (area.getPaddingBottom() != bottom) {
             area.setPadding(area.getPaddingLeft(), area.getPaddingTop(), area.getPaddingRight(), bottom);
         }
+        if (mSuggestions.getPaddingBottom() != bottom) {
+            mSuggestions.setPadding(mSuggestions.getPaddingLeft(), mSuggestions.getPaddingTop(),
+                    mSuggestions.getPaddingRight(), bottom);
+        }
+    }
+
+    @Override
+    protected boolean drawsUnderKeyboard() {
+        return true;
     }
 
     /** MEETUBE(search chips): {label, filter flag}; All is no flag. */

@@ -70,6 +70,10 @@ final class CommentTranslator {
      * (nothing leaves the phone). Without one (below Android 10) every comment offers it. Blocking.
      */
     static boolean isForeign(Context context, String text) {
+        // Emoji, numbers, "!!!": nothing to translate, though the detector still names a language.
+        if (text.codePoints().noneMatch(Character::isLetter)) {
+            return false;
+        }
         if (android.os.Build.VERSION.SDK_INT < 29) {
             return true;
         }

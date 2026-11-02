@@ -41,6 +41,12 @@ public class MobileSettingsActivity extends MobileActivity {
         return intent;
     }
 
+    /** Issue #144: Settings search lifts its results above the keyboard itself (SettingsSearchFragment). */
+    @Override
+    protected boolean drawsUnderKeyboard() {
+        return true;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
