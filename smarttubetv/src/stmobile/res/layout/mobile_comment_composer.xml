@@ -60,7 +60,7 @@
                 android:paddingTop="11dp"
                 android:paddingEnd="4dp"
                 android:paddingBottom="11dp"
-                android:scrollbars="vertical"
+                android:scrollbars="none"
                 android:textColor="@color/mobile_color_on_surface"
                 android:textColorHint="@color/mobile_color_on_surface_secondary"
                 android:textSize="15sp" />

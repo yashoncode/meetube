@@ -24,6 +24,10 @@
       stays dark in both, like YouTube's: its chrome uses the fixed mobile_player_* colours.
     -->
     <style name="Theme.NewTube" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- MEETUBE(scrollbars): no scroll bar at the side of anything, sheets and dialogs included
+             (screens also turn them off at runtime: BounceOverscroll). -->
+        <item name="android:scrollViewStyle">@style/Widget.MeeTube.NoScrollbars.ScrollView</item>
+        <item name="android:listViewStyle">@style/Widget.MeeTube.NoScrollbars.ListView</item>
         <!-- MEETUBE(launch): the system splash shows the launch animation's first frame, still, from
              the tap; the animation itself plays in-app over Home (LaunchSplash), since vivo's splash
              never animates. The same on every phone and for every app icon. -->
@@ -159,6 +163,13 @@
         <item name="android:elevation">0dp</item>
         <item name="android:stateListAnimator">@null</item>
         <item name="cornerRadius">22dp</item>
+    </style>
+
+    <style name="Widget.MeeTube.NoScrollbars.ScrollView" parent="android:Widget.ScrollView">
+        <item name="android:scrollbars">none</item>
+    </style>
+    <style name="Widget.MeeTube.NoScrollbars.ListView" parent="android:Widget.ListView">
+        <item name="android:scrollbars">none</item>
     </style>
 
     <style name="ThemeOverlay.NewTube.BottomSheetDialog" parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">

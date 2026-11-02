@@ -505,8 +505,10 @@
     <string name="mobile_about_star_short">Estrella</string>
     <string name="mobile_about_share_short">Compartir</string>
     <string name="mobile_about_log_short">Enviar registro</string>
+    <string name="mobile_about_creator">Creador</string>
+    <string name="mobile_about_coffee_note"><![CDATA[<font color="#FF5F56">●</font> <font color="#FFBD2E">●</font> <font color="#27C93F">●</font><br><br><font color="#4ADE80">$</font> meetube --gracias<br><font color="#E6EDF3">&#160;&#160;anuncios: 0 | patrocinios: saltados</font><br><font color="#8B949E">// hecho a las 3am a base de café<br>// ¿recarga? totalmente opcional :)</font>]]></string>
     <string name="mobile_about_reporters">Quienes reportaron problemas</string>
-    <string name="mobile_about_reporters_summary">Todas las personas que reportaron un error o pidieron una función</string>
+    <string name="mobile_about_reporters_summary">Gracias a quienes reportaron problemas</string>
     <string name="mobile_about_reporters_note">Gracias a todas las personas que abrieron un issue. Cada reporte e idea hizo mejor a MeeTube.</string>
     <string name="mobile_about_reporters_loading">Cargando desde GitHub…</string>
     <string name="mobile_about_reporters_failed">No se pudo cargar la lista desde GitHub. Revisa tu conexión y vuelve a abrir esta página.</string>

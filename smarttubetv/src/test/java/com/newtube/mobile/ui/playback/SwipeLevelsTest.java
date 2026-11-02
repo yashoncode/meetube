@@ -99,6 +99,24 @@ public class SwipeLevelsTest {
     }
 
     @Test
+    public void pastTheDarkestIsThePhonesOwnBrightness() {
+        mLevels.setBrightnessActive(true);
+        mLevels.begin(SwipeLevels.BRIGHTNESS, 1000f); // range 750px
+        mLevels.move(-750f * 2); // well below the bottom (issue #64)
+        assertEquals(WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE,
+                mActivity.getWindow().getAttributes().screenBrightness, 0f);
+
+        mLevels.move(-750f * 2 + 1500f * 0.5f + 750f); // back up: a level of the window's own again
+        assertTrue(mActivity.getWindow().getAttributes().screenBrightness >= 0f);
+        mLevels.move(-750f * 2);
+        mLevels.end();
+
+        mLevels.setBrightnessActive(true); // the next fullscreen keeps the phone's own level
+        assertEquals(WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE,
+                mActivity.getWindow().getAttributes().screenBrightness, 0f);
+    }
+
+    @Test
     public void thePillLingersAfterTheSwipe() {
         mLevels.begin(SwipeLevels.VOLUME, 1000f);
         mLevels.end();

@@ -871,7 +871,7 @@
             android:layout_height="match_parent"
             android:background="@color/mobile_color_background"
             android:fillViewport="true"
-            android:scrollbars="vertical">
+            android:scrollbars="none">
 
             <LinearLayout
                 android:id="@+id/mobile_watch_content"

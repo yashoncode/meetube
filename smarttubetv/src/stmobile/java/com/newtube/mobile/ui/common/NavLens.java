@@ -34,20 +34,20 @@ public final class NavLens extends View {
     private static final String PREFS = "meetube_app";
     private static final String KEY_MOTION = "tab_switch_motion";
     /** The lens swells in place this long before it glides (a switch's page swap lands then, not mid-glide). */
-    private static final long GLIDE_DELAY_MS = 80;
-    private static final float GROW_MS = 150f;
-    private static final float SETTLE_MS = 220f;
-    private static final float GLIDE_STIFFNESS = 340f;
-    private static final float GLIDE_DAMPING = 0.72f;
+    private static final long GLIDE_DELAY_MS = 50;
+    private static final float GROW_MS = 130f;
+    private static final float SETTLE_MS = 200f;
+    private static final float GLIDE_STIFFNESS = 480f;
+    private static final float GLIDE_DAMPING = 0.82f;
     public static final long JIGGLE_MS = 700;
     private static final float JIGGLE_LEAN_DP = 6f;
     /** How much bigger the bar looks through the lens. */
     private static final float MAGNIFY = 1.12f;
     /** Past the tab: how much wider and taller than it the lens swells. */
-    private static final float GROW_W_DP = 20f;
-    private static final float GROW_H_DP = 12f;
+    private static final float GROW_W_DP = 12f;
+    private static final float GROW_H_DP = 6f;
     /** At full speed the lens is this much wider (and a third of it flatter). */
-    private static final float STRETCH = 0.22f;
+    private static final float STRETCH = 0.26f;
     private static final float REFRACTION_DP = 16f;
     private static final int TINT = 0x10FFFFFF;
 
@@ -193,7 +193,7 @@ public final class NavLens extends View {
         float restY = (float) to.getHeight() / h;
         clipTo(bar);
 
-        // The glide is a spring (a ~4% overshoot as it lands); its stretch follows its real speed.
+        // The glide is a quick spring (a ~1% overshoot as it lands); its stretch follows its real speed.
         Motion.Spring glide = new Motion.Spring(0f, 1f, 0f, GLIDE_STIFFNESS, GLIDE_DAMPING, 0.004f);
         long glideMs = Math.max(1, glide.durationMs);
         float peakSpeed = 1e-3f;

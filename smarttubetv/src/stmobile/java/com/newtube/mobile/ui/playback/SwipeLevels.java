@@ -43,6 +43,8 @@ final class SwipeLevels {
 
     /** Full range for this share of the video's height. */
     private static final float RANGE_OF_HEIGHT = 0.75f;
+    /** Past the darkest by this share of the range, brightness goes back to the phone's (Auto). */
+    private static final float AUTO_OVERSHOOT = 0.08f;
     /** The pill stays this long after the finger lifts. */
     static final long PILL_LINGER_MS = 700;
     /**
@@ -78,6 +80,8 @@ final class SwipeLevels {
     private boolean mSafeVolumeAsked;
     /** Brightness is applied to the window: the player is fullscreen and in front. */
     private boolean mBrightnessActive;
+    /** This swipe went past the bottom: the phone's own brightness (issue #64). */
+    private boolean mAuto;
 
     SwipeLevels(Context context, Window window, View hapticView, Pill pill) {
         mWindow = window;
@@ -113,6 +117,7 @@ final class SwipeLevels {
         } else {
             mStartLevel = currentBrightness();
         }
+        mAuto = false;
         mLevel = mStartLevel;
         showPill();
     }
@@ -122,9 +127,12 @@ final class SwipeLevels {
         if (mKind == 0) {
             return;
         }
-        float level = clamp(mStartLevel + upPx / mRangePx);
+        float raw = mStartLevel + upPx / mRangePx;
+        float level = clamp(raw);
         if (mKind == VOLUME) {
             setVolumeLevel(level);
+        } else if (raw < -AUTO_OVERSHOOT) {
+            setBrightnessAuto();
         } else {
             setBrightnessLevel(level);
         }
@@ -138,7 +146,7 @@ final class SwipeLevels {
         }
         if (BuildConfig.DEBUG) {
             NetPath.log("gesture level " + (mKind == VOLUME ? "volume step=" + mVolumeStep
-                    : "brightness=" + Math.round(mLevel * 100) + "%"));
+                    : mAuto ? "brightness=auto" : "brightness=" + Math.round(mLevel * 100) + "%"));
         }
         mKind = 0;
         mHapticView.removeCallbacks(mHidePill);
@@ -211,8 +219,25 @@ final class SwipeLevels {
     // Brightness
     // ---------------------------------------------------------------------------------
 
+    /**
+     * MEETUBE(issue #64): pushed on past the darkest, the window lets go of its brightness and the
+     * phone's own (adaptive, if that is on) takes over, now and on the next fullscreen. Below the
+     * bottom rather than at it, so the darkest level stays one stroke away for watching at night.
+     */
+    private void setBrightnessAuto() {
+        if (mAuto) {
+            return;
+        }
+        mAuto = true;
+        mLevel = 0f;
+        sBrightness = -1f; // nothing remembered: setBrightnessActive keeps the phone's own level
+        applyWindowBrightness(WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE);
+        Haptics.tick(mHapticView);
+    }
+
     private void setBrightnessLevel(float level) {
         boolean bookend = (level <= 0f || level >= 1f) && level != mLevel;
+        mAuto = false;
         mLevel = level;
         sBrightness = level;
         sBrightnessAt = SystemClock.elapsedRealtime();
@@ -261,7 +286,7 @@ final class SwipeLevels {
     // ---------------------------------------------------------------------------------
 
     private void showPill() {
-        mPill.showLevel(iconFor(mKind, mLevel), mLevel);
+        mPill.showLevel(mAuto ? R.drawable.ic_player_brightness_auto : iconFor(mKind, mLevel), mLevel);
     }
 
     @VisibleForTesting
