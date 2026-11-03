@@ -83,9 +83,9 @@ Get it from [MeeTube TV 0.0.1 Beta](https://github.com/yashoncode/meetube/releas
 
 | Your TV | File |
 |:--|:--|
-| Most TVs and boxes | `MeeTubeTV_<version>_armeabi-v7a.apk` |
-| Newer 64-bit boxes (Nvidia Shield, Google TV Streamer) | `MeeTubeTV_<version>_arm64-v8a.apk` |
-| Not sure | `MeeTubeTV_<version>_universal.apk` |
+| Most TVs and boxes | [MeeTubeTV_0.0.1_armeabi-v7a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_armeabi-v7a.apk) |
+| Newer 64-bit boxes (Nvidia Shield, Google TV Streamer) | [MeeTubeTV_0.0.1_arm64-v8a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_arm64-v8a.apk) |
+| Not sure | [MeeTubeTV_0.0.1_universal.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_universal.apk) |
 
 Android 4.2 or later. The code is on the [tv branch](https://github.com/yashoncode/meetube/tree/tv), with its own [changelog](https://github.com/yashoncode/meetube/blob/tv/CHANGELOG.md). Found a bug? [Open an issue](https://github.com/yashoncode/meetube/issues/new/choose) and pick MeeTube TV.
 
