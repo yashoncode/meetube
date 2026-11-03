@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE: the LIVE / NEW pill on glass Home cards - browse_glass_panel's recipe (fill and light rim) with a darker fill so it reads over bright thumbnails. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="#B3CC0000" />
+            <stroke android:width="1dp" android:color="#40FFFFFF" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</layer-list>

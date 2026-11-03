@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE: MeeTube's own donation link only -->
+    <string-array name="donations">
+        <item>Buy me a coffee|https://buymeacoffee.com/yashwynth</item>
+    </string-array>
+</resources>

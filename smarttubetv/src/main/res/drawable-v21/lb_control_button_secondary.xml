@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE: the glass player's buttons - a bare icon; focused, a frosted glass circle with a bright rim
+     (leanback's opaque circle hid the white icon behind it). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android" android:constantSize="true">
+    <item android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="#4DFFFFFF" />
+            <stroke android:width="1.5dp" android:color="#B3FFFFFF" />
+            <size android:width="@dimen/lb_control_button_secondary_diameter" android:height="@dimen/lb_control_button_secondary_diameter" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#00000000" />
+            <size android:width="@dimen/lb_control_button_secondary_diameter" android:height="@dimen/lb_control_button_secondary_diameter" />
+        </shape>
+    </item>
+</selector>

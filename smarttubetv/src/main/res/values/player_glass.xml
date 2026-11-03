@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE: the minimal glass player (lb_playback_transport_controls_row) and its faster controls. -->
+<resources>
+    <dimen name="player_glass_margin">32dp</dimen>
+    <dimen name="player_glass_padding">20dp</dimen>
+    <dimen name="player_glass_padding_vertical">12dp</dimen>
+    <dimen name="player_glass_title_top">24dp</dimen>
+    <!-- the title stops short of the quality and clock lines at the top right -->
+    <dimen name="player_glass_info_reserve">220dp</dimen>
+    <dimen name="player_glass_title_scrim_height">220dp</dimen>
+    <dimen name="player_glass_time_gap">14dp</dimen>
+    <dimen name="player_glass_row_gap">4dp</dimen>
+    <!-- the presenter still looks these up: the glass player has no ending / remaining time line (the bar's end shows
+         the time left), so they find nothing -->
+    <item type="id" name="time_info" />
+    <item type="id" name="ending_time" />
+
+    <!-- Snappy controls: leanback fades them in over 250 ms (the dim behind over 325 ms) and slides them up 200dp;
+         now a quick fade and a short lift. -->
+    <integer name="lb_playback_bg_fade_in_ms">150</integer>
+    <integer name="lb_playback_bg_fade_out_ms">200</integer>
+    <integer name="lb_playback_controls_fade_in_ms">140</integer>
+    <integer name="lb_playback_controls_fade_out_ms">180</integer>
+    <integer name="lb_playback_description_fade_in_ms">140</integer>
+    <integer name="lb_playback_description_fade_out_ms">120</integer>
+    <dimen name="lb_playback_major_fade_translate_y">24dp</dimen>
+    <dimen name="lb_playback_minor_fade_translate_y">8dp</dimen>
+    <!-- the controls row reaches the screen's bottom (the panel keeps its own 32dp margin there): leanback's 28dp
+         gap let the header of the suggestions row below peek under the panel -->
+    <!-- 1px, not 0: PlaybackSupportFragment aligns the row at -this from the bottom, and an offset of 0 means the TOP
+         edge (the controls went off screen) -->
+    <dimen name="lb_playback_controls_padding_bottom">1px</dimen>
+</resources>

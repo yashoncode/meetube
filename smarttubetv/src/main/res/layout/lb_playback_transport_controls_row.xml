@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- MOD: intention to replace class name with custom one -->
+<!-- MEETUBE: minimal glass player. The row fills the screen (MeeTubePlayerGlass sets its height): the title sits
+     at the top over a soft scrim, the controls in one frosted glass panel at the bottom - time, seek bar and length
+     on one line, then one row of buttons from the left: play / pause, previous, next, then the rest.
+     Every id the presenter looks up is kept. -->
+<!-- Note: clipChildren/clipToPadding false are needed to apply shadows to child
+     views with no padding of their own. Also to allow for negative margin on description. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:paddingBottom="@dimen/player_glass_margin" >
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" >
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/player_glass_title_scrim_height"
+            android:layout_gravity="top"
+            android:background="@drawable/player_glass_title_scrim" />
+        <LinearLayout
+            android:id="@+id/controls_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/player_glass_margin"
+            android:paddingEnd="@dimen/player_glass_info_reserve"
+            android:paddingTop="@dimen/player_glass_title_top"
+            android:orientation="horizontal" >
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/lb_playback_transport_image_height"
+                android:layout_gravity="top"
+                android:adjustViewBounds="true"
+                android:layout_marginEnd="@dimen/lb_playback_transport_image_margin_end"
+                android:scaleType="fitStart" />
+            <FrameLayout
+                android:id="@+id/description_dock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:clipToPadding="false"
+                android:gravity="bottom" />
+        </LinearLayout>
+        <!-- quality and clock: top right, level with the title (no remaining / ending time) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginEnd="@dimen/player_glass_margin"
+            android:layout_marginTop="@dimen/player_glass_title_top"
+            android:orientation="vertical"
+            android:gravity="end" >
+            <RelativeLayout android:id="@+id/additional_info"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layoutDirection="ltr"
+                            android:focusable="false" >
+                <TextView
+                    android:id="@+id/quality_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    style="?attr/playbackControlsTimeStyle" />
+                <com.liskovsoft.smartyoutubetv2.tv.ui.widgets.time.DateTimeView
+                    android:id="@+id/date_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_below="@+id/quality_info"
+                    style="?attr/playbackControlsTimeStyle" />
+            </RelativeLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/thumbs_row_wrapper"
+            android:visibility="invisible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/lb_playback_transport_thumbs_bottom_margin" >
+            <com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.seekpreview.ThumbsBar
+                android:id="@+id/thumbs_row"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/thumbs_row_title"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Hello World!"
+                style="?attr/playbackControlsTimeStyle" />
+        </LinearLayout>
+    </FrameLayout>
+    <com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.tweaks.PlaybackTransportRowView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/transport_row"
+        android:orientation="vertical"
+        android:layout_marginStart="@dimen/player_glass_margin"
+        android:layout_marginEnd="@dimen/player_glass_margin"
+        android:paddingStart="@dimen/player_glass_padding"
+        android:paddingEnd="@dimen/player_glass_padding"
+        android:paddingTop="@dimen/player_glass_padding_vertical"
+        android:paddingBottom="@dimen/player_glass_padding_vertical"
+        android:background="@drawable/player_glass_panel"
+        android:clipChildren="false"
+        android:clipToPadding="false" >
+        <!-- MOD: hide player controls on UP button -->
+        <LinearLayout android:id="@+id/top_edge"
+                      android:orientation="horizontal"
+                      android:layout_width="match_parent"
+                      android:focusable="true"
+                      android:layout_height="1dp"/>
+        <!-- time, seek bar, time left. Not clipped: the knob's glow reaches past the bar's ends and height. -->
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layoutDirection="ltr"
+                      android:clipChildren="false"
+                      android:clipToPadding="false"
+                      android:gravity="center_vertical"
+                      android:orientation="horizontal"
+                      tools:ignore="RtlHardcoded" >
+            <TextView
+                android:id="@+id/current_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?attr/playbackControlsTimeStyle" />
+            <com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.misc.SeekBar
+                android:id="@+id/playback_progress"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="@dimen/lb_playback_transport_progressbar_height"
+                android:layout_marginStart="@dimen/player_glass_time_gap"
+                android:layout_marginEnd="@dimen/player_glass_time_gap"
+                android:focusable="true"
+                android:focusableInTouchMode="true" />
+            <TextView
+                android:id="@+id/total_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?attr/playbackControlsTimeStyle" />
+        </LinearLayout>
+        <!-- one row from the left: play / pause, previous, next, then every other button (comments, like,
+             dislike first), scrolling when they outgrow the panel. Moving down from the seek bar enters the row at
+             its first button, play / pause. -->
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="@dimen/player_glass_row_gap"
+                      android:layoutDirection="ltr"
+                      android:gravity="center_vertical"
+                      android:orientation="horizontal"
+                      tools:ignore="RtlHardcoded" >
+            <FrameLayout
+                android:id="@+id/controls_dock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <!-- the 10dp evens the step from next to the first button here with the steps inside each group -->
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:scrollbars="none"
+                android:clipChildren="false"
+                android:clipToPadding="false" >
+                <LinearLayout
+                    android:id="@+id/secondary_controls_dock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="start|center_vertical"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+        </LinearLayout>
+    </com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.tweaks.PlaybackTransportRowView>
+</LinearLayout>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE: sidebar icon, a ball - MeeTube's outline icon set, not SmartTube's. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- 0.85: the art fills ~77% of the 32dp header slot, the weight of the icons it replaces -->
+    <group android:pivotX="12" android:pivotY="12" android:scaleX="0.85" android:scaleY="0.85">
+        <path
+            android:pathData="M12,3a9,9 0 1,1 0,18a9,9 0 1,1 0,-18z"
+            android:strokeWidth="1.8"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M3,12h18M12,3v18M5.6,5.6c3.2,3.2 3.2,9.6 0,12.8M18.4,5.6c-3.2,3.2 -3.2,9.6 0,12.8"
+            android:strokeWidth="1.8"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+</vector>

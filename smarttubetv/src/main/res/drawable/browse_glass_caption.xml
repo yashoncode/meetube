@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- No stroke of its own: the card's ring frames thumbnail and caption as one piece. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape>
+            <solid android:color="#26FFFFFF" />
+            <corners android:bottomLeftRadius="12dp" android:bottomRightRadius="12dp" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid android:color="#26000000" />
+            <corners android:bottomLeftRadius="12dp" android:bottomRightRadius="12dp" />
+        </shape>
+    </item>
+</selector>

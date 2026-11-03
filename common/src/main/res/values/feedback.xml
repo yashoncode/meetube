@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE: feedback goes to MeeTube's GitHub -->
+    <string-array name="feedback">
+        <item>GitHub|https://github.com/yashoncode/meetube/issues</item>
+    </string-array>
+</resources>

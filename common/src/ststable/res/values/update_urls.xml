@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE: no update source yet (SmartTube's manifest would offer SmartTube's APK) -->
+    <string-array name="update_urls">
+    </string-array>
+</resources>
