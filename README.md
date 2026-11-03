@@ -14,6 +14,7 @@
 <p align="center"><img src=".github/assets/meetube/collage.gif" width="100%" alt="MeeTube on a phone: the liquid glass tab bar switching tabs, the player with comments, synced lyrics, search and Shorts"></p>
 
 <p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
+<p align="center"><a href="#meetube-tv"><b>📺 On a TV? Get MeeTube TV</b></a></p>
 
 > [!IMPORTANT]
 > MeeTube is not affiliated with, endorsed by, or connected to YouTube or Google in any way. Use it at your own discretion.
@@ -66,6 +67,27 @@ Get the APK for your phone from [Releases](https://github.com/yashoncode/meetube
 Android 7.0 or later.
 
 Every release is built and signed in public by [GitHub Actions](https://github.com/yashoncode/meetube/actions/workflows/release.yml) from this repository's source, so you can see exactly how each APK was made.
+
+## MeeTube TV
+
+MeeTube's glass design on Android TV and Google TV. MeeTube TV is [SmartTube](https://github.com/yuliskov/SmartTube) with a new look, so everything SmartTube does works the same, and it installs as its own app next to SmartTube.
+
+> [!NOTE]
+> MeeTube TV is in beta. Screenshots are coming soon.
+
+- **Glass Home.** A frosted sidebar with a focus pill that glides between MeeTube's icons.
+- **Glass player.** One frosted panel at the bottom: a seek bar with a glowing knob, and every button in a single row.
+- **Search that glows.** The screen's edges light up when Search opens, and your words glow as you type.
+
+Get it from [MeeTube TV 0.0.1 Beta](https://github.com/yashoncode/meetube/releases/tag/tv-v0.0.1-beta) on Releases:
+
+| Your TV | File |
+|:--|:--|
+| Most TVs and boxes | `MeeTubeTV_<version>_armeabi-v7a.apk` |
+| Newer 64-bit boxes (Nvidia Shield, Google TV Streamer) | `MeeTubeTV_<version>_arm64-v8a.apk` |
+| Not sure | `MeeTubeTV_<version>_universal.apk` |
+
+Android 4.2 or later. The code is on the [tv branch](https://github.com/yashoncode/meetube/tree/tv), with its own [changelog](https://github.com/yashoncode/meetube/blob/tv/CHANGELOG.md). Found a bug? [Open an issue](https://github.com/yashoncode/meetube/issues/new/choose) and pick MeeTube TV.
 
 ## MeeTube and NewTube
 

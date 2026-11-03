@@ -3,6 +3,6 @@ contact_links:
   - name: Questions and answers
     url: https://github.com/yashoncode/meetube#readme
     about: Sign-in, updates, safety and how MeeTube compares with other apps.
-  - name: Using SmartTube on a TV?
+  - name: Using SmartTube (not MeeTube TV)?
     url: https://github.com/yuliskov/SmartTube/issues
-    about: MeeTube is a separate app. Please report SmartTube bugs in SmartTube's tracker.
+    about: MeeTube and MeeTube TV are separate apps. Please report SmartTube bugs in SmartTube's tracker.

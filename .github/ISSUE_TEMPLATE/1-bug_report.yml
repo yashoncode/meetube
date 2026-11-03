@@ -7,8 +7,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting a MeeTube bug. This tracker is for the MeeTube phone app only.
-        Bugs in SmartTube on a TV belong in [SmartTube's tracker](https://github.com/yuliskov/SmartTube/issues).
+        Thanks for reporting a MeeTube bug. This tracker is for the MeeTube phone app and MeeTube TV.
+        Bugs in SmartTube itself belong in [SmartTube's tracker](https://github.com/yuliskov/SmartTube/issues).
 
   - type: checkboxes
     id: checklist
@@ -19,6 +19,16 @@ body:
           required: true
         - label: "This issue is about one bug."
           required: true
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app?
+      options:
+        - "MeeTube (phone or tablet)"
+        - "MeeTube TV"
+    validations:
+      required: true
 
   - type: input
     id: app-version
@@ -32,8 +42,8 @@ body:
   - type: input
     id: device
     attributes:
-      label: Phone or tablet, and Android version
-      placeholder: "Pixel 9, Android 16 / Redmi Note 14, HyperOS 3"
+      label: Phone, tablet or TV, and Android version
+      placeholder: "Pixel 9, Android 16 / Redmi Note 14, HyperOS 3 / Mi Box S, Android 9"
     validations:
       required: true
 
