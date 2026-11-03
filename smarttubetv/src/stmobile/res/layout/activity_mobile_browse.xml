@@ -140,6 +140,7 @@
                 android:background="@color/mobile_color_background">
 
                 <com.newtube.mobile.ui.common.RgbGlow
+                    android:id="@+id/mobile_you_glow"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
@@ -339,6 +340,19 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.newtube.mobile.ui.common.GlassSource>
+
+    <!-- MEETUBE(you top fade): on the You page, the page colour fading down to nothing behind the
+         top pills, coming in as the page scrolls, so the rows melt away under them - no bar edge,
+         no blur (a full-width live frost made scrolling lag). Gradient and alpha: MobileBrowseActivity. -->
+    <View
+        android:id="@+id/mobile_you_top_fade"
+        android:layout_width="0dp"
+        android:layout_height="76dp"
+        android:alpha="0"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- MEETUBE(glass): no top bar - two floating liquid-glass pills, the same glass as the nav
          capsule (Glass.blur): the brand on the left (a You sub-screen swaps it for a back arrow and

@@ -365,6 +365,24 @@ public class MobileBrowseActivity extends MobileActivity
         setupSwipeRefresh();
         mBottomNav = findViewById(R.id.mobile_bottom_nav);
         mYouPanel = findViewById(R.id.mobile_you_panel);
+        // The page melts away under the top pills as it scrolls: an eased fade to the page colour,
+        // in over the first 64dp, and the status bar strip covered just as much (no seam between).
+        View youFade = findViewById(R.id.mobile_you_top_fade);
+        int page = androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background) & 0xFFFFFF;
+        float[] ease = {1f, 0.92f, 0.74f, 0.5f, 0.28f, 0.12f, 0.03f, 0f};
+        int[] fade = new int[ease.length];
+        for (int i = 0; i < ease.length; i++) {
+            fade[i] = page | (Math.round(255 * ease[i]) << 24);
+        }
+        youFade.setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM, fade));
+        com.newtube.mobile.ui.common.RgbGlow youGlow = findViewById(R.id.mobile_you_glow);
+        float youFadeIn = 64 * getResources().getDisplayMetrics().density;
+        mYouPanel.setOnScrollChangeListener((v, x, y, ox, oy) -> {
+            float strength = Math.min(1f, y / youFadeIn);
+            youFade.setAlpha(strength);
+            youGlow.setBandCover(strength);
+        });
         mYouRows = findViewById(R.id.mobile_you_rows);
         mYouAccountText = findViewById(R.id.mobile_you_account_text);
         mYouAccountSub = findViewById(R.id.mobile_you_account_sub);
@@ -2006,12 +2024,14 @@ public class MobileBrowseActivity extends MobileActivity
         loadYouHistory();
         mContentSwipe.setRefreshing(false);
         mYouPanel.setVisibility(View.VISIBLE);
+        findViewById(R.id.mobile_you_top_fade).setVisibility(View.VISIBLE);
         onYouPanelToggled();
     }
 
     private void hideYouPanel() {
         mYouShowing = false;
         mYouPanel.setVisibility(View.GONE);
+        findViewById(R.id.mobile_you_top_fade).setVisibility(View.GONE);
         onYouPanelToggled();
     }
 
