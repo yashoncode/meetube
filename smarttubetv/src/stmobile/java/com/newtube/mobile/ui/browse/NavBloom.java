@@ -77,12 +77,18 @@ public final class NavBloom extends Drawable {
         });
     }
 
+    /** Until the user picks one: the accent (red) in the light theme, the plain white in the dark. */
     public static int mode(Context context) {
-        if (sMode < 0) {
-            sMode = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getInt(KEY_MODE, MODE_WHITE);
+        if (sMode == -1) {
+            sMode = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getInt(KEY_MODE, UNSET);
+        }
+        if (sMode == UNSET) {
+            return com.newtube.mobile.ui.common.ThemeMode.isLight(context) ? MODE_ACCENT : MODE_WHITE;
         }
         return sMode;
     }
+
+    private static final int UNSET = -2;
 
     public static void setMode(Context context, int mode) {
         sMode = mode;
@@ -202,8 +208,8 @@ public final class NavBloom extends Drawable {
         if (mode == MODE_ACCENT) {
             return ContextCompat.getColor(context, R.color.mobile_color_primary);
         }
-        if (mode == MODE_WHITE) { // white on the dark glass; on the light glass white would vanish, so near-black
-            return ContextCompat.getColor(context, R.color.meetube_nav_inactive) | 0xFF000000;
+        if (mode == MODE_WHITE) { // white on the dark glass; on the light glass white would vanish, so grey
+            return ContextCompat.getColor(context, R.color.meetube_nav_bloom_plain);
         }
         if (itemId == MobileBrowseActivity.YOU_ITEM_ID) {
             return 0xFFBF5AF2; // purple

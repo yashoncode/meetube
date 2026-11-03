@@ -211,6 +211,40 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
         }
     }
 
+    /**
+     * MEETUBE(description): {@code dialog} (just shown) as the landscape side card the chat is: a
+     * column on the right, the video still playing and touchable beside it. Returns the room in px
+     * the video steps aside for (the host's {@link Host#setChatColumn}).
+     * ponytail: the chat's own placeBesideVideo keeps its copy, as it also follows rotations.
+     */
+    static int placeSideCard(@NonNull Dialog dialog, @NonNull View page) {
+        Window window = dialog.getWindow();
+        if (window == null) {
+            return 0;
+        }
+        int margin = cardMarginPx(page);
+        int column = Math.round(page.getWidth() * 0.4f);
+        resize(window, column, page.getHeight() - 2 * margin, Gravity.END | Gravity.CENTER_VERTICAL, margin);
+        MobileSheets.keepSystemBarsHidden(window);
+        window.setDimAmount(0f);
+        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        window.getDecorView().post(() -> com.newtube.mobile.ui.common.SheetGlass.frost(dialog, false));
+        // No bar insets: hidden over the player, they would still leave an empty strip up top.
+        View decor = window.getDecorView();
+        ViewCompat.setOnApplyWindowInsetsListener(decor, (v, insets) -> WindowInsetsCompat.CONSUMED);
+        decor.requestApplyInsets();
+        View frame = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (frame != null) {
+            roundCard(frame, true);
+            frame.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+            frame.requestLayout();
+            BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(frame);
+            behavior.setSkipCollapsed(true);
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
+        return column + 2 * margin;
+    }
+
     /** The panel is the landscape side card (not the upright one under the video). */
     private boolean mColumn;
 

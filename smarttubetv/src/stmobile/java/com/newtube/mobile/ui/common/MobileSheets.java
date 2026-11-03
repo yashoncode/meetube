@@ -218,6 +218,11 @@ public final class MobileSheets {
      * which read as missing bottom padding. Gone once scrolled to the end.
      */
     private static void fadeCutEdge(View list) {
+        // The fade ends at the padding: a list drawn into its padding showed its text bright again
+        // under the fade (the description sheet's last 24dp, held sideways).
+        if (list instanceof android.view.ViewGroup) {
+            ((android.view.ViewGroup) list).setClipToPadding(true);
+        }
         list.setVerticalFadingEdgeEnabled(true);
         list.setFadingEdgeLength(Math.round(FADE_DP * list.getResources().getDisplayMetrics().density));
     }

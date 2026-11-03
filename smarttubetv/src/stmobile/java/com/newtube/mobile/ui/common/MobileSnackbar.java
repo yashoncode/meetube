@@ -3,15 +3,20 @@ package com.newtube.mobile.ui.common;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
@@ -72,6 +77,9 @@ public final class MobileSnackbar {
             return;
         }
         sInstalled = true;
+        // MEETUBE(toasts): the shared code's messages too, as this pill rather than a system Toast.
+        MessageHelpers.setSink((context, message, isLong) ->
+                show(context, message, null, null, isLong ? ACTION_DURATION_MS : 0));
         // Card/section menu confirmations (pin to You, subscribe) come from the shared menu presenters.
         com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.BaseMenuPresenter.setConfirmationSink(
                 MobileSnackbar::show);
@@ -178,6 +186,10 @@ public final class MobileSnackbar {
         show(context, context.getString(textRes), null, null);
     }
 
+    public static void show(Context context, CharSequence text) {
+        show(context, text, null, null);
+    }
+
     public static void show(Context context, CharSequence text, @Nullable CharSequence action,
                             @Nullable Runnable onAction) {
         show(context, text, action, onAction, 0);
@@ -201,7 +213,7 @@ public final class MobileSnackbar {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (sPending == pending) {
                 sPending = null;
-                MessageHelpers.showMessage(app, pending.text.toString());
+                MessageHelpers.showToast(app, pending.text.toString()); // not the sink: that is us
             }
         }, FALLBACK_TOAST_MS);
     }
@@ -233,7 +245,10 @@ public final class MobileSnackbar {
 
     /** A screen that is only a sheet over the one behind it: its message goes to that one. */
     private static boolean isOverlay(@Nullable Activity activity) {
-        return activity instanceof MobileAppDialogActivity || activity instanceof MobileUpdateActivity;
+        return activity instanceof MobileAppDialogActivity || activity instanceof MobileUpdateActivity
+                // MEETUBE(toasts): invisible screens that close at once (a folder or file picker's)
+                || activity instanceof com.newtube.mobile.downloads.DownloadFolderActivity
+                || activity instanceof com.newtube.mobile.ui.settings.SettingsTransferActivity;
     }
 
     private static void make(Activity activity, CharSequence text, @Nullable CharSequence action,
@@ -247,6 +262,7 @@ public final class MobileSnackbar {
         if (action != null && onAction != null) {
             snackbar.setAction(action, v -> onAction.run());
         }
+        style(activity, snackbar);
         sLast = new WeakReference<>(snackbar);
         sLastText = text;
         // Above what sits at the bottom rather than over it: the docked mini-player card (its
@@ -260,6 +276,47 @@ public final class MobileSnackbar {
         }
         snackbar.show();
     }
+
+    /**
+     * MEETUBE(toasts): the app's message pill - the page behind it frosted (the sheets' glass, with
+     * their rim), fully rounded, no shadow (a see-through surface shows its own through itself);
+     * held sideways, a compact pill on the right instead of a bar across the video.
+     */
+    public static void style(@NonNull Activity activity, @NonNull Snackbar snackbar) {
+        View view = snackbar.getView();
+        float density = activity.getResources().getDisplayMetrics().density;
+        float pill = PILL_RADIUS_DP * density; // past half the height: drawn as a capsule
+        view.setBackgroundTintList(null);
+        android.graphics.drawable.GradientDrawable tint = new android.graphics.drawable.GradientDrawable();
+        tint.setCornerRadius(pill);
+        tint.setColor(ContextCompat.getColor(activity, R.color.meetube_toast_glass));
+        view.setBackground(tint); // until the page's frosted copy lands
+        view.setElevation(0f);
+        view.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View v, android.graphics.Outline outline) {
+                outline.setRoundRect(0, 0, v.getWidth(), v.getHeight(), v.getHeight() / 2f);
+            }
+        });
+        view.setClipToOutline(true);
+        int ink = android.graphics.Color.WHITE; // the pill is the same dark frost in both themes
+        TextView text = view.findViewById(com.google.android.material.R.id.snackbar_text);
+        if (text != null) {
+            text.setTextColor(ink);
+        }
+        snackbar.setActionTextColor(ink);
+        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE
+                && view.getLayoutParams() instanceof FrameLayout.LayoutParams) {
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) view.getLayoutParams();
+            lp.width = Math.round(activity.getResources().getDisplayMetrics().widthPixels * LANDSCAPE_WIDTH);
+            lp.gravity = Gravity.BOTTOM | Gravity.END;
+            view.setLayoutParams(lp);
+        }
+        SheetGlass.frost(view, activity.getWindow(), pill, ContextCompat.getColor(activity, R.color.meetube_toast_glass));
+    }
+
+    private static final int PILL_RADIUS_DP = 64;
+    private static final float LANDSCAPE_WIDTH = 0.45f;
 
     private static final class Pending {
         /** Reworded in place by {@link #replaceText}. */

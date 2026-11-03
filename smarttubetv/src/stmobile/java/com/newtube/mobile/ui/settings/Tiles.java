@@ -57,8 +57,95 @@ final class Tiles {
     static final int ICON = 11;
     /** The option's own loader, spinning on a dark stage (white loaders vanish on a light card). */
     static final int LOADER = 12;
+    static final int WATCH_COMPACT = 13;
+    static final int WATCH_CLASSIC = 14;
+    /** Search's round button in that corner, the bar slid away. */
+    static final int FAB_RIGHT = 15;
+    static final int FAB_LEFT = 16;
+    // The bottom bar with its lit tab's glow.
+    static final int GLOW_WHITE = 17;
+    static final int GLOW_TABS = 18;
+    static final int GLOW_ACCENT = 19;
+    static final int GLOW_OFF = 20;
+    // A switch's picture (toggle): what it turns on.
+    static final int FX_WATCHED = 21;
+    static final int FX_REFRESH = 22;
+    static final int FX_SHORTS = 23;
+    static final int FX_GLASS = 24;
+    static final int FX_FROST = 25;
+    static final int FX_MOTION = 26;
+    static final int FX_PROGRESS = 27;
+    static final int FX_SEARCH = 28;
+    static final int FX_TYPING = 29;
+    static final int FX_LABELS = 30;
+
+    private static final float OFF_ALPHA = 0.55f;
 
     private Tiles() {
+    }
+
+    /**
+     * {@code toggle} (a switch row) with a picture of what it does in front, in colour when on
+     * and greyed out when off. A tap flips it in place, without rebuilding the page.
+     */
+    static SettingsRow toggle(@NonNull SettingsRow toggle, int picture) {
+        SettingsRow row = toggle.asCustom();
+        row.custom = (parent, page) -> {
+            Context context = parent.getContext();
+            View view = android.view.LayoutInflater.from(context).inflate(R.layout.item_mobile_settings_row, parent, false);
+            ImageView icon = view.findViewById(R.id.settings_row_icon);
+            TextView title = view.findViewById(R.id.settings_row_title);
+            TextView summary = view.findViewById(R.id.settings_row_summary);
+            android.widget.CompoundButton toggleView = view.findViewById(R.id.settings_row_switch);
+
+            Picture drawable = new Picture(context, picture);
+            icon.setImageDrawable(drawable);
+            icon.setImageTintList(null);
+            icon.setScaleType(ImageView.ScaleType.FIT_XY);
+            int pad = dp(context, 5);
+            icon.setPadding(pad, pad, pad, pad);
+            GradientDrawable card = new GradientDrawable();
+            card.setCornerRadius(dp(context, 12));
+            card.setColor(ContextCompat.getColor(context, R.color.mobile_color_card));
+            card.setStroke(dp(context, 1), ContextCompat.getColor(context, R.color.mobile_color_divider));
+            icon.setBackground(card);
+            ViewGroup.MarginLayoutParams iconParams = (ViewGroup.MarginLayoutParams) icon.getLayoutParams();
+            iconParams.width = dp(context, 76);
+            iconParams.height = dp(context, 52);
+            icon.setVisibility(View.VISIBLE);
+
+            title.setText(row.title);
+            CharSequence text = row.summaryText();
+            summary.setText(text);
+            summary.setVisibility(text != null ? View.VISIBLE : View.GONE);
+            view.setContentDescription(row.title + (text != null ? ", " + text : ""));
+            view.setAccessibilityDelegate(SettingsAdapter.SwitchRole.INSTANCE);
+
+            boolean on = row.checked != null && row.checked.getAsBoolean();
+            toggleView.setVisibility(View.VISIBLE);
+            toggleView.setChecked(on);
+            drawable.setLit(on);
+            icon.setAlpha(on ? 1f : OFF_ALPHA);
+            view.setOnClickListener(v -> {
+                if (row.checked == null || row.toggle == null) {
+                    return;
+                }
+                boolean next = !row.checked.getAsBoolean();
+                Haptics.click(v);
+                toggleView.setChecked(next);
+                drawable.setLit(next);
+                icon.animate().alpha(next ? 1f : OFF_ALPHA).setDuration(200).start();
+                if (next) {
+                    bounce(icon);
+                }
+                row.toggle.set(next);
+                if (row.restart && page instanceof SettingsPageFragment) {
+                    ((SettingsPageFragment) page).offerRestart();
+                }
+            });
+            return view;
+        };
+        return row;
     }
 
     /** {@code choice} (a bound choice row) as tiles {@code heightDp} tall, a picture per option. */
@@ -95,7 +182,7 @@ final class Tiles {
             FrameLayout frame = new FrameLayout(context);
             ImageView picture = new ImageView(context);
             boolean own = pictures[i] == ICON || pictures[i] == LOADER;
-            int picturePad = dp(context, own ? 14 : 8);
+            int picturePad = dp(context, own ? 14 : pictures[i] >= GLOW_WHITE ? 6 : 8);
             picture.setPadding(picturePad, picturePad, picturePad, picturePad);
             picture.setScaleType(ImageView.ScaleType.FIT_CENTER);
             Drawable drawable = own ? ContextCompat.getDrawable(context, option.icon) : new Picture(context, pictures[i]);
@@ -348,6 +435,10 @@ final class Tiles {
         private final int mScreen;
         private final int mBlock;
         private final int mLine;
+        /** Icons and glyphs: near-white on dark, near-black on light. */
+        private final int mInk;
+        private static final int[] SIRI = {0xFFFF6A88, 0xFFFFB86B, 0xFFB45CFF, 0xFF5E9BFF, 0xFF4FD8FF, 0xFFFF6A88};
+        private static final int[] TAB_COLORS = {0xFF0A84FF, 0xFFFF375F, 0xFFFF9F0A, 0xFF30D158};
         private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final RectF mRect = new RectF();
         private final Path mPath = new Path();
@@ -360,6 +451,15 @@ final class Tiles {
             mScreen = dark ? 0xFF0F0F0F : 0xFFFFFFFF;
             mBlock = dark ? 0xFF2C2C30 : 0xFFE3E3E3;
             mLine = dark ? 0xFF404046 : 0xFFCFCFCF;
+            mInk = dark ? 0xFFE8E8E8 : 0xFF303030;
+        }
+
+        /** A switch's picture: in colour when on, grey when off. */
+        void setLit(boolean lit) {
+            android.graphics.ColorMatrix grey = new android.graphics.ColorMatrix();
+            grey.setSaturation(0f);
+            mPaint.setColorFilter(lit ? null : new android.graphics.ColorMatrixColorFilter(grey));
+            invalidateSelf();
         }
 
         @Override
@@ -368,8 +468,12 @@ final class Tiles {
             if (b.isEmpty()) {
                 return; // the loops below step by the height
             }
-            if (mKind >= THUMB_DEFAULT) {
+            if (mKind >= THUMB_DEFAULT && mKind <= THUMB_END || mKind == FX_WATCHED) {
                 thumbnail(canvas, new RectF(b));
+                return;
+            }
+            if (mKind >= GLOW_WHITE) {
+                scene(canvas, new RectF(b));
                 return;
             }
             float h = b.height();
@@ -408,9 +512,58 @@ final class Tiles {
             float l = phone.left + p;
             float r = phone.right - p;
             float y = phone.top + p;
-            block(canvas, l, y, l + w * 0.3f, y + h * 0.04f, ACCENT); // the logo
-            y += h * 0.09f;
+            boolean watch = kind == WATCH_COMPACT || kind == WATCH_CLASSIC;
+            if (!watch) {
+                block(canvas, l, y, l + w * 0.3f, y + h * 0.04f, ACCENT); // the logo
+                y += h * 0.09f;
+            }
             switch (kind) {
+                case WATCH_COMPACT:
+                case WATCH_CLASSIC: {
+                    // The video edge to edge, its title, then the channel.
+                    float videoBottom = phone.top + w * 0.62f;
+                    mPaint.setColor(0xFF1C1C1E);
+                    canvas.drawRect(phone.left, phone.top, phone.right, videoBottom, mPaint);
+                    mPaint.setColor(ACCENT);
+                    canvas.drawRect(phone.left, videoBottom - h * 0.01f, phone.left + w * 0.4f, videoBottom, mPaint);
+                    y = videoBottom + p;
+                    block(canvas, l, y, r - w * 0.12f, y + h * 0.03f, line);
+                    y += h * 0.045f;
+                    block(canvas, l, y, l + (r - l) * 0.45f, y + h * 0.022f, line);
+                    y += h * 0.05f;
+                    float avatar = h * 0.028f;
+                    mPaint.setColor(block);
+                    canvas.drawCircle(l + avatar, y + avatar, avatar, mPaint);
+                    block(canvas, l + avatar * 2.6f, y + avatar * 0.6f, l + w * 0.34f, y + avatar * 1.4f, line);
+                    if (kind == WATCH_COMPACT) {
+                        // Subscribe and the actions on the channel's line, sideways.
+                        int ink = screen == 0xFFFFFFFF ? 0xFF303030 : 0xFFE8E8E8;
+                        pill(canvas, l + w * 0.38f, y, l + w * 0.6f, y + avatar * 2, ink);
+                        for (float x = l + w * 0.64f; x < phone.right; x += w * 0.26f) {
+                            pill(canvas, x, y, x + w * 0.22f, y + avatar * 2, block);
+                        }
+                        y += avatar * 2 + h * 0.04f;
+                        block(canvas, l, y, r, y + h * 0.09f, block); // the top comment
+                        y += h * 0.12f;
+                    } else {
+                        // Subscribe at the end of the channel's row, then the labelled buttons.
+                        pill(canvas, r - w * 0.26f, y, r, y + avatar * 2, ACCENT);
+                        y += avatar * 2 + h * 0.04f;
+                        float button = w * 0.07f;
+                        for (int i = 0; i < 4; i++) {
+                            float x = l + (r - l) * (i + 0.5f) / 4;
+                            mPaint.setColor(block);
+                            canvas.drawCircle(x, y + button, button, mPaint);
+                            block(canvas, x - w * 0.06f, y + button * 2.4f, x + w * 0.06f, y + button * 2.4f + h * 0.018f, line);
+                        }
+                        y += button * 2.4f + h * 0.05f;
+                    }
+                    while (y < phone.bottom) { // what plays next
+                        block(canvas, l, y, r, y + h * 0.13f, block);
+                        y += h * 0.16f;
+                    }
+                    break;
+                }
                 case SHELVES:
                     while (y < phone.bottom) {
                         block(canvas, l, y, l + w * 0.4f, y + h * 0.03f, line);
@@ -454,6 +607,27 @@ final class Tiles {
                     }
                     break;
             }
+            if (kind == FAB_RIGHT || kind == FAB_LEFT) {
+                // The bar slid away; Search floats in its corner.
+                float radius = w * 0.14f;
+                float cx = kind == FAB_LEFT ? l + radius : r - radius;
+                float cy = phone.bottom - p - radius;
+                mPaint.setColor(screen);
+                canvas.drawCircle(cx, cy, radius, mPaint);
+                mPaint.setStyle(Paint.Style.STROKE);
+                mPaint.setStrokeWidth(Math.max(1f, w * 0.015f));
+                mPaint.setColor(line);
+                canvas.drawCircle(cx, cy, radius, mPaint);
+                magnifier(canvas, cx, cy, radius * 0.5f, screen == 0xFFFFFFFF ? 0xFF303030 : 0xFFE8E8E8);
+                canvas.restore();
+                outline(canvas, w, line);
+                return;
+            }
+            if (watch) {
+                canvas.restore();
+                outline(canvas, w, line);
+                return;
+            }
             // The floating bar, Home lit.
             float barTop = phone.bottom - p - h * 0.085f;
             mPaint.setColor(screen);
@@ -467,12 +641,277 @@ final class Tiles {
                 canvas.drawCircle(l + (r - l) * (i + 0.5f) / 4, cy, dot, mPaint);
             }
             canvas.restore();
+            outline(canvas, w, line);
+        }
 
+        /** The phone's edge, round {@link #mPath}. */
+        private void outline(Canvas canvas, float w, int line) {
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeWidth(Math.max(1f, w * 0.015f));
             mPaint.setColor(line);
             canvas.drawPath(mPath, mPaint);
             mPaint.setStyle(Paint.Style.FILL);
+        }
+
+        /** The landscape pictures: the bottom bar's glow, and what each switch turns on. */
+        private void scene(Canvas canvas, RectF b) {
+            float w = b.width();
+            float h = b.height();
+            float cx = b.centerX();
+            float cy = b.centerY();
+            switch (mKind) {
+                case GLOW_WHITE:
+                case GLOW_TABS:
+                case GLOW_ACCENT:
+                case GLOW_OFF: {
+                    RectF bar = new RectF(b.left, cy - h * 0.22f, b.right, cy + h * 0.22f);
+                    pill(canvas, bar.left, bar.top, bar.right, bar.bottom, mBlock);
+                    int glow = mKind == GLOW_WHITE ? (mInk == 0xFF303030 ? 0xFF8E8E93 : mInk) : // grey on light, as NavBloom
+                             mKind == GLOW_TABS ? TAB_COLORS[0] : ACCENT;
+                    float first = bar.left + bar.width() / 8;
+                    if (mKind != GLOW_OFF) {
+                        glow(canvas, first, cy, bar.height() * 1.1f, glow);
+                    }
+                    for (int i = 0; i < 4; i++) {
+                        mPaint.setColor(i == 0 ? (mKind == GLOW_OFF ? mInk : glow) : mKind == GLOW_TABS ? TAB_COLORS[i] : mLine);
+                        canvas.drawCircle(bar.left + bar.width() * (i + 0.5f) / 4, cy, bar.height() * 0.2f, mPaint);
+                    }
+                    break;
+                }
+                case FX_LABELS: {
+                    RectF bar = new RectF(b.left, cy - h * 0.3f, b.right, cy + h * 0.3f);
+                    pill(canvas, bar.left, bar.top, bar.right, bar.bottom, mBlock);
+                    float dot = bar.height() * 0.13f;
+                    for (int i = 0; i < 4; i++) {
+                        float x = bar.left + bar.width() * (i + 0.5f) / 4;
+                        int color = i == 0 ? ACCENT : mLine;
+                        mPaint.setColor(color);
+                        canvas.drawCircle(x, cy - bar.height() * 0.12f, dot, mPaint);
+                        block(canvas, x - dot * 1.8f, cy + bar.height() * 0.12f, x + dot * 1.8f, cy + bar.height() * 0.22f, color);
+                    }
+                    break;
+                }
+                case FX_MOTION: {
+                    RectF bar = new RectF(b.left, cy - h * 0.22f, b.right, cy + h * 0.22f);
+                    pill(canvas, bar.left, bar.top, bar.right, bar.bottom, mBlock);
+                    for (int i = 0; i < 4; i++) {
+                        mPaint.setColor(mLine);
+                        canvas.drawCircle(bar.left + bar.width() * (i + 0.5f) / 4, cy, bar.height() * 0.2f, mPaint);
+                    }
+                    // The lens on its way from the first tab to the second, a trail behind it.
+                    float lens = bar.height() * 0.44f;
+                    float to = bar.left + bar.width() * 1.5f / 4;
+                    for (int i = 3; i >= 1; i--) {
+                        mPaint.setColor((mInk & 0x00FFFFFF) | (0x18 * (4 - i)) << 24);
+                        canvas.drawCircle(to - lens * 0.7f * i, cy, lens, mPaint);
+                    }
+                    mPaint.setColor((mInk & 0x00FFFFFF) | 0x50000000);
+                    canvas.drawCircle(to, cy, lens, mPaint);
+                    mPaint.setColor(ACCENT);
+                    canvas.drawCircle(to, cy, bar.height() * 0.2f, mPaint);
+                    break;
+                }
+                case FX_GLASS: {
+                    // Thumbnails scrolling under the bar; the lens magnifies them.
+                    float barTop = cy + h * 0.02f;
+                    RectF bar = new RectF(b.left, barTop, b.right, barTop + h * 0.4f);
+                    stripes(canvas, b);
+                    pill(canvas, bar.left, bar.top, bar.right, bar.bottom, (mScreen & 0x00FFFFFF) | 0x66000000);
+                    float lx = bar.left + bar.width() * 0.3f;
+                    float ly = bar.centerY();
+                    float lr = bar.height() * 0.62f;
+                    canvas.save();
+                    mPath.reset();
+                    mPath.addCircle(lx, ly, lr, Path.Direction.CW);
+                    canvas.clipPath(mPath);
+                    canvas.scale(1.4f, 1.4f, lx, ly);
+                    stripes(canvas, b);
+                    canvas.restore();
+                    mPaint.setStyle(Paint.Style.STROKE);
+                    mPaint.setStrokeWidth(Math.max(1f, h * 0.035f));
+                    mPaint.setColor(0xCCFFFFFF);
+                    canvas.drawCircle(lx, ly, lr, mPaint);
+                    mPaint.setStyle(Paint.Style.FILL);
+                    break;
+                }
+                case FX_FROST: {
+                    // A dark video, its buttons frosted over it.
+                    float corner = h * 0.14f;
+                    mPath.reset();
+                    mPath.addRoundRect(b, corner, corner, Path.Direction.CW);
+                    canvas.save();
+                    canvas.clipPath(mPath);
+                    mPaint.setColor(0xFF23263A);
+                    canvas.drawRect(b, mPaint);
+                    mPaint.setColor(0xFFFFB300);
+                    canvas.drawCircle(b.left + w * 0.78f, b.top + h * 0.28f, h * 0.14f, mPaint);
+                    mPaint.setColor(0xFF3A4060);
+                    Path hills = new Path();
+                    hills.moveTo(b.left, b.bottom);
+                    hills.lineTo(b.left + w * 0.3f, b.top + h * 0.45f);
+                    hills.lineTo(b.left + w * 0.55f, b.top + h * 0.7f);
+                    hills.lineTo(b.left + w * 0.8f, b.top + h * 0.4f);
+                    hills.lineTo(b.right, b.bottom);
+                    hills.close();
+                    canvas.drawPath(hills, mPaint);
+                    canvas.restore();
+                    float gap = h * 0.5f;
+                    for (int i = -1; i <= 1; i++) {
+                        float r = i == 0 ? h * 0.22f : h * 0.16f;
+                        float x = cx + gap * i;
+                        mPaint.setColor(0x59FFFFFF);
+                        canvas.drawCircle(x, cy, r, mPaint);
+                        mPaint.setStyle(Paint.Style.STROKE);
+                        mPaint.setStrokeWidth(Math.max(1f, h * 0.025f));
+                        mPaint.setColor(0x99FFFFFF);
+                        canvas.drawCircle(x, cy, r, mPaint);
+                        mPaint.setStyle(Paint.Style.FILL);
+                        triangle(canvas, x, cy, r * 0.45f, i < 0 ? -1 : 1, 0xFFFFFFFF);
+                    }
+                    break;
+                }
+                case FX_PROGRESS: {
+                    float l = b.left + w * 0.06f;
+                    float r = b.right - w * 0.06f;
+                    float head = l + (r - l) * 0.62f;
+                    float t = h * 0.035f;
+                    block(canvas, l, cy - t, r, cy + t, mLine);
+                    block(canvas, l, cy - t, head, cy + t, ACCENT);
+                    glow(canvas, head, cy, h * 0.36f, ACCENT);
+                    mPaint.setColor(ACCENT);
+                    canvas.drawCircle(head, cy, h * 0.1f, mPaint);
+                    mPaint.setColor(0xFFFFFFFF);
+                    canvas.drawCircle(head, cy, h * 0.045f, mPaint);
+                    break;
+                }
+                case FX_SEARCH: {
+                    // The screen's edge alight in Siri's colours, Search's bar at the top.
+                    RectF screen = new RectF(b.left + h * 0.08f, b.top + h * 0.08f, b.right - h * 0.08f, b.bottom - h * 0.08f);
+                    float corner = h * 0.16f;
+                    mPaint.setColor(mScreen);
+                    canvas.drawRoundRect(screen, corner, corner, mPaint);
+                    mPaint.setShader(new android.graphics.SweepGradient(cx, cy, SIRI, null));
+                    mPaint.setStyle(Paint.Style.STROKE);
+                    mPaint.setStrokeWidth(h * 0.1f);
+                    mPaint.setAlpha(0x66);
+                    canvas.drawRoundRect(screen, corner, corner, mPaint);
+                    mPaint.setStrokeWidth(h * 0.04f);
+                    mPaint.setAlpha(0xFF);
+                    canvas.drawRoundRect(screen, corner, corner, mPaint);
+                    mPaint.setShader(null);
+                    mPaint.setStyle(Paint.Style.FILL);
+                    pill(canvas, screen.left + h * 0.14f, screen.top + h * 0.14f, screen.right - h * 0.14f,
+                            screen.top + h * 0.32f, mBlock);
+                    break;
+                }
+                case FX_TYPING: {
+                    float top = cy - h * 0.22f;
+                    float bottom = cy + h * 0.22f;
+                    pill(canvas, b.left, top, b.right, bottom, mBlock);
+                    float glass = (bottom - top) * 0.28f;
+                    magnifier(canvas, b.left + (bottom - top) * 0.55f, cy, glass, mInk);
+                    float textLeft = b.left + (bottom - top) * 1.05f;
+                    float textRight = b.right - w * 0.22f;
+                    mPaint.setShader(new android.graphics.LinearGradient(textLeft, 0, textRight, 0, SIRI, null,
+                            android.graphics.Shader.TileMode.CLAMP));
+                    mRect.set(textLeft, cy - h * 0.06f, textRight, cy + h * 0.06f);
+                    canvas.drawRoundRect(mRect, h * 0.06f, h * 0.06f, mPaint);
+                    mPaint.setShader(null);
+                    block(canvas, textRight + w * 0.03f, cy - h * 0.12f, textRight + w * 0.05f, cy + h * 0.12f, mInk); // the caret
+                    break;
+                }
+                case FX_REFRESH: {
+                    // Pull to refresh's spinner, and the pop it makes.
+                    float sx = cx - h * 0.3f;
+                    mPaint.setColor(mBlock);
+                    canvas.drawCircle(sx, cy, h * 0.32f, mPaint);
+                    float ring = h * 0.17f;
+                    mPaint.setStyle(Paint.Style.STROKE);
+                    mPaint.setStrokeCap(Paint.Cap.ROUND);
+                    mPaint.setStrokeWidth(h * 0.06f);
+                    mPaint.setColor(ACCENT);
+                    mRect.set(sx - ring, cy - ring, sx + ring, cy + ring);
+                    canvas.drawArc(mRect, -60, 280, false, mPaint);
+                    mPaint.setColor(mInk);
+                    mPaint.setStrokeWidth(h * 0.05f);
+                    for (int i = 1; i <= 2; i++) {
+                        float wave = h * (0.16f + 0.14f * i);
+                        mRect.set(sx + h * 0.2f - wave, cy - wave, sx + h * 0.2f + wave, cy + wave);
+                        canvas.drawArc(mRect, -35, 70, false, mPaint);
+                    }
+                    mPaint.setStrokeCap(Paint.Cap.BUTT);
+                    mPaint.setStyle(Paint.Style.FILL);
+                    break;
+                }
+                case FX_SHORTS: {
+                    // A shelf of portrait tiles, off the edge.
+                    canvas.save();
+                    canvas.clipRect(b);
+                    float l = b.left + w * 0.05f;
+                    block(canvas, l, b.top + h * 0.06f, l + w * 0.32f, b.top + h * 0.15f, mLine);
+                    float tileH = h * 0.7f;
+                    float tileW = tileH * 0.5625f;
+                    for (float x = l; x < b.right; x += tileW + h * 0.08f) {
+                        block(canvas, x, b.top + h * 0.24f, x + tileW, b.top + h * 0.24f + tileH, mBlock);
+                        block(canvas, x + tileW * 0.15f, b.top + h * 0.8f, x + tileW * 0.7f, b.top + h * 0.86f, mLine);
+                    }
+                    canvas.restore();
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        /** Three thumbnails side by side (Liquid glass's picture draws them twice: plain and magnified). */
+        private void stripes(Canvas canvas, RectF b) {
+            int[] colors = {0xFFFF453A, 0xFFFFB300, 0xFF0A84FF};
+            float gap = b.width() * 0.04f;
+            float cell = (b.width() - gap * 2) / 3;
+            for (int i = 0; i < 3; i++) {
+                float x = b.left + i * (cell + gap);
+                block(canvas, x, b.top, x + cell, b.top + b.height() * 0.62f, colors[i]);
+            }
+        }
+
+        private void glow(Canvas canvas, float cx, float cy, float radius, int color) {
+            mPaint.setShader(new android.graphics.RadialGradient(cx, cy, radius,
+                    new int[] {(color & 0x00FFFFFF) | 0xA0000000, color & 0x00FFFFFF}, null,
+                    android.graphics.Shader.TileMode.CLAMP));
+            canvas.drawCircle(cx, cy, radius, mPaint);
+            mPaint.setShader(null);
+        }
+
+        private void magnifier(Canvas canvas, float cx, float cy, float size, int color) {
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeCap(Paint.Cap.ROUND);
+            mPaint.setStrokeWidth(Math.max(1f, size * 0.28f));
+            mPaint.setColor(color);
+            float r = size * 0.62f;
+            float ox = cx - size * 0.15f;
+            float oy = cy - size * 0.15f;
+            canvas.drawCircle(ox, oy, r, mPaint);
+            canvas.drawLine(ox + r * 0.72f, oy + r * 0.72f, cx + size * 0.75f, cy + size * 0.75f, mPaint);
+            mPaint.setStrokeCap(Paint.Cap.BUTT);
+            mPaint.setStyle(Paint.Style.FILL);
+        }
+
+        /** A play-style triangle, pointing right ({@code direction} 1) or left (-1). */
+        private void triangle(Canvas canvas, float cx, float cy, float size, int direction, int color) {
+            mPaint.setColor(color);
+            Path path = new Path();
+            path.moveTo(cx - size * 0.7f * direction, cy - size);
+            path.lineTo(cx + size * direction, cy);
+            path.lineTo(cx - size * 0.7f * direction, cy + size);
+            path.close();
+            canvas.drawPath(path, mPaint);
+        }
+
+        private void pill(Canvas canvas, float left, float top, float right, float bottom, int color) {
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setColor(color);
+            mRect.set(left, top, right, bottom);
+            canvas.drawRoundRect(mRect, mRect.height() / 2, mRect.height() / 2, mPaint);
         }
 
         /** A landscape thumbnail: hills under a sun, and where along the video its frame is from. */
@@ -508,7 +947,9 @@ final class Tiles {
                 canvas.drawRect(t.left, track, t.right, t.bottom, mPaint);
                 mPaint.setColor(ACCENT);
                 canvas.drawRect(t.left, track, t.left + t.width() * position, t.bottom, mPaint);
-                canvas.drawCircle(t.left + t.width() * position, track, h * 0.08f, mPaint);
+                if (mKind != FX_WATCHED) { // the watched line has no scrubber
+                    canvas.drawCircle(t.left + t.width() * position, track, h * 0.08f, mPaint);
+                }
             }
             canvas.restore();
         }

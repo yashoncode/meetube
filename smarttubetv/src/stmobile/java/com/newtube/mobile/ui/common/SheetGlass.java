@@ -159,20 +159,33 @@ public final class SheetGlass {
 
     /** As above, rounded to {@code cornerPx} (a popup menu's corners, not a sheet's). */
     public static void frost(@NonNull View target, @Nullable Window page, float cornerPx) {
-        frost(target, page, target, cornerPx, false);
+        frost(target, page, target, cornerPx, false, 0);
+    }
+
+    /** As above, under {@code tint} instead of the sheets' (the message pill's thinner glass). */
+    public static void frost(@NonNull View target, @Nullable Window page, float cornerPx, int tint) {
+        frost(target, page, target, cornerPx, false, tint);
     }
 
     /** As above, filling {@code cover} - {@code target} itself or its direct parent. */
     private static void frost(@NonNull View target, @Nullable Window page, @NonNull View cover, float cornerPx,
             boolean live) {
+        frost(target, page, cover, cornerPx, live, 0);
+    }
+
+    /** {@code tint} 0: the sheets' own. */
+    private static void frost(@NonNull View target, @Nullable Window page, @NonNull View cover, float cornerPx,
+            boolean live, int tint) {
         if (cornerPx > 0) {
-            rim(cover, cornerPx);
+            // The message pill (its own tint) takes the hairline alone: the sheen is a sheet's 72dp
+            // top light, and cut down to a 48dp capsule it left two painted-on arcs at the ends.
+            rim(cover, cornerPx, tint == 0);
         }
         View decor = page != null ? page.peekDecorView() : null;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || decor == null) {
             return;
         }
-        new Feed(target, page, decor, cover, cornerPx, live).copy();
+        new Feed(target, page, decor, cover, cornerPx, live, tint).copy();
     }
 
     /**
@@ -180,7 +193,7 @@ public final class SheetGlass {
      * and a faint sheen fading down from the top. An overlay, not a foreground, so the frame's
      * padding for the system bars does not inset it from the glass.
      */
-    private static void rim(@NonNull View cover, float cornerPx) {
+    private static void rim(@NonNull View cover, float cornerPx, boolean sheenToo) {
         if (cover.getTag(R.id.mobile_sheet_rim) != null) {
             return;
         }
@@ -192,10 +205,15 @@ public final class SheetGlass {
         sheen.setCornerRadii(new float[] {cornerPx, cornerPx, cornerPx, cornerPx, 0, 0, 0, 0});
         android.graphics.drawable.GradientDrawable line = new android.graphics.drawable.GradientDrawable();
         line.setCornerRadius(cornerPx);
-        line.setStroke(Math.max(1, Math.round(density)), ContextCompat.getColor(context, R.color.meetube_glass_rim));
-        android.graphics.drawable.LayerDrawable rim = new android.graphics.drawable.LayerDrawable(new Drawable[] {sheen, line});
-        rim.setLayerHeight(0, Math.round(72 * density));
-        rim.setLayerGravity(0, android.view.Gravity.TOP | android.view.Gravity.FILL_HORIZONTAL);
+        // the message pill: the player pills' white hairline (GlassDrawable), dark in both themes
+        int lineColor = ContextCompat.getColor(context, sheenToo ? R.color.meetube_glass_rim : R.color.meetube_toast_rim);
+        line.setStroke(Math.max(1, Math.round(density)), lineColor);
+        android.graphics.drawable.LayerDrawable rim = new android.graphics.drawable.LayerDrawable(
+                sheenToo ? new Drawable[] {sheen, line} : new Drawable[] {line});
+        if (sheenToo) {
+            rim.setLayerHeight(0, Math.round(72 * density));
+            rim.setLayerGravity(0, android.view.Gravity.TOP | android.view.Gravity.FILL_HORIZONTAL);
+        }
         rim.setBounds(0, 0, cover.getWidth(), cover.getHeight());
         cover.getOverlay().add(rim);
         cover.setTag(R.id.mobile_sheet_rim, rim);
@@ -215,13 +233,15 @@ public final class SheetGlass {
         private final View mCover;
         private final float mCorner;
         private final boolean mLive;
+        private final int mTint;
         private final Handler mMain = new Handler(Looper.getMainLooper());
         private final Bitmap[] mRing = new Bitmap[3];
         private int mNext;
         @Nullable
         private Backdrop mBackdrop;
 
-        Feed(View target, Window page, View decor, View cover, float corner, boolean live) {
+        Feed(View target, Window page, View decor, View cover, float corner, boolean live, int tint) {
+            mTint = tint;
             mTarget = target;
             mPage = page;
             mDecor = decor;
@@ -251,7 +271,8 @@ public final class SheetGlass {
                 PixelCopy.request(mPage, page, result -> {
                     boolean copied = result == PixelCopy.SUCCESS;
                     if (copied && !mLive) {
-                        blur(page, BLUR_RADIUS);
+                        // The message pill is frosted, not see-through: twice the blur, shapes gone.
+                        blur(page, mTint != 0 ? BLUR_RADIUS * 2 : BLUR_RADIUS);
                     }
                     show(copied ? page : null, origin, pageW, pageH);
                 }, mMain);
@@ -262,14 +283,29 @@ public final class SheetGlass {
 
         private void show(@Nullable Bitmap page, int[] origin, int pageW, int pageH) {
             if (!mTarget.isAttachedToWindow()) {
-                return; // the sheet is gone
+                if (mBackdrop == null && page != null) {
+                    // Not there yet, not gone: a message pill queued behind the one still showing
+                    // (like, undo, like) attaches after its copy lands - frost it then, not never.
+                    mTarget.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                        @Override
+                        public void onViewAttachedToWindow(@NonNull View v) {
+                            v.removeOnAttachStateChangeListener(this);
+                            show(page, origin, pageW, pageH);
+                        }
+
+                        @Override
+                        public void onViewDetachedFromWindow(@NonNull View v) {
+                        }
+                    });
+                }
+                return; // the sheet is gone, or not shown yet
             }
             if (mBackdrop != null && mTarget.getBackground() != mBackdrop) {
                 return; // the sheet has another surface now
             }
             if (page != null) {
                 if (mBackdrop == null) {
-                    mBackdrop = new Backdrop(mTarget, mCover, mCorner, mLive);
+                    mBackdrop = new Backdrop(mTarget, mCover, mCorner, mLive, mTint);
                     mBackdrop.setPage(page, origin, pageW, pageH);
                     mTarget.setBackground(mBackdrop);
                 } else {
@@ -353,7 +389,7 @@ public final class SheetGlass {
         private final android.graphics.RenderNode mBlurNode;
         private final android.graphics.Path mClip = new android.graphics.Path();
 
-        Backdrop(View target, View cover, float corner, boolean live) {
+        Backdrop(View target, View cover, float corner, boolean live, int tint) {
             mTarget = target;
             mCover = cover;
             if (live && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -366,7 +402,7 @@ public final class SheetGlass {
             ColorMatrix saturate = new ColorMatrix();
             saturate.setSaturation(1.4f);
             mPage.setColorFilter(new ColorMatrixColorFilter(saturate));
-            mTint.setColor(ContextCompat.getColor(target.getContext(), R.color.meetube_sheet_glass));
+            mTint.setColor(tint != 0 ? tint : ContextCompat.getColor(target.getContext(), R.color.meetube_sheet_glass));
             mCorner = corner;
             // A drag moves the sheet without redrawing it: redraw so the page stays put underneath.
             target.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {

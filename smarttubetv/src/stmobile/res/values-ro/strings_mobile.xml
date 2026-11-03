@@ -71,7 +71,6 @@
     <string name="mobile_transcript_search">Caută în transcriere</string>
     <string name="mobile_transcript_none">Videoclipul nu are transcriere.</string>
     <string name="mobile_transcript_failed">Transcrierea nu s-a putut încărca.</string>
-    <string name="mobile_description_videos">Videoclipuri</string>
     <string name="mobile_description_details">Detaliile videoclipului</string>
     <string name="mobile_description_date">Data</string>
     <string name="mobile_player_more_videos">Mai multe videoclipuri</string>

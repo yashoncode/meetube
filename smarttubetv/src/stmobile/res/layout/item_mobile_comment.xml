@@ -15,6 +15,7 @@
     android:id="@+id/comment_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
     android:orientation="horizontal"
     android:paddingStart="12dp"
     android:paddingTop="12dp"

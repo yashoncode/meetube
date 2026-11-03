@@ -182,7 +182,7 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
         mDontAsk = content.findViewById(R.id.update_sheet_dont_ask);
         mDontAsk.setOnClickListener(v -> {
             mUpdates.setPromptOff(true);
-            android.widget.Toast.makeText(this, R.string.mobile_update_dont_ask_done, android.widget.Toast.LENGTH_LONG).show();
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_update_dont_ask_done);
             dismiss();
         });
         mScroll = content.findViewById(R.id.update_sheet_scroll);

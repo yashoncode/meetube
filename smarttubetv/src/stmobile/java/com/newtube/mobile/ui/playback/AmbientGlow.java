@@ -55,8 +55,10 @@ public final class AmbientGlow implements Runnable {
     private View mFillHost;
     private boolean mRunning;
 
+    /** Until the user sets it: on in the dark theme, off in the light one (a glow on a white page). */
     public static boolean isOn(Context context) {
-        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ON, true);
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ON,
+                !com.newtube.mobile.ui.common.ThemeMode.isLight(context));
     }
 
     public static void setOn(Context context, boolean on) {

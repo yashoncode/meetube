@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
@@ -25,7 +24,7 @@ public final class DownloadFolderActivity extends Activity {
         try {
             startActivityForResult(pick, REQUEST_TREE);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, R.string.mobile_download_folder_failed, Toast.LENGTH_LONG).show();
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_download_folder_failed);
             finish();
         }
     }
@@ -39,10 +38,9 @@ public final class DownloadFolderActivity extends Activity {
                 getContentResolver().takePersistableUriPermission(tree,
                         Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                 DownloadFolder.set(this, tree);
-                Toast.makeText(this, getString(R.string.mobile_download_folder_set, DownloadFolder.label(this)),
-                        Toast.LENGTH_SHORT).show();
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_download_folder_set, DownloadFolder.label(this)));
             } catch (SecurityException e) {
-                Toast.makeText(this, R.string.mobile_download_folder_failed, Toast.LENGTH_LONG).show();
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_download_folder_failed);
             }
         }
         finish();

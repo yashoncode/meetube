@@ -20,10 +20,13 @@ import androidx.appcompat.widget.AppCompatEditText;
  * text a moment after the last keystroke.
  */
 public class GlowEditText extends AppCompatEditText {
+    private static final String PREFS = "meetube_app";
+    private static final String KEY_ON = "typing_glow";
     private static final int[] SIRI = {0xFFFF6A88, 0xFFFFB86B, 0xFFB45CFF, 0xFF5E9BFF, 0xFFFF6A88};
     private static final int HALO = 0xB45CFF;
     private static final long SETTLE_MS = 900;
     private static final long SWEEP_MS = 1600;
+    private static int sOn = -1;
 
     private final int[] mColors = new int[SIRI.length];
     private final Runnable mSettle = () -> fadeTo(0f);
@@ -38,6 +41,18 @@ public class GlowEditText extends AppCompatEditText {
         super(context, attrs);
     }
 
+    public static boolean enabled(Context context) {
+        if (sOn < 0) {
+            sOn = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ON, true) ? 1 : 0;
+        }
+        return sOn == 1;
+    }
+
+    public static void setEnabled(Context context, boolean on) {
+        sOn = on ? 1 : 0;
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_ON, on).apply();
+    }
+
     @Override
     protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
@@ -47,6 +62,10 @@ public class GlowEditText extends AppCompatEditText {
     }
 
     private void ignite() {
+        if (!enabled(getContext())) {
+            stopGlow();
+            return;
+        }
         removeCallbacks(mSettle);
         postDelayed(mSettle, SETTLE_MS);
         fadeTo(1f);
@@ -64,6 +83,10 @@ public class GlowEditText extends AppCompatEditText {
     }
 
     private void fadeTo(float target) {
+        if (!enabled(getContext())) {
+            stopGlow();
+            return;
+        }
         if (mFade != null) {
             mFade.cancel();
         }
@@ -96,6 +119,11 @@ public class GlowEditText extends AppCompatEditText {
 
     @Override
     protected void onDetachedFromWindow() {
+        stopGlow();
+        super.onDetachedFromWindow();
+    }
+
+    private void stopGlow() {
         removeCallbacks(mSettle);
         if (mSweep != null) {
             mSweep.cancel();
@@ -103,10 +131,10 @@ public class GlowEditText extends AppCompatEditText {
         }
         if (mFade != null) {
             mFade.cancel();
+            mFade = null;
         }
         mGlow = 0f;
         applyGlow();
-        super.onDetachedFromWindow();
     }
 
     /**
@@ -115,7 +143,7 @@ public class GlowEditText extends AppCompatEditText {
      */
     private void applyGlow() {
         TextPaint paint = getPaint();
-        if (mGlow > 0f && length() > 0 && getWidth() > 0) {
+        if (enabled(getContext()) && mGlow > 0f && length() > 0 && getWidth() > 0) {
             int base = getCurrentTextColor();
             for (int i = 0; i < SIRI.length; i++) {
                 mColors[i] = blend(base, SIRI[i], mGlow);

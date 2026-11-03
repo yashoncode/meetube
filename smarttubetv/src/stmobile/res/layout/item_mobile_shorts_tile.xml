@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(shorts): a channel's Shorts tab tile, as in YouTube's app - three to a row with hairline
-     gaps, the portrait thumbnail with its view count over it and the menu in the corner. -->
+<!-- MEETUBE(shorts): a channel's Shorts tab tile, as in YouTube's app - three to a row with small
+     gaps, the portrait thumbnail with its view count over it and the menu in the corner. Clipped to
+     12dp corners like every other Short (ShortTileHolder clips to its background's outline). -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="1dp"
+    android:layout_margin="2dp"
+    android:background="@drawable/bg_skeleton_block"
     android:foreground="?attr/selectableItemBackground">
 
     <ImageView
         android:id="@+id/shorts_tile_thumbnail"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/mobile_color_placeholder"
         android:importantForAccessibility="no"
         android:scaleType="centerCrop"
         app:layout_constraintDimensionRatio="9:16"

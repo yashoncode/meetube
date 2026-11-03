@@ -75,10 +75,17 @@
          discs (GlassDrawable's tint), with a dark ring to stand out on light thumbnails (#29). -->
     <color name="mobile_watch_fab_tint">#47000000</color>
     <color name="mobile_watch_fab_ring">#59000000</color>
+    <!-- MEETUBE(issue #162): no shadow on a light page - the see-through disc showed its own
+         shadow through it as an octagon. The elevation stays (it floats over the comments). -->
+    <color name="mobile_watch_fab_shadow">#00000000</color>
     <color name="mobile_player_cast_active">#64D2FF</color>
 
     <!-- MEETUBE(glass): the floating-glass surfaces (light side; dark in values-night). -->
     <color name="meetube_glass_tint">#66FAFAFA</color>
+    <!-- MEETUBE(glass): You's Accounts / Settings, whiter so they stand off a light page. -->
+    <color name="meetube_glass_button">#D9FFFFFF</color>
+    <!-- MEETUBE(glass): the watch page's Comments card, milky glass the page shows through. -->
+    <color name="meetube_watch_card">#8CFFFFFF</color>
     <!-- MEETUBE(search): the search pill stays visible over a plain page, frosted over results. -->
     <color name="meetube_search_glass_tint">#14000000</color>
     <!-- MEETUBE(glass): a pill on a frosted sheet ("Add a comment"): a see-through lift. -->
@@ -91,15 +98,21 @@
     <color name="meetube_glass_sheen">#80FFFFFF</color>
     <color name="meetube_glass_selected">#14000000</color>
     <color name="meetube_nav_inactive">#99000000</color>
+    <!-- MEETUBE(nav bloom): the plain tab glow - grey on the light glass, white on the dark. -->
+    <color name="meetube_nav_bloom_plain">#FF8E8E93</color>
     <!-- MEETUBE(glass): the frosted top bar - the page colour at ~75%. -->
     <color name="meetube_bar_tint">#C7FFFFFF</color>
     <color name="meetube_switch_off">#E3E3E8</color>
     <!-- MEETUBE(accent): the app's accent - switches and choice radios (a picker can come later). -->
     <color name="meetube_accent">#D7372D</color>
     <color name="meetube_switch_on">@color/meetube_accent</color>
-    <!-- MEETUBE(launch): the launch animation in black and white (avd_splash_glass): the solid play
-         symbol, then its glass - darkest top-left, see-through bottom-right. White on night. -->
-    <color name="splash_mono">#FF000000</color>
-    <color name="splash_glass_start">#D9000000</color>
-    <color name="splash_glass_end">#59000000</color>
+    <!-- MEETUBE(launch): the launch animation (avd_splash_glass) in the red accent (mobile_color_primary):
+         the solid play symbol, then its glass - deepest top-left, see-through bottom-right. White on night. -->
+    <color name="splash_mono">#FFFF453A</color>
+    <color name="splash_glass_start">#D9FF453A</color>
+    <color name="splash_glass_end">#59FF453A</color>
+    <!-- MEETUBE(toasts): every message pill's glass and hairline - the app's (MobileSnackbar.style)
+         and the player's over the video - one dark frost in both themes, white text. -->
+    <color name="meetube_toast_glass">#A3303034</color>
+    <color name="meetube_toast_rim">#3DFFFFFF</color>
 </resources>

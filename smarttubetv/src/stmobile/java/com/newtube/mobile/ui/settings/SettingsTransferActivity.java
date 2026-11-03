@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 
@@ -83,7 +82,7 @@ public final class SettingsTransferActivity extends Activity {
                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             context.startActivity(Intent.createChooser(send, context.getString(R.string.mobile_settings_transfer_share)));
         } catch (IOException | JSONException | RuntimeException e) {
-            Toast.makeText(context, R.string.mobile_settings_transfer_failed, Toast.LENGTH_LONG).show();
+            com.newtube.mobile.ui.common.MobileSnackbar.show(context, R.string.mobile_settings_transfer_failed);
         }
     }
 
@@ -102,7 +101,7 @@ public final class SettingsTransferActivity extends Activity {
         try {
             startActivityForResult(pick, importing ? REQUEST_IMPORT : REQUEST_EXPORT);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, R.string.mobile_settings_transfer_failed, Toast.LENGTH_LONG).show();
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_settings_transfer_failed);
             finish();
         }
     }
@@ -118,9 +117,9 @@ public final class SettingsTransferActivity extends Activity {
         if (requestCode == REQUEST_EXPORT) {
             try {
                 write(this, getContentResolver().openOutputStream(uri, "wt"));
-                Toast.makeText(this, R.string.mobile_settings_transfer_saved, Toast.LENGTH_LONG).show();
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_settings_transfer_saved);
             } catch (IOException | JSONException | RuntimeException e) {
-                Toast.makeText(this, R.string.mobile_settings_transfer_failed, Toast.LENGTH_LONG).show();
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_settings_transfer_failed);
             }
             finish();
             return;
@@ -128,11 +127,11 @@ public final class SettingsTransferActivity extends Activity {
         try {
             apply(this, new JSONObject(read(getContentResolver().openInputStream(uri))));
         } catch (IOException | JSONException | RuntimeException e) {
-            Toast.makeText(this, R.string.mobile_settings_transfer_not_settings, Toast.LENGTH_LONG).show();
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_settings_transfer_not_settings);
             finish();
             return;
         }
-        Toast.makeText(this, R.string.mobile_settings_transfer_imported, Toast.LENGTH_LONG).show();
+        com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_settings_transfer_imported);
         finish();
         // A beat for the icon pick's apply() to reach the disk before the process goes.
         Context app = getApplicationContext();

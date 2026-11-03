@@ -155,16 +155,21 @@
                     android:layout_gravity="top"
                     android:orientation="vertical">
 
+                <!-- MEETUBE(issue #165): in landscape, centred on the top row's 48dp buttons; margins,
+                     not padding, so the tappable title (issue #164: it opens the description)
+                     never covers the buttons beside it. -->
                 <TextView
                     android:id="@+id/mobile_player_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="104dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="148dp"
+                    android:background="?attr/selectableItemBackground"
                     android:ellipsize="end"
+                    android:gravity="center_vertical|start"
                     android:maxLines="2"
-                    android:paddingStart="104dp"
-                    android:paddingTop="18dp"
-                    android:paddingEnd="148dp"
-                    android:paddingBottom="12dp"
+                    android:minHeight="48dp"
                     android:shadowColor="#80000000"
                     android:shadowDx="0"
                     android:shadowDy="1"
@@ -1103,6 +1108,8 @@
             android:elevation="6dp"
             android:focusable="true"
             android:foreground="@drawable/bg_watch_fab_ring"
+            android:outlineAmbientShadowColor="@color/mobile_watch_fab_shadow"
+            android:outlineSpotShadowColor="@color/mobile_watch_fab_shadow"
             app:glassCornerRadius="26dp"
             app:glassOnGlass="true"
             app:glassTint="@color/mobile_watch_fab_tint">

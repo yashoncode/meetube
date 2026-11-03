@@ -427,7 +427,8 @@ public class MobileBrowseActivity extends MobileActivity
         View topGlass = findViewById(R.id.mobile_top_glass);
         int bar = topGlass != null ? topGlass.getHeight() : 0;
         if (mChipBar != null && mChipBar.isActive()) {
-            bar += mChipRow.getHeight(); // hidden chips keep their room: the feed never jumps
+            // hidden chips keep their room: the feed never jumps. Less the headroom over the top row.
+            bar += mChipRow.getHeight() - mChipRow.getPaddingTop();
         }
         padUnderTopBar(bar);
     }
@@ -1964,6 +1965,8 @@ public class MobileBrowseActivity extends MobileActivity
             return;
         }
         ((TextView) findViewById(R.id.mobile_you_history_title)).setText(history.getTitle());
+        // MEETUBE(issue #168): the row opens at its start; it kept the last visit's scroll for a frame.
+        ((RecyclerView) findViewById(R.id.mobile_you_history_list)).scrollToPosition(0);
         List<Video> cached = FeedCache.get(MediaGroup.TYPE_HISTORY);
         showYouHistory(cached);
         com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mYouHistoryAction);
@@ -1985,8 +1988,13 @@ public class MobileBrowseActivity extends MobileActivity
                 }
             }
         }
-        findViewById(R.id.mobile_you_history_list).setVisibility(shown.isEmpty() ? View.GONE : View.VISIBLE);
-        mYouHistoryAdapter.submitList(shown);
+        RecyclerView list = findViewById(R.id.mobile_you_history_list);
+        list.setVisibility(shown.isEmpty() ? View.GONE : View.VISIBLE);
+        mYouHistoryAdapter.submitList(shown, () -> {
+            if (!list.canScrollHorizontally(-1)) {
+                list.scrollToPosition(0); // a video just watched lands in front, not off the left edge
+            }
+        });
     }
 
     /** Show the You panel over the content area (the panel is opaque; the grid stays put). */

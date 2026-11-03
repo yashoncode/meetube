@@ -76,8 +76,22 @@ final class SwipeLevels {
     private float mRangePx = 1f;
     private float mLevel;
     private int mVolumeStep;
-    /** This swipe already let the system's panel ask about the hearing-safety limit. */
+    /** The stream's range, read once a swipe: each read is a call into the audio service. */
+    private int mMinVolume;
+    private int mMaxVolume;
+    /** Where the system held this swipe back (the hearing-safety limit, Do Not Disturb); -1 none. */
+    private volatile int mCeiling = -1;
+    /** The step the finger asks for; the volume thread sets whatever is latest. */
+    private volatile int mTargetStep;
+    /** This swipe already let the system's panel ask about the hearing-safety limit (volume thread). */
     private boolean mSafeVolumeAsked;
+    /**
+     * MEETUBE(volume swipe): setStreamVolume and the reads after it went to the audio service on the
+     * main thread, step after step - on a vivo T3 Pro that held frames and the video stuttered for the
+     * whole swipe (brightness, a window attribute, never did). One thread, so the steps stay in order.
+     */
+    @VisibleForTesting
+    static java.util.concurrent.Executor sVolumeThread = java.util.concurrent.Executors.newSingleThreadExecutor();
     /** Brightness is applied to the window: the player is fullscreen and in front. */
     private boolean mBrightnessActive;
     /** This swipe went past the bottom: the phone's own brightness (issue #64). */
@@ -110,10 +124,13 @@ final class SwipeLevels {
         mRangePx = rangePxFor(videoHeightPx);
         mHapticView.removeCallbacks(mHidePill);
         if (kind == VOLUME) {
-            int min = minVolume();
+            mMinVolume = minVolume();
+            mMaxVolume = maxVolume();
             mVolumeStep = currentVolume();
-            mSafeVolumeAsked = false;
-            mStartLevel = (mVolumeStep - min) / (float) Math.max(1, maxVolume() - min);
+            mTargetStep = mVolumeStep;
+            mCeiling = -1;
+            sVolumeThread.execute(() -> mSafeVolumeAsked = false);
+            mStartLevel = (mVolumeStep - mMinVolume) / (float) Math.max(1, mMaxVolume - mMinVolume);
         } else {
             mStartLevel = currentBrightness();
         }
@@ -176,30 +193,55 @@ final class SwipeLevels {
     // ---------------------------------------------------------------------------------
 
     private void setVolumeLevel(float level) {
-        int min = minVolume();
-        int max = maxVolume();
+        int min = mMinVolume;
+        int max = mMaxVolume;
         int step = min + Math.round(level * (max - min));
+        int ceiling = mCeiling;
+        if (ceiling >= 0 && step > ceiling) {
+            step = ceiling;
+        }
         if (step != mVolumeStep) {
-            try {
-                mAudio.setStreamVolume(AudioManager.STREAM_MUSIC, step, 0);
-                int now = currentVolume();
-                if (now < step && step > mVolumeStep && !mSafeVolumeAsked) {
-                    // Held back by the hearing-safety limit (headphones): only the system's own
-                    // panel can ask to go past it, so let it show once - as VLC does.
-                    mSafeVolumeAsked = true;
-                    mAudio.setStreamVolume(AudioManager.STREAM_MUSIC, step, AudioManager.FLAG_SHOW_UI);
-                    now = currentVolume();
-                }
-                if (now == mVolumeStep) {
-                    return;
-                }
-                mVolumeStep = now;
-            } catch (SecurityException e) {
-                return; // Do Not Disturb owns the volume
-            }
+            int from = mVolumeStep;
+            mVolumeStep = step; // shown and ticked now; the volume thread catches up
+            mTargetStep = step;
             Haptics.tick(mHapticView);
+            sVolumeThread.execute(() -> applyVolume(from));
         }
         mLevel = (mVolumeStep - min) / (float) Math.max(1, max - min);
+    }
+
+    /** On the volume thread: sets the latest asked step; where the system holds it back, says so. */
+    private void applyVolume(int from) {
+        int step = mTargetStep;
+        int now;
+        try {
+            mAudio.setStreamVolume(AudioManager.STREAM_MUSIC, step, 0);
+            now = currentVolume();
+            if (now < step && step > from && !mSafeVolumeAsked) {
+                // Held back by the hearing-safety limit (headphones): only the system's own
+                // panel can ask to go past it, so let it show once - as VLC does.
+                mSafeVolumeAsked = true;
+                mAudio.setStreamVolume(AudioManager.STREAM_MUSIC, step, AudioManager.FLAG_SHOW_UI);
+                now = currentVolume();
+            }
+        } catch (SecurityException e) {
+            now = currentVolume(); // Do Not Disturb owns the volume
+        }
+        if (now == step || step != mTargetStep) {
+            return; // done, or the finger already asks for another
+        }
+        int held = now;
+        if (held < step) {
+            mCeiling = held;
+        }
+        mHapticView.post(() -> {
+            if (mKind == VOLUME && mTargetStep == step) {
+                mVolumeStep = held;
+                mTargetStep = held;
+                mLevel = (held - mMinVolume) / (float) Math.max(1, mMaxVolume - mMinVolume);
+                showPill();
+            }
+        });
     }
 
     private int currentVolume() {

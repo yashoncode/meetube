@@ -188,7 +188,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     /** TalkBack reads a switch row as a switch with its state, like a platform preference. */
-    private static final class SwitchRole extends View.AccessibilityDelegate {
+    static final class SwitchRole extends View.AccessibilityDelegate {
         static final SwitchRole INSTANCE = new SwitchRole();
 
         @Override

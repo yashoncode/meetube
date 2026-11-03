@@ -208,6 +208,8 @@
 
                 </LinearLayout>
 
+                <!-- MEETUBE(glass): Accounts / Settings in brighter glass than the top pills, so they
+                     stand off a light page without a shadow. -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -220,7 +222,7 @@
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
                         app:glassCornerRadius="22dp"
-                        app:glassTint="@color/meetube_glass_tint">
+                        app:glassTint="@color/meetube_glass_button">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/mobile_you_accounts"
@@ -246,7 +248,7 @@
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
                         app:glassCornerRadius="22dp"
-                        app:glassTint="@color/meetube_glass_tint">
+                        app:glassTint="@color/meetube_glass_button">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/mobile_you_settings"
@@ -346,6 +348,7 @@
         android:id="@+id/mobile_top_glass"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:clipToPadding="false"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp"
@@ -468,14 +471,18 @@
     </LinearLayout>
 
     <!-- MEETUBE(feed-strip): Home's topic chips, liquid-glass pills floating under the top pills;
-         the feed scrolls under them (FeedStrip, the page padded by this row too). -->
+         the feed scrolls under them (FeedStrip, the page padded by this row too).
+         MEETUBE(issue #161): 4dp of headroom laid over the top row, so the chips' shadows aren't
+         cut flat on top; refreshTopPadding takes it back off. -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/mobile_chip_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="-4dp"
         android:clipToPadding="false"
         android:overScrollMode="never"
         android:paddingHorizontal="16dp"
+        android:paddingTop="4dp"
         android:paddingBottom="8dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
