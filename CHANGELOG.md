@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.3.0** Glitch](#330-glitch) | 2026-11-03 | Polished |
 | [**3.2.7** HotLight](#327-hotlight) | 2026-11-02 | Lighter |
 | [**3.2.5** Plazma](#325-plazma) | 2026-11-01 | Smoother |
 | [**3.2.3** Mirage](#323-mirage) | 2026-10-31 | Pick your spinner and icon, Shorts autoscroll, a mini player that rides the bottom bar |
@@ -40,6 +41,45 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.3.0 Glitch
+
+> **Polished**<br>
+> 📅 2026-11-03 · closes #158, #159, #160, #162, #164, #165, #166, #168 and #170
+
+### New
+
+- Held sideways, the description opens as a card beside the video, which keeps playing.
+- Tap the video title in fullscreen to open the description (#164).
+- Tap the channel name in the description to open the channel, so the Videos button is gone (#160).
+- Search glow and Typing glow switches for the Siri colours in Search.
+- A Grey tab glow.
+
+### Changed
+
+- One swipe shrinks Subscribe and scrolls the compact actions to the end, with a tick at either end (#158).
+- The fullscreen title sits centred beside the top buttons (#165).
+- Closing comments in upright fullscreen goes back to upright fullscreen (#166).
+- Every message pill is the same dark frosted glass, and over the player it frosts the video live.
+- On the You page the rows fade away under the top pills as you scroll.
+- The tab glow fades in and out more smoothly.
+- Customization shows its choices and switches as pictures.
+- Shorts tiles have rounded corners everywhere.
+- Light theme: a red tab glow and launch animation, brighter Accounts and Settings buttons, a see-through Comments card, and Ambient mode off unless you turn it on.
+- The cast screens name MeeTube TV / SmartTube TV wherever they said SmartTube.
+- No shadow under the Up next chips.
+
+### Fixed
+
+- Swiping the volume no longer makes the video stutter (#170).
+- The channel picture and the Subscribe label show in the description again (#159).
+- No octagon inside the fullscreen button in the light theme (#162).
+- The Home chips' shadows are no longer cut off in the light theme (#161).
+- The History row on the You page opens at its start, without flashing your last scroll first (#168).
+
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @KrishnakantShedge and @Batmancpu.
 
 ## 3.2.7 HotLight
 
