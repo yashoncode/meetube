@@ -81,6 +81,7 @@
     <!-- NEWTUBE(touch): no top margin - the meta row above (48dp tall now) and the pills'
          own 6dp inset hold the old spacing. -->
     <HorizontalScrollView
+        android:id="@+id/mobile_watch_actions_scroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="0dp"

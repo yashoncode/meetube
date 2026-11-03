@@ -39,6 +39,7 @@ public class SwipeLevelsTest {
 
     @Before
     public void setUp() {
+        SwipeLevels.sVolumeThread = Runnable::run; // the volume thread, inline
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         mAudio = (AudioManager) mActivity.getSystemService(Context.AUDIO_SERVICE);
         shadowOf(mAudio).setStreamMaxVolume(15);

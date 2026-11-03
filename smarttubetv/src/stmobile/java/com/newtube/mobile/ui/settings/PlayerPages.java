@@ -163,7 +163,7 @@ final class PlayerPages {
         rows.add(doubleTap.bind(playerData::getSeekIncrementMs, playerData::setSeekIncrementMs));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_watch_page)));
-        // MEETUBE(ambient): on by default.
+        // MEETUBE(ambient): on by default in the dark theme, off in the light one.
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_ambient),
                 context.getString(R.string.mobile_settings_ambient_summary),
                 () -> com.newtube.mobile.ui.playback.AmbientGlow.isOn(context),

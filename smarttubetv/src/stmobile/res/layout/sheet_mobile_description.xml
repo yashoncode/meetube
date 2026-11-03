@@ -137,7 +137,8 @@
 
             </LinearLayout>
 
-            <!-- MEETUBE(description): the channel - Subscribe mirrors the watch page's, Videos opens it. -->
+            <!-- MEETUBE(description): the channel - Subscribe mirrors the watch page's; the picture or the
+                 name opens the channel. -->
             <LinearLayout
                 android:id="@+id/description_sheet_channel"
                 android:layout_width="match_parent"
@@ -148,8 +149,10 @@
                 tools:visibility="visible">
 
                 <LinearLayout
+                    android:id="@+id/description_sheet_channel_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -208,24 +211,6 @@
                         android:textSize="14sp" />
 
                 </LinearLayout>
-
-                <TextView
-                    android:id="@+id/description_sheet_channel_videos"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_watch_card"
-                    android:clickable="true"
-                    android:drawablePadding="8dp"
-                    android:focusable="true"
-                    android:fontFamily="sans-serif-medium"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp"
-                    android:text="@string/mobile_description_videos"
-                    android:textColor="@color/mobile_color_on_surface"
-                    android:textSize="14sp"
-                    app:drawableStartCompat="@drawable/ic_desc_videos"
-                    app:drawableTint="@color/mobile_color_on_surface" />
 
             </LinearLayout>
 

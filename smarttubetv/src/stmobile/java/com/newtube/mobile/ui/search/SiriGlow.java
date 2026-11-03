@@ -23,9 +23,12 @@ import android.view.animation.LinearInterpolator;
  * turns once around the display and fades, the way Apple Intelligence's Siri wakes. Drawn over the
  * whole window (the decor, not the inset content) and removed when it is done.
  */
-final class SiriGlow extends View {
+public final class SiriGlow extends View {
+    private static final String PREFS = "meetube_app";
+    private static final String KEY_ON = "search_glow";
     private static final int[] SIRI = {0xFFFF6A88, 0xFFFFB86B, 0xFFB45CFF, 0xFF5E9BFF, 0xFF4FD8FF, 0xFFFF6A88};
     private static final long DURATION_MS = 1400;
+    private static int sOn = -1;
 
     private final Paint mLine = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mHalo = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -36,8 +39,23 @@ final class SiriGlow extends View {
     private float mCorner;
     private float mTurn;
 
+    public static boolean enabled(Context context) {
+        if (sOn < 0) {
+            sOn = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ON, true) ? 1 : 0;
+        }
+        return sOn == 1;
+    }
+
+    public static void setEnabled(Context context, boolean on) {
+        sOn = on ? 1 : 0;
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_ON, on).apply();
+    }
+
     /** Play once over {@code activity}'s window. */
     static void play(Activity activity) {
+        if (!enabled(activity)) {
+            return;
+        }
         ViewGroup decor = (ViewGroup) activity.getWindow().getDecorView();
         SiriGlow glow = new SiriGlow(activity);
         decor.addView(glow, new ViewGroup.LayoutParams(

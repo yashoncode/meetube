@@ -289,6 +289,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         ShortTileHolder(@NonNull View itemView, OnVideoClickListener clickListener,
                 @Nullable OnVideoLongClickListener longClickListener) {
             super(itemView);
+            itemView.setClipToOutline(true); // the rounded background (the XML attribute is API 31+)
             mThumbnail = itemView.findViewById(R.id.shorts_tile_thumbnail);
             mViews = itemView.findViewById(R.id.shorts_tile_views);
             itemView.setOnClickListener(v -> {

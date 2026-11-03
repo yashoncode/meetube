@@ -396,7 +396,9 @@
     <string name="mobile_settings_interface_size_sample_meta">MeeTube · 1.2M views · 2 days ago</string>
     <string name="mobile_settings_tab_glow">Tab glow</string>
     <string name="mobile_settings_tab_glow_white">White</string>
-    <string name="mobile_settings_tab_glow_white_desc">A plain white glow (dark grey in the light theme)</string>
+    <string name="mobile_settings_tab_glow_white_desc">A plain white glow (grey in the light theme)</string>
+    <string name="mobile_settings_tab_glow_grey">Grey</string>
+    <string name="mobile_settings_tab_glow_grey_desc">A plain grey glow (white in the dark theme)</string>
     <string name="mobile_settings_tab_glow_tabs">Tab colors</string>
     <string name="mobile_settings_tab_glow_tabs_desc">Each tab glows in its own color</string>
     <string name="mobile_settings_tab_glow_accent">Accent</string>
@@ -404,6 +406,10 @@
     <string name="mobile_settings_tab_glow_off">Off</string>
     <string name="mobile_settings_progress_glow">Progress glow</string>
     <string name="mobile_settings_progress_glow_summary">A soft light at the end of the seek bar and of the watched line on videos</string>
+    <string name="mobile_settings_search_glow">Search glow</string>
+    <string name="mobile_settings_search_glow_summary">The screen\'s edges light up in Siri\'s colours when Search opens</string>
+    <string name="mobile_settings_typing_glow">Typing glow</string>
+    <string name="mobile_settings_typing_glow_summary">Your search glows in Siri\'s colours while you type</string>
     <string name="mobile_settings_short_ends">When a short ends</string>
     <string name="mobile_settings_short_ends_loop">Play it again</string>
     <string name="mobile_settings_short_ends_next">Scroll to the next short</string>

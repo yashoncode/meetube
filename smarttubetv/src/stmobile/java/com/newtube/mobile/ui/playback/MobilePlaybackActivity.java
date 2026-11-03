@@ -221,6 +221,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mActionsShown;
     /** The pill's comments button left fullscreen: open the panel once the page is back. */
     private boolean mCommentsAfterFullscreen;
+    /** The comments were opened from the vertical fullscreen: closing them goes back to it. */
+    private boolean mFullAfterComments;
     /** Landscape comments: the panel in a column beside the video (layOutCommentsSide). */
     private boolean mCommentsSide;
     private boolean mChatSide; // MEETUBE(live chat, issue #32): the landscape video beside the chat column
@@ -840,6 +842,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mTopScrim = findViewById(R.id.mobile_player_top_scrim);
         mBottomScrim = findViewById(R.id.mobile_player_bottom_scrim);
         mTitleView = findViewById(R.id.mobile_player_title);
+        mTitleView.setOnClickListener(v -> showDescriptionSheet()); // MEETUBE(issue #164)
         mPlayerAuthor = findViewById(R.id.mobile_player_author);
         mBackButton = findViewById(R.id.mobile_player_back);
         mAudioButton = findViewById(R.id.mobile_player_audio);
@@ -922,6 +925,17 @@ public class MobilePlaybackActivity extends MobileActivity
                 mPrevButton, mNextButton, mFullscreenButton, mActionsToggle}) {
             com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, dp(4));
         }
+        // MEETUBE(toasts): the player's own message pills (zoom, 2x, brightness/volume, chapter,
+        // notices, skip) frosted like the app's message pill: the video under them, blurred, always -
+        // each only costs while it shows.
+        int pillTint = ContextCompat.getColor(this, R.color.meetube_toast_glass);
+        for (View pill : new View[] {mZoomHintView, mTopPill, mLevelPill, mNoticeView,
+                findViewById(R.id.mobile_player_scrub_chapter), mSkipSegmentPill}) {
+            if (pill != null) {
+                com.newtube.mobile.ui.common.GlassDrawable.apply(pill,
+                        findViewById(R.id.mobile_player_glass), 0, pillTint);
+            }
+        }
         View time = findViewById(R.id.mobile_player_time);
         for (View control : new View[] {mPlayPauseButton, time, mActionsRow, mPlayerLock, mPlayerUnlock}) {
             com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, 0);
@@ -971,6 +985,14 @@ public class MobilePlaybackActivity extends MobileActivity
         mSubscribeTextColor = mWatchSubscribe.getCurrentTextColor();
         mSubscribeIcon = findViewById(R.id.mobile_watch_subscribe_icon);
         View actionsScroll = findViewById(R.id.mobile_watch_actions_scroll);
+        if (actionsScroll != null) {
+            // MEETUBE(issue #158): a light tick where the actions run out, either way, either layout.
+            actionsScroll.setOnScrollChangeListener((v, x, y, oldX, oldY) -> {
+                if (x != oldX && (!v.canScrollHorizontally(1) || !v.canScrollHorizontally(-1))) {
+                    Haptics.tick(v);
+                }
+            });
+        }
         if (actionsScroll != null && mSubscribeIcon != null) {
             // By the finger's way, not the scroll position: the pill's own resize moves the scroll (a
             // narrow Subscribe can leave nothing to scroll), which flipped it back and forth.
@@ -978,49 +1000,25 @@ public class MobilePlaybackActivity extends MobileActivity
             // A press on a pill (most of the row) keeps the down from this listener: the row only
             // hears the drag once it takes it over, so the first event it hears is the start.
             float[] downX = {Float.NaN};
-            // A swipe that starts with the full Subscribe only shrinks it: the row stays put rather
-            // than sliding the Like pill under Subscribe's edge (the room it gets is what it needed).
-            boolean[] hold = {false};
-            int[] labelW = {0};
-            boolean[] ticked = {false};
+            // MEETUBE(issue #158): one swipe shrinks Subscribe and scrolls the row with it (it used to
+            // hold the row still while it shrank, so reaching the end took two swipes).
             actionsScroll.setOnTouchListener((v, event) -> {
                 int action = event.getActionMasked();
                 if (Float.isNaN(downX[0])) {
                     downX[0] = event.getRawX();
-                    hold[0] = !mSubscribeCollapsed
-                            && (mSubscribeAnimator == null || !mSubscribeAnimator.isRunning());
-                    labelW[0] = mWatchSubscribe.getWidth();
-                    ticked[0] = false;
                 }
                 float dx = event.getRawX() - downX[0];
-                boolean held = hold[0];
-                // A held swipe shrinks the pill under the finger, so it tracks it frame by frame.
-                float range = Math.max(1, labelW[0] - dp(36));
-                if (held) {
-                    float t = Math.max(0f, Math.min(1f, (-dx - slop) / range));
-                    if (t > 0f || mSubscribeMorph > 0f) {
-                        applySubscribeMorph(t, Math.round(labelW[0] - range * t));
-                    }
-                    // One light tick per swipe, where letting go starts settling into the mark.
-                    if (!ticked[0] && t > 0.33f) {
-                        ticked[0] = true;
-                        Haptics.tick(v);
-                    }
-                } else if (dx < -slop) {
+                if (dx < -slop) {
                     morphSubscribe(true); // swiping the actions in
                 } else if (dx > slop && v.getScrollX() == 0) {
                     morphSubscribe(false); // pulled back to the start
-                }
-                // Held, only the pull past a fully shrunk pill bounces the row.
-                if (held && dx < 0) {
-                    dx = Math.min(0f, dx + slop + range);
                 }
                 // MEETUBE(watch-look): the bounce - where the row has nothing to scroll that way, its
                 // pills follow the finger a little (less the further it goes) and spring back on release.
                 View pills = ((ViewGroup) v).getChildAt(0);
                 boolean end = action == android.view.MotionEvent.ACTION_UP
                         || action == android.view.MotionEvent.ACTION_CANCEL;
-                if (!end && pills != null && (held || !v.canScrollHorizontally(dx < 0 ? 1 : -1))) {
+                if (!end && pills != null && !v.canScrollHorizontally(dx < 0 ? 1 : -1)) {
                     float max = dp(28);
                     pills.animate().cancel();
                     pills.setTranslationX(max * dx / (Math.abs(dx) + max * 3));
@@ -1031,22 +1029,8 @@ public class MobilePlaybackActivity extends MobileActivity
                                 .setInterpolator(new android.view.animation.OvershootInterpolator(2.4f)).start();
                     }
                     downX[0] = Float.NaN;
-                    hold[0] = false;
-                    if (held && mWatchSubscribe.getLayoutParams().width != ViewGroup.LayoutParams.WRAP_CONTENT) {
-                        // Settles from where the finger left it: past a third, into the mark.
-                        boolean in = mSubscribeMorph > 0.33f;
-                        mSubscribeCollapsed = !in; // so morphSubscribe runs even back to the label
-                        morphSubscribe(in);
-                    }
-                    if (held) {
-                        // Ends the row's drag without the fling its few early moves would make.
-                        android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
-                        cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
-                        v.onTouchEvent(cancel);
-                        cancel.recycle();
-                    }
                 }
-                return held;
+                return false;
             });
         }
         mWatchRelatedLabel = findViewById(R.id.mobile_watch_related_label);
@@ -1557,6 +1541,7 @@ public class MobilePlaybackActivity extends MobileActivity
             } else {
                 // Upright, straight back to the page: toggleFullscreen turns a 16:9 video sideways.
                 mCommentsAfterFullscreen = true;
+                mFullAfterComments = true;
                 setPortraitFull(false);
             }
         });
@@ -2300,6 +2285,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // Minimized with comments open: they went with the watch page, and the player comes
             // back without them (kept, so reopening is instant and in place).
             if (mCommentsPanel != null) {
+                mFullAfterComments = false; // the player comes back as the page left it
                 mCommentsPanel.closeImmediately();
             }
         }
@@ -2943,7 +2929,14 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         boolean full = mPortraitFull && !isLandscape();
-        mTitleView.setPaddingRelative(dp(full ? 16 : 104), dp(full ? 62 : 18), dp(full ? 16 : 148), dp(full ? 0 : 12));
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) mTitleView.getLayoutParams();
+        lp.setMarginStart(dp(full ? 16 : 104));
+        lp.topMargin = dp(full ? 62 : 10);
+        lp.setMarginEnd(dp(full ? 16 : 148));
+        mTitleView.setLayoutParams(lp);
+        // Landscape: centred on the top row's buttons (issue #165); upright: its first line at the top.
+        mTitleView.setMinHeight(full ? 0 : dp(48));
+        mTitleView.setGravity((full ? Gravity.TOP : Gravity.CENTER_VERTICAL) | Gravity.START);
         mPlayerAuthor.setVisibility(full ? View.VISIBLE : View.GONE);
     }
 
@@ -3592,8 +3585,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         showAudioCover(getVideo());
         updatePipActions();
-        android.widget.Toast.makeText(this, audioOnly ? R.string.mobile_player_audio_only
-                : R.string.mobile_player_audio_off, android.widget.Toast.LENGTH_SHORT).show();
+        com.newtube.mobile.ui.common.MobileSnackbar.show(this, audioOnly ? R.string.mobile_player_audio_only : R.string.mobile_player_audio_off);
     }
 
     /** The audio-only cover: {@code video}'s thumbnail, dimmed, with the headphones over it. */
@@ -4555,9 +4547,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void showCastSnackbar(int messageRes) {
-        com.google.android.material.snackbar.Snackbar.make(
-                findViewById(android.R.id.content), messageRes,
-                com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+        com.newtube.mobile.ui.common.MobileSnackbar.show(this, messageRes);
     }
 
     /**
@@ -5421,6 +5411,14 @@ public class MobilePlaybackActivity extends MobileActivity
      * recipe) so the bars stay hidden.
      */
     private void showPlayerSheet(BottomSheetDialog dialog) {
+        showPlayerSheet(dialog, false);
+    }
+
+    /**
+     * {@code side}: held sideways, the sheet is a card on the right and the video plays on beside it
+     * (the live chat's column); upright it is the usual sheet.
+     */
+    private void showPlayerSheet(BottomSheetDialog dialog, boolean side) {
         pruneShownSheets();
         mShownSheets.add(new java.lang.ref.WeakReference<>(dialog));
         mSheetsOrientation = layoutOrientation();
@@ -5443,7 +5441,22 @@ public class MobilePlaybackActivity extends MobileActivity
             // copying the player's legacy flags kept nothing hidden and the sheet jumped up.
             MobileSheets.keepSystemBarsHidden(window);
         }
-        if (landscape) {
+        side &= landscape;
+        if (side) {
+            if (window != null) {
+                window.getDecorView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                    @Override
+                    public void onViewAttachedToWindow(@NonNull View v) {
+                    }
+
+                    @Override
+                    public void onViewDetachedFromWindow(@NonNull View v) {
+                        v.removeOnAttachStateChangeListener(this);
+                        setChatColumn(0); // the video takes the screen back
+                    }
+                });
+            }
+        } else if (landscape) {
             // NEWTUBE(sheet-landscape): most of these sheets are taller than a phone held sideways.
             // Uncapped, a sheet that did not fit filled the screen up to its top edge; capped, it
             // stops short of it, the video stays in sight above, and its list scrolls.
@@ -5488,6 +5501,10 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         dialog.show();
+        if (side) {
+            // After show: the sheet's onCreate sets its window back to the whole screen.
+            setChatColumn(LiveChatSheet.placeSideCard(dialog, getWindow().getDecorView()));
+        }
     }
 
     private int landscapeSheetMaxHeight() {
@@ -9504,11 +9521,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 // An explicit pick outranks the error fixer's per-video audio fallback, which
                 // restoreAudioFormat would otherwise re-apply on a reload of this video.
                 playerData.setTempAudioFormat(null);
-                com.google.android.material.snackbar.Snackbar.make(
-                                findViewById(android.R.id.content),
-                                getString(R.string.mobile_audio_track_toast, choice.label),
-                                com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
-                        .show();
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_audio_track_toast, choice.label));
             });
         }
 
@@ -9639,12 +9652,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
         setButtonState(R.id.lb_control_closed_captioning, on ? BUTTON_ON : BUTTON_OFF);
 
-        com.google.android.material.snackbar.Snackbar.make(
-                        findViewById(android.R.id.content),
-                        on ? getString(R.string.mobile_captions_on_toast, captionLabel(format))
-                                : getString(R.string.mobile_captions_off_toast),
-                        com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
-                .show();
+        com.newtube.mobile.ui.common.MobileSnackbar.show(this, on ? getString(R.string.mobile_captions_on_toast, captionLabel(format)) : getString(R.string.mobile_captions_off_toast));
     }
 
     /** Last-used tracks bubble to the top, like the TV picker (PlayerUIController.reorderSubtitles). */
@@ -9813,8 +9821,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 String toast = minutes == SleepTimer.END_OF_VIDEO ? getString(R.string.mobile_sleep_toast_end)
                         : minutes == SleepTimer.OFF ? getString(R.string.mobile_sleep_toast_off)
                         : getString(R.string.mobile_sleep_toast_minutes, sleepPresetLabel(minutes));
-                com.google.android.material.snackbar.Snackbar.make(findViewById(android.R.id.content),
-                        toast, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, toast);
                 dialog.dismiss();
             });
         }
@@ -9872,11 +9879,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
 
-        com.google.android.material.snackbar.Snackbar.make(
-                        findViewById(android.R.id.content),
-                        getString(R.string.mobile_speed_toast, speedLabel(speed)),
-                        com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
-                .show();
+        com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_speed_toast, speedLabel(speed)));
     }
 
     /**
@@ -10000,6 +10003,11 @@ public class MobilePlaybackActivity extends MobileActivity
             // MEETUBE(fullscreen-actions): the landscape comments closed - the video takes the screen back.
             if (!shown && mCommentsSide && mCommentsPanel != null && !mCommentsPanel.isOpen()) {
                 setCommentsSide(false);
+            }
+            // ...and upright, the vertical fullscreen they were opened from comes back.
+            if (!shown && mFullAfterComments && mCommentsPanel != null && !mCommentsPanel.isOpen()) {
+                mFullAfterComments = false;
+                setPortraitFull(true);
             }
             // The page under the panel is covered: keep TalkBack off it (the video stays reachable).
             if (mWatchScroll != null) {
@@ -10149,6 +10157,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // A new video closes the comments panel and forgets the old video's comments.
             Utils.removeCallbacks(mPrefetchComments);
             if (mCommentsPanel != null) {
+                mFullAfterComments = false; // another video: its own page, not the old fullscreen
                 mCommentsPanel.onVideoChanged(item.videoId);
             }
             if (mWatchScroll != null) {
@@ -10489,7 +10498,11 @@ public class MobilePlaybackActivity extends MobileActivity
         showPlayerSheet(DescriptionSheet.create(this, mWatchTitle.getText(), likes, mDescriptionViews,
                 mDescriptionDate, mWatchDescription.getText(),
                 // A short fills the screen: a plain sheet over it, not one sized to under the video.
-                isLandscape() || shorts ? null : mVideoArea, extras));
+                isLandscape() || shorts ? null : mVideoArea, extras),
+                !shorts); // sideways, beside the video as it plays, YouTube's
+        if (isLandscape() && !shorts) {
+            hideControls(); // the picture beside the card, clear
+        }
     }
 
     /** MEETUBE(transcript): the captions the open video's transcript is made from, or null. */
@@ -10889,8 +10902,7 @@ public class MobilePlaybackActivity extends MobileActivity
         long seconds = atPosition && mPlayer != null && !video.isLive ? mPlayer.getCurrentPosition() / 1000 : 0;
         if (seconds > 0) {
             url += "?t=" + seconds;
-            android.widget.Toast.makeText(this, getString(R.string.mobile_watch_share_at, formatTime(seconds * 1000)),
-                    android.widget.Toast.LENGTH_SHORT).show();
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_watch_share_at, formatTime(seconds * 1000)));
         }
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");

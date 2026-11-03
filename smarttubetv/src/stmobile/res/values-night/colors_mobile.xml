@@ -40,6 +40,8 @@
 
     <!-- MEETUBE(glass): BitChord's glass tint (#121212 at 40%), 14% white hairline, 14% white lit tab. -->
     <color name="meetube_glass_tint">#66000000</color>
+    <color name="meetube_glass_button">#66000000</color>
+    <color name="meetube_watch_card">#17FFFFFF</color>
     <color name="meetube_search_glass_tint">#26FFFFFF</color>
     <!-- MEETUBE(glass): a pill on a frosted sheet ("Add a comment"): a see-through lift. -->
     <color name="meetube_glass_pill_tint">#1FFFFFFF</color>
@@ -52,6 +54,7 @@
     <color name="meetube_glass_sheen">#1AFFFFFF</color>
     <color name="meetube_glass_selected">#24FFFFFF</color>
     <color name="meetube_nav_inactive">#ADFFFFFF</color>
+    <color name="meetube_nav_bloom_plain">#FFFFFFFF</color>
     <!-- MEETUBE(glass): the frosted top bar - the page colour at ~75%. -->
     <color name="meetube_bar_tint">#B8000000</color>
     <color name="meetube_switch_off">#3A3A3F</color>
@@ -60,4 +63,5 @@
     <color name="splash_mono">#FFFFFFFF</color>
     <color name="splash_glass_start">#E6FFFFFF</color>
     <color name="splash_glass_end">#59FFFFFF</color>
+    <color name="mobile_watch_fab_shadow">#FF000000</color>
 </resources>

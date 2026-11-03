@@ -205,14 +205,17 @@ public final class SettingsRow {
 
     /**
      * MEETUBE(customize): this choice as a {@link #KIND_CUSTOM} row (its view set by the caller),
-     * keeping title, options and pick, so search still finds it by them.
+     * keeping title, options and pick (a switch's summary and state), so search still finds it by them.
      */
     SettingsRow asCustom() {
         SettingsRow row = new SettingsRow(KIND_CUSTOM);
         row.title = title;
+        row.summary = summary;
         row.options = options;
         row.current = current;
         row.pick = pick;
+        row.checked = checked;
+        row.toggle = toggle;
         row.restart = restart;
         return row;
     }

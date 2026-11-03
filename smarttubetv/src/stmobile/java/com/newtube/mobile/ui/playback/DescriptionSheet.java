@@ -165,20 +165,22 @@ final class DescriptionSheet {
         TextView subs = content.findViewById(R.id.description_sheet_channel_subs);
         subs.setText(extras.subscribers);
         subs.setVisibility(TextUtils.isEmpty(extras.subscribers) ? View.GONE : View.VISIBLE);
-        if (extras.avatar != null && extras.avatar.getConstantState() != null) {
-            ((android.widget.ImageView) content.findViewById(R.id.description_sheet_channel_avatar))
-                    .setImageDrawable(extras.avatar.getConstantState().newDrawable().mutate());
+        android.graphics.drawable.Drawable avatar = extras.avatar;
+        if (avatar instanceof android.graphics.drawable.TransitionDrawable) {
+            // MEETUBE(issue #159): Glide's cross-fade; a copy restarts it on the placeholder layer.
+            android.graphics.drawable.TransitionDrawable fade = (android.graphics.drawable.TransitionDrawable) avatar;
+            avatar = fade.getDrawable(fade.getNumberOfLayers() - 1);
         }
-        View videos = content.findViewById(R.id.description_sheet_channel_videos);
+        if (avatar != null && avatar.getConstantState() != null) {
+            ((android.widget.ImageView) content.findViewById(R.id.description_sheet_channel_avatar))
+                    .setImageDrawable(avatar.getConstantState().newDrawable().mutate());
+        }
         if (extras.openChannel != null) {
-            View.OnClickListener open = v -> {
+            // The whole row, picture and name (Subscribe takes its own taps).
+            content.findViewById(R.id.description_sheet_channel_row).setOnClickListener(v -> {
                 dialog.dismiss();
                 extras.openChannel.run();
-            };
-            videos.setOnClickListener(open);
-            content.findViewById(R.id.description_sheet_channel_avatar).setOnClickListener(open);
-        } else {
-            videos.setVisibility(View.GONE);
+            });
         }
         TextView subscribe = content.findViewById(R.id.description_sheet_subscribe);
         TextView source = extras.subscribe;
@@ -189,7 +191,10 @@ final class DescriptionSheet {
         Runnable mirror = () -> {
             subscribe.setText(source.getText());
             subscribe.setSelected(source.isSelected());
-            subscribe.setTextColor(source.getCurrentTextColor());
+            // Not the page's current colour: its pill folds into a mark once subscribed and fades
+            // its label out, which left this one blank (issue #159). The same pair it settles on.
+            subscribe.setTextColor(ContextCompat.getColor(subscribe.getContext(), source.isSelected()
+                    ? R.color.mobile_color_on_surface : R.color.mobile_color_on_inverse_surface));
         };
         mirror.run();
         subscribe.setOnClickListener(v -> source.performClick());

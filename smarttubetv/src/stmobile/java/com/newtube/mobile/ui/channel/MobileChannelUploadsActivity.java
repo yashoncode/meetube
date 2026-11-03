@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.VideoGroup;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.QueuePlaybackMode;
@@ -777,10 +776,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
 
             if (!mVideos.isEmpty()) {
                 if (state != LoadFailure.EMPTY) {
-                    Snackbar.make(findViewById(android.R.id.content),
-                            state == LoadFailure.NO_CONNECTION
-                                    ? R.string.mobile_empty_no_connection : R.string.mobile_refresh_error,
-                            Snackbar.LENGTH_SHORT).show();
+                    com.newtube.mobile.ui.common.MobileSnackbar.show(this, state == LoadFailure.NO_CONNECTION ? R.string.mobile_empty_no_connection : R.string.mobile_refresh_error);
                 }
                 return;
             }

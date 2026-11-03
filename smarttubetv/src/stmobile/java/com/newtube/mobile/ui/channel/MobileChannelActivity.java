@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.tabs.TabLayout;
 import com.liskovsoft.sharedutils.helpers.Helpers;
@@ -1353,10 +1352,7 @@ public class MobileChannelActivity extends MobileActivity
 
             if (hasContent()) {
                 if (state != LoadFailure.EMPTY) {
-                    Snackbar.make(findViewById(android.R.id.content),
-                            state == LoadFailure.NO_CONNECTION
-                                    ? R.string.mobile_empty_no_connection : R.string.mobile_refresh_error,
-                            Snackbar.LENGTH_SHORT).show();
+                    com.newtube.mobile.ui.common.MobileSnackbar.show(this, state == LoadFailure.NO_CONNECTION ? R.string.mobile_empty_no_connection : R.string.mobile_refresh_error);
                 }
                 return;
             }
