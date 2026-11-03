@@ -49,6 +49,7 @@ Every MeeTube release, newest first.<br>
 
 ### New
 
+- Try MeeTube TV on your TV now, in beta on Releases.
 - Held sideways, the description opens as a card beside the video, which keeps playing.
 - Tap the video title in fullscreen to open the description (#164).
 - Tap the channel name in the description to open the channel, so the Videos button is gone (#160).
