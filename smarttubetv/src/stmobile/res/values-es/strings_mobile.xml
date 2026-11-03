@@ -338,7 +338,7 @@
     <string name="mobile_cast_searching">Buscando dispositivos…</string>
     <string name="mobile_cast_empty">No se ha encontrado ningún dispositivo en esta red Wi-Fi</string>
     <string name="mobile_cast_subtitle_no_ads">Calidad desde el móvil</string>
-    <string name="mobile_cast_subtitle_youtube_app">YouTube o SmartTube en la TV</string>
+    <string name="mobile_cast_subtitle_youtube_app">YouTube o MeeTube TV / SmartTube TV en la TV</string>
     <string name="mobile_cast_chooser_title">Enviar a %1$s</string>
     <string name="mobile_cast_choose_method">Elige el método de envío</string>
     <string name="mobile_cast_option_direct_title">Envío directo</string>
@@ -348,18 +348,18 @@
 
     <!-- Cast: TV-code linking -->
     <string name="mobile_cast_link_code">Vincular con el código de la TV</string>
-    <string name="mobile_cast_link_code_subtitle">Funciona con YouTube y SmartTube</string>
+    <string name="mobile_cast_link_code_subtitle">Funciona con YouTube y MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_code_hint">Código de 12 dígitos</string>
     <string name="mobile_cast_code_title">Vincular TV</string>
     <string name="mobile_cast_code_app_label">App de la TV</string>
     <string name="mobile_cast_code_choose_app">Elige la app que tienes abierta en la TV.</string>
-    <string name="mobile_cast_code_open_smarttube">En SmartTube de la TV, abre:</string>
+    <string name="mobile_cast_code_open_smarttube">En MeeTube TV / SmartTube TV de la TV, abre:</string>
     <string name="mobile_cast_code_open_youtube">En YouTube de la TV, abre:</string>
     <string name="mobile_cast_code_find">Encuentra el código en cualquiera de las dos apps de TV:</string>
     <string name="mobile_cast_code_youtube_path">Ajustes → Vincular con el código de TV</string>
     <string name="mobile_cast_code_smarttube_path">Ajustes → Control remoto</string>
     <string name="mobile_cast_code_helper">Puedes incluir guiones y espacios</string>
-    <string name="mobile_cast_code_smarttube_benefit">Consejo: con SmartTube controlas la calidad y los subtítulos en la TV.</string>
+    <string name="mobile_cast_code_smarttube_benefit">Consejo: con MeeTube TV / SmartTube TV controlas la calidad y los subtítulos en la TV.</string>
     <string name="mobile_cast_code_positive">Vincular</string>
     <string name="mobile_cast_code_invalid">El código debe tener 12 dígitos</string>
     <string name="mobile_cast_pairing">Vinculando con la TV…</string>
@@ -370,20 +370,20 @@
     <string name="mobile_cast_connecting_youtube_app">Conectando con la app de YouTube de la TV…</string>
     <string name="mobile_cast_switching_tv_app">Abriendo los controles de YouTube en la TV…</string>
     <string name="mobile_cast_fallback_switching">Probando YouTube en la TV…</string>
-    <string name="mobile_cast_trying_smarttube">Probando SmartTube en la TV…</string>
+    <string name="mobile_cast_trying_smarttube">Probando MeeTube TV / SmartTube TV en la TV…</string>
     <string name="mobile_cast_trying_direct">Probando el envío directo…</string>
     <string name="mobile_cast_trying_saved">Probando la app de TV guardada…</string>
     <string name="mobile_cast_checking_ad_free">Comprobando la TV…</string>
-    <string name="mobile_cast_smarttube_title">SmartTube</string>
-    <string name="mobile_cast_smarttube_subtitle">SmartTube · puedes llevarte el móvil</string>
+    <string name="mobile_cast_smarttube_title">MeeTube TV / SmartTube TV</string>
+    <string name="mobile_cast_smarttube_subtitle">MeeTube TV / SmartTube TV · puedes llevarte el móvil</string>
     <string name="mobile_cast_youtube_title">YouTube</string>
     <string name="mobile_cast_youtube_subtitle">YouTube · alternativa</string>
     <string name="mobile_cast_unknown_title">App de TV guardada</string>
     <string name="mobile_cast_unknown_subtitle">App sin identificar · pulsa ⋮ para indicarla</string>
     <string name="mobile_cast_identify_app">¿De qué app de TV es este código?</string>
-    <string name="mobile_cast_onboarding_title">¿Tienes SmartTube en la TV?</string>
-    <string name="mobile_cast_onboarding_body">Vincúlalo una vez y los vídeos que envíes se abrirán en SmartTube.</string>
-    <string name="mobile_cast_pair_smarttube">Vincular SmartTube</string>
+    <string name="mobile_cast_onboarding_title">¿Tienes MeeTube TV / SmartTube TV en la TV?</string>
+    <string name="mobile_cast_onboarding_body">Vincúlalo una vez y los vídeos que envíes se abrirán en MeeTube TV / SmartTube TV.</string>
+    <string name="mobile_cast_pair_smarttube">Vincular MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_receiver_no_playback">La app de la TV no ha empezado a reproducir</string>
     <string name="mobile_cast_playing_on">Reproduciendo en %1$s</string>
     <string name="mobile_cast_disconnect">Desconectar</string>
@@ -391,7 +391,7 @@
     <string name="mobile_cast_unavailable">El envío a la TV todavía no está disponible en esta versión</string>
 
     <!-- Cast: direct-cast limits -->
-    <string name="mobile_cast_direct_live_unsupported">Los directos necesitan YouTube o SmartTube en la TV</string>
+    <string name="mobile_cast_direct_live_unsupported">Los directos necesitan YouTube o MeeTube TV / SmartTube TV en la TV</string>
     <string name="mobile_cast_direct_incompatible">Este vídeo no se puede enviar directamente (no hay ningún formato que la TV pueda reproducir)</string>
     <string name="mobile_cast_direct_load_failed">No se ha podido preparar este vídeo para el envío directo</string>
     <string name="mobile_cast_direct_no_wifi">El envío directo necesita el móvil y la TV en la misma red Wi-Fi</string>
@@ -410,7 +410,7 @@
     <string name="mobile_cast_subtitles_failed">No se han podido cambiar los subtítulos en este receptor</string>
     <string name="mobile_cast_subtitles_need_tv_app">Cambiar a la app de la TV</string>
     <string name="mobile_cast_switch_subtitles_title">¿Usar la app de la TV para los subtítulos?</string>
-    <string name="mobile_cast_switch_subtitles_message">La app de la TV permite usar subtítulos y elegir la calidad con el mando. Probamos primero SmartTube vinculado y después YouTube.</string>
+    <string name="mobile_cast_switch_subtitles_message">La app de la TV permite usar subtítulos y elegir la calidad con el mando. Probamos primero MeeTube TV / SmartTube TV vinculado y después YouTube.</string>
     <string name="mobile_cast_switch_subtitles_positive">Cambiar</string>
 
     <!-- Descargas -->

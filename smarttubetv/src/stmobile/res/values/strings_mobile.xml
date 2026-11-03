@@ -403,7 +403,7 @@
     <!-- Cast-device row: the default mode's promise, nothing else. -->
     <string name="mobile_cast_subtitle_no_ads">Quality controls on your phone</string>
     <!-- Lounge-only row (saved screen / DIAL TV): plain statement of what will play. -->
-    <string name="mobile_cast_subtitle_youtube_app">YouTube or SmartTube on the TV</string>
+    <string name="mobile_cast_subtitle_youtube_app">YouTube or MeeTube TV / SmartTube TV on the TV</string>
     <!-- Chooser header for a Cast device offering both modes; tapping it goes back to the list. -->
     <string name="mobile_cast_chooser_title">Cast to %1$s</string>
     <!-- Chooser option 1 (default, listed first): Route A. Subtitle carries the one real cost. -->
@@ -415,25 +415,25 @@
     <!-- mdx shim in flight: launching the TV's YouTube app and reading its Lounge screenId. -->
     <string name="mobile_cast_connecting_youtube_app">Connecting to the YouTube app on the TV…</string>
     <!-- Route A load refusals: the session stays up, only this video can't be direct-cast. -->
-    <string name="mobile_cast_direct_live_unsupported">Live streams need YouTube or SmartTube on the TV</string>
+    <string name="mobile_cast_direct_live_unsupported">Live streams need YouTube or MeeTube TV / SmartTube TV on the TV</string>
     <string name="mobile_cast_direct_incompatible">This video can\'t be direct-cast (no format the TV can play)</string>
     <string name="mobile_cast_direct_load_failed">Couldn\'t prepare this video for direct cast</string>
     <string name="mobile_cast_direct_no_wifi">Direct cast needs the phone and TV on the same Wi-Fi</string>
     <string name="mobile_cast_link_code">Link with TV code</string>
-    <string name="mobile_cast_link_code_subtitle">Works with YouTube and SmartTube</string>
+    <string name="mobile_cast_link_code_subtitle">Works with YouTube and MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_code_hint">12-digit code</string>
     <string name="mobile_cast_code_title">Link TV</string>
     <string name="mobile_cast_code_app_label">TV app</string>
     <string name="mobile_cast_code_choose_app">Choose the app open on your TV.</string>
-    <string name="mobile_cast_code_open_smarttube">In SmartTube on your TV, open:</string>
+    <string name="mobile_cast_code_open_smarttube">In MeeTube TV / SmartTube TV on your TV, open:</string>
     <string name="mobile_cast_code_open_youtube">In YouTube on your TV, open:</string>
     <string name="mobile_cast_code_find">Find the code in either TV app:</string>
     <string name="mobile_cast_code_youtube" translatable="false">YouTube</string>
     <string name="mobile_cast_code_youtube_path">Settings → Link with TV code</string>
-    <string name="mobile_cast_code_smarttube" translatable="false">SmartTube</string>
+    <string name="mobile_cast_code_smarttube" translatable="false">MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_code_smarttube_path">Settings → Remote control</string>
     <string name="mobile_cast_code_helper">Dashes and spaces are okay</string>
-    <string name="mobile_cast_code_smarttube_benefit">Tip: with SmartTube you get quality and subtitle controls on the TV.</string>
+    <string name="mobile_cast_code_smarttube_benefit">Tip: with MeeTube TV / SmartTube TV you get quality and subtitle controls on the TV.</string>
     <string name="mobile_cast_code_positive">Link</string>
     <string name="mobile_cast_code_invalid">The code should have 12 digits</string>
     <string name="mobile_cast_pairing">Linking with the TV…</string>
@@ -449,20 +449,20 @@
     <string name="mobile_cast_channel_desc">Controls for the TV casting session</string>
     <!-- Volume-key routing while a session is connected: lightweight toast indicator. -->
     <string name="mobile_cast_fallback_switching">Trying YouTube on the TV…</string>
-    <string name="mobile_cast_trying_smarttube">Trying SmartTube on the TV…</string>
+    <string name="mobile_cast_trying_smarttube">Trying MeeTube TV / SmartTube TV on the TV…</string>
     <string name="mobile_cast_trying_direct">Trying direct cast…</string>
     <string name="mobile_cast_trying_saved">Trying the saved TV app…</string>
     <string name="mobile_cast_checking_ad_free">Checking the TV…</string>
-    <string name="mobile_cast_smarttube_title">SmartTube</string>
-    <string name="mobile_cast_smarttube_subtitle">SmartTube · your phone can leave</string>
+    <string name="mobile_cast_smarttube_title">MeeTube TV / SmartTube TV</string>
+    <string name="mobile_cast_smarttube_subtitle">MeeTube TV / SmartTube TV · your phone can leave</string>
     <string name="mobile_cast_youtube_title">YouTube</string>
     <string name="mobile_cast_youtube_subtitle">YouTube · fallback</string>
     <string name="mobile_cast_unknown_title">Saved TV app</string>
     <string name="mobile_cast_unknown_subtitle">TV app not identified · choose ⋮ to set it</string>
     <string name="mobile_cast_identify_app">Which TV app is this code from?</string>
-    <string name="mobile_cast_onboarding_title">SmartTube on your TV?</string>
-    <string name="mobile_cast_onboarding_body">Pair it once and the videos you cast open in SmartTube.</string>
-    <string name="mobile_cast_pair_smarttube">Pair SmartTube</string>
+    <string name="mobile_cast_onboarding_title">MeeTube TV / SmartTube TV on your TV?</string>
+    <string name="mobile_cast_onboarding_body">Pair it once and the videos you cast open in MeeTube TV / SmartTube TV.</string>
+    <string name="mobile_cast_pair_smarttube">Pair MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_receiver_no_playback">The TV app did not start playback</string>
     <string name="mobile_cast_switching_tv_app">Opening YouTube controls on the TV…</string>
     <string name="mobile_cast_choose_method">Choose casting method</string>
@@ -478,7 +478,7 @@
     <string name="mobile_cast_subtitles_sent">Subtitle selection sent to the TV</string>
     <string name="mobile_cast_subtitles_failed">Couldn\'t change subtitles on this receiver</string>
     <string name="mobile_cast_switch_subtitles_title">Use the TV app for subtitles?</string>
-    <string name="mobile_cast_switch_subtitles_message">The TV app supports subtitles and controls quality with the TV remote. We try paired SmartTube first, then YouTube.</string>
+    <string name="mobile_cast_switch_subtitles_message">The TV app supports subtitles and controls quality with the TV remote. We try paired MeeTube TV / SmartTube TV first, then YouTube.</string>
     <string name="mobile_cast_switch_subtitles_positive">Switch</string>
     <string name="mobile_cast_tv_volume_label">TV volume</string>
 
