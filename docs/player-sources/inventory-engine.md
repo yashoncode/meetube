@@ -8,7 +8,7 @@ Written 2026-09-28 by reading the code, READ-ONLY. Nothing was built or run in t
 - `MediaServiceCore` (MSC) at `795091f7`, plus the **uncommitted WEB_EMBED work** in 9 main and 3 test files.
 - `[WT]` marks a value or behaviour that the uncommitted working tree changed. The HEAD value is given next to it.
 - `[inferred]` marks a conclusion drawn from code or logs that no test or measurement confirms.
-- Paths are relative to `MediaServiceCore/youtubeapi/src/main/java/com/liskovsoft/youtubeapi/` unless they start with `smarttubetv/`, `common/` or `~`. `VIS` = `videoinfo/V2/VideoInfoService.java`. `QB` = `common/helpers/QueryBuilder.kt`. `AC` = `common/helpers/AppClient.kt`. `MMA` = `smarttubetv/src/stmobile/java/com/newtube/mobile/MobileMainApplication.java`.
+- Paths are relative to `MediaServiceCore/youtubeapi/src/main/java/com/liskovsoft/youtubeapi/` unless they start with `mobile/`, `common/` or `~`. `VIS` = `videoinfo/V2/VideoInfoService.java`. `QB` = `common/helpers/QueryBuilder.kt`. `AC` = `common/helpers/AppClient.kt`. `MMA` = `mobile/src/stmobile/java/com/newtube/mobile/MobileMainApplication.java`.
 - Several source files are CRLF, and logcat dumps contain NUL bytes, so use `grep -a`.
 
 ---

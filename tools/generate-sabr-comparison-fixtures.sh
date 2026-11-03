@@ -3,7 +3,7 @@ set -euo pipefail
 # Optional benchmark input, not shipping assets. Synthetic 720p AVC/AAC, 60 seconds,
 # aligned two-second video fragments. -n refuses to overwrite existing output.
 cd "$(dirname "$0")/.."
-comparison_assets=smarttubetv/build/generated/sabrComparisonAssets/sabr-comparison
+comparison_assets=mobile/build/generated/sabrComparisonAssets/sabr-comparison
 mkdir -p "$comparison_assets"
 ffmpeg -nostdin -n -hide_banner -loglevel error \
   -f lavfi -i testsrc2=size=1280x720:rate=24 -t 60 -an \

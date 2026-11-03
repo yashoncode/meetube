@@ -9,7 +9,7 @@ The project has two parts:
 
 | Part | What it covers | Where it lives | Status |
 |:--|:--|:--|:--|
-| **App** | Everything built for the phone: the home feed, the player, comments, downloads, casting, sign-in, updates | `smarttubetv/src/stmobile/res/values-*/strings_mobile.xml` | English and Spanish only: **start here** |
+| **App** | Everything built for the phone: the home feed, the player, comments, downloads, casting, sign-in, updates | `mobile/src/stmobile/res/values-*/strings_mobile.xml` | English and Spanish only: **start here** |
 | **Shared settings and messages** | Settings screens, player menus and messages inherited from [SmartTube](https://github.com/yuliskov/SmartTube) | `common/src/main/res/values-*/strings.xml` | About 45 languages, some incomplete |
 
 Some shared strings belong to SmartTube's TV interface and never appear on a phone. You can skip
@@ -38,7 +38,7 @@ translate it. If you think a string is unclear or wrong in English,
 
 ## For developers
 
-- Add new user-visible text to `smarttubetv/src/stmobile/res/values/strings_mobile.xml` (English),
+- Add new user-visible text to `mobile/src/stmobile/res/values/strings_mobile.xml` (English),
   and add the Spanish version to `values-es/strings_mobile.xml`. Translators pick up new strings
   from `main`.
 - Anything the user should not translate (formats such as `0:00`, brand names, glyph paths) gets
@@ -46,7 +46,7 @@ translate it. If you think a string is unclear or wrong in English,
 - Use `<plurals>` and `getQuantityString` for counts, and one format string with numbered
   placeholders rather than joining pieces of a sentence in code.
 - To check a translation pull request locally, run
-  `./gradlew :smarttubetv:lintStmobileDebug -PtranslationLint`. This runs only the lint checks a
+  `./gradlew :mobile:lintStmobileDebug -PtranslationLint`. This runs only the lint checks a
   translation can break (placeholders, plurals, strings missing from the English file).
   `.github/workflows/translations.yml` runs the same check on every pull request that changes
   string resources.

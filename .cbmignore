@@ -4,5 +4,5 @@
 **/src/androidTest/resources/
 # Prebuilt native libraries and media.
 **/jniLibs/
-smarttubetv/src/debug/assets/
+mobile/src/debug/assets/
 .github/assets/

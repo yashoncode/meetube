@@ -104,8 +104,8 @@ cap), `-idle`, `-quiet`.
 
 **In the app (appbench).** Build and install the side-by-side benchmark build:
 ```bash
-ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileBenchmark -PsideBySide
-adb -s "$NETBENCH_SERIAL" install -r smarttubetv/build/outputs/apk/stmobile/benchmark/<apk>
+ANDROID_HOME=<sdk> ./gradlew :mobile:assembleStmobileBenchmark -PsideBySide
+adb -s "$NETBENCH_SERIAL" install -r mobile/build/outputs/apk/stmobile/benchmark/<apk>
 ```
 It is release code with `BENCHMARK=true`, installed as `io.github.aleixrodriala.arc.check` next to
 the normal app (the `.check` id needs release signing, `keystore.properties`; without it the build
