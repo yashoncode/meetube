@@ -45,6 +45,8 @@ public final class NavBloom extends Drawable {
     private static final float FLATTEN = 0.8f;
     /** The glow's heart, ~55% of its colour. */
     private static final int HEART_ALPHA = 0x8C;
+    /** The glow's strength at evenly spaced steps out from its heart. */
+    private static final float[] FALLOFF = {1f, 0.92f, 0.74f, 0.52f, 0.32f, 0.17f, 0.07f, 0.02f, 0f};
     private static int sMode = -1;
 
     private final BottomNavigationView mBar;
@@ -64,6 +66,7 @@ public final class NavBloom extends Drawable {
     private NavBloom(BottomNavigationView bar) {
         mBar = bar;
         mRadius = RADIUS_DP * bar.getResources().getDisplayMetrics().density;
+        mPaint.setDither(true); // the faint outer alphas band into rings without it
     }
 
     /** Puts the glow on {@code bar}; it follows the bar's selection and the setting from then on. */
@@ -241,9 +244,12 @@ public final class NavBloom extends Drawable {
         float r = mRadius * (0.75f + 0.25f * mSwell);
         int alpha = Math.round(HEART_ALPHA * mSwell);
         int rgb = mColor & 0x00FFFFFF;
-        mPaint.setShader(new RadialGradient(mCx, mCy, r,
-                new int[] {rgb | (alpha << 24), rgb | ((alpha * 2 / 5) << 24), rgb},
-                new float[] {0f, 0.45f, 1f}, Shader.TileMode.CLAMP));
+        // An eased (Gaussian-like) falloff: two straight ramps met in a ring the eye picks out.
+        int[] colors = new int[FALLOFF.length];
+        for (int i = 0; i < colors.length; i++) {
+            colors[i] = rgb | (Math.round(alpha * FALLOFF[i]) << 24);
+        }
+        mPaint.setShader(new RadialGradient(mCx, mCy, r, colors, null, Shader.TileMode.CLAMP));
         canvas.save();
         canvas.scale(1f, FLATTEN, mCx, mCy);
         canvas.drawCircle(mCx, mCy, r, mPaint);

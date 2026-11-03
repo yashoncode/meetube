@@ -42,6 +42,8 @@ public final class RgbGlow extends View {
     @Nullable private View mBandHost;
     private final int[] mGlowAt = new int[2];
     private final int[] mHostAt = new int[2];
+    /** How much of the page colour covers the status bar strip (the You page's bar turning solid). */
+    private float mBandCover;
 
     /** The status bar strip: the host's top padding, the lights placed where this view has them. */
     private final Drawable mBand = new Drawable() {
@@ -58,6 +60,13 @@ public final class RgbGlow extends View {
             canvas.translate(mGlowAt[0] - mHostAt[0], mGlowAt[1] - mHostAt[1]);
             drawLights(canvas);
             canvas.restore();
+            if (mBandCover > 0f) {
+                int page = androidx.core.content.ContextCompat.getColor(getContext(), com.liskovsoft.smartyoutubetv2.tv.R.color.mobile_color_background);
+                canvas.save();
+                canvas.clipRect(0, 0, host.getWidth(), host.getPaddingTop());
+                canvas.drawColor((page & 0xFFFFFF) | (Math.round(255 * mBandCover) << 24));
+                canvas.restore();
+            }
         }
 
         @Override
@@ -94,6 +103,14 @@ public final class RgbGlow extends View {
             mBand.invalidateSelf(); // every frame: also follows the page as it scrolls
         });
         mCycle.start();
+    }
+
+    /** 0..1: the page colour over the status bar strip, to match a bar below it turning solid. */
+    public void setBandCover(float cover) {
+        if (cover != mBandCover) {
+            mBandCover = cover;
+            mBand.invalidateSelf();
+        }
     }
 
     @Override
