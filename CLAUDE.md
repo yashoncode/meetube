@@ -3,7 +3,7 @@
 MeeTube is a **phone-only fork of SmartTube** ("SmartTube for phones"): package
 `io.yash.meetube` (Java sources still live under `com.newtube.*`), single product flavor `stmobile`,
 touch UI in
-`smarttubetv/src/stmobile/`, playback on **androidx.media3 1.10.1** (Cronet media
+`mobile/src/stmobile/`, playback on **androidx.media3 1.10.1** (Cronet media
 path). The TV flavors and the vendored ExoPlayer fork were deleted in the
 phone-only port; pre-port history lives at the `tv-legacy` tag and the
 `upstream/master` remote (that's where the original `LiveDashManifestParser`,
@@ -30,9 +30,9 @@ screen in `ui/settings/`: a new setting is a row there (design and per-row audit
 
 ## Build
 ```
-ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileDebug   # verification builds
-ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileRelease # distribution
-# -> smarttubetv/build/outputs/apk/stmobile/<type>/MeeTube_<ver>_<abi>.apk
+ANDROID_HOME=<sdk> ./gradlew :mobile:assembleStmobileDebug   # verification builds
+ANDROID_HOME=<sdk> ./gradlew :mobile:assembleStmobileRelease # distribution
+# -> mobile/build/outputs/apk/stmobile/<type>/MeeTube_<ver>_<abi>.apk
 ```
 On an x86_64 emulator add `-PemulatorAbi` (native Cronet/J2V8; without it every
 CPU-bound timing runs through ARM translation — see HANDOFF §29).

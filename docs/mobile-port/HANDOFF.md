@@ -17,7 +17,7 @@ Companion: `STATUS.md` (current state + backlog), root `CLAUDE.md` (hard rules).
 - `minifyEnabled` is off. Reflection over media3 internals (live parser, via
   `Helpers.setField/getField`) and pref plumbing depend on that.
 
-## 2. Mobile player stack (smarttubetv/src/stmobile/.../player/)
+## 2. Mobile player stack (mobile/src/stmobile/.../player/)
 
 | File | Role / non-obvious behavior |
 |---|---|
@@ -1246,7 +1246,7 @@ quarantined `2/2` by the SABR verdict, `TV_DOWNGRADED` by the 403), then every
 cold open restores `quarantined=2/2` from prefs and goes straight to `VISIONOS`
 — one `/player`, no 403, no reload, tap to first frame 3.2–3.8 s, 27 clean media
 loads on a sustained watch, zero bot checks. 139 focused youtubeapi + 218
-smarttubetv + 48 common tests pass; debug build green.
+mobile + 48 common tests pass; debug build green.
 
 ### Caveats
 
@@ -1696,7 +1696,7 @@ lines to grep and the bench harness.
 - Chains need `--fresh` (never reopen a title an earlier run opened): resumes made r3a's hops look
   +164 ms slower. Autoplay seeks 35-40 s before the end, as in real viewing. Never A/B `stall_ms`.
 
-### Switching videos (`smarttubetv/.../player`, common `playback/controllers`)
+### Switching videos (`mobile/.../player`, common `playback/controllers`)
 - **Keep codecs:** `Media3PlayerInitializer.keepCodecsAcrossOpens` sets ExoPlayer foreground mode for
   the player's lifetime (`player-codec keep-across-opens=y`; per open `decoder init ... initMs=` or
   `decoder reuse ... result=as-is`). `Media3PlayerController.onBackgroundAudio(boolean)` turns it off
@@ -1829,7 +1829,7 @@ lines to grep and the bench harness.
   list in one frame, animations off, pinned to the top; pull-to-refresh during it keeps the snapshot.
   `feed-swap section= warmed=k/n waitMs=`; `launch feed-fresh` logs data arrival, up to 350 ms
   earlier. Also `launch first-frame|token-warmup start|feed-snapshot|first-thumb source=`.
-- Profile: a release/benchmark task in `smarttubetv/build.gradle` runs profgen on the final dex into
+- Profile: a release/benchmark task in `mobile/build.gradle` runs profgen on the final dex into
   `assets/art-profile/baseline.prof` (35,207 methods). Cost: longer install, bigger odex.
 
 ### LTE media path (`MediaPathVerdicts`, `MediaPathProber`, `MediaPathRouting`)
@@ -2165,7 +2165,7 @@ Traps learned this round:
 - `adb` on the maintainer's WSL is Windows `adb.exe` (a zsh function and `/usr/local/bin/adb`). When
   WSL interop drops, every call fails with "exec format error" and `$(adb ... getprop)` reads as an
   empty value: use `~/.local/opt/platform-tools/adb` with `ADB_SERVER_SOCKET=tcp:127.0.0.1:5037`.
-- Robolectric tests in `smarttubetv` need `@ConscryptMode(ConscryptMode.Mode.OFF)` (no conscrypt JNI
+- Robolectric tests in `mobile` need `@ConscryptMode(ConscryptMode.Mode.OFF)` (no conscrypt JNI
   on the host) and `sdk = 28` like the others.
 - A phone's first open after an app update runs uncompiled code: exclude it from timing.
 - Kids channel memory (the next video of a made-for-kids channel asks TV_TIZEN first) is built on

@@ -78,7 +78,7 @@ coverage and performance comparisons are verified separately from this infrastru
 the existing dependency baseline profiles alone did not establish app-specific coverage.
 
 The Pixel's stable collection produced 456 app rules, including 305 methods. These were
-reviewed and incorporated at `smarttubetv/src/main/baseline-prof.txt`, the supported
+reviewed and incorporated at `mobile/src/main/baseline-prof.txt`, the supported
 [manual profile source location](https://developer.android.com/topic/performance/baselineprofiles/manually-create-measure).
 Coverage includes mobile application initialization, common preferences and the actual player
 initializer/cache warmup, but excludes the TV-namespaced base Application and sharedutils.

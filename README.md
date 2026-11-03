@@ -81,12 +81,12 @@ MeeTube is an independent project and is not endorsed by either upstream develop
 ## Build
 
 ```
-./gradlew :smarttubetv:assembleStmobileDebug     # debug, for testing
-./gradlew :smarttubetv:assembleStmobileRelease   # release, signed with keystore.properties if present
-# APKs: smarttubetv/build/outputs/renamed_apks/stmobile<Type>/MeeTube_<version>_<abi>.apk
+./gradlew :mobile:assembleStmobileDebug     # debug, for testing
+./gradlew :mobile:assembleStmobileRelease   # release, signed with keystore.properties if present
+# APKs: mobile/build/outputs/renamed_apks/stmobile<Type>/MeeTube_<version>_<abi>.apk
 ```
 
-Releases are made by pushing a `vX.Y.Z` tag: [release.yml](.github/workflows/release.yml) builds the signed APKs and publishes the GitHub release with its changelog. The glass is `smarttubetv/src/stmobile/java/com/newtube/mobile/ui/common/GlassView.java`; the README showcase comes from `python tools/render_showcase.py`. Clone with `--recurse-submodules`. The backend lives in the `MediaServiceCore` and `SharedModules` submodules (NewTube's forks). Add `-PemulatorAbi` to run on an x86_64 emulator. For upstream documentation, see [NewTube's README](https://github.com/aleixrodriala/newtube#readme) and [CLAUDE.md](CLAUDE.md).
+Releases are made by pushing a `vX.Y.Z` tag: [release.yml](.github/workflows/release.yml) builds the signed APKs and publishes the GitHub release with its changelog. The glass is `mobile/src/stmobile/java/com/newtube/mobile/ui/common/GlassView.java`; the README showcase comes from `python tools/render_showcase.py`. Clone with `--recurse-submodules`. The backend lives in the `MediaServiceCore` and `SharedModules` submodules (NewTube's forks). Add `-PemulatorAbi` to run on an x86_64 emulator. For upstream documentation, see [NewTube's README](https://github.com/aleixrodriala/newtube#readme) and [CLAUDE.md](CLAUDE.md).
 
 ## Support MeeTube
 

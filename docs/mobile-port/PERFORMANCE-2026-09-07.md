@@ -165,8 +165,8 @@ level stop/start metadata deadline and progress-queue integration tests remain
 a coverage gap; helper tests do not substitute for those lifecycle scenarios.
 
 ```sh
-./gradlew :smarttubetv:assembleStmobileDebug \
-  :smarttubetv:testStmobileDebugUnitTest \
+./gradlew :mobile:assembleStmobileDebug \
+  :mobile:testStmobileDebugUnitTest \
   --tests 'com.newtube.mobile.player.*' \
   --tests 'com.newtube.mobile.SessionWarmupGateTest' \
   --tests 'com.newtube.mobile.ui.playback.*' \

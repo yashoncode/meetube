@@ -15,7 +15,7 @@ to the repo root.
 SmartTube is a near-textbook **MVP** app: all logic, data, networking, and the
 ExoPlayer engine live in the **`common`** and **`MediaServiceCore`** modules with
 **zero `androidx.leanback` imports in the presenters**. The Leanback UI in
-`smarttubetv/` only *implements plain View interfaces*. So we reuse the
+`mobile/` only *implements plain View interfaces*. So we reuse the
 presenters + backend + player and write new touch Views.
 
 ---
@@ -33,7 +33,7 @@ presenters + backend + player and write new touch Views.
 | `common/.../app/views/ViewManager.java` | Navigation (Activity-per-screen, hand-rolled back-stack) | **rework** | New mobile router (see §5) |
 | `doubletapplayerview` | YouTube-style double-tap seek | **reuse-as-is** | Already touch-native; keep |
 | `slidableactivity`, `filepicker-lib`, `chatkit` | swipe-dismiss, file picker, chat list UI | **reuse-with-tweaks** | Generic Android, mostly reusable |
-| `smarttubetv/.../ui/**` | Leanback Activities/Fragments/Cards/overlay | **tv-coupled-rewrite** | **Rebuild as touch** |
+| `mobile/.../ui/**` | Leanback Activities/Fragments/Cards/overlay | **tv-coupled-rewrite** | **Rebuild as touch** |
 | `leanback-1.0.0`, `fragment-1.1.0` | vendored/patched Leanback & Fragment libs | **drop eventually** | Remove once no touch code imports them |
 | `leanbackassistant` | Android-TV home-screen channels | **drop on mobile** | Exclude from mobile flavor (its manifest forces `leanback` feature) |
 
@@ -104,7 +104,7 @@ multi-select, sub-screen, password-gated, chat, comments).
 `ViewManager` is Activity-per-screen with a hand-rolled back-stack
 (`register(viewClass, activityClass, parentActivityClass)`, `startView(Class)`,
 `startParentView`, `getTopView`, `getTopPresenter`). Wiring lives **only** in
-`smarttubetv/.../ui/main/MainApplication.setupViewManager()`.
+`mobile/.../ui/main/MainApplication.setupViewManager()`.
 
 Two options (decision pending — see ROADMAP):
 - **(A) Keep Activity-per-screen, repoint `setupViewManager()`** to new touch
@@ -132,7 +132,7 @@ Activity should preserve the `instanceof MotherActivity` contract used by
 - **The contract:** `PlaybackView extends PlayerManager (= PlayerEngine + PlayerUI)`.
   No ExoPlayer types leak through the interface.
 - **Template for the mobile player:**
-  `smarttubetv/.../ui/widgets/embedplayer/EmbedPlayerView.java` — it already
+  `mobile/.../ui/widgets/embedplayer/EmbedPlayerView.java` — it already
   implements `PlaybackView` on a plain `com.google.android.exoplayer2.ui.PlayerView`
   with **no Leanback** in its hierarchy. Build `MobilePlaybackFragment` the same way.
 - **Rebuild:** `PlaybackFragment` (~1650 lines), `VideoPlayerGlue` + the ~25
@@ -156,7 +156,7 @@ Activity should preserve the `instanceof MotherActivity` contract used by
 Device-code OAuth ("enter code at yt.be/activate", QR). **Reuse unchanged:**
 `YTSignInPresenter`, `SignInService`/`YouTubeSignInService`,
 `YouTubeAccountManager`, `AuthService` (V2), token storage. Only
-`smarttubetv/.../ui/signin/SignInActivity`+`SignInFragment` (Leanback GuidedStep)
+`mobile/.../ui/signin/SignInActivity`+`SignInFragment` (Leanback GuidedStep)
 get rebuilt.
 
 Mobile login screen recipe:
@@ -181,7 +181,7 @@ optionally back it with `EncryptedFile` without touching auth logic.
 
 - Versions centralized in `SharedModules/constants.gradle`: AGP 7.4.2, Gradle 7.5,
   Kotlin 1.8.10, JDK 17, compileSdk 34, minSdk 17.
-- **Mandatory manifest fix** (`smarttubetv/src/main/AndroidManifest.xml`): make
+- **Mandatory manifest fix** (`mobile/src/main/AndroidManifest.xml`): make
   `android.software.leanback` `required="false"` (or remove); make
   `android.hardware.touchscreen` `required="true"` (or remove). Remove
   `LEANBACK_LAUNCHER` category, keep `LAUNCHER`+`DEFAULT`. **Also** patch
@@ -189,10 +189,10 @@ optionally back it with `EncryptedFile` without touching auth logic.
   requirement; `common` depends on `:leanbackassistant`) or drop that dependency
   for the mobile flavor.
 - **New flavor** `stmobile` alongside `stbeta/ststable/stfdroid` in
-  `smarttubetv/build.gradle` (+ mirror in `common`, `MediaServiceCore/youtubeapi`).
+  `mobile/build.gradle` (+ mirror in `common`, `MediaServiceCore/youtubeapi`).
   Lets the TV build keep working untouched.
 - Build: `./gradlew assembleStmobileDebug` → APK under
-  `smarttubetv/build/outputs/apk/stmobile/debug/`.
+  `mobile/build/outputs/apk/stmobile/debug/`.
 - **Sandbox gap:** no Android SDK present (only Windows SDK via WSL). Wave 0 must
   install a Linux Android SDK + set `ANDROID_HOME`/`local.properties`.
 

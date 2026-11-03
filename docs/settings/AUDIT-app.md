@@ -1,7 +1,7 @@
 # MeeTube settings audit: General, User interface, Search, Language, Accounts, Backup, About
 
 Repo state: `main` @ 04869135 (2026-10-02). Research only, nothing edited. Labels are resolved from
-`smarttubetv/src/stmobile/res/values/strings_mobile.xml` > `smarttubetv/src/main/res/values/strings.xml` >
+`mobile/src/stmobile/res/values/strings_mobile.xml` > `mobile/src/main/res/values/strings.xml` >
 `common/src/main/res/values/strings.xml` (the phone flavor's overrides are marked *[stmobile]*).
 
 **Verdicts.** LIVE = a phone-executed path reads the value. DEAD = nothing the phone runs reads it.
@@ -25,9 +25,9 @@ and exit-shortcut rows).
 | ADU | common/.../common/utils/AppDialogUtil.java |
 | VSC | common/.../models/playback/controllers/VideoStateController.java |
 | MA | common/.../common/misc/MotherActivity.java |
-| MBA | smarttubetv/src/stmobile/java/com/newtube/mobile/ui/browse/MobileBrowseActivity.java |
-| MPA | smarttubetv/src/stmobile/java/com/newtube/mobile/ui/playback/MobilePlaybackActivity.java |
-| MMA | smarttubetv/src/stmobile/java/com/newtube/mobile/MobileMainApplication.java |
+| MBA | mobile/src/stmobile/java/com/newtube/mobile/ui/browse/MobileBrowseActivity.java |
+| MPA | mobile/src/stmobile/java/com/newtube/mobile/ui/playback/MobilePlaybackActivity.java |
+| MMA | mobile/src/stmobile/java/com/newtube/mobile/MobileMainApplication.java |
 | MGO | MediaServiceCore/youtubeapi/src/main/java/com/liskovsoft/youtubeapi/common/models/impl/mediagroup/MediaGroupOptions.kt |
 | BMG | MediaServiceCore/youtubeapi/.../common/models/impl/mediagroup/BaseMediaGroup.kt |
 
@@ -210,7 +210,7 @@ Settings to Home before the AlertDialog appears.
 | Misc: **Auto load Channels section content** | `MainUIData#isUploadsAutoLoadEnabled` / `#setUploadsAutoLoadEnabled` | **on** | `BP.onVideoItemSelected` BP:557, `BP.onVideoItemClicked` BP:575 (only while Channels is multi-grid, i.e. Old look off) | PARTIAL | — | ON: tapping a channel opens its uploads screen, but `onVideoItemSelected` (MBA:1367) first loads that channel's uploads *into the Channels grid*, because the phone ignores the second column. That is a suspected bug (back on Channels you would see uploads instead of the channel list); verify on a device. OFF: the tap replaces the channel list with that channel's uploads in place. |
 
 **UIScaleSettingsPresenter**: unreachable. Nothing references it anywhere in `common/src/main` or
-`smarttubetv/src` (grep). Its extra "Video grid scale" (`MainUIData#getVideoGridScale`) is read only by
+`mobile/src` (grep). Its extra "Video grid scale" (`MainUIData#getVideoGridScale`) is read only by
 `MediaServiceManager`:493.
 
 ---

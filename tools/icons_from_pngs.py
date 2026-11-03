@@ -13,7 +13,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RES = ROOT / "smarttubetv" / "src" / "stmobile" / "res"
+RES = ROOT / "mobile" / "src" / "stmobile" / "res"
 LAYER = 864  # 108 units at 8 px each: sharp on any launcher scale
 HEART, TILE = 0.53, 0.574  # longer side / layer: inside the launcher masks, as the 3.2.2 icons
 # Source file -> resource name, legacy mipmaps, fill (AppIcon's slot in the comment).

@@ -15,7 +15,7 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     testOptions.unitTests.includeAndroidResources = true
-    sourceSets.test.resources.srcDir '../smarttubetv/src/debug/assets/sabr'
+    sourceSets.test.resources.srcDir '../mobile/src/debug/assets/sabr'
     sourceSets.test.java.srcDir 'src/testSupport/java'
     lint { disable 'UnsafeOptInUsageError' }
 }

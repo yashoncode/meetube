@@ -37,10 +37,10 @@ build/
 # my other stuff
 /smartyoutubetv2/release
 /smarttube/release
-/smarttubetv/release
+/mobile/release
 # gradle 6 fix
 /smarttube/output
-/smarttubetv/output
+/mobile/output
 /smarttubemobile/release
 # google-services.json
 *.hprof
@@ -81,3 +81,6 @@ dist/
 
 # Python bytecode from tools/*.py
 __pycache__/
+
+# MeeTube TV: its own git repo (a SmartTube clone), never part of the phone app
+/meetubetv/

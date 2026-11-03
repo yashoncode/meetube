@@ -16,7 +16,7 @@ YouTube or googlevideo traffic; the device facts below come from logs already on
 - Morphe `fccde737f` (the scratchpad clone used by `inventory-external.md`).
 
 **Paths.** `app/` = `MediaServiceCore/youtubeapi/src/main/java/com/liskovsoft/youtubeapi/app/`.
-`VIS` = `videoinfo/V2/VideoInfoService.java`. `MMA` = `smarttubetv/src/stmobile/java/com/newtube/mobile/MobileMainApplication.java`.
+`VIS` = `videoinfo/V2/VideoInfoService.java`. `MMA` = `mobile/src/stmobile/java/com/newtube/mobile/MobileMainApplication.java`.
 Line numbers are for `16e67076` (fork) or `476357b4` (upstream).
 
 **Evidence tags.**

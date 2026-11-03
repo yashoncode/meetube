@@ -4,7 +4,7 @@ apply plugin: 'com.android.test'
 android {
     namespace = 'com.newtube.benchmark'
     compileSdk = project.ext.compileSdkVersion
-    targetProjectPath = ':smarttubetv'
+    targetProjectPath = ':mobile'
     experimentalProperties['android.experimental.self-instrumenting'] = true
 
     defaultConfig {

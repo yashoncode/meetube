@@ -361,7 +361,7 @@ WhatsApp (no input went in); one text dump of the chat list was read (not saved)
 and deleted. Input now needs MeeTube focused and no heads-up or shade on screen; BACK is never sent
 at our root, HOME never pressed; captures showing other apps were deleted.
 
-**Tests:** 620 smarttubetv and 229 common unit tests pass on the final tree (0 failures, 1
+**Tests:** 620 mobile and 229 common unit tests pass on the final tree (0 failures, 1
 opt-in benchmark skipped); focused youtubeapi suites pass (the full suite keeps its pre-existing
 live-account failures); release and debug assemble. The integrated UX build: 651 + 234.
 
@@ -789,7 +789,7 @@ rounded background reaches the edge while the last row still clears the gesture
 bar, and the sheet's max-height cap is now a fraction of the *usable* height
 rather than of the raw display. Re-measured after: dim starts at y=0, sheet
 surface runs to y=2423. Full-screen settings unchanged (verified), portrait
-player sheet verified, 308 smarttubetv + 62 common unit tests pass.
+player sheet verified, 308 mobile + 62 common unit tests pass.
 
 **Left open, measured not fixed.** The Material `BottomSheetDialog`s hosted by
 the activities (player gear sheet, comments, live chat, cast picker, accounts -
@@ -898,8 +898,8 @@ HANDOFF §27.
 
 Build a phone APK:
 ```
-ANDROID_HOME=<sdk> ./gradlew :smarttubetv:assembleStmobileDebug
-# -> smarttubetv/build/outputs/renamed_apks/stmobileDebug/MeeTube_<ver>_universal.apk
+ANDROID_HOME=<sdk> ./gradlew :mobile:assembleStmobileDebug
+# -> mobile/build/outputs/renamed_apks/stmobileDebug/MeeTube_<ver>_universal.apk
 ```
 
 ## Startup bandwidth, real preload, and release profiling (2026-09-08)
@@ -977,7 +977,7 @@ challenge rotates the anonymous identity (reversing the earlier
 session-preservation removal, at the owner's request; the account credential is
 untouched). Cold open on the Pixel goes from 5.15–5.48 s to first frame to
 3.2–3.8 s, one `/player` instead of three, zero 403s. 139 focused youtubeapi +
-218 smarttubetv + 48 common tests pass. Details, the full client/timestamp
+218 mobile + 48 common tests pass. Details, the full client/timestamp
 matrix and the caveats: [`HANDOFF.md`](HANDOFF.md) section 26.
 
 ## TTFF and playback stability take priority (2026-09-07)
@@ -1930,7 +1930,7 @@ Spanish phone. **130 of the 177 `strings_mobile` strings had no `values-es` at
 all** - the flavour's translations had only ever been added string-by-string as
 features landed. Now translated in full, plus every phone-reachable string the
 other two sources were missing:
-- `smarttubetv/src/stmobile/res/values-es/strings_mobile.xml`: +132. The 7 left
+- `mobile/src/stmobile/res/values-es/strings_mobile.xml`: +132. The 7 left
   are locale-neutral on purpose (brand names, `0:00`, `%1$d / %2$d`, `LIVE`).
 - `common/.../values-es/strings.xml`: +36, everything upstream had added since
   its last es sync. Phone-visible ones: the comments sheet, player errors,
@@ -2303,7 +2303,7 @@ open:
   16 KB-only devices are coming; needs updated .so dependencies or repack.
 - Unstripped native libs (needs NDK 21); `newtube.json` update manifest for
   the in-app updater.
-- 77 of the 78 strings in `smarttubetv/src/main/res/values/strings.xml` are TV
+- 77 of the 78 strings in `mobile/src/main/res/values/strings.xml` are TV
   leftovers nothing references any more (only `search_hint` survives). Dead
   weight, and they make the translation delta look bigger than it is.
 - Parked (documented in HANDOFF): googlevideo range-query leaf wrapper, SABR,

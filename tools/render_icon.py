@@ -7,7 +7,7 @@ adaptive-icon grid. Usage: python tools/render_icon.py
 import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RES = ROOT / "smarttubetv" / "src" / "stmobile" / "res"
+RES = ROOT / "mobile" / "src" / "stmobile" / "res"
 
 # Material "favorite", absolute segments on the 24 grid.
 HEART_START = (12, 21.35)
