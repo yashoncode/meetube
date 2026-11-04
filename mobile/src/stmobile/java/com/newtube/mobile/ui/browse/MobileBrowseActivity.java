@@ -1345,6 +1345,14 @@ public class MobileBrowseActivity extends MobileActivity
             if (mSuppressNavCallback) {
                 return;
             }
+            // MEETUBE(issue #179): a tab lit over another page (a rebuilt bar lights its first tab,
+            // Home, over History opened from You) is a switch: as a re-tap it refreshed History.
+            boolean onItsPage = item.getItemId() == YOU_ITEM_ID ? mYouShowing
+                    : !mYouShowing && item.getItemId() == toMenuItemId(mCurrentSectionId);
+            if (!onItsPage) {
+                onNavItemChosen(item.getItemId());
+                return;
+            }
             if (item.getItemId() != YOU_ITEM_ID && mContentGrid != null
                     && mContentGrid.getVisibility() == View.VISIBLE && mContentGrid.canScrollVertically(-1)) {
                 smoothScrollGridToTop();
@@ -3167,6 +3175,8 @@ public class MobileBrowseActivity extends MobileActivity
             itemId = YOU_ITEM_ID;
         } else if (mCurrentSectionId >= 0 && menu.findItem(toMenuItemId(mCurrentSectionId)) != null) {
             itemId = toMenuItemId(mCurrentSectionId);
+        } else if (mSectionFromYou) {
+            itemId = YOU_ITEM_ID; // MEETUBE(issue #179): a You sub-screen (History...); clear()/add() lit the first tab
         } else {
             return;
         }
