@@ -79,6 +79,9 @@ final class Tiles {
     static final int FX_TYPING = 29;
     static final int FX_LABELS = 30;
     static final int FX_TOP_BAR = 31;
+    // The player's buttons over a video (FX_FROST: frosted discs).
+    static final int BUTTONS_SEE_THROUGH = 32;
+    static final int BUTTONS_MINIMAL = 33;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -753,8 +756,10 @@ final class Tiles {
                     mPaint.setStyle(Paint.Style.FILL);
                     break;
                 }
+                case BUTTONS_SEE_THROUGH:
+                case BUTTONS_MINIMAL:
                 case FX_FROST: {
-                    // A dark video, its buttons frosted over it.
+                    // A dark video, its buttons over it: on tinted discs, frosted ones, or bare.
                     float corner = h * 0.14f;
                     mPath.reset();
                     mPath.addRoundRect(b, corner, corner, Path.Direction.CW);
@@ -778,14 +783,22 @@ final class Tiles {
                     for (int i = -1; i <= 1; i++) {
                         float r = i == 0 ? h * 0.22f : h * 0.16f;
                         float x = cx + gap * i;
-                        mPaint.setColor(0x59FFFFFF);
+                        int direction = i < 0 ? -1 : 1;
+                        if (mKind == BUTTONS_MINIMAL) {
+                            // the bare icon, a size up, on its soft shadow
+                            triangle(canvas, x, cy + h * 0.015f, r * 0.68f, direction, 0x66000000);
+                            triangle(canvas, x, cy, r * 0.6f, direction, 0xFFFFFFFF);
+                            continue;
+                        }
+                        boolean frosted = mKind == FX_FROST;
+                        mPaint.setColor(frosted ? 0x59FFFFFF : 0x73000000);
                         canvas.drawCircle(x, cy, r, mPaint);
                         mPaint.setStyle(Paint.Style.STROKE);
                         mPaint.setStrokeWidth(Math.max(1f, h * 0.025f));
-                        mPaint.setColor(0x99FFFFFF);
+                        mPaint.setColor(frosted ? 0x99FFFFFF : 0x40FFFFFF);
                         canvas.drawCircle(x, cy, r, mPaint);
                         mPaint.setStyle(Paint.Style.FILL);
-                        triangle(canvas, x, cy, r * 0.45f, i < 0 ? -1 : 1, 0xFFFFFFFF);
+                        triangle(canvas, x, cy, r * 0.45f, direction, 0xFFFFFFFF);
                     }
                     break;
                 }

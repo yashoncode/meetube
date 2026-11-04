@@ -84,6 +84,37 @@ public final class GlassDrawable extends Drawable {
         apply(host, source, insetPx, 0);
     }
 
+    /**
+     * MEETUBE(minimal buttons): a player, Shorts or mini player control - its disc as {@link #apply},
+     * or with Player buttons on Minimal no disc: a round ripple under a press, and over the video
+     * ({@code shadow}) a soft dark halo around the icon so it reads on a bright frame, YouTube's look.
+     * The halo is a RenderEffect: API 31+, the bare icon below.
+     */
+    public static void applyButton(@NonNull View host, @Nullable GlassSource source, int insetPx, boolean shadow) {
+        if (Glass.playerButtons(host.getContext()) != Glass.BUTTONS_MINIMAL) {
+            apply(host, source, insetPx);
+            return;
+        }
+        GradientDrawable mask = new GradientDrawable();
+        mask.setCornerRadius(Float.MAX_VALUE / 2);
+        mask.setColor(0xFFFFFFFF);
+        int start = host.getPaddingStart();
+        int top = host.getPaddingTop();
+        int end = host.getPaddingEnd();
+        int bottom = host.getPaddingBottom();
+        host.setBackground(new RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), null, new InsetDrawable(mask, insetPx)));
+        host.setPaddingRelative(start, top, end, bottom);
+        if (shadow && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            float blur = 3 * host.getResources().getDisplayMetrics().density;
+            RenderEffect halo = RenderEffect.createBlurEffect(blur, blur, RenderEffect.createColorFilterEffect(
+                    new android.graphics.PorterDuffColorFilter(0x99000000, android.graphics.PorterDuff.Mode.SRC_IN)),
+                    Shader.TileMode.DECAL);
+            // the icon (an offset of nothing: the view's own content) over its halo
+            host.setRenderEffect(RenderEffect.createBlendModeEffect(halo, RenderEffect.createOffsetEffect(0f, 0f),
+                    android.graphics.BlendMode.SRC_OVER));
+        }
+    }
+
     /** As above, under {@code tint} (0: the buttons' own) - the player's message pills, milkier. */
     public static void apply(@NonNull View host, @Nullable GlassSource source, int insetPx, int tint) {
         GradientDrawable mask = new GradientDrawable();
