@@ -38,6 +38,7 @@ import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
+import com.liskovsoft.mediaserviceinterfaces.data.MediaItem;
 import com.liskovsoft.mediaserviceinterfaces.oauth.Account;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
@@ -216,6 +217,11 @@ public class MobileBrowseActivity extends MobileActivity
     @Nullable private io.reactivex.rxjava3.disposables.Disposable mYouHistoryAction;
     private VideoCardAdapter mYouHistoryAdapter;
     @Nullable private List<Video> mSubsChannels;
+    // MEETUBE(issue #87): Video holds its group weakly; keep the strip's menu context alive.
+    @Nullable private VideoGroup mSubsChannelsGroup;
+    @Nullable private VideoGroup mSubsMenuGroup;
+    private int mSubsMenuRequest;
+    @Nullable private io.reactivex.rxjava3.disposables.Disposable mSubsMenuAction;
     @Nullable private io.reactivex.rxjava3.disposables.Disposable mSubsChannelsAction;
     private BottomNavigationView mBottomNav;
     // "You" tab panel (account header + grouped section rows + Settings row; replaces the drawer).
@@ -1106,6 +1112,7 @@ public class MobileBrowseActivity extends MobileActivity
                 SubsChannelsSheet.show(this, mSubsChannels);
             }
         });
+        mStrip.setOnAvatarLongPressed(this::onStripLongPressed); // MEETUBE(issue #87): the channel's menu.
         mChipRow = findViewById(R.id.mobile_chip_row);
         mChipRow.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
         mChipRow.setItemAnimator(null);
@@ -2717,6 +2724,11 @@ public class MobileBrowseActivity extends MobileActivity
             mSectionFromYou = false;
             onSectionChosen((int) item.id);
         } else if (item.data instanceof Video) {
+            // MEETUBE(issue #87): tapping the picked channel widens to All, like Back.
+            if (mSubsChannel != null && item.id == mStrip.selected()) {
+                onStripPicked(new FeedStrip.Item(-1, getString(R.string.mobile_feed_all), null, null));
+                return;
+            }
             mStrip.select(item.id);
             loadSubsChannel((Video) item.data);
         } else {
@@ -2730,6 +2742,58 @@ public class MobileBrowseActivity extends MobileActivity
         }
     }
 
+    // MEETUBE(issue #87): TV subscription tabs carry only a reload token; resolve their channel for the menu.
+    private void onStripLongPressed(FeedStrip.Item item) {
+        if (!(item.data instanceof Video) || mPresenter == null) {
+            return;
+        }
+        Video channel = (Video) item.data;
+        int request = ++mSubsMenuRequest;
+        com.liskovsoft.sharedutils.rx.OnResult<String> openMenu = channelId -> runOnUiThread(() -> {
+            if (channelId != null && request == mSubsMenuRequest && !isDestroyed()
+                    && mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
+                channel.channelId = channelId;
+                // MEETUBE(issue #87): menu context for this channel; All's sheet keeps the other tabs' context.
+                mSubsMenuGroup = VideoGroup.from(channel);
+                mSubsMenuGroup.setType(MediaGroup.TYPE_SUBSCRIPTIONS);
+                channel.setGroup(mSubsMenuGroup);
+                onVideoLongClicked(channel);
+            }
+        });
+        com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsMenuAction);
+        if (channel.channelId != null) {
+            openMenu.onResult(channel.channelId);
+            return;
+        }
+        mSubsMenuAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
+                com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService()
+                        .getGroupObserve(channel.mediaItem),
+                group -> {
+                    if (group == null) {
+                        return;
+                    }
+                    if (group.getChannelId() != null) {
+                        openMenu.onResult(group.getChannelId());
+                        return;
+                    }
+                    List<MediaItem> videos = group.getMediaItems();
+                    // only a video by this channel ("Name • @handle"), not a collab's: another channel's id
+                    // would aim Unsubscribe at it
+                    String author = channel.getAuthor();
+                    MediaItem first = author == null ? null : Helpers.findFirst(videos,
+                            video -> author.equals(video.getAuthor()) || Helpers.startsWith(video.getAuthor(), author + " •"));
+                    if (first != null) {
+                        if (first.getChannelId() != null) {
+                            openMenu.onResult(first.getChannelId());
+                        } else {
+                            MediaServiceManager.instance().loadMetadata(first,
+                                    metadata -> openMenu.onResult(metadata.getChannelId()));
+                        }
+                    }
+                },
+                error -> android.util.Log.w("MobileBrowse", "Channel menu: " + error));
+    }
+
     private void loadSubsChannels() {
         if (com.liskovsoft.sharedutils.rx.RxHelper.isAnyActionRunning(mSubsChannelsAction)) {
             return;
@@ -2738,9 +2802,12 @@ public class MobileBrowseActivity extends MobileActivity
                 com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService()
                         .getSubscribedChannelsObserve(),
                 group -> runOnUiThread(() -> {
-                    List<Video> channels = VideoGroup.from(group).getVideos();
+                    mSubsChannelsGroup = VideoGroup.from(group);
+                    List<Video> channels = mSubsChannelsGroup.getVideos();
                     mSubsChannels = channels != null ? new ArrayList<>(channels) : new ArrayList<>();
                     for (Video channel : mSubsChannels) { // MEETUBE(card avatars): the feed cards' avatars
+                        channel.itemType = MediaItem.TYPE_CHANNEL; // MEETUBE(issue #87): these are subscribed channels.
+                        channel.isSubscribed = true;
                         com.newtube.mobile.ui.common.ChannelAvatars.put(this, channel.channelId,
                                 Helpers.firstNonNull(channel.getAuthor(), channel.getTitle()), channel.getCardImageUrl());
                     }
@@ -3606,7 +3673,7 @@ public class MobileBrowseActivity extends MobileActivity
         mNavHandler.removeCallbacks(mNavRebuild);
         mNavHandler.removeCallbacks(mRunwayCheck);
         com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction, mSubsChannelsAction, mYouHistoryAction,
-                mHomeChipsAction);
+                mHomeChipsAction, mSubsMenuAction);
         cancelFeedSwap(); // NEWTUBE(feed-swap)
         mContentGrid.removeCallbacks(mRestoreItemAnimator);
         MiniPlayerBridge.unregisterMiniHost(this);
@@ -3884,6 +3951,19 @@ public class MobileBrowseActivity extends MobileActivity
                     break;
                 case VideoGroup.ACTION_REMOVE_AUTHOR:
                     removeByAuthor(group.getVideos());
+                    // MEETUBE(issue #87): an unsubscribed strip channel leaves the strip as well as the feed.
+                    if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS && mSubsChannels != null) {
+                        boolean picked = false;
+                        for (Video video : group.getVideos()) {
+                            mSubsChannels.removeIf(channel -> Helpers.equals(channel.getAuthor(), video.getAuthor()));
+                            picked |= mSubsChannel != null && Helpers.equals(mSubsChannel.getAuthor(), video.getAuthor());
+                        }
+                        updateStrip();
+                        if (picked) {
+                            onStripPicked(new FeedStrip.Item(-1, getString(R.string.mobile_feed_all), null, null));
+                            return;
+                        }
+                    }
                     break;
                 case VideoGroup.ACTION_APPEND:
                 default:
@@ -4249,7 +4329,9 @@ public class MobileBrowseActivity extends MobileActivity
         for (Video video : videos) {
             String author = video.getAuthor();
             for (int i = mCurrentVideos.size() - 1; i >= 0; i--) {
-                if (Helpers.equals(mCurrentVideos.get(i).getAuthor(), author)) {
+                String cardAuthor = mCurrentVideos.get(i).getAuthor();
+                // MEETUBE(issue #87): a strip channel is "Name", its feed cards "Name • @handle"
+                if (Helpers.equals(cardAuthor, author) || author != null && Helpers.startsWith(cardAuthor, author + " •")) {
                     mCurrentVideos.remove(i);
                 }
             }

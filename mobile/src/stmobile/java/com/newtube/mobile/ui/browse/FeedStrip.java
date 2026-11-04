@@ -62,6 +62,8 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
     private long mSelected;
     /** MEETUBE(all subscriptions): long-press on the avatars' "All". */
     @Nullable private Runnable mOnAllLongPressed;
+    // MEETUBE(issue #87): a channel avatar opens its own menu.
+    @Nullable private Listener mOnAvatarLongPressed;
 
     FeedStrip(Listener listener, @Nullable GlassSource glass) {
         mListener = listener;
@@ -102,6 +104,10 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
 
     void setOnAllLongPressed(@Nullable Runnable onAllLongPressed) {
         mOnAllLongPressed = onAllLongPressed;
+    }
+
+    void setOnAvatarLongPressed(@Nullable Listener onAvatarLongPressed) {
+        mOnAvatarLongPressed = onAvatarLongPressed;
     }
 
     void select(long selected) {
@@ -292,16 +298,22 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                 label.setTextColor(selected ? 0xFF000000 : 0xFFFFFFFF);
             }
             holder.itemView.setOnClickListener(v -> {
-                if (item.id != mSelected) {
+                // MEETUBE(issue #87): a picked avatar can widen the feed to All.
+                if (item.id != mSelected || (mMode == MODE_AVATARS && item.data != null)) {
                     mListener.onPicked(item);
                 }
             });
             boolean allAvatar = mMode == MODE_AVATARS && item.data == null && mOnAllLongPressed != null;
-            holder.itemView.setOnLongClickListener(allAvatar ? v -> {
-                mOnAllLongPressed.run();
+            boolean channelAvatar = mMode == MODE_AVATARS && item.data != null && mOnAvatarLongPressed != null;
+            holder.itemView.setOnLongClickListener(allAvatar || channelAvatar ? v -> {
+                if (allAvatar) {
+                    mOnAllLongPressed.run();
+                } else {
+                    mOnAvatarLongPressed.onPicked(item);
+                }
                 return true;
             } : null);
-            holder.itemView.setLongClickable(allAvatar);
+            holder.itemView.setLongClickable(allAvatar || channelAvatar);
         }
     }
 }
