@@ -12,20 +12,20 @@ git clone --recurse-submodules https://github.com/yashoncode/meetube.git
 
 ```bash
 # Debug APK (use this for testing on a device)
-./gradlew :smarttubetv:assembleStmobileDebug
+./gradlew :mobile:assembleStmobileDebug
 
 # Signed distribution build (needs the private keystore.properties)
-./gradlew :smarttubetv:assembleStmobileRelease
+./gradlew :mobile:assembleStmobileRelease
 
 # Output, per ABI plus universal:
-#   smarttubetv/build/outputs/renamed_apks/stmobileDebug/
-#   smarttubetv/build/outputs/renamed_apks/stmobileRelease/
+#   mobile/build/outputs/renamed_apks/stmobileDebug/
+#   mobile/build/outputs/renamed_apks/stmobileRelease/
 ```
 
 Install on a connected device, always naming the device:
 
 ```bash
-adb -s DEVICE_SERIAL install -r smarttubetv/build/outputs/renamed_apks/stmobileDebug/MeeTube_<version>_universal.apk
+adb -s DEVICE_SERIAL install -r mobile/build/outputs/renamed_apks/stmobileDebug/MeeTube_<version>_universal.apk
 ```
 
 On an x86_64 emulator, add `-PemulatorAbi` so Cronet and J2V8 run natively.
@@ -36,7 +36,7 @@ around a signature mismatch: you would lose its data.
 
 ## Where things are
 
-- `smarttubetv/src/stmobile/`: the phone interface (Android Views + Material Components)
+- `mobile/src/stmobile/`: the phone interface (Android Views + Material Components)
   and the Media3 player.
 - `common/`: SmartTube's presenters, settings and account plumbing, shared with the phone UI.
 - `docs/mobile-port/STATUS.md` and `HANDOFF.md`: current state and the deep context behind

@@ -14,6 +14,7 @@
 <p align="center"><img src=".github/assets/meetube/collage.gif" width="100%" alt="MeeTube on a phone: the liquid glass tab bar switching tabs, the player with comments, synced lyrics, search and Shorts"></p>
 
 <p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
+<p align="center"><a href="#meetube-tv"><b>📺 On a TV? Get MeeTube TV</b></a></p>
 
 > [!IMPORTANT]
 > MeeTube is not affiliated with, endorsed by, or connected to YouTube or Google in any way. Use it at your own discretion.
@@ -21,6 +22,9 @@
 ## Features
 
 <table>
+<tr>
+<td colspan="2" valign="top">🎚️ <b>YouTube Equalizer</b><br>Tune how YouTube sounds with your phone's presets or your own bands, live as it plays. Hear the original audio instead of YouTube's compressed track, and turn the volume up to 200%.</td>
+</tr>
 <tr>
 <td width="50%" valign="top">🚫 <b>No ads, no sponsors</b><br>Ads are gone, and SponsorBlock skips sponsors, intros and "like and subscribe" reminders.</td>
 <td width="50%" valign="top">💎 <b>Liquid glass</b><br>Frosted, lens-bending glass on the tab bar, the player and Shorts, lit by GlowFlow: a glow that follows your tab, your progress and live channels.</td>
@@ -46,7 +50,7 @@
 <td valign="top">🔄 <b>Always something new</b><br>Pull Home to refresh and get videos you haven't seen yet.</td>
 </tr>
 <tr>
-<td valign="top">🌏 <b>Speaks your language</b><br>English, Español, Română, Русский, 简体中文 and 繁體中文. Channel pages, view counts and dates follow your language too. <a href="TRANSLATING.md">Help translate</a>.</td>
+<td valign="top">🌏 <b>Speaks your language</b><br>English, Español, Română, Русский, 简体中文, 繁體中文 and العربية. Channel pages, view counts and dates follow your language too. <a href="TRANSLATING.md">Help translate</a>.</td>
 <td valign="top">🔐 <b>Your account, your subscriptions</b><br>Sign in with a code, or use it without an account. Cast to your TV.</td>
 </tr>
 </table>
@@ -67,6 +71,27 @@ Android 7.0 or later.
 
 Every release is built and signed in public by [GitHub Actions](https://github.com/yashoncode/meetube/actions/workflows/release.yml) from this repository's source, so you can see exactly how each APK was made.
 
+## MeeTube TV
+
+MeeTube's glass design on Android TV and Google TV. MeeTube TV is [SmartTube](https://github.com/yuliskov/SmartTube) with a new look, so everything SmartTube does works the same, and it installs as its own app next to SmartTube.
+
+> [!NOTE]
+> MeeTube TV is in beta. Screenshots are coming soon.
+
+- **Glass Home.** A frosted sidebar with a focus pill that glides between MeeTube's icons.
+- **Glass player.** One frosted panel at the bottom: a seek bar with a glowing knob, and every button in a single row.
+- **Search that glows.** The screen's edges light up when Search opens, and your words glow as you type.
+
+Get it from [MeeTube TV 0.0.1 Beta](https://github.com/yashoncode/meetube/releases/tag/tv-v0.0.1-beta) on Releases:
+
+| Your TV | File |
+|:--|:--|
+| Most TVs and boxes | [MeeTubeTV_0.0.1_armeabi-v7a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_armeabi-v7a.apk) |
+| Newer 64-bit boxes (Nvidia Shield, Google TV Streamer) | [MeeTubeTV_0.0.1_arm64-v8a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_arm64-v8a.apk) |
+| Not sure | [MeeTubeTV_0.0.1_universal.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_universal.apk) |
+
+Android 4.2 or later. The code is on the [tv branch](https://github.com/yashoncode/meetube/tree/tv), with its own [changelog](https://github.com/yashoncode/meetube/blob/tv/CHANGELOG.md). Found a bug? [Open an issue](https://github.com/yashoncode/meetube/issues/new/choose) and pick MeeTube TV.
+
 ## MeeTube and NewTube
 
 MeeTube is a heavily tweaked fork of [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala), and NewTube is built on [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov). MeeTube follows NewTube's playback and network fixes, and adds its own design and features on top: lyrics, liquid glass, the Shorts player, channel photos, search chips and the rest of the list above. Beyond what you see:
@@ -81,12 +106,12 @@ MeeTube is an independent project and is not endorsed by either upstream develop
 ## Build
 
 ```
-./gradlew :smarttubetv:assembleStmobileDebug     # debug, for testing
-./gradlew :smarttubetv:assembleStmobileRelease   # release, signed with keystore.properties if present
-# APKs: smarttubetv/build/outputs/renamed_apks/stmobile<Type>/MeeTube_<version>_<abi>.apk
+./gradlew :mobile:assembleStmobileDebug     # debug, for testing
+./gradlew :mobile:assembleStmobileRelease   # release, signed with keystore.properties if present
+# APKs: mobile/build/outputs/renamed_apks/stmobile<Type>/MeeTube_<version>_<abi>.apk
 ```
 
-Releases are made by pushing a `vX.Y.Z` tag: [release.yml](.github/workflows/release.yml) builds the signed APKs and publishes the GitHub release with its changelog. The glass is `smarttubetv/src/stmobile/java/com/newtube/mobile/ui/common/GlassView.java`; the README showcase comes from `python tools/render_showcase.py`. Clone with `--recurse-submodules`. The backend lives in the `MediaServiceCore` and `SharedModules` submodules (NewTube's forks). Add `-PemulatorAbi` to run on an x86_64 emulator. For upstream documentation, see [NewTube's README](https://github.com/aleixrodriala/newtube#readme) and [CLAUDE.md](CLAUDE.md).
+Releases are made by pushing a `vX.Y.Z` tag: [release.yml](.github/workflows/release.yml) builds the signed APKs and publishes the GitHub release with its changelog. The glass is `mobile/src/stmobile/java/com/newtube/mobile/ui/common/GlassView.java`; the README showcase comes from `python tools/render_showcase.py`. Clone with `--recurse-submodules`. The backend lives in the `MediaServiceCore` and `SharedModules` submodules (NewTube's forks). Add `-PemulatorAbi` to run on an x86_64 emulator. For upstream documentation, see [NewTube's README](https://github.com/aleixrodriala/newtube#readme) and [CLAUDE.md](CLAUDE.md).
 
 ## Support MeeTube
 
@@ -95,6 +120,10 @@ If it makes your YouTube a little nicer and you'd like to say thanks, you can bu
 It's completely optional, and every coffee is truly appreciated. ☕
 
 <p align="center"><a href="https://buymeacoffee.com/yashwynth"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy me a coffee"></a></p>
+
+In India? Scan to send a coffee over UPI (`yashwynth@ptaxis`):
+
+<p align="center"><img src=".github/assets/meetube/donation.jpeg" width="240" alt="UPI QR code for yashwynth@ptaxis"></p>
 
 A star on GitHub or sharing MeeTube with a friend helps just as much. Thank you for using it! ❤️
 

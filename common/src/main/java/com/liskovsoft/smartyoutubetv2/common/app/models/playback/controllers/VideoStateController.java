@@ -691,7 +691,8 @@ public class VideoStateController extends BasePlayerController {
         // normalization now, applied by the engine on top of this so it can follow audio track
         // switches (Media3PlayerController). The inherited formula halved every track, and the
         // Shorts halving on top had no YouTube counterpart (issue #15).
-        getPlayer().setVolume(Math.min(getPlayerData().getPlayerVolume(), 1f));
+        // MEETUBE(issue #177): the phone player applies values above 1 through its audio effect.
+        getPlayer().setVolume(getPlayerData().getPlayerVolume());
     }
 
     private void restorePitch() {

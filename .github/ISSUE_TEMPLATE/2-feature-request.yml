@@ -4,6 +4,16 @@ title: "[Feature]: "
 labels: [enhancement]
 
 body:
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app?
+      options:
+        - "MeeTube (phone or tablet)"
+        - "MeeTube TV"
+    validations:
+      required: true
+
   - type: textarea
     id: what
     attributes:

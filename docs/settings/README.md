@@ -82,7 +82,7 @@ without touching the rest.
 
 ## How it is built
 
-`smarttubetv/src/stmobile/java/com/newtube/mobile/ui/settings/`:
+`mobile/src/stmobile/java/com/newtube/mobile/ui/settings/`:
 
 - `MobileSettingsActivity`: hosts one `SettingsPageFragment` per page on a fragment back stack with
   `MaterialSharedAxis.X`. Not exported; opened from You › Settings (`MobileBrowseActivity.openSettings`).

@@ -132,8 +132,8 @@ OkHttp tests, twelve preconnect gate tests, twelve default-network callback
 tests, four load-policy tests and two local playback-failure tests.
 
 ```sh
-./gradlew :smarttubetv:assembleStmobileDebug
-./gradlew :smarttubetv:testStmobileDebugUnitTest \
+./gradlew :mobile:assembleStmobileDebug
+./gradlew :mobile:testStmobileDebugUnitTest \
   --tests 'com.newtube.mobile.player.*' \
   :common:testDebugUnitTest \
   --tests com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.DefaultNetworkRecoveryCallbackTest \

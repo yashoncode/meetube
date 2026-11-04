@@ -939,7 +939,8 @@ public class VideoLoaderController extends BasePlayerController {
             return;
         }
 
-        getPlayer().setPositionMs(getPlayer().getDurationMs());
+        // MEETUBE(issue #167): no seek to the end - the video has ended already (onPlayEnd), and that
+        // seek landed on the last keyframe, seconds back, paused: Play resumed from there, not Replay.
         getPlayer().setPlayWhenReady(false);
         getPlayer().showSuggestions(true);
     }

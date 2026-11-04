@@ -102,7 +102,7 @@ The focused test selection is:
   --tests '*JsonPathTreeReuseTest' --tests '*VideoInfoParsingTest' \
   --tests '*QueryBuilderJsonTest' --tests '*QueryBuilderTimestampTest' \
   --tests '*AuthRouteSabrOnlyVerdictTest' \
-  :smarttubetv:testStmobileDebugUnitTest \
+  :mobile:testStmobileDebugUnitTest \
   --tests 'com.newtube.mobile.player.*' --tests 'com.newtube.mobile.ui.playback.*'
 ```
 

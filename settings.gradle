@@ -1,4 +1,4 @@
-include ':smarttubetv', ':common', ':filepicker-lib', ':doubletapplayerview-media3', ':slidableactivity'
+include ':mobile', ':common', ':filepicker-lib', ':doubletapplayerview-media3', ':slidableactivity'
 include ':macrobenchmark'
 include ':sabr-media3'
 

@@ -196,9 +196,9 @@ properties were restored to inactive values, and the phone was left on its
 launcher with no pinned task. Account data was preserved.
 
 ```sh
-./gradlew :smarttubetv:assembleStmobileDebug \
-  :smarttubetv:assembleStmobileDebugAndroidTest \
-  :smarttubetv:testStmobileDebugUnitTest \
+./gradlew :mobile:assembleStmobileDebug \
+  :mobile:assembleStmobileDebugAndroidTest \
+  :mobile:testStmobileDebugUnitTest \
   --tests 'com.newtube.mobile.player.*' \
   --tests 'com.newtube.mobile.ui.playback.*' \
   --tests 'com.newtube.mobile.SessionWarmupGateTest'
@@ -214,7 +214,7 @@ adb -s <PIXEL_SERIAL> shell am instrument -w -r \
 
 The instrumentation test also checks continued frame production after switching,
 not only advancing audio position. The fixture's reproduction command is in
-`smarttubetv/src/debug/assets/README.md`; debug assets/activity are not release
+`mobile/src/debug/assets/README.md`; debug assets/activity are not release
 features. Do not benchmark other connected devices implicitly.
 
 Private evidence: `/tmp/newtube-ttff-priority-20260907-hsSv9w`: `fixture-*.txt`,
