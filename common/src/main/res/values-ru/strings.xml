@@ -748,4 +748,49 @@
         <item quantity="many">%s секунд</item>
         <item quantity="other">%s секунды</item>
     </plurals>
+    <!-- Additional Russian translations for current MeeTube features -->
+    <string name="header_downloads">Загрузки</string>
+    <string name="dialog_download">Скачать</string>
+    <string name="msg_sign_in_to_save">Войдите, чтобы сохранять видео в плейлисты</string>
+    <string name="about_app">О приложении %1$s</string>
+    <string name="about_source_code">Исходный код</string>
+    <string name="about_source_code_url" translatable="false">https://github.com/yashoncode/meetube</string>
+    <string name="about_license">Лицензия</string>
+    <string name="about_license_name" translatable="false">MIT</string>
+    <string name="about_license_url" translatable="false">https://github.com/yashoncode/meetube/blob/main/LICENSE</string>
+    <string name="diagnostic_log_send">Отправить журнал диагностики</string>
+    <string name="diagnostic_log_send_desc">Для сообщений об ошибках. Включает видео и каналы, которые вы открывали; пароли и токены входа удаляются</string>
+    <string name="diagnostic_log_subject">%1$s %2$s — журнал диагностики</string>
+    <string name="diagnostic_log_failed">Не удалось создать журнал диагностики</string>
+    <string name="signed_in_success">Вход выполнен</string>
+    <string name="feedback_failed">Не удалось отправить отзыв в YouTube. Попробуйте ещё раз.</string>
+    <string name="subscribed_to_channel_name">Вы подписались на %1$s</string>
+    <string name="unsubscribed_from_channel_name">Вы отписались от %1$s</string>
+    <string name="subscribe_failed">Не удалось подписаться. Попробуйте ещё раз.</string>
+    <string name="unsubscribe_failed">Не удалось отменить подписку. Попробуйте ещё раз.</string>
+    <string name="action_undo">Отменить</string>
+    <string name="msg_player_no_connection_retry">Нет подключения. Повторим попытку, когда вы снова будете в сети, или нажмите «Воспроизвести», чтобы повторить её.</string>
+    <string name="msg_player_no_connection_short">Нет подключения — повторная попытка…</string>
+    <string name="msg_player_no_connection_tap">Нет подключения — нажмите «Воспроизвести», чтобы повторить попытку</string>
+    <string name="auto_frame_rate_sec">%s с</string>
+    <string name="audio_shift_sec">%s с</string>
+    <string name="ui_hide_timeout_sec">%s с</string>
+    <string name="screen_dimming_timeout_min">%s мин</string>
+    <string name="msg_quality_pin_fallback">Не удалось применить %1$s — для этого видео установлено качество «Авто»</string>
+    <string name="msg_audio_pin_fallback">Не удалось использовать аудиодорожку — для этого видео используется дорожка по умолчанию</string>
+    <string name="update_check_failed">Не удалось проверить наличие обновлений. Попробуйте позже.</string>
+    <string name="playlist_name_hint">Название плейлиста</string>
+    <string name="playback_controls_repeat_pause">Повтор: пауза</string>
+    <string name="playback_controls_repeat_list">Повтор плейлиста</string>
+    <string name="action_subscribe_off">Отписаться</string>
+    <string name="action_subscribe_on">Подписаться</string>
+    <string name="player_return_youtube_dislike">Количество дизлайков (Return YouTube Dislike)</string>
+    <string name="header_live">В эфире</string>
+    <string name="keep_finished_activities">Сохранять завершённые действия</string>
+    <string name="disable_channels_service">Отключить службу каналов</string>
+    <string name="lb_playback_controls_closed_captioning_disable">Отключить субтитры</string>
+    <string name="lb_playback_controls_closed_captioning_enable">Включить субтитры</string>
+    <string name="premium_users_only">Только для пользователей Premium. Исправление неполного списка форматов видео</string>
+    <string name="install_bridge">Установить мост ATV/Amazon</string>
+    <string name="fix_empty_subs_and_channels">Исправить пустые разделы «Подписки» и «Каналы»</string>
 </resources>
