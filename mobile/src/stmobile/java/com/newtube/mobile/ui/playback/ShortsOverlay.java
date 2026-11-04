@@ -702,7 +702,8 @@ final class ShortsOverlay {
         } else {
             com.newtube.mobile.ui.common.ChannelAvatars.fetch(context, item.channelId, item.getAuthor(),
                     () -> item.equals(mCurrent), found -> {
-                if (item.equals(mCurrent)) {
+                // MEETUBE(issue #172): the lookup can return after the player is destroyed.
+                if (item.equals(mCurrent) && mAvatar.isAttachedToWindow()) {
                     loadAvatar(found);
                 }
             }, true);

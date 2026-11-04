@@ -2228,6 +2228,9 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     protected void onPause() {
+        if (mVideoArea != null) {
+            mVideoArea.removeCallbacks(mShortsSingleTap); // MEETUBE(issue #172): no tap after leaving.
+        }
         if (mPresenter != null) {
             mPresenter.onViewPaused();
         }
@@ -7363,6 +7366,8 @@ public class MobilePlaybackActivity extends MobileActivity
             return beginSeekSwipe(downRawX + dx);
         }
         if (isShortsMode()) {
+            // MEETUBE(issue #172): a pending tap must not pause a swiped-to short.
+            mVideoArea.removeCallbacks(mShortsSingleTap);
             hideControls();
             return SWIPE_SHORTS;
         }
@@ -12095,6 +12100,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             cancelHoldSpeed();
             if (mVideoArea != null) {
+                mVideoArea.removeCallbacks(mShortsSingleTap); // MEETUBE(issue #172): taps stay with their video.
                 mVideoArea.resetZoom(); // MEETUBE(issue #55): each video starts whole
             }
             // NEWTUBE(gestures): a drag held across an autoplay would have seeked the new video to
