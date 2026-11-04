@@ -206,7 +206,7 @@
     <string name="mobile_loader_neon">Неоновое кольцо</string>
     <string name="mobile_loader_frosted">Матированное стекло</string>
     <string name="mobile_loader_cookie">Печенье</string>
-    <string name="mobile_loader_frosted_cookie">Матированное печенье</string>
+    <string name="mobile_loader_frosted_cookie">Матовое печенье</string>
     <string name="mobile_loader_liquid_ring">Жидкое кольцо</string>
     <string name="mobile_loader_glass_orb">Стеклянная сфера</string>
     <string name="mobile_loader_morphing_blob">Жидкая капля</string>
@@ -283,7 +283,7 @@
     <string name="mobile_settings_resume_live">Возобновлять прямые трансляции</string>
     <string name="mobile_settings_resume_live_summary">Продолжать трансляцию с того места, где вы остановились, а не с текущего момента эфира</string>
     <string name="mobile_settings_watch_page">Под видео</string>
-    <string name="mobile_settings_ambient">Режим окружающего свечения</string>
+    <string name="mobile_settings_ambient">Атмосферный режим</string>
     <string name="mobile_settings_ambient_summary">Цвета видео подсвечивают область под плеером и заполняют чёрные полосы в вертикальном полноэкранном режиме</string>
     <string name="mobile_settings_hide_related">Скрыть раздел «Далее»</string>
     <string name="mobile_settings_hide_related_summary">Скрывает похожие видео под плеером</string>
