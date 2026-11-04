@@ -154,6 +154,7 @@ public final class AccountsSheet {
     private static void addActionRow(Activity activity, LinearLayout parent, int iconRes, int labelRes, Runnable onClick) {
         View row = LayoutInflater.from(activity).inflate(R.layout.item_mobile_you_row, parent, false);
         ((ImageView) row.findViewById(R.id.mobile_you_row_icon)).setImageResource(iconRes);
+        row.findViewById(R.id.mobile_you_row_glass).setWillNotDraw(true); // the You page's bubble, not the sheet's
         ((TextView) row.findViewById(R.id.mobile_you_row_label)).setText(labelRes);
         row.setOnClickListener(v -> onClick.run());
         parent.addView(row);

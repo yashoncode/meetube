@@ -169,12 +169,23 @@
                     android:paddingTop="16dp"
                     android:paddingBottom="12dp">
 
-                    <ImageView
-                        android:id="@+id/mobile_you_avatar"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_mobile_account" />
+                    <!-- MEETUBE(glass): the avatar sits in a frosted disc; signed out, the disc is the avatar. -->
+                    <com.newtube.mobile.ui.common.GlassView
+                        android:id="@+id/mobile_you_avatar_glass"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        app:glassCornerRadius="48dp"
+                        app:glassTint="@color/meetube_glass_button">
+
+                        <ImageView
+                            android:id="@+id/mobile_you_avatar"
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_you_avatar" />
+
+                    </com.newtube.mobile.ui.common.GlassView>
 
                     <LinearLayout
                         android:layout_width="0dp"
