@@ -51,6 +51,7 @@ public class SuggestionsController extends BasePlayerController {
     private int mFocusCount;
     private int mNextRetryCount;
     private List<ChapterItem> mChapters;
+    private long mLastShownChapterStartMs = -1;
     private final Runnable mChapterHandler = this::startChapterNotificationServiceIfNeededInt;
     private static final int MAX_PLAYLIST_CONTINUATIONS = 20;
     private static final int CHAPTER_NOTIFICATION_Id = 565;
@@ -1125,24 +1126,34 @@ public class SuggestionsController extends BasePlayerController {
     private void startChapterNotificationServiceIfNeededInt() {
         Utils.removeCallbacks(mChapterHandler);
 
-        Pair<ChapterItem, Integer> currentChapter = getCurrentChapter();
-        showChapterDialog(currentChapter != null ? currentChapter.first : null);
-
-        if (mChapters == null) {
+        if (getPlayer() == null || mChapters == null) {
+            showChapterDialog(null);
             return;
         }
 
         long positionMs = getPlayer().getPositionMs();
+        ChapterItem currentChapter = null;
+        ChapterItem nextChapter = null;
+        // MEETUBE(issue #151): notifications follow actual chapter starts, not the navigation lookahead.
+        for (ChapterItem chapter : mChapters) {
+            if (chapter.getStartTimeMs() > positionMs) {
+                nextChapter = chapter;
+                break;
+            }
+            currentChapter = chapter;
+        }
+        showChapterDialog(currentChapter);
 
-        ChapterItem chapter = getNextChapter();
-
-        if (chapter != null) {
-            Utils.postDelayed(mChapterHandler, (long) ((chapter.getStartTimeMs() - positionMs) * getPlayer().getSpeed()));
+        float speed = getPlayer().getSpeed();
+        if (nextChapter != null && speed > 0) {
+            // at least 500 ms: paused or stalled just before a chapter start must not spin
+            Utils.postDelayed(mChapterHandler, Math.max(500, (long) ((nextChapter.getStartTimeMs() - positionMs) / speed)));
         }
     }
 
     private void appendChaptersIfNeeded(MediaItemMetadata mediaItemMetadata) {
         mChapters = mediaItemMetadata.getChapters();
+        mLastShownChapterStartMs = -1;
 
         // NEWTUBE(chapters, issue #13): no chapter ticks through setSeekBarSegments any more. That
         // slot holds ONE list and SponsorBlockController fills it too, so whichever arrived second
@@ -1332,6 +1343,11 @@ public class SuggestionsController extends BasePlayerController {
     }
 
     private void showChapterDialog(ChapterItem chapter) {
+        // MEETUBE(issue #151): controls, seeks and stalled timers must not repeat the same chapter.
+        if (chapter != null && chapter.getStartTimeMs() == mLastShownChapterStartMs) {
+            return;
+        }
+
         AppDialogPresenter dialogPresenter = AppDialogPresenter.instance(getContext());
 
         if (dialogPresenter.isDialogShown() && dialogPresenter.getId() != CHAPTER_NOTIFICATION_Id) {
@@ -1367,6 +1383,7 @@ public class SuggestionsController extends BasePlayerController {
         dialogPresenter.enableExpandable(false);
         dialogPresenter.setId(CHAPTER_NOTIFICATION_Id);
         dialogPresenter.showDialog();
+        mLastShownChapterStartMs = chapter.getStartTimeMs();
     }
 
     private ChapterItem getNextChapter() {
