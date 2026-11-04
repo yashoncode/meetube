@@ -2521,9 +2521,20 @@ public class MobileBrowseActivity extends MobileActivity
      * player with History's other Shorts as its queue. Marked copies, so the grid's cards stay.
      */
     private Video queueHistoryShorts(Video tapped) {
+        Video opened = queueHistoryShorts(tapped, mCurrentVideos);
+        // The You page's History row is not the grid on screen: its own History list is the queue.
+        if (opened == null && tapped.getGroup() != null) {
+            opened = queueHistoryShorts(tapped, tapped.getGroup().getVideos());
+        }
+        return opened != null ? opened : tapped;
+    }
+
+    /** The marked copy of {@code tapped} (the same object, not an equal card) queued in {@code source}'s Shorts, or null. */
+    @Nullable
+    private static Video queueHistoryShorts(Video tapped, List<Video> source) {
         List<Video> shorts = new ArrayList<>();
         Video opened = null;
-        for (Video video : mCurrentVideos) {
+        for (Video video : source) {
             if (video.hasVideo() && ShortsFilter.isShort(video)) {
                 Video copy = video.copy();
                 copy.isShorts = true;
@@ -2535,10 +2546,9 @@ public class MobileBrowseActivity extends MobileActivity
                 }
             }
         }
-        if (opened == null) {
-            return tapped;
+        if (opened != null) {
+            ShortsFilter.queueAround(shorts, opened);
         }
-        ShortsFilter.queueAround(shorts, opened);
         return opened;
     }
 
