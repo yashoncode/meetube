@@ -168,6 +168,9 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             {R.string.action_video_info, R.drawable.ic_settings_about},
             {R.string.set_stream_reminder, R.drawable.ic_menu_bell},
             {R.string.unset_stream_reminder, R.drawable.ic_menu_bell},
+            {R.string.pin_channel, R.drawable.ic_menu_pin},
+            {R.string.pin_playlist, R.drawable.ic_menu_pin},
+            {R.string.unpin_from_sidebar, R.drawable.ic_menu_pin},
     };
     @Nullable private Map<String, Integer> mIcons;
     private final List<String[]> mIconPrefixes = new ArrayList<>(); // {fixed start, drawable id}
