@@ -32,6 +32,8 @@ final class DescriptionSheet {
     private static final Pattern VIEWS = Pattern.compile("^(.*\\d\\S*)\\s+views?$", Pattern.CASE_INSENSITIVE);
     /** "Oct 25, 2009" -> "Oct 25" over "2009", as YouTube stacks it. */
     private static final Pattern DATE = Pattern.compile("^(.+?),?\\s+(\\d{4})$");
+    /** "1:23" or "1:02:03" in the description, the shapes YouTube links. */
+    private static final Pattern TIMESTAMP = Pattern.compile("\\b(?:(\\d{1,2}):)?(\\d{1,2}):([0-5]\\d)\\b");
 
     private DescriptionSheet() {
     }
@@ -55,6 +57,11 @@ final class DescriptionSheet {
         /** MEETUBE(exact counts): Video details' whole numbers ("12,345,678"); -1 = the short form above. */
         long views = -1;
         long likes = -1;
+        /** MEETUBE(issue #175): a description timestamp seeks the video here (ms); null = plain text. */
+        @Nullable
+        java.util.function.LongConsumer seek;
+        /** The video's length: a timestamp past it stays plain text, as on YouTube; 0 or less = unknown. */
+        long durationMs;
     }
 
     /**
@@ -78,7 +85,8 @@ final class DescriptionSheet {
         content.findViewById(R.id.description_sheet_close).setOnClickListener(v -> dialog.dismiss());
         ((TextView) content.findViewById(R.id.description_sheet_title)).setText(title);
         TextView text = content.findViewById(R.id.description_sheet_text);
-        text.setText(description);
+        // A selectable TextView with autoLink still clicks the ClickableSpan under a tap.
+        text.setText(withTimestamps(description, extras));
         text.setVisibility(TextUtils.isEmpty(description) ? View.GONE : View.VISIBLE);
 
         LinearLayout stats = content.findViewById(R.id.description_sheet_stats);
@@ -228,6 +236,31 @@ final class DescriptionSheet {
                 source.removeOnLayoutChangeListener(follow);
             }
         });
+    }
+
+    /** MEETUBE(issue #175): the description's timestamps seek the video, as on YouTube. */
+    private static CharSequence withTimestamps(CharSequence description, Extras extras) {
+        java.util.function.LongConsumer seek = extras.seek;
+        if (seek == null || TextUtils.isEmpty(description)) {
+            return description;
+        }
+        android.text.SpannableString text = new android.text.SpannableString(description);
+        Matcher m = TIMESTAMP.matcher(description);
+        while (m.find()) {
+            String hours = m.group(1);
+            long ms = ((hours != null ? Long.parseLong(hours) * 3600 : 0)
+                    + Long.parseLong(m.group(2)) * 60 + Long.parseLong(m.group(3))) * 1000;
+            if (extras.durationMs > 0 && ms > extras.durationMs) {
+                continue;
+            }
+            text.setSpan(new android.text.style.ClickableSpan() {
+                @Override
+                public void onClick(@NonNull View widget) {
+                    seek.accept(ms);
+                }
+            }, m.start(), m.end(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return text;
     }
 
     /** A Video details row: icon, what it is, then the value at the end. */
