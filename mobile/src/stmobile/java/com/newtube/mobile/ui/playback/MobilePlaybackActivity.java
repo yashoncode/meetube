@@ -925,12 +925,13 @@ public class MobilePlaybackActivity extends MobileActivity
         mNextButton = findViewById(R.id.mobile_player_next);
         // MEETUBE(glass): every control over the video sits on a see-through tinted disc (time: a
         // pill); with Frosted player buttons on, a frosted disc of the video instead. Over HDR's
-        // SurfaceView (#35) there is nothing to frost, so the tint alone.
+        // SurfaceView (#35) there is nothing to frost, so the tint alone. MEETUBE(minimal buttons):
+        // with Player buttons on Minimal, no discs at all (applyButton).
         com.newtube.mobile.ui.common.GlassSource videoGlass =
                 com.newtube.mobile.ui.common.Glass.isPlayerFrost(this) ? findViewById(R.id.mobile_player_glass) : null;
         for (View control : new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
                 mPrevButton, mNextButton, mFullscreenButton, mActionsToggle}) {
-            com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, dp(4));
+            com.newtube.mobile.ui.common.GlassDrawable.applyButton(control, videoGlass, dp(4), true);
         }
         // MEETUBE(toasts): the player's own message pills (zoom, 2x, brightness/volume, chapter,
         // notices, skip) frosted like the app's message pill: the video under them, blurred, always -
@@ -944,9 +945,11 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
         View time = findViewById(R.id.mobile_player_time);
-        for (View control : new View[] {mPlayPauseButton, time, mActionsRow, mPlayerLock, mPlayerUnlock}) {
-            com.newtube.mobile.ui.common.GlassDrawable.apply(control, videoGlass, 0);
+        for (View control : new View[] {mPlayPauseButton, mActionsRow, mPlayerLock, mPlayerUnlock}) {
+            com.newtube.mobile.ui.common.GlassDrawable.applyButton(control, videoGlass, 0, true);
         }
+        // the time keeps its see-through pill in every style, Minimal too
+        com.newtube.mobile.ui.common.GlassDrawable.apply(time, videoGlass, 0);
         if (videoGlass != null) {
             mGlassControls = new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
                     mPrevButton, mNextButton, mFullscreenButton, mActionsToggle, mPlayPauseButton, time, mActionsRow,

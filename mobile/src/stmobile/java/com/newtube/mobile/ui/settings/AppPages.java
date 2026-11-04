@@ -240,11 +240,21 @@ final class AppPages {
                 () -> com.newtube.mobile.ui.common.Glass.isLiquid(context),
                 on -> com.newtube.mobile.ui.common.Glass.setLiquid(context, on)).needsRestart(), Tiles.FX_GLASS));
 
-        // MEETUBE(glass): the player's and Shorts' buttons frost the video under them; off by default.
-        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_player_frost),
-                context.getString(R.string.mobile_settings_player_frost_summary),
-                () -> com.newtube.mobile.ui.common.Glass.isPlayerFrost(context),
-                on -> com.newtube.mobile.ui.common.Glass.setPlayerFrost(context, on)).needsRestart(), Tiles.FX_FROST));
+        // MEETUBE(glass, minimal buttons): the discs under the player's, Shorts' and the mini player's
+        // buttons - see-through (default), a frost of the video, or none.
+        rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_player_buttons_look))
+                .option(context.getString(R.string.mobile_settings_player_buttons_see_through),
+                        context.getString(R.string.mobile_settings_player_buttons_see_through_desc),
+                        com.newtube.mobile.ui.common.Glass.BUTTONS_SEE_THROUGH)
+                .option(context.getString(R.string.mobile_settings_player_buttons_frosted),
+                        context.getString(R.string.mobile_settings_player_buttons_frosted_desc),
+                        com.newtube.mobile.ui.common.Glass.BUTTONS_FROSTED)
+                .option(context.getString(R.string.mobile_settings_player_buttons_minimal),
+                        context.getString(R.string.mobile_settings_player_buttons_minimal_desc),
+                        com.newtube.mobile.ui.common.Glass.BUTTONS_MINIMAL)
+                .bind(() -> com.newtube.mobile.ui.common.Glass.playerButtons(context),
+                        style -> com.newtube.mobile.ui.common.Glass.setPlayerButtons(context, style))
+                .needsRestart(), 72, Tiles.BUTTONS_SEE_THROUGH, Tiles.FX_FROST, Tiles.BUTTONS_MINIMAL));
 
         // MEETUBE(nav lens): the tab switch's lens and wiggle; off by default on a low-end phone.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_tab_motion),

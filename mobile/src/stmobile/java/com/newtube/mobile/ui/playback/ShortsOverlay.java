@@ -213,12 +213,12 @@ final class ShortsOverlay {
                 root.getContext()) ? root.findViewById(R.id.mobile_player_glass) : null;
         for (int id : new int[] {R.id.mobile_shorts_like, R.id.mobile_shorts_dislike, R.id.mobile_shorts_comments,
                 R.id.mobile_shorts_share, R.id.mobile_shorts_more, R.id.mobile_shorts_flash}) {
-            GlassDrawable.apply(mOverlay.findViewById(id), glass, 0);
+            GlassDrawable.applyButton(mOverlay.findViewById(id), glass, 0, true);
         }
         for (int id : new int[] {R.id.mobile_shorts_back, R.id.mobile_shorts_download, R.id.mobile_shorts_mute,
                 R.id.mobile_shorts_search}) {
-            GlassDrawable.apply(mOverlay.findViewById(id), glass,
-                    Math.round(4 * root.getResources().getDisplayMetrics().density)); // the player's minimize disc
+            GlassDrawable.applyButton(mOverlay.findViewById(id), glass,
+                    Math.round(4 * root.getResources().getDisplayMetrics().density), true); // the player's minimize disc
         }
         // MEETUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
         mTitle.setOnClickListener(v -> mHost.openShortsDescription());
