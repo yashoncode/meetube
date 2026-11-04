@@ -25,6 +25,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.newtube.mobile.CardMenuMigration;
 import com.newtube.mobile.downloads.DownloadFolder;
+import com.newtube.mobile.downloads.DownloadQuality;
 import com.newtube.mobile.ui.browse.NavTabs;
 import com.newtube.mobile.ui.common.AppIcon;
 import com.newtube.mobile.ui.common.CountStyle;
@@ -133,8 +134,19 @@ final class AppPages {
                 .option(context.getString(R.string.mobile_app_icon_play), R.mipmap.app_icon_play, AppIcon.PLAY)
                 .option(context.getString(R.string.mobile_app_icon_play_dark), R.mipmap.app_icon_play_dark, AppIcon.PLAY_DARK)
                 .option(context.getString(R.string.mobile_app_icon_blaze), R.mipmap.app_icon_blaze, AppIcon.BLAZE)
+                .option(context.getString(R.string.mobile_app_icon_red_crt), R.mipmap.app_icon_red_crt, AppIcon.RED_CRT)
+                .option(context.getString(R.string.mobile_app_icon_chrome), R.mipmap.app_icon_chrome, AppIcon.CHROME)
+                .option(context.getString(R.string.mobile_app_icon_pixel_play), R.mipmap.app_icon_pixel_play, AppIcon.PIXEL_PLAY)
+                .option(context.getString(R.string.mobile_app_icon_starry_night), R.mipmap.app_icon_starry_night,
+                        AppIcon.STARRY_NIGHT)
+                .option(context.getString(R.string.mobile_app_icon_gta_vi), R.mipmap.app_icon_gta_vi, AppIcon.VICE_CITY)
                 .bind(() -> AppIcon.current(context), icon -> AppIcon.set(context, icon)),
-                88, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON));
+                88, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON,
+                Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON));
+
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_downloads)));
+        rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_quality_title),
+                () -> DownloadQuality.label(context), AppPages::showDownloadQualityOptions));
 
         // MEETUBE(loader): every spinner in the app, from this list; each tile spins its own.
         rows.add(Tiles.of(SettingsRow.<String>choice(context.getString(R.string.mobile_settings_loader))
@@ -285,6 +297,39 @@ final class AppPages {
                 () -> context.getString(R.string.mobile_settings_video_menu_summary), SettingsPages.FEEDS_MENU));
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_customize), rows);
+    }
+
+    private static void showDownloadQualityOptions(SettingsPageFragment page) {
+        Context context = page.requireContext();
+        CharSequence[] choices = {
+                context.getString(R.string.mobile_download_quality_ask),
+                context.getString(R.string.mobile_download_quality_select)
+        };
+        page.showDialog(new MaterialAlertDialogBuilder(context, R.style.MobileAlertDialog)
+                .setTitle(R.string.mobile_download_quality_title)
+                .setItems(choices, (dialog, which) -> {
+                    if (which == 0) {
+                        DownloadQuality.setPreferredHeight(context, DownloadQuality.ASK_EVERY_TIME);
+                        page.rebuild();
+                    } else {
+                        showDownloadResolutionOptions(page);
+                    }
+                }).show());
+    }
+
+    private static void showDownloadResolutionOptions(SettingsPageFragment page) {
+        Context context = page.requireContext();
+        int[] heights = DownloadQuality.heights();
+        CharSequence[] choices = new CharSequence[heights.length];
+        for (int i = 0; i < heights.length; i++) {
+            choices[i] = context.getString(R.string.mobile_download_quality_resolution, heights[i]);
+        }
+        page.showDialog(new MaterialAlertDialogBuilder(context, R.style.MobileAlertDialog)
+                .setTitle(R.string.mobile_download_quality_select)
+                .setItems(choices, (dialog, which) -> {
+                    DownloadQuality.setPreferredHeight(context, heights[which]);
+                    page.rebuild();
+                }).show());
     }
 
     /** MEETUBE(watch-look): which buttons the player shows (PlayerButton hides the rest). */

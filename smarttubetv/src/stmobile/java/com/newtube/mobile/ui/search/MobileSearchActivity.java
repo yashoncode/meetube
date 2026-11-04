@@ -99,6 +99,7 @@ public class MobileSearchActivity extends MobileActivity
     private RecyclerView mGrid;
     private GridLayoutManager mLayoutManager;
     private VideoCardAdapter mAdapter;
+    @Nullable private com.newtube.mobile.ui.browse.InlineFeedPlayback mInlinePlayback;
     private View mSkeleton;
     /** The presenter's loading state (showProgressBar), for a clear that lands mid-load. */
     private boolean mLoading;
@@ -389,6 +390,7 @@ public class MobileSearchActivity extends MobileActivity
         mGrid.setItemViewCacheSize(8);
         mGrid.setLayoutManager(mLayoutManager);
         mGrid.setAdapter(mAdapter);
+        mInlinePlayback = new com.newtube.mobile.ui.browse.InlineFeedPlayback(this, mGrid);
         // Next cards' thumbnails decoded before they scroll in (no grey card + fade on a fling).
         com.newtube.mobile.ui.common.FeedThumbnailPreloader.attach(mGrid, mAdapter);
         mGrid.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -485,6 +487,7 @@ public class MobileSearchActivity extends MobileActivity
             // suggest response must not cover results that were submitted in the meantime.
             mSuggestions.setVisibility(mTagAdapter.isEmpty() || !mSearchInput.hasFocus()
                     ? View.GONE : View.VISIBLE);
+            updateInlinePlaybackVisibility();
         }));
     }
 
@@ -569,6 +572,7 @@ public class MobileSearchActivity extends MobileActivity
         hideKeyboard();
         mSearchInput.clearFocus();
         mSuggestions.setVisibility(View.GONE);
+        updateInlinePlaybackVisibility();
         mTagAdapter.clearTags();
         ((View) mChips.getParent()).setVisibility(View.VISIBLE);
         syncChips();
@@ -593,6 +597,9 @@ public class MobileSearchActivity extends MobileActivity
     private void onVideoClicked(Video video) {
         if (mPresenter == null) {
             return;
+        }
+        if (mInlinePlayback != null) {
+            mInlinePlayback.handoff(video);
         }
         mPresenter.onVideoItemSelected(video);
         if (video.belongsToShorts()) {
@@ -773,6 +780,9 @@ public class MobileSearchActivity extends MobileActivity
     @Override
     protected void onResume() {
         super.onResume();
+        if (mInlinePlayback != null) {
+            mInlinePlayback.onResume();
+        }
 
         if (mPresenter != null) {
             mPresenter.onViewResumed();
@@ -786,6 +796,9 @@ public class MobileSearchActivity extends MobileActivity
 
     @Override
     protected void onPause() {
+        if (mInlinePlayback != null) {
+            mInlinePlayback.onStop();
+        }
         // Free the mini bar's video surface whenever this screen leaves the foreground - the
         // playback activity may be about to re-claim it (expand / new video).
         // NEWTUBE(motion): a docked card stays up frozen until the player covers it.
@@ -809,6 +822,9 @@ public class MobileSearchActivity extends MobileActivity
 
     @Override
     protected void onDestroy() {
+        if (mInlinePlayback != null) {
+            mInlinePlayback.release();
+        }
         MiniPlayerBridge.unregisterMiniHost(this);
         mTornDown = true; // NEWTUBE(shorts): the teardown's spinner-off must not page on
 
@@ -851,9 +867,16 @@ public class MobileSearchActivity extends MobileActivity
             hideKeyboard();
             mSearchInput.clearFocus();
             mSuggestions.setVisibility(View.GONE);
+            updateInlinePlaybackVisibility();
             return;
         }
         finish();
+    }
+
+    private void updateInlinePlaybackVisibility() {
+        if (mInlinePlayback != null) {
+            mInlinePlayback.setEnabled(mSuggestions.getVisibility() != View.VISIBLE);
+        }
     }
 
     @Override
@@ -1048,6 +1071,7 @@ public class MobileSearchActivity extends MobileActivity
         runOnUiThread(() -> {
             mTagAdapter.clearTags();
             mSuggestions.setVisibility(View.GONE);
+            updateInlinePlaybackVisibility();
         });
     }
 
@@ -1057,6 +1081,7 @@ public class MobileSearchActivity extends MobileActivity
             mTagAdapter.removeTag(tag);
             if (mTagAdapter.isEmpty()) {
                 mSuggestions.setVisibility(View.GONE);
+                updateInlinePlaybackVisibility();
             }
         });
     }

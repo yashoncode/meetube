@@ -17,6 +17,7 @@ import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.AppIcon;
+import com.newtube.mobile.downloads.DownloadQuality;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -180,6 +181,7 @@ public final class SettingsTransferActivity extends Activity {
         }
         root.put("prefs", prefs);
         root.put("app_icon", AppIcon.current(context));
+        root.put("download_quality_height", DownloadQuality.preferredHeight(context));
         try (OutputStream o = out) {
             o.write(root.toString(2).getBytes(StandardCharsets.UTF_8));
         }
@@ -238,6 +240,12 @@ public final class SettingsTransferActivity extends Activity {
         String icon = root.optString("app_icon", null);
         if (icon != null && AppIcon.exists(icon)) {
             AppIcon.set(activity, icon); // applied once the restarted app leaves the screen
+        }
+        if (root.has("download_quality_height")) {
+            int height = root.optInt("download_quality_height", DownloadQuality.ASK_EVERY_TIME);
+            if (DownloadQuality.isValid(height)) {
+                DownloadQuality.setPreferredHeight(activity, height);
+            }
         }
     }
 

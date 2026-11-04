@@ -3,9 +3,12 @@ package com.newtube.mobile.ui.browse;
 import android.annotation.SuppressLint;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewConfiguration;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -60,8 +63,17 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         boolean onVideoLongClick(Video video);
     }
 
+    public interface OnInlineHoldListener {
+        boolean canPlayInline(Video video, VideoViewHolder holder);
+
+        void playInline(Video video, VideoViewHolder holder);
+
+        void onHolderUnbound(VideoViewHolder holder);
+    }
+
     private final OnVideoClickListener mClickListener;
     private final OnVideoLongClickListener mLongClickListener;
+    @Nullable private OnInlineHoldListener mInlineHoldListener;
     private boolean mShowAvatars;
 
     /**
@@ -112,6 +124,16 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         super(DIFF_CALLBACK);
         mClickListener = clickListener;
         mLongClickListener = longClickListener;
+    }
+
+    public void setInlineHoldListener(@Nullable OnInlineHoldListener listener) {
+        if (mInlineHoldListener == listener) {
+            return;
+        }
+        mInlineHoldListener = listener;
+        if (hasObservers()) {
+            new Handler(Looper.getMainLooper()).post(this::notifyDataSetChanged);
+        }
     }
 
     private static final DiffUtil.ItemCallback<Video> DIFF_CALLBACK = new DiffUtil.ItemCallback<Video>() {
@@ -210,7 +232,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         } else if (holder instanceof ShortsShelfHolder) {
             ((ShortsShelfHolder) holder).bind(getItem(position));
         } else {
-            ((VideoViewHolder) holder).bind(getItem(position), mLongClickListener);
+            ((VideoViewHolder) holder).bind(getItem(position), mLongClickListener, mInlineHoldListener);
             ((VideoViewHolder) holder).bindShortsColumn(shortsColumn(position));
         }
     }
@@ -219,6 +241,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewRecycled(holder);
         if (holder instanceof VideoViewHolder) {
+            ((VideoViewHolder) holder).notifyInlineHolderUnbound();
             ((VideoViewHolder) holder).unbind();
         } else if (holder instanceof ChannelViewHolder) {
             ((ChannelViewHolder) holder).unbind();
@@ -410,6 +433,14 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         @Nullable private final com.newtube.mobile.ui.common.LiveRingView mLiveRing;
         private Video mVideo;
         private String mBoundThumbUrl;
+        private boolean mInlineVisible;
+        @Nullable private OnInlineHoldListener mInlineHoldListener;
+        @Nullable private Video mHoldVideo;
+        private boolean mHoldTriggered;
+        private final Handler mHoldHandler = new Handler(Looper.getMainLooper());
+        private final Runnable mHoldRunnable = this::triggerInlineHold;
+        private int mSavedBadgeVisibility;
+        private int mSavedProgressVisibility;
         boolean mShowAvatar;
         /** Where the last touch landed in the meta line: on the channel name or not. */
         private boolean mMetaTouchOnChannel;
@@ -442,7 +473,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                     int offset = mMeta.getOffsetForPosition(event.getX(), event.getY());
                     mMetaTouchOnChannel = mShowAvatar && offset >= 0 && offset < channelNameLength();
                 }
-                return false;
+                return handleHoldTouch(event);
             });
             mMeta.setOnClickListener(v -> {
                 if (mMetaTouchOnChannel) {
@@ -451,7 +482,12 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                     itemView.performClick();
                 }
             });
-            mMeta.setOnLongClickListener(v -> itemView.performLongClick());
+            mMeta.setOnLongClickListener(v -> {
+                if (triggerInlineHold()) {
+                    return true;
+                }
+                return itemView.performLongClick();
+            });
 
             itemView.setOnClickListener(v -> {
                 if (mVideo != null && clickListener != null) {
@@ -588,8 +624,15 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             return new String[] {author.substring(0, at), author.substring(at + 5)};
         }
 
-        public void bind(Video video, OnVideoLongClickListener longClickListener) {
+        public void bind(Video video, OnVideoLongClickListener longClickListener,
+                @Nullable OnInlineHoldListener inlineHoldListener) {
+            if (mVideo != null && !sameVideo(mVideo, video)) {
+                notifyInlineHolderUnbound();
+            }
+            setInlinePlaybackVisible(false);
             mVideo = video;
+            mInlineHoldListener = inlineHoldListener;
+            resetHoldState();
             Context context = itemView.getContext();
             if (android.text.TextUtils.isEmpty(video.getTitle())) {
                 // MEETUBE(issue #41): a bare video id from the feed - its title and channel are asked for.
@@ -602,8 +645,13 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             }
             bindAvatar(context, video);
 
-            itemView.setOnLongClickListener(v ->
-                    mVideo != null && longClickListener != null && longClickListener.onVideoLongClick(mVideo));
+            itemView.setOnLongClickListener(v -> {
+                if (triggerInlineHold()) {
+                    return true;
+                }
+                return mVideo != null && longClickListener != null && longClickListener.onVideoLongClick(mVideo);
+            });
+            itemView.setOnTouchListener((view, event) -> handleHoldTouch(event));
 
             // ⋮ = the exact long-press context menu, just discoverable (Not interested, Open
             // channel, playlists...). Hidden when the host screen has no menu wired.
@@ -847,9 +895,97 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 };
 
         public void unbind() {
+            notifyInlineHolderUnbound();
+            setInlinePlaybackVisible(false);
+            resetHoldState();
             mVideo = null;
             mBoundThumbUrl = null;
             Glide.with(itemView.getContext().getApplicationContext()).clear(mThumbnail);
+        }
+
+        private void resetHoldState() {
+            mHoldHandler.removeCallbacks(mHoldRunnable);
+            mHoldVideo = null;
+            mHoldTriggered = false;
+        }
+
+        void finishPendingInlineHold() {
+            if (mHoldTriggered) {
+                mHoldHandler.removeCallbacks(mHoldRunnable);
+            } else {
+                resetHoldState();
+            }
+        }
+
+        private boolean handleHoldTouch(android.view.MotionEvent event) {
+            switch (event.getActionMasked()) {
+                case android.view.MotionEvent.ACTION_DOWN:
+                    resetHoldState();
+                    mHoldVideo = mVideo;
+                    if (mHoldVideo != null && mInlineHoldListener != null) {
+                        mHoldHandler.postDelayed(mHoldRunnable, ViewConfiguration.getLongPressTimeout());
+                    }
+                    return false;
+                case android.view.MotionEvent.ACTION_UP:
+                    boolean heldForInline = mHoldTriggered;
+                    resetHoldState();
+                    return heldForInline;
+                case android.view.MotionEvent.ACTION_CANCEL:
+                    // RecyclerView sends CANCEL when it takes over a drag. Keep the timer alive
+                    // so a hold that began on a moving card can still start inline playback.
+                    return false;
+                default:
+                    return false;
+            }
+        }
+
+        private boolean triggerInlineHold() {
+            if (mHoldTriggered || mHoldVideo == null || mHoldVideo != mVideo
+                    || mInlineHoldListener == null
+                    || !mInlineHoldListener.canPlayInline(mHoldVideo, this)) {
+                return false;
+            }
+            mHoldTriggered = true;
+            mHoldHandler.removeCallbacks(mHoldRunnable);
+            mInlineHoldListener.playInline(mHoldVideo, this);
+            return true;
+        }
+
+        private void notifyInlineHolderUnbound() {
+            if (mInlineHoldListener != null) {
+                mInlineHoldListener.onHolderUnbound(this);
+            }
+        }
+
+        private static boolean sameVideo(Video first, Video second) {
+            return first == second || first.videoId != null && first.videoId.equals(second.videoId);
+        }
+
+        @Nullable
+        public Video inlineVideo() {
+            return mVideo;
+        }
+
+        public ViewGroup inlineContainer() {
+            return (ViewGroup) mThumbnailFrame;
+        }
+
+        public void setInlinePlaybackVisible(boolean visible) {
+            if (visible == mInlineVisible) {
+                return;
+            }
+            if (visible) {
+                mSavedBadgeVisibility = mBadge.getVisibility();
+                mSavedProgressVisibility = mWatchProgress.getVisibility();
+                mThumbnail.setVisibility(View.INVISIBLE);
+                mBadge.setVisibility(View.GONE);
+                mWatchProgress.setVisibility(View.GONE);
+            } else {
+                mThumbnail.setVisibility(View.VISIBLE);
+                mBadge.setVisibility(mSavedBadgeVisibility);
+                mWatchProgress.setVisibility(mSavedProgressVisibility);
+            }
+            mInlineVisible = visible;
         }
     }
 

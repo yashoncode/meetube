@@ -80,6 +80,16 @@ public final class DownloadsBridge implements VideoDownloads.Handler {
         return new DownloadStorage(mContext).exists(item.outputUri) ? item.outputUri : null;
     }
 
+    @Override
+    @Nullable
+    public String subtitleUriFor(String videoId) {
+        DownloadItem item = DownloadRegistry.instance(mContext).findDone(videoId, DownloadOption.KIND_VIDEO);
+        if (item == null || item.subtitleUri == null) {
+            return null;
+        }
+        return new DownloadStorage(mContext).exists(item.subtitleUri) ? item.subtitleUri : null;
+    }
+
     /** The registry entry behind a Downloads card, or null for any other card. */
     @Nullable
     public DownloadItem itemFor(@Nullable Video video) {

@@ -8,6 +8,7 @@ import android.os.Looper;
 import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
+import com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle;
 import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.UiOptionItem;
@@ -86,10 +87,21 @@ public final class DownloadPicker {
         String cardImage = video.getCardImageUrl();
         String thumb = cardImage != null && cardImage.startsWith("http") ? cardImage
                 : "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg";
+        MediaSubtitle englishAutoSubtitle = DownloadOptions.pickEnglishSubtitle(info.getSubtitles());
+
+        DownloadRegistry registry = DownloadRegistry.instance(context);
+        int preferredHeight = DownloadQuality.preferredHeight(context);
+        if (preferredHeight != DownloadQuality.ASK_EVERY_TIME) {
+            DownloadOption preferred = DownloadQuality.pick(options, preferredHeight);
+            if (preferred == null) {
+                MobileSnackbar.show(context, R.string.mobile_download_unavailable);
+                return;
+            }
+            enqueue(context, video, title, author, thumb, preferred, englishAutoSubtitle, registry);
+            return;
+        }
 
         AppDialogPresenter dialog = AppDialogPresenter.instance(context);
-        DownloadRegistry registry = DownloadRegistry.instance(context);
-
         for (DownloadOption option : options) {
             String label = option.isAudioOnly()
                     ? context.getString(R.string.mobile_download_audio_only)
@@ -107,27 +119,35 @@ public final class DownloadPicker {
 
             dialog.appendSingleButton(UiOptionItem.from(label, description, optionItem -> {
                 dialog.closeDialog();
-                if (alreadyHere) {
-                    // NEWTUBE(snackbar): the same file is already on the device - say so rather
-                    // than queue a second copy under a "Download started".
-                    MobileSnackbar.show(context, context.getString(R.string.mobile_download_already_here),
-                            context.getString(R.string.mobile_download_view), () -> openDownloads(context));
-                    return;
-                }
-                DownloadItem item = DownloadItem.create(video.videoId, title != null ? title : video.videoId,
-                        author, thumb, option);
-                MobileDownloadService.enqueue(context, item);
-                // NEWTUBE(snackbar): confirm with the size, and a way to the Downloads tab.
-                String started = size.isEmpty()
-                        ? context.getString(R.string.mobile_download_started)
-                        : context.getString(R.string.mobile_download_started_size, size);
-                MobileSnackbar.show(context, started,
-                        context.getString(R.string.mobile_download_view), () -> openDownloads(context));
-                rewordWhenDone(context, item, started, size);
+                enqueue(context, video, title, author, thumb, option, englishAutoSubtitle, registry);
             }));
         }
 
         dialog.showDialog(context.getString(R.string.dialog_download));
+    }
+
+    private static void enqueue(Context context, Video video, @Nullable String title, @Nullable String author,
+                                String thumb, DownloadOption option, @Nullable MediaSubtitle englishAutoSubtitle,
+                                DownloadRegistry registry) {
+        DownloadItem existing = registry.findDone(video.videoId, option.kind);
+        boolean alreadyHere = existing != null && (option.isAudioOnly()
+                || (existing.qualityLabel != null && existing.qualityLabel.equals(option.qualityLabel)));
+        if (alreadyHere) {
+            MobileSnackbar.show(context, context.getString(R.string.mobile_download_already_here),
+                    context.getString(R.string.mobile_download_view), () -> openDownloads(context));
+            return;
+        }
+
+        DownloadItem item = DownloadItem.create(video.videoId, title != null ? title : video.videoId,
+                author, thumb, option, option.isAudioOnly() ? null : englishAutoSubtitle);
+        MobileDownloadService.enqueue(context, item);
+        String size = DownloadOptions.formatBytes(option.totalBytes);
+        String started = size.isEmpty()
+                ? context.getString(R.string.mobile_download_started)
+                : context.getString(R.string.mobile_download_started_size, size);
+        MobileSnackbar.show(context, started,
+                context.getString(R.string.mobile_download_view), () -> openDownloads(context));
+        rewordWhenDone(context, item, started, size);
     }
 
     /**

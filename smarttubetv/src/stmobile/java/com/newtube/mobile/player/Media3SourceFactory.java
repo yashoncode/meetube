@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -1189,6 +1190,21 @@ public class Media3SourceFactory {
     @Nullable
     MediaSource fromUrlList(List<String> urlList) {
         return fromUrlList(urlList, null);
+    }
+
+    MediaSource fromLocalVideo(String videoUri, @Nullable String subtitleUri) {
+        MediaItem.Builder item = new MediaItem.Builder().setUri(Uri.parse(videoUri));
+        if (subtitleUri != null) {
+            MediaItem.SubtitleConfiguration subtitle = new MediaItem.SubtitleConfiguration.Builder(
+                    Uri.parse(subtitleUri))
+                    .setMimeType(MimeTypes.TEXT_VTT)
+                    .setLanguage("en")
+                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                    .build();
+            item.setSubtitleConfigurations(Collections.singletonList(subtitle));
+        }
+        return new ProgressiveMediaSource.Factory(new DefaultDataSource.Factory(mContext))
+                .createMediaSource(item.build());
     }
 
     /** The same, NEWTUBE(readiness) behind the answer's gate when it announced a pre-roll hold. */

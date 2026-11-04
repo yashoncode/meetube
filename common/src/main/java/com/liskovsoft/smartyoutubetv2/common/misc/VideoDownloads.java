@@ -33,6 +33,12 @@ public final class VideoDownloads {
         /** A finished, playable local copy of this video (content:// or file://), or null. */
         @Nullable
         String localUriFor(String videoId);
+
+        /** A finished subtitle sidecar for this video (content:// or file://), or null. */
+        @Nullable
+        default String subtitleUriFor(String videoId) {
+            return null;
+        }
     }
 
     @Nullable
@@ -64,6 +70,12 @@ public final class VideoDownloads {
     public static String localUriFor(@Nullable String videoId) {
         Handler handler = sHandler;
         return handler != null && videoId != null ? handler.localUriFor(videoId) : null;
+    }
+
+    @Nullable
+    public static String subtitleUriFor(@Nullable String videoId) {
+        Handler handler = sHandler;
+        return handler != null && videoId != null ? handler.subtitleUriFor(videoId) : null;
     }
 
     public static void request(Context context, @Nullable Video video) {

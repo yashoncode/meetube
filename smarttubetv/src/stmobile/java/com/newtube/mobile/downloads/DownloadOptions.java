@@ -3,6 +3,7 @@ package com.newtube.mobile.downloads;
 import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
+import com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -75,6 +77,52 @@ public final class DownloadOptions {
         }
 
         return result;
+    }
+
+    /** Best English caption track, preferring auto-generated and excluding translated/dubbed variants. */
+    @Nullable
+    public static MediaSubtitle pickEnglishSubtitle(@Nullable List<MediaSubtitle> tracks) {
+        if (tracks == null) {
+            return null;
+        }
+        MediaSubtitle manualEnglish = null;
+        MediaSubtitle regionalEnglish = null;
+        MediaSubtitle regionalManualEnglish = null;
+        for (MediaSubtitle track : tracks) {
+            if (track == null) {
+                continue;
+            }
+            String url = track.getBaseUrl();
+            if (url == null || url.contains("tlang=") || url.contains("variant=timing-optimized")) {
+                continue;
+            }
+            String languageCode = track.getLanguageCode();
+            if (languageCode == null) {
+                continue;
+            }
+            String normalized = languageCode.replace('_', '-').toLowerCase(Locale.ROOT);
+            boolean automatic = "asr".equals(track.getType());
+            if ("en".equals(normalized)) {
+                if (automatic) {
+                    return track;
+                }
+                if (manualEnglish == null) {
+                    manualEnglish = track;
+                }
+                continue;
+            }
+            if (Locale.forLanguageTag(normalized).getLanguage().equals("en")) {
+                if (automatic && regionalEnglish == null) {
+                    regionalEnglish = track;
+                } else if (!automatic && regionalManualEnglish == null) {
+                    regionalManualEnglish = track;
+                }
+            }
+        }
+        if (regionalEnglish != null) {
+            return regionalEnglish;
+        }
+        return manualEnglish != null ? manualEnglish : regionalManualEnglish;
     }
 
     /**

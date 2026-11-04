@@ -63,6 +63,9 @@ final class Tiles {
 
     /** {@code choice} (a bound choice row) as tiles {@code heightDp} tall, a picture per option. */
     static SettingsRow of(@NonNull SettingsRow choice, int heightDp, int... pictures) {
+        if (pictures.length != choice.options.size()) {
+            throw new IllegalArgumentException("Expected one tile picture per option for " + choice.title);
+        }
         SettingsRow row = choice.asCustom();
         row.custom = (parent, page) -> strip(parent, page, row, heightDp, pictures);
         return row;

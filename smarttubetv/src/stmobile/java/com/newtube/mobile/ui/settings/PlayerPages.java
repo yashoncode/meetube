@@ -58,6 +58,16 @@ final class PlayerPages {
         PlayerData playerData = PlayerData.instance(context);
         PlayerTweaksData tweaks = PlayerTweaksData.instance(context);
 
+        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_feed_playback))
+                .option(context.getString(R.string.mobile_settings_feed_playback_always),
+                        com.newtube.mobile.ui.browse.FeedPlaybackSettings.ALWAYS)
+                .option(context.getString(R.string.mobile_settings_feed_playback_wifi),
+                        com.newtube.mobile.ui.browse.FeedPlaybackSettings.WIFI_ONLY)
+                .option(context.getString(R.string.mobile_settings_feed_playback_off),
+                        com.newtube.mobile.ui.browse.FeedPlaybackSettings.OFF)
+                .bind(() -> com.newtube.mobile.ui.browse.FeedPlaybackSettings.getMode(context),
+                        mode -> com.newtube.mobile.ui.browse.FeedPlaybackSettings.setMode(context, mode)));
+
         rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_video_ends))
                 .option(context.getString(R.string.mobile_settings_video_ends_next), PlayerConstants.PLAYBACK_MODE_ALL)
                 .option(context.getString(R.string.mobile_settings_video_ends_repeat), PlayerConstants.PLAYBACK_MODE_ONE)

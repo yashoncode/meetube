@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
+import com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle;
 import com.liskovsoft.smartyoutubetv2.common.misc.NetPath;
 import com.liskovsoft.youtubeapi.service.YouTubeMediaItemService;
 import com.liskovsoft.youtubeapi.service.YouTubeServiceManager;
@@ -16,7 +17,11 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.player.Media3SourceFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -55,14 +60,17 @@ final class DownloadJob {
 
         File videoPart = mItem.isAudioOnly() ? null : new File(DownloadRegistry.partsDir(mContext), mItem.id + ".video");
         File audioPart = mItem.audioItag != null ? new File(DownloadRegistry.partsDir(mContext), mItem.id + ".audio") : null;
+        File subtitlePart = new File(DownloadRegistry.partsDir(mContext), mItem.id + ".en.vtt");
 
         try {
             fetchThumbnail();
+            fetchEnglishSubtitle(subtitlePart);
             fetchParts(videoPart, audioPart);
             if (mItem.cancelRequested) {
                 throw new StreamFetcher.CancelledException();
             }
             publish(videoPart, audioPart);
+            publishEnglishSubtitle(subtitlePart);
             mItem.state = DownloadItem.STATE_DONE;
             mItem.error = null;
             retirePreviousCopies();
@@ -80,6 +88,9 @@ final class DownloadJob {
         } catch (RuntimeException e) {
             Log.e(TAG, "download crashed", e);
             fail(mContext.getString(R.string.mobile_download_error_generic));
+        } finally {
+            //noinspection ResultOfMethodCallIgnored
+            subtitlePart.delete();
         }
 
         mRegistry.notifyChanged();
@@ -327,6 +338,99 @@ final class DownloadJob {
         }
     }
 
+    private void fetchEnglishSubtitle(File part) {
+        if (mItem.isAudioOnly()) {
+            return;
+        }
+        if (!mItem.englishAutoSubtitleAvailable) {
+            Log.i(TAG, "No English subtitles available for " + mItem.videoId);
+            return;
+        }
+
+        try {
+            String url = mItem.englishAutoSubtitleUrl;
+            if (url == null) {
+                url = resolveEnglishAutoSubtitleUrl();
+            }
+            if (url == null) {
+                Log.w(TAG, "English auto captions unavailable for " + mItem.videoId);
+                return;
+            }
+
+            try {
+                mFetcher.fetchCaption(url, part);
+            } catch (IOException firstFailure) {
+                Log.w(TAG, "caption link failed, refreshing for " + mItem.videoId, firstFailure);
+                String refreshedUrl = resolveEnglishAutoSubtitleUrl();
+                if (refreshedUrl == null || refreshedUrl.equals(url)) {
+                    throw firstFailure;
+                }
+                mFetcher.fetchCaption(refreshedUrl, part);
+            }
+            Log.i(TAG, "English subtitles fetched before video transfer for " + mItem.videoId);
+        } catch (IOException | RuntimeException e) {
+            Log.w(TAG, "English subtitles could not be fetched for " + mItem.videoId, e);
+            //noinspection ResultOfMethodCallIgnored
+            part.delete();
+        }
+    }
+
+    private void publishEnglishSubtitle(File part) {
+        if (!part.exists() || part.length() == 0) {
+            return;
+        }
+        DownloadStorage.Target target = null;
+        try {
+            target = mStorage.createSubtitle(subtitleFileName(mItem.fileName));
+            copy(part, target);
+            mStorage.commit(target);
+            mItem.subtitleUri = target.uri.toString();
+            Log.i(TAG, "English subtitles saved for " + mItem.videoId);
+        } catch (IOException | RuntimeException e) {
+            if (target != null) {
+                mStorage.abandon(target);
+            }
+            Log.w(TAG, "English subtitles were not saved for " + mItem.videoId, e);
+        }
+    }
+
+    @Nullable
+    private String resolveEnglishAutoSubtitleUrl() throws IOException {
+        MediaItemFormatInfo info;
+        try {
+            info = YouTubeMediaItemService.instance()
+                    .getFormatInfoObserve(mItem.videoId).blockingFirst();
+        } catch (RuntimeException e) {
+            throw new IOException("caption info unavailable: " + e.getMessage(), e);
+        }
+        MediaSubtitle track = info != null
+                ? DownloadOptions.pickEnglishSubtitle(info.getSubtitles()) : null;
+        mItem.englishAutoSubtitleUrl = track != null ? track.getBaseUrl() : null;
+        return mItem.englishAutoSubtitleUrl;
+    }
+
+    private static String subtitleFileName(@Nullable String videoFileName) {
+        String name = videoFileName != null ? videoFileName : "video";
+        int extension = name.lastIndexOf('.');
+        return (extension > 0 ? name.substring(0, extension) : name) + ".en.vtt";
+    }
+
+    private static void copy(File source, DownloadStorage.Target target) throws IOException {
+        if (target.file == null && target.pfd == null) {
+            throw new IOException("no subtitle output path");
+        }
+        OutputStream out = target.file != null
+                ? new FileOutputStream(target.file)
+                : new FileOutputStream(target.pfd.getFileDescriptor());
+        try (InputStream in = new FileInputStream(source); OutputStream destination = out) {
+            byte[] buffer = new byte[16 * 1024];
+            int count;
+            while ((count = in.read(buffer)) != -1) {
+                destination.write(buffer, 0, count);
+            }
+        }
+    }
+
     static String mimeOf(@Nullable String fileName) {
         if (fileName != null && fileName.endsWith(".webm")) {
             return "video/webm";
@@ -339,6 +443,7 @@ final class DownloadJob {
         for (DownloadItem other : mRegistry.items()) {
             if (other != mItem && other.isDone() && other.videoId.equals(mItem.videoId) && other.kind == mItem.kind) {
                 mStorage.delete(other.outputUri);
+                mStorage.delete(other.subtitleUri);
                 if (other.thumbPath != null) {
                     //noinspection ResultOfMethodCallIgnored
                     new File(other.thumbPath).delete();

@@ -12,7 +12,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -196,6 +198,48 @@ final class StreamFetcher {
             //noinspection ResultOfMethodCallIgnored
             target.delete();
             return null;
+        }
+    }
+
+    /** Fetches and validates an English WebVTT caption track into a temporary file. */
+    void fetchCaption(String url, File target) throws IOException {
+        HttpUrl parsed = HttpUrl.parse(url);
+        if (parsed == null) {
+            throw new IOException("invalid caption URL");
+        }
+        String vttUrl = parsed.newBuilder().setQueryParameter("fmt", "vtt").build().toString();
+        try (Response response = mClient.newCall(new Request.Builder().url(vttUrl)
+                .header("User-Agent", mUserAgent).build()).execute()) {
+            ResponseBody body = response.body();
+            if (!response.isSuccessful() || body == null) {
+                throw new IOException("caption HTTP " + response.code());
+            }
+            try (InputStream in = body.byteStream(); OutputStream out = new FileOutputStream(target)) {
+                byte[] buffer = new byte[16 * 1024];
+                int count;
+                while ((count = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, count);
+                }
+            } catch (IOException e) {
+                //noinspection ResultOfMethodCallIgnored
+                target.delete();
+                throw e;
+            }
+        }
+
+        byte[] prefix = new byte[16];
+        int length;
+        try (InputStream in = new java.io.FileInputStream(target)) {
+            length = in.read(prefix);
+        }
+        String header = length > 0 ? new String(prefix, 0, length, StandardCharsets.UTF_8).trim() : "";
+        if (header.startsWith("\uFEFF")) {
+            header = header.substring(1).trim();
+        }
+        if (!header.startsWith("WEBVTT")) {
+            //noinspection ResultOfMethodCallIgnored
+            target.delete();
+            throw new IOException("caption response is not WebVTT");
         }
     }
 

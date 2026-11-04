@@ -2,6 +2,8 @@ package com.newtube.mobile.downloads;
 
 import androidx.annotation.Nullable;
 
+import com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,6 +46,7 @@ public final class DownloadItem {
     public volatile long bytesDone;
     public volatile long bytesTotal = -1;
     @Nullable public volatile String outputUri;
+    @Nullable public volatile String subtitleUri;
     @Nullable public volatile String fileName;
     @Nullable public volatile String thumbPath;
     public volatile long durationMs;
@@ -53,6 +56,8 @@ public final class DownloadItem {
     // Transient: the URLs of the enqueue moment, reused while they are fresh.
     @Nullable public transient volatile String videoUrl;
     @Nullable public transient volatile String audioUrl;
+    @Nullable public transient volatile String englishAutoSubtitleUrl;
+    public volatile boolean englishAutoSubtitleAvailable;
     public transient volatile long videoLength = -1;
     public transient volatile long audioLength = -1;
     public transient volatile boolean cancelRequested;
@@ -73,7 +78,8 @@ public final class DownloadItem {
     }
 
     public static DownloadItem create(String videoId, String title, @Nullable String author,
-                                      @Nullable String thumbUrl, DownloadOption option) {
+                                      @Nullable String thumbUrl, DownloadOption option,
+                                      @Nullable MediaSubtitle englishAutoSubtitle) {
         DownloadItem item = new DownloadItem(UUID.randomUUID().toString(), videoId, title, author, thumbUrl,
                 option.kind, option.qualityLabel,
                 option.video != null ? option.video.getITag() : null,
@@ -82,6 +88,8 @@ public final class DownloadItem {
         item.videoUrl = option.video != null ? option.video.getUrl() : null;
         item.audioUrl = option.audio != null ? option.audio.getUrl() : null;
         item.audioTrack = DownloadOptions.audioTrackKey(option.audio);
+        item.englishAutoSubtitleAvailable = englishAutoSubtitle != null;
+        item.englishAutoSubtitleUrl = englishAutoSubtitle != null ? englishAutoSubtitle.getBaseUrl() : null;
         item.videoLength = DownloadOptions.lengthOf(option.video);
         item.audioLength = DownloadOptions.lengthOf(option.audio);
         item.bytesTotal = option.totalBytes;
@@ -130,6 +138,8 @@ public final class DownloadItem {
         json.put("bytesDone", bytesDone);
         json.put("bytesTotal", bytesTotal);
         json.putOpt("outputUri", outputUri);
+        json.putOpt("subtitleUri", subtitleUri);
+        json.put("englishAutoSubtitleAvailable", englishAutoSubtitleAvailable);
         json.putOpt("fileName", fileName);
         json.putOpt("thumbPath", thumbPath);
         json.put("durationMs", durationMs);
@@ -148,6 +158,8 @@ public final class DownloadItem {
         item.bytesDone = json.optLong("bytesDone", 0);
         item.bytesTotal = json.optLong("bytesTotal", -1);
         item.outputUri = optString(json, "outputUri");
+        item.subtitleUri = optString(json, "subtitleUri");
+        item.englishAutoSubtitleAvailable = json.optBoolean("englishAutoSubtitleAvailable", false);
         item.fileName = optString(json, "fileName");
         item.thumbPath = optString(json, "thumbPath");
         item.durationMs = json.optLong("durationMs", 0);
