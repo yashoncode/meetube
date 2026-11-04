@@ -170,6 +170,9 @@ public class MobileBrowseActivity extends MobileActivity
     private ChipBar mChipBar;
     // MEETUBE(nav hide, issue #37): the floating nav pill slides away while a feed scrolls down.
     private com.newtube.mobile.ui.common.NavHider mNavHider;
+    // MEETUBE(issue #181): the top pills slide away with it, unless Settings > Customization keeps them.
+    private com.newtube.mobile.ui.common.NavHider mTopHider;
+    private boolean mTopBarPinned;
     // MEETUBE(search fab): Search floated out of the slid-away bar; out = shown in its corner.
     private View mSearchFab;
     private boolean mSearchFabOut;
@@ -455,6 +458,9 @@ public class MobileBrowseActivity extends MobileActivity
     private void showNav() {
         if (mNavHider != null) {
             mNavHider.show();
+        }
+        if (mTopHider != null) {
+            mTopHider.show();
         }
     }
 
@@ -1175,6 +1181,9 @@ public class MobileBrowseActivity extends MobileActivity
                     mLastNearEndTriggerCount = -1;
                 }
                 mChipBar.onScrolled(dy, !recyclerView.canScrollVertically(-1));
+                if (mTopHider != null && !mTopBarPinned) {
+                    mTopHider.onScrolled(recyclerView, dx, dy);
+                }
                 maybeTriggerPagination();
             }
         });
@@ -1186,6 +1195,7 @@ public class MobileBrowseActivity extends MobileActivity
             });
             mNavHider.setMorph(mSearchMorph); // MEETUBE(search fab)
             mContentGrid.addOnScrollListener(mNavHider);
+            mTopHider = new com.newtube.mobile.ui.common.NavHider(findViewById(R.id.mobile_top_glass), true);
         }
         if (com.newtube.mobile.ui.common.FocusRing.isTv(this)) {
             // MEETUBE(tv): the remote's way to the chips is up from the first row, so there the feed
@@ -3306,6 +3316,10 @@ public class MobileBrowseActivity extends MobileActivity
         }
         // MEETUBE(nav tabs): the tabs may have been changed in Settings (a no-op when they weren't).
         rebuildNavigation();
+        mTopBarPinned = NavTabs.topBarAlwaysShown(this); // MEETUBE(issue #181): or the top bar's setting
+        if (mTopBarPinned && mTopHider != null) {
+            mTopHider.show();
+        }
 
         // MEETUBE(shorts): back from the Shorts player - return to the tab before Shorts once the
         // player's close (player_close_exit, 200 ms) is over. Posted, not run: a resume while the

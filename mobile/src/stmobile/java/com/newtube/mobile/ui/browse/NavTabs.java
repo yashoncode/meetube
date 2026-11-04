@@ -26,6 +26,7 @@ public final class NavTabs {
     private static final String KEY_SEARCH_ON_TOP = "search_on_top";
     private static final String KEY_SEARCH_POSITION = "search_position";
     private static final String KEY_SEARCH_FAB_LEFT = "search_fab_left";
+    private static final String KEY_TOP_BAR_PINNED = "top_bar_pinned";
     /** The bar as it was before the tabs could be picked. */
     private static final int[] DEFAULTS = {MediaGroup.TYPE_SHORTS, VideoDownloads.SECTION_ID};
 
@@ -67,6 +68,15 @@ public final class NavTabs {
 
     public static void setSearchFabLeft(Context context, boolean left) {
         prefs(context).edit().putBoolean(KEY_SEARCH_FAB_LEFT, left).apply();
+    }
+
+    /** MEETUBE(issue #181): the top pills stay while a feed scrolls; off (default) they slide away like the bottom bar. */
+    public static boolean topBarAlwaysShown(Context context) {
+        return prefs(context).getBoolean(KEY_TOP_BAR_PINNED, false);
+    }
+
+    public static void setTopBarAlwaysShown(Context context, boolean shown) {
+        prefs(context).edit().putBoolean(KEY_TOP_BAR_PINNED, shown).apply();
     }
 
     /** Where Search sits in the bottom bar: how many of the two tabs come before it (0 to 2). */
