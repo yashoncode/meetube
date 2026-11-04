@@ -171,6 +171,13 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             {R.string.pin_channel, R.drawable.ic_menu_pin},
             {R.string.pin_playlist, R.drawable.ic_menu_pin},
             {R.string.unpin_from_sidebar, R.drawable.ic_menu_pin},
+            // A download's own menu (DownloadMenu).
+            {R.string.mobile_download_open_folder, R.drawable.ic_menu_folder},
+            {R.string.mobile_download_delete, R.drawable.ic_menu_delete},
+            {R.string.mobile_download_cancel, R.drawable.ic_sheet_close},
+            {R.string.mobile_download_pause, R.drawable.ic_player_pause},
+            {R.string.mobile_download_resume, R.drawable.ic_player_play},
+            {R.string.mobile_download_retry, R.drawable.ic_player_replay},
     };
     @Nullable private Map<String, Integer> mIcons;
     private final List<String[]> mIconPrefixes = new ArrayList<>(); // {fixed start, drawable id}

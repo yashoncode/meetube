@@ -27,6 +27,7 @@
         android:layout_height="24dp"
         android:layout_marginEnd="20dp"
         android:importantForAccessibility="no"
+        android:tint="@color/mobile_color_on_surface"
         android:visibility="gone"
         tools:src="@drawable/ic_watch_share"
         tools:visibility="visible" />
