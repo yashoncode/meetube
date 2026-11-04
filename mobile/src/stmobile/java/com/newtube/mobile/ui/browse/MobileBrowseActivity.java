@@ -1,6 +1,7 @@
 package com.newtube.mobile.ui.browse;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -46,6 +47,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.VideoGroup;
 import com.liskovsoft.smartyoutubetv2.common.app.models.errors.ErrorFragmentData;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.SearchPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.YTSignInPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.AccountSettingsPresenter;
@@ -71,6 +73,7 @@ import com.newtube.mobile.ui.common.MobileSnackbar;
 import com.newtube.mobile.ui.common.Motion;
 import com.newtube.mobile.ui.common.ShortsFilter;
 import com.newtube.mobile.ui.common.SkeletonReveal;
+import com.newtube.mobile.ui.common.ThemeMode;
 import com.newtube.mobile.ui.update.MobileUpdateActivity;
 import com.newtube.mobile.update.AppUpdates;
 import com.newtube.mobile.ui.playback.MiniPlayerBridge;
@@ -3564,9 +3567,24 @@ public class MobileBrowseActivity extends MobileActivity
         boolean hasSearch = searchLit && source.findItem(SEARCH_ITEM_ID) != null;
         bar.setSelectedItemId(hasSearch ? SEARCH_ITEM_ID : browse.mBottomNav.getSelectedItemId());
         com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener goBack = item -> {
+            Object playback = PlaybackPresenter.instance(screen).getPlayer();
+            Activity player = playback instanceof Activity ? (Activity) playback : null;
+            boolean keepPlayer = player != null && !player.isFinishing() && !player.isDestroyed()
+                    && player.getTaskId() == screen.getTaskId();
+            // MEETUBE(issue #171): CLEAR_TOP also destroys the docked player between Browse and this screen.
             screen.startActivity(new Intent(screen, MobileBrowseActivity.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    .addFlags((keepPlayer ? Intent.FLAG_ACTIVITY_REORDER_TO_FRONT : Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            | Intent.FLAG_ACTIVITY_SINGLE_TOP)
                     .putExtra(EXTRA_NAV_TAB, item.getItemId()));
+            if (keepPlayer) {
+                // MEETUBE(issue #171): close the other pages too (a channel under Search), and their stack entries.
+                for (MobileActivity open : ThemeMode.liveScreens()) {
+                    if (open != browse && open != player && open.getTaskId() == screen.getTaskId()
+                            && !open.isFinishing() && !open.isDestroyed()) {
+                        open.finishReally(false);
+                    }
+                }
+            }
             return false; // Search stays lit while this screen closes
         };
         bar.setOnItemSelectedListener(goBack);

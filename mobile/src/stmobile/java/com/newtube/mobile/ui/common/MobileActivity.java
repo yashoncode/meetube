@@ -382,6 +382,11 @@ public abstract class MobileActivity extends MotherActivity {
 
     @Override
     public void finishReally() {
+        finishReally(true);
+    }
+
+    // MEETUBE(issue #171): a tab already launched Browse; close without routing Back through the player.
+    public void finishReally(boolean startParent) {
         // Mandatory line. Fix un-proper view order (especially for playback view).
         //
         // Mobile activities share one task, so normal Back should simply remove this Activity and
@@ -397,7 +402,7 @@ public abstract class MobileActivity extends MotherActivity {
         // activity - popping this one would reveal the fullscreen video instead of the logical
         // parent screen. Route through the explicit parent launch, which reorders the parent
         // over the buried player before this activity goes away.
-        if (getViewManager().isNewViewPending()) {
+        if (!startParent || getViewManager().isNewViewPending()) {
             getViewManager().removeTop(this);
         } else if (isTaskRoot() || MiniPlayerBridge.isActive()) {
             getViewManager().startParentView(this);

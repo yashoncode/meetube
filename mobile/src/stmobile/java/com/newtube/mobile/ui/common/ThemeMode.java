@@ -185,7 +185,8 @@ public final class ThemeMode {
         }
     }
 
-    private static List<MobileActivity> liveScreens() {
+    // MEETUBE(issue #171): reuse the live-screen registry when a tab closes screens around a docked player.
+    public static List<MobileActivity> liveScreens() {
         List<MobileActivity> screens = new ArrayList<>();
         synchronized (sScreens) {
             prune();
