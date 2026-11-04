@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.Nullable;
 import androidx.media3.common.AudioAttributes;
 import androidx.media3.common.C;
+import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences;
 import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -205,6 +206,10 @@ public class Media3PlayerInitializer {
         // videos topped out at 608x1080, which YouTube calls 480p (VideoRung).
         int ceiling = VideoRung.ceilingSide(1080);
         trackSelector.setParameters(trackSelector.buildUponParameters()
+                // MEETUBE(issue #177): session audio effects require decoded, non-offloaded audio.
+                .setAudioOffloadPreferences(new AudioOffloadPreferences.Builder()
+                        .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED)
+                        .build())
                 .setMaxVideoSize(ceiling, ceiling)
                 .setExceedVideoConstraintsIfNecessary(true));
 

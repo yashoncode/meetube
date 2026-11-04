@@ -144,11 +144,13 @@ public class Media3PlayerController implements Player.Listener {
     /**
      * NEWTUBE(loudness): the volume callers set (master volume, mute, the close fades) and what
      * {@link #getVolume()} reports, kept apart from {@link #mLoudnessGain}, YouTube's normalization of
-     * the playing audio track ("Auto volume adjustment"). The player gets the product. Separate so a
+     * the playing audio track ("Auto volume adjustment"). Media3 gets the capped volume times that
+     * gain; AudioEffects supplies any boost. Separate so a
      * caller that saves and restores the volume never bakes one track's normalization into the next.
      */
     private float mUserVolume = 1f;
     private float mLoudnessGain = 1f;
+    @Nullable private AudioEffects mAudioEffects;
     /**
      * NEWTUBE(loudness): follows the format the audio renderer is actually fed. Not
      * onTracksChanged: an adaptive audio selection holds several formats of a group (the stable-
@@ -160,6 +162,13 @@ public class Media3PlayerController implements Player.Listener {
                 public void onAudioInputFormatChanged(EventTime eventTime, Format format,
                         @Nullable androidx.media3.exoplayer.DecoderReuseEvaluation decoderReuseEvaluation) {
                     updateLoudnessGain(format);
+                }
+
+                @Override
+                public void onAudioSessionIdChanged(EventTime eventTime, int audioSessionId) {
+                    if (mAudioEffects != null) {
+                        mAudioEffects.attach(audioSessionId);
+                    }
                 }
             };
     /**
@@ -328,7 +337,8 @@ public class Media3PlayerController implements Player.Listener {
             openSabr(formatInfo);
             return;
         }
-        mReadinessAnswer = formatInfo;
+        mReadinessAnswer = mMediaSourceFactory.playbackFormats(formatInfo);
+        final MediaItemFormatInfo playbackInfo = mReadinessAnswer;
         // NEWTUBE(prepare-stash): a pre-built source for this exact video skips the XML gen+parse
         // AND the executor round-trip - prepare fires synchronously, within ~1ms of this call.
         if (!formatInfo.isLive()) {
@@ -345,7 +355,7 @@ public class Media3PlayerController implements Player.Listener {
 
         // "dash-mpd-live" only fires on the last-resort live route (no dash/hls manifest url).
         SourceBuildTiming timing = new SourceBuildTiming();
-        openMediaSourceOffMain(() -> mMediaSourceFactory.fromDashFormatInfo(formatInfo, timing),
+        openMediaSourceOffMain(() -> mMediaSourceFactory.fromDashFormatInfo(playbackInfo, timing),
                 formatInfo.isLive() ? "dash-mpd-live" : "dash-mpd", timing);
     }
 
@@ -364,19 +374,21 @@ public class Media3PlayerController implements Player.Listener {
         }
 
         final String videoId = formatInfo.getVideoId();
+        final PlaybackAudioFormats playbackInfo = mMediaSourceFactory.playbackFormats(formatInfo);
+        final String stashKey = sourceStashKey(videoId, playbackInfo.stableVolume);
         final int generation = mOpenGeneration.current();
 
-        if (mSourceStash.contains(videoId)) {
+        if (mSourceStash.contains(stashKey)) {
             return; // already stashed (the minute tick fires again inside the 80s window)
         }
 
         SOURCE_BUILD_EXECUTOR.execute(mOpenGeneration.guard(generation, "prebuild", () -> {
-            if (mSourceStash.contains(videoId)) {
+            if (mSourceStash.contains(stashKey)) {
                 return; // another queued prebuild already published this exact next video
             }
             MediaSource mediaSource;
             try {
-                mediaSource = mMediaSourceFactory.fromDashFormatInfo(formatInfo);
+                mediaSource = mMediaSourceFactory.fromDashFormatInfo(playbackInfo);
             } catch (Throwable e) { // never kill the build thread
                 Log.e(TAG, "prebuildNextSource: build failed: " + e);
                 mediaSource = null;
@@ -385,7 +397,7 @@ public class Media3PlayerController implements Player.Listener {
             if (mediaSource != null) {
                 final MediaSource result = mediaSource;
                 mOpenGeneration.publishIfCurrent(generation, "prebuild-publish",
-                        () -> mSourceStash.offerIfAbsent(videoId, result));
+                        () -> mSourceStash.offerIfAbsent(stashKey, result));
                 // Manager/player interactions belong to main. Recorded live/OTF keeps only the
                 // existing XML prebuild; its normalized manifest must not start speculative loads.
                 // MEETUBE(shorts): media itself only for a swiped-to short (or with the debug prop);
@@ -448,7 +460,8 @@ public class Media3PlayerController implements Player.Listener {
             if (!mSourceStash.hasSource()) {
                 return null; // nothing stashed -> no consult line
             }
-            stashed = mSourceStash.take(videoId);
+            stashed = mSourceStash.take(sourceStashKey(videoId,
+                    AudioPreferences.isStableVolumeEnabled(mContext)));
             // Mismatch: leave the entry; resetPlayerState (this very open runs it) clears it.
         }
 
@@ -467,6 +480,11 @@ public class Media3PlayerController implements Player.Listener {
         mSourceStash.clear();
     }
 
+    /** MEETUBE(issue #177): a preload made under the old audio setting cannot serve the next open. */
+    private static String sourceStashKey(@Nullable String videoId, boolean stableVolume) {
+        return videoId != null ? videoId + ":stable=" + stableVolume : null;
+    }
+
     /**
      * Stash invalidation for {@link #resetPlayerState()}. Every open runs reset - and the
      * loading pipeline ({@code VideoLoaderController.loadVideo}) runs it BEFORE the format info
@@ -480,7 +498,7 @@ public class Media3PlayerController implements Player.Listener {
      * reset of that same open or the next one's mismatch drop.
      */
     private void dropMismatchedStash() {
-        mSourceStash.dropExcept(getVideoId());
+        mSourceStash.dropExcept(sourceStashKey(getVideoId(), AudioPreferences.isStableVolumeEnabled(mContext)));
     }
 
     public void openDash(InputStream dashManifest) {
@@ -521,8 +539,9 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     public void openMerged(MediaItemFormatInfo formatInfo, String hlsPlaylistUrl) {
-        mReadinessAnswer = formatInfo; // its DASH half is gated
-        openMediaSourceOffMain(() -> mMediaSourceFactory.fromMerged(formatInfo, hlsPlaylistUrl), "dash-mpd+hls",
+        mReadinessAnswer = mMediaSourceFactory.playbackFormats(formatInfo); // its DASH half is gated
+        final MediaItemFormatInfo playbackInfo = mReadinessAnswer;
+        openMediaSourceOffMain(() -> mMediaSourceFactory.fromMerged(playbackInfo, hlsPlaylistUrl), "dash-mpd+hls",
                 new SourceBuildTiming());
     }
 
@@ -673,7 +692,11 @@ public class Media3PlayerController implements Player.Listener {
                 || !session.videoId.equals(formatInfo.getVideoId())) {
             return false;
         }
-        java.util.Map<String, String> answer = MediaRepoint.keyedUrls(formatInfo);
+        // MEETUBE(issue #177): recovery keeps this open's audio policy even if Settings changed.
+        boolean stableVolume = mReadinessAnswer instanceof PlaybackAudioFormats
+                && ((PlaybackAudioFormats) mReadinessAnswer).stableVolume;
+        MediaItemFormatInfo playbackInfo = PlaybackAudioFormats.select(formatInfo, stableVolume);
+        java.util.Map<String, String> answer = MediaRepoint.keyedUrls(playbackInfo);
         java.util.Map<String, String> targets = new java.util.HashMap<>();
         for (java.util.Map.Entry<String, String> entry : answer.entrySet()) {
             if (session.keys.contains(entry.getKey())) {
@@ -692,7 +715,7 @@ public class Media3PlayerController implements Player.Listener {
             NetPath.log(NetPath.context() + " wall-swap keys open=" + session.keys + " answer=" + answer.keySet());
         }
         if (landed) {
-            mReadinessAnswer = formatInfo;
+            mReadinessAnswer = playbackInfo;
             // The wall's evidence is per answer: what the old one served says nothing about this one.
             mMediaRequests.reset();
         }
@@ -997,6 +1020,12 @@ public class Media3PlayerController implements Player.Listener {
         player.addAnalyticsListener(mResumeListener);
         player.addAnalyticsListener(mFirstFrameListener);
         player.addAnalyticsListener(mLoudnessListener);
+        // MEETUBE(issue #177): the main session owns its effects; preloading has no effects owner.
+        if (mAudioEffects != null) {
+            mAudioEffects.release();
+        }
+        mAudioEffects = new AudioEffects(mContext, this::setVolume);
+        mAudioEffects.attach(player.getAudioSessionId());
     }
 
     public void setTrackSelector(DefaultTrackSelector trackSelector) {
@@ -1050,6 +1079,10 @@ public class Media3PlayerController implements Player.Listener {
             mPlayer.removeAnalyticsListener(mResumeListener);
             mPlayer.removeAnalyticsListener(mFirstFrameListener);
             mPlayer.removeAnalyticsListener(mLoudnessListener);
+            if (mAudioEffects != null) {
+                mAudioEffects.release();
+                mAudioEffects = null;
+            }
             mPlayer.stop();
             mPlayer.clearMediaItems();
             mPlayer.clearVideoSurface();
@@ -1358,9 +1391,13 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     public void setVolume(float volume) {
-        if (mPlayer != null && volume >= 0) {
-            mUserVolume = Math.min(volume, 1f);
-            mPlayer.setVolume(mUserVolume * mLoudnessGain);
+        if (mPlayer != null && volume >= 0 && !Float.isInfinite(volume)) {
+            mUserVolume = volume;
+            // MEETUBE(issue #177): media3 stays at <= 1; the session effect supplies the boost.
+            mPlayer.setVolume(Math.min(volume, 1f) * mLoudnessGain);
+            if (mAudioEffects != null) {
+                mAudioEffects.setVolume(volume);
+            }
         }
     }
 
@@ -1387,7 +1424,7 @@ public class Media3PlayerController implements Player.Listener {
         }
         if (gain != mLoudnessGain) {
             mLoudnessGain = gain;
-            mPlayer.setVolume(mUserVolume * mLoudnessGain);
+            mPlayer.setVolume(Math.min(mUserVolume, 1f) * mLoudnessGain);
             NetPath.log("loudness video=" + getVideoId() + " format=" + audio.id + " db=" + db
                     + " gain=" + gain);
         }

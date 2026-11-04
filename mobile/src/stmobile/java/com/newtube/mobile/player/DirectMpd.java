@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
 import com.liskovsoft.youtubeapi.formatbuilders.mpdbuilder.YouTubeMPDBuilder;
-import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemFormatInfo;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -57,7 +56,7 @@ final class DirectMpd {
      */
     @Nullable
     static Recorder record(MediaItemFormatInfo formatInfo) {
-        if (!(formatInfo instanceof YouTubeMediaItemFormatInfo) || formatInfo.isLive()) {
+        if (!PlaybackAudioFormats.usesYouTubeBuilder(formatInfo) || formatInfo.isLive()) {
             return null;
         }
         List<MediaFormat> formats = formatInfo.getAdaptiveFormats();

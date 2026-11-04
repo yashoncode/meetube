@@ -60,6 +60,8 @@
     <string name="mobile_settings_playback">Reproducción</string>
     <string name="mobile_settings_playback_summary">Reproducción automática, en segundo plano, velocidad</string>
     <string name="mobile_settings_quality">Calidad de vídeo</string>
+    <string name="mobile_settings_audio_quality">Calidad de audio</string>
+    <string name="mobile_settings_audio_quality_summary">Volumen estable, amplificación y ecualizador</string>
     <string name="mobile_settings_captions">Subtítulos</string>
     <string name="mobile_settings_captions_summary">Estilo, tamaño y posición</string>
     <string name="mobile_settings_sponsorblock_on">Activado · salta patrocinios e intros</string>
@@ -238,7 +240,6 @@
     <string name="mobile_settings_quality_data_saver">Ahorra datos</string>
     <string name="mobile_settings_hdr">Vídeo HDR</string>
     <string name="mobile_settings_hdr_summary">Reproduce los vídeos HDR en HDR, con más brillo y color. Usa más datos. Se aplica al siguiente vídeo que abras</string>
-    <string name="mobile_settings_audio">Audio</string>
     <string name="mobile_settings_loudness">Igualar el volumen</string>
     <string name="mobile_settings_loudness_summary">Baja los vídeos muy altos al nivel normal de YouTube</string>
     <string name="mobile_settings_player_volume">Volumen del reproductor</string>
@@ -363,4 +364,12 @@
     <string name="mobile_settings_transfer_imported">Ajustes importados. MeeTube se está reiniciando</string>
     <string name="mobile_settings_transfer_failed">No se pudo guardar el archivo de ajustes</string>
     <string name="mobile_settings_transfer_not_settings">Ese no es un archivo de ajustes de MeeTube</string>
+    <!-- MEETUBE(issue #177): phone player audio. -->
+    <string name="mobile_settings_stable_volume">Volumen estable</string>
+    <string name="mobile_settings_stable_volume_summary">Permite el audio comprimido de YouTube para suavizar las partes fuertes y suaves. Se aplica al próximo vídeo que abras</string>
+    <string name="mobile_settings_equalizer">Ecualizador</string>
+    <string name="mobile_settings_equalizer_enable">Usar ecualizador</string>
+    <string name="mobile_settings_equalizer_custom">Personalizado</string>
+    <string name="mobile_settings_equalizer_reset">Restablecer</string>
+    <string name="mobile_settings_equalizer_unavailable">El ecualizador no está disponible en este dispositivo</string>
 </resources>

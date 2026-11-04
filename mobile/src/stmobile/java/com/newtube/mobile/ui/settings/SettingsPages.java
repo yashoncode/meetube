@@ -25,7 +25,7 @@ import java.util.List;
  * Settings
  *   [ Search settings ]          (SettingsSearchFragment: every row of every page)
  *   App:    General · Customization · Feeds · History and privacy
- *   Video:  Playback · Video quality · Captions · SponsorBlock · DeArrow
+ *   Video:  Playback · Video quality · Audio quality · Captions · SponsorBlock · DeArrow
  *   Other:  Backup and restore · Advanced · About
  * </pre>
  */
@@ -41,6 +41,7 @@ public final class SettingsPages {
     public static final String PRIVACY = "privacy";
     public static final String PLAYBACK = "playback";
     public static final String QUALITY = "quality";
+    public static final String AUDIO = "audio";
     public static final String CAPTIONS = "captions";
     public static final String SPONSORBLOCK = "sponsorblock";
     public static final String SPONSORBLOCK_MARKS = "sponsorblock_marks";
@@ -88,6 +89,8 @@ public final class SettingsPages {
                 return PlayerPages.playback(context);
             case QUALITY:
                 return PlayerPages.quality(context);
+            case AUDIO:
+                return PlayerPages.audio(context);
             case CAPTIONS:
                 return PlayerPages.captions(context);
             case SPONSORBLOCK:
@@ -132,6 +135,8 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_playback_summary), PLAYBACK));
         rows.add(SettingsRow.page(R.drawable.ic_settings_quality, context.getString(R.string.mobile_settings_quality),
                 null, QUALITY).summary(() -> PlayerPages.qualitySummary(context)));
+        rows.add(SettingsRow.page(R.drawable.ic_settings_audio, context.getString(R.string.mobile_settings_audio_quality),
+                context.getString(R.string.mobile_settings_audio_quality_summary), AUDIO));
         rows.add(SettingsRow.page(R.drawable.ic_settings_captions, context.getString(R.string.mobile_settings_captions),
                 context.getString(R.string.mobile_settings_captions_summary), CAPTIONS));
         rows.add(SettingsRow.page(R.drawable.ic_settings_sponsorblock, context.getString(R.string.content_block_provider),

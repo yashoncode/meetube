@@ -28,6 +28,8 @@ import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.newtube.mobile.player.SabrSourcePreference;
+import com.newtube.mobile.player.AudioEffects;
+import com.newtube.mobile.player.AudioPreferences;
 import com.newtube.mobile.ui.playback.PlayerGesturePrefs;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 
@@ -253,7 +255,6 @@ final class PlayerPages {
 
     static SettingsPages.Page quality(Context context) {
         List<SettingsRow> rows = new ArrayList<>();
-        PlayerData playerData = PlayerData.instance(context);
         PlayerTweaksData tweaks = PlayerTweaksData.instance(context);
 
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_quality_intro)));
@@ -270,15 +271,28 @@ final class PlayerPages {
                     }));
         }
 
-        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_audio)));
-        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_loudness),
-                context.getString(R.string.mobile_settings_loudness_summary),
-                tweaks::isPlayerAutoVolumeEnabled, tweaks::setPlayerAutoVolumeEnabled));
-        rows.add(playerVolume(context, playerData));
-
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_quality_data_saver_note)));
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_quality), rows);
+    }
+
+    // MEETUBE(issue #177): the audio rows have their own page next to Video quality.
+    static SettingsPages.Page audio(Context context) {
+        List<SettingsRow> rows = new ArrayList<>();
+        PlayerTweaksData tweaks = PlayerTweaksData.instance(context);
+
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_loudness),
+                context.getString(R.string.mobile_settings_loudness_summary),
+                tweaks::isPlayerAutoVolumeEnabled, tweaks::setPlayerAutoVolumeEnabled));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_stable_volume),
+                context.getString(R.string.mobile_settings_stable_volume_summary),
+                () -> AudioPreferences.isStableVolumeEnabled(context),
+                enabled -> AudioPreferences.setStableVolumeEnabled(context, enabled)));
+        rows.add(playerVolume(context, PlayerData.instance(context)));
+        rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_equalizer),
+                () -> EqualizerSheet.summary(context), EqualizerSheet::show));
+
+        return new SettingsPages.Page(context.getString(R.string.mobile_settings_audio_quality), rows);
     }
 
     /** "Auto (up to 1080p)" or the cap the user picked, for the Video quality row on the top level. */
@@ -437,10 +451,14 @@ final class PlayerPages {
     /** Fraction of full volume the player plays at, on top of the phone's own volume. */
     private static SettingsRow playerVolume(Context context, PlayerData playerData) {
         List<Float> values = new ArrayList<>();
+        // MEETUBE(issue #177): media3's base volume stops at 100%; the session effect boosts above it.
+        for (int percent : new int[] {200, 175, 150, 125}) {
+            values.add(percent / 100f);
+        }
         for (int percent = 100; percent >= 10; percent -= 10) {
             values.add(percent / 100f);
         }
-        float stored = Math.min(1f, playerData.getPlayerVolume());
+        float stored = playerData.getPlayerVolume();
         if (!containsFloat(values, stored)) {
             values.add(stored);
             Collections.sort(values, Collections.reverseOrder());
@@ -450,7 +468,14 @@ final class PlayerPages {
             String label = String.format(Locale.US, "%d%%", Math.round(value * 100));
             choice.option(Math.abs(value - 1f) < 0.001f ? context.getString(R.string.mobile_settings_default_value, label) : label, value);
         }
-        return choice.bind(() -> nearest(values, Math.min(1f, playerData.getPlayerVolume())), playerData::setPlayerVolume);
+        return choice.bind(() -> nearest(values, playerData.getPlayerVolume()), volume -> {
+            playerData.setPlayerVolume(volume);
+            AudioEffects.applyPlayerVolume(volume);
+        }).summary(() -> {
+            String label = String.format(Locale.US, "%d%%", Math.round(playerData.getPlayerVolume() * 100));
+            return playerData.getPlayerVolume() > 1f
+                    ? label + "\n" + context.getString(R.string.volume_boost_warning) : label;
+        });
     }
 
     // ---------------------------------------------------------------------------------------------

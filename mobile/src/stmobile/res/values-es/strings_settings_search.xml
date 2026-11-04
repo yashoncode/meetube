@@ -23,7 +23,7 @@
     <string name="mobile_settings_search_kw_dislikes">no me gusta return youtube dislike ryd</string>
     <string name="mobile_settings_search_kw_quality">resolución 4k 1080p 720p hd ahorro de datos datos móviles</string>
     <string name="mobile_settings_search_kw_loudness">normalizar volumen automático bajo alto</string>
-    <string name="mobile_settings_search_kw_player_volume">volumen bajo alto sonido</string>
+    <string name="mobile_settings_search_kw_player_volume">volumen bajo alto sonido amplificar ganancia aumento 125 150 175 200</string>
     <string name="mobile_settings_search_kw_captions">captions cc</string>
     <string name="mobile_settings_search_kw_sponsorblock">saltar patrocinadores anuncios segmentos intros</string>
     <string name="mobile_settings_search_kw_dearrow">clickbait títulos miniaturas</string>
@@ -39,4 +39,6 @@
     <string name="mobile_settings_search_kw_loader">carga cargando indicador progreso neón cristal esmerilado galleta líquido anillo orbe gota órbita</string>
     <string name="mobile_settings_search_kw_watched_bar">visto progreso línea roja barra historial miniatura</string>
     <string name="mobile_settings_search_kw_short_ends">shorts bucle repetir desplazamiento automático siguiente deslizar</string>
+    <string name="mobile_settings_search_kw_stable_volume">volumen estable drc compresión rango dinámico audio fuerte suave</string>
+    <string name="mobile_settings_search_kw_equalizer">ecualizador eq audio graves agudos frecuencias bandas preajustes personalizado sonido</string>
 </resources>
