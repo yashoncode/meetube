@@ -1972,6 +1972,7 @@ public class MobileBrowseActivity extends MobileActivity
         findViewById(R.id.mobile_you_settings).setOnClickListener(v -> openSettings());
         com.newtube.mobile.ui.common.Glass.blur((View) findViewById(R.id.mobile_you_accounts).getParent(), findViewById(R.id.mobile_you_glow_source));
         com.newtube.mobile.ui.common.Glass.blur((View) findViewById(R.id.mobile_you_settings).getParent(), findViewById(R.id.mobile_you_glow_source));
+        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_you_avatar_glass), findViewById(R.id.mobile_you_glow_source));
         findViewById(R.id.mobile_you_history_title).setOnClickListener(v -> openFromYou(MediaGroup.TYPE_HISTORY));
 
         // MEETUBE(you page): History's latest videos, two and a bit across like YouTube's You page.
@@ -2322,6 +2323,7 @@ public class MobileBrowseActivity extends MobileActivity
         if (iconRes > 0) {
             icon.setImageResource(iconRes);
         }
+        com.newtube.mobile.ui.common.Glass.blur(row.findViewById(R.id.mobile_you_row_glass), findViewById(R.id.mobile_you_glow_source));
         TextView label = row.findViewById(R.id.mobile_you_row_label);
         label.setText(title);
 
@@ -3494,15 +3496,15 @@ public class MobileBrowseActivity extends MobileActivity
                 com.bumptech.glide.Glide.with(this)
                         .load(avatarUrl)
                         .circleCrop()
-                        .placeholder(R.drawable.ic_mobile_account)
+                        .placeholder(R.drawable.ic_you_avatar)
                         .into(mYouAvatar);
             } else {
-                mYouAvatar.setImageResource(R.drawable.ic_mobile_account);
+                mYouAvatar.setImageResource(R.drawable.ic_you_avatar);
             }
         } else {
             mYouAccountText.setText(R.string.dialog_add_account);
             mYouAccountSub.setVisibility(View.GONE);
-            mYouAvatar.setImageResource(R.drawable.ic_mobile_account);
+            mYouAvatar.setImageResource(R.drawable.ic_you_avatar);
         }
     }
 
