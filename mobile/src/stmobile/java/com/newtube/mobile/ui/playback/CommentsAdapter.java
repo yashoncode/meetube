@@ -577,6 +577,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private final TextView mPinnedLabel;
         private final TextView mMeta;
         private final CommentTextView mMessage;
+        private final ImageView mImage;
         private final View mLike;
         private final ImageView mLikeIcon;
         private final View mLikeCountBox;
@@ -606,6 +607,8 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             mPinnedLabel = itemView.findViewById(R.id.comment_pinned_label);
             mMeta = itemView.findViewById(R.id.comment_meta);
             mMessage = itemView.findViewById(R.id.comment_message);
+            mImage = itemView.findViewById(R.id.comment_image);
+            mImage.setClipToOutline(true); // the rounded block behind it
             mLike = itemView.findViewById(R.id.comment_like);
             mLikeIcon = itemView.findViewById(R.id.comment_like_icon);
             mLikeCountBox = itemView.findViewById(R.id.comment_like_count_box);
@@ -707,6 +710,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             }
             bindMessage();
             mMessage.setExpanded(mIsParent || entry.expanded, false);
+            bindImage(item);
 
             bindLike(false);
 
@@ -743,6 +747,28 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 mTranslate.setText(entry.translated ? context.getString(R.string.mobile_comments_show_original)
                         : context.getString(R.string.mobile_comments_translate_to, CommentTranslator.targetName(context)));
             }
+        }
+
+        /**
+         * MEETUBE(issue #190): the GIF posted in the comment, at most 240 x 180dp at its own aspect
+         * ratio; sized before it loads so the row doesn't jump.
+         */
+        private void bindImage(CommentItem item) {
+            String url = item.getImageUrl();
+            if (TextUtils.isEmpty(url)) {
+                Glide.with(itemView.getContext()).clear(mImage);
+                mImage.setVisibility(View.GONE);
+                return;
+            }
+            Context context = itemView.getContext();
+            float ratio = item.getImageAspectRatio() > 0f ? item.getImageAspectRatio() : 1f;
+            int width = Math.min(dp(context, 240), Math.round(dp(context, 180) * ratio));
+            ViewGroup.LayoutParams params = mImage.getLayoutParams();
+            params.width = width;
+            params.height = Math.round(width / ratio);
+            mImage.setLayoutParams(params);
+            mImage.setVisibility(View.VISIBLE);
+            Glide.with(context).load(url).into(mImage);
         }
 
         /** Like state; {@code animate} = the person just tapped it (pop the thumb, roll the count). */
@@ -850,6 +876,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             mLikeIcon.setScaleX(1f);
             mLikeIcon.setScaleY(1f);
             Glide.with(itemView.getContext()).clear(mAvatar);
+            Glide.with(itemView.getContext()).clear(mImage);
             mEntry = null;
         }
 
