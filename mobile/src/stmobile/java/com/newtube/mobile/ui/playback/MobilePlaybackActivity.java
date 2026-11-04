@@ -4603,8 +4603,8 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void showControlsInternal(boolean animate) {
-        if (isShortsMode() || mPlayerLocked) {
-            return; // MEETUBE(shorts): the overlay is the chrome; MEETUBE(lock): nothing while locked
+        if (isShortsMode()) {
+            return; // MEETUBE(shorts): the overlay is the chrome
         }
         if (mIsInPip || mPipEnterPending) {
             // The pinned window is all video. Most callers checked mIsInPip on their own, the
@@ -4625,6 +4625,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mScrubChromeHidden && !mScrubbing) {
             setScrubChrome(false); // a drag that ended while hidden must not leave them invisible
         }
+        setLockedChrome(mPlayerLocked);
         mTimeBar.setShown(true, animate);
         updatePlayPauseIcon();
 
@@ -7041,8 +7042,17 @@ public class MobilePlaybackActivity extends MobileActivity
     private FloatingLock mFloatingLock;
     private boolean mPlayerLocked;
     private boolean mUnlockTouch;
-    private final Runnable mHideUnlock = () -> mPlayerUnlock.animate().alpha(0f).setDuration(150)
-            .withEndAction(() -> mPlayerUnlock.setVisibility(View.GONE)).start();
+    private final Runnable mHideUnlock = () -> {
+        mPlayerUnlock.animate().alpha(0f).setDuration(150)
+                .withEndAction(() -> mPlayerUnlock.setVisibility(View.GONE)).start();
+        if (mPlayerLocked) {
+            hideControls(); // the bar, time and chapter leave with it
+        }
+    };
+    /** MEETUBE(lock): the alphas the locked look took away, given back on unlock. */
+    private final java.util.Map<View, Float> mLockedAlphas = new java.util.HashMap<>();
+    @Nullable private Drawable[] mLockedChapterIcons;
+    private boolean mLockedChrome;
 
     private void setPlayerLocked(boolean locked) {
         if (mPlayerLocked == locked) {
@@ -7051,18 +7061,59 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerLocked = locked;
         Haptics.threshold(mContainer, locked);
         if (locked) {
-            hideControls();
             flashUnlock();
         } else {
             mPlayerUnlock.removeCallbacks(mHideUnlock);
             mPlayerUnlock.animate().cancel();
             mPlayerUnlock.setVisibility(View.GONE);
-            showControlsInternal(true);
+            showControlsInternal(!mControlsVisible);
         }
     }
 
-    /** The unlock button for a few seconds, then it fades away again. */
+    /**
+     * MEETUBE(lock): a locked player still says where the video is - the seek bar, the time and the
+     * current chapter, without its chevron (nothing takes a tap) - and nothing else: the top row,
+     * the transport, the lock, fullscreen and the actions row (likes, comments...) step aside.
+     */
+    private void setLockedChrome(boolean locked) {
+        if (locked == mLockedChrome || !(mControlsRoot instanceof ViewGroup) || !(mBottomRow instanceof ViewGroup)) {
+            return;
+        }
+        mLockedChrome = locked;
+        if (!locked) {
+            for (java.util.Map.Entry<View, Float> hidden : mLockedAlphas.entrySet()) {
+                hidden.getKey().setAlpha(hidden.getValue());
+            }
+            mLockedAlphas.clear();
+            if (mLockedChapterIcons != null) {
+                mChapterButton.setCompoundDrawablesRelative(mLockedChapterIcons[0], mLockedChapterIcons[1],
+                        mLockedChapterIcons[2], mLockedChapterIcons[3]);
+                mLockedChapterIcons = null;
+            }
+            return;
+        }
+        View bottomScrim = findViewById(R.id.mobile_player_bottom_scrim);
+        View chapter = (View) mChapterButton.getParent();
+        for (ViewGroup group : new ViewGroup[] {(ViewGroup) mControlsRoot, (ViewGroup) mBottomRow}) {
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View child = group.getChildAt(i);
+                int id = child.getId();
+                if (child == mBottomRow || child == bottomScrim || child == chapter
+                        || id == R.id.mobile_player_time || id == R.id.mobile_player_live) {
+                    continue;
+                }
+                child.animate().cancel();
+                mLockedAlphas.put(child, child.getAlpha());
+                child.setAlpha(0f);
+            }
+        }
+        mLockedChapterIcons = mChapterButton.getCompoundDrawablesRelative();
+        mChapterButton.setCompoundDrawablesRelative(null, null, null, null);
+    }
+
+    /** The unlock button for a few seconds, then it fades away again - with where the video is. */
     private void flashUnlock() {
+        showControlsInternal(!mControlsVisible);
         mPlayerUnlock.removeCallbacks(mHideUnlock);
         mPlayerUnlock.animate().cancel();
         if (mPlayerUnlock.getVisibility() != View.VISIBLE) {
