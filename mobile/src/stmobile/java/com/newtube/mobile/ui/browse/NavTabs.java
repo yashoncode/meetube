@@ -23,6 +23,7 @@ public final class NavTabs {
     private static final String PREFS = "meetube_nav_tabs";
     private static final String[] KEYS = {"before_search", "after_search"}; // the names from when Search sat between
     private static final String KEY_LABELS = "labels";
+    private static final String KEY_BRAND_NAME = "brand_name";
     private static final String KEY_SEARCH_ON_TOP = "search_on_top";
     private static final String KEY_SEARCH_POSITION = "search_position";
     private static final String KEY_SEARCH_FAB_LEFT = "search_fab_left";
@@ -54,6 +55,15 @@ public final class NavTabs {
 
     public static void setShowLabels(Context context, boolean show) {
         prefs(context).edit().putBoolean(KEY_LABELS, show).apply();
+    }
+
+    /** MEETUBE(brand name): Settings > Customization > App name in the top bar - off, the brand pill is only the icon. */
+    public static boolean showBrandName(Context context) {
+        return prefs(context).getBoolean(KEY_BRAND_NAME, true);
+    }
+
+    public static void setShowBrandName(Context context, boolean show) {
+        prefs(context).edit().putBoolean(KEY_BRAND_NAME, show).apply();
     }
 
     /** MEETUBE(search place): Settings > Customization > Tabs - Search in the top bar instead of the bottom one. */

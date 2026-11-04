@@ -2,6 +2,7 @@ package com.newtube.mobile.ui.browse;
 
 import android.app.Activity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,6 +18,8 @@ final class BrowseTopBar {
     private final TextView mTitle;
     private final View mBack;
     private final View mMark;
+    private boolean mSubScreen;
+    private CharSequence mSubTitle;
 
     BrowseTopBar(Activity activity, Runnable onBack) {
         mTitle = activity.findViewById(R.id.mobile_title_bar);
@@ -44,9 +47,13 @@ final class BrowseTopBar {
         });
     }
 
-    /** MEETUBE(app icon): the brand follows the picked icon (on resume: Settings may have changed it). */
+    /**
+     * MEETUBE(app icon): the brand follows the picked icon, and shows or drops the app's name
+     * (on resume: Settings may have changed either).
+     */
     void syncMark(Activity activity) {
         com.newtube.mobile.ui.common.AppIcon.show((ImageView) mMark, true);
+        show(mSubScreen, mSubTitle);
     }
 
     /**
@@ -54,9 +61,21 @@ final class BrowseTopBar {
      * the section came without one - the arrow is what matters).
      */
     void show(boolean subScreen, CharSequence title) {
+        mSubScreen = subScreen;
+        mSubTitle = title;
         mBack.setVisibility(subScreen ? View.VISIBLE : View.GONE);
         mMark.setVisibility(subScreen ? View.GONE : View.VISIBLE);
         mTitle.setText(subScreen && title != null && title.length() > 0
                 ? title : mTitle.getContext().getString(R.string.app_name));
+
+        // MEETUBE(brand name): without the name, the icon sits alone in a round pill.
+        boolean named = subScreen || NavTabs.showBrandName(mTitle.getContext());
+        mTitle.setVisibility(named ? View.VISIBLE : View.GONE);
+        float density = mMark.getResources().getDisplayMetrics().density;
+        ((View) mMark.getParent()).setPaddingRelative(Math.round((named ? 14 : 11) * density), 0,
+                Math.round((named ? 16 : 11) * density), 0);
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) mMark.getLayoutParams();
+        lp.setMarginEnd(named ? Math.round(8 * density) : 0);
+        mMark.setLayoutParams(lp);
     }
 }

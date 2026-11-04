@@ -82,6 +82,8 @@ final class Tiles {
     // The player's buttons over a video (FX_FROST: frosted discs).
     static final int BUTTONS_SEE_THROUGH = 32;
     static final int BUTTONS_MINIMAL = 33;
+    /** The top bar's brand pill: the icon, then the app's name. */
+    static final int FX_BRAND_NAME = 34;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -711,6 +713,16 @@ final class Tiles {
                         float y = bottom + h * 0.1f + i * h * 0.2f;
                         block(canvas, screen.left + in, y, screen.right - in, y + h * 0.12f, mLine);
                     }
+                    break;
+                }
+                case FX_BRAND_NAME: {
+                    float ph = h * 0.44f;
+                    RectF brand = new RectF(cx - ph * 1.8f, cy - ph / 2, cx + ph * 1.8f, cy + ph / 2);
+                    pill(canvas, brand.left, brand.top, brand.right, brand.bottom, mBlock);
+                    float icon = brand.left + ph * 0.5f;
+                    mPaint.setColor(ACCENT);
+                    canvas.drawCircle(icon, cy, ph * 0.24f, mPaint);
+                    block(canvas, icon + ph * 0.45f, cy - ph * 0.09f, brand.right - ph * 0.4f, cy + ph * 0.09f, mInk);
                     break;
                 }
                 case FX_MOTION: {

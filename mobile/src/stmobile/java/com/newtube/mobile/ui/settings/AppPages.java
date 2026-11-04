@@ -297,6 +297,10 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_nav_labels_summary),
                 () -> NavTabs.showLabels(context), on -> NavTabs.setShowLabels(context, on)), Tiles.FX_LABELS));
 
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_brand_name),
+                context.getString(R.string.mobile_settings_brand_name_summary),
+                () -> NavTabs.showBrandName(context), on -> NavTabs.setShowBrandName(context, on)), Tiles.FX_BRAND_NAME));
+
         // MEETUBE(issue #181): off by default - the top pills slide away with the bottom bar.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_top_bar),
                 context.getString(R.string.mobile_settings_top_bar_summary),

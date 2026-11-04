@@ -80,6 +80,8 @@
     <string name="mobile_settings_tabs_bottom_bar">Bottom bar</string>
     <string name="mobile_settings_nav_labels">Tab names</string>
     <string name="mobile_settings_nav_labels_summary">Show each tab\'s name under its icon in the bottom bar</string>
+    <string name="mobile_settings_brand_name">App name in the top bar</string>
+    <string name="mobile_settings_brand_name_summary">Show MeeTube next to its icon at the top. Off, only the icon</string>
     <string name="mobile_settings_top_bar">Always show the top bar</string>
     <string name="mobile_settings_top_bar_summary">Keep the top bar on screen while a feed scrolls, instead of sliding it away</string>
     <string name="mobile_settings_search_fab">Search button when the bar hides</string>

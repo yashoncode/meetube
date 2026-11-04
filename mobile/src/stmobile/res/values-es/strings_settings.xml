@@ -94,6 +94,8 @@
     <string name="mobile_settings_tabs_summary">Elige qué aparece en la barra inferior y en Tú</string>
     <string name="mobile_settings_nav_labels">Nombres de las pestañas</string>
     <string name="mobile_settings_nav_labels_summary">Mostrar el nombre de cada pestaña bajo su icono en la barra inferior</string>
+    <string name="mobile_settings_brand_name">Nombre de la app en la barra superior</string>
+    <string name="mobile_settings_brand_name_summary">Muestra MeeTube junto a su icono arriba. Desactivado, solo el icono</string>
     <string name="mobile_settings_top_bar">Mostrar siempre la barra superior</string>
     <string name="mobile_settings_top_bar_summary">Mantener la barra superior en pantalla al desplazar un feed, en lugar de ocultarla</string>
     <string name="mobile_settings_search_fab">Botón de búsqueda al ocultarse la barra</string>
