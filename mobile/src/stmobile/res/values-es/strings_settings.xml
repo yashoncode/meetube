@@ -187,7 +187,7 @@
     <string name="mobile_settings_video_ends_shuffle">Reproducir la lista en orden aleatorio</string>
     <string name="mobile_settings_video_ends_list">Terminar la lista y parar</string>
     <string name="mobile_settings_video_ends_reverse">Reproducir la lista al revés</string>
-    <string name="mobile_settings_video_ends_pause">Pausar</string>
+    <string name="mobile_settings_video_ends_pause">Detener</string>
     <string name="mobile_settings_video_ends_close">Cerrar el reproductor</string>
     <string name="mobile_settings_background">Al salir de la aplicación</string>
     <string name="mobile_settings_background_pip_desc">El vídeo sigue en una ventana pequeña</string>
