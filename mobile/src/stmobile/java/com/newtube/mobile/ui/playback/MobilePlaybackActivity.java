@@ -10484,6 +10484,8 @@ public class MobilePlaybackActivity extends MobileActivity
             extras.avatar = mWatchAvatar.getDrawable();
             extras.subscribe = mWatchSubscribe;
             extras.openChannel = this::openCurrentChannel;
+            extras.seek = ms -> seekFromList(ms, null); // MEETUBE(issue #175)
+            extras.durationMs = getDurationMs();
         }
         // MEETUBE(exact counts): Video details in whole numbers - the likes moved by the person's
         // own tap like the short count (showLikeCount), the views from this video's /player reply.
