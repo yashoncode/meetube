@@ -937,6 +937,7 @@ public class Media3SourceFactory {
     @Nullable
     MediaSource fromDashFormatInfo(MediaItemFormatInfo formatInfo, @Nullable SourceBuildTiming timing) {
         long startMs = android.os.SystemClock.elapsedRealtime();
+        formatInfo = playbackFormats(formatInfo);
         // NEWTUBE(readiness): null unless this answer announced a pre-roll wait (see ReadinessGate).
         ReadinessGate gate = ReadinessGate.forAnswer(formatInfo);
         // NEWTUBE(open-cpu): the same manifest without printing and re-lexing its XML (see
@@ -973,6 +974,7 @@ public class Media3SourceFactory {
     }
 
     MediaSource fromSabrFormatInfo(MediaItemFormatInfo formatInfo) {
+        formatInfo = playbackFormats(formatInfo);
         com.newtube.sabr.SabrStreamInfo info = SabrFormatAdapter.adapt(formatInfo);
         MediaSource source = new com.newtube.sabr.SabrMediaSource(info, getSabrDataSourceFactory(), mBandwidthMeter);
         NetPath.log("sabr source=vod transport=okhttp cache=off tracks=" + info.tracks.size());
@@ -993,6 +995,12 @@ public class Media3SourceFactory {
                     mHttpDataSourceFactory, format, Uri.parse(subtitle.getBaseUrl())));
         }
         return sources.size() == 1 ? source : new MergingMediaSource(sources.toArray(new MediaSource[0]));
+    }
+
+    /** MEETUBE(issue #177): capture once per source, shared by direct MPD, XML fallback and SABR. */
+    PlaybackAudioFormats playbackFormats(MediaItemFormatInfo info) {
+        return info instanceof PlaybackAudioFormats ? (PlaybackAudioFormats) info
+                : PlaybackAudioFormats.select(info, AudioPreferences.isStableVolumeEnabled(mContext));
     }
 
     private synchronized DataSource.Factory getSabrDataSourceFactory() {

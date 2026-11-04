@@ -23,6 +23,8 @@
           xmlns:tools="http://schemas.android.com/tools"
           tools:ignore="UnsupportedTvHardware">
 
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
     <uses-feature
         android:name="android.software.leanback"
         android:required="false"

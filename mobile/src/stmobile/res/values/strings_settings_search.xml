@@ -27,7 +27,7 @@
     <string name="mobile_settings_search_kw_app_icon">launcher logo home screen old classic fantasy white glass heart ruby play dark blaze fire</string>
     <string name="mobile_settings_search_kw_quality">resolution 4k 1080p 720p hd data saver mobile data</string>
     <string name="mobile_settings_search_kw_loudness">volume normalization auto volume quiet loud</string>
-    <string name="mobile_settings_search_kw_player_volume">quiet loud sound</string>
+    <string name="mobile_settings_search_kw_player_volume">quiet loud sound boost gain amplify 125 150 175 200</string>
     <string name="mobile_settings_search_kw_captions">subtitles cc closed captions</string>
     <string name="mobile_settings_search_kw_sponsorblock">skip sponsors ads segments intros</string>
     <string name="mobile_settings_search_kw_dearrow">clickbait titles thumbnails</string>
@@ -45,4 +45,6 @@
     <string name="mobile_settings_search_kw_watched_bar">watched progress red line bar history seen thumbnail</string>
     <string name="mobile_settings_search_kw_refresh_sound">refresh sound pop audio pull swipe noise mute</string>
     <string name="mobile_settings_search_kw_short_ends">shorts loop repeat autoscroll auto scroll next swipe</string>
+    <string name="mobile_settings_search_kw_stable_volume">stable volume drc compression dynamic range audio loud quiet</string>
+    <string name="mobile_settings_search_kw_equalizer">equalizer eq audio bass treble frequencies bands presets custom sound</string>
 </resources>

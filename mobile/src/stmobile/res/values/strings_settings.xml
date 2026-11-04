@@ -43,6 +43,8 @@
     <string name="mobile_settings_playback">Playback</string>
     <string name="mobile_settings_playback_summary">Autoplay, background play, speed</string>
     <string name="mobile_settings_quality">Video quality</string>
+    <string name="mobile_settings_audio_quality">Audio quality</string>
+    <string name="mobile_settings_audio_quality_summary">Stable volume, volume boost and equalizer</string>
     <string name="mobile_settings_captions">Captions</string>
     <string name="mobile_settings_captions_summary">Style, size and position</string>
     <string name="mobile_settings_sponsorblock_on">On · skips sponsors and intros</string>
@@ -295,7 +297,6 @@
     <string name="mobile_settings_quality_data_saver">Saves data</string>
     <string name="mobile_settings_hdr">HDR video</string>
     <string name="mobile_settings_hdr_summary">Plays HDR videos in HDR, brighter and with richer colour. Uses more data. Applies to the next video you open</string>
-    <string name="mobile_settings_audio">Audio</string>
     <string name="mobile_settings_loudness">Even out loudness</string>
     <string name="mobile_settings_loudness_summary">Turns loud videos down to YouTube\'s normal level</string>
     <string name="mobile_settings_player_volume">Player volume</string>
@@ -434,4 +435,12 @@
     <string name="mobile_settings_transfer_imported">Settings imported. MeeTube is restarting</string>
     <string name="mobile_settings_transfer_failed">Couldn\'t save the settings file</string>
     <string name="mobile_settings_transfer_not_settings">That isn\'t a MeeTube settings file</string>
+    <!-- MEETUBE(issue #177): phone player audio. -->
+    <string name="mobile_settings_stable_volume">Stable volume</string>
+    <string name="mobile_settings_stable_volume_summary">Allow YouTube\'s compressed audio to soften loud and quiet parts. Applies to the next video you open</string>
+    <string name="mobile_settings_equalizer">Equalizer</string>
+    <string name="mobile_settings_equalizer_enable">Use equalizer</string>
+    <string name="mobile_settings_equalizer_custom">Custom</string>
+    <string name="mobile_settings_equalizer_reset">Reset</string>
+    <string name="mobile_settings_equalizer_unavailable">The equalizer is unavailable on this device</string>
 </resources>
