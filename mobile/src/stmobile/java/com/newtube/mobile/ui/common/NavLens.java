@@ -201,6 +201,9 @@ public final class NavLens extends View {
             peakSpeed = Math.max(peakSpeed, speed(glide, i / 40f));
         }
         float topSpeed = peakSpeed;
+        // MEETUBE(nav drag): stretched by the distance covered too. A drag let go on its tab glides
+        // nowhere; stretched in full it poked past the bar's rounded end on Home or You.
+        float reach = Math.min(1f, Math.abs(toX - fromX) / Math.max(1, to.getWidth()));
         long settleAt = GLIDE_DELAY_MS + Math.round(glideMs * 0.7f);
         long total = settleAt + (long) SETTLE_MS;
 
@@ -215,7 +218,7 @@ public final class NavLens extends View {
             float travel = clamp((ms - GLIDE_DELAY_MS) / glideMs);
             float settle = Motion.STANDARD.getInterpolation(clamp((ms - settleAt) / SETTLE_MS));
             float presence = grow * (1f - settle);
-            float speed = travel <= 0f || travel >= 1f ? 0f : Math.min(1f, speed(glide, travel) / topSpeed);
+            float speed = travel <= 0f || travel >= 1f ? 0f : Math.min(1f, speed(glide, travel) / topSpeed) * reach;
             mMagnify = lerp(1f, MAGNIFY, presence);
             if (settle > 0f && !settled[0]) {
                 settled[0] = true;
