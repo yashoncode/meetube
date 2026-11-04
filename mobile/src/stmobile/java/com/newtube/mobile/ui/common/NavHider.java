@@ -17,6 +17,8 @@ public final class NavHider extends RecyclerView.OnScrollListener {
     private static final long DURATION_MS = 220;
 
     private final View mBar;
+    /** MEETUBE(issue #181): a bar along the top (the top pills) slides up and away instead of down. */
+    private final boolean mTop;
     private final int mSlopPx;
     private boolean mHidden;
     private boolean mHeld;
@@ -35,7 +37,12 @@ public final class NavHider extends RecyclerView.OnScrollListener {
     }
 
     public NavHider(View bar) {
+        this(bar, false);
+    }
+
+    public NavHider(View bar, boolean top) {
         mBar = bar;
+        mTop = top;
         mSlopPx = Math.round(24 * bar.getResources().getDisplayMetrics().density);
     }
 
@@ -99,7 +106,7 @@ public final class NavHider extends RecyclerView.OnScrollListener {
         mHidden = true;
         int margin = mBar.getLayoutParams() instanceof ViewGroup.MarginLayoutParams
                 ? ((ViewGroup.MarginLayoutParams) mBar.getLayoutParams()).bottomMargin : 0;
-        float travel = mBar.getHeight() + margin;
+        float travel = mTop ? -mBar.getBottom() : mBar.getHeight() + margin;
         mBar.animate().cancel();
         if (mMorph == null || !mMorph.hide(travel)) {
             mBar.animate().translationY(travel).alpha(0f).setDuration(DURATION_MS)

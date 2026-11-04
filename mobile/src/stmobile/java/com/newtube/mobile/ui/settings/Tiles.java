@@ -78,6 +78,7 @@ final class Tiles {
     static final int FX_SEARCH = 28;
     static final int FX_TYPING = 29;
     static final int FX_LABELS = 30;
+    static final int FX_TOP_BAR = 31;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -688,6 +689,24 @@ final class Tiles {
                         mPaint.setColor(color);
                         canvas.drawCircle(x, cy - bar.height() * 0.12f, dot, mPaint);
                         block(canvas, x - dot * 1.8f, cy + bar.height() * 0.12f, x + dot * 1.8f, cy + bar.height() * 0.22f, color);
+                    }
+                    break;
+                }
+                case FX_TOP_BAR: {
+                    // A feed under the top bar's two pills, kept on screen.
+                    RectF screen = new RectF(b.left + h * 0.08f, b.top + h * 0.08f, b.right - h * 0.08f, b.bottom - h * 0.08f);
+                    mPaint.setColor(mScreen);
+                    canvas.drawRoundRect(screen, h * 0.16f, h * 0.16f, mPaint);
+                    float in = h * 0.12f;
+                    float top = screen.top + in;
+                    float bottom = top + h * 0.2f;
+                    pill(canvas, screen.left + in, top, cx, bottom, mBlock);
+                    pill(canvas, screen.right - in - w * 0.22f, top, screen.right - in, bottom, mBlock);
+                    mPaint.setColor(ACCENT);
+                    canvas.drawCircle(screen.left + in + h * 0.1f, (top + bottom) / 2, h * 0.05f, mPaint);
+                    for (int i = 0; i < 2; i++) { // the feed's cards
+                        float y = bottom + h * 0.1f + i * h * 0.2f;
+                        block(canvas, screen.left + in, y, screen.right - in, y + h * 0.12f, mLine);
                     }
                     break;
                 }

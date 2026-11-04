@@ -287,6 +287,11 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_nav_labels_summary),
                 () -> NavTabs.showLabels(context), on -> NavTabs.setShowLabels(context, on)), Tiles.FX_LABELS));
 
+        // MEETUBE(issue #181): off by default - the top pills slide away with the bottom bar.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_top_bar),
+                context.getString(R.string.mobile_settings_top_bar_summary),
+                () -> NavTabs.topBarAlwaysShown(context), on -> NavTabs.setTopBarAlwaysShown(context, on)), Tiles.FX_TOP_BAR));
+
         // MEETUBE(search fab): the corner Search floats to while a scroll has the bar slid away.
         rows.add(Tiles.of(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_search_fab))
                 .option(context.getString(R.string.mobile_settings_search_fab_right), false)
