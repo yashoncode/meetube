@@ -469,7 +469,7 @@
     <string name="mobile_nav_hint_confirm_body">Откроются настройки, где можно выбрать вкладки нижней панели и изменить их порядок.</string>
     <string name="mobile_nav_hint_confirm_open">Открыть</string>
     <string name="mobile_subs_all_channels">Все подписки</string>
-    <string name="mobile_empty_my_videos">Здесь отображаются ваши общедоступные видео. YouTube не показывает личные и видео по ссылке в телевизионной версии, через которую MeeTube выполняет вход.</string>
+    <string name="mobile_empty_my_videos">Здесь отображаются ваши общедоступные видео. MeeTube использует вход через YouTube для телевизоров, где личные видео и видео с доступом по ссылке не отображаются.</string>
     <string name="mobile_settings_double_tap_seek">Двойное касание для перемотки</string>
     <string name="mobile_comment_gif">GIF</string>
     <string name="mobile_download_open_folder">Открыть в папке</string>
@@ -493,8 +493,8 @@
     <string name="mobile_about_log_short">Отправить журнал</string>
     <string name="mobile_about_creator">Автор</string>
     <string name="mobile_about_coffee_note"><![CDATA[<font color="#FF5F56">●</font> <font color="#FFBD2E">●</font> <font color="#27C93F">●</font><br><br><font color="#4ADE80">$</font> meetube --thank-you<br><font color="#E6EDF3">&#160;&#160;реклама: 0 | спонсорские вставки: пропущены</font><br><font color="#8B949E">// собрано в 3 часа ночи на чистом кофеине<br>// ещё кофе? только по желанию :)</font>]]></string>
-    <string name="mobile_about_reporters">Авторы сообщений об ошибках</string>
-    <string name="mobile_about_reporters_summary">Спасибо всем, кто сообщил о проблемах</string>
+    <string name="mobile_about_reporters">Авторы обращений</string>
+    <string name="mobile_about_reporters_summary">Спасибо всем, кто отправил обращение</string>
     <string name="mobile_about_reporters_note">Спасибо всем, кто создавал обращения. Каждый отчёт и каждая идея сделали MeeTube лучше.</string>
     <string name="mobile_about_reporters_loading">Загрузка с GitHub…</string>
     <string name="mobile_about_reporters_failed">Не удалось загрузить список с GitHub. Проверьте подключение и откройте эту страницу снова.</string>
