@@ -139,6 +139,11 @@ public class CommentsPanelLayout extends FrameLayout implements NestedScrollingP
         return mOpen;
     }
 
+    // MEETUBE(lyrics-panel): a fresh binding waits until Material has finished the previous Back.
+    boolean isBackFinishing() {
+        return mBackFinishing;
+    }
+
     public View getSheet() {
         return mSheet;
     }

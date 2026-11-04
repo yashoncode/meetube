@@ -6,6 +6,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.LinearLayout;
@@ -24,8 +25,8 @@ import java.util.regex.Pattern;
 
 /**
  * MEETUBE(description): YouTube's Description panel - the title, a Likes / Views / date row and the
- * description, selectable so any of it can be copied. Opened from the watch page's title; a plain
- * {@link BottomSheetDialog} on the frosted sheet glass, shown by the player (showPlayerSheet).
+ * description, selectable so any of it can be copied. MEETUBE(description-panel): shared by the
+ * portrait page's panel and the fullscreen / Shorts dialog.
  */
 final class DescriptionSheet {
     /** "1.8B views" -> "1.8B" over "Views"; other shapes (other languages) show whole. */
@@ -82,7 +83,28 @@ final class DescriptionSheet {
             fillUnder(dialog, content, video);
         }
 
-        content.findViewById(R.id.description_sheet_close).setOnClickListener(v -> dialog.dismiss());
+        bind(content, dialog::dismiss, title, likes, views, date, description, extras);
+        return dialog;
+    }
+
+    // MEETUBE(description-panel): fresh content resets the scroll, rows and Subscribe's listeners.
+    static void bindPanel(@NonNull CommentsPanelLayout panel, CharSequence title, @Nullable CharSequence likes,
+                          @Nullable String views, @Nullable String date, CharSequence description,
+                          @NonNull Extras extras) {
+        ViewGroup sheet = (ViewGroup) panel.getSheet();
+        View body = sheet.findViewById(R.id.description_sheet_body);
+        int index = sheet.indexOfChild(body);
+        ViewGroup.LayoutParams params = body.getLayoutParams();
+        sheet.removeView(body);
+        View fresh = LayoutInflater.from(panel.getContext()).inflate(R.layout.mobile_description_body, sheet, false);
+        sheet.addView(fresh, index, params);
+        bind(panel, panel::close, title, likes, views, date, description, extras);
+    }
+
+    private static void bind(View content, Runnable dismiss, CharSequence title, @Nullable CharSequence likes,
+                             @Nullable String views, @Nullable String date, CharSequence description, Extras extras) {
+        android.content.Context context = content.getContext();
+        content.findViewById(R.id.description_sheet_close).setOnClickListener(v -> dismiss.run());
         ((TextView) content.findViewById(R.id.description_sheet_title)).setText(title);
         TextView text = content.findViewById(R.id.description_sheet_text);
         // A selectable TextView with autoLink still clicks the ClickableSpan under a tap.
@@ -91,11 +113,11 @@ final class DescriptionSheet {
 
         LinearLayout stats = content.findViewById(R.id.description_sheet_stats);
         if (!TextUtils.isEmpty(likes)) {
-            addStat(stats, likes, activity.getString(R.string.mobile_description_likes));
+            addStat(stats, likes, context.getString(R.string.mobile_description_likes));
         }
         if (!TextUtils.isEmpty(views)) {
             Matcher m = VIEWS.matcher(views.trim());
-            addStat(stats, m.matches() ? m.group(1) : views, m.matches() ? activity.getString(R.string.mobile_description_views) : null);
+            addStat(stats, m.matches() ? m.group(1) : views, m.matches() ? context.getString(R.string.mobile_description_views) : null);
         }
         if (!TextUtils.isEmpty(date)) {
             Matcher m = DATE.matcher(date.trim());
@@ -106,11 +128,11 @@ final class DescriptionSheet {
         if (extras.transcript != null) {
             content.findViewById(R.id.description_sheet_transcript).setVisibility(View.VISIBLE);
             content.findViewById(R.id.description_sheet_transcript_show).setOnClickListener(v -> {
-                dialog.dismiss();
+                dismiss.run();
                 extras.transcript.run();
             });
         }
-        bindChannel(dialog, content, extras);
+        bindChannel(content, dismiss, extras);
 
         LinearLayout details = content.findViewById(R.id.description_sheet_details_rows);
         if (!TextUtils.isEmpty(date)) {
@@ -130,15 +152,17 @@ final class DescriptionSheet {
         }
         content.findViewById(R.id.description_sheet_details)
                 .setVisibility(details.getChildCount() > 0 ? View.VISIBLE : View.GONE);
-        return dialog;
     }
 
     /**
-     * Sizes the sheet to reach exactly the video's bottom edge, measured on screen before its first
-     * frame: the dialog's frame need not end where the page does (a navigation bar inset).
+     * Sizes the sheet to the comments panel's place, measured on screen before its first frame: from
+     * the video's bottom edge down to where the watch page ends, above the navigation bar. The
+     * dialog's frame runs on under that bar, so it is lifted by the difference, and the sheet drops
+     * its padding for the bar.
      */
     static void fillUnder(BottomSheetDialog dialog, View content, View video) {
         int minPx = Math.round(240 * content.getResources().getDisplayMetrics().density);
+        View page = video.getRootView().findViewById(R.id.mobile_watch_area);
         content.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             private final int[] mAt = new int[2];
 
@@ -149,14 +173,28 @@ final class DescriptionSheet {
                 if (frame == null || frame.getHeight() == 0) {
                     return true;
                 }
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) frame.getLayoutParams();
                 frame.getLocationOnScreen(mAt);
-                int frameBottom = mAt[1] + frame.getHeight();
+                int frameBottom = mAt[1] + frame.getHeight() + lp.bottomMargin; // where it ends unlifted
+                int bottom = frameBottom;
+                if (page != null && page.getHeight() > 0) {
+                    page.getLocationOnScreen(mAt);
+                    bottom = Math.min(bottom, mAt[1] + page.getHeight());
+                }
+                int lift = frameBottom - bottom;
+                int padBottom = lift > 0 ? 0 : sheet.getPaddingBottom();
                 video.getLocationOnScreen(mAt);
-                int height = frameBottom - (mAt[1] + video.getHeight());
-                int contentHeight = height - sheet.getPaddingTop() - sheet.getPaddingBottom();
-                if (height < minPx || contentHeight == content.getMinimumHeight()) {
+                int height = bottom - (mAt[1] + video.getHeight());
+                int contentHeight = height - sheet.getPaddingTop() - padBottom;
+                if (height < minPx || (contentHeight == content.getMinimumHeight()
+                        && lp.bottomMargin == lift && sheet.getPaddingBottom() == padBottom)) {
                     return true;
                 }
+                if (lp.bottomMargin != lift) {
+                    lp.bottomMargin = lift;
+                    frame.setLayoutParams(lp);
+                }
+                sheet.setPadding(sheet.getPaddingLeft(), sheet.getPaddingTop(), sheet.getPaddingRight(), padBottom);
                 content.setMinimumHeight(contentHeight);
                 dialog.getBehavior().setMaxHeight(height);
                 return false; // laid out again at that height before anything is drawn
@@ -164,7 +202,7 @@ final class DescriptionSheet {
         });
     }
 
-    private static void bindChannel(BottomSheetDialog dialog, View content, Extras extras) {
+    private static void bindChannel(View content, Runnable dismiss, Extras extras) {
         if (TextUtils.isEmpty(extras.channel)) {
             return;
         }
@@ -186,7 +224,7 @@ final class DescriptionSheet {
         if (extras.openChannel != null) {
             // The whole row, picture and name (Subscribe takes its own taps).
             content.findViewById(R.id.description_sheet_channel_row).setOnClickListener(v -> {
-                dialog.dismiss();
+                dismiss.run();
                 extras.openChannel.run();
             });
         }
@@ -224,8 +262,8 @@ final class DescriptionSheet {
         };
         source.addTextChangedListener(watcher);
         source.addOnLayoutChangeListener(follow);
-        // Not setOnDismissListener: showPlayerSheet owns the dialog's.
-        content.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+        // MEETUBE(description-panel): the body detaches on rebind; the dialog's body detaches on dismiss.
+        subscribe.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(@NonNull View v) {
             }
@@ -234,6 +272,8 @@ final class DescriptionSheet {
             public void onViewDetachedFromWindow(@NonNull View v) {
                 source.removeTextChangedListener(watcher);
                 source.removeOnLayoutChangeListener(follow);
+                subscribe.removeCallbacks(mirror);
+                subscribe.removeOnAttachStateChangeListener(this);
             }
         });
     }

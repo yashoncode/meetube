@@ -365,6 +365,13 @@ public class MobilePlaybackActivity extends MobileActivity
     private View mWatchCommentsEntry;
     private TextView mWatchCommentsCount;
     private CommentsPanel mCommentsPanel;
+    // MEETUBE(lyrics-panel): portrait side panels share the comments panel's frame and motion.
+    private CommentsPanelLayout mDescriptionPanel;
+    private CommentsPanelLayout mLyricsPanel;
+    private CommentsPanelLayout mTranscriptPanel;
+    private CommentsPanelLayout[] mSidePanels = new CommentsPanelLayout[0];
+    private final Map<CommentsPanelLayout, Runnable> mSidePanelBindings = new LinkedHashMap<>();
+    private androidx.activity.OnBackPressedCallback mSidePanelBackCallback;
     /** NEWTUBE(comments-panel): best effort, a little after the video starts, so the panel opens full. */
     private static final long COMMENTS_PREFETCH_DELAY_MS = 2_000;
     private final Runnable mPrefetchComments = this::prefetchComments;
@@ -1568,6 +1575,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // Comments open the panel over the watch page; live chat opens its bottom sheet. The
         // panel is created here, after the player's back handler, so its own is asked first.
         mCommentsPanel = new CommentsPanel(this, findViewById(R.id.mobile_comments_panel), mCommentsHost);
+        setupSidePanels();
         if (mWatchCommentsEntry != null) {
             mWatchCommentsEntry.setOnClickListener(v -> onCommentsEntryClicked());
         }
@@ -1625,6 +1633,11 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
 
+        // MEETUBE(lyrics-panel): fullscreen and Shorts close the panels; returning shows the page.
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE
+                || isTallMode() || (mShorts != null && mShorts.isActive())) {
+            closeSidePanelsImmediately();
+        }
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
 
         // The fill / original snap is a fullscreen gesture, as YouTube's; the free zoom (#55) is
@@ -2288,6 +2301,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 mFullAfterComments = false; // the player comes back as the page left it
                 mCommentsPanel.closeImmediately();
             }
+            closeSidePanelsImmediately();
         }
         Utils.removeCallbacks(mPrefetchComments);
     }
@@ -2347,6 +2361,13 @@ public class MobilePlaybackActivity extends MobileActivity
         Utils.removeCallbacks(mNextTopComment);
         if (mCommentsPanel != null) {
             mCommentsPanel.release();
+        }
+        closeSidePanelsImmediately();
+        for (CommentsPanelLayout panel : mSidePanels) {
+            panel.setCallback(null);
+        }
+        if (mSidePanelBackCallback != null) {
+            mSidePanelBackCallback.remove();
         }
         mRelatedRenderGate.cancelPending();
         // The loading still is loaded through the application request manager (see
@@ -2534,6 +2555,7 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     protected boolean onThemeChanged(int night) {
         dismissPlayerSheets();
+        closeSidePanelsImmediately(); // MEETUBE(lyrics-panel): open again in the new theme
         for (androidx.fragment.app.Fragment fragment : getSupportFragmentManager().getFragments()) {
             if (fragment instanceof androidx.fragment.app.DialogFragment) {
                 ((androidx.fragment.app.DialogFragment) fragment).dismissAllowingStateLoss();
@@ -2766,6 +2788,9 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(content);
+        }
+        for (CommentsPanelLayout panel : mSidePanels) {
+            panel.setAlpha(content);
         }
         LyricsSheet.setMorphAlpha(mLyricsSheet, content); // MEETUBE(lyrics)
         LyricsSheet.setMorphAlpha(mTranscriptSheet, content); // MEETUBE(transcript)
@@ -3493,6 +3518,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mCommentsPanel != null) {
             mCommentsPanel.setSuspended(true);
         }
+        closeSidePanelsImmediately();
         if (mVideoArea != null) {
             mVideoArea.setVisibility(View.VISIBLE);
             LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
@@ -7228,7 +7254,8 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mWatchScroll == null || mWatchScroll.getVisibility() != View.VISIBLE || mWatchScroll.getScrollY() != 0
                 || mTallBoxCollapse > 0 // the pull grows the box first (#36)
                 || isLandscape() || isTallMode() || mIsInPip || mClosing || mMorphFraction != 0f
-                || (mCommentsPanel != null && mCommentsPanel.isOpen())) {
+                || (mCommentsPanel != null && mCommentsPanel.isOpen())
+                || (openSidePanel() != null)) {
             return false;
         }
         int[] at = new int[2];
@@ -7913,6 +7940,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(contentAlpha);
         }
+        for (CommentsPanelLayout panel : mSidePanels) {
+            panel.setAlpha(contentAlpha);
+        }
         LyricsSheet.setMorphAlpha(mLyricsSheet, contentAlpha); // MEETUBE(lyrics): fades like the comments
         LyricsSheet.setMorphAlpha(mTranscriptSheet, contentAlpha);
     }
@@ -8043,6 +8073,9 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mCommentsPanel != null) {
             mCommentsPanel.setMorphAlpha(1f);
+        }
+        for (CommentsPanelLayout panel : mSidePanels) {
+            panel.setAlpha(1f);
         }
         LyricsSheet.setMorphAlpha(mLyricsSheet, 1f); // MEETUBE(lyrics)
         LyricsSheet.setMorphAlpha(mTranscriptSheet, 1f);
@@ -8334,6 +8367,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         // MEETUBE(lyrics): the panel goes with the watch page. Left open, its window outlived the
         // minimize and resetMorph faded it back in over the mini player (issue #30).
+        closeSidePanelsImmediately();
         if (mLyricsSheet != null) {
             mLyricsSheet.dismiss();
             mLyricsSheet = null;
@@ -9948,6 +9982,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mCommentsKey == null || mCommentsPanel == null) {
             return;
         }
+        closeSidePanelsImmediately(); // MEETUBE(lyrics-panel): one panel at a time
         // NEWTUBE(comments-panel): the open-time image hold is NOT lifted here (the old sheet did):
         // that resumed every queued watch-page image before the first frame. Avatars wait for the
         // hold's normal release like the rest of the page.
@@ -10044,6 +10079,9 @@ public class MobilePlaybackActivity extends MobileActivity
 
         @Override
         public void onCommentsPanelShown(boolean shown) {
+            if (shown) {
+                closeSidePanelsImmediately(); // MEETUBE(lyrics-panel): also covers a deferred open
+            }
             // MEETUBE(shorts): the comments of a short closed - it fills the screen again.
             if (!shown && mShorts != null && mShorts.isCommentsOpen()) {
                 onShortsCommentsClosed();
@@ -10061,11 +10099,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 setPortraitFull(true);
             }
             // The page under the panel is covered: keep TalkBack off it (the video stays reachable).
-            if (mWatchScroll != null) {
-                mWatchScroll.setImportantForAccessibility(shown
-                        ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
-                        : View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
-            }
+            updateSidePanelsShown(shown);
         }
     };
 
@@ -10211,6 +10245,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 mFullAfterComments = false; // another video: its own page, not the old fullscreen
                 mCommentsPanel.onVideoChanged(item.videoId);
             }
+            closeSidePanelsImmediately();
             if (mWatchScroll != null) {
                 mWatchScroll.scrollTo(0, 0);
             }
@@ -10304,6 +10339,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mWatchCommentsCount.setText(null);
         }
         clearTopComments();
+        closeSidePanelImmediately(mTranscriptPanel);
         if (mTranscriptSheet != null) {
             mTranscriptSheet.dismiss(); // the last video's words
             mTranscriptSheet = null;
@@ -10548,6 +10584,16 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mCaptionInfo != null && video != null && Helpers.equals(video.videoId, mCaptionInfo.getVideoId())) {
             extras.views = Helpers.parseLong(mCaptionInfo.getViewCount());
         }
+        // MEETUBE(description-panel): portrait lives under the video, so its seek dot draws over the edge.
+        if (canShowSidePanel()) {
+            if (!prepareSidePanel(mDescriptionPanel)) {
+                return;
+            }
+            DescriptionSheet.bindPanel(mDescriptionPanel, mWatchTitle.getText(), likes, mDescriptionViews,
+                    mDescriptionDate, mWatchDescription.getText(), extras);
+            mDescriptionPanel.open();
+            return;
+        }
         showPlayerSheet(DescriptionSheet.create(this, mWatchTitle.getText(), likes, mDescriptionViews,
                 mDescriptionDate, mWatchDescription.getText(),
                 // A short fills the screen: a plain sheet over it, not one sized to under the video.
@@ -10555,6 +10601,148 @@ public class MobilePlaybackActivity extends MobileActivity
                 !shorts); // sideways, beside the video as it plays, YouTube's
         if (isLandscape() && !shorts) {
             hideControls(); // the picture beside the card, clear
+        }
+    }
+
+    // MEETUBE(lyrics-panel): one Back handler for the open panel, ahead of the player's.
+    private void setupSidePanels() {
+        mDescriptionPanel = findViewById(R.id.mobile_description_panel);
+        mLyricsPanel = findViewById(R.id.mobile_lyrics_panel);
+        mTranscriptPanel = findViewById(R.id.mobile_transcript_panel);
+        mSidePanels = new CommentsPanelLayout[]{mDescriptionPanel, mLyricsPanel, mTranscriptPanel};
+        mSidePanelBackCallback = new androidx.activity.OnBackPressedCallback(false) {
+            @Nullable private androidx.activity.BackEventCompat mLastBackEvent;
+            @Nullable private CommentsPanelLayout mBackPanel;
+
+            @Override
+            public void handleOnBackStarted(@NonNull androidx.activity.BackEventCompat backEvent) {
+                mLastBackEvent = null;
+                mBackPanel = openSidePanel();
+                if (mBackPanel != null) {
+                    mBackPanel.startBackProgress(backEvent);
+                }
+            }
+
+            @Override
+            public void handleOnBackProgressed(@NonNull androidx.activity.BackEventCompat backEvent) {
+                mLastBackEvent = backEvent;
+                if (mBackPanel != null) {
+                    mBackPanel.updateBackProgress(backEvent);
+                }
+            }
+
+            @Override
+            public void handleOnBackCancelled() {
+                mLastBackEvent = null;
+                if (mBackPanel != null) {
+                    mBackPanel.cancelBackProgress();
+                    mBackPanel = null;
+                }
+            }
+
+            @Override
+            public void handleOnBackPressed() {
+                CommentsPanelLayout panel = mBackPanel != null ? mBackPanel : openSidePanel();
+                androidx.activity.BackEventCompat last = mLastBackEvent;
+                mLastBackEvent = null;
+                mBackPanel = null;
+                if (panel != null) {
+                    panel.handleBack(last);
+                    releaseSidePanelBinding(panel);
+                }
+                setEnabled(false);
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, mSidePanelBackCallback);
+        int[] titles = {R.string.mobile_watch_description, R.string.mobile_lyrics, R.string.mobile_transcript};
+        for (int i = 0; i < mSidePanels.length; i++) {
+            CommentsPanelLayout panel = mSidePanels[i];
+            panel.setCallback(new CommentsPanelLayout.Callback() {
+                @Override
+                public void onPanelOpened() {
+                    updateSidePanelsShown();
+                }
+
+                @Override
+                public void onPanelClosing(long durationMs) {
+                    mSidePanelBackCallback.setEnabled(false);
+                    releaseSidePanelBinding(panel);
+                }
+
+                @Override
+                public void onPanelClosed() {
+                    releaseSidePanelBinding(panel);
+                    updateSidePanelsShown();
+                }
+            });
+            ViewCompat.setAccessibilityPaneTitle(panel.getSheet(), getString(titles[i]));
+        }
+    }
+
+    private boolean canShowSidePanel() {
+        boolean shorts = mShorts != null && mShorts.isActive();
+        return !isLandscape() && !shorts && !mPortraitFull && !mIsInPip && !mPipEnterPending;
+    }
+
+    @Nullable
+    private CommentsPanelLayout openSidePanel() {
+        for (CommentsPanelLayout panel : mSidePanels) {
+            if (panel.isOpen()) {
+                return panel;
+            }
+        }
+        return null;
+    }
+
+    private boolean prepareSidePanel(CommentsPanelLayout panel) {
+        if (panel.isOpen() || panel.isBackFinishing()) {
+            return false;
+        }
+        mFullAfterComments = false;
+        if (mCommentsPanel != null) {
+            mCommentsPanel.closeImmediately();
+        }
+        closeSidePanelsImmediately();
+        com.newtube.mobile.ui.common.SheetGlass.frost(panel.getSheet(), getWindow());
+        return true;
+    }
+
+    private void updateSidePanelsShown() {
+        updateSidePanelsShown(mCommentsPanel != null && mCommentsPanel.isOpen());
+    }
+
+    private void updateSidePanelsShown(boolean commentsShown) {
+        boolean shown = openSidePanel() != null;
+        if (mSidePanelBackCallback != null) {
+            mSidePanelBackCallback.setEnabled(shown);
+        }
+        if (mWatchScroll != null) {
+            mWatchScroll.setImportantForAccessibility(shown || commentsShown
+                    ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                    : View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+        }
+    }
+
+    // MEETUBE(transcript-panel): release polling, search and late answers on every close path.
+    private void releaseSidePanelBinding(CommentsPanelLayout panel) {
+        Runnable release = mSidePanelBindings.remove(panel);
+        if (release != null) {
+            release.run();
+        }
+    }
+
+    private void closeSidePanelImmediately(@Nullable CommentsPanelLayout panel) {
+        if (panel != null) {
+            releaseSidePanelBinding(panel);
+            panel.closeImmediately();
+            updateSidePanelsShown();
+        }
+    }
+
+    // MEETUBE(lyrics-panel): an interrupted close already cleared isOpen; reset Back and TalkBack too.
+    private void closeSidePanelsImmediately() {
+        for (CommentsPanelLayout panel : mSidePanels) {
+            closeSidePanelImmediately(panel);
         }
     }
 
@@ -10578,6 +10766,17 @@ public class MobilePlaybackActivity extends MobileActivity
         com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle track = transcriptTrack();
         if (track == null || isFinishing()) {
             return false;
+        }
+        // MEETUBE(transcript-panel): portrait shares the description panel's place and motion.
+        if (canShowSidePanel()) {
+            if (!prepareSidePanel(mTranscriptPanel)) {
+                return mTranscriptPanel.isOpen();
+            }
+            mSidePanelBindings.put(mTranscriptPanel, TranscriptSheet.bindPanel(mTranscriptPanel, track,
+                    () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1,
+                    positionMs -> seekFromList(positionMs, null), noLyrics));
+            mTranscriptPanel.open();
+            return true;
         }
         mTranscriptSheet = TranscriptSheet.create(this, track, isLandscape() ? null : mVideoArea,
                 () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1,
@@ -10973,6 +11172,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mMusicPillVideoId = videoId;
         mWatchMusic.setVisibility(View.GONE);
+        closeSidePanelImmediately(mLyricsPanel);
         if (mLyricsSheet != null) {
             mLyricsSheet.dismiss();
             mLyricsSheet = null;
@@ -10991,6 +11191,18 @@ public class MobilePlaybackActivity extends MobileActivity
     private void showLyricsSheet() {
         Video video = getVideo();
         if (video == null || TextUtils.isEmpty(video.videoId) || isFinishing()) {
+            return;
+        }
+        // MEETUBE(lyrics-panel): portrait shares the description panel's place and motion.
+        if (canShowSidePanel()) {
+            if (!prepareSidePanel(mLyricsPanel)) {
+                return;
+            }
+            mSidePanelBindings.put(mLyricsPanel, LyricsSheet.bindPanel(this, mLyricsPanel,
+                    video.videoId, video.getTitle(), video.getAuthor(),
+                    () -> mExoPlayerController != null ? mExoPlayerController.getPositionMs() : -1,
+                    this::showPlayerSheet, transcriptTrack() != null ? this::showTranscriptSheet : null));
+            mLyricsPanel.open();
             return;
         }
         mLyricsSheet = LyricsSheet.create(this, video.videoId, video.getTitle(), video.getAuthor(),

@@ -33,6 +33,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BooleanSupplier;
 import java.util.function.LongConsumer;
 import java.util.function.LongSupplier;
 
@@ -107,12 +108,57 @@ final class TranscriptSheet {
         } else {
             dialog.setCanceledOnTouchOutside(false); // fullscreen: a tap on the video keeps it too
         }
-        content.findViewById(R.id.transcript_sheet_close).setOnClickListener(v -> dialog.dismiss());
+        bind(content, dialog::dismiss, dialog::isShowing, track, position, seek, noLyrics);
+        return dialog;
+    }
+
+    // MEETUBE(transcript-panel): a fresh body resets the search, list and their listeners.
+    static Runnable bindPanel(@NonNull CommentsPanelLayout panel, @NonNull MediaSubtitle track,
+                              @NonNull LongSupplier position, @NonNull LongConsumer seek, boolean noLyrics) {
+        ViewGroup sheet = (ViewGroup) panel.getSheet();
+        View body = sheet.findViewById(R.id.transcript_sheet_body);
+        int index = sheet.indexOfChild(body);
+        ViewGroup.LayoutParams params = body.getLayoutParams();
+        sheet.removeView(body);
+        View fresh = LayoutInflater.from(panel.getContext()).inflate(R.layout.mobile_transcript_body, sheet, false);
+        sheet.addView(fresh, index, params);
+        return bind(panel, panel::close, panel::isOpen, track, position, seek, noLyrics);
+    }
+
+    private static Runnable bind(View content, Runnable dismiss, BooleanSupplier showing, MediaSubtitle track,
+                                 LongSupplier position, LongConsumer seek, boolean noLyrics) {
+        boolean[] bound = {true};
+        BooleanSupplier active = () -> bound[0] && showing.getAsBoolean();
+        Runnable[] stopFollowing = {null};
+        View close = content.findViewById(R.id.transcript_sheet_close);
+        EditText search = content.findViewById(R.id.transcript_sheet_search);
+        close.setOnClickListener(v -> dismiss.run());
+        Runnable release = LyricsSheet.releaseOnDetach(content.findViewById(R.id.transcript_sheet_body), () -> {
+            if (!bound[0]) {
+                return;
+            }
+            bound[0] = false;
+            if (stopFollowing[0] != null) {
+                stopFollowing[0].run();
+            }
+            close.setOnClickListener(null);
+            if (search.hasFocus()) {
+                search.clearFocus();
+                android.view.inputmethod.InputMethodManager ime = (android.view.inputmethod.InputMethodManager)
+                        content.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+                if (ime != null) {
+                    ime.hideSoftInputFromWindow(search.getWindowToken(), 0);
+                }
+            }
+        });
         TextView language = content.findViewById(R.id.transcript_sheet_language);
+        language.setMaxLines(1);
+        language.setText(null);
+        language.setVisibility(View.GONE);
         // Without the auto marker (TranslatedCaptionTrack.TRANSLATE_MARKER).
         String name = TextUtils.isEmpty(track.getName()) ? "" : track.getName().replace("*", "").trim();
         if (noLyrics) {
-            String none = activity.getString(R.string.mobile_lyrics_none);
+            String none = content.getContext().getString(R.string.mobile_lyrics_none);
             name = name.isEmpty() ? none : none + " · " + name;
             language.setMaxLines(2);
         }
@@ -132,19 +178,23 @@ final class TranscriptSheet {
                 android.util.Log.w("Transcript", "fetch failed: " + e);
             }
             List<Line> answer = lines;
-            main.post(() -> show(dialog, content, answer, position, seek));
+            main.post(() -> {
+                if (bound[0]) { // MEETUBE(transcript-panel): ignore the previous binding's answer
+                    stopFollowing[0] = show(content, answer, position, seek, active);
+                }
+            });
         });
-        return dialog;
+        return release;
     }
 
-    private static void show(BottomSheetDialog dialog, View content, @Nullable List<Line> lines,
-                             LongSupplier position, LongConsumer seek) {
+    private static Runnable show(View content, @Nullable List<Line> lines,
+                                 LongSupplier position, LongConsumer seek, BooleanSupplier showing) {
         content.findViewById(R.id.transcript_sheet_loading).setVisibility(View.GONE);
         if (lines == null || lines.isEmpty()) {
             TextView empty = content.findViewById(R.id.transcript_sheet_empty);
             empty.setText(lines == null ? R.string.mobile_transcript_failed : R.string.mobile_transcript_none);
             empty.setVisibility(View.VISIBLE);
-            return;
+            return () -> {};
         }
         RecyclerView list = content.findViewById(R.id.transcript_sheet_list);
         LinearLayoutManager layout = new LinearLayoutManager(list.getContext());
@@ -154,7 +204,7 @@ final class TranscriptSheet {
         list.setVisibility(View.VISIBLE);
 
         EditText search = content.findViewById(R.id.transcript_sheet_search);
-        search.addTextChangedListener(new TextWatcher() {
+        TextWatcher watcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -168,7 +218,8 @@ final class TranscriptSheet {
                 adapter.filter(s.toString());
                 list.scrollToPosition(0);
             }
-        });
+        };
+        search.addTextChangedListener(watcher);
 
         long[] touchedAt = {-HANDS_OFF_MS};
         list.setOnTouchListener((v, event) -> {
@@ -177,11 +228,11 @@ final class TranscriptSheet {
             }
             return false;
         });
-        list.post(new Runnable() {
+        Runnable follow = new Runnable() {
             @Override
             public void run() {
-                if (!list.isAttachedToWindow()) {
-                    return; // closed (a post before the sheet shows waits for it to attach)
+                if (!showing.getAsBoolean() || !list.isAttachedToWindow()) {
+                    return; // MEETUBE(transcript-panel): the panel stays attached while closed
                 }
                 int said = adapter.said(position.getAsLong());
                 if (said >= 0 && SystemClock.uptimeMillis() - touchedAt[0] > HANDS_OFF_MS
@@ -206,7 +257,14 @@ final class TranscriptSheet {
                 }
                 list.postDelayed(this, TICK_MS);
             }
-        });
+        };
+        list.post(follow);
+        return () -> {
+            list.removeCallbacks(follow);
+            list.stopScroll();
+            list.setOnTouchListener(null);
+            search.removeTextChangedListener(watcher);
+        };
     }
 
     /** json3: {"events":[{"tStartMs":..,"segs":[{"utf8":".."}]}]}; a line-break event carries no words. */

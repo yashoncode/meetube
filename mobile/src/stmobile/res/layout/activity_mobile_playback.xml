@@ -1125,6 +1125,9 @@
         </com.newtube.mobile.ui.common.GlassView>
 
         <include layout="@layout/mobile_comments_panel" />
+        <include layout="@layout/mobile_description_panel" />
+        <include layout="@layout/mobile_lyrics_panel" />
+        <include layout="@layout/mobile_transcript_panel" />
 
         </FrameLayout>
 
