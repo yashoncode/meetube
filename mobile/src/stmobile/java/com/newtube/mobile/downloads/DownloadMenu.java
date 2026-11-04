@@ -42,11 +42,19 @@ public final class DownloadMenu {
                         openFolder(context, item);
                     }));
         }
-        if (item.isFailed()) {
-            dialog.appendSingleButton(UiOptionItem.from(context.getString(R.string.mobile_download_retry),
+        if (item.isFailed() || item.isPaused()) {
+            dialog.appendSingleButton(UiOptionItem.from(context.getString(item.isPaused()
+                            ? R.string.mobile_download_resume : R.string.mobile_download_retry),
                     optionItem -> {
                         dialog.closeDialog();
-                        MobileDownloadService.retry(context, item);
+                        MobileDownloadService.resume(context, item);
+                    }));
+        }
+        if (item.state == DownloadItem.STATE_QUEUED || item.state == DownloadItem.STATE_DOWNLOADING) {
+            dialog.appendSingleButton(UiOptionItem.from(context.getString(R.string.mobile_download_pause),
+                    optionItem -> {
+                        dialog.closeDialog();
+                        MobileDownloadService.pause(context, item);
                     }));
         }
         if (item.isActive()) {

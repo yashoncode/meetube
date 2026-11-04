@@ -345,6 +345,11 @@
     <string name="mobile_download_badge_queued">В очереди</string>
     <string name="mobile_download_badge_downloading">Загрузка</string>
     <string name="mobile_download_badge_failed">Ошибка</string>
+    <string name="mobile_download_pause">Приостановить загрузку</string>
+    <string name="mobile_download_resume">Возобновить загрузку</string>
+    <string name="mobile_download_action_pause">Пауза</string>
+    <string name="mobile_download_state_paused">Приостановлено · %1$d%% · %2$s из %3$s</string>
+    <string name="mobile_download_badge_paused">Пауза</string>
     <string name="mobile_download_channel_name">Загрузки</string>
     <string name="mobile_download_channel_desc">Прогресс загрузки видео</string>
     <string name="mobile_update_checking">Проверка обновлений…</string>

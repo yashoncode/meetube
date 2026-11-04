@@ -20,6 +20,8 @@ public final class DownloadItem {
     public static final int STATE_PROCESSING = 2;
     public static final int STATE_DONE = 3;
     public static final int STATE_FAILED = 4;
+    /** Stopped by the user (or by a process death) with its part files kept: Resume goes on from there. */
+    public static final int STATE_PAUSED = 5;
 
     public final String id;
     public final String videoId;
@@ -56,6 +58,7 @@ public final class DownloadItem {
     public transient volatile long videoLength = -1;
     public transient volatile long audioLength = -1;
     public transient volatile boolean cancelRequested;
+    public transient volatile boolean pauseRequested;
 
     public DownloadItem(String id, String videoId, String title, @Nullable String author,
                         @Nullable String thumbUrl, int kind, @Nullable String qualityLabel,
@@ -102,6 +105,10 @@ public final class DownloadItem {
 
     public boolean isFailed() {
         return state == STATE_FAILED;
+    }
+
+    public boolean isPaused() {
+        return state == STATE_PAUSED;
     }
 
     /** 0..100, or -1 while the total is unknown. */

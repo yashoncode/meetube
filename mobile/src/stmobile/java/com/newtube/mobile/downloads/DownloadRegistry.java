@@ -33,9 +33,9 @@ import java.util.concurrent.Executors;
  * mutates items and calls {@link #notifyChanged}. Listeners are always called on the main
  * thread. Writes are coalesced onto a single background thread.
  *
- * <p>An item found DOWNLOADING or PROCESSING when the registry loads was interrupted by a
- * process death: it is marked failed-retryable, and its part files keep whatever was fetched
- * so a Retry resumes rather than restarts.
+ * <p>An item found QUEUED, DOWNLOADING or PROCESSING when the registry loads was interrupted by
+ * a process death: it is marked paused, and its part files keep whatever was fetched so Resume
+ * goes on rather than restarts.
  */
 public final class DownloadRegistry {
     private static final String TAG = DownloadRegistry.class.getSimpleName();
@@ -122,11 +122,11 @@ public final class DownloadRegistry {
         return null;
     }
 
-    /** The queued/running download of this video, if any - video file or audio track alike. */
+    /** The queued/running/paused download of this video, if any - video file or audio track alike. */
     @Nullable
     public synchronized DownloadItem findActive(String videoId) {
         for (DownloadItem item : mItems) {
-            if (item.isActive() && item.videoId.equals(videoId)) {
+            if ((item.isActive() || item.isPaused()) && item.videoId.equals(videoId)) {
                 return item;
             }
         }
@@ -220,7 +220,7 @@ public final class DownloadRegistry {
                 if (item.state == DownloadItem.STATE_DOWNLOADING || item.state == DownloadItem.STATE_PROCESSING
                         || item.state == DownloadItem.STATE_QUEUED) {
                     // Interrupted by a process death: nothing is running it any more.
-                    item.state = DownloadItem.STATE_FAILED;
+                    item.state = DownloadItem.STATE_PAUSED;
                     item.error = null;
                 }
                 mItems.add(item);

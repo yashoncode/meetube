@@ -535,6 +535,11 @@
     <string name="mobile_download_badge_queued">Queued</string>
     <string name="mobile_download_badge_downloading">Downloading</string>
     <string name="mobile_download_badge_failed">Failed</string>
+    <string name="mobile_download_pause">Pause download</string>
+    <string name="mobile_download_resume">Resume download</string>
+    <string name="mobile_download_action_pause">Pause</string>
+    <string name="mobile_download_state_paused">Paused · %1$d%% · %2$s of %3$s</string>
+    <string name="mobile_download_badge_paused">Paused</string>
     <string name="mobile_download_channel_name">Downloads</string>
     <string name="mobile_download_channel_desc">Progress of video downloads</string>
 

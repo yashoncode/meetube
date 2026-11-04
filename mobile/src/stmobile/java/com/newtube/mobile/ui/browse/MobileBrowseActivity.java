@@ -2456,8 +2456,8 @@ public class MobileBrowseActivity extends MobileActivity
             return;
         }
 
-        // NEWTUBE(downloads): a card that is still downloading (or failed) has no file to play
-        // yet - its tap opens the download's own menu (cancel / retry / delete). A finished one
+        // NEWTUBE(downloads): a card that is still downloading (or paused, or failed) has no file to
+        // play yet - its tap opens the download's own menu (pause / resume / cancel / retry / delete). A finished one
         // carries its local file and goes through the ordinary play route below.
         DownloadItem download = DownloadsBridge.instance(this).itemFor(video);
         if (download != null && !download.isDone()) {
