@@ -68,9 +68,13 @@ final class DownloadJob {
             retirePreviousCopies();
             deleteParts(videoPart, audioPart);
         } catch (StreamFetcher.CancelledException e) {
-            deleteParts(videoPart, audioPart);
-            mRegistry.remove(mItem);
-            return;
+            if (mItem.cancelRequested) {
+                deleteParts(videoPart, audioPart);
+                mRegistry.remove(mItem);
+                return;
+            }
+            // Paused: the parts stay, and Resume appends to them.
+            mItem.state = DownloadItem.STATE_PAUSED;
         } catch (StreamFetcher.UrlRefusedException e) {
             Log.w(TAG, "download refused: " + e);
             fail(mContext.getString(R.string.mobile_download_error_link));
@@ -186,7 +190,7 @@ final class DownloadJob {
             mRegistry.notifyChanged();
             mListener.onProgress(mItem);
         }
-        return !mItem.cancelRequested;
+        return !mItem.cancelRequested && !mItem.pauseRequested;
     }
 
     /**

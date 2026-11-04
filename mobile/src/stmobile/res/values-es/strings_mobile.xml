@@ -453,6 +453,11 @@
     <string name="mobile_download_badge_queued">En cola</string>
     <string name="mobile_download_badge_downloading">Descargando</string>
     <string name="mobile_download_badge_failed">Error</string>
+    <string name="mobile_download_pause">Pausar la descarga</string>
+    <string name="mobile_download_resume">Reanudar la descarga</string>
+    <string name="mobile_download_action_pause">Pausar</string>
+    <string name="mobile_download_state_paused">En pausa · %1$d%% · %2$s de %3$s</string>
+    <string name="mobile_download_badge_paused">En pausa</string>
     <string name="mobile_download_channel_name">Descargas</string>
     <string name="mobile_download_channel_desc">Progreso de las descargas de vídeo</string>
 

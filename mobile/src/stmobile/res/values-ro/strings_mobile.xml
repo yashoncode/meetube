@@ -341,6 +341,11 @@
     <string name="mobile_download_badge_queued">În așteptare</string>
     <string name="mobile_download_badge_downloading">Se descarcă</string>
     <string name="mobile_download_badge_failed">Eșuat</string>
+    <string name="mobile_download_pause">Întrerupe descărcarea</string>
+    <string name="mobile_download_resume">Reia descărcarea</string>
+    <string name="mobile_download_action_pause">Pauză</string>
+    <string name="mobile_download_state_paused">În pauză · %1$d%% · %2$s din %3$s</string>
+    <string name="mobile_download_badge_paused">În pauză</string>
     <string name="mobile_download_channel_name">Descărcări</string>
     <string name="mobile_download_channel_desc">Progresul descărcării videoclipului</string>
     <string name="mobile_update_checking">Verificare pentru actualizări…</string>

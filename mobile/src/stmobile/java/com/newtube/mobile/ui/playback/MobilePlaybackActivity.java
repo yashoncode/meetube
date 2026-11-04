@@ -11090,6 +11090,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (item.isFailed()) {
             return getString(R.string.mobile_download_retry);
         }
+        if (item.isPaused()) {
+            return getString(R.string.mobile_download_badge_paused);
+        }
         return getString(R.string.mobile_download_badge_queued);
     }
 
@@ -11137,13 +11140,16 @@ public class MobilePlaybackActivity extends MobileActivity
                 mWatchDownloadLabel.setText(R.string.mobile_download_pill_downloaded);
             } else if (item != null && item.state == DownloadItem.STATE_DOWNLOADING && item.progressPercent() >= 0) {
                 mWatchDownloadLabel.setText(item.progressPercent() + "%");
+            } else if (item != null && item.isPaused()) {
+                mWatchDownloadLabel.setText(R.string.mobile_download_badge_paused);
             } else if (item != null && item.isActive()) {
                 mWatchDownloadLabel.setText(R.string.mobile_download_badge_queued);
             } else {
                 mWatchDownloadLabel.setText(R.string.dialog_download);
             }
             if (mWatchCompact) {
-                mWatchDownloadLabel.setVisibility(item != null && item.isActive() ? View.VISIBLE : View.GONE);
+                mWatchDownloadLabel.setVisibility(item != null && (item.isActive() || item.isPaused())
+                        ? View.VISIBLE : View.GONE);
             }
         });
     }

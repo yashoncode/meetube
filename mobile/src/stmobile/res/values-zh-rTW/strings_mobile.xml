@@ -462,6 +462,11 @@
     <string name="mobile_download_badge_queued">排隊中</string>
     <string name="mobile_download_badge_downloading">下載中</string>
     <string name="mobile_download_badge_failed">失敗</string>
+    <string name="mobile_download_pause">暫停下載</string>
+    <string name="mobile_download_resume">繼續下載</string>
+    <string name="mobile_download_action_pause">暫停</string>
+    <string name="mobile_download_state_paused">已暫停・%1$d%%・%2$s／%3$s</string>
+    <string name="mobile_download_badge_paused">已暫停</string>
     <string name="mobile_download_channel_name">下載</string>
     <string name="mobile_download_channel_desc">影片下載進度</string>
     <string name="mobile_update_checking">

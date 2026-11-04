@@ -40,6 +40,7 @@ public final class MobileDownloadService extends Service {
 
     private static final String ACTION_START = "com.newtube.mobile.downloads.START";
     private static final String ACTION_CANCEL = "com.newtube.mobile.downloads.CANCEL";
+    private static final String ACTION_PAUSE = "com.newtube.mobile.downloads.PAUSE";
     private static final String EXTRA_ITEM_ID = "item_id";
 
     private final ExecutorService mWorker = Executors.newSingleThreadExecutor(r -> new Thread(r, "newtube-download"));
@@ -55,13 +56,26 @@ public final class MobileDownloadService extends Service {
         start(context);
     }
 
-    /** Re-runs a failed item (part files, if any, resume where they stopped). */
-    public static void retry(Context context, DownloadItem item) {
+    /** Re-runs a paused or failed item (part files, if any, resume where they stopped). */
+    public static void resume(Context context, DownloadItem item) {
         item.state = DownloadItem.STATE_QUEUED;
         item.error = null;
         item.cancelRequested = false;
+        item.pauseRequested = false;
         DownloadRegistry.instance(context).notifyChanged();
         start(context);
+    }
+
+    /**
+     * Stops an item and keeps what it fetched. The running job polls the flag at its next
+     * progress tick and marks itself paused; a queued item is paused right away.
+     */
+    public static void pause(Context context, DownloadItem item) {
+        item.pauseRequested = true;
+        if (item.state == DownloadItem.STATE_QUEUED) {
+            item.state = DownloadItem.STATE_PAUSED;
+            DownloadRegistry.instance(context).notifyChanged();
+        }
     }
 
     /**
@@ -93,13 +107,15 @@ public final class MobileDownloadService extends Service {
         String action = intent != null ? intent.getAction() : null;
 
         // Every start must promote promptly: a startForegroundService() that never reaches
-        // startForeground() is an ANR-class crash on API 26+. Cancel arrives the same way (the
-        // notification action), so it promotes too and steps back down when nothing is running.
+        // startForeground() is an ANR-class crash on API 26+. Cancel and Pause arrive the same way
+        // (the notification actions), so they promote too and step back down when nothing is running.
         promote(buildProgressNotification(mRegistry.nextQueued()));
 
-        if (ACTION_CANCEL.equals(action)) {
+        if (ACTION_CANCEL.equals(action) || ACTION_PAUSE.equals(action)) {
             DownloadItem item = mRegistry.find(intent.getStringExtra(EXTRA_ITEM_ID));
-            if (item != null) {
+            if (item != null && ACTION_PAUSE.equals(action)) {
+                pause(this, item);
+            } else if (item != null) {
                 cancel(this, item);
             }
             synchronized (mDrainLock) {
@@ -220,8 +236,10 @@ public final class MobileDownloadService extends Service {
             int percent = item.progressPercent();
             builder.setContentText(DownloadProgressText.of(this, item))
                     .setProgress(100, Math.max(0, percent), percent < 0);
+            builder.addAction(R.drawable.ic_player_pause, getString(R.string.mobile_download_action_pause),
+                    actionIntent(item, ACTION_PAUSE));
             builder.addAction(R.drawable.ic_sheet_close, getString(R.string.cancel),
-                    cancelIntent(item));
+                    actionIntent(item, ACTION_CANCEL));
         }
         return builder.build();
     }
@@ -248,9 +266,9 @@ public final class MobileDownloadService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    private PendingIntent cancelIntent(DownloadItem item) {
+    private PendingIntent actionIntent(DownloadItem item, String action) {
         Intent intent = new Intent(this, MobileDownloadService.class)
-                .setAction(ACTION_CANCEL)
+                .setAction(action)
                 .putExtra(EXTRA_ITEM_ID, item.id);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
