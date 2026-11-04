@@ -239,7 +239,7 @@
     <string name="mobile_settings_video_ends_shuffle">Shuffle the playlist</string>
     <string name="mobile_settings_video_ends_list">Finish the playlist, then stop</string>
     <string name="mobile_settings_video_ends_reverse">Play the playlist backwards</string>
-    <string name="mobile_settings_video_ends_pause">Pause</string>
+    <string name="mobile_settings_video_ends_pause">Stop</string>
     <string name="mobile_settings_video_ends_close">Close the player</string>
     <string name="mobile_settings_background">When you leave the app</string>
     <string name="mobile_settings_background_pip_desc">The video keeps playing in a small window</string>
