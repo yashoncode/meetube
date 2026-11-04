@@ -23,6 +23,9 @@
 
 <table>
 <tr>
+<td colspan="2" valign="top">🎚️ <b>YouTube Equalizer</b><br>Tune how YouTube sounds with your phone's presets or your own bands, live as it plays. Hear the original audio instead of YouTube's compressed track, and turn the volume up to 200%.</td>
+</tr>
+<tr>
 <td width="50%" valign="top">🚫 <b>No ads, no sponsors</b><br>Ads are gone, and SponsorBlock skips sponsors, intros and "like and subscribe" reminders.</td>
 <td width="50%" valign="top">💎 <b>Liquid glass</b><br>Frosted, lens-bending glass on the tab bar, the player and Shorts, lit by GlowFlow: a glow that follows your tab, your progress and live channels.</td>
 </tr>
@@ -47,7 +50,7 @@
 <td valign="top">🔄 <b>Always something new</b><br>Pull Home to refresh and get videos you haven't seen yet.</td>
 </tr>
 <tr>
-<td valign="top">🌏 <b>Speaks your language</b><br>English, Español, Română, Русский, 简体中文 and 繁體中文. Channel pages, view counts and dates follow your language too. <a href="TRANSLATING.md">Help translate</a>.</td>
+<td valign="top">🌏 <b>Speaks your language</b><br>English, Español, Română, Русский, 简体中文, 繁體中文 and العربية. Channel pages, view counts and dates follow your language too. <a href="TRANSLATING.md">Help translate</a>.</td>
 <td valign="top">🔐 <b>Your account, your subscriptions</b><br>Sign in with a code, or use it without an account. Cast to your TV.</td>
 </tr>
 </table>

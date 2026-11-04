@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.3.1** Pluto](#331-pluto) | 2026-11-04 | Tuned |
 | [**3.3.0** Glitch](#330-glitch) | 2026-11-03 | Polished |
 | [**3.2.7** HotLight](#327-hotlight) | 2026-11-02 | Lighter |
 | [**3.2.5** Plazma](#325-plazma) | 2026-11-01 | Smoother |
@@ -41,6 +42,55 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.3.1 Pluto
+
+> **Tuned**<br>
+> 📅 2026-11-04 · closes #69, #87, #151, #157, #167, #171, #172, #175, #177, #179, #181, #190 and #191
+
+### 🎚️ YouTube Equalizer
+
+- An Equalizer for everything you watch: your phone's presets or your own bands, applied live, in Settings > Audio quality (#177).
+- Stable volume is off by default, so you hear YouTube's original audio instead of its compressed track.
+- Player volume goes up to 200%.
+
+### 📺 Try MeeTube TV
+
+MeeTube's glass design is on Android TV and Google TV, in beta. Get [MeeTube TV 0.0.1 Beta](https://github.com/yashoncode/meetube/releases/tag/tv-v0.0.1-beta), try it on your TV and tell me what you think: [open an issue](https://github.com/yashoncode/meetube/issues/new/choose) and pick MeeTube TV, or say it in [Discussions](https://github.com/yashoncode/meetube/discussions).
+
+### New
+
+- Pause and resume downloads from their menu or notification, and a download cut off by closing the app comes back paused instead of failed (#191).
+- Tap a timestamp in a video's description to jump there (#175).
+- Hold a channel in the Subscriptions strip to open its menu, and tap it again to go back to All (#87).
+- Player button style in Customization: See-through, Frosted, or Minimal with bare icons like YouTube.
+- App name in the top bar in Customization: turn it off and only the icon shows.
+- MeeTube speaks Arabic on every phone screen and setting, with fixes to the existing Arabic text (#69).
+
+### Changed
+
+- The top bar slides away as you scroll down and comes back when you scroll up; Always show the top bar keeps it in place (#181).
+- Description, Lyrics and Transcript open under the video like Comments, so the seek bar stays in sight.
+- A tap on the locked player shows the seek bar, the time and the chapter (#157).
+- When a video ends, Pause is now Stop, and the video waits at its end with Replay (#167).
+- On the You page your profile picture sits in a frosted glass disc, and every Library and Explore icon gets a frosted bubble.
+- Every row of a download's menu has an icon, and the Pin to You rows get a pin.
+
+### Fixed
+
+- Shorts keep playing after a swipe (#172).
+- A minimized video keeps playing when you tap Home from Search or a channel (#171).
+- The Home tab opens Home after History, instead of refreshing History (#179).
+- Each chapter pop-up shows once, not again after a seek or when the controls hide (#151).
+- GIFs in comments show up instead of a blank comment (#190).
+- Shorts from History open in the Shorts player.
+- Menu icons no longer vanish in the light theme.
+- The tab bar's Search bubble and lens stay inside the bar.
+- A crash after closing a Short is gone.
+
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @Hammoudi99, @KrishnakantShedge, @Ishaanj2007, @dhanunjay333i-cyber, @Evergreenpro, @alibinarshad, @mygtvact and @sakuraDev31.
 
 ## 3.3.0 Glitch
 
