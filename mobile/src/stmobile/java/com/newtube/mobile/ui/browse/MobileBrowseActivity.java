@@ -1818,7 +1818,7 @@ public class MobileBrowseActivity extends MobileActivity
 
     /**
      * One glass changing shape between the bar and the Search bubble (its corners always round, so
-     * it stays a capsule), on a spring that bulges a touch past and settles. The tabs dissolve as it
+     * it stays a capsule), on a spring that bulges a touch past the bubble and settles. The tabs dissolve as it
      * shrinks and come back as it reaches the bar's size; the Search icon the other way round. A
      * morph cut short turns round from the shape it had reached.
      */
@@ -1842,8 +1842,10 @@ public class MobileBrowseActivity extends MobileActivity
         bar.setTranslationY(0f);
         bar.setTranslationZ(1f); // the tabs fade over the glass, not under it
 
+        // MEETUBE(search fab): back to the bar without passing it: a bulge over the whole bar's width
+        // landed ~30px out past its end, doubling the edge as the bar faded in under it.
         Motion.Spring spring = toButton ? new Motion.Spring(0f, 1f, 0f, 300f, 0.68f, 0.002f)
-                : new Motion.Spring(0f, 1f, 0f, 340f, 0.72f, 0.002f);
+                : new Motion.Spring(0f, 1f, 0f, 340f, 1f, 0.002f);
         android.animation.ValueAnimator morph = android.animation.ValueAnimator.ofFloat(0f, 1f);
         morph.setDuration(Math.max(1, spring.durationMs));
         morph.setInterpolator(spring);
