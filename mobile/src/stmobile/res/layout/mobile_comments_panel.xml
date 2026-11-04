@@ -65,11 +65,11 @@
                             android:id="@+id/comments_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="sans-serif-medium"
                             android:maxLines="1"
                             android:text="@string/mobile_comments_title"
                             android:textColor="@color/mobile_color_on_surface"
-                            android:textSize="18sp" />
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/comments_count"
@@ -89,11 +89,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:alpha="0"
-                        android:fontFamily="sans-serif-medium"
                         android:maxLines="1"
                         android:text="@string/mobile_comments_replies_title"
                         android:textColor="@color/mobile_color_on_surface"
                         android:textSize="18sp"
+                        android:textStyle="bold"
                         android:visibility="invisible" />
 
                 </FrameLayout>

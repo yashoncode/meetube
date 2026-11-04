@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -27,6 +28,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.Haptics;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 
@@ -72,30 +74,103 @@ final class LyricsSheet {
         } else {
             dialog.setCanceledOnTouchOutside(false); // fullscreen: a tap on the video keeps them too
         }
-        content.findViewById(R.id.lyrics_sheet_close).setOnClickListener(v -> dialog.dismiss());
+        bind(activity, content, dialog::dismiss, dialog::isShowing, videoId, title, channel, position, showSheet, transcript);
+        return dialog;
+    }
+
+    // MEETUBE(lyrics-panel): fresh content resets the scroll and releases the previous follow loop.
+    static Runnable bindPanel(@NonNull Activity activity, @NonNull CommentsPanelLayout panel, @NonNull String videoId,
+                              String title, String channel, @NonNull LongSupplier position,
+                              @NonNull Consumer<BottomSheetDialog> showSheet, @Nullable Predicate<Boolean> transcript) {
+        ViewGroup sheet = (ViewGroup) panel.getSheet();
+        View body = sheet.findViewById(R.id.lyrics_sheet_body);
+        int index = sheet.indexOfChild(body);
+        ViewGroup.LayoutParams params = body.getLayoutParams();
+        sheet.removeView(body);
+        View fresh = LayoutInflater.from(panel.getContext()).inflate(R.layout.mobile_lyrics_body, sheet, false);
+        sheet.addView(fresh, index, params);
+        return bind(activity, panel, panel::close, panel::isOpen, videoId, title, channel, position, showSheet, transcript);
+    }
+
+    private static Runnable bind(Activity activity, View content, Runnable dismiss, BooleanSupplier showing,
+                                 String videoId, String title, String channel, LongSupplier position,
+                                 Consumer<BottomSheetDialog> showSheet, @Nullable Predicate<Boolean> transcript) {
+        boolean[] bound = {true};
+        BooleanSupplier active = () -> bound[0] && showing.getAsBoolean();
+        Runnable[] stopFollowing = {null};
+        Chooser[] chooser = {null};
+        View close = content.findViewById(R.id.lyrics_sheet_close);
+        View provider = content.findViewById(R.id.lyrics_sheet_provider);
+        close.setOnClickListener(v -> dismiss.run());
+        provider.setVisibility(View.GONE);
+        provider.setOnClickListener(null);
+        Runnable release = releaseOnDetach(content.findViewById(R.id.lyrics_sheet_body), () -> {
+            if (!bound[0]) {
+                return;
+            }
+            bound[0] = false;
+            if (stopFollowing[0] != null) {
+                stopFollowing[0].run();
+            }
+            if (chooser[0] != null) {
+                chooser[0].close();
+            }
+            close.setOnClickListener(null);
+            provider.setOnClickListener(null);
+        });
         Lyrics.fetch(videoId, title != null ? title : "", channel != null ? channel : "", song -> {
+            if (!bound[0]) {
+                return; // MEETUBE(lyrics-panel): an answer for a closed or rebound panel
+            }
             content.findViewById(R.id.lyrics_sheet_loading).setVisibility(View.GONE);
             if (song == null) {
-                if (transcript != null && dialog.isShowing() && transcript.test(true)) {
-                    dialog.dismiss();
+                if (transcript != null && active.getAsBoolean() && transcript.test(true)) {
+                    dismiss.run();
                     return;
                 }
                 content.findViewById(R.id.lyrics_sheet_empty).setVisibility(View.VISIBLE);
                 return;
             }
-            Runnable showLyrics = () -> show(dialog, content, song, position);
+            Runnable showLyrics = () -> {
+                if (!bound[0]) {
+                    return;
+                }
+                if (stopFollowing[0] != null) {
+                    stopFollowing[0].run();
+                }
+                stopFollowing[0] = show(content, song, position, active);
+            };
             Runnable showTranscript = transcript == null ? null : () -> {
-                if (transcript.test(false)) {
-                    dialog.dismiss();
+                if (active.getAsBoolean() && transcript.test(false)) {
+                    dismiss.run();
                 }
             };
-            Chooser chooser = new Chooser(activity, song, showSheet, showLyrics, showTranscript);
-            View provider = content.findViewById(R.id.lyrics_sheet_provider);
+            chooser[0] = new Chooser(activity, song, showSheet, showLyrics, showTranscript);
             provider.setVisibility(View.VISIBLE);
-            provider.setOnClickListener(v -> chooser.open());
+            provider.setOnClickListener(v -> chooser[0].open());
             showLyrics.run();
         });
-        return dialog;
+        return release;
+    }
+
+    // MEETUBE(lyrics-panel): dialogs detach on dismiss; panels also release explicitly on close.
+    static Runnable releaseOnDetach(View body, Runnable release) {
+        View.OnAttachStateChangeListener listener = new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(@NonNull View v) {
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(@NonNull View v) {
+                v.removeOnAttachStateChangeListener(this);
+                release.run();
+            }
+        };
+        body.addOnAttachStateChangeListener(listener);
+        return () -> {
+            body.removeOnAttachStateChangeListener(listener);
+            release.run();
+        };
     }
 
     /**
@@ -146,7 +221,7 @@ final class LyricsSheet {
     }
 
     /** The lyrics of the provider the song {@link Lyrics.Song#shown shows}, in place of any shown before. */
-    private static void show(BottomSheetDialog dialog, View content, Lyrics.Song song, LongSupplier position) {
+    private static Runnable show(View content, Lyrics.Song song, LongSupplier position, BooleanSupplier showing) {
         Lyrics lyrics = song.lyrics(song.shown); // never null: only a provider with lyrics is shown
         String provider = Lyrics.PROVIDERS[song.shown];
         ((TextView) content.findViewById(R.id.lyrics_sheet_provider_name)).setText(provider);
@@ -167,7 +242,7 @@ final class LyricsSheet {
             text.setLineSpacing(0, 1.3f);
             text.setTextIsSelectable(true);
             lines.addView(text);
-            return;
+            return () -> {};
         }
         for (String words : lyrics.lines) {
             TextView line = line(lines, words, 22, R.color.mobile_color_on_surface_secondary);
@@ -175,15 +250,15 @@ final class LyricsSheet {
             line.setPadding(0, 0, 0, Math.round(14 * content.getResources().getDisplayMetrics().density));
             lines.addView(line);
         }
-        follow(dialog, scroll, lines, lyrics.times, position);
+        return follow(scroll, lines, lyrics.times, position, showing);
     }
 
     /**
      * Lights the line being sung and keeps it a third of the way down, until the sheet closes or other
      * lyrics take the lines' place.
      */
-    private static void follow(BottomSheetDialog dialog, NestedScrollView scroll, LinearLayout lines, long[] times,
-                               LongSupplier position) {
+    private static Runnable follow(NestedScrollView scroll, LinearLayout lines, long[] times,
+                                   LongSupplier position, BooleanSupplier showing) {
         int dim = ContextCompat.getColor(scroll.getContext(), R.color.mobile_color_on_surface_secondary);
         int lit = ContextCompat.getColor(scroll.getContext(), R.color.mobile_color_on_surface);
         long[] touchedAt = {-HANDS_OFF_MS};
@@ -193,12 +268,12 @@ final class LyricsSheet {
             }
             return false;
         });
-        lines.post(new Runnable() {
+        Runnable follow = new Runnable() {
             private int mCurrent = -1;
 
             @Override
             public void run() {
-                if (!dialog.isShowing() || lines.getTag() != times) {
+                if (!showing.getAsBoolean() || lines.getTag() != times) {
                     return;
                 }
                 long at = position.getAsLong() + LEAD_MS;
@@ -222,7 +297,12 @@ final class LyricsSheet {
                 }
                 lines.postDelayed(this, TICK_MS);
             }
-        });
+        };
+        lines.post(follow);
+        return () -> {
+            lines.removeCallbacks(follow);
+            scroll.setOnTouchListener(null);
+        };
     }
 
     private static TextView line(View parent, CharSequence text, int sp, int color) {
@@ -286,6 +366,14 @@ final class LyricsSheet {
             });
             fill();
             mShowSheet.accept(list);
+        }
+
+        // MEETUBE(lyrics-panel): the chooser belongs to this binding, including late provider answers.
+        void close() {
+            mWanted = -1;
+            if (mList != null) {
+                mList.dismiss();
+            }
         }
 
         /** A row per provider: its name over what it has for this song. */
