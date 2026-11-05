@@ -133,7 +133,8 @@ public class PlayerUIController extends BasePlayerController {
             return false;
         }
 
-        boolean isHandled = handleBackKey(keyCode) || handleMenuKey(keyCode) ||
+        // MEETUBE(shorts): Prioritize short navigation over the quick-skip preferences.
+        boolean isHandled = handleBackKey(keyCode) || handleShortsKeys(keyCode) || handleMenuKey(keyCode) ||
                 handleConfirmKey(keyCode) || handleStopKey(keyCode) || handleNumKeys(keyCode) ||
                 handlePlayPauseKey(keyCode) || handleLeftRightSkip(keyCode) || handleUpDownSkip(keyCode);
 
@@ -802,6 +803,35 @@ public class PlayerUIController extends BasePlayerController {
         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
             getMainController().onPreviousClicked();
             return true; // hide ui
+        }
+
+        return false;
+    }
+
+    // MEETUBE(shorts): Remote actions while a short plays with normal controls hidden.
+    private boolean handleShortsKeys(int keyCode) {
+        if (getPlayer() == null || getVideo() == null || !getVideo().isShorts || getPlayer().isOverlayShown()) {
+            return false;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            getMainController().onNextClicked();
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            getMainController().onPreviousClicked();
+            return true;
+        }
+
+        if (KeyHelpers.isConfirmKey(keyCode)) {
+            getPlayer().setPlayWhenReady(!getPlayer().getPlayWhenReady());
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            getPlayer().showControls(true);
+            return true;
         }
 
         return false;

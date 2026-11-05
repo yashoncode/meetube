@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE: sidebar rhythm and the shared list/orb alignment, without changing global Leanback sizes. -->
+    <dimen name="browse_sidebar_item_height">54dp</dimen>
+    <dimen name="browse_sidebar_item_spacing">8dp</dimen>
+    <dimen name="browse_sidebar_icon_size">24dp</dimen>
+    <dimen name="browse_sidebar_text_size">16sp</dimen>
+    <dimen name="browse_sidebar_item_padding_start">16dp</dimen>
+    <dimen name="browse_sidebar_item_padding_end">20dp</dimen>
+    <dimen name="browse_sidebar_panel_inset">16dp</dimen>
+    <dimen name="browse_sidebar_panel_padding">20dp</dimen>
+</resources>

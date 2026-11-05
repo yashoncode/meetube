@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE: browse-title greeting and its User interface setting. -->
+    <string name="greeting_hey">Hey, %s</string>
+    <string name="title_greeting">Greeting in the top bar</string>
+</resources>

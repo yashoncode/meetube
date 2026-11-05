@@ -13,7 +13,6 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.base.BasePresenter;
 import com.liskovsoft.smartyoutubetv2.common.prefs.DeArrowData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
-import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData.ColorScheme;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerData;
 import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 
@@ -49,21 +48,18 @@ public class MainUISettingsPresenter extends BasePresenter<Void> {
         AppDialogPresenter settingsPresenter = AppDialogPresenter.instance(getContext());
 
         appendTopButtonsCategory(settingsPresenter);
-        appendColorScheme(settingsPresenter);
+        // MEETUBE: one fixed glass theme; legacy color schemes are ignored.
         if (Build.VERSION.SDK_INT > 19) {
             appendCardTextScrollSpeed(settingsPresenter);
         }
         appendCardPreviews(settingsPresenter);
         appendCardStyle(settingsPresenter);
         appendThumbSource(settingsPresenter);
-        //appendCardTitleLines(settingsPresenter);
         appendChannelSortingCategory(settingsPresenter);
-        //appendPlaylistsCategoryStyle(settingsPresenter);
         appendScaleUI(settingsPresenter);
         if (Build.VERSION.SDK_INT > 19) {
             appendVideoGridScale(settingsPresenter);
         }
-        //appendTimeFormatCategory(settingsPresenter);
         appendMiscCategory(settingsPresenter);
 
         settingsPresenter.showDialog(getContext().getString(R.string.dialog_main_ui), mOnFinish);
@@ -86,28 +82,6 @@ public class MainUISettingsPresenter extends BasePresenter<Void> {
         }
 
         settingsPresenter.appendCheckedCategory(getContext().getString(R.string.various_buttons), options);
-    }
-
-    private void appendColorScheme(AppDialogPresenter settingsPresenter) {
-        List<ColorScheme> colorSchemes = mMainUIData.getColorSchemes();
-
-        settingsPresenter.appendRadioCategory(getContext().getString(R.string.color_scheme), fromColorSchemes(colorSchemes));
-    }
-
-    private List<OptionItem> fromColorSchemes(List<ColorScheme> colorSchemes) {
-        List<OptionItem> styleOptions = new ArrayList<>();
-
-        for (ColorScheme colorScheme : colorSchemes) {
-            styleOptions.add(UiOptionItem.from(
-                    getContext().getString(colorScheme.nameResId),
-                    option -> {
-                        mMainUIData.setColorScheme(colorScheme);
-                        mRestartApp = true;
-                    },
-                    colorScheme.equals(mMainUIData.getColorScheme())));
-        }
-
-        return styleOptions;
     }
 
     private void appendCardPreviews(AppDialogPresenter settingsPresenter) {
@@ -138,7 +112,11 @@ public class MainUISettingsPresenter extends BasePresenter<Void> {
                 option -> mMainUIData.setCardTextAutoScrollEnabled(option.isSelected()), mMainUIData.isCardTextAutoScrollEnabled());
 
         OptionItem unlocalizedTitle = UiOptionItem.from(getContext().getString(R.string.card_unlocalized_titles),
-                option -> mMainUIData.setUnlocalizedTitlesEnabled(option.isSelected()), mMainUIData.isUnlocalizedTitlesEnabled());
+                option -> {
+                    // MEETUBE: keep the single titles toggle here, including its DeArrow interaction.
+                    mMainUIData.setUnlocalizedTitlesEnabled(option.isSelected());
+                    mDeArrowData.setReplaceTitlesEnabled(false);
+                }, mMainUIData.isUnlocalizedTitlesEnabled());
 
         OptionItem roundedCardCorners = UiOptionItem.from(getContext().getString(R.string.rounded_card_corners),
                 option -> {
@@ -160,18 +138,6 @@ public class MainUISettingsPresenter extends BasePresenter<Void> {
         options.add(roundedCardCorners);
 
         settingsPresenter.appendCheckedCategory(getContext().getString(R.string.cards_style), options);
-    }
-
-    private void appendCardTitleLines(AppDialogPresenter settingsPresenter) {
-        List<OptionItem> options = new ArrayList<>();
-
-        for (int linesNum : new int[] {1, 2, 3, 4}) {
-            options.add(UiOptionItem.from(String.format("%s", linesNum),
-                    optionItem -> mMainUIData.setCartTitleLinesNum(linesNum),
-                    linesNum == mMainUIData.getCardTitleLinesNum()));
-        }
-
-        settingsPresenter.appendRadioCategory(getContext().getString(R.string.card_title_lines_num), options);
     }
 
     private void appendThumbSource(AppDialogPresenter settingsPresenter) {
@@ -205,21 +171,6 @@ public class MainUISettingsPresenter extends BasePresenter<Void> {
         }
 
         settingsPresenter.appendRadioCategory(getContext().getString(R.string.channels_section_sorting), options);
-    }
-
-    private void appendPlaylistsCategoryStyle(AppDialogPresenter settingsPresenter) {
-        List<OptionItem> options = new ArrayList<>();
-
-        for (int[] pair : new int[][] {
-                {R.string.playlists_style_grid, MainUIData.PLAYLISTS_STYLE_GRID},
-                {R.string.playlists_style_rows, MainUIData.PLAYLISTS_STYLE_ROWS}}) {
-            options.add(UiOptionItem.from(getContext().getString(pair[0]), optionItem -> {
-                mMainUIData.setPlaylistsStyle(pair[1]);
-                BrowsePresenter.instance(getContext()).updatePlaylistsStyle();
-            }, mMainUIData.getPlaylistsStyle() == pair[1]));
-        }
-
-        settingsPresenter.appendRadioCategory(getContext().getString(R.string.playlists_style), options);
     }
 
     private void appendScaleUI(AppDialogPresenter settingsPresenter) {
@@ -264,38 +215,14 @@ public class MainUISettingsPresenter extends BasePresenter<Void> {
         settingsPresenter.appendRadioCategory(getContext().getString(R.string.video_grid_scale), options);
     }
 
-    private void appendTimeFormatCategory(AppDialogPresenter settingsPresenter) {
-        List<OptionItem> options = new ArrayList<>();
-
-        options.add(UiOptionItem.from(
-                getContext().getString(R.string.time_format_24),
-                option -> {
-                    mGeneralData.set24HourLocaleEnabled(true);
-                    mRestartApp = true;
-                },
-                mGeneralData.is24HourLocaleEnabled()));
-
-        options.add(UiOptionItem.from(
-                getContext().getString(R.string.time_format_12),
-                option -> {
-                    mGeneralData.set24HourLocaleEnabled(false);
-                    mRestartApp = true;
-                },
-                !mGeneralData.is24HourLocaleEnabled()));
-
-        settingsPresenter.appendRadioCategory(getContext().getString(R.string.time_format), options);
-    }
-
     private void appendMiscCategory(AppDialogPresenter settingsPresenter) {
         List<OptionItem> options = new ArrayList<>();
-        
-        options.add(UiOptionItem.from(getContext().getString(R.string.card_unlocalized_titles),
-                option -> {
-                    mMainUIData.setUnlocalizedTitlesEnabled(option.isSelected());
-                    mDeArrowData.setReplaceTitlesEnabled(false);
-                },
-                mMainUIData.isUnlocalizedTitlesEnabled()));
 
+        // MEETUBE: a live browse-title switch, enabled by default.
+        options.add(UiOptionItem.from(getContext().getString(R.string.title_greeting),
+                option -> mMainUIData.setTitleGreetingEnabled(option.isSelected()),
+                mMainUIData.isTitleGreetingEnabled()));
+        
         options.add(UiOptionItem.from(getContext().getString(R.string.time_format_24) + " " + getContext().getString(R.string.time_format),
                 option -> {
                     mGeneralData.set24HourLocaleEnabled(option.isSelected());
@@ -318,12 +245,7 @@ public class MainUISettingsPresenter extends BasePresenter<Void> {
                 option -> mPlayerData.setGlobalEndingTimeEnabled(option.isSelected()),
                 mPlayerData.isGlobalEndingTimeEnabled()));
 
-        options.add(UiOptionItem.from(getContext().getString(R.string.channels_old_look),
-                optionItem -> {
-                    mMainUIData.setUploadsOldLookEnabled(optionItem.isSelected());
-                    mRestartApp = true;
-                },
-                mMainUIData.isUploadsOldLookEnabled()));
+        // MEETUBE: Subscriptions always uses the glass channel pills and All feed.
 
         options.add(UiOptionItem.from(getContext().getString(R.string.fullscreen_mode),
                 option -> {

@@ -135,6 +135,16 @@ public class MainUIData extends DataChangeBase implements ProfileChangeListener 
         return sInstance;
     }
 
+    // MEETUBE: independent preference; keep the positional main_ui_data2 string unchanged.
+    public boolean isTitleGreetingEnabled() {
+        return mPrefs.getBoolean("meetube_title_greeting", false); // MEETUBE: off unless turned on
+    }
+
+    public void setTitleGreetingEnabled(boolean enabled) {
+        mPrefs.putBoolean("meetube_title_greeting", enabled);
+        onDataChange();
+    }
+
     public boolean isCardMultilineTitleEnabled() {
         return mIsCardMultilineTitleEnabled;
     }
@@ -206,7 +216,7 @@ public class MainUIData extends DataChangeBase implements ProfileChangeListener 
     }
 
     public ColorScheme getColorScheme() {
-        return mColorSchemes.get(mColorSchemeIndex);
+        return mColorSchemes.get(1); // MEETUBE: always the default (Dark Grey, the glass design's base), ignoring saved schemes.
     }
 
     public void setColorScheme(ColorScheme scheme) {
@@ -233,7 +243,7 @@ public class MainUIData extends DataChangeBase implements ProfileChangeListener 
     }
 
     public boolean isUploadsOldLookEnabled() {
-        return mIsUploadsOldLookEnabled;
+        return false; // MEETUBE: Subscriptions always uses the new multi-grid channel list.
     }
 
     public void setUploadsOldLookEnabled(boolean enable) {

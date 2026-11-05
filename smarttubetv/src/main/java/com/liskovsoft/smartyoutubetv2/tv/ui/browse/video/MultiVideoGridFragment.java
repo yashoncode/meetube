@@ -216,7 +216,9 @@ public class MultiVideoGridFragment extends MultiGridFragment implements VideoSe
     private void setupAdapter() {
         // Left vertical list of channels
         VerticalGridPresenter presenter1 = new CustomVerticalGridPresenter(R.layout.lb_vertical_grid1, R.id.browse_grid1);
-        presenter1.enableChildRoundedCorners(getMainUIData().isUiTweakEnabled(MainUIData.UI_TWEAK_ROUNDED_CORNERS));
+        // MEETUBE: the channel rows are glass pills (channel_card), a square shadow or clip would frame them
+        presenter1.enableChildRoundedCorners(false);
+        presenter1.setShadowEnabled(false);
         presenter1.setNumberOfColumns(1);
 
         // Right grid of channel's content
@@ -438,6 +440,9 @@ public class MultiVideoGridFragment extends MultiGridFragment implements VideoSe
                                    RowPresenter.ViewHolder rowViewHolder, Row row) {
             if (item instanceof Video) {
                 mMainPresenter.onVideoItemSelected((Video) item);
+                if (mCardPresenter1 instanceof ChannelCardPresenter) { // MEETUBE: keep this channel marked
+                    ((ChannelCardPresenter) mCardPresenter1).setSelected(itemViewHolder, (Video) item);
+                }
 
                 // Not working: Exception: Cannot call this method while RecyclerView is computing a layout
                 // Change unwatched state (remove red mark).

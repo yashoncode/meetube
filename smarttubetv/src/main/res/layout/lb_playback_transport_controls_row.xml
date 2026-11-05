@@ -3,7 +3,8 @@
 <!-- MOD: intention to replace class name with custom one -->
 <!-- MEETUBE: minimal glass player. The row fills the screen (MeeTubePlayerGlass sets its height): the title sits
      at the top over a soft scrim, the controls in one frosted glass panel at the bottom - time, seek bar and length
-     on one line, then one row of buttons from the left: play / pause, previous, next, then the rest.
+     on one line, then one row of buttons from the left: play / pause, previous, channel, next, comments, like,
+     dislike, repeat mode, high quality, then the rest.
      Every id the presenter looks up is kept. -->
 <!-- Note: clipChildren/clipToPadding false are needed to apply shadows to child
      views with no padding of their own. Also to allow for negative margin on description. -->
@@ -151,9 +152,9 @@
                 android:layout_height="wrap_content"
                 style="?attr/playbackControlsTimeStyle" />
         </LinearLayout>
-        <!-- one row from the left: play / pause, previous, next, then every other button (comments, like,
-             dislike first), scrolling when they outgrow the panel. Moving down from the seek bar enters the row at
-             its first button, play / pause. -->
+        <!-- MEETUBE: one row from the left: play / pause, previous, channel, next, comments, like, dislike,
+             repeat mode, high quality, then the rest, scrolling when they outgrow the panel. Moving down from the
+             seek bar enters the row at its first button, play / pause. -->
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:layout_marginTop="@dimen/player_glass_row_gap"

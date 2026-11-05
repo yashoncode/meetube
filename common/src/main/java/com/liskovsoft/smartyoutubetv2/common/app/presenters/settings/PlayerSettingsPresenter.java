@@ -59,6 +59,10 @@ public class PlayerSettingsPresenter extends BasePresenter<Void> {
         appendPlaybackModeCategory(settingsPresenter);
         appendVideoPresetsCategory(settingsPresenter);
         appendPlayerButtonsCategory(settingsPresenter);
+        // MEETUBE: Toggle the glass outline independently of the button selection.
+        settingsPresenter.appendSingleSwitch(UiOptionItem.from(getContext().getString(R.string.player_glass_outline),
+                option -> mPlayerTweaksData.setPlayerGlassOutlineEnabled(option.isSelected()),
+                mPlayerTweaksData.isPlayerGlassOutlineEnabled()));
         appendNetworkEngineCategory(settingsPresenter);
         appendVideoBufferCategory(settingsPresenter);
         appendVideoZoomCategory(settingsPresenter);
@@ -200,34 +204,35 @@ public class PlayerSettingsPresenter extends BasePresenter<Void> {
     private void appendPlayerButtonsCategory(AppDialogPresenter settingsPresenter) {
         List<OptionItem> options = new ArrayList<>();
 
+        // MEETUBE: Match the order of buttons in the glass player's single controls row.
         for (int[] pair : new int[][] {
-                {R.string.auto_frame_rate, PlayerTweaksData.PLAYER_BUTTON_AFR},
-                {R.string.action_sound_off, PlayerTweaksData.PLAYER_BUTTON_SOUND_OFF},
-                {R.string.video_rotate, PlayerTweaksData.PLAYER_BUTTON_VIDEO_ROTATE},
-                {R.string.video_flip, PlayerTweaksData.PLAYER_BUTTON_VIDEO_FLIP},
-                {R.string.open_chat, PlayerTweaksData.PLAYER_BUTTON_CHAT},
-                {R.string.content_block_provider, PlayerTweaksData.PLAYER_BUTTON_CONTENT_BLOCK},
-                {R.string.seek_interval, PlayerTweaksData.PLAYER_BUTTON_SEEK_INTERVAL},
-                {R.string.share_link, PlayerTweaksData.PLAYER_BUTTON_SHARE},
-                {R.string.action_video_info, PlayerTweaksData.PLAYER_BUTTON_VIDEO_INFO},
-                {R.string.action_debug_info, PlayerTweaksData.PLAYER_BUTTON_VIDEO_STATS},
-                {R.string.action_playback_queue, PlayerTweaksData.PLAYER_BUTTON_PLAYBACK_QUEUE},
-                {R.string.screen_dimming, PlayerTweaksData.PLAYER_BUTTON_SCREEN_DIMMING},
-                {R.string.action_video_zoom, PlayerTweaksData.PLAYER_BUTTON_VIDEO_ZOOM},
+                {R.string.action_play_pause, PlayerTweaksData.PLAYER_BUTTON_PLAY_PAUSE},
+                {R.string.action_previous, PlayerTweaksData.PLAYER_BUTTON_PREVIOUS},
                 {R.string.action_channel, PlayerTweaksData.PLAYER_BUTTON_OPEN_CHANNEL},
-                {R.string.action_search, PlayerTweaksData.PLAYER_BUTTON_SEARCH},
-                {R.string.run_in_background, PlayerTweaksData.PLAYER_BUTTON_PIP},
-                {R.string.action_video_speed, PlayerTweaksData.PLAYER_BUTTON_VIDEO_SPEED},
-                {R.string.action_subtitles, PlayerTweaksData.PLAYER_BUTTON_SUBTITLES},
-                {R.string.action_subscribe, PlayerTweaksData.PLAYER_BUTTON_SUBSCRIBE},
+                {R.string.action_next, PlayerTweaksData.PLAYER_BUTTON_NEXT},
+                {R.string.open_chat, PlayerTweaksData.PLAYER_BUTTON_CHAT},
                 {R.string.action_like, PlayerTweaksData.PLAYER_BUTTON_LIKE},
                 {R.string.action_dislike, PlayerTweaksData.PLAYER_BUTTON_DISLIKE},
-                {R.string.action_playlist_add, PlayerTweaksData.PLAYER_BUTTON_ADD_TO_PLAYLIST},
-                {R.string.action_play_pause, PlayerTweaksData.PLAYER_BUTTON_PLAY_PAUSE},
                 {R.string.action_repeat_mode, PlayerTweaksData.PLAYER_BUTTON_REPEAT_MODE},
-                {R.string.action_next, PlayerTweaksData.PLAYER_BUTTON_NEXT},
-                {R.string.action_previous, PlayerTweaksData.PLAYER_BUTTON_PREVIOUS},
-                {R.string.playback_settings, PlayerTweaksData.PLAYER_BUTTON_HIGH_QUALITY}
+                {R.string.playback_settings, PlayerTweaksData.PLAYER_BUTTON_HIGH_QUALITY},
+                {R.string.action_video_speed, PlayerTweaksData.PLAYER_BUTTON_VIDEO_SPEED},
+                {R.string.run_in_background, PlayerTweaksData.PLAYER_BUTTON_PIP},
+                {R.string.screen_dimming, PlayerTweaksData.PLAYER_BUTTON_SCREEN_DIMMING},
+                {R.string.action_search, PlayerTweaksData.PLAYER_BUTTON_SEARCH},
+                {R.string.share_link, PlayerTweaksData.PLAYER_BUTTON_SHARE},
+                {R.string.seek_interval, PlayerTweaksData.PLAYER_BUTTON_SEEK_INTERVAL},
+                {R.string.action_video_zoom, PlayerTweaksData.PLAYER_BUTTON_VIDEO_ZOOM},
+                {R.string.video_rotate, PlayerTweaksData.PLAYER_BUTTON_VIDEO_ROTATE},
+                {R.string.video_flip, PlayerTweaksData.PLAYER_BUTTON_VIDEO_FLIP},
+                {R.string.action_sound_off, PlayerTweaksData.PLAYER_BUTTON_SOUND_OFF},
+                {R.string.auto_frame_rate, PlayerTweaksData.PLAYER_BUTTON_AFR},
+                {R.string.action_subtitles, PlayerTweaksData.PLAYER_BUTTON_SUBTITLES},
+                {R.string.action_playlist_add, PlayerTweaksData.PLAYER_BUTTON_ADD_TO_PLAYLIST},
+                {R.string.action_subscribe, PlayerTweaksData.PLAYER_BUTTON_SUBSCRIBE},
+                {R.string.action_video_info, PlayerTweaksData.PLAYER_BUTTON_VIDEO_INFO},
+                {R.string.action_playback_queue, PlayerTweaksData.PLAYER_BUTTON_PLAYBACK_QUEUE},
+                {R.string.content_block_provider, PlayerTweaksData.PLAYER_BUTTON_CONTENT_BLOCK},
+                {R.string.action_debug_info, PlayerTweaksData.PLAYER_BUTTON_VIDEO_STATS}
         }) {
             options.add(UiOptionItem.from(getContext().getString(pair[0]), optionItem -> {
                 if (optionItem.isSelected()) {

@@ -4,6 +4,17 @@ import android.content.Context;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 public class ThumbsUpAction extends TwoStateAction {
+    // MEETUBE: metadata counts are separate from the action's tooltip and on/off labels.
+    private String mCount;
+
+    public String getCount() {
+        return mCount;
+    }
+
+    public void setCount(String count) {
+        mCount = count != null ? count.trim() : null;
+    }
+
     public ThumbsUpAction(Context context) {
         super(context, R.id.action_thumbs_up, R.drawable.lb_ic_thumb_up, false);
 

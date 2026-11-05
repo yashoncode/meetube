@@ -93,7 +93,7 @@ public final class BrowseGlassStyle {
             case MediaGroup.TYPE_GAMING: return R.drawable.browse_ic_gaming;
             case MediaGroup.TYPE_NEWS: return R.drawable.browse_ic_news;
             case MediaGroup.TYPE_MUSIC: return R.drawable.browse_ic_music;
-            case MediaGroup.TYPE_CHANNEL_UPLOADS: return R.drawable.browse_ic_channels;
+            case MediaGroup.TYPE_CHANNEL_UPLOADS: return R.drawable.browse_ic_subscriptions; // MEETUBE: shown as Subscriptions
             case MediaGroup.TYPE_SUBSCRIPTIONS: return R.drawable.browse_ic_subscriptions;
             case MediaGroup.TYPE_HISTORY: return R.drawable.browse_ic_history;
             case MediaGroup.TYPE_BLOCKED_CHANNELS: return R.drawable.browse_ic_blocked;

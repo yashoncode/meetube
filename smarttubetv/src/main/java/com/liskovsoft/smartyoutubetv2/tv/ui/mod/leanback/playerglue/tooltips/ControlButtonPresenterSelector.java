@@ -14,10 +14,12 @@
 package com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.tooltips;
 
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.leanback.R;
@@ -26,6 +28,8 @@ import androidx.leanback.widget.PlaybackControlsRow;
 import androidx.leanback.widget.Presenter;
 import androidx.leanback.widget.PresenterSelector;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.PaddingAction;
+import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.ThumbsUpAction;
+import com.liskovsoft.smartyoutubetv2.tv.ui.playback.actions.ThumbsDownAction;
 
 /**
  * Displays primary and secondary controls for a {@link PlaybackControlsRow}.
@@ -74,12 +78,62 @@ public class ControlButtonPresenterSelector extends PresenterSelector {
         ImageView mIcon;
         TextView mLabel;
         View mFocusableView;
+        // MEETUBE: an overlay inside the existing button footprint; other controls keep their dimensions.
+        TextView mCount;
+        View.OnFocusChangeListener mTooltipFocusListener;
+        final View.OnFocusChangeListener mCountFocusListener = (v, focused) -> {
+            updateCountFocus();
+            if (mTooltipFocusListener != null) {
+                mTooltipFocusListener.onFocusChange(v, focused);
+            }
+        };
 
         public ActionViewHolder(View view) {
             super(view);
             mIcon = (ImageView) view.findViewById(R.id.icon);
             mLabel = (TextView) view.findViewById(R.id.label);
             mFocusableView = view.findViewById(R.id.button);
+        }
+
+        void bindCount(String count) {
+            boolean hasCount = !TextUtils.isEmpty(count);
+            if (hasCount && mCount == null) {
+                float density = view.getResources().getDisplayMetrics().density;
+                mCount = new TextView(view.getContext());
+                mCount.setTextSize(10);
+                mCount.setGravity(Gravity.CENTER);
+                mCount.setSingleLine(true);
+                mCount.setEllipsize(TextUtils.TruncateAt.END);
+                mCount.setIncludeFontPadding(false);
+                mCount.setPadding(Math.round(2 * density), 0, Math.round(2 * density), 0);
+                mCount.setBackgroundResource(com.liskovsoft.smartyoutubetv2.tv.R.drawable.player_rating_badge);
+                mCount.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                        mFocusableView.getLayoutParams().width, ViewGroup.LayoutParams.WRAP_CONTENT,
+                        Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+                params.bottomMargin = Math.round(1 * density);
+                ((FrameLayout) view).addView(mCount, params);
+            }
+            if (mCount != null) {
+                mCount.setText(count);
+                mCount.setVisibility(hasCount ? View.VISIBLE : View.GONE);
+                mIcon.setTranslationY(hasCount ? -6 * view.getResources().getDisplayMetrics().density : 0);
+                // Tooltips replace the focus listener on rebind; chain it after they have installed it.
+                View.OnFocusChangeListener listener = mFocusableView.getOnFocusChangeListener();
+                if (listener != mCountFocusListener) {
+                    mTooltipFocusListener = listener;
+                    mFocusableView.setOnFocusChangeListener(mCountFocusListener);
+                }
+                updateCountFocus();
+            }
+        }
+
+        private void updateCountFocus() {
+            if (mCount != null) {
+                boolean focused = mFocusableView.hasFocus();
+                mCount.setActivated(focused);
+                mCount.setTextColor(focused ? 0xFF141414 : 0xFFFFFFFF);
+            }
         }
     }
 
@@ -119,8 +173,14 @@ public class ControlButtonPresenterSelector extends PresenterSelector {
                     vh.mLabel.setText(null);
                 }
             }
+            // MEETUBE: only the two rating actions carry an always-visible count.
+            String count = action instanceof ThumbsUpAction ? ((ThumbsUpAction) action).getCount() :
+                    action instanceof ThumbsDownAction ? ((ThumbsDownAction) action).getCount() : null;
             CharSequence contentDescription = TextUtils.isEmpty(action.getLabel2())
                     ? action.getLabel1() : action.getLabel2();
+            if (!TextUtils.isEmpty(count)) {
+                contentDescription = TextUtils.concat(contentDescription, " ", count);
+            }
             if (!TextUtils.equals(vh.mFocusableView.getContentDescription(), contentDescription)) {
                 vh.mFocusableView.setContentDescription(contentDescription);
                 vh.mFocusableView.sendAccessibilityEvent(
@@ -131,11 +191,13 @@ public class ControlButtonPresenterSelector extends PresenterSelector {
                     TooltipCompatHandler.setTooltipText(vh.mFocusableView, action.getLabel1());
                 }
             }
+            vh.bindCount(count);
         }
 
         @Override
         public void onUnbindViewHolder(ViewHolder viewHolder) {
             ActionViewHolder vh = (ActionViewHolder) viewHolder;
+            vh.bindCount(null); // MEETUBE: recycled controls must lose the previous video's badge.
             vh.mIcon.setImageDrawable(null);
             if (vh.mLabel != null) {
                 vh.mLabel.setText(null);

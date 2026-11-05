@@ -314,6 +314,10 @@
     <string name="move_section_up">Move section up</string>
     <string name="move_section_down">Move section down</string>
     <string name="player_buttons">Setup player buttons</string>
+    <!-- MEETUBE: Optional bright rim around the glass player panels. -->
+    <string name="player_glass_outline">Glass outline on player controls</string>
+    <!-- MEETUBE: first entry of the Channels list, the latest videos of every subscribed channel -->
+    <string name="channels_all">All</string>
     <string name="action_playlist_add">Add to playlist</string>
     <string name="action_video_stats">Video stats</string>
     <string name="action_subscribe">Subscribe</string>

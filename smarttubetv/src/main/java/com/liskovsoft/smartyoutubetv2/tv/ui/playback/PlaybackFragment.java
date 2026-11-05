@@ -87,6 +87,7 @@ import com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.tweaks.Playb
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.mod.SeekModePlaybackFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.mod.surface.SurfacePlaybackFragmentGlueHost;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.other.BackboneQueueNavigator;
+import com.liskovsoft.smartyoutubetv2.tv.ui.playback.other.ShortsOverlay; // MEETUBE(shorts): Overlay on the existing player.
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.other.VideoPlayerGlue;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.other.VideoPlayerGlue.OnActionClickedListener;
 import com.liskovsoft.smartyoutubetv2.tv.ui.playback.previewtimebar.StoryboardSeekDataProvider;
@@ -110,6 +111,8 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
     private static final int UPDATE_DELAY_MS = 100;
     private static final int SUGGESTIONS_START_INDEX = 1;
     private VideoPlayerGlue mPlayerGlue;
+    // MEETUBE(shorts): Presentation state for the current short.
+    private ShortsOverlay mShortsOverlay;
     private SimpleExoPlayer mPlayer;
     private PlaybackPresenter mPlaybackPresenter;
     private ArrayObjectAdapter mRowsAdapter;
@@ -178,6 +181,10 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
         // We should use internal progress manager because it's used in many places like Exo engine etc.
         // ProgressBar.setRootView already called at this moment.
         ProgressBarManager.setup(getProgressBarManager(), (ViewGroup) root);
+
+        // MEETUBE(shorts): Share this fragment's video surface and controls.
+        mShortsOverlay = new ShortsOverlay(root, this);
+        mShortsOverlay.setControlsShown(isControlsOverlayVisible());
 
         return root;
     }
@@ -491,6 +498,16 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
 
         DefaultRenderersFactory renderersFactory = new CustomOverridesRenderersFactory(getContext());
         mPlayer = mPlayerInitializer.createPlayer(getContext(), renderersFactory, trackSelector);
+
+        // MEETUBE(shorts): Reflect pause state without creating another player.
+        mPlayer.addListener(new Player.EventListener() {
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                if (mShortsOverlay != null) {
+                    mShortsOverlay.setPaused(!playWhenReady);
+                }
+            }
+        });
 
         mExoPlayerController.setPlayer(mPlayer);
     }
@@ -845,11 +862,21 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
     public void setVideo(Video video) {
         mExoPlayerController.setVideo(video);
 
+        // MEETUBE: late metadata and null/new-video counts must also refresh the action adapters.
+        if (mPlayerGlue != null) {
+            mPlayerGlue.updateLikeCounts(video);
+        }
+
         if (mPlayerGlue != null && video != null) {
             // Preserve player formatting
             mPlayerGlue.setTitle(video.getTitleFull() != null ? video.getTitleFull() : "...");
-            mPlayerGlue.setSubtitle(video.getSecondTitleFull() != null ? createSubtitle(video) : "...");
+            mPlayerGlue.setSubtitle(video.getSecondTitleFull() != null ? createSubtitle(video, false) : "...");
             mPlayerGlue.setVideo(video);
+        }
+
+        // MEETUBE(shorts): Rebind metadata without reloading artwork for the same short.
+        if (mShortsOverlay != null) {
+            mShortsOverlay.bind(video, video != null && video.getSecondTitleFull() != null ? createSubtitle(video, true) : null);
         }
     }
 
@@ -863,18 +890,19 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
         mBackgroundManager.showBackgroundColor(colorResId);
     }
 
-    private CharSequence createSubtitle(Video video) {
+    // MEETUBE: ratings live on the normal player's buttons; Shorts keeps them in its metadata panel.
+    private CharSequence createSubtitle(Video video, boolean includeRatings) {
         CharSequence result = video.getSecondTitleFull();
 
         if (getContext() != null && video.isLive) {
             result = TextUtils.concat( result, " ", Video.TERTIARY_TEXT_DELIM, " ", Utils.color(getContext().getString(R.string.badge_live), ContextCompat.getColor(getContext(), R.color.red)));
         }
 
-        if (getContext() != null && video.likeCount != null) {
+        if (includeRatings && getContext() != null && !TextUtils.isEmpty(video.likeCount)) {
             result = TextUtils.concat(result, " ", Video.TERTIARY_TEXT_DELIM, " ", video.likeCount, Helpers.NON_BREAKING_SPACE, icon(R.drawable.player_ic_like, Helpers.THUMB_UP));
         }
 
-        if (getContext() != null && video.dislikeCount != null) {
+        if (includeRatings && getContext() != null && !TextUtils.isEmpty(video.dislikeCount)) {
             result = TextUtils.concat(result, " ", Video.TERTIARY_TEXT_DELIM, " ", video.dislikeCount, Helpers.NON_BREAKING_SPACE, icon(R.drawable.player_ic_dislike, Helpers.THUMB_DOWN));
         }
 
@@ -1274,6 +1302,11 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
             return;
         }
 
+        // MEETUBE(shorts): Let normal controls take over the foreground.
+        if (mShortsOverlay != null) {
+            mShortsOverlay.setControlsShown(true);
+        }
+
         updatePlayerBackground();
 
         if (mPlayerGlue != null) {
@@ -1294,6 +1327,11 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
         // Do throttle. Called so many times. Rely on boxing because initial state is unknown.
         if (mIsControlsShownPreviously != null && !mIsControlsShownPreviously) {
             return;
+        }
+
+        // MEETUBE(shorts): Restore information and the pause indicator with controls hidden.
+        if (mShortsOverlay != null) {
+            mShortsOverlay.setControlsShown(false);
         }
 
         if (mPlayerGlue != null) {
@@ -1370,6 +1408,11 @@ public class PlaybackFragment extends SeekModePlaybackFragment implements Playba
     public void setChannelIcon(String iconUrl) {
         if (mPlayerGlue != null) {
             mPlayerGlue.setChannelIcon(iconUrl);
+        }
+
+        // MEETUBE(shorts): Reuse the channel icon supplied to the player controls.
+        if (mShortsOverlay != null) {
+            mShortsOverlay.setAvatar(iconUrl);
         }
     }
 

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE: Shared Search and Subtitles settings title. -->
+    <string name="settings_search_subtitles">Search &amp; subtitles</string>
+</resources>

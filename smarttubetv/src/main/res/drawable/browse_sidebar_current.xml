@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE: a quiet leading marker for the current section, separate from content badges. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#E6FFFFFF" />
+    <corners android:radius="2dp" />
+</shape>

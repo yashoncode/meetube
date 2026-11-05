@@ -27,17 +27,35 @@ public class SearchSettingsPresenter extends BasePresenter<Void> {
         return new SearchSettingsPresenter(context);
     }
 
+    // MEETUBE: Append Search first, then Subtitles, and retain Search's finish callback.
+    public static void showWithSubtitles(Context context) {
+        SearchSettingsPresenter searchPresenter = instance(context);
+        AppDialogPresenter settingsPresenter = AppDialogPresenter.instance(context);
+
+        searchPresenter.appendCategories(settingsPresenter);
+        SubtitleSettingsPresenter.instance(context).appendCategories(settingsPresenter);
+
+        settingsPresenter.showDialog(context.getString(R.string.settings_search_subtitles), searchPresenter::onDialogFinished);
+    }
+
+    // MEETUBE: Keep standalone Search using the same categories and finish callback.
     public void show() {
         AppDialogPresenter settingsPresenter = AppDialogPresenter.instance(getContext());
 
+        appendCategories(settingsPresenter);
+
+        settingsPresenter.showDialog(getContext().getString(R.string.dialog_search), this::onDialogFinished);
+    }
+
+    public void appendCategories(AppDialogPresenter settingsPresenter) {
         appendSpeechRecognizerCategory(settingsPresenter);
         appendMiscCategory(settingsPresenter);
+    }
 
-        settingsPresenter.showDialog(getContext().getString(R.string.dialog_search), () -> {
-            if (mSearchData.isSearchHistoryDisabled()) {
-                MediaServiceManager.instance().clearSearchHistory();
-            }
-        });
+    private void onDialogFinished() {
+        if (mSearchData.isSearchHistoryDisabled()) {
+            MediaServiceManager.instance().clearSearchHistory();
+        }
     }
 
     private void appendSpeechRecognizerCategory(AppDialogPresenter settingsPresenter) {

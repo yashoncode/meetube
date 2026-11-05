@@ -22,6 +22,14 @@
         <!-- Modified place for VideoSurfaceView -->
     </com.google.android.exoplayer2.ui.AspectRatioFrameLayout>
 
+    <!-- MEETUBE(shorts): ambient light around the short's 9:16 card, above the video with a rounded hole over it -->
+    <com.liskovsoft.smartyoutubetv2.tv.ui.playback.other.ShortsFrameView
+        android:id="@+id/shorts_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:importantForAccessibility="no"/>
+
     <!-- MOD: fix subs width issues on vertical videos by placing subs outside of the aspect layout -->
     <!-- MOD: add subtitle padding -->
     <com.google.android.exoplayer2.ui.SubtitleView
@@ -90,6 +98,78 @@
             android:shadowRadius="1.6"
             android:textStyle="bold"
             style="?attr/playbackControlsTimeStyle"/>
+    </LinearLayout>
+
+    <!-- MEETUBE(shorts): pause indicator, and the short's title, channel and stats beside the card's bottom edge
+         (ShortsOverlay sets the left padding to the card's right edge). The key hints fade after a few seconds. -->
+    <ImageView
+        android:id="@+id/shorts_paused"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="center"
+        android:src="@drawable/lb_ic_play"
+        android:visibility="gone"
+        android:alpha="0.9"/>
+
+    <LinearLayout
+        android:id="@+id/shorts_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/shorts_hints"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:textSize="13sp"
+            android:textColor="#B3FFFFFF"
+            android:lineSpacingExtra="5dp"
+            android:shadowColor="#99000000"
+            android:shadowRadius="4"
+            android:text="@string/shorts_hints"/>
+
+        <TextView
+            android:id="@+id/shorts_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:shadowColor="#99000000"
+            android:shadowRadius="4"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- only when the channel icon is known (SmartTube's real channel icon setting) -->
+            <ImageView
+                android:id="@+id/shorts_avatar"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="10dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/shorts_meta"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="14sp"
+                android:textColor="#E6FFFFFF"
+                android:maxLines="3"
+                android:ellipsize="end"
+                android:shadowColor="#99000000"
+                android:shadowRadius="4"/>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Add debug view -->

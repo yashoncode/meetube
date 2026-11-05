@@ -17,7 +17,6 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.MainUISetti
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.PlayerSettingsPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.RemoteControlSettingsPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.SearchSettingsPresenter;
-import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.SubtitleSettingsPresenter;
 import com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.FormatItem.VideoPreset;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 
@@ -57,10 +56,9 @@ public class AppDataSourceManager {
         // Users want even fake afr settings.
         settingItems.add(new SettingsItem(
                 context.getString(R.string.auto_frame_rate), () -> AutoFrameRateSettingsPresenter.instance(context).show(), R.drawable.settings_afr));
+        // MEETUBE: Combine Search and Subtitles at the former Subtitles position.
         settingItems.add(new SettingsItem(
-                context.getString(R.string.subtitle_category_title), () -> SubtitleSettingsPresenter.instance(context).show(), R.drawable.settings_subtitles));
-        settingItems.add(new SettingsItem(
-                context.getString(R.string.settings_search), () -> SearchSettingsPresenter.instance(context).show(), R.drawable.settings_search));
+                context.getString(R.string.settings_search_subtitles), () -> SearchSettingsPresenter.showWithSubtitles(context), R.drawable.settings_search));
         settingItems.add(new SettingsItem(
                 context.getString(R.string.content_block_provider), () -> SponsorBlockSettingsPresenter.instance(context).show(), R.drawable.settings_block));
         settingItems.add(new SettingsItem(

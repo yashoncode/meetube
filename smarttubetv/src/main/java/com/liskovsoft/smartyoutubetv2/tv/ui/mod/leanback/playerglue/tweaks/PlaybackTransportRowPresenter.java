@@ -1079,6 +1079,12 @@ public class PlaybackTransportRowPresenter extends PlaybackRowPresenter {
     }
 
     private void initRow(final ViewHolder vh) {
+        // MEETUBE: Apply the glass outline preference to the normal player controls.
+        if (!PlayerTweaksData.instance(vh.view.getContext()).isPlayerGlassOutlineEnabled()) {
+            vh.view.findViewById(R.id.transport_row)
+                    .setBackgroundResource(com.liskovsoft.smartyoutubetv2.tv.R.drawable.player_glass_panel_flat);
+        }
+
         vh.mControlsVh = (ControlBarPresenter.ViewHolder) mPlaybackControlsPresenter
                 .onCreateViewHolder(vh.mControlsDock);
         // MEETUBE: white progress and light buffered part on the glass panel, whatever the color scheme

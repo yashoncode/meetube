@@ -10,7 +10,7 @@ public class SubscriptionsLauncherActivity extends MotherActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        BrowsePresenter.instance(this).selectSection(MediaGroup.TYPE_SUBSCRIPTIONS);
+        BrowsePresenter.instance(this).selectSection(MediaGroup.TYPE_CHANNEL_UPLOADS); // MEETUBE: the Subscriptions feed is Channels "All" now
 
         finish();
     }

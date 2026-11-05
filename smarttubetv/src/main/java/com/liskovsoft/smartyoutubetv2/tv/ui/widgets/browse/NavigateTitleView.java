@@ -6,8 +6,10 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -72,6 +74,7 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
     private boolean mIsAccountViewEnabled;
     private boolean mIsLanguageViewEnabled;
     private boolean mIsGlobalClockEnabled;
+    private boolean mBrowseTitleEnabled; // MEETUBE: shared title layouts keep the greeting browse-only.
 
     public NavigateTitleView(Context context) {
         super(context);
@@ -130,6 +133,55 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
         return getSearchAffordanceView().requestFocus() || super.onRequestFocusInDescendants(direction, previouslyFocusedRect);
     }
 
+    public void setBrowseTitleEnabled(boolean enabled) {
+        mBrowseTitleEnabled = enabled;
+        if (enabled) {
+            // MEETUBE: the sidebar slides orbs to physical left, including in RTL; branding stays right.
+            ((FrameLayout.LayoutParams) findViewById(R.id.title_orbs).getLayoutParams()).gravity =
+                    Gravity.CENTER_VERTICAL | Gravity.LEFT;
+            ((FrameLayout.LayoutParams) findViewById(R.id.title_branding).getLayoutParams()).gravity =
+                    Gravity.CENTER_VERTICAL | Gravity.RIGHT;
+        }
+        updateGreeting();
+        requestLayout();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if (mBrowseTitleEnabled) {
+            // MEETUBE: reserve the orb row's full unshifted width, including while the sidebar slides.
+            View branding = findViewById(R.id.title_branding);
+            View orbs = findViewById(R.id.title_orbs);
+            int gap = Math.round(12 * getResources().getDisplayMetrics().density);
+            int available = Math.max(0, getMeasuredWidth() - getPaddingLeft() - getPaddingRight() -
+                    orbs.getMeasuredWidth() - gap);
+            branding.measure(MeasureSpec.makeMeasureSpec(available, MeasureSpec.AT_MOST),
+                    MeasureSpec.makeMeasureSpec(getResources().getDimensionPixelSize(R.dimen.lb_search_orb_size),
+                            MeasureSpec.EXACTLY));
+        }
+    }
+
+    // MEETUBE: the selected account supplies a first name independently of account-orb visibility.
+    private void updateGreeting() {
+        TextView greeting = findViewById(R.id.title_greeting);
+        if (greeting == null) {
+            return;
+        }
+        Account account = MediaServiceManager.instance().getSelectedAccount();
+        String name = account != null && !account.isEmpty() ? account.getName() : null;
+        name = name != null ? name.trim() : null;
+        if (!mBrowseTitleEnabled || !MainUIData.instance(getContext()).isTitleGreetingEnabled() ||
+                name == null || name.isEmpty()) {
+            greeting.setVisibility(View.GONE);
+            return;
+        }
+        String[] words = name.split("\\s+", 2);
+        String firstName = words.length > 0 && !words[0].isEmpty() ? words[0] : name;
+        greeting.setText(getContext().getString(R.string.greeting_hey, firstName));
+        greeting.setVisibility(mBrandingVisibility == View.VISIBLE ? View.VISIBLE : View.GONE);
+    }
+
     public void setOnSettingsClickedListener(View.OnClickListener listener) {
         mOnSettingsClickedListener = listener;
         SearchOrbView settings = findViewById(R.id.settings_orb);
@@ -145,7 +197,11 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
         settings.setVisibility(enabled ? mSearchVisibility : View.GONE);
         // MEETUBE: hidden Settings leaves the shared title layout and focus chain unchanged.
         View search = getSearchAffordanceView();
-        search.setNextFocusLeftId(enabled ? R.id.settings_orb : View.NO_ID);
+        if (getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
+            search.setNextFocusRightId(enabled ? R.id.settings_orb : View.NO_ID);
+        } else {
+            search.setNextFocusLeftId(enabled ? R.id.settings_orb : View.NO_ID);
+        }
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) search.getLayoutParams();
         params.setMarginStart(enabled ? getResources().getDimensionPixelSize(R.dimen.search_bar_right_items_margin) : 0);
         search.setLayoutParams(params);
@@ -197,6 +253,7 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
         if (mIsGlobalClockEnabled) {
             mGlobalDate.setVisibility(mBrandingVisibility);
         }
+        updateGreeting(); // MEETUBE: follow the branding visibility when browsing or scrolling.
     }
 
     private void init() {
@@ -265,6 +322,7 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
         Utils.postDelayed(this::updateAccountIcon, 1_000); // give a time to engine to fetch an updated icon url
         //updateAccountIcon();
         updateLanguageIcon();
+        updateGreeting(); // MEETUBE: MainUIData changes refresh the switch immediately.
     }
 
     @Override
@@ -289,6 +347,7 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
     @Override
     public void onAccountChanged(Account account) {
         updateAccountIcon();
+        updateGreeting(); // MEETUBE: sign-in, sign-out and account switching refresh the name.
     }
 
     private void applyPipParameters() {

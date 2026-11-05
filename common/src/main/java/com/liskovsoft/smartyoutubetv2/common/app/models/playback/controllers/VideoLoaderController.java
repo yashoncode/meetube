@@ -159,6 +159,9 @@ public class VideoLoaderController extends BasePlayerController {
 
         if (next != null) {
             openVideoInt(next);
+        } else if (getVideo().isShorts) {
+            // MEETUBE(shorts): the next short is still being looked up, never fall back to a normal video
+            MessageHelpers.showMessage(getContext(), R.string.wait_data_loading);
         } else {
             waitMetadataSync(getVideo(), true);
         }

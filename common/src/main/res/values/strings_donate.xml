@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE: About > Donation, the two QR codes side by side -->
+<resources>
+    <string name="donate_title">Support MeeTube</string>
+    <string name="donate_hint">Scan a code with your phone camera</string>
+    <string name="donate_international">International</string>
+    <string name="donate_international_sub">Buy me a coffee</string>
+    <string name="donate_india">India</string>
+    <string name="donate_india_sub">UPI</string>
+</resources>

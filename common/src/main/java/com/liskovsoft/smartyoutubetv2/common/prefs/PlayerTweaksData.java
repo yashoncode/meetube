@@ -278,6 +278,15 @@ public class PlayerTweaksData implements ProfileChangeListener {
         return (mPlayerButtons & menuItems) == menuItems;
     }
 
+    // MEETUBE: Keep the glass outline preference outside the positional tweaks data.
+    public boolean isPlayerGlassOutlineEnabled() {
+        return mPrefs.getBoolean("meetube_player_glass_outline", true);
+    }
+
+    public void setPlayerGlassOutlineEnabled(boolean enabled) {
+        mPrefs.putBoolean("meetube_player_glass_outline", enabled);
+    }
+
     public void setPlayerButtonEnabled(int playerButtons) {
         mPlayerButtons |= playerButtons;
         persistData();

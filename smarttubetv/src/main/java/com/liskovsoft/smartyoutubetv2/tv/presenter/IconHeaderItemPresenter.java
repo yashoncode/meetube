@@ -44,7 +44,8 @@ public class IconHeaderItemPresenter extends RowHeaderPresenter {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mDefaultIcon = new ColorDrawable(ContextCompat.getColor(viewGroup.getContext(), R.color.lb_grey));
 
-        View view = inflater.inflate(R.layout.icon_header_item, null);
+        // MEETUBE: preserve the sidebar height and width from XML before Leanback wraps the item.
+        View view = inflater.inflate(R.layout.icon_header_item, viewGroup, false);
         view.setAlpha(mUnselectedAlpha); // Initialize icons to be at half-opacity.
 
         return new ViewHolder(view);

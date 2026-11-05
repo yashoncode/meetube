@@ -44,6 +44,7 @@ import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.ui.common.LeanbackActivity;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.dialog.ErrorDialogFragment;
+import com.liskovsoft.smartyoutubetv2.tv.ui.browse.video.MultipleRowsFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.headers.ExtendedHeadersSupportFragment;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.interfaces.SettingsSection;
 import com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.misc.ProgressBarManager;
@@ -59,15 +60,13 @@ import java.util.Map;
  */
 public class BrowseFragment extends BrowseSupportFragment implements BrowseView {
     private static final String TAG = BrowseFragment.class.getSimpleName();
-    static final long EXPLORE_HEADER_ID = Long.MIN_VALUE;
     private ArrayObjectAdapter mSectionRowAdapter;
     private BrowsePresenter mBrowsePresenter;
-    // MEETUBE: presenter indices always refer to this ungrouped list, never the visible adapter.
+    // MEETUBE: presenter indices include hidden settings/explore sections; sidebar rows exclude them.
     private final List<PageRow> mSectionRows = new ArrayList<>();
-    private PageRow mExploreRow;
-    private boolean mExploreExpanded;
-    private PageRow mSettingsRow;
-    private long mSettingsReturnSectionId = -1;
+    // MEETUBE: Settings and direct Explore links (when Home is disabled) use a visible sidebar anchor.
+    private PageRow mHiddenRow;
+    private long mHiddenReturnSectionId = -1;
     private BrowseSectionFragmentFactory mSectionFragmentFactory;
     private Handler mHandler;
     private ProgressBarManager mProgressBarManager;
@@ -162,12 +161,6 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
         getHeadersSupportFragment().setOnHeaderClickedListener(
                 (viewHolder, row) -> {
                     long headerId = row.getHeaderItem().getId();
-                    if (headerId == EXPLORE_HEADER_ID) {
-                        mFocusOnContent = false;
-                        mExploreExpanded = !mExploreExpanded;
-                        updateHeaders(EXPLORE_HEADER_ID);
-                        return;
-                    }
                     int newPosition = indexOf(headerId);
 
                     if (getHeadersSupportFragment().getSelectedPosition() != newPosition) {
@@ -175,6 +168,9 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
                         getHeadersSupportFragment().setSelectedPosition(newPosition);
                     } else {
                         // update section when clicked or pressed
+                        if (headerId == MediaGroup.TYPE_HOME) {
+                            mFocusOnContent = true; // MEETUBE: complete the handoff when video's row arrives.
+                        }
                         mBrowsePresenter.onSectionFocused((int) headerId);
                         startHeadersTransitionSafe(false);
                     }
@@ -185,9 +181,7 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
                 (viewHolder, row) -> {
                     long headerId = row.getHeaderItem().getId();
 
-                    if (headerId != EXPLORE_HEADER_ID) {
-                        mBrowsePresenter.onSectionLongPressed((int) headerId);
-                    }
+                    mBrowsePresenter.onSectionLongPressed((int) headerId);
                 }
         );
 
@@ -208,6 +202,7 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
 
     private void updateSettingsButton() {
         if (getTitleView() instanceof NavigateTitleView) {
+            ((NavigateTitleView) getTitleView()).setBrowseTitleEnabled(true); // MEETUBE: greeting is browse-only.
             boolean enabled = indexOfSection(MediaGroup.TYPE_SETTINGS) != -1 &&
                     SidebarService.instance(getContext()).isSettingsSectionEnabled();
             ((NavigateTitleView) getTitleView()).setOnSettingsClickedListener(enabled ?
@@ -216,13 +211,15 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
     }
 
     boolean returnFromSettings(boolean focusOnContent) {
-        if (mSettingsRow == null) {
+        if (mHiddenRow == null) {
             return false;
         }
-        int index = indexOfSection(mSettingsReturnSectionId);
+        int index = indexOfSection(mHiddenReturnSectionId);
         if (index == -1) {
             for (int i = 0; i < mSectionRows.size(); i++) {
-                if (mSectionRows.get(i).getHeaderItem().getId() != MediaGroup.TYPE_SETTINGS) {
+                // MEETUBE: return to a visible sidebar item, not another hidden Explore feed.
+                long id = mSectionRows.get(i).getHeaderItem().getId();
+                if (id != MediaGroup.TYPE_SETTINGS && !BrowsePresenter.isExploreSection(id)) {
                     index = i;
                     break;
                 }
@@ -231,7 +228,7 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
         if (index == -1) {
             return false;
         }
-        mSettingsRow = null;
+        mHiddenRow = null;
         selectSection(index, focusOnContent);
         return true;
     }
@@ -239,9 +236,15 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
     private void setupFragmentFactory() {
         mSectionFragmentFactory = new BrowseSectionFragmentFactory(
                 (row) -> {
-                    focusOnContentIfNeeded();
-                    // MEETUBE: focus may already be on Explore when this delayed callback runs.
-                    mBrowsePresenter.onSectionFocused((int) row.getHeaderItem().getId());
+                    int sectionId = (int) row.getHeaderItem().getId();
+                    if (sectionId != MediaGroup.TYPE_HOME) {
+                        focusOnContentIfNeeded();
+                    }
+                    mBrowsePresenter.onSectionFocused(sectionId);
+                    if (sectionId == MediaGroup.TYPE_HOME) {
+                        // MEETUBE: populate the chips before handing focus to Home's content.
+                        focusOnContentIfNeeded();
+                    }
                 }
         );
 
@@ -278,31 +281,20 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
         return -1;
     }
 
-    static boolean isExploreSection(long id) {
-        return id == MediaGroup.TYPE_KIDS_HOME || id == MediaGroup.TYPE_SPORTS || id == MediaGroup.TYPE_LIVE ||
-                id == MediaGroup.TYPE_GAMING || id == MediaGroup.TYPE_NEWS || id == MediaGroup.TYPE_MUSIC;
-    }
-
     @Override
     protected boolean isTitleKeptWithHeaders() {
         return mGlassEnabled; // MEETUBE: Settings, Search and the account sit on the glass sidebar, always reachable
     }
 
     @Override
-    protected boolean isHeaderOnlyRow(Object row) {
-        return row != null && row == mExploreRow;
-    }
-
-    @Override
     protected Object getMainFragmentRow(Object row) {
-        return mSettingsRow != null ? mSettingsRow : row;
+        return mHiddenRow != null ? mHiddenRow : row;
     }
 
     private void setupAdapter() {
         // Map category results from the database to ListRow objects.
         // This Adapter is used to render the MainFragment sidebar labels.
         mSectionRowAdapter = new ArrayObjectAdapter(new ListRowPresenter());
-        mExploreRow = new PageRow(new HeaderItem(EXPLORE_HEADER_ID, getString(R.string.header_explore)));
         setAdapter(mSectionRowAdapter);
     }
 
@@ -336,7 +328,6 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
                 if (presenter == null) {
                     presenter = new BrowseHeaderItemPresenter(getHeaderResId(o), getIconUrl(o));
                     presenter.setGlassState(mGlassEnabled, mGlassSelectedHeaderId);
-                    presenter.setExploreExpanded(mExploreExpanded);
                     mGlassHeaderPresenters.put(o.hashCode(), presenter);
                 }
 
@@ -364,15 +355,15 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
     }
 
     private int getSelectedHeaderId() {
-        if (mSettingsRow != null) {
-            return MediaGroup.TYPE_SETTINGS;
+        if (mHiddenRow != null) {
+            return (int) mHiddenRow.getHeaderItem().getId();
         }
         if (getSelectedPosition() < 0 || getSelectedPosition() >= mSectionRowAdapter.size()) {
             return -1;
         }
 
         long id = ((PageRow) mSectionRowAdapter.get(getSelectedPosition())).getHeaderItem().getId();
-        return (int) (id == EXPLORE_HEADER_ID ? mGlassSelectedHeaderId : id);
+        return (int) id; // MEETUBE: no synthetic Explore header.
     }
 
     private void updateGlassAppearance() {
@@ -455,8 +446,7 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
     @Override
     public void removeAllSections() {
         mSectionRows.clear();
-        mExploreExpanded = false;
-        mSettingsRow = null;
+        mHiddenRow = null;
         mSectionRowAdapter.clear();
         updateSettingsButton();
     }
@@ -467,6 +457,9 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
 
         mSectionFragmentFactory.updateCurrentFragment(group);
 
+        if (mGlassSelectedHeaderId == MediaGroup.TYPE_HOME && !BrowsePresenter.isHomeChipGroup(group)) {
+            focusOnContentIfNeeded(); // MEETUBE: Home may now have its asynchronous first video row.
+        }
         fixInvisibleSearchOrb();
     }
 
@@ -480,14 +473,23 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
     @Override
     public void selectSection(int index, boolean focusOnContent) {
         if (index >= 0 && !mSectionRows.isEmpty()) {
-            // MEETUBE: resolve the presenter's index by id, expanding hidden boot/selected sections.
+            // MEETUBE: Explore launchers/boot choices open Home with the requested feed active.
             PageRow row = mSectionRows.get(Math.min(index, mSectionRows.size() - 1));
             long headerId = row.getHeaderItem().getId();
-            if (headerId == MediaGroup.TYPE_SETTINGS) {
-                if (mSettingsRow == null && mGlassSelectedHeaderId != MediaGroup.TYPE_SETTINGS) {
-                    mSettingsReturnSectionId = mGlassSelectedHeaderId;
+            if (BrowsePresenter.isExploreSection(headerId)) {
+                int homeIndex = indexOfSection(MediaGroup.TYPE_HOME);
+                if (homeIndex != -1) {
+                    mBrowsePresenter.setHomeSection((int) headerId);
+                    row = mSectionRows.get(homeIndex);
+                    headerId = MediaGroup.TYPE_HOME;
                 }
-                mSettingsRow = row;
+            }
+            // If Home is disabled, an Explore deep link still opens directly on the current sidebar anchor.
+            if (headerId == MediaGroup.TYPE_SETTINGS || BrowsePresenter.isExploreSection(headerId)) {
+                if (mHiddenRow == null && mGlassSelectedHeaderId != headerId) {
+                    mHiddenReturnSectionId = mGlassSelectedHeaderId;
+                }
+                mHiddenRow = row;
                 // MEETUBE: a hidden section uses the current visible header as its sidebar anchor.
                 mFocusOnContent = true;
                 startHeadersTransitionSafe(false);
@@ -498,11 +500,7 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
                 setSelectedPosition(Math.max(0, Math.min(getSelectedPosition(), mSectionRowAdapter.size() - 1)), false);
                 return;
             }
-            mSettingsRow = null;
-            if (isExploreSection(headerId) && !mExploreExpanded) {
-                mExploreExpanded = true;
-                updateHeaders(EXPLORE_HEADER_ID);
-            }
+            mHiddenRow = null;
             int position = indexOf(headerId);
             mFocusOnContent = focusOnContent; // focus after header transition
 
@@ -510,8 +508,13 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
             if (mGlassSelectedHeaderId == headerId) {
                 // update section manually
                 // headers transition event not fired on the same index
-                focusOnContentIfNeeded();
+                if (headerId != MediaGroup.TYPE_HOME) {
+                    focusOnContentIfNeeded();
+                }
                 mBrowsePresenter.onSectionFocused((int) headerId);
+                if (headerId == MediaGroup.TYPE_HOME) {
+                    focusOnContentIfNeeded();
+                }
             }
 
             // Need select again if current header is removed previously (can't check for it right now)
@@ -533,6 +536,11 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
      */
     private void focusOnContentIfNeeded() {
         if (mFocusOnContent) {
+            if (mGlassSelectedHeaderId == MediaGroup.TYPE_HOME && (getMainFragment() == null ||
+                    getMainFragment().getView() == null || (getMainFragment() instanceof MultipleRowsFragment &&
+                    !((MultipleRowsFragment) getMainFragment()).isHomeVideoReady()))) {
+                return; // MEETUBE: chips arrive before videos; keep the fresh-load focus request pending.
+            }
             focusOnContent();
             mFocusOnContent = false;
         }
@@ -612,29 +620,15 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
 
     private void updateHeaders(long selectedId) {
         List<PageRow> rows = new ArrayList<>();
-        boolean exploreAdded = false;
+        // MEETUBE: Explore feeds live in Home's chip row, never in the sidebar.
         for (PageRow row : mSectionRows) {
-            if (row.getHeaderItem().getId() == MediaGroup.TYPE_SETTINGS) {
-                continue;
-            }
-            if (isExploreSection(row.getHeaderItem().getId())) {
-                if (!exploreAdded) {
-                    exploreAdded = true;
-                    rows.add(mExploreRow);
-                    if (mExploreExpanded) {
-                        for (PageRow child : mSectionRows) {
-                            if (isExploreSection(child.getHeaderItem().getId())) {
-                                rows.add(child);
-                            }
-                        }
-                    }
-                }
-            } else {
+            long id = row.getHeaderItem().getId();
+            if (id != MediaGroup.TYPE_SETTINGS && !BrowsePresenter.isExploreSection(id)) {
                 rows.add(row);
             }
         }
 
-        // MEETUBE: keep PageRow identities and header focus stable so toggling never reloads content.
+        // MEETUBE: preserve PageRow identities and sidebar focus during section updates.
         mSectionRowAdapter.setItems(rows, new DiffCallback<PageRow>() {
             @Override
             public boolean areItemsTheSame(@NonNull PageRow oldRow, @NonNull PageRow newRow) {
@@ -646,12 +640,9 @@ public class BrowseFragment extends BrowseSupportFragment implements BrowseView 
                 return oldRow == newRow;
             }
         });
-        for (BrowseHeaderItemPresenter presenter : mGlassHeaderPresenters.values()) {
-            presenter.setExploreExpanded(mExploreExpanded);
-        }
         int position = indexOf(selectedId);
-        if (position == -1 && isExploreSection(selectedId)) {
-            position = indexOf(EXPLORE_HEADER_ID);
+        if (position == -1 && BrowsePresenter.isExploreSection(selectedId)) {
+            position = indexOf(MediaGroup.TYPE_HOME);
         }
         if (position == -1 && selectedId != -1 && !rows.isEmpty()) {
             position = Math.max(0, Math.min(getSelectedPosition(), rows.size() - 1));

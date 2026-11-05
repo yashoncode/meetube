@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.liskovsoft.sharedutils.mylogger.Log;
+import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video; // MEETUBE: rating metadata on controls.
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
 import com.liskovsoft.smartyoutubetv2.tv.R;
@@ -138,13 +139,16 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
 
     @Override
     protected void onCreatePrimaryActions(ArrayObjectAdapter adapter) {
-        // MEETUBE: the glass player's row starts with play / pause (focused first), then previous and next. Every
+        // MEETUBE: the glass player's row starts with play / pause (focused first), previous, channel, then next. Every
         // other button follows, see onCreateSecondaryActions. super.onCreatePrimaryActions() creates play / pause.
         if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_PLAY_PAUSE)) {
             super.onCreatePrimaryActions(adapter);
         }
         if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_PREVIOUS)) {
             adapter.add(mSkipPreviousAction);
+        }
+        if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_OPEN_CHANNEL)) {
+            adapter.add(mActions.get(R.id.action_channel));
         }
         //adapter.add(mRewindAction);
         //adapter.add(mFastForwardAction);
@@ -153,11 +157,8 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
         }
     }
 
-    /** SmartTube's other primary buttons, now after comments, like and dislike. */
+    /** MEETUBE: Remaining controls after comments, like, dislike, repeat mode and high quality. */
     private void addMoreActions(ArrayObjectAdapter adapter) {
-        if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_REPEAT_MODE)) {
-            adapter.add(mActions.get(R.id.action_repeat));
-        }
         if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_VIDEO_SPEED)) {
             adapter.add(mActions.get(R.id.action_video_speed));
         }
@@ -198,7 +199,7 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
         // Does nothing
         super.onCreateSecondaryActions(adapter);
 
-        // MEETUBE: comments (the chat button: live chat on streams, comments otherwise), like, dislike, then the rest
+        // MEETUBE: comments (live chat on streams), like, dislike, repeat mode, high quality, then the remaining controls.
         if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_CHAT)) {
             adapter.add(mActions.get(R.id.action_chat));
         }
@@ -208,6 +209,12 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
         if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_DISLIKE)) {
             adapter.add(mActions.get(R.id.action_thumbs_down));
         }
+        if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_REPEAT_MODE)) {
+            adapter.add(mActions.get(R.id.action_repeat));
+        }
+        if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_HIGH_QUALITY)) {
+            adapter.add(mActions.get(R.id.lb_control_high_quality));
+        }
 
         addMoreActions(adapter);
 
@@ -215,12 +222,6 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
         // Origin: {@link androidx.leanback.widget.ControlBarPresenter#MAX_CONTROLS}
         // Custom mod: {@link com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.playerglue.ControlBarPresenter#MAX_CONTROLS}
 
-        if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_HIGH_QUALITY)) {
-            adapter.add(mActions.get(R.id.lb_control_high_quality));
-        }
-        if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_OPEN_CHANNEL)) {
-            adapter.add(mActions.get(R.id.action_channel));
-        }
         if (mPlayerTweaksData.isPlayerButtonEnabled(PlayerTweaksData.PLAYER_BUTTON_SUBTITLES)) {
             adapter.add(mActions.get(R.id.lb_control_closed_captioning));
         }
@@ -320,6 +321,18 @@ public class VideoPlayerGlue extends MaxControlsVideoPlayerGlue<PlayerAdapter> i
 
     public void setButtonState(int buttonId, int buttonState) {
         setActionIndex(mActions.get(buttonId), buttonState);
+    }
+
+    // MEETUBE: called on every metadata bind, including null counts on a new video or disabled counter.
+    public void updateLikeCounts(Video video) {
+        ThumbsUpAction like = (ThumbsUpAction) mActions.get(R.id.action_thumbs_up);
+        ThumbsDownAction dislike = (ThumbsDownAction) mActions.get(R.id.action_thumbs_down);
+        like.setCount(video != null ? video.likeCount : null);
+        dislike.setCount(video != null ? video.dislikeCount : null);
+        if (getControlsRow() != null) {
+            invalidateUi(like);
+            invalidateUi(dislike);
+        }
     }
 
     public void setChannelIcon(String iconUrl) {

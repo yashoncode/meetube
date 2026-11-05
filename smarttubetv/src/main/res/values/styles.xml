@@ -8,6 +8,11 @@
     <attr name="cardProgressStyle" format="reference"/>
     <attr name="appLogo" format="reference"/>
 
+    <!-- MEETUBE: Stock loaders on API 21-22; API 23+ overrides use the neon ring. -->
+    <style name="NeonLoader" parent="@android:style/Widget.Material.ProgressBar" />
+    <style name="NeonLoader.Large" parent="@android:style/Widget.Material.ProgressBar.Large" />
+    <style name="NeonLoader.Small" parent="@android:style/Widget.Material.ProgressBar.Small" />
+
     <!-- Increase spacing between items in GridView -->
     <style name="GridViewStyle" parent="Widget.Leanback.GridItems.VerticalGridView">
         <item name="android:horizontalSpacing">@dimen/grid_item_horizontal_spacing</item>
@@ -26,6 +31,10 @@
 
     <!-- Color scheme: Teal (Default) -->
     <style name="App.Theme.Leanback.Player" parent="Theme.Leanback">
+        <!-- MEETUBE: Theme all indeterminate loaders, including Leanback's own. -->
+        <item name="android:progressBarStyle">@style/NeonLoader</item>
+        <item name="android:progressBarStyleLarge">@style/NeonLoader.Large</item>
+        <item name="android:progressBarStyleSmall">@style/NeonLoader.Small</item>
         <!-- <item name="android:windowBackground">@null</item> -->
         <!-- NOTE: don't use transparency because the BackgroundManager won't work (BackgroundManager:778) -->
         <item name="android:windowBackground">@android:color/black</item>
@@ -47,6 +56,10 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
     <style name="App.Theme.Leanback.Browse" parent="Theme.Leanback.Browse">
+        <!-- MEETUBE: Use the API-appropriate indeterminate loaders in browse views. -->
+        <item name="android:progressBarStyle">@style/NeonLoader</item>
+        <item name="android:progressBarStyleLarge">@style/NeonLoader.Large</item>
+        <item name="android:progressBarStyleSmall">@style/NeonLoader.Small</item>
         <item name="android:windowBackground">@color/shelf_background_dark</item>
         <item name="brandColor">@color/fastlane_background_dark</item>
         <item name="brandAccentColor">@color/fastlane_background</item>
@@ -70,6 +83,10 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
     <style name="App.Theme.Leanback.GuidedStep" parent="Theme.Leanback.GuidedStep">
+        <!-- MEETUBE: Use the API-appropriate indeterminate loaders in guided steps. -->
+        <item name="android:progressBarStyle">@style/NeonLoader</item>
+        <item name="android:progressBarStyleLarge">@style/NeonLoader.Large</item>
+        <item name="android:progressBarStyleSmall">@style/NeonLoader.Small</item>
         <item name="android:windowBackground">@color/shelf_background_dark</item>
         <item name="shelfBackground">@color/shelf_background_dark</item>
         <!-- Disable activity transition animations -->
@@ -81,6 +98,10 @@
     </style>
     <!-- AppDialogFragment style -->
     <style name="App.Theme.Leanback.Preferences.Base" parent="Theme.Leanback">
+        <!-- MEETUBE: Use the API-appropriate indeterminate loaders in settings and dialogs. -->
+        <item name="android:progressBarStyle">@style/NeonLoader</item>
+        <item name="android:progressBarStyleLarge">@style/NeonLoader.Large</item>
+        <item name="android:progressBarStyleSmall">@style/NeonLoader.Small</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Leanback</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>

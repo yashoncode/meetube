@@ -82,5 +82,10 @@
                 <data android:mimeType="application/zip" />
             </intent-filter>
         </activity>
+
+        <!-- MEETUBE: About > Donation, the two QR codes -->
+        <activity android:name=".misc.DonateActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:exported="false"/>
     </application>
 </manifest>

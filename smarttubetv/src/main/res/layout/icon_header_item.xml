@@ -2,24 +2,41 @@
 <androidx.leanback.widget.NonOverlappingLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal">
+    android:layout_height="@dimen/browse_sidebar_item_height"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:baselineAligned="false">
+
+    <!-- MEETUBE: keep the leading marker slot stable as focus moves between 54dp pills. -->
+    <View
+        android:id="@+id/browse_header_indicator"
+        android:layout_width="3dp"
+        android:layout_height="18dp"
+        android:layout_marginEnd="9dp"
+        android:background="@drawable/browse_sidebar_current"
+        android:importantForAccessibility="no"
+        android:focusable="false"
+        android:visibility="invisible" />
 
     <ImageView
         android:id="@+id/header_icon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="@dimen/browse_sidebar_icon_size"
+        android:layout_height="@dimen/browse_sidebar_icon_size"
         android:contentDescription="@string/header_icon" />
 
     <com.liskovsoft.smartyoutubetv2.tv.ui.widgets.marqueetextviewcompat.HeaderMarqueeTextViewCompat
         android:id="@+id/header_label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:textStyle="normal"
+        android:textSize="@dimen/browse_sidebar_text_size"
+        android:textColor="#D9FFFFFF"
+        android:includeFontPadding="false"
 
         android:singleLine="true"
-        android:maxWidth="150sp"
         android:marqueeRepeatLimit="marquee_forever"
         android:ellipsize="marquee"
         android:scrollHorizontally="true"

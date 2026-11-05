@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE: active feed stays brighter after focus moves down into its content. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape>
+            <solid android:color="#FFFFFFFF" />
+            <stroke android:width="1dp" android:color="#FFFFFFFF" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+    <item android:state_activated="true">
+        <shape>
+            <solid android:color="#33FFFFFF" />
+            <stroke android:width="1dp" android:color="#80FFFFFF" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid android:color="#1AFFFFFF" />
+            <stroke android:width="1dp" android:color="#33FFFFFF" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+</selector>

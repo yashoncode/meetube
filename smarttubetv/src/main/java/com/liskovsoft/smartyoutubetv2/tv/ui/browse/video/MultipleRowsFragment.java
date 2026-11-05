@@ -1,6 +1,9 @@
 package com.liskovsoft.smartyoutubetv2.tv.ui.browse.video;
 
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.leanback.app.RowsSupportFragment;
@@ -20,11 +23,14 @@ import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.VideoGroup;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.interfaces.VideoGroupPresenter;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
+import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.adapter.VideoGroupObjectAdapter;
 import com.liskovsoft.smartyoutubetv2.tv.presenter.ChannelHeaderPresenter;
 import com.liskovsoft.smartyoutubetv2.tv.presenter.ChannelHeaderPresenter.ChannelHeaderCallback;
+import com.liskovsoft.smartyoutubetv2.tv.presenter.HomeChipPresenter;
 import com.liskovsoft.smartyoutubetv2.tv.presenter.ShortsCardPresenter;
 import com.liskovsoft.smartyoutubetv2.tv.presenter.VideoCardPresenter;
 import com.liskovsoft.smartyoutubetv2.tv.presenter.CustomListRowPresenter;
@@ -51,7 +57,10 @@ public abstract class MultipleRowsFragment extends RowsSupportFragment implement
     private VideoGroupPresenter mMainPresenter;
     private VideoCardPresenter mCardPresenter;
     private ShortsCardPresenter mShortsPresenter;
+    private final HomeChipPresenter mHomeChipPresenter = new HomeChipPresenter(); // MEETUBE: only Home's navigation row.
     private int mSelectedRowIndex = -1;
+    private boolean mHomeFirstVideoPending; // MEETUBE: wait for asynchronous content, once per fresh load.
+    private int mRowsAlignment = -1;
     private ChannelHeaderCallback mChannelHeaderCallback;
 
     @Override
@@ -66,6 +75,75 @@ public abstract class MultipleRowsFragment extends RowsSupportFragment implement
         setupAdapter();
         setupEventListeners();
         applyPendingUpdates();
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // MEETUBE: measure the first row's real header height; leave all video presenters unchanged.
+        view.getViewTreeObserver().addOnPreDrawListener(() -> !updateHomeAlignment());
+        restorePosition();
+    }
+
+    @Override
+    public void setAlignment(int alignment) {
+        mRowsAlignment = alignment;
+        super.setAlignment(alignment);
+    }
+
+    private boolean updateHomeAlignment() {
+        if (getVerticalGridView() == null || mRowsAlignment < 0) {
+            return false;
+        }
+        int alignment = mRowsAlignment;
+        if (hasHomeChips() && getSelectedPosition() <= 1 && getParentFragment() != null &&
+                getParentFragment().getView() != null) {
+            View title = getParentFragment().getView().findViewById(R.id.browse_title_group);
+            if (title == null || title.getHeight() == 0) {
+                return false;
+            }
+            int[] titleLocation = new int[2];
+            int[] rowsLocation = new int[2];
+            title.getLocationOnScreen(titleLocation);
+            getVerticalGridView().getLocationOnScreen(rowsLocation);
+            // MEETUBE: 14dp below the visible top bar, excluding its trailing layout padding.
+            alignment = titleLocation[1] - rowsLocation[1] + title.getHeight() - title.getPaddingBottom() +
+                    Math.round(14 * title.getResources().getDisplayMetrics().density);
+            if (getSelectedPosition() == 1) {
+                ViewHolder chips = findRowViewHolderByPosition(0);
+                ViewHolder first = findRowViewHolderByPosition(1);
+                if (!(chips instanceof ListRowPresenter.ViewHolder) || !(first instanceof ListRowPresenter.ViewHolder)) {
+                    return false;
+                }
+                Rect bounds = new Rect();
+                getVerticalGridView().offsetDescendantRectToMyCoords(
+                        ((ListRowPresenter.ViewHolder) first).getGridView(), bounds);
+                alignment += bounds.top;
+                bounds.setEmpty();
+                getVerticalGridView().offsetDescendantRectToMyCoords(
+                        ((ListRowPresenter.ViewHolder) chips).getGridView(), bounds);
+                alignment -= bounds.top;
+            }
+        }
+        if (getVerticalGridView().getWindowAlignmentOffset() == alignment) {
+            return false;
+        }
+        getVerticalGridView().setWindowAlignmentOffset(alignment);
+        return true;
+    }
+
+    private boolean hasHomeChips() {
+        return mRowsAdapter != null && mRowsAdapter.size() > 0 &&
+                mRowsAdapter.get(0) instanceof HomeChipPresenter.ChipRow;
+    }
+
+    @Override
+    protected int getLastTitleRow() {
+        return hasHomeChips() ? 1 : 0; // MEETUBE: the top bar stays over the chips and the first video row
+    }
+
+    public boolean isHomeVideoReady() {
+        return hasHomeChips() && mRowsAdapter.size() > 1 && !mHomeFirstVideoPending;
     }
 
     protected void addHeader(ChannelHeaderCallback callback) {
@@ -102,6 +180,8 @@ public abstract class MultipleRowsFragment extends RowsSupportFragment implement
 
             ClassPresenterSelector presenterSelector = new ClassPresenterSelector();
             presenterSelector.addClassPresenter(ListRow.class, mRowPresenter);
+            // MEETUBE: a separate row presenter prevents chip sizing/focus rules affecting video cards.
+            presenterSelector.addClassPresenter(HomeChipPresenter.ChipRow.class, HomeChipPresenter.rowPresenter());
             presenterSelector.addClassPresenter(ChannelHeaderCallback.class, new ChannelHeaderPresenter());
 
             mRowsAdapter = new ArrayObjectAdapter(presenterSelector);
@@ -229,8 +309,14 @@ public abstract class MultipleRowsFragment extends RowsSupportFragment implement
         int action = group.getAction();
 
         if (action == VideoGroup.ACTION_REPLACE) {
-            if (group.getPosition() == -1) {
-                clear();
+            if (BrowsePresenter.isHomeChipGroup(group)) {
+                mHomeFirstVideoPending = group.getPosition() != 0;
+                if (replaceHomeFeed(group)) {
+                    return; // MEETUBE: preserve chips; fresh loads still wait for video row one.
+                }
+            }
+            if (group.getPosition() == -1 || BrowsePresenter.isHomeChipGroup(group)) {
+                clear(); // MEETUBE: a changed chip list must also discard the old feed.
             } else {
                 removeById(group.getId());
             }
@@ -260,11 +346,14 @@ public abstract class MultipleRowsFragment extends RowsSupportFragment implement
             HeaderItem rowHeader = new HeaderItem(group.getTitle());
             int videoGroupId = group.getId(); // Create unique int from category.
 
-            VideoGroupObjectAdapter videoGroupAdapter = new VideoGroupObjectAdapter(group, group.isShorts() ? mShortsPresenter : mCardPresenter);
+            // MEETUBE: use the normal row-adapter presenter choice for the special chip Videos.
+            boolean chips = BrowsePresenter.isHomeChipGroup(group);
+            VideoGroupObjectAdapter videoGroupAdapter = new VideoGroupObjectAdapter(group,
+                    chips ? mHomeChipPresenter : group.isShorts() ? mShortsPresenter : mCardPresenter);
 
             mVideoGroupAdapters.put(videoGroupId, videoGroupAdapter);
 
-            ListRow row = new ListRow(rowHeader, videoGroupAdapter);
+            ListRow row = chips ? new HomeChipPresenter.ChipRow(videoGroupAdapter) : new ListRow(rowHeader, videoGroupAdapter);
 
             if (group.getPosition() == -1 || group.getPosition() > mRowsAdapter.size()) {
                 mRowsAdapter.add(row);
@@ -281,10 +370,44 @@ public abstract class MultipleRowsFragment extends RowsSupportFragment implement
             freeze(false);
         }
 
+        if (BrowsePresenter.isHomeChipGroup(group)) {
+            setPosition(mHomeFirstVideoPending ? 1 : 0);
+        }
         restorePosition();
     }
 
+    // MEETUBE: preserve row zero across feed switches/refreshes; rebuild it only if enabled chips changed.
+    private boolean replaceHomeFeed(VideoGroup group) {
+        VideoGroupObjectAdapter chips = mVideoGroupAdapters.get(group.getId());
+        if (chips == null || chips.size() != group.getVideos().size()) {
+            return false;
+        }
+        for (int i = 0; i < chips.size(); i++) {
+            Video oldChip = (Video) chips.get(i);
+            Video newChip = group.getVideos().get(i);
+            if (!TextUtils.equals(oldChip.channelId, newChip.channelId) ||
+                    !TextUtils.equals(oldChip.getTitle(), newChip.getTitle())) {
+                return false;
+            }
+        }
+        for (int i = mRowsAdapter.size() - 1; i > 0; i--) {
+            removeByIndex(i);
+        }
+        chips.notifyItemRangeChanged(0, chips.size());
+        setPosition(mHomeFirstVideoPending ? 1 : 0);
+        return true;
+    }
+
     private void restorePosition() {
+        if (mHomeFirstVideoPending && hasHomeChips() && mRowsAdapter.size() > 1 && getVerticalGridView() != null) {
+            // MEETUBE: select the first card only after its content row exists; chip switches skip this.
+            ListRowPresenter.SelectItemViewHolderTask firstVideo = new ListRowPresenter.SelectItemViewHolderTask(0);
+            firstVideo.setSmoothScroll(false);
+            setSelectedPosition(1, false, firstVideo);
+            mHomeFirstVideoPending = false;
+            mSelectedRowIndex = -1;
+            return;
+        }
         setPosition(mSelectedRowIndex);
 
         // Maybe we don't need to load next group since all rows already fetched?
@@ -360,6 +483,9 @@ public abstract class MultipleRowsFragment extends RowsSupportFragment implement
         @Override
         public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item,
                                    RowPresenter.ViewHolder rowViewHolder, Row row) {
+            if (item instanceof Video && BrowsePresenter.isHomeChipItem((Video) item)) {
+                return; // MEETUBE: navigation pills do not change the backdrop or trigger continuation.
+            }
             mBackgroundManager.setBackgroundFrom(item instanceof Video ? (Video) item : null);
             if (item instanceof Video) {
                 mMainPresenter.onVideoItemSelected((Video) item);

@@ -289,6 +289,9 @@ public class SuggestionsController extends BasePlayerController {
             result = Video.from(getVideo().nextMediaItem);
         } else if (mNextSectionVideo != null && !getVideo().isShuffled) {
             result = mNextSectionVideo;
+        } else if (getVideo().isShorts) {
+            // MEETUBE(shorts): never a suggested (normal) video after a short; none until findNextShort has one
+            result = null;
         } else if (getVideo().nextMediaItem != null) {
             result = Video.from(getVideo().nextMediaItem);
         }
@@ -567,6 +570,9 @@ public class SuggestionsController extends BasePlayerController {
         if (!video.isSectionPlaylistEnabled(getContext())) {
             // Important fix. Gives priority to playlist or suggestion.
             mNextSectionVideo = null;
+            if (video.isShorts) {
+                findNextShort(video); // MEETUBE(shorts): shorts page through shorts whatever the section playlist tweak
+            }
             return;
         }
 
@@ -576,8 +582,107 @@ public class SuggestionsController extends BasePlayerController {
             // Make the index consistent with the other sections.
             group.setPosition(-1);
             getPlayer().updateSuggestions(group);
-            focusAndContinueIfNeeded(group, () -> findNextSectionVideoIfNeeded(video));
+            focusAndContinueIfNeeded(group, () -> {
+                if (video.isShorts) {
+                    findNextShort(video); // MEETUBE(shorts)
+                } else {
+                    findNextSectionVideoIfNeeded(video);
+                }
+            });
+        } else if (video.isShorts) {
+            findNextShort(video); // MEETUBE(shorts)
         }
+    }
+
+    /**
+     * MEETUBE(shorts): the short after this one, so down on the remote pages through shorts like YouTube's Shorts
+     * player: the next short in the row or grid it was opened from, then that row's next page, then YouTube's Shorts
+     * feed (whose shorts carry the feed as their group, so the chain continues page after page).
+     */
+    private void findNextShort(Video video) {
+        mNextSectionVideo = null;
+        VideoGroup group = video.getGroup();
+        Video next = findNextShortIn(group, video);
+
+        if (next != null) {
+            setNextShort(next);
+            return;
+        }
+
+        MediaGroup mediaGroup = group != null ? group.getMediaGroup() : null;
+
+        if (mediaGroup == null || mediaGroup.getNextPageKey() == null) {
+            loadShortsFeed(video);
+            return;
+        }
+
+        Disposable action = mContentService.continueGroupObserve(mediaGroup)
+                .firstElement()
+                .subscribe(
+                        continuation -> {
+                            Video nextShort = findNextShortIn(VideoGroup.from(group, continuation), video);
+                            if (nextShort != null) {
+                                setNextShort(nextShort);
+                            } else {
+                                loadShortsFeed(video);
+                            }
+                        },
+                        error -> loadShortsFeed(video),
+                        () -> loadShortsFeed(video) // no next page
+                );
+
+        mActions.add(action);
+    }
+
+    private void loadShortsFeed(Video video) {
+        Disposable action = mContentService.getShortsObserve()
+                .firstElement()
+                .subscribe(
+                        feed -> {
+                            VideoGroup group = VideoGroup.from(feed);
+                            for (Video item : group.getVideos() != null ? group.getVideos() : new ArrayList<Video>()) {
+                                if (item.hasVideo() && !item.equals(video)) {
+                                    setNextShort(item);
+                                    return;
+                                }
+                            }
+                        },
+                        error -> Log.e(TAG, "loadShortsFeed error: %s", error.getMessage())
+                );
+
+        mActions.add(action);
+    }
+
+    /** The first short after {@code video} in {@code group} (the Shorts feed's items count as shorts). */
+    private static Video findNextShortIn(VideoGroup group, Video video) {
+        if (group == null || group.getVideos() == null) {
+            return null;
+        }
+
+        boolean found = false;
+        boolean shortsGroup = group.getType() == MediaGroup.TYPE_SHORTS;
+
+        for (Video current : group.getVideos()) {
+            if (found && current.hasVideo() && !current.isUpcoming && (current.isShorts || shortsGroup)) {
+                return current;
+            }
+
+            if (current.equals(video)) {
+                found = true;
+            }
+        }
+
+        return null;
+    }
+
+    private void setNextShort(Video next) {
+        if (getPlayer() == null) {
+            return;
+        }
+
+        next.isShorts = true; // a Shorts feed item always plays as one
+        mNextSectionVideo = next;
+        getPlayer().setNextTitle(next);
     }
 
     private void markAsQueueIfNeeded(Video item) {

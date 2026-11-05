@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE: Neon loader keyframe animators are supported on API 23+. -->
+    <style name="NeonLoader" parent="@android:style/Widget.Material.ProgressBar">
+        <item name="android:indeterminateDrawable">@drawable/avd_neon_ring</item>
+    </style>
+    <style name="NeonLoader.Large" parent="@android:style/Widget.Material.ProgressBar.Large">
+        <item name="android:indeterminateDrawable">@drawable/avd_neon_ring</item>
+    </style>
+    <style name="NeonLoader.Small" parent="@android:style/Widget.Material.ProgressBar.Small">
+        <item name="android:indeterminateDrawable">@drawable/avd_neon_ring</item>
+    </style>
+</resources>

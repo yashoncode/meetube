@@ -59,6 +59,14 @@ import io.reactivex.disposables.Disposable;
 
 public class BrowsePresenter extends BasePresenter<BrowseView> implements SectionPresenter, VideoGroupPresenter, AccountChangeListener {
     private static final String TAG = BrowsePresenter.class.getSimpleName();
+    // MEETUBE: "All" heads the Channels list and shows every subscribed channel's latest videos (the feed the
+    // removed Subscriptions tab had). A fake channel id keeps it a channel item in the list's own code paths.
+    private static final String ALL_CHANNELS_ID = "meetube:all_channels";
+    // MEETUBE: special Videos select feeds within Home, independently of the sidebar selection.
+    private static final String HOME_CHIP_PREFIX = "meetube:home_chip:";
+    private static final int HOME_CHIPS_ROW_ID = "meetube:home_chips".hashCode();
+    private int mHomeSectionId = MediaGroup.TYPE_HOME;
+    private boolean mHomeFeedFromChip; // MEETUBE: distinguish chip switches from a fresh Home load.
     @SuppressLint("StaticFieldLeak")
     private static BrowsePresenter sInstance;
     private final List<BrowseSection> mSections;
@@ -198,8 +206,9 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
             mSectionsMapping.put(MediaGroup.TYPE_NEWS, new BrowseSection(MediaGroup.TYPE_NEWS, getContext().getString(R.string.header_news), BrowseSection.TYPE_ROW, R.drawable.icon_news));
         }
         mSectionsMapping.put(MediaGroup.TYPE_MUSIC, new BrowseSection(MediaGroup.TYPE_MUSIC, getContext().getString(R.string.header_music), BrowseSection.TYPE_ROW, R.drawable.icon_music));
-        mSectionsMapping.put(MediaGroup.TYPE_CHANNEL_UPLOADS, new BrowseSection(MediaGroup.TYPE_CHANNEL_UPLOADS, getContext().getString(R.string.header_channels), uploadsType, R.drawable.icon_channels, false));
-        mSectionsMapping.put(MediaGroup.TYPE_SUBSCRIPTIONS, new BrowseSection(MediaGroup.TYPE_SUBSCRIPTIONS, getContext().getString(R.string.header_subscriptions), BrowseSection.TYPE_GRID, R.drawable.icon_subscriptions, false));
+        mSectionsMapping.put(MediaGroup.TYPE_CHANNEL_UPLOADS, new BrowseSection(MediaGroup.TYPE_CHANNEL_UPLOADS, getContext().getString(R.string.header_subscriptions), uploadsType, R.drawable.icon_subscriptions, false)); // MEETUBE: named Subscriptions (its "All" is the old Subscriptions feed)
+        // MEETUBE: no Subscriptions tab, Channels' "All" shows the same feed
+        //mSectionsMapping.put(MediaGroup.TYPE_SUBSCRIPTIONS, new BrowseSection(MediaGroup.TYPE_SUBSCRIPTIONS, getContext().getString(R.string.header_subscriptions), BrowseSection.TYPE_GRID, R.drawable.icon_subscriptions, false));
         mSectionsMapping.put(MediaGroup.TYPE_HISTORY, new BrowseSection(MediaGroup.TYPE_HISTORY, getContext().getString(R.string.header_history), BrowseSection.TYPE_GRID, R.drawable.icon_history, true));
         mSectionsMapping.put(MediaGroup.TYPE_BLOCKED_CHANNELS,
                 new BrowseSection(MediaGroup.TYPE_BLOCKED_CHANNELS, getContext().getString(R.string.header_blocked_channels), BrowseSection.TYPE_GRID, R.drawable.icon_blocked_channels, false));
@@ -414,7 +423,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
 
     @Override
     public void onVideoItemSelected(Video item) {
-        if (getView() == null) {
+        if (getView() == null || isHomeChipItem(item)) { // MEETUBE: chips are navigation, not playable items.
             return;
         }
 
@@ -435,6 +444,22 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
             return;
         }
 
+        if (isHomeChipItem(item)) { // MEETUBE: keep Home selected and replace only its feed.
+            if (isHomeSection() && mHomeSectionId != item.sectionId) {
+                mHomeFeedFromChip = true;
+                setHomeSection(item.sectionId);
+                mCurrentVideo = null;
+                updateCurrentSection();
+                getView().selectSectionItem(0);
+            }
+            return;
+        }
+
+        if (isAllChannelsItem(item)) { // MEETUBE: no channel page to open, (re)load the feed
+            updateChannelUploadsMultiGrid(item);
+            return;
+        }
+
         // Check that channels new look enabled and we're on the first columnAdd commentMore actions
         if (belongsToChannelUploadsMultiGrid(item)) {
             if (getMainUIData().isUploadsAutoLoadEnabled()) {
@@ -449,7 +474,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
 
     @Override
     public void onVideoItemLongClicked(Video item) {
-        if (getContext() == null) {
+        if (getContext() == null || isAllChannelsItem(item) || isHomeChipItem(item)) { // MEETUBE: navigation has no menu
             return;
         }
 
@@ -480,6 +505,9 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
 
     @Override
     public void onScrollEnd(Video item) {
+        if (isHomeChipItem(item)) { // MEETUBE: the chips have no continuation or metadata to fetch.
+            return;
+        }
         if (item == null) {
             Log.e(TAG, "Can't scroll. Video is null.");
             return;
@@ -492,6 +520,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
 
     @Override
     public void onSectionFocused(int sectionId) {
+        mHomeFeedFromChip = false; // MEETUBE: entering from the sidebar starts on the first video.
         saveSelectedItems(); // save previous state
         mCurrentSection = findSectionById(sectionId);
         mCurrentVideo = null; // fast scroll through the sections (fix empty selected item)
@@ -657,7 +686,16 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
                 }
                 break;
             case BrowseSection.TYPE_ROW:
-                Observable<List<MediaGroup>> groups = mRowMapping.get(section.getId());
+                // MEETUBE: Home owns the chips while the active chip supplies its row observable.
+                int contentId = section.getId();
+                if (contentId == MediaGroup.TYPE_HOME) {
+                    BrowseSection active = findSectionById(mHomeSectionId);
+                    if (active == null || !active.isEnabled()) {
+                        mHomeSectionId = MediaGroup.TYPE_HOME;
+                    }
+                    contentId = mHomeSectionId;
+                }
+                Observable<List<MediaGroup>> groups = mRowMapping.get(contentId);
                 updateVideoRows(section, groups, section.isAuthOnly());
                 break;
             case BrowseSection.TYPE_SETTINGS_GRID:
@@ -719,7 +757,9 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
         
         getView().showProgressBar(true);
 
-        VideoGroup firstGroup = VideoGroup.from(section);
+        // MEETUBE: the first row is always the chips, even before a feed emits any content.
+        boolean home = section.getId() == MediaGroup.TYPE_HOME;
+        VideoGroup firstGroup = home ? createHomeChips(section) : VideoGroup.from(section);
         firstGroup.setAction(VideoGroup.ACTION_REPLACE);
         getView().updateSection(firstGroup);
 
@@ -729,7 +769,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
             return;
         }
 
-        AtomicInteger groupIndex = new AtomicInteger(-1);
+        AtomicInteger groupIndex = new AtomicInteger(home ? 0 : -1); // MEETUBE: reserve row zero for chips.
 
         Disposable updateAction = groups
                 .subscribe(
@@ -800,6 +840,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
                             }
 
                             VideoGroup videoGroup = VideoGroup.from(baseGroup, mediaGroup);
+                            addAllChannelsItemIfNeeded(section, column, videoGroup);
                             appendLocalHistory(videoGroup);
                             getView().updateSection(videoGroup);
                             mBrowseProcessor.process(videoGroup);
@@ -931,7 +972,75 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
             return;
         }
 
-        updateVideoGrid(mCurrentSection, ChannelUploadsPresenter.instance(getContext()).obtainUploadsObservable(item), 1, false);
+        updateVideoGrid(mCurrentSection, isAllChannelsItem(item) ? getContentService().getSubscriptionsObserve() :
+                ChannelUploadsPresenter.instance(getContext()).obtainUploadsObservable(item), 1, false);
+    }
+
+    // MEETUBE: the same section set is shared by sidebar filtering and chip navigation.
+    public static boolean isExploreSection(long id) {
+        return id == MediaGroup.TYPE_KIDS_HOME || id == MediaGroup.TYPE_SPORTS || id == MediaGroup.TYPE_LIVE ||
+                id == MediaGroup.TYPE_GAMING || id == MediaGroup.TYPE_NEWS || id == MediaGroup.TYPE_MUSIC;
+    }
+
+    public static boolean isHomeChipItem(Video item) {
+        return item != null && item.channelId != null && item.channelId.startsWith(HOME_CHIP_PREFIX);
+    }
+
+    public static boolean isHomeChipGroup(VideoGroup group) {
+        return group != null && !group.isEmpty() && isHomeChipItem(group.getVideos().get(0));
+    }
+
+    public boolean isHomeChipActive(Video item) {
+        return isHomeChipItem(item) && item.sectionId == mHomeSectionId;
+    }
+
+    // Also used when a launcher selects a hidden Explore section before Home's fragment is created.
+    public void setHomeSection(int sectionId) {
+        if (sectionId == MediaGroup.TYPE_HOME || isExploreSection(sectionId)) {
+            mHomeSectionId = sectionId;
+        }
+    }
+
+    private VideoGroup createHomeChips(BrowseSection home) {
+        List<Video> chips = new ArrayList<>();
+        chips.add(createHomeChip(home));
+        for (BrowseSection section : mSections) {
+            if (section.isEnabled() && isExploreSection(section.getId())) {
+                chips.add(createHomeChip(section));
+            }
+        }
+        VideoGroup group = VideoGroup.from(chips, home);
+        group.setId(HOME_CHIPS_ROW_ID);
+        group.setPosition(mHomeFeedFromChip ? 0 : -1); // MEETUBE: row zero is retained only for chip navigation.
+        group.setTitle(null); // no row heading above the pills
+        return group;
+    }
+
+    private Video createHomeChip(BrowseSection section) {
+        Video chip = new Video();
+        chip.channelId = HOME_CHIP_PREFIX + section.getId();
+        chip.sectionId = section.getId();
+        chip.title = section.getTitle();
+        return chip;
+    }
+
+    public static boolean isAllChannelsItem(Video item) {
+        return item != null && ALL_CHANNELS_ID.equals(item.channelId);
+    }
+
+    /** MEETUBE: puts "All" first in the Channels list (multi grid's left column), once. */
+    private void addAllChannelsItemIfNeeded(BrowseSection section, int column, VideoGroup group) {
+        if (column != 0 || section.getId() != MediaGroup.TYPE_CHANNEL_UPLOADS || section.getType() != BrowseSection.TYPE_MULTI_GRID) {
+            return;
+        }
+
+        Video all = new Video();
+        all.channelId = ALL_CHANNELS_ID;
+        all.title = getContext().getString(R.string.channels_all);
+
+        if (group.getVideos() == null || !group.getVideos().contains(all)) {
+            group.add(0, all);
+        }
     }
 
     private boolean belongsToChannelUploadsMultiGrid(Video item) {
@@ -1023,7 +1132,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
     }
 
     private void filterHomeIfNeeded(List<MediaGroup> mediaGroups) {
-        if (mediaGroups == null || !isHomeSection()) {
+        if (mediaGroups == null || !isHomeSection() || mHomeSectionId != MediaGroup.TYPE_HOME) { // MEETUBE: filter only Home's feed.
             return;
         }
 
@@ -1187,6 +1296,16 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
         }
 
         getView().showProgressBar(false);
+
+        // MEETUBE: keep the chip navigation available when a Home feed fails to load.
+        if (isHomeSection()) {
+            if (error != null) {
+                if (!Utils.fixRetrofitErrors(getContext(), error)) {
+                    Utils.postDelayed(mRefreshSection, 30_000);
+                }
+            }
+            return;
+        }
 
         if (getView().isEmpty() || error != null) {
             ErrorFragmentData errorFragmentData;

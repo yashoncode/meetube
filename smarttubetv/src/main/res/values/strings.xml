@@ -3,7 +3,7 @@
     <!-- NOTE: Please don't translate this file. All strings have been moved to the common module. -->
     <string translatable="false" name="app_name"><![CDATA[SmartTube]]></string>
     <string translatable="false" name="browse_title"><![CDATA[SmartTube]]></string>
-    <string name="header_explore">Explore</string>
+    <!-- MEETUBE: Explore feeds use Home chips instead of a sidebar group label. -->
     <string name="related_movies">Related Videos</string>
     <string name="vertical_grid_title"><![CDATA[Vertical Video Grid]]></string>
 
@@ -19,6 +19,9 @@
     <string name="buy_1">Buy and Own</string>
     <string name="buy_2">AT $9.99</string>
     <string name="queue_name">Play Queue</string>
+
+    <!-- MEETUBE(shorts): Remote key hints while normal player controls are hidden. -->
+    <string name="shorts_hints">▲ ▼  Previous / next short\nOK  Play / pause\n◀ ▶  Player controls</string>
 
     <string name="search_results">Search results for \'%1$s\'</string>
     <string name="no_search_results">No search results found for \'%1$s\'</string>

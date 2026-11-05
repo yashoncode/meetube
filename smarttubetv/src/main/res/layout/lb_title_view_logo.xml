@@ -3,21 +3,42 @@
 <!-- Title Logo with embedded clock -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/title_branding"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:layout_gravity="center_vertical|end"
               android:orientation="horizontal">
+    <!-- MEETUBE: browse-only greeting; all title pills use the orbs' 52dp height. -->
+    <TextView
+        android:id="@+id/title_greeting"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/lb_search_orb_size"
+        android:layout_marginEnd="12dp"
+        android:maxWidth="160dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:background="@drawable/browse_glass_title_pill"
+        android:visibility="gone" />
+
     <!-- Global clock -->
     <LinearLayout android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
+                  android:layout_height="@dimen/lb_search_orb_size"
                   android:layout_gravity="center_vertical"
-                  android:gravity="center_horizontal"
+                  android:gravity="center"
                   android:orientation="vertical">
         <com.liskovsoft.smartyoutubetv2.tv.ui.widgets.time.DateTimeView
             android:id="@+id/global_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/pip_title_size"
+            android:textSize="20sp"
+            android:includeFontPadding="false"
+            android:singleLine="true"
             android:textColor="@color/white"
             android:shadowColor="@color/black"
             android:shadowDx="1.5"
@@ -30,7 +51,9 @@
             android:id="@+id/global_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/pip_title_date_size"
+            android:textSize="12sp"
+            android:includeFontPadding="false"
+            android:singleLine="true"
             android:textColor="@color/white"
             android:shadowColor="@color/black"
             android:shadowDx="1.5"
@@ -41,15 +64,18 @@
             android:visibility="gone" />
     </LinearLayout>
 
+    <!-- MEETUBE: the logo PNG is already a glass pill (heart + MeeTube, its own rim): no extra pill or padding,
+         just its 470x150 art at the bar height. The text fallback gets the title pill. -->
     <FrameLayout android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
+                 android:layout_height="@dimen/lb_search_orb_size"
+                 android:layout_marginStart="12dp"
                  android:layout_gravity="center_vertical">
         <ImageView
             android:id="@+id/title_badge"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/lb_browse_title_icon_height"
-            android:maxWidth="@dimen/lb_browse_title_icon_max_width"
-            android:layout_marginStart="@dimen/search_bar_right_items_margin"
+            android:layout_height="@dimen/lb_search_orb_size"
+            android:maxWidth="220dp"
+            android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@null"
             android:visibility="gone"
@@ -58,7 +84,14 @@
         <TextView
             android:id="@+id/title_text"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/lb_browse_title_height"
+            android:layout_height="@dimen/lb_search_orb_size"
+            android:maxWidth="160dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textSize="18sp"
+            android:background="@drawable/browse_glass_title_pill"
             style="?attr/browseTitleTextStyle"/>
     </FrameLayout>
 </LinearLayout>

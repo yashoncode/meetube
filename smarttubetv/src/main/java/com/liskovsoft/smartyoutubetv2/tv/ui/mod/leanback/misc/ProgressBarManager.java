@@ -1,5 +1,6 @@
 package com.liskovsoft.smartyoutubetv2.tv.ui.mod.leanback.misc;
 
+import android.os.Build; // MEETUBE: Neon loader keyframes require API 23.
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,12 +66,15 @@ public final class ProgressBarManager {
         ProgressBar progressBarView = new ProgressBar(
                 rootView.getContext(), null, android.R.attr.progressBarStyleLarge);
         progressBarView.setIndeterminate(true);
+        // MEETUBE: Use the neon ring at 72dp on API 23+, retaining the holo fallback.
+        boolean neonLoader = Build.VERSION.SDK_INT >= 23;
         progressBarView.setIndeterminateDrawable(
-                ContextCompat.getDrawable(rootView.getContext(), R.drawable.progress_large_holo));
+                ContextCompat.getDrawable(rootView.getContext(),
+                        neonLoader ? R.drawable.avd_neon_ring : R.drawable.progress_large_holo));
 
-        FrameLayout.LayoutParams progressBarParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT);
+        int size = neonLoader ? Math.round(72 * rootView.getResources().getDisplayMetrics().density)
+                : FrameLayout.LayoutParams.WRAP_CONTENT;
+        FrameLayout.LayoutParams progressBarParams = new FrameLayout.LayoutParams(size, size);
         progressBarParams.gravity = position;
         rootView.addView(progressBarView, progressBarParams);
 

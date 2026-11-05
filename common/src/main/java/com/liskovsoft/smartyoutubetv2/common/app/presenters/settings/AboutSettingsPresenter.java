@@ -1,6 +1,7 @@
 package com.liskovsoft.smartyoutubetv2.common.app.presenters.settings;
 
 import android.content.Context;
+import android.content.Intent;
 import com.liskovsoft.appupdatechecker2.AppUpdateChecker;
 import com.liskovsoft.sharedutils.helpers.AppInfoHelpers;
 import com.liskovsoft.sharedutils.helpers.Helpers;
@@ -14,6 +15,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.ATVBridgePre
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AmazonBridgePresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AppUpdatePresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.base.BasePresenter;
+import com.liskovsoft.smartyoutubetv2.common.misc.DonateActivity;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 
@@ -129,19 +131,9 @@ public class AboutSettingsPresenter extends BasePresenter<Void> {
     }
 
     private void appendDonation(AppDialogPresenter settingsPresenter) {
-        List<OptionItem> donateOptions = new ArrayList<>();
-
-        Map<String, String> donations = Helpers.getMap(getContext(), R.array.donations);
-
-        for (Entry<String, String> entry : donations.entrySet()) {
-            donateOptions.add(UiOptionItem.from(
-                    entry.getKey(),
-                    option -> Utils.openLink(getContext(), Utils.toQrCodeLink(entry.getValue()))));
-        }
-
-        if (!donateOptions.isEmpty()) {
-            settingsPresenter.appendStringsCategory(getContext().getString(R.string.donation), donateOptions);
-        }
+        // MEETUBE: one button to the page with both QR codes (international and India UPI) side by side
+        settingsPresenter.appendSingleButton(UiOptionItem.from(getContext().getString(R.string.donation),
+                option -> getContext().startActivity(new Intent(getContext(), DonateActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))));
     }
 
     private void appendUpdateSource(AppDialogPresenter settingsPresenter) {

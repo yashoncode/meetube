@@ -291,7 +291,7 @@ public class SplashPresenter extends BasePresenter<SplashView> {
 
             // ATV channel icon clicked
             if (IntentExtractor.isSubscriptionsUrl(intent)) {
-                sectionId = MediaGroup.TYPE_SUBSCRIPTIONS;
+                sectionId = MediaGroup.TYPE_CHANNEL_UPLOADS; // MEETUBE: the Subscriptions feed is Channels "All" now
             } else if (IntentExtractor.isHistoryUrl(intent)) {
                 sectionId = MediaGroup.TYPE_HISTORY;
             } else if (IntentExtractor.isRecommendedUrl(intent)) {

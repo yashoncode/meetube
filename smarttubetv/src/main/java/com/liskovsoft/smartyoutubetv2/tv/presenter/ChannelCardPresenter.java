@@ -3,7 +3,6 @@ package com.liskovsoft.smartyoutubetv2.tv.presenter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Build.VERSION;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,58 +10,58 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.presenter.base.LongClickPresenter;
 import com.liskovsoft.smartyoutubetv2.tv.ui.browse.video.GridFragmentHelper;
 import com.liskovsoft.smartyoutubetv2.tv.util.ViewUtil;
 
+/**
+ * MEETUBE: a Subscriptions (Channels) list row in the glass style - round avatar and name in a pill that turns white
+ * on focus (dark text), like the sidebar; faint glass marks the channel whose videos are shown (the fragment sets
+ * it activated) and a red dot replaces SmartTube's dark red background for new videos. "All" gets a white disc with
+ * the subscriptions icon.
+ */
 public class ChannelCardPresenter extends LongClickPresenter {
-    private static final String TAG = VideoCardPresenter.class.getSimpleName();
-    private int mDefaultBackgroundColor;
-    private int mDefaultTextColor;
-    private int mSelectedBackgroundColor;
-    private int mNewContentBackgroundColor;
-    private int mSelectedTextColor;
+    private static final String TAG = ChannelCardPresenter.class.getSimpleName();
+    private static final int TEXT_COLOR = 0xF2FFFFFF;
+    private static final int TEXT_COLOR_FOCUSED = 0xFF141414;
+    private static final int ALL_ICON_COLOR = 0xFF141414;
     private int mWidth;
-    private int mHeight;
+    private Video mSelected;
+    private View mSelectedView;
+
+    /** Marks the channel whose videos are shown: faint glass while the focus is on its videos. */
+    public void setSelected(@Nullable ViewHolder holder, @Nullable Video item) {
+        if (mSelectedView != null) {
+            mSelectedView.setActivated(false);
+        }
+        mSelected = item;
+        mSelectedView = holder != null ? holder.view : null;
+        if (mSelectedView != null) {
+            mSelectedView.setActivated(true);
+        }
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
         Context context = parent.getContext();
 
-        mDefaultBackgroundColor =
-                ContextCompat.getColor(context, Helpers.getThemeAttr(context, R.attr.cardDefaultBackground));
-        mDefaultTextColor =
-                ContextCompat.getColor(context, R.color.card_default_text);
-        mNewContentBackgroundColor =
-                ContextCompat.getColor(context, R.color.dark_red);
-        mSelectedBackgroundColor =
-                ContextCompat.getColor(context, Helpers.getThemeAttr(context, R.attr.cardSelectedBackground));
-        mSelectedTextColor =
-                ContextCompat.getColor(context, R.color.card_selected_text_grey);
-
         updateDimensions(context);
 
         @SuppressLint("InflateParams")
         View container = LayoutInflater.from(context).inflate(R.layout.channel_card, null);
-        container.setBackgroundColor(mDefaultBackgroundColor);
-        //if (VERSION.SDK_INT >= 23 && MainUIData.instance(context).isUiTweakEnabled(MainUIData.UI_TWEAK_ROUNDED_CORNERS)) {
-        //    container.setForeground(ContextCompat.getDrawable(context, R.drawable.lb_card_outline));
-        //}
 
         TextView textView = container.findViewById(R.id.channel_title);
-        textView.setBackgroundColor(mDefaultBackgroundColor);
-        textView.setTextColor(mDefaultTextColor);
+        textView.setTextColor(TEXT_COLOR);
 
         boolean autoScrollEnabled = isCardTextAutoScrollEnabled(context);
         if (autoScrollEnabled) {
@@ -70,12 +69,7 @@ public class ChannelCardPresenter extends LongClickPresenter {
         }
 
         container.setOnFocusChangeListener((v, hasFocus) -> {
-            int backgroundColor = hasFocus ? mSelectedBackgroundColor :
-                    textView.getTag(R.id.channel_new_content) != null ? mNewContentBackgroundColor : mDefaultBackgroundColor;
-            int textColor = hasFocus ? mSelectedTextColor : mDefaultTextColor;
-            
-            textView.setBackgroundColor(backgroundColor);
-            textView.setTextColor(textColor);
+            textView.setTextColor(hasFocus ? TEXT_COLOR_FOCUSED : TEXT_COLOR);
 
             if (!autoScrollEnabled) {
                 return;
@@ -104,18 +98,34 @@ public class ChannelCardPresenter extends LongClickPresenter {
         textView.setText(video.getTitle());
 
         // We should setup props each time because object may be reused by the underlying RecyclerView
-        textView.setBackgroundColor(video.hasNewContent ? mNewContentBackgroundColor : mDefaultBackgroundColor);
-        textView.setTag(R.id.channel_new_content, video.hasNewContent ? true : null);
-
+        boolean selected = video.equals(mSelected);
+        viewHolder.view.setActivated(selected);
+        if (selected) {
+            mSelectedView = viewHolder.view;
+        }
+        viewHolder.view.findViewById(R.id.channel_new_dot).setVisibility(video.hasNewContent ? View.VISIBLE : View.GONE);
 
         ImageView imageView = viewHolder.view.findViewById(R.id.channel_image);
-        imageView.setVisibility(View.VISIBLE);
+
+        if (BrowsePresenter.isAllChannelsItem(video)) {
+            Glide.with(context).clear(imageView);
+            int pad = Math.round(9 * context.getResources().getDisplayMetrics().density);
+            imageView.setPadding(pad, pad, pad, pad);
+            imageView.setBackgroundResource(R.drawable.channel_avatar_circle);
+            imageView.setImageResource(R.drawable.browse_ic_subscriptions);
+            imageView.setColorFilter(ALL_ICON_COLOR);
+            return;
+        }
+
+        imageView.setPadding(0, 0, 0, 0);
+        imageView.setBackground(null);
+        imageView.clearColorFilter();
 
         Glide.with(context)
                 .load(video.cardImageUrl)
                 .apply(ViewUtil.glideOptions())
+                .circleCrop()
                 .listener(mErrorListener)
-                //.error(R.drawable.card_placeholder) // R.color.lb_grey
                 .into(imageView);
     }
 
@@ -130,7 +140,6 @@ public class ChannelCardPresenter extends LongClickPresenter {
         Pair<Integer, Integer> dimens = getCardDimensPx(context);
 
         mWidth = dimens.first;
-        mHeight = dimens.second;
     }
 
     protected Pair<Integer, Integer> getCardDimensPx(Context context) {

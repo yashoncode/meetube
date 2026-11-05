@@ -237,6 +237,11 @@ public class RowsSupportFragment extends BaseRowSupportFragment implements
         return mOnItemViewSelectedListener;
     }
 
+    /** MEETUBE: the last row position that still shows the title (Home: its chip row and first video row). */
+    protected int getLastTitleRow() {
+        return 0;
+    }
+
     @Override
     void onRowSelected(RecyclerView parent, RecyclerView.ViewHolder viewHolder,
             int position, int subposition) {
@@ -255,7 +260,7 @@ public class RowsSupportFragment extends BaseRowSupportFragment implements
         // When RowsSupportFragment is embedded inside a page fragment, we want to show
         // the title view only when we're on the first row or there is no data.
         if (mMainFragmentAdapter != null) {
-            mMainFragmentAdapter.getFragmentHost().showTitleView(position <= 0);
+            mMainFragmentAdapter.getFragmentHost().showTitleView(position <= getLastTitleRow()); // MEETUBE: Home keeps the title over its chips and first video row
         }
     }
 
