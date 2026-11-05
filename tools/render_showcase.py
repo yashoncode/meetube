@@ -1,8 +1,9 @@
 """Renders the README showcase (bento, the one in use) from the app screenshots in .github/assets/meetube/.
 
-    python tools/render_showcase.py [bento|coverflow] [out path]
+    python tools/render_showcase.py [bento|coverflow|tv] [out path]
 
-Writes .github/assets/meetube/showcase.webp by default. Re-run after retaking a screenshot.
+Writes .github/assets/meetube/showcase.webp by default (tv: MeeTube TV's poster, tv.webp). Re-run after
+retaking a screenshot.
 """
 import os
 import sys
@@ -89,9 +90,15 @@ def card(name, caption, headline, w, h, layout, tint):
         else:
             s = screen(name, w - 2 * pad - 30)
             img.alpha_composite(s.crop((0, 0, s.width, h - top)), ((w - s.width) // 2, top))
+    return finish(img)
+
+
+def finish(img, radius=40):
+    """A card's rounded corners and hairline edge."""
+    w, h = img.size
     out = Image.new('RGBA', (w, h), (0, 0, 0, 0))
-    out.paste(img, (0, 0), rounded_mask((w, h), 40))
-    ImageDraw.Draw(out).rounded_rectangle((0, 0, w - 1, h - 1), 40, outline=(255, 255, 255, 26), width=2)
+    out.paste(img, (0, 0), rounded_mask((w, h), radius))
+    ImageDraw.Draw(out).rounded_rectangle((0, 0, w - 1, h - 1), radius, outline=(255, 255, 255, 26), width=2)
     return out
 
 
@@ -170,9 +177,75 @@ def coverflow():
     return out
 
 
+# ---------------------------------------------------------------------------------------------
+# TV: MeeTube TV's poster (tv.webp). A title card with the logo over four TV screens, from the
+# TV's own screenshots (tv_*.jpg, 1280x720 screencaps).
+
+TV_W, TV_GAP, TV_HEAD_H = 2400, 30, 400
+TV_CARDS = [  # screen, caption, headline, tint
+    ('tv_home', 'Glass sidebar', 'Everything, one click away.', (70, 140, 255)),
+    ('tv_sports', 'Explore', 'Kids, Sports, Live and more.', (60, 210, 110)),
+    ('tv_shorts', 'Shorts', 'Made for the big screen.', (255, 140, 40)),
+    ('tv_subscriptions', 'Subscriptions', 'Every channel at a glance.', (255, 70, 150)),
+]
+TV_PILLS = ['No ads', 'Liquid glass', 'Shorts on TV', 'Updates itself']
+
+
+def tv_header(w, h):
+    img = Image.new('RGBA', (w, h), (22, 22, 26, 255))
+    img.alpha_composite(glow((w, h), (230, h * 0.5), 460, RED, 120))
+    img.alpha_composite(glow((w, h), (w * 0.88, h * 1.05), 560, (120, 60, 255), 90))
+    logo = Image.open(os.path.join(ASSETS, 'icon.png')).convert('RGBA').resize((230, 230), Image.LANCZOS)
+    img.alpha_composite(logo, (90, (h - 230) // 2))
+    d = ImageDraw.Draw(img)
+    x, title_f = 370, font('seguibl.ttf', 136)
+    d.text((x, 178), 'MeeTube', font=title_f, fill=(255, 255, 255), anchor='ls')
+    d.text((x + d.textlength('MeeTube ', font=title_f), 178), 'TV', font=title_f, fill=RED, anchor='ls')
+    d.text((x + 4, 252), 'YouTube, reimagined for the big screen.', font=font('seguisb.ttf', 50),
+           fill=(225, 225, 232), anchor='ls')
+    pills = Image.new('RGBA', (w, h), (0, 0, 0, 0))   # glass pills blend over the glow on their own layer
+    pd, pill_f, px = ImageDraw.Draw(pills), font('seguisb.ttf', 32), x
+    for p in TV_PILLS:
+        pw = pd.textlength(p, font=pill_f) + 56
+        pd.rounded_rectangle((px, 290, px + pw, 350), 30, fill=(255, 255, 255, 26), outline=(255, 255, 255, 60), width=2)
+        px += pw + 16
+    img.alpha_composite(pills)
+    px = x
+    for p in TV_PILLS:
+        pw = d.textlength(p, font=pill_f) + 56
+        d.text((px + pw / 2, 320), p, font=pill_f, fill=(240, 240, 245), anchor='mm')
+        px += pw + 16
+    return finish(img)
+
+
+def tv_card(name, caption, headline, w, tint):
+    pad = 56
+    s = screen(name, w - 2 * pad, radius=24)
+    top = pad + 44 + 92
+    h = top + s.height + pad
+    img = Image.new('RGBA', (w, h), (22, 22, 26, 255))
+    img.alpha_composite(glow((w, h), (w * 0.5, h * 0.95), max(w, h) * 0.55, tint, 120))
+    d = ImageDraw.Draw(img)
+    d.text((pad, pad), caption, font=font('seguisb.ttf', 34), fill=tint)
+    d.text((pad, pad + 44), headline, font=font('segoeuib.ttf', 56), fill=(255, 255, 255))
+    img.alpha_composite(s, (pad, top))
+    return finish(img)
+
+
+def tv():
+    cw = (TV_W - TV_GAP) // 2
+    cards = [tv_card(n, c, hl, cw, t) for n, c, hl, t in TV_CARDS]
+    ch = cards[0].height
+    img = Image.new('RGBA', (TV_W, TV_HEAD_H + 2 * (TV_GAP + ch)), (0, 0, 0, 0))
+    img.alpha_composite(tv_header(TV_W, TV_HEAD_H))
+    for i, c in enumerate(cards):
+        img.alpha_composite(c, ((i % 2) * (cw + TV_GAP), TV_HEAD_H + TV_GAP + (i // 2) * (ch + TV_GAP)))
+    return img
+
+
 if __name__ == '__main__':
     style = sys.argv[1] if len(sys.argv) > 1 else 'bento'
-    result = {'bento': bento, 'coverflow': coverflow}[style]()
-    path = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ASSETS, 'showcase.webp')
+    result = {'bento': bento, 'coverflow': coverflow, 'tv': tv}[style]()
+    path = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ASSETS, 'tv.webp' if style == 'tv' else 'showcase.webp')
     result.save(path, quality=88, method=6)
     print(path, result.size, os.path.getsize(path) // 1024, 'KB')
