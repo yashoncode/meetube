@@ -11,9 +11,12 @@
 **YouTube, reimagined. Different by design. Smooth by nature.** <br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
 
 <p align="center"><img src=".github/assets/meetube/showcase.webp" width="100%" alt="MeeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Shorts (full screen, swipe ready), Channels (banner, Subscribe, Shorts tab), Liquid glass (a tab bar that floats), Search (YouTube's chips and filters) and Offline (save it in 4K)"></p>
-<p align="center"><img src=".github/assets/meetube/collage.gif" width="100%" alt="MeeTube on a phone: the liquid glass tab bar switching tabs, the player with comments, synced lyrics, search and Shorts"></p>
+<p align="center"><img src=".github/assets/meetube/collage.webp" width="100%" alt="MeeTube on a phone, one screen at a time: the liquid glass tab bar switching tabs, the player with comments, synced lyrics, search and Shorts"></p>
 
 <p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
+
+<p align="center"><img src=".github/assets/meetube/tv.webp" width="100%" alt="MeeTube TV: the glass sidebar over Home, the Sports page, the Shorts player and Subscriptions"></p>
+
 <p align="center"><a href="#meetube-tv"><b>📺 On a TV? Get MeeTube TV</b></a></p>
 
 > [!IMPORTANT]
@@ -73,35 +76,21 @@ Every release is built and signed in public by [GitHub Actions](https://github.c
 
 ## MeeTube TV
 
-MeeTube's glass design on Android TV and Google TV. MeeTube TV is [SmartTube](https://github.com/yuliskov/SmartTube) with a new look, so everything SmartTube does works the same, and it installs as its own app next to SmartTube.
-
-> [!NOTE]
-> MeeTube TV is in beta. Screenshots are coming soon.
+MeeTube's glass design on Android TV and Google TV, tuned its own way. It installs as its own app and updates itself.
 
 - **Glass Home.** A frosted sidebar with a focus pill that glides between MeeTube's icons.
 - **Glass player.** One frosted panel at the bottom: a seek bar with a glowing knob, and every button in a single row.
 - **Search that glows.** The screen's edges light up when Search opens, and your words glow as you type.
 
-Get it from [MeeTube TV 0.0.1 Beta](https://github.com/yashoncode/meetube/releases/tag/tv-v0.0.1-beta) on Releases:
+Get it from [MeeTube TV 1.0.0](https://github.com/yashoncode/meetube/releases/tag/tv-v1.0.0) on Releases:
 
 | Your TV | File |
 |:--|:--|
-| Most TVs and boxes | [MeeTubeTV_0.0.1_armeabi-v7a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_armeabi-v7a.apk) |
-| Newer 64-bit boxes (Nvidia Shield, Google TV Streamer) | [MeeTubeTV_0.0.1_arm64-v8a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_arm64-v8a.apk) |
-| Not sure | [MeeTubeTV_0.0.1_universal.apk](https://github.com/yashoncode/meetube/releases/download/tv-v0.0.1-beta/MeeTubeTV_0.0.1_universal.apk) |
+| Most TVs and boxes | [MeeTubeTV_1.0.0_armeabi-v7a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_armeabi-v7a.apk) |
+| Newer 64-bit boxes (Nvidia Shield, Google TV Streamer) | [MeeTubeTV_1.0.0_arm64-v8a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_arm64-v8a.apk) |
+| Not sure | [MeeTubeTV_1.0.0_universal.apk](https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_universal.apk) |
 
 Android 4.2 or later. The code is on the [tv branch](https://github.com/yashoncode/meetube/tree/tv), with its own [changelog](https://github.com/yashoncode/meetube/blob/tv/CHANGELOG.md). Found a bug? [Open an issue](https://github.com/yashoncode/meetube/issues/new/choose) and pick MeeTube TV.
-
-## MeeTube and NewTube
-
-MeeTube is a heavily tweaked fork of [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala), and NewTube is built on [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov). MeeTube follows NewTube's playback and network fixes, and adds its own design and features on top: lyrics, liquid glass, the Shorts player, channel photos, search chips and the rest of the list above. Beyond what you see:
-
-- **Its own app.** A separate app id (`io.yash.meetube`), so it installs alongside NewTube or SmartTube, and an in-app updater that follows MeeTube's releases.
-- **True black.** The dark theme is AMOLED black by default, with a red accent and rounded thumbnails. A light theme is in Settings.
-- **Quicker Shorts.** The next Short is fetched and buffered while you watch the current one, so a swipe starts playing right away.
-- **Lighter on memory.** Video buffers are sized to your phone's memory, so long sessions don't run out of it.
-
-MeeTube is an independent project and is not endorsed by either upstream developer.
 
 ## Build
 
