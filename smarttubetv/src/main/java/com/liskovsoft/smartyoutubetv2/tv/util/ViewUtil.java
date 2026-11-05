@@ -32,8 +32,10 @@ public class ViewUtil {
     /**
      * Focused card zoom factor
      */
-    public static final int FOCUS_ZOOM_FACTOR = FocusHighlight.ZOOM_FACTOR_SMALL;
-    //public static final int FOCUS_ZOOM_FACTOR = FocusHighlight.ZOOM_FACTOR_NONE;
+    // MEETUBE: Leanback LARGE is 118% for video cards in rows and grids.
+    public static final int FOCUS_ZOOM_FACTOR = FocusHighlight.ZOOM_FACTOR_LARGE;
+    // MEETUBE: settings keep their original 110% focus zoom.
+    public static final int SETTINGS_FOCUS_ZOOM_FACTOR = FocusHighlight.ZOOM_FACTOR_SMALL;
     /**
      * Dim focused card?
      */

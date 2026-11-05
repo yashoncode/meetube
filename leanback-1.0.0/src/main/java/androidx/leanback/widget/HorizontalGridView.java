@@ -321,14 +321,17 @@ public class HorizontalGridView extends BaseGridView {
             return;
         }
 
-        int lowEdge = mFadingLowEdge? getPaddingLeft() - mLowFadeShaderOffset - mLowFadeShaderLength : 0;
-        int highEdge = mFadingHighEdge ? getWidth() - getPaddingRight()
+        // MEETUBE: cut only the side that fades now. Stock leanback cut both enabled sides whenever either faded,
+        // so a row at its start with only the right end fading clipped the focused (zoomed) first card at the
+        // left card line, with no fade drawn there.
+        int lowEdge = needsFadingLow ? getPaddingLeft() - mLowFadeShaderOffset - mLowFadeShaderLength : 0;
+        int highEdge = needsFadingHigh ? getWidth() - getPaddingRight()
                 + mHighFadeShaderOffset + mHighFadeShaderLength : getWidth();
 
         // draw not-fade content
         int save = canvas.save();
-        canvas.clipRect(lowEdge + (mFadingLowEdge ? mLowFadeShaderLength : 0), 0,
-                highEdge - (mFadingHighEdge ? mHighFadeShaderLength : 0), getHeight());
+        canvas.clipRect(lowEdge + (needsFadingLow ? mLowFadeShaderLength : 0), 0,
+                highEdge - (needsFadingHigh ? mHighFadeShaderLength : 0), getHeight());
         super.draw(canvas);
         canvas.restoreToCount(save);
 

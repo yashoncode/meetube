@@ -95,8 +95,13 @@
     -->
     <!--<dimen name="lb_browse_item_horizontal_spacing">15dp</dimen>-->
     <!--<dimen name="lb_browse_item_vertical_spacing">15dp</dimen>-->
-    <dimen name="grid_item_horizontal_spacing">15dp</dimen>
-    <dimen name="grid_item_vertical_spacing">15dp</dimen>
+    <!-- MEETUBE: room for the 118% focus zoom (ViewUtil.FOCUS_ZOOM_FACTOR): a ~210dp card grows ~19dp per side,
+         so the focused card keeps a visible gap to its neighbours. Was 15dp.
+         ponytail: fixed for the default card scale; past ~1.3x video card scale the zoom touches its neighbours again. -->
+    <dimen name="grid_item_horizontal_spacing">26dp</dimen>
+    <dimen name="grid_item_vertical_spacing">24dp</dimen>
+    <!-- MEETUBE: settings cards keep the old 15dp both ways (their focus zoom stays small), so they fit 2 rows. -->
+    <dimen name="settings_item_spacing">15dp</dimen>
     <dimen name="grid_horizontal_margin">25dp</dimen>
 
     <!-- Browse headers spacing. Origin: 21dp -->

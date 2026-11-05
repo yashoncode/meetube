@@ -109,8 +109,10 @@ public class ExoPlayerInitializer {
         // Default values
         int minBufferMs = 30_000;
         int maxBufferMs = 30_000;
-        int bufferForPlaybackMs = 2_500;
-        int bufferForPlaybackAfterRebufferMs = 5_000;
+        // MEETUBE: start like the phone app: play once half a second is buffered (was 2.5 s), resume after a
+        // stall at 1.5 s (was 5 s). The phone's measured start gates (Media3PlayerInitializer START_BUFFER_MS).
+        int bufferForPlaybackMs = 500;
+        int bufferForPlaybackAfterRebufferMs = 1_500;
 
         switch (mPlayerData.getVideoBufferType()) {
             case PlayerData.BUFFER_HIGHEST:

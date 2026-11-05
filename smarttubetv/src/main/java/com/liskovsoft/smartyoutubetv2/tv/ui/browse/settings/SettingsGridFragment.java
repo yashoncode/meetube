@@ -71,8 +71,16 @@ public class SettingsGridFragment extends GridFragment implements SettingsSectio
 
     private void setupAdapter() {
         boolean browseGlass = BrowseGlassStyle.isBrowse(this);
-        VerticalGridPresenter presenter = new VerticalGridPresenter(ViewUtil.FOCUS_ZOOM_FACTOR,
-                !browseGlass && ViewUtil.FOCUS_DIMMER_ENABLED);
+        // MEETUBE: settings retain the smaller zoom independently of video cards.
+        VerticalGridPresenter presenter = new VerticalGridPresenter(ViewUtil.SETTINGS_FOCUS_ZOOM_FACTOR,
+                !browseGlass && ViewUtil.FOCUS_DIMMER_ENABLED) {
+            @Override
+            protected void initializeGridViewHolder(ViewHolder vh) {
+                super.initializeGridViewHolder(vh);
+                // MEETUBE: the old 15dp gaps (video grids got wider ones for their bigger zoom), so settings fit 2 rows.
+                vh.getGridView().setItemSpacing(getResources().getDimensionPixelSize(R.dimen.settings_item_spacing));
+            }
+        };
         presenter.enableChildRoundedCorners(getMainUIData().isUiTweakEnabled(MainUIData.UI_TWEAK_ROUNDED_CORNERS));
         if (browseGlass) {
             // MEETUBE: the card drawable supplies the glass and its 16dp corners.

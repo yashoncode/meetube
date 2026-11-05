@@ -35,6 +35,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.VideoMe
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.providers.channelgroup.ChannelGroupServiceWrapper;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.interfaces.SectionPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.interfaces.VideoGroupPresenter;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.service.PersonalShortsService;
 import com.liskovsoft.smartyoutubetv2.common.app.views.BrowseView;
 import com.liskovsoft.smartyoutubetv2.common.misc.AppDataSourceManager;
 import com.liskovsoft.smartyoutubetv2.common.misc.BrowseProcessorManager;
@@ -96,6 +97,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
         mSettingsGridMapping = new HashMap<>();
         mLocalGridMappings = new HashMap<>();
         mSectionsMapping = new HashMap<>();
+        PersonalShortsService.instance(); // MEETUBE: clear account picks before Browse reloads Home on account change.
         MediaServiceManager.instance().addAccountListener(this);
 
         mBrowseProcessor = new BrowseProcessorManager(getContext(), this::syncItem);
@@ -222,7 +224,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
     }
 
     private void initRowAndGridMapping() {
-        mRowMapping.put(MediaGroup.TYPE_HOME, getContentService().getHomeObserve());
+        mRowMapping.put(MediaGroup.TYPE_HOME, PersonalShortsService.instance().getHomeObserve()); // MEETUBE: reuse Home Shorts rows.
         mRowMapping.put(MediaGroup.TYPE_TRENDING, getContentService().getTrendingObserve());
         mRowMapping.put(MediaGroup.TYPE_KIDS_HOME, getContentService().getKidsHomeObserve());
         mRowMapping.put(MediaGroup.TYPE_SPORTS, getContentService().getSportsObserve());
@@ -232,7 +234,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
         mRowMapping.put(MediaGroup.TYPE_GAMING, getContentService().getGamingObserve());
         mRowMapping.put(MediaGroup.TYPE_USER_PLAYLISTS, getContentService().getPlaylistRowsObserve());
 
-        mGridMapping.put(MediaGroup.TYPE_SHORTS, getContentService().getShortsObserve());
+        mGridMapping.put(MediaGroup.TYPE_SHORTS, PersonalShortsService.instance().getShortsObserve()); // MEETUBE: account picks first.
         mGridMapping.put(MediaGroup.TYPE_SUBSCRIPTIONS, getContentService().getSubscriptionsObserve());
         mGridMapping.put(MediaGroup.TYPE_HISTORY, getContentService().getHistoryObserve());
         mGridMapping.put(MediaGroup.TYPE_CHANNEL_UPLOADS, getContentService().getSubscribedChannelsByNewContentObserve());
@@ -892,7 +894,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
         //    continuation = getContentService().continueGroupObserve(mediaGroup);
         //}
 
-        continuation = getContentService().continueGroupObserve(mediaGroup);
+        continuation = PersonalShortsService.instance().continueGroupObserve(mediaGroup); // MEETUBE: feed paging.
 
         Disposable continueAction = continuation
                 .subscribe(

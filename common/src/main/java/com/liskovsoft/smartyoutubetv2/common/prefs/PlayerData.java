@@ -797,7 +797,7 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
         mVideoFormat = Helpers.firstNonNull(ExoFormatItem.from(Helpers.parseStr(split, 9)), getDefaultVideoFormat());
         mAudioFormat = Helpers.firstNonNull(ExoFormatItem.from(Helpers.parseStr(split, 10)), getDefaultAudioFormat());
         mSubtitleFormat = Helpers.firstNonNull(ExoFormatItem.from(Helpers.parseStr(split, 11)), getDefaultSubtitleFormat());
-        mVideoBufferType = Helpers.parseInt(split, 12, PlayerEngine.BUFFER_MEDIUM);
+        mVideoBufferType = Helpers.parseInt(split, 12, PlayerEngine.BUFFER_HIGH); // MEETUBE: High by default (was Medium)
         mSubtitleStyleIndex = Helpers.parseInt(split, 13, yellowOnSemiBgSubIdx);
         mResizeMode = Helpers.parseInt(split, 14, PlayerEngine.RESIZE_MODE_DEFAULT);
         mSpeed = Helpers.parseFloat(split, 15, 1.0f);
@@ -862,7 +862,18 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
         if (mSubtitleStyleIndex >= mSubtitleStyles.size()) {
             mSubtitleStyleIndex = yellowOnSemiBgSubIdx;
         }
+
+        // MEETUBE: installs that saved the old Medium default move to High once; a buffer chosen later sticks.
+        if (!mPrefs.getBoolean(BUFFER_HIGH_MIGRATED, false)) {
+            mPrefs.putBoolean(BUFFER_HIGH_MIGRATED, true);
+            if (mVideoBufferType == PlayerEngine.BUFFER_MEDIUM) {
+                mVideoBufferType = PlayerEngine.BUFFER_HIGH;
+                persistStateInt();
+            }
+        }
     }
+
+    private static final String BUFFER_HIGH_MIGRATED = "meetube_buffer_high_default";
 
     public void persistNow() {
         Utils.post(mPersistStateInt);

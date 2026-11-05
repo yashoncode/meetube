@@ -79,7 +79,9 @@ public class GridFragmentHelper {
         }
 
         float cardWidthPx = res.getDimensionPixelSize(cardWidthResId) * cardScale;
-        float cardSpacingPx = res.getDimensionPixelSize(R.dimen.grid_item_horizontal_spacing);
+        // MEETUBE: settings cards use their own spacing (see SettingsGridFragment).
+        float cardSpacingPx = res.getDimensionPixelSize(cardWidthResId == R.dimen.settings_card_width
+                ? R.dimen.settings_item_spacing : R.dimen.grid_item_horizontal_spacing);
 
         // Get into consideration space from grid sides
         return (displayWidthPx - displayWidthPx * 0.1f * uiScale) / (cardWidthPx + cardSpacingPx);

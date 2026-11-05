@@ -20,6 +20,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.VideoActionP
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.VideoMenuPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.VideoMenuPresenter.VideoMenuCallback;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.interfaces.VideoGroupPresenter;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.service.PersonalShortsService;
 import com.liskovsoft.smartyoutubetv2.common.app.views.ChannelUploadsView;
 import com.liskovsoft.smartyoutubetv2.common.misc.BrowseProcessorManager;
 import com.liskovsoft.smartyoutubetv2.common.misc.MediaServiceManager;
@@ -213,7 +214,7 @@ public class ChannelUploadsPresenter extends BasePresenter<ChannelUploadsView> i
 
         Observable<MediaGroup> continuation;
 
-        continuation = getContentService().continueGroupObserve(mediaGroup);
+        continuation = PersonalShortsService.instance().continueGroupObserve(mediaGroup); // MEETUBE: feed paging.
 
         mScrollAction = continuation
                 .subscribe(

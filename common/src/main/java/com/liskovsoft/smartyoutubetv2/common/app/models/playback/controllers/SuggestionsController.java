@@ -26,6 +26,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.SeekBarSegme
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.UiOptionItem;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.AppDialogPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.service.PersonalShortsService;
 import com.liskovsoft.smartyoutubetv2.common.misc.BrowseProcessorManager;
 import com.liskovsoft.smartyoutubetv2.common.misc.MediaServiceManager;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
@@ -186,7 +187,7 @@ public class SuggestionsController extends BasePlayerController {
 
         MediaGroup mediaGroup = group.getMediaGroup();
 
-        Disposable continueAction = mContentService.continueGroupObserve(mediaGroup)
+        Disposable continueAction = PersonalShortsService.instance().continueGroupObserve(mediaGroup) // MEETUBE: feed paging.
                 .subscribe(
                         continueMediaGroup -> {
                             getPlayer().showProgressBar(false);
@@ -616,13 +617,16 @@ public class SuggestionsController extends BasePlayerController {
             return;
         }
 
-        Disposable action = mContentService.continueGroupObserve(mediaGroup)
+        Disposable action = PersonalShortsService.instance().continueGroupObserve(mediaGroup) // MEETUBE: feed paging.
                 .firstElement()
                 .subscribe(
                         continuation -> {
                             Video nextShort = findNextShortIn(VideoGroup.from(group, continuation), video);
                             if (nextShort != null) {
                                 setNextShort(nextShort);
+                            } else if (continuation.getType() == MediaGroup.TYPE_SHORTS && continuation.getNextPageKey() != null) {
+                                // MEETUBE: keep the feed cursor when a page contains no playable next short.
+                                loadShortsFeed(video, PersonalShortsService.instance().continueGroupObserve(continuation));
                             } else {
                                 loadShortsFeed(video);
                             }
@@ -635,7 +639,15 @@ public class SuggestionsController extends BasePlayerController {
     }
 
     private void loadShortsFeed(Video video) {
-        Disposable action = mContentService.getShortsObserve()
+        loadShortsFeed(video, PersonalShortsService.instance().getShortsObserve()); // MEETUBE: account picks first.
+    }
+
+    private void loadShortsFeed(Video video, Observable<MediaGroup> source) {
+        loadShortsFeed(video, source, 3); // MEETUBE: bound automatic skips if the reel only repeats this video.
+    }
+
+    private void loadShortsFeed(Video video, Observable<MediaGroup> source, int skipsLeft) {
+        Disposable action = source
                 .firstElement()
                 .subscribe(
                         feed -> {
@@ -645,6 +657,10 @@ public class SuggestionsController extends BasePlayerController {
                                     setNextShort(item);
                                     return;
                                 }
+                            }
+                            // MEETUBE: a filtered page or a lone repeat of the current short still has a next page.
+                            if (feed.getNextPageKey() != null && skipsLeft > 0) {
+                                loadShortsFeed(video, PersonalShortsService.instance().continueGroupObserve(feed), skipsLeft - 1);
                             }
                         },
                         error -> Log.e(TAG, "loadShortsFeed error: %s", error.getMessage())

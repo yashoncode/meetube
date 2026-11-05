@@ -112,7 +112,10 @@ public final class BrowseGlassStyle {
         }
     }
 
-    /** A row whose cards scrolled past its start fade out across the left padding instead of being cut at the screen edge. */
+    /**
+     * A row whose cards scrolled past either end fades out across that end's padding instead of being cut at the
+     * screen edge: the same fade on both sides (the row's start and end paddings are both 56dp).
+     */
     public static CustomListRowPresenter rowPresenter() {
         return new CustomListRowPresenter() {
             @Override
@@ -120,12 +123,17 @@ public final class BrowseGlassStyle {
                 super.initializeRowViewHolder(holder);
                 HorizontalGridView grid = ((ListRowPresenter.ViewHolder) holder).getGridView();
                 // Leanback fades [paddingLeft - offset - length, paddingLeft - offset] and draws nothing left
-                // of it: the fade starts on the line the cards start on and is gone 20dp left of it.
+                // of it: the fade starts on the line the cards start on and is gone 20dp left of it. The right
+                // edge mirrors it from the line the last card ends on. The focused card never reaches a fade:
+                // the row keeps it centred, and a row scrolled to its end has nothing past the line to fade.
                 float density = grid.getResources().getDisplayMetrics().density;
                 int length = Math.round(20 * density);
                 grid.setFadingLeftEdge(true);
                 grid.setFadingLeftEdgeLength(length);
                 grid.setFadingLeftEdgeOffset(0);
+                grid.setFadingRightEdge(true); // MEETUBE: the same fade on the right end
+                grid.setFadingRightEdgeLength(length);
+                grid.setFadingRightEdgeOffset(0);
             }
         };
     }
