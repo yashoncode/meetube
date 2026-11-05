@@ -4,6 +4,9 @@
 #   as a pre-release) with the armeabi-v7a, arm64-v8a and universal APKs. Its notes are a download table,
 #   then the changelog entry.
 # - A TV release is never marked Latest: the phone app's updater reads releases/latest/download/meetube.json.
+# - The TV's in-app updater reads meetube_tv.json from the tv branch (raw.githubusercontent.com), so a stable
+#   release commit bumps it to the new version, versionCode and tv-vX.Y.Z APK links; this run checks that.
+#   Until this run publishes the APKs a TV that checks gets a failed download and simply tries again later.
 # - Run it by hand (Actions > Release TV > Run workflow, on tv): builds and keeps the APKs as artifacts only.
 # Secrets: the phone's release key (SIGNING_KEY, the .jks in base64, KEY_STORE_PASSWORD, ALIAS, KEY_PASSWORD).
 # Every TV release must use the same key or installed TVs refuse the update.
@@ -61,6 +64,7 @@ jobs:
           cp smarttubetv/build/outputs/apk/ststable/release/*.apk dist/
           ls -l dist
           echo "version=$(grep -oP 'versionName "\K[0-9]+\.[0-9]+\.[0-9]+' smarttubetv/build.gradle | head -n 1)" >> "$GITHUB_OUTPUT"
+          echo "code=$(grep -oP 'versionCode \K[0-9]+' smarttubetv/build.gradle | head -n 1)" >> "$GITHUB_OUTPUT"
 
       - name: Keep APKs
         if: github.event_name == 'workflow_dispatch'
@@ -76,6 +80,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
           VERSION: ${{ steps.meta.outputs.version }}
+          CODE: ${{ steps.meta.outputs.code }}
         run: |
           tagged="${TAG#tv-v}"
           number="${tagged%%-*}"
@@ -83,7 +88,13 @@ jobs:
           for abi in armeabi-v7a arm64-v8a universal; do test -f "dist/MeeTubeTV_${number}_${abi}.apk"; done
           title="MeeTube TV $number"
           prerelease=""
-          case "$tagged" in *-beta*) title="$title Beta"; prerelease="--prerelease";; esac
+          case "$tagged" in
+            *-beta*) title="$title Beta"; prerelease="--prerelease";;
+            # A stable release must be what the TVs' updater offers (meetube_tv.json, see the top).
+            *) python3 -c 'import json,sys; v,c,t=sys.argv[1:]; m=json.load(open("meetube_tv.json")); p=m["package"]; urls=[p["downloadUrl"]]+[u for k in p if k.startswith("downloadUrlList") for u in p[k]]; sys.exit(not (m[v]["versionCode"] == int(c) and all(t in u for u in urls)))' \
+                 "$number" "$CODE" "/$TAG/" \
+                 || { echo "::error::meetube_tv.json does not offer $TAG (versionCode $CODE)"; exit 1; };;
+          esac
           # This version's CHANGELOG.md section without its heading ("## 0.0.1 Beta").
           awk -v h="## $number" '$0 == h || index($0, h " ") == 1 {on=1; next} on && /^## / {exit} on' CHANGELOG.md > changes.md
           test -s changes.md

@@ -1,0 +1,18 @@
+{
+  "package": {
+    "downloadUrl": "https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_universal.apk",
+    "downloadUrlList_armeabi-v7a": ["https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_armeabi-v7a.apk"],
+    "downloadUrlList_arm64-v8a": ["https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_arm64-v8a.apk"]
+  },
+  "1.0.0": {
+    "versionCode": 10000,
+    "changelog": [
+      "In-app updates: MeeTube TV now finds and installs its own new versions.",
+      "Shorts player, and a Shorts feed picked for your account.",
+      "Bigger focused cards that never touch their neighbours.",
+      "Videos start faster, with a larger buffer by default.",
+      "Subscriptions page with round channel avatars and an All item.",
+      "Home: explore pills, a roomier glass sidebar and fades on both row ends."
+    ]
+  }
+}

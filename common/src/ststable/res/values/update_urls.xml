@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- MEETUBE: no update source yet (SmartTube's manifest would offer SmartTube's APK) -->
+    <!-- MEETUBE: the TV-only manifest on the tv branch (bumped in each stable TV release commit). Never the phone
+    app's releases/latest/download/meetube.json, which offers the phone APK. -->
     <string-array name="update_urls">
+        <item>https://raw.githubusercontent.com/yashoncode/meetube/tv/meetube_tv.json</item>
     </string-array>
 </resources>
