@@ -2966,7 +2966,10 @@ public class MobilePlaybackActivity extends MobileActivity
         lp.setMarginEnd(dp(full ? 16 : 148));
         mTitleView.setLayoutParams(lp);
         // Landscape: centred on the top row's buttons (issue #165); upright: its first line at the top.
+        // Both: TextView.setMinHeight leaves the View-level floor (the layout's minHeight) in place,
+        // which kept a one-line title's box 48dp tall (issue #205).
         mTitleView.setMinHeight(full ? 0 : dp(48));
+        mTitleView.setMinimumHeight(full ? 0 : dp(48));
         mTitleView.setGravity((full ? Gravity.TOP : Gravity.CENTER_VERTICAL) | Gravity.START);
         mPlayerAuthor.setVisibility(full ? View.VISIBLE : View.GONE);
     }
