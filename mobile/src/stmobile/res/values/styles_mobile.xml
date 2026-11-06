@@ -32,6 +32,8 @@
              the tap; the animation itself plays in-app over Home (LaunchSplash), since vivo's splash
              never animates. The same on every phone and for every app icon. -->
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@drawable/splash_play_still</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/mobile_color_background</item>
+        <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="31">0</item>
         <!-- MEETUBE(loader): every circular spinner is the loader picked in Settings > Customization
              (meetubeLoader; Loader applies the pick's overlay to each screen's theme). -->
         <item name="meetubeLoader">@drawable/avd_neon_ring</item>
@@ -439,7 +441,7 @@
         <item name="android:layout_height">44dp</item>
         <item name="android:padding">11dp</item>
         <item name="android:scaleType">fitCenter</item>
-        <item name="android:src">@drawable/ic_bar_lock</item>
+        <item name="android:src">@drawable/ic_player_unlocked</item>
         <item name="android:tint">@color/mobile_player_on_video</item>
     </style>
 

@@ -2992,7 +2992,7 @@ public class MobilePlaybackActivity extends MobileActivity
         int lift = inline ? 0 : dp(8);
         // MEETUBE(fullscreen-actions): the actions pill takes the bar's place and the bar, with
         // everything over it, rises above the pill. The chevron beside fullscreen flips it.
-        boolean actions = !inline && mActionsShown;
+        boolean actions = !inline && mActionsShown && !mLockedChrome;
         if (mActionsRow != null && mActionsToggle != null) {
             mActionsRow.setVisibility(actions ? View.VISIBLE : View.GONE);
             setMargins(mActionsRow, dp(8), 0, 0, lift);
@@ -7115,6 +7115,9 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         mLockedChrome = locked;
+        // Locked: no dot (nothing takes a touch) and no room kept for the hidden actions row (#201).
+        mTimeBar.setDotHidden(locked);
+        applyControlsInsets();
         if (!locked) {
             for (java.util.Map.Entry<View, Float> hidden : mLockedAlphas.entrySet()) {
                 hidden.getKey().setAlpha(hidden.getValue());
