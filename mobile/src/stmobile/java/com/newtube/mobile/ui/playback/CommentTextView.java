@@ -133,7 +133,7 @@ public class CommentTextView extends AppCompatTextView {
             @Override
             public void onLongPress(@NonNull MotionEvent e) {
                 if (mListener != null) {
-                    performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                    com.newtube.mobile.ui.common.Haptics.longPress(CommentTextView.this);
                     mListener.onTextLongPressed(CommentTextView.this);
                 }
             }
