@@ -92,7 +92,7 @@ public final class NavLens extends View {
      * Android's own low-RAM flag, about 3 GB or less (a 4 GB phone reports ~3.7), or under six
      * cores. ponytail: a coarse guess - a measured frame-time check would catch a slow GPU too.
      */
-    private static boolean lowEnd(Context context) {
+    public static boolean lowEnd(Context context) {
         android.app.ActivityManager am = (android.app.ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         android.app.ActivityManager.MemoryInfo memory = new android.app.ActivityManager.MemoryInfo();
         am.getMemoryInfo(memory);
