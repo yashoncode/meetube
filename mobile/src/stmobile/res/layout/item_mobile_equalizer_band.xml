@@ -27,8 +27,8 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <SeekBar
+    <com.newtube.mobile.ui.common.GlassSlider
         android:id="@+id/equalizer_band_slider"
         android:layout_width="match_parent"
-        android:layout_height="48dp" />
+        android:layout_height="wrap_content" />
 </LinearLayout>

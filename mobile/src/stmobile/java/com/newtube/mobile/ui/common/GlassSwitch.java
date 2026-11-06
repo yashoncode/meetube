@@ -34,24 +34,24 @@ public class GlassSwitch extends SwitchMaterial {
     private static final float TRACK_W = 64f;
     private static final float TRACK_H = 28f;
     /** The lens at full size; the knob at rest is this at REST_SCALE. */
-    private static final float LENS_W = 58f;
-    private static final float LENS_H = 38f;
-    private static final float REST_SCALE = 0.655f;
+    static final float LENS_W = 58f;
+    static final float LENS_H = 38f;
+    static final float REST_SCALE = 0.655f;
     /** The knob's centre sits this far in from the track's end when off; it travels TRAVEL. */
     private static final float CENTRE_INSET = 21f;
     private static final float TRAVEL = 22f;
     /** Room each side for the lens and its shadow, which reach past the track. */
     private static final float SIDE_ROOM = 22f;
     /** The jelly: at most 14% stretch, saturating around 5 track-lengths a second. */
-    private static final float JELLY_MAX = 0.14f;
-    private static final float JELLY_SPEED = 5f;
+    static final float JELLY_MAX = 0.14f;
+    static final float JELLY_SPEED = 5f;
 
     // Springs as (response s, damping fraction), from the reference.
-    private static final float[] SNAP = {0.36f, 0.72f};
-    private static final float[] DRAG = {0.12f, 0.92f};
-    private static final float[] PRESS = {0.26f, 0.78f};
-    private static final float[] SETTLE = {0.36f, 0.68f};
-    private static final float[] JELLY = {0.30f, 0.50f};
+    static final float[] SNAP = {0.36f, 0.72f};
+    static final float[] DRAG = {0.12f, 0.92f};
+    static final float[] PRESS = {0.26f, 0.78f};
+    static final float[] SETTLE = {0.36f, 0.68f};
+    static final float[] JELLY = {0.30f, 0.50f};
     private static final float[] FADE = {0.25f, 1.00f};
 
     private final float mDp;
@@ -123,7 +123,7 @@ public class GlassSwitch extends SwitchMaterial {
     }
 
     /** Retarget a spring: stiffness and damping from (response, damping fraction). */
-    private static void spring(SpringAnimation spring, float target, float[] config) {
+    static void spring(SpringAnimation spring, float target, float[] config) {
         double w = 2 * Math.PI / config[0];
         SpringForce force = spring.getSpring();
         force.setStiffness((float) (w * w));
