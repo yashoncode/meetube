@@ -2695,7 +2695,7 @@ public class MobileBrowseActivity extends MobileActivity
                     }
                 }
             }
-            mStrip.show(chips.size() > 1 ? FeedStrip.MODE_CHIPS : FeedStrip.MODE_NONE, chips, selected);
+            mStrip.show(chips.size() > 1 && com.newtube.mobile.ui.common.HomeBar.chipsShown(this) ? FeedStrip.MODE_CHIPS : FeedStrip.MODE_NONE, chips, selected);
             updateChipRow();
         } else if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
             if (mSubsChannels == null) {
@@ -3390,6 +3390,12 @@ public class MobileBrowseActivity extends MobileActivity
         // MEETUBE(search place): Search in the top bar or the bottom one, as Settings > Tabs says.
         boolean searchOnTop = NavTabs.searchOnTop(this);
         mSearchButton.setVisibility(searchOnTop ? View.VISIBLE : View.GONE);
+        // MEETUBE(home bar): Settings > Customization hides the Cast button and the chips; with
+        // neither Cast nor Search in it, the whole pill goes.
+        boolean castShown = com.newtube.mobile.ui.common.HomeBar.castShown(this);
+        mCastButton.setVisibility(castShown ? View.VISIBLE : View.GONE);
+        ((View) mCastButton.getParent().getParent()).setVisibility(castShown || searchOnTop ? View.VISIBLE : View.GONE);
+        updateStrip();
         if (searchOnTop == (mBottomNav.getMenu().findItem(SEARCH_ITEM_ID) != null)) {
             rebuildNavigation();
         }
