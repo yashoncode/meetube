@@ -754,10 +754,7 @@
     <string name="msg_sign_in_to_save">Войдите, чтобы сохранять видео в плейлисты</string>
     <string name="about_app">О приложении %1$s</string>
     <string name="about_source_code">Исходный код</string>
-    <string name="about_source_code_url" translatable="false">https://github.com/yashoncode/meetube</string>
     <string name="about_license">Лицензия</string>
-    <string name="about_license_name" translatable="false">MIT</string>
-    <string name="about_license_url" translatable="false">https://github.com/yashoncode/meetube/blob/main/LICENSE</string>
     <string name="diagnostic_log_send">Отправить журнал диагностики</string>
     <string name="diagnostic_log_send_desc">Для сообщений об ошибках. Включает видео и каналы, которые вы открывали; пароли и токены входа удаляются</string>
     <string name="diagnostic_log_subject">%1$s %2$s — журнал диагностики</string>
@@ -786,7 +783,7 @@
     <string name="action_subscribe_on">Подписаться</string>
     <string name="player_return_youtube_dislike">Количество дизлайков (Return YouTube Dislike)</string>
     <string name="header_live">В эфире</string>
-    <string name="keep_finished_activities">Сохранять завершённые действия</string>
+    <string name="keep_finished_activities">Не закрывать завершённые экраны</string>
     <string name="disable_channels_service">Отключить службу каналов</string>
     <string name="lb_playback_controls_closed_captioning_disable">Отключить субтитры</string>
     <string name="lb_playback_controls_closed_captioning_enable">Включить субтитры</string>
