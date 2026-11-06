@@ -85,9 +85,18 @@ public final class Haptics {
     private Haptics() {
     }
 
+    /** MEETUBE(haptics): Settings > App > Haptics. Every vibration of the app asks this first. */
+    public static boolean isOn(@NonNull Context context) {
+        return context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).getBoolean("haptics", true);
+    }
+
+    public static void setOn(@NonNull Context context, boolean on) {
+        context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).edit().putBoolean("haptics", on).apply();
+    }
+
     /** A boundary crossed while dragging (a chapter on the seek bar, a zoom snap). */
     public static void tick(@Nullable View view) {
-        if (view != null) {
+        if (view != null && isOn(view.getContext())) {
             // SEGMENT_TICK is the platform's name for exactly this (API 34); before it,
             // CONTEXT_CLICK is the constant that plays the same light TICK effect.
             view.performHapticFeedback(Build.VERSION.SDK_INT >= 34
@@ -97,14 +106,14 @@ public final class Haptics {
 
     /** A snap into a resting place, or an action taking effect (like, dislike). */
     public static void click(@Nullable View view) {
-        if (view != null && SystemClock.uptimeMillis() - sLastTapAt > TAP_GUARD_MS) {
+        if (view != null && isOn(view.getContext()) && SystemClock.uptimeMillis() - sLastTapAt > TAP_GUARD_MS) {
             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
         }
     }
 
     /** Press-and-hold switching a mode on. */
     public static void longPress(@Nullable View view) {
-        if (view != null) {
+        if (view != null && isOn(view.getContext())) {
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         }
     }
@@ -114,7 +123,7 @@ public final class Haptics {
      * The Pixel plays the same click both ways; the platform fallback has a pair.
      */
     public static void threshold(@Nullable View view, boolean engaged) {
-        if (view == null) {
+        if (view == null || !isOn(view.getContext())) {
             return;
         }
         sLastThresholdAt = SystemClock.uptimeMillis();
@@ -137,7 +146,7 @@ public final class Haptics {
      * primitives: a platform tick every 60 ms would be a buzz, not a grain.
      */
     public static void tension(@Nullable View view, float progress) {
-        if (view == null || progress <= 0f) {
+        if (view == null || progress <= 0f || !isOn(view.getContext())) {
             return;
         }
         long now = SystemClock.uptimeMillis();
@@ -180,7 +189,7 @@ public final class Haptics {
                 View target = sTapTarget;
                 sTapTarget = null;
                 boolean held = event.getEventTime() - event.getDownTime() >= ViewConfiguration.getLongPressTimeout();
-                if (target != null && target.isEnabled() && target.isClickable() && target.isHapticFeedbackEnabled()
+                if (target != null && isOn(target.getContext()) && target.isEnabled() && target.isClickable() && target.isHapticFeedbackEnabled()
                         && !(target instanceof EditText) && !(held && target.isLongClickable())) {
                     sLastTapAt = SystemClock.uptimeMillis();
                     target.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);

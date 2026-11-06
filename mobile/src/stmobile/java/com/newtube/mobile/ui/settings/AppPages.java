@@ -168,6 +168,12 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_refresh_sound_summary),
                 () -> RefreshFeedback.isSoundOn(context), on -> RefreshFeedback.setSoundOn(context, on)), Tiles.FX_REFRESH));
 
+        // MEETUBE(haptics): the app's vibration on taps, drags and holds; on by default.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_haptics),
+                context.getString(R.string.mobile_settings_haptics_summary),
+                () -> com.newtube.mobile.ui.common.Haptics.isOn(context),
+                on -> com.newtube.mobile.ui.common.Haptics.setOn(context, on)), Tiles.FX_REFRESH));
+
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_layout)));
 
         // MEETUBE(home-rows, issue #4): Home as one feed, or as SmartTube's rows of shelves.
