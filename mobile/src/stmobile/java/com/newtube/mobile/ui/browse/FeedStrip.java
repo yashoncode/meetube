@@ -150,7 +150,8 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
         row.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         int pad = dp(parent.getContext(), 12);
-        row.setPadding(pad, dp(parent.getContext(), 4), pad, dp(parent.getContext(), 8));
+        // 16dp gutter like the cards; each chip carries an 8dp right margin, so the end pad is 8
+        row.setPadding(dp(parent.getContext(), 16), dp(parent.getContext(), 4), dp(parent.getContext(), 8), dp(parent.getContext(), 8));
         row.setClipToPadding(false);
         row.setItemAnimator(null);
         // The feed scrolls vertically; a sideways drag on the strip is the strip's.
