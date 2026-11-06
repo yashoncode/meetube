@@ -105,6 +105,11 @@ final class MoreVideosPanel {
         settle(open);
     }
 
+    /** A tap on the toggle: begin() first, then this slides the panel up. */
+    void open() {
+        settle(true);
+    }
+
     void close() {
         if (isShown()) {
             settle(false);

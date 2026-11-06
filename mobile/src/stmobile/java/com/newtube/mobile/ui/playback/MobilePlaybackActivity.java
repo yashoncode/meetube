@@ -6810,8 +6810,13 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean show = isLandscape() && mActionsRow != null && mActionsRow.getVisibility() == View.VISIBLE
                 && !mRelatedVideos.isEmpty();
         hint.setVisibility(show ? View.VISIBLE : View.GONE);
+        hint.setOnClickListener(v -> {
+            if (mMoreVideos != null && mMoreVideos.begin()) {
+                mMoreVideos.open();
+            }
+        });
         if (show) {
-            setMargins(hint, 0, 0, 0, ((ViewGroup.MarginLayoutParams) mActionsRow.getLayoutParams()).bottomMargin);
+            setMargins(hint, 0, 0, dp(12), ((ViewGroup.MarginLayoutParams) mActionsRow.getLayoutParams()).bottomMargin);
         }
     }
 
