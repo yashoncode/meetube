@@ -113,11 +113,44 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
         return view;
     }
 
+    /**
+     * MEETUBE(status bar): the activity no longer pads for the status bar, so the page grows its top
+     * bar by that height (the frost runs up through it, the title stays where it was) and pushes
+     * the rows and the search pill down the same amount.
+     */
+    private void blendIntoStatusBar(View root) {
+        View bar = root.findViewById(R.id.settings_bar);
+        View search = root.findViewById(R.id.settings_search_field);
+        int[] base = new int[3];
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            int top = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()
+                    | androidx.core.view.WindowInsetsCompat.Type.displayCutout()).top;
+            ViewGroup.LayoutParams barParams = bar.getLayoutParams();
+            ViewGroup.MarginLayoutParams searchParams = (ViewGroup.MarginLayoutParams) search.getLayoutParams();
+            if (base[0] == 0) {
+                base[0] = barParams.height;
+                base[1] = mList.getPaddingTop();
+                base[2] = searchParams.topMargin;
+            }
+            barParams.height = base[0] + top;
+            bar.setLayoutParams(barParams);
+            ViewGroup.MarginLayoutParams row = (ViewGroup.MarginLayoutParams) ((ViewGroup) bar).getChildAt(0).getLayoutParams();
+            row.topMargin = top;
+            ((ViewGroup) bar).getChildAt(0).setLayoutParams(row);
+            mList.setPadding(mList.getPaddingLeft(), base[1] + top, mList.getPaddingRight(), mList.getPaddingBottom());
+            searchParams.topMargin = base[2] + top;
+            search.setLayoutParams(searchParams);
+            return insets;
+        });
+        androidx.core.view.ViewCompat.requestApplyInsets(root);
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         // MEETUBE(glass): the top bar frosts the rows scrolling under it.
         com.newtube.mobile.ui.common.Glass.blur(view.findViewById(R.id.settings_bar), view.findViewById(R.id.settings_blur_target));
+        blendIntoStatusBar(view);
         if (SettingsPages.ROOT.equals(mPageId)) {
             View search = view.findViewById(R.id.settings_search_field);
             search.setVisibility(View.VISIBLE);

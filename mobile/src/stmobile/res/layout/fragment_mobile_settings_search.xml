@@ -40,6 +40,17 @@
 
     </com.newtube.mobile.ui.common.GlassSource>
 
+    <!-- MEETUBE(status bar): the results scroll under the status bar, frosted like the other pages'
+         top bar; its height is set from the inset (SettingsSearchFragment). -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/settings_search_status"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:glassCornerRadius="0dp"
+        app:glassFadeBottom="12dp"
+        app:glassLiquid="false"
+        app:glassTint="@color/meetube_glass_tint" />
+
     <com.newtube.mobile.ui.common.GlassView
         android:id="@+id/settings_search_glass"
         android:layout_width="match_parent"
