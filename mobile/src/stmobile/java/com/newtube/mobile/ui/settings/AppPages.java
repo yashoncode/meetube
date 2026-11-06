@@ -238,6 +238,16 @@ final class AppPages {
         rows.add(SettingsRow.page(context.getString(R.string.mobile_settings_player_buttons),
                 () -> context.getString(R.string.mobile_settings_player_buttons_summary), SettingsPages.PLAYER_BUTTONS));
 
+        // MEETUBE(home bar): the Cast button in Home's top bar, and the topic chips under it.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_cast),
+                context.getString(R.string.mobile_settings_home_cast_summary),
+                () -> com.newtube.mobile.ui.common.HomeBar.castShown(context),
+                on -> com.newtube.mobile.ui.common.HomeBar.setCastShown(context, on)), Tiles.FX_TOP_BAR));
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_chips),
+                context.getString(R.string.mobile_settings_home_chips_summary),
+                () -> com.newtube.mobile.ui.common.HomeBar.chipsShown(context),
+                on -> com.newtube.mobile.ui.common.HomeBar.setChipsShown(context, on)), Tiles.FX_TOP_BAR));
+
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_effects)));
 
         // MEETUBE(glass): the lens shader runs every frame something scrolls under the glass.
