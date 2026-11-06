@@ -62,7 +62,6 @@
     <string name="mobile_settings_about">О приложении</string>
     <string name="mobile_settings_coffee">Угостить разработчика кофе</string>
     <string name="mobile_settings_coffee_summary">Поддержите MeeTube, если вам нравится приложение</string>
-    <string name="mobile_settings_coffee_url" translatable="false">https://buymeacoffee.com/yashwynth</string>
 
     <!-- General -->
     <string name="mobile_settings_language">Язык</string>
@@ -134,7 +133,7 @@
     <string name="mobile_settings_menu_queue_add">Добавить в очередь</string>
     <string name="mobile_settings_menu_save">Сохранение</string>
     <string name="mobile_settings_menu_recent_playlist">Сохранить в последний использованный плейлист</string>
-    <string name="mobile_settings_menu_save_playlist">Добавить в плейлист или удалить из него</string>
+    <string name="mobile_settings_menu_save_playlist">Сохранить или удалить плейлист</string>
     <string name="mobile_settings_menu_channel">Канал и рекомендации</string>
     <string name="mobile_settings_menu_hide_subscriptions">Скрыть из подписок</string>
     <string name="mobile_settings_menu_share">Поделиться и сведения</string>
@@ -430,7 +429,7 @@
     <string name="mobile_settings_short_ends_loop">Повторить</string>
     <string name="mobile_settings_short_ends_next">Перейти к следующему Shorts</string>
     <string name="mobile_settings_watched_bar">Красная полоса просмотра на миниатюрах</string>
-    <string name="mobile_settings_watched_bar_summary">Показывает под миниатюрой, сколько видео вы посмотрели</string>
+    <string name="mobile_settings_watched_bar_summary">Показывает под миниатюрой, какую часть видео вы посмотрели</string>
     <string name="mobile_settings_refresh_sound">Звук обновления</string>
     <string name="mobile_settings_refresh_sound_summary">Ненавязчивый звук при потягивании страницы вниз для обновления</string>
     <!-- MEETUBE(settings-transfer): Backup > Share or move your settings. -->
