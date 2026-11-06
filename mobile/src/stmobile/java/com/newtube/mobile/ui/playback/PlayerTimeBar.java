@@ -170,6 +170,7 @@ public class PlayerTimeBar extends View implements TimeBar {
     private boolean mTouchRouted;
 
     private boolean mScrubbing;
+    private boolean mDotHidden;
     private long mScrubPosition;
     /** Where playback was when the drag began: the cancel spot. */
     private long mScrubOrigin;
@@ -245,6 +246,14 @@ public class PlayerTimeBar extends View implements TimeBar {
      */
     public void setTouchRouted(boolean routed) {
         mTouchRouted = routed;
+    }
+
+    /** The locked player takes no touch on the bar, so it shows no dot to drag (issue #201). */
+    public void setDotHidden(boolean hidden) {
+        if (mDotHidden != hidden) {
+            mDotHidden = hidden;
+            invalidate();
+        }
     }
 
     /** Whether the played part stays on screen as a line while the controls are hidden. */
@@ -505,7 +514,7 @@ public class PlayerTimeBar extends View implements TimeBar {
         }
 
         // The dot grows in with the controls and a little more under the finger.
-        float radius = lerp(dp(SCRUBBER_DP), dp(SCRUBBER_DRAGGING_DP), mDrag) / 2f * mShown;
+        float radius = mDotHidden ? 0f : lerp(dp(SCRUBBER_DP), dp(SCRUBBER_DRAGGING_DP), mDrag) / 2f * mShown;
         if (radius > 0.5f && hasDuration) {
             float restRadius = dp(SCRUBBER_DP) / 2f;
             float cx = Math.max(left + restRadius, Math.min(right - restRadius, playedX));
