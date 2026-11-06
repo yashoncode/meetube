@@ -157,6 +157,7 @@
             android:id="@+id/video_overflow"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:layout_marginEnd="-12dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/mobile_player_more"
             android:padding="12dp"

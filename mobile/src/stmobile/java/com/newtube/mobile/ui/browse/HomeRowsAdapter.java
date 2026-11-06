@@ -156,7 +156,7 @@ final class HomeRowsAdapter extends RecyclerView.Adapter<HomeRowsAdapter.RowHold
             strip.setRecycledViewPool(mCardPool);
             strip.setNestedScrollingEnabled(false);
             strip.setClipToPadding(false);
-            strip.setPadding(Math.round(4 * density), 0, Math.round(4 * density), 0);
+            strip.setPadding(Math.round(8 * density), 0, Math.round(8 * density), 0); // + a card's 8dp margin = the 16dp gutter
             strip.setAdapter(cards);
             root.addView(strip, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
