@@ -1974,6 +1974,9 @@ public class MobileBrowseActivity extends MobileActivity
         com.newtube.mobile.ui.common.Glass.blur((View) findViewById(R.id.mobile_you_settings).getParent(), findViewById(R.id.mobile_you_glow_source));
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_you_avatar_glass), findViewById(R.id.mobile_you_glow_source));
         findViewById(R.id.mobile_you_history_title).setOnClickListener(v -> openFromYou(MediaGroup.TYPE_HISTORY));
+        // MEETUBE(you page): the avatar leans with the phone, as the About photo does.
+        com.newtube.mobile.ui.settings.TiltParallax.attach((ViewGroup) findViewById(R.id.mobile_you_avatar_glass), 0.4f,
+                findViewById(R.id.mobile_you_avatar));
 
         // MEETUBE(you page): History's latest videos, two and a bit across like YouTube's You page.
         int cardWidth = Math.round(getResources().getDisplayMetrics().widthPixels / 2.4f);
@@ -2145,35 +2148,53 @@ public class MobileBrowseActivity extends MobileActivity
 
         if (!personal.isEmpty()) {
             addYouGroupLabel(getString(R.string.mobile_you_library));
-            for (BrowseSection section : personal) {
-                addYouSectionRow(section);
-            }
+            addYouSectionRows(personal);
         }
 
         if (!pinned.isEmpty()) {
             addYouGroupLabel(getString(R.string.mobile_you_pinned));
-            for (BrowseSection section : pinned) {
-                addYouSectionRow(section);
-            }
+            addYouSectionRows(pinned);
         }
 
         if (!explore.isEmpty()) {
             addYouGroupLabel(getString(R.string.mobile_you_explore));
-            for (BrowseSection section : explore) {
-                addYouSectionRow(section);
-            }
+            addYouSectionRows(explore);
         }
     }
 
-    private void addYouSectionRow(BrowseSection section) {
+    /** MEETUBE(you page): a group's rows two to a line, so the right half is not left empty. */
+    private void addYouSectionRows(List<BrowseSection> sections) {
+        for (int i = 0; i < sections.size(); i += 2) {
+            LinearLayout line = new LinearLayout(this);
+            line.setOrientation(LinearLayout.HORIZONTAL);
+            for (int j = i; j < i + 2; j++) {
+                if (j < sections.size()) {
+                    line.addView(youSectionRow(sections.get(j)));
+                } else {
+                    line.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1f)); // keeps the half width
+                }
+            }
+            line.setPadding(Math.round(12 * getResources().getDisplayMetrics().density), 0,
+                    Math.round(12 * getResources().getDisplayMetrics().density), 0);
+            mYouRows.addView(line);
+        }
+    }
+
+    private View youSectionRow(BrowseSection section) {
         int sectionId = section.getId();
         View row = addYouRow(section.getResId(), section.getTitle(), () -> openFromYou(sectionId));
+        float density = getResources().getDisplayMetrics().density;
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Math.round(56 * density), 1f);
+        lp.setMargins(Math.round(4 * density), Math.round(4 * density), Math.round(4 * density), Math.round(4 * density));
+        row.setLayoutParams(lp);
+        row.setPadding(Math.round(10 * density), 0, Math.round(8 * density), 0);
         row.setOnLongClickListener(v -> {
             if (mPresenter != null) {
                 mPresenter.onSectionLongPressed(sectionId);
             }
             return true;
         });
+        return row;
     }
 
     private void openFromYou(int sectionId) {
@@ -2328,7 +2349,6 @@ public class MobileBrowseActivity extends MobileActivity
         label.setText(title);
 
         row.setOnClickListener(v -> action.run());
-        mYouRows.addView(row);
         return row;
     }
 

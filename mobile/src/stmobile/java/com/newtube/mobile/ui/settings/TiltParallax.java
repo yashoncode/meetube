@@ -15,7 +15,7 @@ import android.view.ViewGroup;
  * over it (and every button on it), like a card held in the hand. Reads gravity, not the gyroscope (no drift), and only while
  * the card is on screen. The neutral pose follows how the phone is held, so a new grip re-centres it.
  */
-final class TiltParallax implements SensorEventListener, View.OnAttachStateChangeListener {
+public final class TiltParallax implements SensorEventListener, View.OnAttachStateChangeListener {
     private static final float MAX_DEGREES = 7f;
     private static final float FLOAT_DP = 10f;
     /** m/s² of lean (about 20 degrees) for the full effect. */
@@ -30,8 +30,10 @@ final class TiltParallax implements SensorEventListener, View.OnAttachStateChang
     private float mBaseY;
     private float mX;
     private float mY;
+    private final float mStrength;
 
-    private TiltParallax(View card, View[] floating, SensorManager sensors, Sensor gravity) {
+    private TiltParallax(View card, View[] floating, SensorManager sensors, Sensor gravity, float strength) {
+        mStrength = strength;
         mCard = card;
         mFloating = floating;
         mSensors = sensors;
@@ -40,7 +42,12 @@ final class TiltParallax implements SensorEventListener, View.OnAttachStateChang
     }
 
     /** No gravity sensor, or animations turned off in the phone's settings: the card stays still. */
-    static void attach(ViewGroup card, View... floating) {
+    public static void attach(ViewGroup card, View... floating) {
+        attach(card, 1f, floating);
+    }
+
+    /** {@code strength} scales the lean and the float: 1 is the About card, less is subtler. */
+    public static void attach(ViewGroup card, float strength, View... floating) {
         SensorManager sensors = (SensorManager) card.getContext().getSystemService(Context.SENSOR_SERVICE);
         Sensor gravity = sensors != null ? sensors.getDefaultSensor(Sensor.TYPE_GRAVITY) : null;
         if (gravity == null || (Build.VERSION.SDK_INT >= 26 && !ValueAnimator.areAnimatorsEnabled())) {
@@ -49,7 +56,7 @@ final class TiltParallax implements SensorEventListener, View.OnAttachStateChang
         // What floats moves into the card's padding: drawn there, not cut at its edge.
         card.setClipToPadding(false);
         card.setClipChildren(false);
-        card.addOnAttachStateChangeListener(new TiltParallax(card, floating, sensors, gravity));
+        card.addOnAttachStateChangeListener(new TiltParallax(card, floating, sensors, gravity, strength));
     }
 
     @Override
@@ -82,9 +89,9 @@ final class TiltParallax implements SensorEventListener, View.OnAttachStateChang
     }
 
     private void apply() {
-        mCard.setRotationY(-mX * MAX_DEGREES);
-        mCard.setRotationX(-mY * MAX_DEGREES);
-        float px = FLOAT_DP * mCard.getResources().getDisplayMetrics().density;
+        mCard.setRotationY(-mX * MAX_DEGREES * mStrength);
+        mCard.setRotationX(-mY * MAX_DEGREES * mStrength);
+        float px = FLOAT_DP * mStrength * mCard.getResources().getDisplayMetrics().density;
         for (View view : mFloating) {
             view.setTranslationX(-mX * px);
             view.setTranslationY(mY * px);
