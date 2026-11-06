@@ -142,7 +142,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         if (mShortsTiles && item.belongsToShorts()) {
             return VIEW_TYPE_SHORT_TILE;
         }
-        if (item.isChannel() && !item.isPlaylistAsChannel()) {
+        // MEETUBE(channels): the Channels section's entries (no video behind them) are channel cards too.
+        if ((item.isChannel() && !item.isPlaylistAsChannel()) || (item.belongsToChannelUploads() && item.videoId == null)) {
             return VIEW_TYPE_CHANNEL;
         }
         return mListRows && !item.belongsToShorts() ? VIEW_TYPE_VIDEO_ROW : VIEW_TYPE_VIDEO;
