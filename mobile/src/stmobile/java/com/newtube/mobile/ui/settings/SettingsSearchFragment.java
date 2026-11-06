@@ -60,10 +60,37 @@ public final class SettingsSearchFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_mobile_settings_search, container, false);
+        // MEETUBE(status bar): the activity no longer pads for it; this page, whose results have no
+        // frosted bar to blend, keeps clear of it itself.
+        View status = view.findViewById(R.id.settings_search_status);
+        View pill = view.findViewById(R.id.settings_search_glass);
+        View results = view.findViewById(R.id.settings_search_results);
+        View empty = view.findViewById(R.id.settings_search_empty);
+        int[] base = new int[3];
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            int top = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars()
+                    | androidx.core.view.WindowInsetsCompat.Type.displayCutout()).top;
+            float dp = getResources().getDisplayMetrics().density;
+            ViewGroup.MarginLayoutParams pillParams = (ViewGroup.MarginLayoutParams) pill.getLayoutParams();
+            if (base[0] == 0) {
+                base[0] = pillParams.topMargin;
+                base[1] = results.getPaddingTop();
+                base[2] = empty.getPaddingTop();
+            }
+            status.getLayoutParams().height = top + Math.round(12 * dp);
+            status.requestLayout();
+            pillParams.topMargin = base[0] + top;
+            pill.setLayoutParams(pillParams);
+            results.setPadding(results.getPaddingLeft(), base[1] + top, results.getPaddingRight(), results.getPaddingBottom());
+            empty.setPadding(empty.getPaddingLeft(), base[2] + top, empty.getPaddingRight(), empty.getPaddingBottom());
+            return insets;
+        });
         mInput = view.findViewById(R.id.settings_search_input);
         mClear = view.findViewById(R.id.settings_search_clear);
         mResults = view.findViewById(R.id.settings_search_results);
         mEmpty = view.findViewById(R.id.settings_search_empty);
+        com.newtube.mobile.ui.common.Glass.blur(view.findViewById(R.id.settings_search_status),
+                view.findViewById(R.id.settings_search_blur_target));
         com.newtube.mobile.ui.common.Glass.blur(view.findViewById(R.id.settings_search_glass),
                 view.findViewById(R.id.settings_search_blur_target)); // MEETUBE(glass)
 
