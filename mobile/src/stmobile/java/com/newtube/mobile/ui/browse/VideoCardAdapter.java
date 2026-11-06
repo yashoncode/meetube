@@ -667,7 +667,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         private void bindShape(Video video) {
             androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
                     (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) mThumbnailFrame.getLayoutParams();
-            String ratio = video.belongsToShorts() ? "9:16" : "16:9";
+            String ratio = video.belongsToShorts() ? "9:16" : "16:10";
             if (!ratio.equals(lp.dimensionRatio)) {
                 lp.dimensionRatio = ratio;
                 mThumbnailFrame.setLayoutParams(lp);
