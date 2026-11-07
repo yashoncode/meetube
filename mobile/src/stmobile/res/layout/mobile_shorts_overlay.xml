@@ -59,15 +59,17 @@
             android:src="@drawable/ic_mobile_back_arrow"
             android:tint="@android:color/white" />
 
+        <!-- MEETUBE(glass): the header sits on a frosted pill of the short (ShortsOverlay). -->
         <TextView
+            android:id="@+id/mobile_shorts_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-medium"
-            android:shadowColor="#B3000000"
-            android:shadowRadius="4"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="6dp"
             android:text="@string/header_shorts"
             android:textColor="@android:color/white"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
     </LinearLayout>

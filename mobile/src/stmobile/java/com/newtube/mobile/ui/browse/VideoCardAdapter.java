@@ -250,6 +250,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mTitle.setSingleLine();
             int side = Math.round(16 * density);
             mTitle.setPadding(side, 0, side, Math.round(8 * density));
+            // MEETUBE(shorts): the red Shorts mark before the title, as on YouTube.
+            mTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_shorts_logo, 0, 0, 0);
+            mTitle.setCompoundDrawablePadding(Math.round(10 * density));
             root.addView(mTitle);
 
             int tileWidth = Math.round(SHELF_TILE_WIDTH_DP * density);
