@@ -1793,6 +1793,9 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private final Runnable mLeaveShortsTab = () -> {
+        if (mBottomNav.getMenu().findItem(mLastNonShortsNavItem) == null) {
+            mLastNonShortsNavItem = landingItemId(); // MEETUBE(issue #213): Home may be gone from the bar
+        }
         if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && !mShortsLaunchPending && !mYouShowing
                 && mBottomNav.getMenu().findItem(mLastNonShortsNavItem) != null) {
             // MEETUBE(issue #107): one move back - the player has slid down, the tab is just there
@@ -3401,7 +3404,8 @@ public class MobileBrowseActivity extends MobileActivity
 
         List<BrowseSection> chosen = new ArrayList<>();
 
-        int[] ids = {MediaGroup.TYPE_HOME, NavTabs.get(this, NavTabs.FIRST), NavTabs.get(this, NavTabs.SECOND)};
+        int[] ids = {NavTabs.showHome(this) ? MediaGroup.TYPE_HOME : NavTabs.NONE, // MEETUBE(issue #213)
+                NavTabs.get(this, NavTabs.FIRST), NavTabs.get(this, NavTabs.SECOND)};
         for (int id : ids) {
             BrowseSection match = id == NavTabs.NONE ? null : findPreferredSection(enabledSections, chosen, id,
                     id == MediaGroup.TYPE_HOME ? R.string.header_home : 0);
@@ -3482,6 +3486,15 @@ public class MobileBrowseActivity extends MobileActivity
         }
         // MEETUBE(nav tabs): the tabs may have been changed in Settings (a no-op when they weren't).
         rebuildNavigation();
+        if (!NavTabs.showHome(this) && !mYouShowing && mCurrentSectionId == MediaGroup.TYPE_HOME) {
+            mBottomNav.post(() -> { // MEETUBE(issue #213): Home was just removed in Settings; after the rebuild
+                int landing = landingItemId();
+                mSuppressNavCallback = true;
+                mBottomNav.setSelectedItemId(landing);
+                mSuppressNavCallback = false;
+                onNavItemChosen(landing);
+            });
+        }
         mTopBarPinned = NavTabs.topBarAlwaysShown(this); // MEETUBE(issue #181): or the top bar's setting
         if (mTopBarPinned && mTopHider != null) {
             mTopHider.show();
@@ -3876,15 +3889,25 @@ public class MobileBrowseActivity extends MobileActivity
         // NEWTUBE(back-home): so does back on any other tab (Subscriptions, History, Downloads) -
         // it used to exit the app from there, dropping the mini-player and the Home scroll. Only
         // Home itself exits.
-        if (mYouShowing || mCurrentSectionId != MediaGroup.TYPE_HOME) {
-            int homeItemId = toMenuItemId(MediaGroup.TYPE_HOME);
-            if (mBottomNav.getMenu().findItem(homeItemId) != null) {
-                mBottomNav.setSelectedItemId(homeItemId); // listener hides the panel + loads Home
-                return;
-            }
+        // MEETUBE(issue #213): with Home removed, the first tab (or You) is where Back lands.
+        int landing = landingItemId();
+        boolean onLanding = landing == YOU_ITEM_ID ? mYouShowing
+                : !mYouShowing && toMenuItemId(mCurrentSectionId) == landing;
+        if (!onLanding && mBottomNav.getMenu().findItem(landing) != null) {
+            mBottomNav.setSelectedItemId(landing); // listener hides the panel + loads the tab
+            return;
         }
 
         finish();
+    }
+
+    /**
+     * MEETUBE(issue #213): the tab the app opens on and Back returns to - Home, or with Home
+     * removed the first bar tab that is a feed (Shorts is a player), else You.
+     */
+    private int landingItemId() {
+        int id = NavTabs.landingSectionId(this);
+        return id == NavTabs.NONE ? YOU_ITEM_ID : toMenuItemId(id);
     }
 
     // ---------------------------------------------------------------------------------
@@ -3950,6 +3973,16 @@ public class MobileBrowseActivity extends MobileActivity
                 return;
             }
 
+            // MEETUBE(issue #213): the boot selection of a removed Home opens the landing tab instead.
+            if (section.getId() == MediaGroup.TYPE_HOME && !NavTabs.showHome(this)) {
+                int landing = landingItemId();
+                mSuppressNavCallback = true;
+                mBottomNav.setSelectedItemId(landing);
+                mSuppressNavCallback = false;
+                onNavItemChosen(landing);
+                return;
+            }
+
             hideYouPanel();
             boolean switched = mCurrentSectionId != section.getId();
             if (switched) {
@@ -3963,7 +3996,20 @@ public class MobileBrowseActivity extends MobileActivity
             // sign-out boot fallback can select Music, which the preferred-tab selection
             // doesn't include (it lives in the You panel). Still drive the presenter so the
             // grid loads; syncNavHighlight no-ops when the section has no tab.
-            syncNavHighlight(section.getId());
+            // MEETUBE(start screen): a start section without a tab of its own (History, a pinned
+            // channel) opens as a You row does: You lit, its title in the top bar, Back to You.
+            // The bar may still be a posted rebuild at boot; build it first so the check is real.
+            flushNavRebuild();
+            Menu menu = mBottomNav.getMenu();
+            mSectionFromYou = menu.size() > 0 && menu.findItem(toMenuItemId(section.getId())) == null;
+            if (mSectionFromYou) {
+                mSuppressNavCallback = true;
+                mBottomNav.setSelectedItemId(YOU_ITEM_ID);
+                mSuppressNavCallback = false;
+            } else {
+                syncNavHighlight(section.getId());
+            }
+            onYouPanelToggled();
 
             if (mPresenter != null) {
                 mPresenter.onSectionFocused(section.getId());
