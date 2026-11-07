@@ -220,6 +220,7 @@ final class ShortsOverlay {
             GlassDrawable.applyButton(mOverlay.findViewById(id), glass,
                     Math.round(4 * root.getResources().getDisplayMetrics().density), true); // the player's minimize disc
         }
+        GlassDrawable.apply(mOverlay.findViewById(R.id.mobile_shorts_header), glass, 0);
         // MEETUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
         mTitle.setOnClickListener(v -> mHost.openShortsDescription());
 
