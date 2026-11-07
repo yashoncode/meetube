@@ -75,6 +75,7 @@ public final class MobileMiniPlayerController {
      * grey button box, so every screen with a card calls this (Home has its own card code).
      */
     public static void glassButtons(Activity activity) {
+        MiniSize.apply(activity);
         int inset = Math.round(4 * activity.getResources().getDisplayMetrics().density);
         // MEETUBE(minimal buttons): Minimal drops these discs too; the card is behind them, no halo
         com.newtube.mobile.ui.common.GlassDrawable.applyButton(activity.findViewById(R.id.mobile_mini_play_pause), null, 0, false);
@@ -257,6 +258,7 @@ public final class MobileMiniPlayerController {
             mFreeze.setVisibility(View.VISIBLE);
         }
 
+        MiniSize.apply(mActivity); // the type may have changed while this screen stayed alive
         MiniPlayerBridge.fitToVideo(mFrame); // NEWTUBE(issue #9): letterbox, never stretch
         attachTexture();
         mBar.setVisibility(View.VISIBLE);
@@ -534,6 +536,7 @@ public final class MobileMiniPlayerController {
     }
 
     private void updatePlayPause(ExoPlayer player) {
+        MiniSize.bindText(mActivity);
         MiniPip.syncAudioButton(mActivity.findViewById(R.id.mobile_mini_audio));
         boolean playing = player.getPlayWhenReady()
                 && player.getPlaybackState() != Player.STATE_ENDED

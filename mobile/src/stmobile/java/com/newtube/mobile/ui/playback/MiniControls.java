@@ -43,6 +43,9 @@ public final class MiniControls {
     }
 
     private void hide() {
+        if (MiniSize.type(mButtons[0].getContext()) != MiniSize.DEFAULT) {
+            return; // a bar keeps its pause and close up
+        }
         for (View button : mButtons) {
             button.animate().alpha(0f).setDuration(Motion.FADE_OUT_MS).setInterpolator(Motion.STANDARD)
                     .withEndAction(() -> button.setVisibility(View.INVISIBLE)).start();

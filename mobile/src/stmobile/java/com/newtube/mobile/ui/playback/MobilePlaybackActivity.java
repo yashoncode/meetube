@@ -7824,7 +7824,9 @@ public class MobilePlaybackActivity extends MobileActivity
     /** Compute the video transform (pivot 0,0) that maps the video area onto the mini card. */
     private void computeMorphTarget() {
         float density = getResources().getDisplayMetrics().density;
-        float cardW = getResources().getDimension(R.dimen.meetube_mini_width); // a tablet's is bigger
+        float picW = MiniSize.width(this); // a tablet's is bigger, the setting scales it
+        float cardW = MiniSize.cardWidth(this);
+        float picLeft = MiniSize.pictureOffset(this);
         float margin = 12 * density;
         // Card bottom offset comes from the DESTINATION host: Browse's card floats above its
         // 56dp bottom-nav row, Search/Channel overlay cards sit flush at the content bottom.
@@ -7838,10 +7840,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
         // MEETUBE(issue #13): the card is 16:9 and fits the video in it, so a box of another shape
         // (a square or vertical video's) lands centred on the card, where the card shows its picture.
-        float cardH = cardW * 9f / 16f;
+        float cardH = MiniSize.height(this);
         float scale = video.width() > 0 && video.height() > 0
-                ? Math.min(cardW / video.width(), cardH / video.height()) : 0.44f;
-        float targetX = mContainer.getWidth() - margin - cardW + (cardW - video.width() * scale) / 2f;
+                ? Math.min(picW / video.width(), cardH / video.height()) : 0.44f;
+        float targetX = mContainer.getWidth() - margin - cardW + picLeft + (picW - video.width() * scale) / 2f;
         float targetY = mContainer.getHeight() - bottomNav - margin - (cardH + video.height() * scale) / 2f;
 
         mMorphScaleX = scale;
@@ -8309,6 +8311,14 @@ public class MobilePlaybackActivity extends MobileActivity
      * player. Called once the release animation has landed on the mini-card rectangle.
      */
     private void minimizeByDrag() {
+        if (MiniSize.type(this) == MiniSize.DISABLED) { // MEETUBE(issue #188): no mini player, minimizing closes
+            if (mPresenter != null) {
+                mPresenter.onFinish();
+            }
+            finish();
+            overridePendingTransition(0, 0);
+            return;
+        }
         // WHOLE-APP-IN-PIP GUARD: the host reorder below launches Browse into THIS activity's task.
         // While the task is pinned that puts Browse on top of the PiP window, so the system renders
         // the entire app - feed, tab bar and all - shrunk into the corner (and removeTop then leaves
@@ -8406,8 +8416,8 @@ public class MobilePlaybackActivity extends MobileActivity
             // navigation still starts its destination animation at full width, so retain the
             // full-size capture for that path.
             Bitmap frame;
-            int width = Math.max(1, getResources().getDimensionPixelSize(R.dimen.meetube_mini_width));
-            int height = Math.max(1, getResources().getDimensionPixelSize(R.dimen.meetube_mini_height));
+            int width = Math.max(1, MiniSize.width(this));
+            int height = Math.max(1, MiniSize.height(this));
             if (mHdrOutput && mHdrSurface != null) { // the texture holds an old frame (#35)
                 frame = captureFullSizeStill
                         ? copyHdrFrame(Math.max(1, mHdrSurface.getWidth()), Math.max(1, mHdrSurface.getHeight()))
@@ -8435,8 +8445,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // The card shows this player's live frames at card size: cap NEW chunks to that window.
         // Card px use the app density on purpose - it is the density the card is laid out with.
         mExoPlayerController.setSmallWindowViewport("mini",
-                getResources().getDimensionPixelSize(R.dimen.meetube_mini_width),
-                getResources().getDimensionPixelSize(R.dimen.meetube_mini_height));
+                MiniSize.width(this), MiniSize.height(this));
         // A deep-linked open arms ViewManager's player-only mode ("watch, then back to the
         // launcher"). Minimizing into an in-app host means the user is now USING the app, so
         // drop the flag - a stale one makes startParentView "exit to Home" on the next back
