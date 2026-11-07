@@ -393,6 +393,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private final List<Video> mChapterVideos = new ArrayList<>();
     /** Shown above the seek bar ONLY while scrubbing: a pill with the time and chapter under the finger. */
     private TextView mScrubChapterView;
+    private SeekFilmstrip mSeekFilmstrip;
     /**
      * NEWTUBE(chapters, issue #13): above the seek bar while the controls are up and the bar is not
      * being dragged - the playing chapter's title; a tap opens the Chapters list (ChaptersSheet).
@@ -1180,6 +1181,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mCommentTeaserText = findViewById(R.id.mobile_watch_comment_text);
         mWatchChatEntry = findViewById(R.id.mobile_watch_chat_entry);
         mScrubChapterView = findViewById(R.id.mobile_player_scrub_chapter);
+        mSeekFilmstrip = findViewById(R.id.mobile_player_seek_filmstrip);
         mChapterButton = findViewById(R.id.mobile_player_chapter);
         mChapterButton.setOnClickListener(v -> showChaptersSheet());
     }
@@ -9255,6 +9257,9 @@ public class MobilePlaybackActivity extends MobileActivity
         CharSequence title = index >= 0 ? mChapterVideos.get(index).title : null;
         String time = formatTime(positionMs);
         setTextIfChanged(mScrubChapterView, TextUtils.isEmpty(title) ? time : time + "   " + title);
+        if (mSeekFilmstrip != null) {
+            mSeekFilmstrip.update(positionMs, time, title);
+        }
     }
 
     /**
@@ -9274,7 +9279,14 @@ public class MobilePlaybackActivity extends MobileActivity
                 view.animate().alpha(alpha).setDuration(duration).setInterpolator(Motion.STANDARD).start();
             }
         }
-        fadePill(mScrubChapterView, scrubbing);
+        // the filmstrip draws the time; no second pill
+        if (mSeekFilmstrip != null) {
+            Video video = getVideo();
+            if (scrubbing && video != null) {
+                mSeekFilmstrip.prepare(video.videoId);
+            }
+            fadePill(mSeekFilmstrip, scrubbing);
+        }
     }
 
     /** The pill over the top of the video ({@code null} hides it). */
