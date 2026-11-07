@@ -6,7 +6,9 @@
     <string name="mobile_settings_search_kw_account">iniciar sesión cerrar sesión google perfil cambiar</string>
     <string name="mobile_settings_search_kw_theme">modo oscuro modo claro noche apariencia colores</string>
     <string name="mobile_settings_search_kw_customize">personalizar apariencia aspecto estilo diseño</string>
+    <string name="mobile_settings_search_kw_downloads">descargas ajustes descargar guardar resolución calidad preferida recordar</string>
     <string name="mobile_settings_search_kw_app_icon">logo lanzador pantalla de inicio antiguo clásico fantasía blanco cristal corazón rubí play oscuro llama fuego</string>
+    <string name="mobile_settings_search_kw_download_quality">descarga resolución 4k 2160p 1440p 1080p 720p 480p 360p 240p predeterminada preguntar recordar preferida</string>
     <string name="mobile_settings_search_kw_country">país región</string>
     <string name="mobile_settings_search_kw_start_screen">al abrir arranque pestaña por defecto inicio</string>
     <string name="mobile_settings_search_kw_interface_size">escala zoom letra tamaño del texto densidad más grande más pequeño</string>
@@ -25,6 +27,7 @@
     <string name="mobile_settings_search_kw_loudness">normalizar volumen automático bajo alto</string>
     <string name="mobile_settings_search_kw_player_volume">volumen bajo alto sonido amplificar ganancia aumento 125 150 175 200</string>
     <string name="mobile_settings_search_kw_captions">captions cc</string>
+    <string name="mobile_settings_search_kw_feed_playback">reproducción automática feed inicio búsqueda vídeos wifi datos mantener pulsado menú shorts directo</string>
     <string name="mobile_settings_search_kw_sponsorblock">saltar patrocinadores anuncios segmentos intros</string>
     <string name="mobile_settings_search_kw_dearrow">clickbait títulos miniaturas</string>
     <string name="mobile_settings_search_kw_backup">copia de seguridad exportar importar guardar ajustes</string>

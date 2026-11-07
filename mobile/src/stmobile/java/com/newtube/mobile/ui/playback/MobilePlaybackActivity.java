@@ -11803,6 +11803,11 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     @Override
+    public void openLocalVideo(String videoUri, String subtitleUri) {
+        mExoPlayerController.openLocalVideo(videoUri, subtitleUri);
+    }
+
+    @Override
     public void openHlsVod(MediaItemFormatInfo formatInfo) {
         mCaptionInfo = formatInfo; // MEETUBE(transcript)
         mExoPlayerController.openHlsVod(formatInfo);

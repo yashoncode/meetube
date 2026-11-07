@@ -5,6 +5,7 @@
     <string name="mobile_settings_search_kw_account">تسجيل دخول خروج Google حساب ملف شخصي تبديل</string>
     <string name="mobile_settings_search_kw_theme">داكن فاتح وضع ليلي مظهر ألوان</string>
     <string name="mobile_settings_search_kw_customize">تخصيص تعديل مظهر شكل نمط تنسيق</string>
+    <string name="mobile_settings_search_kw_downloads">تنزيلات إعدادات تنزيل حفظ دقة جودة مفضلة تذكر</string>
     <string name="mobile_settings_search_kw_country">بلد دولة منطقة</string>
     <string name="mobile_settings_search_kw_start_screen">تشغيل بدء فتح افتراضي تبويب رئيسية صفحة</string>
     <string name="mobile_settings_search_kw_interface_size">واجهة مقياس تكبير خط نص حجم كثافة أكبر أصغر</string>
@@ -21,10 +22,12 @@
     <string name="mobile_settings_search_kw_dislikes">Return YouTube Dislike عدم إعجاب ryd</string>
     <string name="mobile_settings_search_kw_home_layout">صفوف رفوف شرائح خلاصة شبكة SmartTube</string>
     <string name="mobile_settings_search_kw_app_icon">مشغّل شعار شاشة رئيسية قديم كلاسيكي خيالي أبيض زجاج قلب ياقوت تشغيل داكن لهب نار</string>
+    <string name="mobile_settings_search_kw_download_quality">تنزيل دقة 4k 2160p 1440p 1080p 720p 480p 360p 240p افتراضي سؤال تذكر مفضل</string>
     <string name="mobile_settings_search_kw_quality">دقة 4k 1080p 720p hd توفير بيانات جوّال</string>
     <string name="mobile_settings_search_kw_loudness">مستوى صوت توحيد تلقائي منخفض مرتفع</string>
     <string name="mobile_settings_search_kw_player_volume">منخفض مرتفع صوت تعزيز كسب تضخيم 125 150 175 200</string>
     <string name="mobile_settings_search_kw_captions">ترجمة cc شرح مكتوب</string>
+    <string name="mobile_settings_search_kw_feed_playback">تشغيل تلقائي خلاصة رئيسية بحث فيديوهات واي فاي بيانات ضغط مطول قائمة shorts بث مباشر</string>
     <string name="mobile_settings_search_kw_sponsorblock">تخطي رعاية إعلانات أجزاء مقدمات</string>
     <string name="mobile_settings_search_kw_dearrow">مضللة نقرات عناوين صور مصغرة</string>
     <string name="mobile_settings_search_kw_backup">تصدير استيراد حفظ إعدادات</string>

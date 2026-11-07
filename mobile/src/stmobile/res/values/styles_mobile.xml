@@ -28,9 +28,8 @@
              (screens also turn them off at runtime: BounceOverscroll). -->
         <item name="android:scrollViewStyle">@style/Widget.MeeTube.NoScrollbars.ScrollView</item>
         <item name="android:listViewStyle">@style/Widget.MeeTube.NoScrollbars.ListView</item>
-        <!-- MEETUBE(launch): the system splash shows the launch animation's first frame, still, from
-             the tap; the animation itself plays in-app over Home (LaunchSplash), since vivo's splash
-             never animates. The same on every phone and for every app icon. -->
+        <!-- MEETUBE(launch): show the animation's first frame from the tap; LaunchSplash plays it over
+             Home because some launchers (including vivo's) do not animate the system splash. -->
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@drawable/splash_play_still</item>
         <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/mobile_color_background</item>
         <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="31">0</item>
@@ -584,7 +583,7 @@
     </style>
     <style name="MobileSkeletonFeedThumb">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">204dp</item>
+        <item name="android:layout_height">228dp</item>
         <item name="android:background">@drawable/bg_skeleton_block</item>
     </style>
     <style name="MobileSkeletonFeedLineWide">

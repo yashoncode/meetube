@@ -118,6 +118,15 @@ class Media3TrackAdapter {
         applyTarget(formatItem);
     }
 
+    /** Downloaded sidecars should play even when the network subtitle preference is "None". */
+    void selectLocalSubtitleDefault() {
+        mTargets[FormatItem.TYPE_SUBTITLE] = null;
+        mTrackSelector.setParameters(mTrackSelector.buildUponParameters()
+                .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+                .clearOverridesOfType(C.TRACK_TYPE_TEXT)
+                .setPreferredTextLanguage("en"));
+    }
+
     @Nullable
     FormatItem getSelectedFormat(int rendererIndex) {
         FormatItem target = rendererIndex >= 0 && rendererIndex < mTargets.length ? mTargets[rendererIndex] : null;
