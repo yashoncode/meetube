@@ -75,6 +75,11 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     private boolean mIgnoring;
     /** MEETUBE(issue #188): two fingers on the default card resize it (MiniSize.pinch). */
     private final ScaleGestureDetector mPinch;
+    /** Resting at the top: it follows Home's top bar in and out (followTop). */
+    private boolean mAtTop;
+    private float mTopY = Float.NaN;
+    /** Where it was let go (above home): Home's top bar coming back pushes it below the chips. */
+    private float mRestY = Float.NaN;
     @Nullable
     private VelocityTracker mVelocity;
 
@@ -101,6 +106,8 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         }
         mSnapX.cancel();
         mSnapY.cancel();
+        mAtTop = false; // the host moves it now
+        mRestY = Float.NaN;
     }
 
     public float homeY() {
@@ -114,7 +121,7 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     public void setHomeY(float homeY) {
         mHomeY = homeY;
         View parent = (View) mCard.getParent();
-        if (mDragging || parent == null || mCard.getVisibility() != View.VISIBLE || !mCallback.canSwipe()
+        if (mDragging || !Float.isNaN(mRestY) || parent == null || mCard.getVisibility() != View.VISIBLE || !mCallback.canSwipe()
                 || mCard.getTop() + mCard.getHeight() / 2f + mCard.getTranslationY() <= parent.getHeight() / 2f) {
             return;
         }
@@ -135,6 +142,10 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                 MiniSize.pinch(mCard, detector.getScaleFactor());
                 return true;
             }
+        });
+        card.getViewTreeObserver().addOnPreDrawListener(() -> {
+            followTop();
+            return true;
         });
     }
 
@@ -174,6 +185,8 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                         return false;
                     }
                     mDragging = true;
+                    mAtTop = false;
+                    mRestY = Float.NaN;
                     // Drop the press and its pending click: this touch is a drag now.
                     MotionEvent cancel = MotionEvent.obtain(event);
                     cancel.setAction(MotionEvent.ACTION_CANCEL);
@@ -279,13 +292,22 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         float homeLeft = mCard.getLeft();
         float otherSide = homeLeft + mCard.getWidth() / 2f < parent.getWidth() / 2f
                 ? parent.getWidth() - margin - mCard.getRight() : margin - homeLeft;
-        float top = TOP_CLEARANCE_DP * mDensity - mCard.getTop();
+        float top = topClearance(parent) - mCard.getTop();
 
         float centerX = homeLeft + mCard.getWidth() / 2f + mCard.getTranslationX() + velocityX * THROW_S;
-        float centerY = mCard.getTop() + mCard.getHeight() / 2f + mCard.getTranslationY() + velocityY * THROW_S;
         float homeCenterX = homeLeft + mCard.getWidth() / 2f;
         float x = Math.abs(centerX - homeCenterX) < Math.abs(centerX - (homeCenterX + otherSide)) ? 0f : otherSide;
-        float y = centerY > parent.getHeight() / 2f || top >= 0f ? mHomeY : top;
+        // MEETUBE(issue #188): it rests where it is let go (thrown a little further), anywhere from
+        // the top spot down to home; near either end it snaps there.
+        float y = Math.max(top, Math.min(mHomeY, mCard.getTranslationY() + velocityY * THROW_S));
+        float snap = 48 * mDensity;
+        if (top >= 0f || mHomeY - y < snap) {
+            y = mHomeY;
+        } else if (y - top < snap) {
+            y = top;
+        }
+        mAtTop = y == top;
+        mRestY = y == mHomeY ? Float.NaN : y; // NaN: at home, riding with the nav bar
 
         mCard.setAlpha(1f);
         mSnapX.setStartVelocity(velocityX);
@@ -293,6 +315,52 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         mSnapY.getSpring().setStiffness(SNAP_STIFFNESS).setDampingRatio(SNAP_DAMPING); // after a nav ride's bounce
         mSnapY.setStartVelocity(velocityY);
         mSnapY.animateToFinalPosition(y);
+        mTopY = y;
+    }
+
+    /**
+     * MEETUBE(issue #188): a card resting above home moves with Home's top bar: the top spot follows
+     * it (under the chips, or under the status bar once it scrolls away), and one left higher than
+     * the chips' bottom is pushed below them while they show.
+     */
+    private void followTop() {
+        View parent = (View) mCard.getParent();
+        if (mDragging || parent == null || mCard.getVisibility() != View.VISIBLE || Float.isNaN(mRestY)) {
+            return;
+        }
+        float top = topClearance(parent) - mCard.getTop();
+        float y = mAtTop ? top : Math.max(mRestY, top);
+        if (Math.abs(y - mTopY) < 1f) {
+            return;
+        }
+        mTopY = y;
+        mSnapY.getSpring().setStiffness(FOLLOW_STIFFNESS).setDampingRatio(FOLLOW_DAMPING);
+        mSnapY.animateToFinalPosition(y);
+    }
+
+    /**
+     * MEETUBE(issue #188): the top spot sits under Home's chips when they show (a bar or a big card
+     * at a fixed 80dp landed on them), right under the status bar once Home's top bar has scrolled
+     * away, and TOP_CLEARANCE_DP down on other screens.
+     */
+    private float topClearance(View parent) {
+        float fallback = TOP_CLEARANCE_DP * mDensity;
+        View chips = parent.getRootView().findViewById(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_chip_track);
+        if (chips == null) {
+            return fallback; // not Home: under the screen's own top bar
+        }
+        int[] chipsAt = new int[2];
+        int[] parentAt = new int[2];
+        chips.getLocationInWindow(chipsAt);
+        parent.getLocationInWindow(parentAt);
+        android.view.WindowInsets insets = parent.getRootWindowInsets();
+        int status = insets != null ? insets.getSystemWindowInsetTop() : 0;
+        float topmost = status - parentAt[1] + 8 * mDensity; // Home's top bar scrolled away: right under the status bar
+        float chipsBottom = chipsAt[1] + chips.getHeight();
+        if (!chips.isShown() || chips.getAlpha() == 0f || chipsBottom <= status) {
+            return topmost;
+        }
+        return Math.max(topmost, chipsBottom - parentAt[1] + 8 * mDensity);
     }
 
     /** How far past a side edge of its parent the card hangs (negative: the start side). */
