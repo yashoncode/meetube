@@ -273,7 +273,7 @@ final class AppPages {
                 .needsRestart(), 72, Tiles.BUTTONS_SEE_THROUGH, Tiles.FX_FROST, Tiles.BUTTONS_MINIMAL));
 
         // MEETUBE(glass segmented): Home's topic chips and the search filters.
-        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_chip_style))
+        rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_chip_style))
                 .option(context.getString(R.string.mobile_settings_chip_style_segment),
                         context.getString(R.string.mobile_settings_chip_style_segment_desc),
                         com.newtube.mobile.ui.common.Glass.CHIPS_SEGMENT)
@@ -281,7 +281,8 @@ final class AppPages {
                         context.getString(R.string.mobile_settings_chip_style_pills_desc),
                         com.newtube.mobile.ui.common.Glass.CHIPS_PILLS)
                 .bind(() -> com.newtube.mobile.ui.common.Glass.chipStyle(context),
-                        style -> com.newtube.mobile.ui.common.Glass.setChipStyle(context, style)));
+                        style -> com.newtube.mobile.ui.common.Glass.setChipStyle(context, style)),
+                56, Tiles.CHIPS_SEGMENT, Tiles.CHIPS_PILLS));
 
         // MEETUBE(nav lens): the tab switch's lens and wiggle; off by default on a low-end phone.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_tab_motion),

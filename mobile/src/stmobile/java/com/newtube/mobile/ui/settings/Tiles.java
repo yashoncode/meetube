@@ -84,6 +84,9 @@ final class Tiles {
     static final int BUTTONS_MINIMAL = 33;
     /** The top bar's brand pill: the icon, then the app's name. */
     static final int FX_BRAND_NAME = 34;
+    // MEETUBE(glass segmented): the chip styles.
+    static final int CHIPS_SEGMENT = 39;
+    static final int CHIPS_PILLS = 40;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -712,6 +715,29 @@ final class Tiles {
                     for (int i = 0; i < 2; i++) { // the feed's cards
                         float y = bottom + h * 0.1f + i * h * 0.2f;
                         block(canvas, screen.left + in, y, screen.right - in, y + h * 0.12f, mLine);
+                    }
+                    break;
+                }
+                case CHIPS_SEGMENT:
+                case CHIPS_PILLS: {
+                    // Home's topic chips: one glass track with the lit pill in it, or separate pills.
+                    float ph = h * 0.32f;
+                    float top = cy - ph / 2;
+                    float chip = w * 0.24f;
+                    float gap = w * 0.03f;
+                    float left = b.left + w * 0.04f;
+                    if (mKind == CHIPS_SEGMENT) {
+                        pill(canvas, left, top - ph * 0.15f, b.right - w * 0.04f, top + ph * 1.15f, mBlock);
+                        gap = 0;
+                    }
+                    for (int i = 0; i < 4 && left + chip <= b.right; i++) {
+                        boolean lit = i == 0;
+                        if (lit || mKind == CHIPS_PILLS) {
+                            pill(canvas, left, top, left + chip, top + ph, lit ? mInk : mBlock);
+                        }
+                        block(canvas, left + chip * 0.25f, cy - ph * 0.1f, left + chip * 0.75f, cy + ph * 0.1f,
+                                lit ? mScreen : mLine);
+                        left += chip + gap;
                     }
                     break;
                 }
