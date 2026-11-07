@@ -213,6 +213,11 @@
     <string name="mobile_settings_home_shorts">Shorts on Home</string>
     <string name="mobile_settings_home_shorts_summary">A row of Shorts you swipe sideways, where YouTube puts one</string>
     <!-- MEETUBE(glass, issue #80; minimal buttons) -->
+    <string name="mobile_settings_chip_style">Chips style</string>
+    <string name="mobile_settings_chip_style_segment">Segment bubble</string>
+    <string name="mobile_settings_chip_style_segment_desc">Home topic chips and the search filters sit in one glass bar; press the pick and drag it like a lens</string>
+    <string name="mobile_settings_chip_style_pills">Chips</string>
+    <string name="mobile_settings_chip_style_pills_desc">A separate glass pill for each chip</string>
     <string name="mobile_settings_player_buttons_look">Player button style</string>
     <string name="mobile_settings_player_buttons_see_through">See-through</string>
     <string name="mobile_settings_player_buttons_see_through_desc">A tinted glass disc behind each button over a video, a short and the mini player</string>

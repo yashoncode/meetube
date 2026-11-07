@@ -318,6 +318,19 @@ public class MobileSearchActivity extends MobileActivity
             | SearchOptions.FEATURE_LIVE | SearchOptions.UPLOAD_DATE_TODAY | SearchOptions.UPLOAD_DATE_THIS_WEEK
             | SearchOptions.UPLOAD_DATE_THIS_MONTH | SearchOptions.UPLOAD_DATE_THIS_YEAR;
     private android.widget.LinearLayout mChips;
+    private com.newtube.mobile.ui.common.GlassChipTrack mChipTrack;
+
+    private boolean segmentChips() {
+        return com.newtube.mobile.ui.common.Glass.chipStyle(this) == com.newtube.mobile.ui.common.Glass.CHIPS_SEGMENT;
+    }
+
+    private void pickChip(int flag) {
+        int options = (mPresenter.getSearchOptions() & ~CHIP_FLAGS) | flag;
+        if (options != mPresenter.getSearchOptions()) {
+            mPresenter.setSearchOptions(options);
+        }
+        syncChips();
+    }
 
     /**
      * MEETUBE(search chips): YouTube's chip row over the results. A chip is a one-tap filter: it
@@ -327,6 +340,15 @@ public class MobileSearchActivity extends MobileActivity
     private void setupChips() {
         mChips = findViewById(R.id.mobile_search_chips);
         com.newtube.mobile.ui.common.GlassSource results = findViewById(R.id.mobile_search_chips_source);
+        // MEETUBE(glass segmented): the same filters as one glass segment (Settings > Customization > Chips style).
+        mChipTrack = findViewById(R.id.mobile_search_chip_track);
+        mChipTrack.setGlassSource(results);
+        java.util.List<CharSequence> labels = new java.util.ArrayList<>();
+        for (int[] entry : CHIPS) {
+            labels.add(getString(entry[0]));
+        }
+        mChipTrack.setChips(labels);
+        mChipTrack.setOnPicked(index -> pickChip(CHIPS[index][1]));
         for (int[] entry : CHIPS) {
             TextView chip = (TextView) getLayoutInflater().inflate(R.layout.mobile_search_chip, mChips, false);
             chip.setText(entry[0]);
@@ -334,19 +356,26 @@ public class MobileSearchActivity extends MobileActivity
             com.newtube.mobile.ui.common.GlassDrawable.apply(chip, results, 0);
             chip.setTag(R.id.mobile_search_chips, chip.getBackground());
             int flag = entry[1];
-            chip.setOnClickListener(v -> {
-                int options = (mPresenter.getSearchOptions() & ~CHIP_FLAGS) | flag;
-                if (options != mPresenter.getSearchOptions()) {
-                    mPresenter.setSearchOptions(options);
-                }
-                syncChips();
-            });
+            chip.setOnClickListener(v -> pickChip(flag));
             mChips.addView(chip);
         }
     }
 
     private void syncChips() {
         int picked = mPresenter.getSearchOptions() & CHIP_FLAGS;
+        int pickedIndex = -1;
+        for (int i = 0; i < CHIPS.length; i++) {
+            if (CHIPS[i][1] == picked) {
+                pickedIndex = i;
+            }
+        }
+        mChipTrack.setSelected(pickedIndex);
+        boolean segment = segmentChips();
+        View pills = (View) mChips.getParent();
+        if (pills.getVisibility() == View.VISIBLE || mChipTrack.getVisibility() == View.VISIBLE) {
+            pills.setVisibility(segment ? View.GONE : View.VISIBLE);
+            mChipTrack.setVisibility(segment ? View.VISIBLE : View.GONE);
+        }
         for (int i = 0; i < CHIPS.length; i++) {
             // The picked chip is a solid light pill (FeedStrip's), the rest are glass.
             TextView chip = (TextView) mChips.getChildAt(i);
@@ -570,7 +599,7 @@ public class MobileSearchActivity extends MobileActivity
         mSearchInput.clearFocus();
         mSuggestions.setVisibility(View.GONE);
         mTagAdapter.clearTags();
-        ((View) mChips.getParent()).setVisibility(View.VISIBLE);
+        (segmentChips() ? mChipTrack : (View) mChips.getParent()).setVisibility(View.VISIBLE);
         syncChips();
         mPresenter.onSearch(normalized);
     }
