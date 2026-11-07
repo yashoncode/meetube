@@ -236,6 +236,7 @@ public class MobileBrowseActivity extends MobileActivity
     private ImageView mYouAvatar;
     /** True while the You panel covers the content grid (the You tab is selected). */
     private boolean mYouShowing;
+    private HomePreview mPreview; // MEETUBE(home autoplay)
     /** True when the current grid section was opened from a You-panel row (back returns to You). */
     private boolean mSectionFromYou;
     private BrowseTopBar mTopBar;
@@ -1222,6 +1223,31 @@ public class MobileBrowseActivity extends MobileActivity
                     mTopHider.onScrolled(recyclerView, dx, dy);
                 }
                 maybeTriggerPagination();
+            }
+        });
+        // MEETUBE(home autoplay): the centred Home card plays muted, as on YouTube.
+        mPreview = new HomePreview(mContentGrid, () -> isHomeChip(mCurrentSectionId) && !mYouShowing
+                && !mRowsShown && getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+                && (mMiniPlayerBar == null || mMiniPlayerBar.getVisibility() != View.VISIBLE));
+        mAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                mPreview.onDataChanged();
+            }
+
+            @Override
+            public void onItemRangeChanged(int start, int count) {
+                mPreview.onDataChanged();
+            }
+
+            @Override
+            public void onItemRangeInserted(int start, int count) {
+                mPreview.onDataChanged();
+            }
+
+            @Override
+            public void onItemRangeRemoved(int start, int count) {
+                mPreview.onDataChanged();
             }
         });
         if (!com.newtube.mobile.ui.common.FocusRing.isTv(this)) { // a remote needs the tabs in reach
@@ -3411,6 +3437,7 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onResume() {
         super.onResume();
+        mPreview.schedule();
         mTopBar.syncMark(this);
         mBottomNav.setLabelVisibilityMode(NavTabs.showLabels(this) // MEETUBE(nav labels)
                 ? BottomNavigationView.LABEL_VISIBILITY_LABELED : BottomNavigationView.LABEL_VISIBILITY_UNLABELED);
@@ -3564,6 +3591,7 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onPause() {
         super.onPause();
+        mPreview.stop();
         mBottomNav.removeCallbacks(mLeaveShortsTab);
 
         if (mPresenter != null) {
@@ -3725,6 +3753,7 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onDestroy() {
         unwatchMiniScreenOn(); // the shared player outlives this Activity
+        mPreview.release();
         mNavHandler.removeCallbacks(mNavRebuild);
         mNavHandler.removeCallbacks(mRunwayCheck);
         com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mSubsAction, mSubsChannelsAction, mYouHistoryAction,

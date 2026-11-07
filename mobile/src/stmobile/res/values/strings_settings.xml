@@ -461,4 +461,11 @@
     <string name="mobile_settings_equalizer_custom">Custom</string>
     <string name="mobile_settings_equalizer_reset">Reset</string>
     <string name="mobile_settings_equalizer_unavailable">The equalizer is unavailable on this device</string>
+    <string name="mobile_settings_home_autoplay">Home autoplay</string>
+    <string name="mobile_settings_home_autoplay_wifi">On Wi-Fi only</string>
+    <string name="mobile_settings_home_autoplay_wifi_desc">The video in the middle of Home plays muted, not on mobile data</string>
+    <string name="mobile_settings_home_autoplay_always">Always</string>
+    <string name="mobile_settings_home_autoplay_always_desc">Plays muted on mobile data too</string>
+    <string name="mobile_settings_home_autoplay_off">Off</string>
+    <string name="mobile_settings_home_autoplay_off_desc">Home shows thumbnails only</string>
 </resources>
