@@ -24,7 +24,6 @@ import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.newtube.mobile.CardMenuMigration;
-import com.newtube.mobile.downloads.DownloadFolder;
 import com.newtube.mobile.ui.browse.NavTabs;
 import com.newtube.mobile.ui.common.AppIcon;
 import com.newtube.mobile.ui.common.CountStyle;
@@ -40,8 +39,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * The app-side pages of the phone Settings: General, Feeds (tabs, hidden videos, the video menu),
@@ -80,13 +79,6 @@ final class AppPages {
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_indian_counts),
                 context.getString(R.string.mobile_settings_indian_counts_summary),
                 () -> CountStyle.isIndian(context), on -> CountStyle.setIndian(context, on)).needsRestart());
-
-        // MEETUBE(download-folder): also a long press on any Download button.
-        if (DownloadFolder.isSupported()) {
-            rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_folder),
-                    () -> DownloadFolder.label(context),
-                    page -> page.showDialog(DownloadFolder.showOptions(page.requireActivity()))));
-        }
 
         // MEETUBE(performance): every screen at the display's top refresh rate (BitChord's setting).
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_performance)));
@@ -523,7 +515,6 @@ final class AppPages {
                 MediaGroup.TYPE_USER_PLAYLISTS, MediaGroup.TYPE_MY_VIDEOS, MediaGroup.TYPE_CHANNEL_UPLOADS,
                 MediaGroup.TYPE_PLAYBACK_QUEUE, MediaGroup.TYPE_BLOCKED_CHANNELS};
 
-        rows.add(startScreen(context)); // MEETUBE(start screen): next to the bar it opens on
         rows.add(BarEditor.row(context)); // MEETUBE(bar editor): the bars as a stack to drag
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_tabs_bar_note)));
         // MEETUBE(bar reset): Home, Shorts, Search, Subs, You - Search in the bar, not on top.
@@ -532,6 +523,7 @@ final class AppPages {
                     NavTabs.setLayout(context, MediaGroup.TYPE_SHORTS, MediaGroup.TYPE_SUBSCRIPTIONS, 1, false);
                     page.rebuild();
                 }));
+        rows.add(startScreen(context)); // MEETUBE(start screen): next to the bar it opens on
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_tabs_you)));
         addSectionToggles(context, rows, sections, you, true);
         rows.add(SettingsRow.header(context.getString(R.string.mobile_you_explore)));

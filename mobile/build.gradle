@@ -371,6 +371,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
     implementation 'androidx.annotation:annotation:' + annotationXVersion
+    implementation 'androidx.work:work-runtime:' + workVersion // MEETUBE(auto download): already common's, compiled against here
     implementation 'androidx.activity:activity:' + activityXVersion
     implementation 'androidx.lifecycle:lifecycle-runtime:' + liveDataVersion
     implementation 'androidx.recyclerview:recyclerview:' + recyclerviewXVersion // exoplayer 2.12.1 fix

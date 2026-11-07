@@ -46,6 +46,7 @@ public final class SettingsPages {
     public static final String SPONSORBLOCK = "sponsorblock";
     public static final String SPONSORBLOCK_MARKS = "sponsorblock_marks";
     public static final String DEARROW = "dearrow";
+    public static final String DOWNLOADS = "downloads";
     public static final String BACKUP = "backup";
     public static final String ADVANCED = "advanced";
     public static final String ABOUT = "about";
@@ -99,6 +100,8 @@ public final class SettingsPages {
                 return PlayerPages.sponsorBlockMarks(context);
             case DEARROW:
                 return PlayerPages.deArrow(context);
+            case DOWNLOADS:
+                return DownloadPages.downloads(context);
             case BACKUP:
                 return AppPages.backup(context);
             case ADVANCED:
@@ -129,6 +132,8 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_feeds_summary), FEEDS));
         rows.add(SettingsRow.page(R.drawable.ic_settings_privacy, context.getString(R.string.mobile_settings_privacy),
                 context.getString(R.string.mobile_settings_privacy_summary), PRIVACY));
+        rows.add(SettingsRow.page(R.drawable.ic_nav_downloads_outline, context.getString(R.string.header_downloads),
+                context.getString(R.string.mobile_settings_downloads_summary), DOWNLOADS));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_video)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_playback, context.getString(R.string.mobile_settings_playback),

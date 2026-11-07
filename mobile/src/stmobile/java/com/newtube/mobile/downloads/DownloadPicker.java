@@ -87,6 +87,16 @@ public final class DownloadPicker {
         String thumb = cardImage != null && cardImage.startsWith("http") ? cardImage
                 : "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg";
 
+        // MEETUBE(download quality): Settings > Downloads can set one, then a tap downloads at once.
+        DownloadOption preset = AutoDownload.defaultQuality(context) == AutoDownload.ASK ? null
+                : AutoDownload.pick(options, AutoDownload.defaultQuality(context));
+        if (preset != null) {
+            DownloadItem existing = DownloadRegistry.instance(context).findDone(video.videoId, preset.kind);
+            start(context, video, title, author, thumb, preset, existing != null && (preset.isAudioOnly()
+                    || (existing.qualityLabel != null && existing.qualityLabel.equals(preset.qualityLabel))));
+            return;
+        }
+
         AppDialogPresenter dialog = AppDialogPresenter.instance(context);
         DownloadRegistry registry = DownloadRegistry.instance(context);
 
@@ -107,27 +117,33 @@ public final class DownloadPicker {
 
             dialog.appendSingleButton(UiOptionItem.from(label, description, optionItem -> {
                 dialog.closeDialog();
-                if (alreadyHere) {
-                    // NEWTUBE(snackbar): the same file is already on the device - say so rather
-                    // than queue a second copy under a "Download started".
-                    MobileSnackbar.show(context, context.getString(R.string.mobile_download_already_here),
-                            context.getString(R.string.mobile_download_view), () -> openDownloads(context));
-                    return;
-                }
-                DownloadItem item = DownloadItem.create(video.videoId, title != null ? title : video.videoId,
-                        author, thumb, option);
-                MobileDownloadService.enqueue(context, item);
-                // NEWTUBE(snackbar): confirm with the size, and a way to the Downloads tab.
-                String started = size.isEmpty()
-                        ? context.getString(R.string.mobile_download_started)
-                        : context.getString(R.string.mobile_download_started_size, size);
-                MobileSnackbar.show(context, started,
-                        context.getString(R.string.mobile_download_view), () -> openDownloads(context));
-                rewordWhenDone(context, item, started, size);
+                start(context, video, title, author, thumb, option, alreadyHere);
             }));
         }
 
         dialog.showDialog(context.getString(R.string.dialog_download));
+    }
+
+    private static void start(Context context, Video video, String title, String author, String thumb,
+                              DownloadOption option, boolean alreadyHere) {
+        if (alreadyHere) {
+            // NEWTUBE(snackbar): the same file is already on the device - say so rather
+            // than queue a second copy under a "Download started".
+            MobileSnackbar.show(context, context.getString(R.string.mobile_download_already_here),
+                    context.getString(R.string.mobile_download_view), () -> openDownloads(context));
+            return;
+        }
+        String size = DownloadOptions.formatBytes(option.totalBytes);
+        DownloadItem item = DownloadItem.create(video.videoId, title != null ? title : video.videoId,
+                author, thumb, option);
+        MobileDownloadService.enqueue(context, item);
+        // NEWTUBE(snackbar): confirm with the size, and a way to the Downloads tab.
+        String started = size.isEmpty()
+                ? context.getString(R.string.mobile_download_started)
+                : context.getString(R.string.mobile_download_started_size, size);
+        MobileSnackbar.show(context, started,
+                context.getString(R.string.mobile_download_view), () -> openDownloads(context));
+        rewordWhenDone(context, item, started, size);
     }
 
     /**
