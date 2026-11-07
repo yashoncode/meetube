@@ -24,7 +24,7 @@ import java.util.List;
  * <pre>
  * Settings
  *   [ Search settings ]          (SettingsSearchFragment: every row of every page)
- *   App:    General · Customization · Feeds · History and privacy
+ *   App:    General · Customization · Downloads · Feeds · History and privacy
  *   Video:  Playback · Video quality · Audio quality · Captions · SponsorBlock · DeArrow
  *   Other:  Backup and restore · Advanced · About
  * </pre>
@@ -33,6 +33,7 @@ public final class SettingsPages {
     public static final String ROOT = "root";
     public static final String GENERAL = "general";
     public static final String CUSTOMIZE = "customize";
+    public static final String DOWNLOADS = "downloads";
     public static final String FEEDS = "feeds";
     public static final String FEEDS_TABS = "feeds_tabs";
     public static final String FEEDS_HIDDEN = "feeds_hidden";
@@ -73,6 +74,8 @@ public final class SettingsPages {
                 return AppPages.general(context);
             case CUSTOMIZE:
                 return AppPages.customize(context);
+            case DOWNLOADS:
+                return AppPages.downloads(context);
             case FEEDS:
                 return AppPages.feeds(context);
             case FEEDS_TABS:
@@ -125,6 +128,8 @@ public final class SettingsPages {
         rows.add(SettingsRow.page(R.drawable.ic_settings_customize, context.getString(R.string.mobile_settings_customize),
                 context.getString(R.string.mobile_settings_customize_summary), CUSTOMIZE)
                 .summary(() -> customizeSummary(context)));
+        rows.add(SettingsRow.page(R.drawable.ic_nav_downloads, context.getString(R.string.mobile_settings_downloads),
+                context.getString(R.string.mobile_settings_downloads_summary), DOWNLOADS));
         rows.add(SettingsRow.page(R.drawable.ic_settings_feeds, context.getString(R.string.mobile_settings_feeds),
                 context.getString(R.string.mobile_settings_feeds_summary), FEEDS));
         rows.add(SettingsRow.page(R.drawable.ic_settings_privacy, context.getString(R.string.mobile_settings_privacy),

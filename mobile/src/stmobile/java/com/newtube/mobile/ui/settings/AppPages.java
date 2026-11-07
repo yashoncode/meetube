@@ -142,12 +142,9 @@ final class AppPages {
                         AppIcon.STARRY_NIGHT)
                 .option(context.getString(R.string.mobile_app_icon_gta_vi), R.mipmap.app_icon_gta_vi, AppIcon.VICE_CITY)
                 .bind(() -> AppIcon.current(context), icon -> AppIcon.set(context, icon)),
-                88, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON,
+                88, 8, context.getString(R.string.mobile_settings_more),
+                Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON,
                 Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON));
-
-        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_downloads)));
-        rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_quality_title),
-                () -> DownloadQuality.label(context), AppPages::showDownloadQualityOptions));
 
         // MEETUBE(loader): every spinner in the app, from this list; each tile spins its own.
         rows.add(Tiles.of(SettingsRow.<String>choice(context.getString(R.string.mobile_settings_loader))
@@ -332,6 +329,13 @@ final class AppPages {
                 () -> context.getString(R.string.mobile_settings_video_menu_summary), SettingsPages.FEEDS_MENU));
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_customize), rows);
+    }
+
+    static SettingsPages.Page downloads(Context context) {
+        List<SettingsRow> rows = new ArrayList<>();
+        rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_quality_title),
+                () -> DownloadQuality.label(context), AppPages::showDownloadQualityOptions));
+        return new SettingsPages.Page(context.getString(R.string.mobile_settings_downloads), rows);
     }
 
     private static void showDownloadQualityOptions(SettingsPageFragment page) {

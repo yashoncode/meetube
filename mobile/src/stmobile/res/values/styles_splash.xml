@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- MEETUBE(launch): a plain black starting window while the routing activity opens Home. -->
-    <style name="Theme.MeeTube.Splash" parent="Theme.NewTube">
-        <item name="android:windowBackground">@android:color/black</item>
-        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@android:color/black</item>
-        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@android:color/transparent</item>
-    </style>
+<resources>
+    <!-- MEETUBE(launch): the routing screen's theme; Android 12+ uses Theme.NewTube's splash, and
+         LaunchSplash plays the first-frame animation in-app over Home. -->
+    <style name="Theme.MeeTube.Splash" parent="Theme.NewTube" />
 </resources>

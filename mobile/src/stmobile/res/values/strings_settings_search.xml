@@ -9,6 +9,7 @@
     <string name="mobile_settings_search_kw_account">sign in log in sign out google profile switch</string>
     <string name="mobile_settings_search_kw_theme">dark mode light mode night appearance colors colours</string>
     <string name="mobile_settings_search_kw_customize">customise personalize personalise appearance look style layout</string>
+    <string name="mobile_settings_search_kw_downloads">downloads download settings save resolution quality preferred remember</string>
     <string name="mobile_settings_search_kw_country">country region</string>
     <string name="mobile_settings_search_kw_start_screen">launch startup opens on default tab home page</string>
     <string name="mobile_settings_search_kw_interface_size">ui scale zoom font text size density bigger smaller</string>
@@ -25,12 +26,12 @@
     <string name="mobile_settings_search_kw_dislikes">return youtube dislike ryd</string>
     <string name="mobile_settings_search_kw_home_layout">rows shelves carousel feed grid smarttube</string>
     <string name="mobile_settings_search_kw_app_icon">launcher logo home screen old classic fantasy white glass heart ruby play dark blaze fire</string>
-    <string name="mobile_settings_search_kw_download_quality">download resolution 4k 2160p 1440p 1080p 720p 480p 360p 240p 144p default ask</string>
+    <string name="mobile_settings_search_kw_download_quality">download resolution 4k 2160p 1440p 1080p 720p 480p 360p 240p default ask remember preferred</string>
     <string name="mobile_settings_search_kw_quality">resolution 4k 1080p 720p hd data saver mobile data</string>
     <string name="mobile_settings_search_kw_loudness">volume normalization auto volume quiet loud</string>
     <string name="mobile_settings_search_kw_player_volume">quiet loud sound boost gain amplify 125 150 175 200</string>
     <string name="mobile_settings_search_kw_captions">subtitles cc closed captions</string>
-    <string name="mobile_settings_search_kw_feed_playback">inline autoplay previews home feed search videos wifi data</string>
+    <string name="mobile_settings_search_kw_feed_playback">inline autoplay previews home feed search videos wifi data long press menu shorts live stream</string>
     <string name="mobile_settings_search_kw_sponsorblock">skip sponsors ads segments intros</string>
     <string name="mobile_settings_search_kw_dearrow">clickbait titles thumbnails</string>
     <string name="mobile_settings_search_kw_backup">export import save settings</string>

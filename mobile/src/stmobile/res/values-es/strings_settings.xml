@@ -29,6 +29,8 @@
     <string name="mobile_settings_general">General</string>
     <string name="mobile_settings_general_summary">Idioma, país, búsqueda por voz, reloj</string>
     <string name="mobile_settings_customize">Personalización</string>
+    <string name="mobile_settings_downloads">Descargas</string>
+    <string name="mobile_settings_downloads_summary">Resolución de descarga preferida</string>
     <string name="mobile_settings_app_icon">Icono de la app</string>
     <string name="mobile_app_icon_default">Clásico (predeterminado)</string>
     <string name="mobile_app_icon_classic">Corazón negro</string>
@@ -43,7 +45,6 @@
     <string name="mobile_app_icon_pixel_play">Pixel Play</string>
     <string name="mobile_app_icon_starry_night">Starry Night</string>
     <string name="mobile_app_icon_gta_vi">GTA VI</string>
-    <string name="mobile_settings_customize_downloads">Descargas</string>
     <string name="mobile_download_quality_title">Calidad de descarga predeterminada</string>
     <string name="mobile_download_quality_ask">Preguntar cada vez</string>
     <string name="mobile_download_quality_select">Seleccionar resolución</string>
@@ -72,6 +73,7 @@
     <string name="mobile_settings_feed_playback_always">Siempre activada</string>
     <string name="mobile_settings_feed_playback_wifi">Solo con Wi-Fi</string>
     <string name="mobile_settings_feed_playback_off">Desactivada</string>
+    <string name="mobile_settings_feed_playback_note">Mantén pulsado un vídeo normal para reproducirlo en línea cuando esté permitido. Si está desactivada la reproducción, Wi-Fi solo no está disponible con datos móviles o la tarjeta es un Short o una emisión en directo, la pulsación larga abre el menú del vídeo. Toca ⋮ para abrir el menú en cualquier momento.</string>
     <string name="mobile_settings_playback_summary">Reproducción automática, en segundo plano, velocidad</string>
     <string name="mobile_settings_quality">Calidad de vídeo</string>
     <string name="mobile_settings_audio_quality">Calidad de audio</string>

@@ -33,6 +33,8 @@
     <string name="mobile_settings_customize">Customization</string>
     <string name="mobile_settings_customize_summary">Theme, tabs, Home layout, video menu</string>
     <string name="mobile_settings_customize_summary_value">%1$s theme, tabs, Home layout, video menu</string>
+    <string name="mobile_settings_downloads">Downloads</string>
+    <string name="mobile_settings_downloads_summary">Preferred download resolution</string>
     <string name="mobile_settings_theme_system_short">System</string>
     <string name="mobile_settings_theme_light_short">Light</string>
     <string name="mobile_settings_theme_dark_short">Dark</string>
@@ -46,6 +48,7 @@
     <string name="mobile_settings_feed_playback_always">Always on</string>
     <string name="mobile_settings_feed_playback_wifi">Wi-Fi only</string>
     <string name="mobile_settings_feed_playback_off">Off</string>
+    <string name="mobile_settings_feed_playback_note">Long-press a regular video to play inline when allowed. If playback is off, Wi-Fi only is blocked by mobile data, or the card is a Short or live stream, long-press opens its video menu. Tap ⋮ to open the menu at any time.</string>
     <string name="mobile_settings_quality">Video quality</string>
     <string name="mobile_settings_audio_quality">Audio quality</string>
     <string name="mobile_settings_audio_quality_summary">Stable volume, volume boost and equalizer</string>
@@ -205,7 +208,6 @@
     <string name="mobile_app_icon_pixel_play">Pixel Play</string>
     <string name="mobile_app_icon_starry_night">Starry Night</string>
     <string name="mobile_app_icon_gta_vi">GTA VI</string>
-    <string name="mobile_settings_customize_downloads">Downloads</string>
     <string name="mobile_download_quality_title">Default download quality</string>
     <string name="mobile_download_quality_ask">Ask every time</string>
     <string name="mobile_download_quality_select">Select resolution</string>

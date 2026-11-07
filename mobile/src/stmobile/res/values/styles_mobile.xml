@@ -28,8 +28,9 @@
              (screens also turn them off at runtime: BounceOverscroll). -->
         <item name="android:scrollViewStyle">@style/Widget.MeeTube.NoScrollbars.ScrollView</item>
         <item name="android:listViewStyle">@style/Widget.MeeTube.NoScrollbars.ListView</item>
-        <!-- MEETUBE(launch): no logo or animation in the app's starting window. -->
-        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@android:color/transparent</item>
+        <!-- MEETUBE(launch): show the animation's first frame from the tap; LaunchSplash plays it over
+             Home because some launchers (including vivo's) do not animate the system splash. -->
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@drawable/splash_play_still</item>
         <!-- MEETUBE(loader): every circular spinner is the loader picked in Settings > Customization
              (meetubeLoader; Loader applies the pick's overlay to each screen's theme). -->
         <item name="meetubeLoader">@drawable/avd_neon_ring</item>

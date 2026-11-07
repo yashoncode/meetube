@@ -941,7 +941,10 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         }
 
         private boolean triggerInlineHold() {
-            if (mHoldTriggered || mHoldVideo == null || mHoldVideo != mVideo
+            if (mHoldTriggered) {
+                return true;
+            }
+            if (mHoldVideo == null || mHoldVideo != mVideo
                     || mInlineHoldListener == null
                     || !mInlineHoldListener.canPlayInline(mHoldVideo, this)) {
                 return false;

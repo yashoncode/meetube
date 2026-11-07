@@ -69,6 +69,7 @@ final class PlayerPages {
                         com.newtube.mobile.ui.browse.FeedPlaybackSettings.OFF)
                 .bind(() -> com.newtube.mobile.ui.browse.FeedPlaybackSettings.getMode(context),
                         mode -> com.newtube.mobile.ui.browse.FeedPlaybackSettings.setMode(context, mode)));
+        rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_feed_playback_note)));
 
         rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_video_ends))
                 .option(context.getString(R.string.mobile_settings_video_ends_next), PlayerConstants.PLAYBACK_MODE_ALL)

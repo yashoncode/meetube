@@ -156,18 +156,30 @@ final class Tiles {
 
     /** {@code choice} (a bound choice row) as tiles {@code heightDp} tall, a picture per option. */
     static SettingsRow of(@NonNull SettingsRow choice, int heightDp, int... pictures) {
+        return of(choice, heightDp, 0, null, pictures);
+    }
+
+    /** A tile row that initially shows only {@code initialCount} choices and reveals the rest on demand. */
+    static SettingsRow of(@NonNull SettingsRow choice, int heightDp, int initialCount, @Nullable CharSequence moreLabel,
+            int... pictures) {
         SettingsRow row = choice.asCustom();
-        row.custom = (parent, page) -> strip(parent, page, row, heightDp, pictures);
+        row.custom = (parent, page) -> strip(parent, page, row, heightDp, initialCount, moreLabel, pictures);
         return row;
     }
 
-    private static View strip(ViewGroup parent, SettingsAdapter.Listener page, SettingsRow row, int heightDp, int[] pictures) {
+    private static View strip(ViewGroup parent, SettingsAdapter.Listener page, SettingsRow row, int heightDp,
+            int initialCount, @Nullable CharSequence moreLabel, int[] pictures) {
         Context context = parent.getContext();
         LinearLayout root = column(context);
         TextView summary = heading(root, row.title);
 
         // Four tiles a row at most: the loader picker has eight.
         int count = row.options.size();
+        int shownCount = initialCount > 0 ? Math.min(initialCount, count) : count;
+        int selectedIndex = row.currentIndex();
+        if (selectedIndex >= shownCount && moreLabel != null) {
+            summary.setText(row.title + " · " + row.options.get(selectedIndex).label);
+        }
         int columns = Math.min(4, count);
         GridLayout strip = new GridLayout(context);
         strip.setColumnCount(columns);
@@ -178,86 +190,120 @@ final class Tiles {
         stripParams.topMargin = dp(context, 12);
         root.addView(strip, stripParams);
 
-        for (int i = 0; i < count; i++) {
-            SettingsRow.Option option = row.options.get(i);
-            LinearLayout tile = new LinearLayout(context);
-            tile.setOrientation(LinearLayout.VERTICAL);
-            tile.setGravity(Gravity.CENTER_HORIZONTAL);
-            tile.setContentDescription(option.label);
-
-            FrameLayout frame = new FrameLayout(context);
-            ImageView picture = new ImageView(context);
-            boolean own = pictures[i] == ICON || pictures[i] == LOADER;
-            int picturePad = dp(context, own ? 14 : pictures[i] >= GLOW_WHITE ? 6 : 8);
-            picture.setPadding(picturePad, picturePad, picturePad, picturePad);
-            picture.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            Drawable drawable = own ? ContextCompat.getDrawable(context, option.icon) : new Picture(context, pictures[i]);
-            picture.setImageDrawable(drawable);
-            if (pictures[i] == LOADER) {
-                GradientDrawable stage = new GradientDrawable();
-                stage.setCornerRadius(dp(context, 12));
-                stage.setColor(0xFF1C1C1E);
-                picture.setBackground(new android.graphics.drawable.InsetDrawable(stage, dp(context, 6)));
-                if (drawable instanceof android.graphics.drawable.Animatable) {
-                    ((android.graphics.drawable.Animatable) drawable).start();
-                }
+        for (int i = 0; i < shownCount; i++) {
+            addTile(context, strip, page, row, summary, heightDp, columns, pictures, i);
+        }
+        if (shownCount < count && moreLabel != null) {
+            TextView more = new TextView(context);
+            more.setText(moreLabel);
+            more.setTextColor(ContextCompat.getColor(context, R.color.mobile_color_primary));
+            more.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            more.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            more.setGravity(Gravity.CENTER);
+            more.setMinHeight(dp(context, 44));
+            more.setPadding(dp(context, 16), dp(context, 8), dp(context, 16), dp(context, 8));
+            more.setFocusable(true);
+            more.setClickable(true);
+            TypedValue selectable = new TypedValue();
+            if (context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, selectable, true)
+                    && selectable.resourceId != 0) {
+                more.setBackgroundResource(selectable.resourceId);
             }
-            frame.addView(picture, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT));
-            ImageView check = new ImageView(context);
-            check.setImageResource(R.drawable.ic_mobile_check);
-            check.setImageTintList(android.content.res.ColorStateList.valueOf(0xFFFFFFFF));
-            int checkPad = dp(context, 3);
-            check.setPadding(checkPad, checkPad, checkPad, checkPad);
-            GradientDrawable badge = new GradientDrawable();
-            badge.setShape(GradientDrawable.OVAL);
-            badge.setColor(ContextCompat.getColor(context, R.color.mobile_color_primary));
-            check.setBackground(badge);
-            FrameLayout.LayoutParams checkParams = new FrameLayout.LayoutParams(dp(context, 20), dp(context, 20),
-                    Gravity.TOP | Gravity.END);
-            checkParams.setMargins(0, dp(context, 6), dp(context, 6), 0);
-            frame.addView(check, checkParams);
-            tile.addView(frame, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(context, heightDp)));
-
-            TextView label = new TextView(context);
-            label.setText(option.label);
-            label.setGravity(Gravity.CENTER_HORIZONTAL);
-            label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-            label.setMaxLines(2);
-            LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams moreParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
-            labelParams.topMargin = dp(context, 6);
-            tile.addView(label, labelParams);
-
-            int column = i % columns;
-            GridLayout.LayoutParams tileParams = new GridLayout.LayoutParams(GridLayout.spec(i / columns),
-                    GridLayout.spec(column, 1f));
-            tileParams.width = 0;
-            tileParams.setMarginStart(column == 0 ? 0 : dp(context, 5));
-            tileParams.setMarginEnd(column == columns - 1 ? 0 : dp(context, 5));
-            tileParams.topMargin = i < columns ? 0 : dp(context, 12);
-            strip.addView(tile, tileParams);
-
-            int which = i;
-            tile.setOnClickListener(v -> {
-                bounce(frame);
-                if (which == row.currentIndex()) {
-                    Haptics.tick(v);
-                    return;
-                }
+            moreParams.gravity = Gravity.CENTER_HORIZONTAL;
+            moreParams.topMargin = dp(context, 8);
+            root.addView(more, moreParams);
+            more.setOnClickListener(v -> {
                 Haptics.click(v);
-                select(strip, which, row, summary, true);
-                // After the bounce: a theme change redraws every screen.
-                v.postDelayed(() -> {
-                    row.pick.pick(option.value);
-                    if (row.restart && page instanceof SettingsPageFragment) {
-                        ((SettingsPageFragment) page).offerRestart();
-                    }
-                }, 160);
+                for (int i = shownCount; i < count; i++) {
+                    addTile(context, strip, page, row, summary, heightDp, columns, pictures, i);
+                }
+                root.removeView(more);
+                summary.setText(row.title);
+                select(strip, row.currentIndex(), row, summary, false);
             });
         }
         select(strip, row.currentIndex(), row, summary, false);
         return root;
+    }
+
+    private static void addTile(Context context, GridLayout strip, SettingsAdapter.Listener page, SettingsRow row,
+            TextView summary, int heightDp, int columns, int[] pictures, int index) {
+        SettingsRow.Option option = row.options.get(index);
+        LinearLayout tile = new LinearLayout(context);
+        tile.setOrientation(LinearLayout.VERTICAL);
+        tile.setGravity(Gravity.CENTER_HORIZONTAL);
+        tile.setContentDescription(option.label);
+
+        FrameLayout frame = new FrameLayout(context);
+        ImageView picture = new ImageView(context);
+        boolean own = pictures[index] == ICON || pictures[index] == LOADER;
+        int picturePad = dp(context, own ? 14 : pictures[index] >= GLOW_WHITE ? 6 : 8);
+        picture.setPadding(picturePad, picturePad, picturePad, picturePad);
+        picture.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        Drawable drawable = own ? ContextCompat.getDrawable(context, option.icon) : new Picture(context, pictures[index]);
+        picture.setImageDrawable(drawable);
+        if (pictures[index] == LOADER) {
+            GradientDrawable stage = new GradientDrawable();
+            stage.setCornerRadius(dp(context, 12));
+            stage.setColor(0xFF1C1C1E);
+            picture.setBackground(new android.graphics.drawable.InsetDrawable(stage, dp(context, 6)));
+            if (drawable instanceof android.graphics.drawable.Animatable) {
+                ((android.graphics.drawable.Animatable) drawable).start();
+            }
+        }
+        frame.addView(picture, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        ImageView check = new ImageView(context);
+        check.setImageResource(R.drawable.ic_mobile_check);
+        check.setImageTintList(android.content.res.ColorStateList.valueOf(0xFFFFFFFF));
+        int checkPad = dp(context, 3);
+        check.setPadding(checkPad, checkPad, checkPad, checkPad);
+        GradientDrawable badge = new GradientDrawable();
+        badge.setShape(GradientDrawable.OVAL);
+        badge.setColor(ContextCompat.getColor(context, R.color.mobile_color_primary));
+        check.setBackground(badge);
+        FrameLayout.LayoutParams checkParams = new FrameLayout.LayoutParams(dp(context, 20), dp(context, 20),
+                Gravity.TOP | Gravity.END);
+        checkParams.setMargins(0, dp(context, 6), dp(context, 6), 0);
+        frame.addView(check, checkParams);
+        tile.addView(frame, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(context, heightDp)));
+
+        TextView label = new TextView(context);
+        label.setText(option.label);
+        label.setGravity(Gravity.CENTER_HORIZONTAL);
+        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        label.setMaxLines(2);
+        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        labelParams.topMargin = dp(context, 6);
+        tile.addView(label, labelParams);
+
+        int column = index % columns;
+        GridLayout.LayoutParams tileParams = new GridLayout.LayoutParams(GridLayout.spec(index / columns),
+                GridLayout.spec(column, 1f));
+        tileParams.width = 0;
+        tileParams.setMarginStart(column == 0 ? 0 : dp(context, 5));
+        tileParams.setMarginEnd(column == columns - 1 ? 0 : dp(context, 5));
+        tileParams.topMargin = index < columns ? 0 : dp(context, 12);
+        strip.addView(tile, tileParams);
+
+        tile.setOnClickListener(v -> {
+            bounce(frame);
+            if (index == row.currentIndex()) {
+                Haptics.tick(v);
+                return;
+            }
+            Haptics.click(v);
+            select(strip, index, row, summary, true);
+            v.postDelayed(() -> {
+                row.pick.pick(option.value);
+                if (row.restart && page instanceof SettingsPageFragment) {
+                    ((SettingsPageFragment) page).offerRestart();
+                }
+            }, 160);
+        });
     }
 
     /** Lights the picked tile: a red ring, a check that pops in, its name in red. */

@@ -327,6 +327,8 @@ public class MobileBrowseActivity extends MobileActivity
         // mini card; ordinary navigation still uses BrowseWindowAnimation's quick fade.
 
         setContentView(R.layout.activity_mobile_browse);
+        com.newtube.mobile.ui.common.LaunchSplash.play(this);
+
         registerBackHandler(this::handleBack);
         sLive = new java.lang.ref.WeakReference<>(this);
 
