@@ -450,31 +450,43 @@ final class PlayerPages {
 
     /** Fraction of full volume the player plays at, on top of the phone's own volume. */
     private static SettingsRow playerVolume(Context context, PlayerData playerData) {
-        List<Float> values = new ArrayList<>();
         // MEETUBE(issue #177): media3's base volume stops at 100%; the session effect boosts above it.
-        for (int percent : new int[] {200, 175, 150, 125}) {
-            values.add(percent / 100f);
-        }
-        for (int percent = 100; percent >= 10; percent -= 10) {
-            values.add(percent / 100f);
-        }
-        float stored = playerData.getPlayerVolume();
-        if (!containsFloat(values, stored)) {
-            values.add(stored);
-            Collections.sort(values, Collections.reverseOrder());
-        }
-        SettingsRow.Choice<Float> choice = SettingsRow.choice(context.getString(R.string.mobile_settings_player_volume));
-        for (float value : values) {
-            String label = String.format(Locale.US, "%d%%", Math.round(value * 100));
-            choice.option(Math.abs(value - 1f) < 0.001f ? context.getString(R.string.mobile_settings_default_value, label) : label, value);
-        }
-        return choice.bind(() -> nearest(values, playerData.getPlayerVolume()), volume -> {
-            playerData.setPlayerVolume(volume);
-            AudioEffects.applyPlayerVolume(volume);
-        }).summary(() -> {
-            String label = String.format(Locale.US, "%d%%", Math.round(playerData.getPlayerVolume() * 100));
-            return playerData.getPlayerVolume() > 1f
-                    ? label + "\n" + context.getString(R.string.volume_boost_warning) : label;
+        return SettingsRow.custom(context.getString(R.string.mobile_settings_player_volume), (parent, page) -> {
+            android.widget.LinearLayout root = Tiles.column(parent.getContext());
+            android.widget.TextView summary = Tiles.heading(root, context.getString(R.string.mobile_settings_player_volume));
+            summary.setVisibility(android.view.View.VISIBLE);
+            // Glass spring slider (as the equalizer's): progress p is (p + 2) * 5 percent, 10..200.
+            com.newtube.mobile.ui.common.GlassSlider slider = new com.newtube.mobile.ui.common.GlassSlider(parent.getContext());
+            slider.setMax(38);
+            slider.setProgress(Math.max(0, Math.min(38, Math.round(playerData.getPlayerVolume() * 20) - 2)));
+            slider.setContentDescription(context.getString(R.string.mobile_settings_player_volume));
+            root.addView(slider, new android.widget.LinearLayout.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+            Runnable show = () -> {
+                int percent = (slider.getProgress() + 2) * 5;
+                String label = String.format(Locale.US, "%d%%", percent);
+                summary.setText(percent > 100 ? label + "\n" + context.getString(R.string.volume_boost_warning) : label);
+            };
+            show.run();
+            slider.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(android.widget.SeekBar s, int progress, boolean fromUser) {
+                    if (fromUser) {
+                        show.run();
+                        AudioEffects.applyPlayerVolume((progress + 2) * 0.05f); // live, to judge by ear
+                    }
+                }
+
+                @Override
+                public void onStartTrackingTouch(android.widget.SeekBar s) {
+                }
+
+                @Override
+                public void onStopTrackingTouch(android.widget.SeekBar s) {
+                    playerData.setPlayerVolume((s.getProgress() + 2) * 0.05f);
+                }
+            });
+            return root;
         });
     }
 
