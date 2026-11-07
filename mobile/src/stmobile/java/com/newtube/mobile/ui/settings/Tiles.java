@@ -400,7 +400,7 @@ final class Tiles {
         return String.format(Locale.US, "%d%%", value);
     }
 
-    private static LinearLayout column(Context context) {
+    static LinearLayout column(Context context) {
         LinearLayout root = new LinearLayout(context);
         root.setOrientation(LinearLayout.VERTICAL);
         int inset = context.getResources().getDimensionPixelSize(R.dimen.mobile_settings_row_inset);
@@ -409,7 +409,7 @@ final class Tiles {
     }
 
     /** The row's title like any row's; returns the summary line under it (hidden until set). */
-    private static TextView heading(LinearLayout root, CharSequence text) {
+    static TextView heading(LinearLayout root, CharSequence text) {
         Context context = root.getContext();
         TextView title = new TextView(context);
         title.setText(text);
