@@ -2,6 +2,7 @@ package com.newtube.mobile.ui.playback;
 
 import android.annotation.SuppressLint;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -72,6 +73,8 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     private float mHomeY;
     /** The touch stopped being a drag (a second finger): consume it to the end. */
     private boolean mIgnoring;
+    /** MEETUBE(issue #188): two fingers on the default card resize it (MiniSize.pinch). */
+    private final ScaleGestureDetector mPinch;
     @Nullable
     private VelocityTracker mVelocity;
 
@@ -126,6 +129,13 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         mDensity = card.getResources().getDisplayMetrics().density;
         mSnapX = spring(DynamicAnimation.TRANSLATION_X);
         mSnapY = spring(DynamicAnimation.TRANSLATION_Y);
+        mPinch = new ScaleGestureDetector(card.getContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                MiniSize.pinch(mCard, detector.getScaleFactor());
+                return true;
+            }
+        });
     }
 
     private SpringAnimation spring(DynamicAnimation.ViewProperty property) {
@@ -137,6 +147,10 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent event) {
+        boolean pinchable = MiniSize.type(mCard.getContext()) == MiniSize.DEFAULT;
+        if (pinchable) {
+            mPinch.onTouchEvent(event);
+        }
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mCallback.onTouched();
@@ -209,6 +223,13 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                     mIgnoring = true;
                     recycleVelocity();
                     snapToCorner(0f, 0f);
+                } else if (pinchable && !mIgnoring) {
+                    mIgnoring = true; // a pinch, not a tap: drop the press so letting go does not expand
+                    recycleVelocity();
+                    MotionEvent cancel = MotionEvent.obtain(event);
+                    cancel.setAction(MotionEvent.ACTION_CANCEL);
+                    view.onTouchEvent(cancel);
+                    cancel.recycle();
                 }
                 return mIgnoring;
             case MotionEvent.ACTION_CANCEL:

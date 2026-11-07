@@ -247,6 +247,13 @@
     <string name="mobile_settings_screen_off">Keep playing with the screen off</string>
     <string name="mobile_settings_screen_off_on">Allowed: battery saver won\'t stop the audio</string>
     <string name="mobile_settings_screen_off_off">Battery saver may stop the audio. Tap to allow MeeTube in the background</string>
+    <string name="mobile_settings_mini_type">Mini player type</string>
+    <string name="mobile_settings_mini_type_default">Default</string>
+    <string name="mobile_settings_mini_type_default_desc">A floating card. Pinch it in or out to change its size</string>
+    <string name="mobile_settings_mini_type_minimal">Minimal</string>
+    <string name="mobile_settings_mini_type_minimal2">Minimal 2</string>
+    <string name="mobile_settings_mini_type_disabled">Disabled</string>
+    <string name="mobile_settings_mini_type_disabled_desc">Swiping the player down closes the video instead of shrinking it</string>
     <string name="mobile_settings_auto_pip">Picture-in-picture</string>
     <string name="mobile_settings_auto_pip_summary">Leaving the app with a video playing shrinks it into a small window. Off, only the sound keeps playing</string>
     <string name="mobile_settings_video_ends">When a video ends</string>

@@ -798,6 +798,7 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayerBar.setTranslationX(0f);
         // MEETUBE(mini-float): back home from the corner it was dragged to (issue #125: lower while the nav is away)
         mMiniPlayerBar.setTranslationY(mMiniSwipe != null ? mMiniSwipe.homeY() : 0f);
+        com.newtube.mobile.ui.playback.MiniSize.apply(this); // the type may have changed while Home stayed alive
         mMiniPlayerBar.setVisibility(View.VISIBLE);
         mMiniControls.show();
         updateMiniPlayPauseIcon(player);
@@ -1042,6 +1043,7 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void onMiniPlayerTick() {
+        com.newtube.mobile.ui.playback.MiniSize.bindText(this);
         if (mMiniPlayerBar.getVisibility() != View.VISIBLE) {
             return;
         }

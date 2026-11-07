@@ -284,6 +284,22 @@ final class AppPages {
                         style -> com.newtube.mobile.ui.common.Glass.setChipStyle(context, style)),
                 56, Tiles.CHIPS_SEGMENT, Tiles.CHIPS_PILLS));
 
+        // MEETUBE(issue #188): the floating mini player's type (a pinch on the Default card sizes it).
+        rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_mini_type))
+                .option(context.getString(R.string.mobile_settings_mini_type_default),
+                        context.getString(R.string.mobile_settings_mini_type_default_desc),
+                        com.newtube.mobile.ui.playback.MiniSize.DEFAULT)
+                .option(context.getString(R.string.mobile_settings_mini_type_minimal), null,
+                        com.newtube.mobile.ui.playback.MiniSize.MINIMAL)
+                .option(context.getString(R.string.mobile_settings_mini_type_minimal2), null,
+                        com.newtube.mobile.ui.playback.MiniSize.MINIMAL2)
+                .option(context.getString(R.string.mobile_settings_mini_type_disabled),
+                        context.getString(R.string.mobile_settings_mini_type_disabled_desc),
+                        com.newtube.mobile.ui.playback.MiniSize.DISABLED)
+                .bind(() -> com.newtube.mobile.ui.playback.MiniSize.type(context),
+                        v -> com.newtube.mobile.ui.playback.MiniSize.setType(context, v)),
+                72, Tiles.MINI_DEFAULT, Tiles.MINI_MINIMAL, Tiles.MINI_MINIMAL2, Tiles.MINI_OFF));
+
         // MEETUBE(nav lens): the tab switch's lens and wiggle; off by default on a low-end phone.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_tab_motion),
                 context.getString(R.string.mobile_settings_tab_motion_summary),
