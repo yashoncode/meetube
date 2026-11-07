@@ -527,6 +527,13 @@
                 android:layout_height="@dimen/mobile_player_bar_height"
                 android:layout_gravity="bottom" />
 
+            <!-- While the bar is dragged: the frames around the finger roll by, the time flies in big. -->
+            <com.newtube.mobile.ui.playback.SeekFilmstrip
+                android:id="@+id/mobile_player_seek_filmstrip"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
             <!-- While the bar is dragged: the time under the finger and its chapter, in a pill above
                  the bar (the other controls step aside). -->
             <TextView
