@@ -39,6 +39,18 @@ public final class Glass {
         context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).edit().putInt(KEY_PLAYER_BUTTONS, style).apply();
     }
 
+    /** MEETUBE(glass segmented): Home's topic chips and the search filters, as separate pills or one glass segment. */
+    public static final int CHIPS_PILLS = 0;
+    public static final int CHIPS_SEGMENT = 1;
+
+    public static int chipStyle(android.content.Context context) {
+        return context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).getInt("chip_style", CHIPS_SEGMENT);
+    }
+
+    public static void setChipStyle(android.content.Context context, int style) {
+        context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).edit().putInt("chip_style", style).apply();
+    }
+
     public static boolean isPlayerFrost(android.content.Context context) {
         return playerButtons(context) == BUTTONS_FROSTED;
     }

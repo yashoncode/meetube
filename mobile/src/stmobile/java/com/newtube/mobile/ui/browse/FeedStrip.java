@@ -58,6 +58,7 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
     private final Listener mListener;
     @Nullable private final GlassSource mGlass;
     private final ItemAdapter mItems = new ItemAdapter();
+    @Nullable private com.newtube.mobile.ui.common.GlassChipTrack mTrack;
     private int mMode = MODE_NONE;
     private long mSelected;
     /** MEETUBE(all subscriptions): long-press on the avatars' "All". */
@@ -100,6 +101,36 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
         } else if (!wasShown && shown) {
             notifyItemInserted(0);
         }
+        syncTrack();
+    }
+
+    /** The segment style of the chips (Settings > Customization > Chips style): fed the same items. */
+    void setTrack(com.newtube.mobile.ui.common.GlassChipTrack track) {
+        mTrack = track;
+        track.setOnPicked(index -> {
+            if (index < mItems.mList.size() && mItems.mList.get(index).id != mSelected) {
+                mListener.onPicked(mItems.mList.get(index));
+            }
+        });
+        syncTrack();
+    }
+
+    private void syncTrack() {
+        if (mTrack == null) {
+            return;
+        }
+        List<CharSequence> labels = new ArrayList<>();
+        int selected = -1;
+        if (mMode == MODE_CHIPS) {
+            for (int i = 0; i < mItems.mList.size(); i++) {
+                labels.add(mItems.mList.get(i).label);
+                if (mItems.mList.get(i).id == mSelected) {
+                    selected = i;
+                }
+            }
+        }
+        mTrack.setChips(labels);
+        mTrack.setSelected(selected);
     }
 
     void setOnAllLongPressed(@Nullable Runnable onAllLongPressed) {
@@ -113,6 +144,7 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
     void select(long selected) {
         mSelected = selected;
         mItems.notifyDataSetChanged();
+        syncTrack();
     }
 
     long selected() {

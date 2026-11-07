@@ -171,6 +171,9 @@ public class MobileBrowseActivity extends MobileActivity
     // MEETUBE(feed-strip, 2.9.8): Home's topic chips / Subscriptions' channel avatars above the feed.
     private FeedStrip mStrip;
     private RecyclerView mChipRow;
+    private com.newtube.mobile.ui.common.GlassChipTrack mChipTrack;
+    private ChipBar mChipBarRow;
+    private ChipBar mChipBarTrack;
     private ChipBar mChipBar;
     // MEETUBE(nav hide, issue #37): the floating nav pill slides away while a feed scrolls down.
     private com.newtube.mobile.ui.common.NavHider mNavHider;
@@ -458,7 +461,11 @@ public class MobileBrowseActivity extends MobileActivity
         int bar = topGlass != null ? topGlass.getHeight() : 0;
         if (mChipBar != null && mChipBar.isActive()) {
             // hidden chips keep their room: the feed never jumps. Less the headroom over the top row.
-            bar += mChipRow.getHeight() - mChipRow.getPaddingTop();
+            if (mChipBar == mChipBarTrack) {
+                bar += mChipTrack.getHeight() + Math.round(8 * getResources().getDisplayMetrics().density);
+            } else {
+                bar += mChipRow.getHeight() - mChipRow.getPaddingTop();
+            }
         }
         padUnderTopBar(bar);
     }
@@ -474,12 +481,22 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     /** Home's chips float only over Home and its topics, never over the You panel. */
+    private ChipBar chipBarForStyle() {
+        return com.newtube.mobile.ui.common.Glass.chipStyle(this) == com.newtube.mobile.ui.common.Glass.CHIPS_SEGMENT
+                ? mChipBarTrack : mChipBarRow;
+    }
+
     private void updateChipRow() {
         if (mChipRow == null || mStrip == null) {
             return;
         }
         boolean active = mStrip.mode() == FeedStrip.MODE_CHIPS && !mYouShowing;
         if (active != mChipBar.isActive()) {
+        ChipBar style = chipBarForStyle();
+        if (style != mChipBar) { // Settings > Customization > Chips style changed
+            mChipBar.setActive(false);
+            mChipBar = style;
+        }
             mChipBar.setActive(active);
             refreshTopPadding();
         } else if (active && !mContentGrid.canScrollVertically(-1)) {
@@ -1119,7 +1136,17 @@ public class MobileBrowseActivity extends MobileActivity
         mChipRow.setAdapter(mStrip.items());
         View chipExpand = findViewById(R.id.mobile_chip_expand);
         com.newtube.mobile.ui.common.GlassDrawable.apply(chipExpand, findViewById(R.id.mobile_blur_target), 0);
-        mChipBar = new ChipBar(mChipRow, chipExpand);
+        mChipTrack = findViewById(R.id.mobile_chip_track);
+        mChipTrack.setGlassSource(findViewById(R.id.mobile_blur_target));
+        mStrip.setTrack(mChipTrack);
+        mChipBarRow = new ChipBar(mChipRow, chipExpand);
+        mChipBarTrack = new ChipBar(mChipTrack, chipExpand);
+        mChipBar = chipBarForStyle();
+        mChipTrack.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if (b - t != ob - ot) {
+                refreshTopPadding();
+            }
+        });
         // The page starts under the top pills AND the chips while they show.
         mChipRow.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             if (b - t != ob - ot) {
