@@ -89,6 +89,27 @@ public final class MobileDownloadService extends Service {
         }
     }
 
+    /**
+     * MEETUBE(auto download): from a background worker. Android 12+ refuses a foreground start while
+     * the app is not in front; then the caller's thread drains the queue itself (no notification).
+     */
+    static void startOrDrain(Context context) {
+        DownloadRegistry registry = DownloadRegistry.instance(context);
+        if (registry.nextQueued() == null) {
+            return;
+        }
+        try {
+            start(context);
+            return;
+        } catch (RuntimeException e) {
+            Log.w(TAG, "background start refused, draining in the worker: " + e);
+        }
+        DownloadItem next;
+        while ((next = registry.nextQueued()) != null) {
+            new DownloadJob(context, next, registry, item -> { }).run();
+        }
+    }
+
     private static void start(Context context) {
         Intent intent = new Intent(context, MobileDownloadService.class).setAction(ACTION_START);
         ContextCompat.startForegroundService(context, intent);
