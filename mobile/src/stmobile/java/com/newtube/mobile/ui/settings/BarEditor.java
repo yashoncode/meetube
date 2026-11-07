@@ -150,7 +150,14 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ((TextView) view.findViewById(R.id.bar_tile_summary)).setText(summary(item));
         ImageView grip = view.findViewById(R.id.bar_tile_grip);
         grip.setImageResource(fixed ? R.drawable.ic_bar_lock : R.drawable.ic_bar_drag);
-        view.setAlpha(item == NavTabs.NONE ? 0.6f : 1f);
+        boolean homeOff = item == MediaGroup.TYPE_HOME && !NavTabs.showHome(mContext);
+        view.setAlpha(item == NavTabs.NONE || homeOff ? 0.6f : 1f);
+        if (item == MediaGroup.TYPE_HOME) { // MEETUBE(issue #213): Home stays first but a tap removes it
+            grip.setOnTouchListener(null);
+            view.setOnClickListener(v -> pick(holder.getBindingAdapterPosition()));
+            view.setClickable(true);
+            return;
+        }
         // The grip drags at once; a long press anywhere on the tile does too.
         grip.setOnTouchListener(fixed ? null : (v, event) -> {
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
@@ -176,6 +183,14 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     .option(c.getString(R.string.mobile_settings_search_place_bottom), false)
                     .option(c.getString(R.string.mobile_settings_search_place_top), true)
                     .bind(() -> NavTabs.searchOnTop(c), onTop -> NavTabs.setLayout(c, first, second, searchPosition, onTop)));
+            return;
+        }
+        if (mItems.get(position) == MediaGroup.TYPE_HOME) {
+            mPage.onRowClicked(SettingsRow.<Boolean>choice(c.getString(R.string.header_home))
+                    .option(c.getString(R.string.mobile_settings_bar_home_shown), true)
+                    .option(c.getString(R.string.mobile_settings_bar_home_removed),
+                            c.getString(R.string.mobile_settings_bar_home_removed_desc), false)
+                    .bind(() -> NavTabs.showHome(c), show -> NavTabs.setShowHome(c, show)));
             return;
         }
         int slot = 0;
@@ -307,7 +322,8 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         int bottomHeader = mItems.indexOf(BOTTOM_HEADER);
         for (int i = 0; i < mItems.size(); i++) {
             int item = mItems.get(i);
-            if (item == TOP_HEADER || item == BOTTOM_HEADER || item == NavTabs.NONE) {
+            if (item == TOP_HEADER || item == BOTTOM_HEADER || item == NavTabs.NONE
+                    || (item == MediaGroup.TYPE_HOME && !NavTabs.showHome(mContext))) {
                 continue;
             }
             (i < bottomHeader ? top : bottom).add(item);
@@ -430,7 +446,8 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private CharSequence summary(int item) {
         switch (item) {
             case MediaGroup.TYPE_HOME:
-                return mContext.getString(R.string.mobile_settings_bar_first);
+                return mContext.getString(NavTabs.showHome(mContext)
+                        ? R.string.mobile_settings_bar_home_summary : R.string.mobile_settings_bar_home_removed);
             case YOU:
                 return mContext.getString(R.string.mobile_settings_bar_last);
             case SEARCH:

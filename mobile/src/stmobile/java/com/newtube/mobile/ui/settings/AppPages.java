@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 import java.util.Map;
 
 /**
@@ -225,8 +226,6 @@ final class AppPages {
                 }),
                 132, Tiles.GRID, Tiles.LIST));
 
-        rows.add(startScreen(context));
-
         // MEETUBE(watch-look): the watch page compact (default) or as it was, and the player's buttons.
         rows.add(Tiles.of(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_watch_style))
                 .option(context.getString(R.string.mobile_settings_watch_style_compact),
@@ -406,12 +405,20 @@ final class AppPages {
     private static SettingsRow startScreen(Context context) {
         SidebarService sidebar = SidebarService.instance(context);
         SettingsRow.Choice<Integer> choice = SettingsRow.choice(context.getString(R.string.mobile_settings_start_screen));
-        int boot = sidebar.getBootSectionId();
+        // MEETUBE(issue #213): a removed Home is not offered; a start screen still set to it opens
+        // the tab that took Home's place (MobileBrowseActivity), so that is what the row shows.
+        boolean home = NavTabs.showHome(context);
+        int landing = NavTabs.landingSectionId(context);
+        Supplier<Integer> current = () -> {
+            int boot = sidebar.getBootSectionId();
+            return boot == MediaGroup.TYPE_HOME && !home && landing != NavTabs.NONE ? landing : boot;
+        };
+        int shown = current.get();
         for (Map.Entry<Integer, Integer> section : sidebar.getDefaultSections().entrySet()) {
             int sectionId = section.getValue();
-            boolean current = sectionId == boot;
-            if (!current && (sectionId == MediaGroup.TYPE_SHORTS || sectionId == MediaGroup.TYPE_SETTINGS
-                    || !sidebar.isSectionPinned(sectionId))) {
+            if (sectionId == MediaGroup.TYPE_SHORTS || sectionId == MediaGroup.TYPE_SETTINGS
+                    || (sectionId == MediaGroup.TYPE_HOME && !home)
+                    || (sectionId != shown && !sidebar.isSectionPinned(sectionId))) {
                 continue;
             }
             choice.option(context.getString(sectionTitle(section.getKey())), sectionId);
@@ -421,7 +428,7 @@ final class AppPages {
                 choice.option(item.getTitle(), item.getId());
             }
         }
-        return choice.bind(sidebar::getBootSectionId, sidebar::setBootSectionId);
+        return choice.bind(current, sidebar::setBootSectionId);
     }
 
     /**
@@ -516,6 +523,7 @@ final class AppPages {
                 MediaGroup.TYPE_USER_PLAYLISTS, MediaGroup.TYPE_MY_VIDEOS, MediaGroup.TYPE_CHANNEL_UPLOADS,
                 MediaGroup.TYPE_PLAYBACK_QUEUE, MediaGroup.TYPE_BLOCKED_CHANNELS};
 
+        rows.add(startScreen(context)); // MEETUBE(start screen): next to the bar it opens on
         rows.add(BarEditor.row(context)); // MEETUBE(bar editor): the bars as a stack to drag
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_tabs_bar_note)));
         // MEETUBE(bar reset): Home, Shorts, Search, Subs, You - Search in the bar, not on top.

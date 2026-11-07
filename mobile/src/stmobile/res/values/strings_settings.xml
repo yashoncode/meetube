@@ -112,6 +112,10 @@
     <string name="mobile_settings_hidden_watched">Watched videos</string>
     <string name="mobile_settings_hidden_watched_home">Hide watched videos on Home</string>
     <string name="mobile_settings_hidden_watched_subscriptions">Hide watched videos in Subscriptions</string>
+    <string name="mobile_settings_bar_home_summary">Always first. Tap to remove it</string>
+    <string name="mobile_settings_bar_home_shown">Shown</string>
+    <string name="mobile_settings_bar_home_removed">Removed</string>
+    <string name="mobile_settings_bar_home_removed_desc">No recommendations feed: the app opens on your first tab</string>
     <string name="mobile_settings_hidden_watched_later">Remove watched videos from Watch later</string>
     <string name="mobile_settings_hidden_watched_later_summary">Takes a video off your Watch later playlist once you finish it</string>
     <string name="mobile_settings_hidden_watched_note">Uses your YouTube watch history, so it needs you signed in.</string>
