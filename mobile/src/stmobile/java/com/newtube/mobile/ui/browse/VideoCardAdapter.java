@@ -416,6 +416,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         /** Where the last touch landed in the meta line: on the channel name or not. */
         private boolean mMetaTouchOnChannel;
 
+        Video video() { return mVideo; }
+        View thumbnailFrame() { return mThumbnailFrame; }
+        TextView badge() { return mBadge; }
         public VideoViewHolder(@NonNull View itemView, OnVideoClickListener clickListener) {
             super(itemView);
 
