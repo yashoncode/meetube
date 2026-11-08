@@ -220,7 +220,14 @@ final class ShortsOverlay {
             GlassDrawable.applyButton(mOverlay.findViewById(id), glass,
                     Math.round(4 * root.getResources().getDisplayMetrics().density), true); // the player's minimize disc
         }
-        GlassDrawable.apply(mOverlay.findViewById(R.id.mobile_shorts_header), glass, 0);
+        // MEETUBE(shorts header): no pill; the word itself is glass, frosted white that thins toward
+        // its foot (a vertical gradient over one line), with a soft shadow to read over any short.
+        android.widget.TextView header = mOverlay.findViewById(R.id.mobile_shorts_header);
+        float line = header.getLineHeight();
+        header.getPaint().setShader(new android.graphics.LinearGradient(0, 0, 0, line,
+                new int[] {0xFFFFFFFF, 0xE6FFFFFF, 0x80FFFFFF}, new float[] {0f, 0.45f, 1f},
+                android.graphics.Shader.TileMode.CLAMP));
+        header.setShadowLayer(6 * root.getResources().getDisplayMetrics().density, 0, 1, 0x66000000);
         // MEETUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
         mTitle.setOnClickListener(v -> mHost.openShortsDescription());
 
