@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.Nullable;
 import androidx.media3.common.AudioAttributes;
 import androidx.media3.common.C;
+import androidx.media3.common.MimeTypes;
 import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences;
 import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.DefaultRenderersFactory;
@@ -212,6 +213,15 @@ public class Media3PlayerInitializer {
                         .build())
                 .setMaxVideoSize(ceiling, ceiling)
                 .setExceedVideoConstraintsIfNecessary(true));
+
+        // MEETUBE(dolby): media3 keeps audio to what the output can play (stereo on a phone without
+        // an active spatializer), so YouTube's Dolby 5.1 / Atmos track never won. With the setting
+        // on and a Dolby decoder here, prefer it and let the decoder render it for this output.
+        if (AudioPreferences.isDolbyEnabled(mContext) && AudioPreferences.decodesDolby()) {
+            trackSelector.setParameters(trackSelector.buildUponParameters()
+                    .setPreferredAudioMimeTypes(MimeTypes.AUDIO_E_AC3_JOC, MimeTypes.AUDIO_E_AC3, MimeTypes.AUDIO_AC3)
+                    .setConstrainAudioChannelCountToDeviceCapabilities(false));
+        }
 
         return trackSelector;
     }
