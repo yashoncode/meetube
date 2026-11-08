@@ -223,6 +223,10 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mCommentsAfterFullscreen;
     /** The comments were opened from the vertical fullscreen: closing them goes back to it. */
     private boolean mFullAfterComments;
+    // MEETUBE(issue #217): the description from the vertical fullscreen, as the comments: the page
+    // comes back with the panel under the video, and the fullscreen returns when it closes.
+    private boolean mDescriptionAfterFullscreen;
+    private boolean mFullAfterDescription;
     /** Landscape comments: the panel in a column beside the video (layOutCommentsSide). */
     private boolean mCommentsSide;
     private boolean mChatSide; // MEETUBE(live chat, issue #32): the landscape video beside the chat column
@@ -1733,6 +1737,9 @@ public class MobilePlaybackActivity extends MobileActivity
                     mCommentsAfterFullscreen = false; // MEETUBE(fullscreen-actions)
                     OneShotPreDrawListener.add(mWatchRoot, this::onCommentsEntryClicked);
                 }
+            }
+            if (mDescriptionAfterFullscreen && !isTallMode()) { // MEETUBE(issue #217)
+                OneShotPreDrawListener.add(mWatchRoot, this::showDescriptionSheet);
             }
             // Portrait already presents the complete title immediately below the video. Repeating
             // it in the overlay squeezes five useful controls into half the top bar and makes the
@@ -10653,6 +10660,14 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         CharSequence likes = isCountUnset(mWatchLikeCount) ? null : mWatchLikeCount.getText();
         boolean shorts = mShorts != null && mShorts.isActive();
+        // MEETUBE(issue #217): upright fullscreen goes back to the page first, like its comments button.
+        if (mPortraitFull && !isLandscape() && !shorts) {
+            mDescriptionAfterFullscreen = true;
+            setPortraitFull(false);
+            return;
+        }
+        boolean fromFull = mDescriptionAfterFullscreen;
+        mDescriptionAfterFullscreen = false;
         DescriptionSheet.Extras extras = new DescriptionSheet.Extras();
         extras.transcript = !shorts && transcriptTrack() != null ? this::showTranscriptSheet : null;
         if (!shorts) {
@@ -10682,6 +10697,7 @@ public class MobilePlaybackActivity extends MobileActivity
             DescriptionSheet.bindPanel(mDescriptionPanel, mWatchTitle.getText(), likes, mDescriptionViews,
                     mDescriptionDate, mWatchDescription.getText(), extras);
             mDescriptionPanel.open();
+            mFullAfterDescription = fromFull;
             return;
         }
         showPlayerSheet(DescriptionSheet.create(this, mWatchTitle.getText(), likes, mDescriptionViews,
@@ -10763,6 +10779,10 @@ public class MobilePlaybackActivity extends MobileActivity
                 public void onPanelClosed() {
                     releaseSidePanelBinding(panel);
                     updateSidePanelsShown();
+                    if (panel == mDescriptionPanel && mFullAfterDescription) { // MEETUBE(issue #217)
+                        mFullAfterDescription = false;
+                        setPortraitFull(true);
+                    }
                 }
             });
             ViewCompat.setAccessibilityPaneTitle(panel.getSheet(), getString(titles[i]));
@@ -10823,6 +10843,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private void closeSidePanelImmediately(@Nullable CommentsPanelLayout panel) {
         if (panel != null) {
+            mFullAfterDescription = false; // closed for another panel, video or minimize: no fullscreen back
             releaseSidePanelBinding(panel);
             panel.closeImmediately();
             updateSidePanelsShown();
