@@ -509,6 +509,7 @@
     <string name="mobile_about_contributors_code">Код и переводы</string>
     <string name="mobile_about_contributors_built_on">Основано на</string>
     <string name="mobile_about_credit_zh_tw">Перевод на традиционный китайский (#14)</string>
+    <string name="mobile_about_credit_ru">Перевод на русский (#194)</string>
     <string name="mobile_about_credit_smarttube">SmartTube: плеер и серверная часть YouTube, на которых работает MeeTube</string>
     <string name="mobile_about_credit_newtube">NewTube: мобильное приложение, на основе которого появился MeeTube</string>
     <string name="mobile_about_credit_backdrop">Backdrop: эффект жидкого стекла на панелях</string>
