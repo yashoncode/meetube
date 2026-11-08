@@ -522,4 +522,46 @@
     <string name="mobile_settings_coffee_qr">UPI QR code</string>
     <string name="mobile_settings_coffee_scan">Or scan from another phone</string>
     <string name="mobile_settings_coffee_footer">Totally optional. A ⭐ on GitHub helps just as much ❤️</string>
+
+    <!-- MEETUBE(tv install): the phone walks through an ADB install on the TV. -->
+    <string name="mobile_settings_tv_title">Install on TV</string>
+    <string name="mobile_settings_tv_summary">Put MeeTube TV on your Android TV from this phone</string>
+    <string name="mobile_settings_tv_android">Google TV / Android TV</string>
+    <string name="mobile_settings_tv_fire">Fire TV</string>
+    <string name="mobile_settings_tv_step_one">1</string>
+    <string name="mobile_settings_tv_step_two">2</string>
+    <string name="mobile_settings_tv_step_three">3</string>
+    <string name="mobile_settings_tv_step_four">4</string>
+    <string name="mobile_settings_tv_developer">Turn on developer mode</string>
+    <string name="mobile_settings_tv_developer_android">On the TV: Settings › System › About, then click Android TV OS build 7 times until it says you’re a developer.</string>
+    <string name="mobile_settings_tv_developer_fire">On the TV: Settings › My Fire TV › About, then click your TV’s name 7 times.</string>
+    <string name="mobile_settings_tv_debugging">Turn on debugging</string>
+    <string name="mobile_settings_tv_debugging_android">Settings › System › Developer options › turn on USB debugging (some TVs call it ADB or network debugging).</string>
+    <string name="mobile_settings_tv_debugging_fire">Settings › My Fire TV › Developer options › turn on ADB debugging.</string>
+    <string name="mobile_settings_tv_find">Find your TV</string>
+    <string name="mobile_settings_tv_same_wifi">Keep this phone and the TV on the same Wi-Fi.</string>
+    <string name="mobile_settings_tv_search">Search my Wi-Fi</string>
+    <string name="mobile_settings_tv_searching">Searching…</string>
+    <string name="mobile_settings_tv_none_found">No TV answered. Check step 2, or type the TV’s IP (Settings › Network on the TV).</string>
+    <string name="mobile_settings_tv_found">Found %1$s. Tap an address below.</string>
+    <string name="mobile_settings_tv_ip">TV IP address</string>
+    <string name="mobile_settings_tv_ip_hint" translatable="false">192.168.1.20</string>
+    <string name="mobile_settings_tv_ip_invalid">Enter the TV’s IPv4 address, like %1$s</string>
+    <string name="mobile_settings_tv_install">Install</string>
+    <string name="mobile_settings_tv_install_button">Install MeeTube TV</string>
+    <string name="mobile_settings_tv_connecting">Connecting to %1$s…  Look at your TV and choose Allow (tick Always allow).</string>
+    <string name="mobile_settings_tv_finding_release">Finding the latest MeeTube TV…</string>
+    <string name="mobile_settings_tv_downloading">Downloading MeeTube TV %1$s… %2$s%%</string>
+    <string name="mobile_settings_tv_downloading_unknown">Downloading MeeTube TV %1$s…</string>
+    <string name="mobile_settings_tv_installing">Installing on your TV…</string>
+    <string name="mobile_settings_tv_done">Done! MeeTube TV is open on your TV 🎉</string>
+    <string name="mobile_settings_tv_unreachable">Couldn’t reach the TV. Is debugging on (step 2) and the IP right?</string>
+    <string name="mobile_settings_tv_auth_failed">The TV didn’t allow this phone. Try again and choose Allow on the TV.</string>
+    <string name="mobile_settings_tv_download_failed">Couldn’t download MeeTube TV. Check your internet.</string>
+    <string name="mobile_settings_tv_install_failed">The TV refused the install: %1$s</string>
+    <string name="mobile_settings_tv_unknown_error">Unknown error</string>
+    <string name="mobile_settings_tv_launch_failed">MeeTube TV is installed. Open it from your TV’s apps.</string>
+    <string name="mobile_settings_tv_busy">An install is already running. Give it a moment.</string>
+    <string name="mobile_settings_tv_permission">Allow local network access to find and connect to your TV.</string>
+    <string name="mobile_settings_tv_footer">You can turn debugging off on the TV afterwards.</string>
 </resources>

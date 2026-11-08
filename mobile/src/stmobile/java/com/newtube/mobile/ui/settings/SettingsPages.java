@@ -1,6 +1,7 @@
 package com.newtube.mobile.ui.settings;
 
 import android.content.Context;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -50,6 +51,7 @@ public final class SettingsPages {
     public static final String BACKUP = "backup";
     public static final String ADVANCED = "advanced";
     public static final String ABOUT = "about";
+    public static final String TV_INSTALL = "tv_install";
     public static final String ABOUT_REPORTERS = "about_reporters";
     public static final String ABOUT_CONTRIBUTORS = "about_contributors";
 
@@ -108,6 +110,8 @@ public final class SettingsPages {
                 return PlayerPages.advanced(context);
             case ABOUT:
                 return about(context);
+            case TV_INSTALL:
+                return Build.VERSION.SDK_INT >= 26 ? TvInstall.page(context) : root(context);
             case ABOUT_REPORTERS:
                 return AboutPeople.reporters(context);
             case ABOUT_CONTRIBUTORS:
@@ -156,6 +160,10 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_advanced_summary), ADVANCED));
         rows.add(SettingsRow.page(R.drawable.ic_settings_about, context.getString(R.string.mobile_settings_about),
                 versionLine(context), ABOUT));
+        if (Build.VERSION.SDK_INT >= 26) {
+            rows.add(SettingsRow.page(R.drawable.ic_settings_tv, context.getString(R.string.mobile_settings_tv_title),
+                    context.getString(R.string.mobile_settings_tv_summary), TV_INSTALL));
+        }
 
         return new Page(context.getString(R.string.header_settings), rows);
     }

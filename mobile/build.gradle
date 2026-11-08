@@ -457,6 +457,9 @@ dependencies {
     // :common module already declares for WebProxyDialog; the root build forces okhttpVersion.
     implementation 'com.squareup.okhttp3:okhttp:' + okhttpVersion
 
+    // MEETUBE(tv install): ADB over Wi-Fi to install MeeTube TV from the phone
+    implementation 'dev.mobile:dadb:2.0.0'
+
     // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.14'
 
     // ByeByeDPI fix
