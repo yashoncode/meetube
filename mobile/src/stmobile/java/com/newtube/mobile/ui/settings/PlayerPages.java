@@ -302,6 +302,11 @@ final class PlayerPages {
                 context.getString(R.string.mobile_settings_stable_volume_summary),
                 () -> AudioPreferences.isStableVolumeEnabled(context),
                 enabled -> AudioPreferences.setStableVolumeEnabled(context, enabled)));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_dolby),
+                context.getString(AudioPreferences.decodesDolby() ? R.string.mobile_settings_dolby_summary
+                        : R.string.mobile_settings_dolby_summary_none),
+                () -> AudioPreferences.isDolbyEnabled(context),
+                enabled -> AudioPreferences.setDolbyEnabled(context, enabled)));
         rows.add(playerVolume(context, PlayerData.instance(context)));
         rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_equalizer),
                 () -> EqualizerSheet.summary(context), EqualizerSheet::show));

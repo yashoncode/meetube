@@ -488,6 +488,9 @@
     <!-- MEETUBE(issue #177): phone player audio. -->
     <string name="mobile_settings_stable_volume">Stable volume</string>
     <string name="mobile_settings_stable_volume_summary">Allow YouTube\'s compressed audio to soften loud and quiet parts. Applies to the next video you open</string>
+    <string name="mobile_settings_dolby">Dolby Atmos</string>
+    <string name="mobile_settings_dolby_summary">Play the Dolby Atmos or 5.1 surround track when a video has one. Applies to the next video you open</string>
+    <string name="mobile_settings_dolby_summary_none">This phone has no Dolby decoder, so videos keep their stereo track</string>
     <string name="mobile_settings_equalizer">Equalizer</string>
     <string name="mobile_settings_equalizer_enable">Use equalizer</string>
     <string name="mobile_settings_equalizer_custom">Custom</string>
