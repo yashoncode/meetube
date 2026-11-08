@@ -80,11 +80,13 @@
          push an action off a narrow screen. -->
     <!-- NEWTUBE(touch): no top margin - the meta row above (48dp tall now) and the pills'
          own 6dp inset hold the old spacing. -->
-    <HorizontalScrollView
+    <com.newtube.mobile.ui.common.ShadeScrollView
         android:id="@+id/mobile_watch_actions_scroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="0dp"
+        android:fadingEdgeLength="32dp"
+        android:requiresFadingEdge="horizontal"
         android:overScrollMode="never"
         android:scrollbars="none">
 
@@ -304,7 +306,7 @@
 
     </LinearLayout>
 
-    </HorizontalScrollView>
+    </com.newtube.mobile.ui.common.ShadeScrollView>
 
     <!-- Channel row: avatar + name/subs + Subscribe. Sections separate by
          whitespace, not hairline dividers (matches current YouTube).
