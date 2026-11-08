@@ -89,6 +89,7 @@ public class GlassChipTrack extends HorizontalScrollView {
         mSimple = NavLens.lowEnd(context);
         mSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         setHorizontalScrollBarEnabled(false);
+        setFillViewport(true); // a few chips share the bar's width (weights below); many still scroll
         setOverScrollMode(OVER_SCROLL_NEVER);
         setHorizontalFadingEdgeEnabled(true); // the chips melt away at a side that has more to scroll to
         setFadingEdgeLength(Math.round(28 * mDp));
@@ -159,7 +160,7 @@ public class GlassChipTrack extends HorizontalScrollView {
             chip.setPadding(pad, 0, pad, 0);
             int index = i;
             chip.setOnClickListener(v -> pick(index));
-            mRow.addView(chip, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, Math.round(CHIP_H * mDp)));
+            mRow.addView(chip, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, Math.round(CHIP_H * mDp), 1f));
         }
         recolor();
     }

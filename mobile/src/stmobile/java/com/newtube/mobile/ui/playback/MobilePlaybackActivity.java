@@ -347,6 +347,9 @@ public class MobilePlaybackActivity extends MobileActivity
      * panel keep reading the real suggestions.
      */
     private View mRelatedChips;
+    /** MEETUBE(glass segmented): the chips as a segment bar, in place of mRelatedChips. */
+    private com.newtube.mobile.ui.common.GlassChipTrack mRelatedTrack;
+    private final List<TextView> mTrackChips = new ArrayList<>();
     private TextView mAllChip;
     private TextView mChannelChip;
     private TextView mNewChip;
@@ -1048,6 +1051,13 @@ public class MobilePlaybackActivity extends MobileActivity
         mRelatedSkeleton = findViewById(R.id.mobile_watch_related_skeleton);
         mWatchRelated = findViewById(R.id.mobile_watch_related);
         mRelatedChips = findViewById(R.id.mobile_watch_related_chips);
+        mRelatedTrack = findViewById(R.id.mobile_watch_related_track);
+        mRelatedTrack.setGlassSource(null);
+        mRelatedTrack.setOnPicked(index -> {
+            if (index < mTrackChips.size()) {
+                onRelatedChip(mTrackChips.get(index));
+            }
+        });
         mAllChip = findViewById(R.id.mobile_watch_chip_all);
         mChannelChip = findViewById(R.id.mobile_watch_chip_channel);
         mNewChip = findViewById(R.id.mobile_watch_chip_new);
@@ -11435,6 +11445,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mPickedChip = mAllChip;
         if (mRelatedChips != null) {
             mRelatedChips.setVisibility(View.GONE);
+            mRelatedTrack.setVisibility(View.GONE);
             syncRelatedChips();
             mRelatedChips.scrollTo(0, 0);
         }
@@ -11447,7 +11458,11 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mChipMetadata = metadata;
         mChannelChip.setText(getString(R.string.mobile_watch_chip_channel, metadata.getAuthor()));
-        mRelatedChips.setVisibility(View.VISIBLE);
+        boolean segment = com.newtube.mobile.ui.common.Glass.chipStyle(this)
+                == com.newtube.mobile.ui.common.Glass.CHIPS_SEGMENT;
+        mRelatedChips.setVisibility(segment ? View.GONE : View.VISIBLE);
+        mRelatedTrack.setVisibility(segment ? View.VISIBLE : View.GONE);
+        syncRelatedChips(); // the track's labels carry the channel's name
     }
 
     private void onRelatedChip(TextView chip) {
@@ -11514,6 +11529,19 @@ public class MobilePlaybackActivity extends MobileActivity
                 chip.setBackground((android.graphics.drawable.Drawable) chip.getTag(R.id.mobile_watch_related_chips));
             }
             chip.setTextColor(getColorInt(picked ? R.color.mobile_color_background : R.color.mobile_color_on_surface));
+        }
+        // The segment bar shows the same chips: the visible ones, the picked one on the pill.
+        if (mRelatedTrack != null) {
+            mTrackChips.clear();
+            List<CharSequence> labels = new ArrayList<>();
+            for (TextView chip : mRelatedChipViews) {
+                if (chip.getVisibility() == View.VISIBLE) {
+                    mTrackChips.add(chip);
+                    labels.add(chip.getText());
+                }
+            }
+            mRelatedTrack.setChips(labels);
+            mRelatedTrack.setSelected(mTrackChips.indexOf(mPickedChip));
         }
     }
 
