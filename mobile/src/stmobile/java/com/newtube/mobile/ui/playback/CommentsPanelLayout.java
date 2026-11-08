@@ -356,8 +356,9 @@ public class CommentsPanelLayout extends FrameLayout implements NestedScrollingP
     // ---------------------------------------------------------------------------------
 
     private boolean isInHeader(MotionEvent ev) {
-        float top = mSheet.getTop() + mSheet.getTranslationY() + mHeader.getTop();
-        return ev.getY() >= top && ev.getY() <= top + mHeader.getHeight();
+        // MEETUBE(issue #218): from the sheet's top edge, so the drag handle above the header counts.
+        float top = mSheet.getTop() + mSheet.getTranslationY();
+        return ev.getY() >= top && ev.getY() <= top + mHeader.getBottom();
     }
 
     @Override
