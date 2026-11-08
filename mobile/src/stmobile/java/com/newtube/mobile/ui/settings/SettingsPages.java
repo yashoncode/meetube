@@ -230,8 +230,7 @@ public final class SettingsPages {
         }
         card.findViewById(R.id.about_avatar).setContentDescription(context.getString(R.string.mobile_about_made_by,
                 context.getString(R.string.mobile_about_dev_name)));
-        card.findViewById(R.id.about_coffee).setOnClickListener(
-                v -> Utils.openLinkExt(context, context.getString(R.string.mobile_settings_coffee_url)));
+        card.findViewById(R.id.about_coffee).setOnClickListener(v -> CoffeeSheet.show(context));
         card.findViewById(R.id.about_star).setOnClickListener(v -> AboutShareRows.star(context));
         card.findViewById(R.id.about_share).setOnClickListener(v -> AboutShareRows.share(context));
         card.findViewById(R.id.about_log).setOnClickListener(v -> DiagnosticLog.share(context));
