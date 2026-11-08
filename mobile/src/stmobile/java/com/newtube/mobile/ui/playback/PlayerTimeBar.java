@@ -171,6 +171,8 @@ public class PlayerTimeBar extends View implements TimeBar {
 
     private boolean mScrubbing;
     private boolean mDotHidden;
+    /** MEETUBE(seek thumb): the user's picture in place of the dot, or null. */
+    @Nullable private android.graphics.drawable.Drawable mThumb;
     private long mScrubPosition;
     /** Where playback was when the drag began: the cancel spot. */
     private long mScrubOrigin;
@@ -518,8 +520,16 @@ public class PlayerTimeBar extends View implements TimeBar {
         if (radius > 0.5f && hasDuration) {
             float restRadius = dp(SCRUBBER_DP) / 2f;
             float cx = Math.max(left + restRadius, Math.min(right - restRadius, playedX));
-            mPaint.setColor(PLAYED_COLOR);
-            canvas.drawCircle(cx, (top + bottom) / 2f, radius, mPaint);
+            if (mThumb != null) {
+                // ponytail: drawn square at 2x the dot; a wide picture is squeezed into it.
+                int half = Math.round(radius * 2f);
+                int cy = Math.round((top + bottom) / 2f);
+                mThumb.setBounds(Math.round(cx) - half, cy - half, Math.round(cx) + half, cy + half);
+                mThumb.draw(canvas);
+            } else {
+                mPaint.setColor(PLAYED_COLOR);
+                canvas.drawCircle(cx, (top + bottom) / 2f, radius, mPaint);
+            }
         }
     }
 
@@ -981,8 +991,29 @@ public class PlayerTimeBar extends View implements TimeBar {
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mThumb = SeekThumb.load(getContext()); // picked up again each time the player opens
+        if (mThumb != null) {
+            mThumb.setCallback(this);
+        }
+    }
+
+    @Override
+    protected boolean verifyDrawable(android.graphics.drawable.Drawable who) {
+        return who == mThumb || super.verifyDrawable(who);
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        if (mThumb != null) {
+            mThumb.setCallback(null);
+            if (mThumb instanceof android.graphics.drawable.Animatable) {
+                ((android.graphics.drawable.Animatable) mThumb).stop();
+            }
+            mThumb = null;
+        }
         endTouch(true);
         mKeyHandler.removeCallbacks(mStopKeyScrub);
     }
