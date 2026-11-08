@@ -47,6 +47,8 @@
          primitives, which only the Vibrator plays - View.performHapticFeedback has no way to ask
          for them. Normal, auto-granted permission. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- MEETUBE(tv install): finding and reaching the TV on the Wi-Fi (asked for on Android 17+). -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <!-- The in-app updater hands its APK straight to Android's installer (AppUpdates.systemInstaller):
          from Android 11 these queries make the installers visible, so apps that also open APK files
