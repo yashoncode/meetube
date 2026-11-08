@@ -219,6 +219,8 @@ public class MobileBrowseActivity extends MobileActivity
     /** MEETUBE(you page): the You page's History row, fetched each time the page opens. */
     @Nullable private io.reactivex.rxjava3.disposables.Disposable mYouHistoryAction;
     private VideoCardAdapter mYouHistoryAdapter;
+    /** MEETUBE(issue #215): the History row is to land at its start once this visit's lists are in. */
+    private boolean mYouHistoryToStart;
     @Nullable private List<Video> mSubsChannels;
     // MEETUBE(issue #87): Video holds its group weakly; keep the strip's menu context alive.
     @Nullable private VideoGroup mSubsChannelsGroup;
@@ -2059,6 +2061,17 @@ public class MobileBrowseActivity extends MobileActivity
         RecyclerView historyList = findViewById(R.id.mobile_you_history_list);
         historyList.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
         historyList.setAdapter(mYouHistoryAdapter);
+        // MEETUBE(issue #215): no fades or slides when the fresh list replaces the cached one; they
+        // blanked the first card for a moment and crossfaded titles on every visit.
+        historyList.setItemAnimator(null);
+        historyList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    mYouHistoryToStart = false; // the user's own scroll wins over the landing
+                }
+            }
+        });
     }
 
     /** MEETUBE(you page): History's videos for its row - the last ones seen at once, then fresh ones. */
@@ -2077,6 +2090,7 @@ public class MobileBrowseActivity extends MobileActivity
         ((TextView) findViewById(R.id.mobile_you_history_title)).setText(history.getTitle());
         // MEETUBE(issue #168): the row opens at its start; it kept the last visit's scroll for a frame.
         ((RecyclerView) findViewById(R.id.mobile_you_history_list)).scrollToPosition(0);
+        mYouHistoryToStart = true;
         List<Video> cached = FeedCache.get(MediaGroup.TYPE_HISTORY);
         showYouHistory(cached);
         com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mYouHistoryAction);
@@ -2100,8 +2114,12 @@ public class MobileBrowseActivity extends MobileActivity
         }
         RecyclerView list = findViewById(R.id.mobile_you_history_list);
         list.setVisibility(shown.isEmpty() ? View.GONE : View.VISIBLE);
+        // MEETUBE(issue #215): decide before the swap. A card inserted in front kept the old first card
+        // anchored at the left edge, so the row came back one video in, the same one each time, and
+        // the post-swap check saw a row that could scroll left and left it there.
+        boolean toStart = mYouHistoryToStart || !list.canScrollHorizontally(-1);
         mYouHistoryAdapter.submitList(shown, () -> {
-            if (!list.canScrollHorizontally(-1)) {
+            if (toStart) {
                 list.scrollToPosition(0); // a video just watched lands in front, not off the left edge
             }
         });
