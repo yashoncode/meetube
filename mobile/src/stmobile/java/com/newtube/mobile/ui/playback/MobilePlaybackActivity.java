@@ -1766,14 +1766,47 @@ public class MobilePlaybackActivity extends MobileActivity
         lp.setMargins(margin, margin, margin, margin);
         area.setLayoutParams(lp);
         LiveChatSheet.roundCard(area, side);
+        // MEETUBE(issue #214): behind a dragged panel, the video's own black, not a grey block.
+        area.setBackgroundColor(side ? Color.BLACK : Color.TRANSPARENT);
     }
 
     /** The comments column beside the fullscreen video, or the video alone again. */
     private void setCommentsSide(boolean side) {
         if (mCommentsSide != side && (!side || isLandscape())) {
             mCommentsSide = side;
+            // MEETUBE(issue #214): the picture glides aside as the panel comes up (and back as it
+            // goes), as it does for the description card, instead of jumping first.
+            ViewGroup frame = mPlayerView != null ? mPlayerView.getContentFrame() : null;
+            int[] at = new int[2];
+            float oldW = 0f, oldCx = 0f, oldCy = 0f;
+            if (frame != null && frame.getWidth() > 0) {
+                frame.animate().cancel();
+                frame.getLocationOnScreen(at);
+                oldW = frame.getWidth() * frame.getScaleX();
+                oldCx = at[0] + oldW / 2f;
+                oldCy = at[1] + frame.getHeight() * frame.getScaleY() / 2f;
+                frame.setScaleX(1f);
+                frame.setScaleY(1f);
+                frame.setTranslationX(0f);
+                frame.setTranslationY(0f);
+            }
             applyWatchLayoutForOrientation(Configuration.ORIENTATION_LANDSCAPE);
             setResizeMode(PlayerData.instance(this).getResizeMode()); // fit beside the comments
+            if (frame != null && oldW > 0f) {
+                float w = oldW, cx = oldCx, cy = oldCy;
+                OneShotPreDrawListener.add(frame, () -> {
+                    if (frame.getWidth() == 0) {
+                        return;
+                    }
+                    frame.getLocationOnScreen(at);
+                    frame.setScaleX(w / frame.getWidth());
+                    frame.setScaleY(w / frame.getWidth());
+                    frame.setTranslationX(cx - (at[0] + frame.getWidth() / 2f));
+                    frame.setTranslationY(cy - (at[1] + frame.getHeight() / 2f));
+                    frame.animate().scaleX(1f).scaleY(1f).translationX(0f).translationY(0f)
+                            .setDuration(Motion.ENTER_MS).setInterpolator(Motion.STANDARD).start();
+                });
+            }
         }
     }
 
@@ -10123,6 +10156,11 @@ public class MobilePlaybackActivity extends MobileActivity
 
         @Override
         public void onCommentsPanelMoved(float gone) {
+            // MEETUBE(issue #214): beside the video, the card's rim leaves with the panel.
+            View area = mCommentsSide ? findViewById(R.id.mobile_watch_area) : null;
+            if (area != null && area.getForeground() != null) {
+                area.getForeground().setAlpha(Math.round(255 * (1f - gone)));
+            }
             // MEETUBE(shorts): as the comments slide the short grows or shrinks with them.
             followShortsComments(gone);
         }
