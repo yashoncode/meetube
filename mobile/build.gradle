@@ -224,6 +224,10 @@ android {
         debug {
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
+                // -PsideBySide: a debug build next to the daily app, not over it.
+                if (project.hasProperty('sideBySide')) {
+                    applicationIdSuffix ".debug"
+                }
             } else {
                 // No keystore.properties on this machine, so debug falls back to the auto-generated
                 // debug key and can NOT replace an installed release build (INSTALL_FAILED_UPDATE_
