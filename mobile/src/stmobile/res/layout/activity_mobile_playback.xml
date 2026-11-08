@@ -165,7 +165,7 @@
                     android:layout_marginStart="104dp"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="148dp"
-                    android:background="?attr/selectableItemBackground"
+                    android:background="@drawable/bg_mobile_menu_row"
                     android:ellipsize="end"
                     android:gravity="center_vertical|start"
                     android:maxLines="2"
@@ -470,18 +470,27 @@
 
                 </LinearLayout>
 
-                <!-- MEETUBE(more videos): a bare up chevron beside the actions pill, saying the
-                     video swipes up for More videos (no button: the swipe is the way in). -->
-                <ImageView
+                <!-- MEETUBE(more videos, issue #196): bottom right of the landscape controls, a tap
+                     raises the same panel the swipe up does. -->
+                <TextView
                     android:id="@+id/mobile_player_more_hint"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:alpha="0.8"
-                    android:importantForAccessibility="no"
-                    android:padding="8dp"
-                    android:rotation="180"
-                    android:src="@drawable/ic_chips_expand"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_mobile_player_chapter"
+                    android:clickable="true"
+                    android:drawablePadding="4dp"
+                    android:drawableStart="@drawable/ic_mobile_more_videos_up"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:minHeight="36dp"
+                    android:paddingHorizontal="12dp"
+                    android:shadowColor="#80000000"
+                    android:shadowRadius="3"
+                    android:text="@string/mobile_player_more_videos"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp"
                     android:visibility="gone" />
 
                 <!-- MEETUBE(lock, issue #98): fullscreen only (applyControlsInsets); locks out every
@@ -496,23 +505,16 @@
 
             </FrameLayout>
 
-            <!-- MEETUBE(lock): the one thing a locked player answers; a tap anywhere shows it. It
-                 says so, where the lock button is only a padlock. Placed by FloatingLock too. -->
-            <TextView
+            <!-- MEETUBE(lock): the one thing a locked player answers; a tap anywhere shows it. Icon
+                 only: the lock button's open padlock turns into this shut one, and a tap unlocks.
+                 Placed by FloatingLock too. -->
+            <com.newtube.mobile.ui.playback.PlayerButton
                 android:id="@+id/mobile_player_unlock"
-                android:layout_width="wrap_content"
-                android:layout_height="44dp"
+                style="@style/MobilePlayerLock"
                 android:layout_gravity="top|left"
-                android:drawablePadding="8dp"
-                android:gravity="center_vertical"
-                android:maxLines="1"
-                android:paddingStart="12dp"
-                android:paddingEnd="16dp"
-                android:text="@string/mobile_player_locked"
-                android:textColor="@color/mobile_player_on_video"
-                android:textSize="14sp"
-                android:visibility="gone"
-                app:drawableStartCompat="@drawable/ic_player_locked" />
+                android:contentDescription="@string/mobile_player_locked"
+                android:src="@drawable/ic_player_locked"
+                android:visibility="gone" />
 
             <!-- NEWTUBE(seek bar): the seek bar, YouTube-style - outside the controls overlay so that
                  in portrait it stays on the video's bottom edge as a thin progress line while the
@@ -524,6 +526,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/mobile_player_bar_height"
                 android:layout_gravity="bottom" />
+
+            <!-- While the bar is dragged: the frames around the finger roll by, the time flies in big. -->
+            <com.newtube.mobile.ui.playback.SeekFilmstrip
+                android:id="@+id/mobile_player_seek_filmstrip"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
 
             <!-- While the bar is dragged: the time under the finger and its chapter, in a pill above
                  the bar (the other controls step aside). -->
@@ -1074,6 +1083,15 @@
                     </LinearLayout>
 
                 </HorizontalScrollView>
+
+                <!-- MEETUBE(glass segmented): the same chips as one glass bar, when Chips style is Segment. -->
+                <com.newtube.mobile.ui.common.GlassChipTrack
+                    android:id="@+id/mobile_watch_related_track"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginHorizontal="@dimen/mobile_watch_content_padding"
+                    android:layout_marginVertical="6dp"
+                    android:visibility="gone" />
 
                 <include
                     layout="@layout/mobile_watch_related_skeleton"

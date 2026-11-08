@@ -99,6 +99,11 @@ public final class DownloadItem {
         return item;
     }
 
+    public static DownloadItem create(String videoId, String title, @Nullable String author,
+                                      @Nullable String thumbUrl, DownloadOption option) {
+        return create(videoId, title, author, thumbUrl, option, null);
+    }
+
     public boolean isAudioOnly() {
         return kind == DownloadOption.KIND_AUDIO;
     }

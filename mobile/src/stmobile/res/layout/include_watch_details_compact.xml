@@ -167,7 +167,7 @@
 
         </FrameLayout>
 
-        <HorizontalScrollView
+        <com.newtube.mobile.ui.common.ShadeScrollView
             android:id="@+id/mobile_watch_actions_scroll"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -341,7 +341,7 @@
 
             </LinearLayout>
 
-        </HorizontalScrollView>
+        </com.newtube.mobile.ui.common.ShadeScrollView>
 
     </LinearLayout>
 

@@ -23,6 +23,7 @@ public final class NavTabs {
     private static final String PREFS = "meetube_nav_tabs";
     private static final String[] KEYS = {"before_search", "after_search"}; // the names from when Search sat between
     private static final String KEY_LABELS = "labels";
+    private static final String KEY_HOME = "home";
     private static final String KEY_BRAND_NAME = "brand_name";
     private static final String KEY_SEARCH_ON_TOP = "search_on_top";
     private static final String KEY_SEARCH_POSITION = "search_position";
@@ -46,6 +47,35 @@ public final class NavTabs {
             editor.putInt(KEYS[other], get(context, slot));
         }
         editor.apply();
+    }
+
+    /**
+     * MEETUBE(issue #213): Settings > Customization > Tabs, a tap on Home - off, the bar has no Home
+     * and the app opens on its first tab that is a feed (else You), for a feed-free app.
+     */
+    public static boolean showHome(Context context) {
+        return prefs(context).getBoolean(KEY_HOME, true);
+    }
+
+    public static void setShowHome(Context context, boolean show) {
+        prefs(context).edit().putBoolean(KEY_HOME, show).apply();
+    }
+
+    /**
+     * The tab Home's place goes to: Home, or with Home removed the first bar tab that is a feed
+     * (Shorts is a player), else {@link #NONE} (You).
+     */
+    public static int landingSectionId(Context context) {
+        if (showHome(context)) {
+            return MediaGroup.TYPE_HOME;
+        }
+        for (int slot : new int[] {FIRST, SECOND}) {
+            int id = get(context, slot);
+            if (id != NONE && id != MediaGroup.TYPE_SHORTS) {
+                return id;
+            }
+        }
+        return NONE;
     }
 
     /** MEETUBE(nav labels): Settings > Customization > Tab names - the names under the bar's icons. */

@@ -223,6 +223,13 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mCommentsAfterFullscreen;
     /** The comments were opened from the vertical fullscreen: closing them goes back to it. */
     private boolean mFullAfterComments;
+    // MEETUBE(issue #217): the description from the vertical fullscreen, as the comments: the page
+    // comes back with the panel under the video, and the fullscreen returns when it closes.
+    private boolean mDescriptionAfterFullscreen;
+    private boolean mFullAfterDescription;
+    // MEETUBE(issue #219): the Chapters list does the same from the vertical fullscreen.
+    private boolean mChaptersAfterFullscreen;
+    private boolean mFullAfterChapters;
     /** Landscape comments: the panel in a column beside the video (layOutCommentsSide). */
     private boolean mCommentsSide;
     private boolean mChatSide; // MEETUBE(live chat, issue #32): the landscape video beside the chat column
@@ -347,6 +354,9 @@ public class MobilePlaybackActivity extends MobileActivity
      * panel keep reading the real suggestions.
      */
     private View mRelatedChips;
+    /** MEETUBE(glass segmented): the chips as a segment bar, in place of mRelatedChips. */
+    private com.newtube.mobile.ui.common.GlassChipTrack mRelatedTrack;
+    private final List<TextView> mTrackChips = new ArrayList<>();
     private TextView mAllChip;
     private TextView mChannelChip;
     private TextView mNewChip;
@@ -393,6 +403,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private final List<Video> mChapterVideos = new ArrayList<>();
     /** Shown above the seek bar ONLY while scrubbing: a pill with the time and chapter under the finger. */
     private TextView mScrubChapterView;
+    private SeekFilmstrip mSeekFilmstrip;
     /**
      * NEWTUBE(chapters, issue #13): above the seek bar while the controls are up and the bar is not
      * being dragged - the playing chapter's title; a tap opens the Chapters list (ChaptersSheet).
@@ -1047,6 +1058,13 @@ public class MobilePlaybackActivity extends MobileActivity
         mRelatedSkeleton = findViewById(R.id.mobile_watch_related_skeleton);
         mWatchRelated = findViewById(R.id.mobile_watch_related);
         mRelatedChips = findViewById(R.id.mobile_watch_related_chips);
+        mRelatedTrack = findViewById(R.id.mobile_watch_related_track);
+        mRelatedTrack.setGlassSource(null);
+        mRelatedTrack.setOnPicked(index -> {
+            if (index < mTrackChips.size()) {
+                onRelatedChip(mTrackChips.get(index));
+            }
+        });
         mAllChip = findViewById(R.id.mobile_watch_chip_all);
         mChannelChip = findViewById(R.id.mobile_watch_chip_channel);
         mNewChip = findViewById(R.id.mobile_watch_chip_new);
@@ -1180,6 +1198,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mCommentTeaserText = findViewById(R.id.mobile_watch_comment_text);
         mWatchChatEntry = findViewById(R.id.mobile_watch_chat_entry);
         mScrubChapterView = findViewById(R.id.mobile_player_scrub_chapter);
+        mSeekFilmstrip = findViewById(R.id.mobile_player_seek_filmstrip);
         mChapterButton = findViewById(R.id.mobile_player_chapter);
         mChapterButton.setOnClickListener(v -> showChaptersSheet());
     }
@@ -1279,7 +1298,9 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerView.setOnClickListener(v -> {
             if (isShortsMode()) {
                 mVideoArea.removeCallbacks(mShortsSingleTap);
-                mVideoArea.postDelayed(mShortsSingleTap, 260);
+                // MEETUBE(issue #216): from the release, about the rest of the system's 300 ms
+                // double-tap window (counted from the touch down), so a pause follows the finger.
+                mVideoArea.postDelayed(mShortsSingleTap, 200);
                 return;
             }
             if (mMoreVideos != null && mMoreVideos.isShown()) {
@@ -1720,6 +1741,12 @@ public class MobilePlaybackActivity extends MobileActivity
                     OneShotPreDrawListener.add(mWatchRoot, this::onCommentsEntryClicked);
                 }
             }
+            if (mDescriptionAfterFullscreen && !isTallMode()) { // MEETUBE(issue #217)
+                OneShotPreDrawListener.add(mWatchRoot, this::showDescriptionSheet);
+            }
+            if (mChaptersAfterFullscreen && !isTallMode()) { // MEETUBE(issue #219)
+                OneShotPreDrawListener.add(mWatchRoot, this::showChaptersSheet);
+            }
             // Portrait already presents the complete title immediately below the video. Repeating
             // it in the overlay squeezes five useful controls into half the top bar and makes the
             // player look crowded, especially for two-line titles. The vertical fullscreen has no
@@ -1754,14 +1781,47 @@ public class MobilePlaybackActivity extends MobileActivity
         lp.setMargins(margin, margin, margin, margin);
         area.setLayoutParams(lp);
         LiveChatSheet.roundCard(area, side);
+        // MEETUBE(issue #214): behind a dragged panel, the video's own black, not a grey block.
+        area.setBackgroundColor(side ? Color.BLACK : Color.TRANSPARENT);
     }
 
     /** The comments column beside the fullscreen video, or the video alone again. */
     private void setCommentsSide(boolean side) {
         if (mCommentsSide != side && (!side || isLandscape())) {
             mCommentsSide = side;
+            // MEETUBE(issue #214): the picture glides aside as the panel comes up (and back as it
+            // goes), as it does for the description card, instead of jumping first.
+            ViewGroup frame = mPlayerView != null ? mPlayerView.getContentFrame() : null;
+            int[] at = new int[2];
+            float oldW = 0f, oldCx = 0f, oldCy = 0f;
+            if (frame != null && frame.getWidth() > 0) {
+                frame.animate().cancel();
+                frame.getLocationOnScreen(at);
+                oldW = frame.getWidth() * frame.getScaleX();
+                oldCx = at[0] + oldW / 2f;
+                oldCy = at[1] + frame.getHeight() * frame.getScaleY() / 2f;
+                frame.setScaleX(1f);
+                frame.setScaleY(1f);
+                frame.setTranslationX(0f);
+                frame.setTranslationY(0f);
+            }
             applyWatchLayoutForOrientation(Configuration.ORIENTATION_LANDSCAPE);
             setResizeMode(PlayerData.instance(this).getResizeMode()); // fit beside the comments
+            if (frame != null && oldW > 0f) {
+                float w = oldW, cx = oldCx, cy = oldCy;
+                OneShotPreDrawListener.add(frame, () -> {
+                    if (frame.getWidth() == 0) {
+                        return;
+                    }
+                    frame.getLocationOnScreen(at);
+                    frame.setScaleX(w / frame.getWidth());
+                    frame.setScaleY(w / frame.getWidth());
+                    frame.setTranslationX(cx - (at[0] + frame.getWidth() / 2f));
+                    frame.setTranslationY(cy - (at[1] + frame.getHeight() / 2f));
+                    frame.animate().scaleX(1f).scaleY(1f).translationX(0f).translationY(0f)
+                            .setDuration(Motion.ENTER_MS).setInterpolator(Motion.STANDARD).start();
+                });
+            }
         }
     }
 
@@ -2966,7 +3026,10 @@ public class MobilePlaybackActivity extends MobileActivity
         lp.setMarginEnd(dp(full ? 16 : 148));
         mTitleView.setLayoutParams(lp);
         // Landscape: centred on the top row's buttons (issue #165); upright: its first line at the top.
+        // Both: TextView.setMinHeight leaves the View-level floor (the layout's minHeight) in place,
+        // which kept a one-line title's box 48dp tall (issue #205).
         mTitleView.setMinHeight(full ? 0 : dp(48));
+        mTitleView.setMinimumHeight(full ? 0 : dp(48));
         mTitleView.setGravity((full ? Gravity.TOP : Gravity.CENTER_VERTICAL) | Gravity.START);
         mPlayerAuthor.setVisibility(full ? View.VISIBLE : View.GONE);
     }
@@ -2989,7 +3052,7 @@ public class MobilePlaybackActivity extends MobileActivity
         int lift = inline ? 0 : dp(8);
         // MEETUBE(fullscreen-actions): the actions pill takes the bar's place and the bar, with
         // everything over it, rises above the pill. The chevron beside fullscreen flips it.
-        boolean actions = !inline && mActionsShown;
+        boolean actions = !inline && mActionsShown && !mLockedChrome;
         if (mActionsRow != null && mActionsToggle != null) {
             mActionsRow.setVisibility(actions ? View.VISIBLE : View.GONE);
             setMargins(mActionsRow, dp(8), 0, 0, lift);
@@ -6807,8 +6870,13 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean show = isLandscape() && mActionsRow != null && mActionsRow.getVisibility() == View.VISIBLE
                 && !mRelatedVideos.isEmpty();
         hint.setVisibility(show ? View.VISIBLE : View.GONE);
+        hint.setOnClickListener(v -> {
+            if (mMoreVideos != null && mMoreVideos.begin()) {
+                mMoreVideos.open();
+            }
+        });
         if (show) {
-            setMargins(hint, 0, 0, 0, ((ViewGroup.MarginLayoutParams) mActionsRow.getLayoutParams()).bottomMargin);
+            setMargins(hint, 0, 0, dp(12), ((ViewGroup.MarginLayoutParams) mActionsRow.getLayoutParams()).bottomMargin);
         }
     }
 
@@ -7112,6 +7180,9 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         mLockedChrome = locked;
+        // Locked: no dot (nothing takes a touch) and no room kept for the hidden actions row (#201).
+        mTimeBar.setDotHidden(locked);
+        applyControlsInsets();
         if (!locked) {
             for (java.util.Map.Entry<View, Float> hidden : mLockedAlphas.entrySet()) {
                 hidden.getKey().setAlpha(hidden.getValue());
@@ -7811,7 +7882,9 @@ public class MobilePlaybackActivity extends MobileActivity
     /** Compute the video transform (pivot 0,0) that maps the video area onto the mini card. */
     private void computeMorphTarget() {
         float density = getResources().getDisplayMetrics().density;
-        float cardW = getResources().getDimension(R.dimen.meetube_mini_width); // a tablet's is bigger
+        float picW = MiniSize.width(this); // a tablet's is bigger, the setting scales it
+        float cardW = MiniSize.cardWidth(this);
+        float picLeft = MiniSize.pictureOffset(this);
         float margin = 12 * density;
         // Card bottom offset comes from the DESTINATION host: Browse's card floats above its
         // 56dp bottom-nav row, Search/Channel overlay cards sit flush at the content bottom.
@@ -7825,10 +7898,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
         // MEETUBE(issue #13): the card is 16:9 and fits the video in it, so a box of another shape
         // (a square or vertical video's) lands centred on the card, where the card shows its picture.
-        float cardH = cardW * 9f / 16f;
+        float cardH = MiniSize.height(this);
         float scale = video.width() > 0 && video.height() > 0
-                ? Math.min(cardW / video.width(), cardH / video.height()) : 0.44f;
-        float targetX = mContainer.getWidth() - margin - cardW + (cardW - video.width() * scale) / 2f;
+                ? Math.min(picW / video.width(), cardH / video.height()) : 0.44f;
+        float targetX = mContainer.getWidth() - margin - cardW + picLeft + (picW - video.width() * scale) / 2f;
         float targetY = mContainer.getHeight() - bottomNav - margin - (cardH + video.height() * scale) / 2f;
 
         mMorphScaleX = scale;
@@ -8296,6 +8369,14 @@ public class MobilePlaybackActivity extends MobileActivity
      * player. Called once the release animation has landed on the mini-card rectangle.
      */
     private void minimizeByDrag() {
+        if (MiniSize.type(this) == MiniSize.DISABLED) { // MEETUBE(issue #188): no mini player, minimizing closes
+            if (mPresenter != null) {
+                mPresenter.onFinish();
+            }
+            finish();
+            overridePendingTransition(0, 0);
+            return;
+        }
         // WHOLE-APP-IN-PIP GUARD: the host reorder below launches Browse into THIS activity's task.
         // While the task is pinned that puts Browse on top of the PiP window, so the system renders
         // the entire app - feed, tab bar and all - shrunk into the corner (and removeTop then leaves
@@ -8393,8 +8474,8 @@ public class MobilePlaybackActivity extends MobileActivity
             // navigation still starts its destination animation at full width, so retain the
             // full-size capture for that path.
             Bitmap frame;
-            int width = Math.max(1, getResources().getDimensionPixelSize(R.dimen.meetube_mini_width));
-            int height = Math.max(1, getResources().getDimensionPixelSize(R.dimen.meetube_mini_height));
+            int width = Math.max(1, MiniSize.width(this));
+            int height = Math.max(1, MiniSize.height(this));
             if (mHdrOutput && mHdrSurface != null) { // the texture holds an old frame (#35)
                 frame = captureFullSizeStill
                         ? copyHdrFrame(Math.max(1, mHdrSurface.getWidth()), Math.max(1, mHdrSurface.getHeight()))
@@ -8422,8 +8503,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // The card shows this player's live frames at card size: cap NEW chunks to that window.
         // Card px use the app density on purpose - it is the density the card is laid out with.
         mExoPlayerController.setSmallWindowViewport("mini",
-                getResources().getDimensionPixelSize(R.dimen.meetube_mini_width),
-                getResources().getDimensionPixelSize(R.dimen.meetube_mini_height));
+                MiniSize.width(this), MiniSize.height(this));
         // A deep-linked open arms ViewManager's player-only mode ("watch, then back to the
         // launcher"). Minimizing into an in-app host means the user is now USING the app, so
         // drop the flag - a stale one makes startParentView "exit to Home" on the next back
@@ -9079,6 +9159,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** Store the current video's chapters (null/empty clears them). */
     private void setChapters(List<Video> chapters) {
         if (mChaptersSheet != null && !sameChapters(mChapterVideos, chapters)) {
+            mFullAfterChapters = false; // another video's chapters: no fullscreen to return to
             mChaptersSheet.dismiss();
             mChaptersSheet = null;
         }
@@ -9244,6 +9325,9 @@ public class MobilePlaybackActivity extends MobileActivity
         CharSequence title = index >= 0 ? mChapterVideos.get(index).title : null;
         String time = formatTime(positionMs);
         setTextIfChanged(mScrubChapterView, TextUtils.isEmpty(title) ? time : time + "   " + title);
+        if (mSeekFilmstrip != null) {
+            mSeekFilmstrip.update(positionMs, time, title);
+        }
     }
 
     /**
@@ -9263,7 +9347,14 @@ public class MobilePlaybackActivity extends MobileActivity
                 view.animate().alpha(alpha).setDuration(duration).setInterpolator(Motion.STANDARD).start();
             }
         }
-        fadePill(mScrubChapterView, scrubbing);
+        // the filmstrip draws the time; no second pill
+        if (mSeekFilmstrip != null) {
+            Video video = getVideo();
+            if (scrubbing && video != null) {
+                mSeekFilmstrip.prepare(video.videoId);
+            }
+            fadePill(mSeekFilmstrip, scrubbing);
+        }
     }
 
     /** The pill over the top of the video ({@code null} hides it). */
@@ -9366,6 +9457,15 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mChapterVideos.isEmpty()) {
             return;
         }
+        // MEETUBE(issue #219): like the comments - upright fullscreen goes back to the page, the list
+        // opens under the video, and the fullscreen comes back when it closes.
+        if (mPortraitFull && !isLandscape()) {
+            mChaptersAfterFullscreen = true;
+            setPortraitFull(false);
+            return;
+        }
+        boolean fromFull = mChaptersAfterFullscreen;
+        mChaptersAfterFullscreen = false;
         cancelAutoHide();
 
         releaseImageRequests("chapters-sheet"); // like the chat sheet: its frames are what's on screen now
@@ -9376,9 +9476,24 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mChaptersSheet == d) {
                 mChaptersSheet = null;
             }
+            if (mFullAfterChapters) {
+                mFullAfterChapters = false;
+                if (!isFinishing() && mMorphFraction == 0f) {
+                    setPortraitFull(true);
+                }
+            }
         });
         mChaptersSheet = dialog;
-        showPlayerSheet(dialog);
+        mFullAfterChapters = fromFull;
+        // MEETUBE(issue #219): no dim over the video; sideways a card on the right beside it, as the
+        // description and comments.
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setDimAmount(0f);
+        }
+        showPlayerSheet(dialog, true);
+        if (isLandscape()) {
+            hideControls(); // the picture beside the card, clear
+        }
     }
 
     /**
@@ -10081,6 +10196,11 @@ public class MobilePlaybackActivity extends MobileActivity
 
         @Override
         public void onCommentsPanelMoved(float gone) {
+            // MEETUBE(issue #214): beside the video, the card's rim leaves with the panel.
+            View area = mCommentsSide ? findViewById(R.id.mobile_watch_area) : null;
+            if (area != null && area.getForeground() != null) {
+                area.getForeground().setAlpha(Math.round(255 * (1f - gone)));
+            }
             // MEETUBE(shorts): as the comments slide the short grows or shrinks with them.
             followShortsComments(gone);
         }
@@ -10571,6 +10691,14 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         CharSequence likes = isCountUnset(mWatchLikeCount) ? null : mWatchLikeCount.getText();
         boolean shorts = mShorts != null && mShorts.isActive();
+        // MEETUBE(issue #217): upright fullscreen goes back to the page first, like its comments button.
+        if (mPortraitFull && !isLandscape() && !shorts) {
+            mDescriptionAfterFullscreen = true;
+            setPortraitFull(false);
+            return;
+        }
+        boolean fromFull = mDescriptionAfterFullscreen;
+        mDescriptionAfterFullscreen = false;
         DescriptionSheet.Extras extras = new DescriptionSheet.Extras();
         extras.transcript = !shorts && transcriptTrack() != null ? this::showTranscriptSheet : null;
         if (!shorts) {
@@ -10600,6 +10728,7 @@ public class MobilePlaybackActivity extends MobileActivity
             DescriptionSheet.bindPanel(mDescriptionPanel, mWatchTitle.getText(), likes, mDescriptionViews,
                     mDescriptionDate, mWatchDescription.getText(), extras);
             mDescriptionPanel.open();
+            mFullAfterDescription = fromFull;
             return;
         }
         showPlayerSheet(DescriptionSheet.create(this, mWatchTitle.getText(), likes, mDescriptionViews,
@@ -10681,6 +10810,10 @@ public class MobilePlaybackActivity extends MobileActivity
                 public void onPanelClosed() {
                     releaseSidePanelBinding(panel);
                     updateSidePanelsShown();
+                    if (panel == mDescriptionPanel && mFullAfterDescription) { // MEETUBE(issue #217)
+                        mFullAfterDescription = false;
+                        setPortraitFull(true);
+                    }
                 }
             });
             ViewCompat.setAccessibilityPaneTitle(panel.getSheet(), getString(titles[i]));
@@ -10741,6 +10874,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private void closeSidePanelImmediately(@Nullable CommentsPanelLayout panel) {
         if (panel != null) {
+            mFullAfterDescription = false; // closed for another panel, video or minimize: no fullscreen back
             releaseSidePanelBinding(panel);
             panel.closeImmediately();
             updateSidePanelsShown();
@@ -11403,6 +11537,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mPickedChip = mAllChip;
         if (mRelatedChips != null) {
             mRelatedChips.setVisibility(View.GONE);
+            mRelatedTrack.setVisibility(View.GONE);
             syncRelatedChips();
             mRelatedChips.scrollTo(0, 0);
         }
@@ -11415,7 +11550,11 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mChipMetadata = metadata;
         mChannelChip.setText(getString(R.string.mobile_watch_chip_channel, metadata.getAuthor()));
-        mRelatedChips.setVisibility(View.VISIBLE);
+        boolean segment = com.newtube.mobile.ui.common.Glass.chipStyle(this)
+                == com.newtube.mobile.ui.common.Glass.CHIPS_SEGMENT;
+        mRelatedChips.setVisibility(segment ? View.GONE : View.VISIBLE);
+        mRelatedTrack.setVisibility(segment ? View.VISIBLE : View.GONE);
+        syncRelatedChips(); // the track's labels carry the channel's name
     }
 
     private void onRelatedChip(TextView chip) {
@@ -11482,6 +11621,19 @@ public class MobilePlaybackActivity extends MobileActivity
                 chip.setBackground((android.graphics.drawable.Drawable) chip.getTag(R.id.mobile_watch_related_chips));
             }
             chip.setTextColor(getColorInt(picked ? R.color.mobile_color_background : R.color.mobile_color_on_surface));
+        }
+        // The segment bar shows the same chips: the visible ones, the picked one on the pill.
+        if (mRelatedTrack != null) {
+            mTrackChips.clear();
+            List<CharSequence> labels = new ArrayList<>();
+            for (TextView chip : mRelatedChipViews) {
+                if (chip.getVisibility() == View.VISIBLE) {
+                    mTrackChips.add(chip);
+                    labels.add(chip.getText());
+                }
+            }
+            mRelatedTrack.setChips(labels);
+            mRelatedTrack.setSelected(mTrackChips.indexOf(mPickedChip));
         }
     }
 

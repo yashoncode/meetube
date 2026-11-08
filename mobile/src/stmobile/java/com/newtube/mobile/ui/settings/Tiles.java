@@ -84,6 +84,13 @@ final class Tiles {
     static final int BUTTONS_MINIMAL = 33;
     /** The top bar's brand pill: the icon, then the app's name. */
     static final int FX_BRAND_NAME = 34;
+    // MEETUBE(issue #188): the mini player types, and the chip styles.
+    static final int MINI_DEFAULT = 35;
+    static final int MINI_MINIMAL = 36;
+    static final int MINI_MINIMAL2 = 37;
+    static final int MINI_OFF = 38;
+    static final int CHIPS_SEGMENT = 39;
+    static final int CHIPS_PILLS = 40;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -446,7 +453,7 @@ final class Tiles {
         return String.format(Locale.US, "%d%%", value);
     }
 
-    private static LinearLayout column(Context context) {
+    static LinearLayout column(Context context) {
         LinearLayout root = new LinearLayout(context);
         root.setOrientation(LinearLayout.VERTICAL);
         int inset = context.getResources().getDimensionPixelSize(R.dimen.mobile_settings_row_inset);
@@ -455,7 +462,7 @@ final class Tiles {
     }
 
     /** The row's title like any row's; returns the summary line under it (hidden until set). */
-    private static TextView heading(LinearLayout root, CharSequence text) {
+    static TextView heading(LinearLayout root, CharSequence text) {
         Context context = root.getContext();
         TextView title = new TextView(context);
         title.setText(text);
@@ -761,6 +768,100 @@ final class Tiles {
                     }
                     break;
                 }
+                case MINI_DEFAULT:
+                case MINI_MINIMAL:
+                case MINI_MINIMAL2:
+                case MINI_OFF: {
+                    // A page of the feed with the mini player over its bottom: a corner card, a black
+                    // bar, a frosted pill, or nothing (a struck-out card).
+                    float corner = h * 0.14f;
+                    float pw = Math.min(w, h * 1.5f);
+                    RectF page = new RectF(cx - pw / 2, b.top, cx + pw / 2, b.bottom);
+                    mPaint.setColor(mScreen);
+                    canvas.drawRoundRect(page, corner, corner, mPaint);
+                    float pad = h * 0.1f;
+                    block(canvas, page.left + pad, page.top + pad, page.right - pad, page.top + h * 0.42f, mBlock);
+                    block(canvas, page.left + pad, page.top + h * 0.48f, page.right - pad * 3, page.top + h * 0.54f, mLine);
+                    float bottom = page.bottom - pad * 0.7f;
+                    if (mKind == MINI_DEFAULT || mKind == MINI_OFF) {
+                        float cw = pw * 0.44f;
+                        RectF card = new RectF(page.right - pad * 0.7f - cw, bottom - cw * 9f / 16f, page.right - pad * 0.7f, bottom);
+                        if (mKind == MINI_OFF) {
+                            mPaint.setStyle(Paint.Style.STROKE);
+                            mPaint.setStrokeWidth(Math.max(1f, h * 0.025f));
+                            mPaint.setColor(mLine);
+                            canvas.drawRoundRect(card, h * 0.06f, h * 0.06f, mPaint);
+                            mPaint.setColor(ACCENT);
+                            canvas.drawLine(card.left, card.bottom, card.right, card.top, mPaint);
+                            mPaint.setStyle(Paint.Style.FILL);
+                        } else {
+                            video(canvas, card, h * 0.06f);
+                            mPaint.setColor(0x73000000);
+                            canvas.drawCircle(card.right - card.height() * 0.2f, card.top + card.height() * 0.2f, card.height() * 0.12f, mPaint);
+                        }
+                        break;
+                    }
+                    float bh = h * 0.26f;
+                    RectF bar = new RectF(page.left + pad * 0.5f, bottom - bh, page.right - pad * 0.5f, bottom);
+                    boolean frost = mKind == MINI_MINIMAL2;
+                    if (frost) {
+                        mPaint.setColor(0x993A3A44);
+                        canvas.drawRoundRect(bar, bh / 2, bh / 2, mPaint);
+                        mPaint.setStyle(Paint.Style.STROKE);
+                        mPaint.setStrokeWidth(Math.max(1f, h * 0.015f));
+                        mPaint.setColor(0x59FFFFFF);
+                        canvas.drawRoundRect(bar, bh / 2, bh / 2, mPaint);
+                        mPaint.setStyle(Paint.Style.FILL);
+                    } else {
+                        mPaint.setColor(0xFF000000);
+                        canvas.drawRoundRect(bar, bh * 0.3f, bh * 0.3f, mPaint);
+                    }
+                    float in = bh * 0.14f;
+                    float vw = (bh - in * 2) * 16f / 9f;
+                    float textLeft;
+                    float textRight;
+                    RectF pic;
+                    if (frost) { // the picture first, then the title
+                        pic = new RectF(bar.left + bh * 0.3f, bar.top + in, bar.left + bh * 0.3f + vw, bar.bottom - in);
+                        textLeft = pic.right + in;
+                        textRight = bar.right - bh * 1.5f;
+                    } else { // the title, then the picture
+                        textLeft = bar.left + in * 2;
+                        textRight = textLeft + bar.width() * 0.28f;
+                        pic = new RectF(textRight + in, bar.top + in, textRight + in + vw, bar.bottom - in);
+                    }
+                    video(canvas, pic, in);
+                    block(canvas, textLeft, bar.top + bh * 0.3f, textRight, bar.top + bh * 0.44f, 0xFFE8E8E8);
+                    block(canvas, textLeft, bar.top + bh * 0.56f, textLeft + (textRight - textLeft) * 0.6f, bar.top + bh * 0.68f, 0xFF8E8E93);
+                    mPaint.setColor(0x40FFFFFF);
+                    for (int i = 0; i < 2; i++) {
+                        canvas.drawCircle(bar.right - bh * (0.45f + 0.62f * i), bar.centerY(), bh * 0.26f, mPaint);
+                    }
+                    break;
+                }
+                case CHIPS_SEGMENT:
+                case CHIPS_PILLS: {
+                    // Home's topic chips: one glass track with the lit pill in it, or separate pills.
+                    float ph = h * 0.32f;
+                    float top = cy - ph / 2;
+                    float chip = w * 0.24f;
+                    float gap = w * 0.03f;
+                    float left = b.left + w * 0.04f;
+                    if (mKind == CHIPS_SEGMENT) {
+                        pill(canvas, left, top - ph * 0.15f, b.right - w * 0.04f, top + ph * 1.15f, mBlock);
+                        gap = 0;
+                    }
+                    for (int i = 0; i < 4 && left + chip <= b.right; i++) {
+                        boolean lit = i == 0;
+                        if (lit || mKind == CHIPS_PILLS) {
+                            pill(canvas, left, top, left + chip, top + ph, lit ? mInk : mBlock);
+                        }
+                        block(canvas, left + chip * 0.25f, cy - ph * 0.1f, left + chip * 0.75f, cy + ph * 0.1f,
+                                lit ? mScreen : mLine);
+                        left += chip + gap;
+                    }
+                    break;
+                }
                 case FX_BRAND_NAME: {
                     float ph = h * 0.44f;
                     RectF brand = new RectF(cx - ph * 1.8f, cy - ph / 2, cx + ph * 1.8f, cy + ph / 2);
@@ -995,6 +1096,29 @@ final class Tiles {
             path.lineTo(cx - size * 0.7f * direction, cy + size);
             path.close();
             canvas.drawPath(path, mPaint);
+        }
+
+        /** A little dark video frame: a sun over hills. */
+        private void video(Canvas canvas, RectF r, float corner) {
+            mPath.reset();
+            mPath.addRoundRect(r, corner, corner, Path.Direction.CW);
+            canvas.save();
+            canvas.clipPath(mPath);
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setColor(0xFF23263A);
+            canvas.drawRect(r, mPaint);
+            mPaint.setColor(0xFFFFB300);
+            canvas.drawCircle(r.left + r.width() * 0.75f, r.top + r.height() * 0.3f, r.height() * 0.14f, mPaint);
+            mPaint.setColor(0xFF3A4060);
+            Path hills = new Path();
+            hills.moveTo(r.left, r.bottom);
+            hills.lineTo(r.left + r.width() * 0.35f, r.top + r.height() * 0.45f);
+            hills.lineTo(r.left + r.width() * 0.6f, r.top + r.height() * 0.7f);
+            hills.lineTo(r.left + r.width() * 0.85f, r.top + r.height() * 0.4f);
+            hills.lineTo(r.right, r.bottom);
+            hills.close();
+            canvas.drawPath(hills, mPaint);
+            canvas.restore();
         }
 
         private void pill(Canvas canvas, float left, float top, float right, float bottom, int color) {

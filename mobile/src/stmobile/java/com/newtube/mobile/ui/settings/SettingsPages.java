@@ -1,6 +1,7 @@
 package com.newtube.mobile.ui.settings;
 
 import android.content.Context;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -33,7 +34,6 @@ public final class SettingsPages {
     public static final String ROOT = "root";
     public static final String GENERAL = "general";
     public static final String CUSTOMIZE = "customize";
-    public static final String DOWNLOADS = "downloads";
     public static final String FEEDS = "feeds";
     public static final String FEEDS_TABS = "feeds_tabs";
     public static final String FEEDS_HIDDEN = "feeds_hidden";
@@ -47,9 +47,11 @@ public final class SettingsPages {
     public static final String SPONSORBLOCK = "sponsorblock";
     public static final String SPONSORBLOCK_MARKS = "sponsorblock_marks";
     public static final String DEARROW = "dearrow";
+    public static final String DOWNLOADS = "downloads";
     public static final String BACKUP = "backup";
     public static final String ADVANCED = "advanced";
     public static final String ABOUT = "about";
+    public static final String TV_INSTALL = "tv_install";
     public static final String ABOUT_REPORTERS = "about_reporters";
     public static final String ABOUT_CONTRIBUTORS = "about_contributors";
 
@@ -74,8 +76,6 @@ public final class SettingsPages {
                 return AppPages.general(context);
             case CUSTOMIZE:
                 return AppPages.customize(context);
-            case DOWNLOADS:
-                return AppPages.downloads(context);
             case FEEDS:
                 return AppPages.feeds(context);
             case FEEDS_TABS:
@@ -102,12 +102,16 @@ public final class SettingsPages {
                 return PlayerPages.sponsorBlockMarks(context);
             case DEARROW:
                 return PlayerPages.deArrow(context);
+            case DOWNLOADS:
+                return DownloadPages.downloads(context);
             case BACKUP:
                 return AppPages.backup(context);
             case ADVANCED:
                 return PlayerPages.advanced(context);
             case ABOUT:
                 return about(context);
+            case TV_INSTALL:
+                return Build.VERSION.SDK_INT >= 26 ? TvInstall.page(context) : root(context);
             case ABOUT_REPORTERS:
                 return AboutPeople.reporters(context);
             case ABOUT_CONTRIBUTORS:
@@ -128,12 +132,12 @@ public final class SettingsPages {
         rows.add(SettingsRow.page(R.drawable.ic_settings_customize, context.getString(R.string.mobile_settings_customize),
                 context.getString(R.string.mobile_settings_customize_summary), CUSTOMIZE)
                 .summary(() -> customizeSummary(context)));
-        rows.add(SettingsRow.page(R.drawable.ic_nav_downloads, context.getString(R.string.mobile_settings_downloads),
-                context.getString(R.string.mobile_settings_downloads_summary), DOWNLOADS));
         rows.add(SettingsRow.page(R.drawable.ic_settings_feeds, context.getString(R.string.mobile_settings_feeds),
                 context.getString(R.string.mobile_settings_feeds_summary), FEEDS));
         rows.add(SettingsRow.page(R.drawable.ic_settings_privacy, context.getString(R.string.mobile_settings_privacy),
                 context.getString(R.string.mobile_settings_privacy_summary), PRIVACY));
+        rows.add(SettingsRow.page(R.drawable.ic_nav_downloads_outline, context.getString(R.string.header_downloads),
+                context.getString(R.string.mobile_settings_downloads_summary), DOWNLOADS));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_video)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_playback, context.getString(R.string.mobile_settings_playback),
@@ -156,6 +160,10 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_advanced_summary), ADVANCED));
         rows.add(SettingsRow.page(R.drawable.ic_settings_about, context.getString(R.string.mobile_settings_about),
                 versionLine(context), ABOUT));
+        if (Build.VERSION.SDK_INT >= 26) {
+            rows.add(SettingsRow.page(R.drawable.ic_settings_tv, context.getString(R.string.mobile_settings_tv_title),
+                    context.getString(R.string.mobile_settings_tv_summary), TV_INSTALL));
+        }
 
         return new Page(context.getString(R.string.header_settings), rows);
     }
@@ -230,8 +238,7 @@ public final class SettingsPages {
         }
         card.findViewById(R.id.about_avatar).setContentDescription(context.getString(R.string.mobile_about_made_by,
                 context.getString(R.string.mobile_about_dev_name)));
-        card.findViewById(R.id.about_coffee).setOnClickListener(
-                v -> Utils.openLinkExt(context, context.getString(R.string.mobile_settings_coffee_url)));
+        card.findViewById(R.id.about_coffee).setOnClickListener(v -> CoffeeSheet.show(context));
         card.findViewById(R.id.about_star).setOnClickListener(v -> AboutShareRows.star(context));
         card.findViewById(R.id.about_share).setOnClickListener(v -> AboutShareRows.share(context));
         card.findViewById(R.id.about_log).setOnClickListener(v -> DiagnosticLog.share(context));

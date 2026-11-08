@@ -105,8 +105,12 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ViewGroup host = (ViewGroup) holder.itemView;
             host.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
-            host.removeAllViews();
-            host.addView(row.custom.create(host, mListener));
+            // MEETUBE(tv install): an interactive factory can keep its view across onResume.
+            View content = row.custom.create(host, mListener);
+            if (host.getChildCount() != 1 || host.getChildAt(0) != content) {
+                host.removeAllViews();
+                host.addView(content);
+            }
         }
     }
 

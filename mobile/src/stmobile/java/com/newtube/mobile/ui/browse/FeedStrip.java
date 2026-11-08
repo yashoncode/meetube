@@ -58,6 +58,7 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
     private final Listener mListener;
     @Nullable private final GlassSource mGlass;
     private final ItemAdapter mItems = new ItemAdapter();
+    @Nullable private com.newtube.mobile.ui.common.GlassChipTrack mTrack;
     private int mMode = MODE_NONE;
     private long mSelected;
     /** MEETUBE(all subscriptions): long-press on the avatars' "All". */
@@ -100,6 +101,36 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
         } else if (!wasShown && shown) {
             notifyItemInserted(0);
         }
+        syncTrack();
+    }
+
+    /** The segment style of the chips (Settings > Customization > Chips style): fed the same items. */
+    void setTrack(com.newtube.mobile.ui.common.GlassChipTrack track) {
+        mTrack = track;
+        track.setOnPicked(index -> {
+            if (index < mItems.mList.size() && mItems.mList.get(index).id != mSelected) {
+                mListener.onPicked(mItems.mList.get(index));
+            }
+        });
+        syncTrack();
+    }
+
+    private void syncTrack() {
+        if (mTrack == null) {
+            return;
+        }
+        List<CharSequence> labels = new ArrayList<>();
+        int selected = -1;
+        if (mMode == MODE_CHIPS) {
+            for (int i = 0; i < mItems.mList.size(); i++) {
+                labels.add(mItems.mList.get(i).label);
+                if (mItems.mList.get(i).id == mSelected) {
+                    selected = i;
+                }
+            }
+        }
+        mTrack.setChips(labels);
+        mTrack.setSelected(selected);
     }
 
     void setOnAllLongPressed(@Nullable Runnable onAllLongPressed) {
@@ -113,6 +144,7 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
     void select(long selected) {
         mSelected = selected;
         mItems.notifyDataSetChanged();
+        syncTrack();
     }
 
     long selected() {
@@ -150,7 +182,8 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
         row.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         int pad = dp(parent.getContext(), 12);
-        row.setPadding(pad, dp(parent.getContext(), 4), pad, dp(parent.getContext(), 8));
+        // 16dp gutter like the cards; each chip carries an 8dp right margin, so the end pad is 8
+        row.setPadding(dp(parent.getContext(), 16), dp(parent.getContext(), 4), dp(parent.getContext(), 8), dp(parent.getContext(), 8));
         row.setClipToPadding(false);
         row.setItemAnimator(null);
         // The feed scrolls vertically; a sideways drag on the strip is the strip's.

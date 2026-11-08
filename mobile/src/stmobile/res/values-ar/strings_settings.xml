@@ -35,7 +35,7 @@
     <string name="mobile_settings_general_summary">اللغة والبلد والبحث الصوتي والساعة</string>
     <string name="mobile_settings_customize">التخصيص</string>
     <string name="mobile_settings_downloads">التنزيلات</string>
-    <string name="mobile_settings_downloads_summary">دقة التنزيل المفضّلة</string>
+    <string name="mobile_settings_downloads_summary">المجلد، الجودة، التنزيل التلقائي</string>
     <string name="mobile_download_quality_title">جودة التنزيل الافتراضية</string>
     <string name="mobile_download_quality_ask">السؤال في كل مرة</string>
     <string name="mobile_download_quality_select">اختيار الدقة</string>

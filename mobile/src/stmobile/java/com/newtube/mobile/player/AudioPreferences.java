@@ -2,6 +2,8 @@ package com.newtube.mobile.player;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 
 /** MEETUBE(issue #177): phone-only audio settings, separate from the shared player prefs. */
 public final class AudioPreferences {
@@ -21,6 +23,39 @@ public final class AudioPreferences {
 
     public static void setStableVolumeEnabled(Context context, boolean enabled) {
         prefs(context).edit().putBoolean("stable_volume", enabled).apply();
+    }
+
+    /**
+     * MEETUBE(dolby): prefer YouTube's Dolby track (E-AC-3 / AC-3, itags 328 and 380, 5.1, Atmos
+     * when JOC) where a video has one. On by default; only takes effect where this phone has a
+     * Dolby decoder ({@link #decodesDolby}). Applies to the next video opened.
+     */
+    public static boolean isDolbyEnabled(Context context) {
+        return prefs(context).getBoolean("dolby_atmos", true);
+    }
+
+    public static void setDolbyEnabled(Context context, boolean enabled) {
+        prefs(context).edit().putBoolean("dolby_atmos", enabled).apply();
+    }
+
+    /** ponytail: asked once per process; a decoder can't appear while the app runs. */
+    private static Boolean sDecodesDolby;
+
+    /** Whether the platform has an E-AC-3 decoder (licensed, so many phones have none). */
+    public static boolean decodesDolby() {
+        if (sDecodesDolby == null) {
+            boolean found = false;
+            for (MediaCodecInfo info : new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos()) {
+                if (info.isEncoder()) {
+                    continue;
+                }
+                for (String type : info.getSupportedTypes()) {
+                    found |= type.equalsIgnoreCase("audio/eac3") || type.equalsIgnoreCase("audio/eac3-joc");
+                }
+            }
+            sDecodesDolby = found;
+        }
+        return sDecodesDolby;
     }
 
     public static boolean isEqualizerEnabled(Context context) {

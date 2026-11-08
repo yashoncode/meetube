@@ -514,6 +514,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/mobile_top_glass" />
 
+    <!-- MEETUBE(glass segmented): the same chips as one glass segment (Settings > Customization > Chips
+         style); ChipBar floats whichever is picked. -->
+    <com.newtube.mobile.ui.common.GlassChipTrack
+        android:id="@+id/mobile_chip_track"
+        android:layout_width="0dp"
+        android:layout_height="44dp"
+        android:layout_marginHorizontal="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/mobile_top_glass" />
+
     <!-- MEETUBE(quotes): the quote a tap on the brand pill shows for three seconds (QuoteCard),
          on the same liquid glass as the pills. -->
     <com.newtube.mobile.ui.common.GlassView
@@ -643,6 +655,33 @@
                 android:padding="14dp"
                 android:src="@drawable/ic_player_headphones"
                 android:tint="@color/mobile_player_on_video" />
+
+            <LinearLayout
+                android:id="@+id/mobile_mini_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/mobile_mini_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/mobile_mini_channel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
             <com.newtube.mobile.ui.common.GlowProgressBar
                 android:id="@+id/mobile_mini_progress"

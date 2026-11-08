@@ -47,6 +47,16 @@ public class MobileSettingsActivity extends MobileActivity {
         return true;
     }
 
+    /**
+     * MEETUBE(status bar): the pages draw under the status bar, so their frosted top bar blends up
+     * through it instead of starting below a black strip; each page pads for the inset itself.
+     */
+    @Override
+    protected androidx.core.graphics.Insets contentInsets(androidx.core.view.WindowInsetsCompat windowInsets) {
+        androidx.core.graphics.Insets bars = super.contentInsets(windowInsets);
+        return androidx.core.graphics.Insets.of(bars.left, 0, bars.right, bars.bottom);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

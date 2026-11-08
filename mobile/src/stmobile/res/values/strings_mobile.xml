@@ -625,6 +625,7 @@
     <string name="mobile_about_contributors_code">Code and translations</string>
     <string name="mobile_about_contributors_built_on">Built on</string>
     <string name="mobile_about_credit_zh_tw">Traditional Chinese translation (#14)</string>
+    <string name="mobile_about_credit_ru">Russian translation (#194)</string>
     <string name="mobile_about_credit_smarttube">SmartTube: the player and the YouTube backend MeeTube runs on</string>
     <string name="mobile_about_credit_newtube">NewTube: the phone app MeeTube grew from</string>
     <string name="mobile_about_credit_backdrop">Backdrop: the liquid glass lens on the bars</string>

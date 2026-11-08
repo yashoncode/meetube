@@ -164,7 +164,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         if (mShortsTiles && item.belongsToShorts()) {
             return VIEW_TYPE_SHORT_TILE;
         }
-        if (item.isChannel() && !item.isPlaylistAsChannel()) {
+        // MEETUBE(channels): the Channels section's entries (no video behind them) are channel cards too.
+        if ((item.isChannel() && !item.isPlaylistAsChannel()) || (item.belongsToChannelUploads() && item.videoId == null)) {
             return VIEW_TYPE_CHANNEL;
         }
         return mListRows && !item.belongsToShorts() ? VIEW_TYPE_VIDEO_ROW : VIEW_TYPE_VIDEO;
@@ -272,6 +273,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mTitle.setSingleLine();
             int side = Math.round(16 * density);
             mTitle.setPadding(side, 0, side, Math.round(8 * density));
+            // MEETUBE(shorts): the red Shorts mark before the title, as on YouTube.
+            mTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_shorts_logo, 0, 0, 0);
+            mTitle.setCompoundDrawablePadding(Math.round(10 * density));
             root.addView(mTitle);
 
             int tileWidth = Math.round(SHELF_TILE_WIDTH_DP * density);
@@ -446,6 +450,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         /** Where the last touch landed in the meta line: on the channel name or not. */
         private boolean mMetaTouchOnChannel;
 
+        Video video() { return mVideo; }
+        View thumbnailFrame() { return mThumbnailFrame; }
+        TextView badge() { return mBadge; }
         public VideoViewHolder(@NonNull View itemView, OnVideoClickListener clickListener) {
             super(itemView);
 

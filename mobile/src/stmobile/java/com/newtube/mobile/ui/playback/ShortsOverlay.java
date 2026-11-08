@@ -220,6 +220,14 @@ final class ShortsOverlay {
             GlassDrawable.applyButton(mOverlay.findViewById(id), glass,
                     Math.round(4 * root.getResources().getDisplayMetrics().density), true); // the player's minimize disc
         }
+        // MEETUBE(shorts header): no pill; the word itself is glass, frosted white that thins toward
+        // its foot (a vertical gradient over one line), with a soft shadow to read over any short.
+        android.widget.TextView header = mOverlay.findViewById(R.id.mobile_shorts_header);
+        float line = header.getLineHeight();
+        header.getPaint().setShader(new android.graphics.LinearGradient(0, 0, 0, line,
+                new int[] {0xFFFFFFFF, 0xE6FFFFFF, 0x80FFFFFF}, new float[] {0f, 0.45f, 1f},
+                android.graphics.Shader.TileMode.CLAMP));
+        header.setShadowLayer(6 * root.getResources().getDisplayMetrics().density, 0, 1, 0x66000000);
         // MEETUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
         mTitle.setOnClickListener(v -> mHost.openShortsDescription());
 
@@ -469,10 +477,11 @@ final class ShortsOverlay {
         mFlash.setImageResource(playing ? R.drawable.ic_player_pause : R.drawable.ic_player_play); // paused shows play
         mFlash.animate().cancel();
         mFlash.setAlpha(1f);
-        mFlash.setScaleX(0.8f);
-        mFlash.setScaleY(0.8f);
-        mFlash.animate().scaleX(1f).scaleY(1f).setDuration(150).withEndAction(() ->
-                mFlash.animate().alpha(0f).setStartDelay(450).setDuration(200).start()).start();
+        // MEETUBE(issue #216): a quick pop that keeps up with the finger (was 150 + 450 held + 200 ms).
+        mFlash.setScaleX(0.85f);
+        mFlash.setScaleY(0.85f);
+        mFlash.animate().scaleX(1f).scaleY(1f).setStartDelay(0).setDuration(90).withEndAction(() ->
+                mFlash.animate().alpha(0f).setStartDelay(220).setDuration(140).start()).start();
     }
 
     /** Double tap: a big heart springs in and floats off. */

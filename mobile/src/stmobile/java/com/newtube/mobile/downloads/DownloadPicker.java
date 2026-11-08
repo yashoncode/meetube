@@ -90,14 +90,13 @@ public final class DownloadPicker {
         MediaSubtitle englishAutoSubtitle = DownloadOptions.pickEnglishSubtitle(info.getSubtitles());
 
         DownloadRegistry registry = DownloadRegistry.instance(context);
-        int preferredHeight = DownloadQuality.preferredHeight(context);
-        if (preferredHeight != DownloadQuality.ASK_EVERY_TIME) {
-            DownloadOption preferred = DownloadQuality.pick(options, preferredHeight);
-            if (preferred == null) {
-                MobileSnackbar.show(context, R.string.mobile_download_unavailable);
-                return;
-            }
-            enqueue(context, video, title, author, thumb, preferred, englishAutoSubtitle, registry);
+        // MEETUBE(download quality): Settings > Downloads can set one, then a tap downloads at once.
+        DownloadOption preset = AutoDownload.defaultQuality(context) == AutoDownload.ASK ? null
+                : AutoDownload.pick(options, AutoDownload.defaultQuality(context));
+        if (preset != null) {
+            DownloadItem existing = registry.findDone(video.videoId, preset.kind);
+            start(context, video, title, author, thumb, preset, alreadyHere(preset, existing),
+                    englishAutoSubtitle);
             return;
         }
 
@@ -111,37 +110,35 @@ public final class DownloadPicker {
             String description = size.isEmpty() ? format : format + MetaSeparator.DOT + size;
 
             DownloadItem existing = registry.findDone(video.videoId, option.kind);
-            boolean alreadyHere = existing != null && (option.isAudioOnly()
-                    || (existing.qualityLabel != null && existing.qualityLabel.equals(option.qualityLabel)));
+            boolean alreadyHere = alreadyHere(option, existing);
             if (alreadyHere) {
                 description += MetaSeparator.DOT + context.getString(R.string.mobile_download_already);
             }
 
             dialog.appendSingleButton(UiOptionItem.from(label, description, optionItem -> {
                 dialog.closeDialog();
-                enqueue(context, video, title, author, thumb, option, englishAutoSubtitle, registry);
+                start(context, video, title, author, thumb, option, alreadyHere, englishAutoSubtitle);
             }));
         }
 
         dialog.showDialog(context.getString(R.string.dialog_download));
     }
 
-    private static void enqueue(Context context, Video video, @Nullable String title, @Nullable String author,
-                                String thumb, DownloadOption option, @Nullable MediaSubtitle englishAutoSubtitle,
-                                DownloadRegistry registry) {
-        DownloadItem existing = registry.findDone(video.videoId, option.kind);
-        boolean alreadyHere = existing != null && (option.isAudioOnly()
-                || (existing.qualityLabel != null && existing.qualityLabel.equals(option.qualityLabel)));
+    private static void start(Context context, Video video, String title, String author, String thumb,
+                              DownloadOption option, boolean alreadyHere,
+                              @Nullable MediaSubtitle englishAutoSubtitle) {
         if (alreadyHere) {
+            // NEWTUBE(snackbar): the same file is already on the device - say so rather
+            // than queue a second copy under a "Download started".
             MobileSnackbar.show(context, context.getString(R.string.mobile_download_already_here),
                     context.getString(R.string.mobile_download_view), () -> openDownloads(context));
             return;
         }
-
+        String size = DownloadOptions.formatBytes(option.totalBytes);
         DownloadItem item = DownloadItem.create(video.videoId, title != null ? title : video.videoId,
                 author, thumb, option, option.isAudioOnly() ? null : englishAutoSubtitle);
         MobileDownloadService.enqueue(context, item);
-        String size = DownloadOptions.formatBytes(option.totalBytes);
+        // NEWTUBE(snackbar): confirm with the size, and a way to the Downloads tab.
         String started = size.isEmpty()
                 ? context.getString(R.string.mobile_download_started)
                 : context.getString(R.string.mobile_download_started_size, size);
@@ -172,6 +169,11 @@ public final class DownloadPicker {
         };
         registry.addListener(holder[0]);
         main.postDelayed(release, REWORD_WINDOW_MS);
+    }
+
+    private static boolean alreadyHere(DownloadOption option, @Nullable DownloadItem existing) {
+        return existing != null && (option.isAudioOnly()
+                || (existing.qualityLabel != null && existing.qualityLabel.equals(option.qualityLabel)));
     }
 
     /** The Downloads tab, as the download notification opens it. */

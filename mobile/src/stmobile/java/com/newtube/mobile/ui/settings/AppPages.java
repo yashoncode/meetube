@@ -24,8 +24,6 @@ import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.newtube.mobile.CardMenuMigration;
-import com.newtube.mobile.downloads.DownloadFolder;
-import com.newtube.mobile.downloads.DownloadQuality;
 import com.newtube.mobile.ui.browse.NavTabs;
 import com.newtube.mobile.ui.common.AppIcon;
 import com.newtube.mobile.ui.common.CountStyle;
@@ -42,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * The app-side pages of the phone Settings: General, Feeds (tabs, hidden videos, the video menu),
@@ -80,13 +79,6 @@ final class AppPages {
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_indian_counts),
                 context.getString(R.string.mobile_settings_indian_counts_summary),
                 () -> CountStyle.isIndian(context), on -> CountStyle.setIndian(context, on)).needsRestart());
-
-        // MEETUBE(download-folder): also a long press on any Download button.
-        if (DownloadFolder.isSupported()) {
-            rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_folder),
-                    () -> DownloadFolder.label(context),
-                    page -> page.showDialog(DownloadFolder.showOptions(page.requireActivity()))));
-        }
 
         // MEETUBE(performance): every screen at the display's top refresh rate (BitChord's setting).
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_performance)));
@@ -177,6 +169,12 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_refresh_sound_summary),
                 () -> RefreshFeedback.isSoundOn(context), on -> RefreshFeedback.setSoundOn(context, on)), Tiles.FX_REFRESH));
 
+        // MEETUBE(haptics): the app's vibration on taps, drags and holds; on by default.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_haptics),
+                context.getString(R.string.mobile_settings_haptics_summary),
+                () -> com.newtube.mobile.ui.common.Haptics.isOn(context),
+                on -> com.newtube.mobile.ui.common.Haptics.setOn(context, on)), Tiles.FX_REFRESH));
+
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_layout)));
 
         // MEETUBE(home-rows, issue #4): Home as one feed, or as SmartTube's rows of shelves.
@@ -228,8 +226,6 @@ final class AppPages {
                 }),
                 132, Tiles.GRID, Tiles.LIST));
 
-        rows.add(startScreen(context));
-
         // MEETUBE(watch-look): the watch page compact (default) or as it was, and the player's buttons.
         rows.add(Tiles.of(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_watch_style))
                 .option(context.getString(R.string.mobile_settings_watch_style_compact),
@@ -240,6 +236,16 @@ final class AppPages {
                 .needsRestart(), 132, Tiles.WATCH_COMPACT, Tiles.WATCH_CLASSIC));
         rows.add(SettingsRow.page(context.getString(R.string.mobile_settings_player_buttons),
                 () -> context.getString(R.string.mobile_settings_player_buttons_summary), SettingsPages.PLAYER_BUTTONS));
+
+        // MEETUBE(home bar): the Cast button in Home's top bar, and the topic chips under it.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_cast),
+                context.getString(R.string.mobile_settings_home_cast_summary),
+                () -> com.newtube.mobile.ui.common.HomeBar.castShown(context),
+                on -> com.newtube.mobile.ui.common.HomeBar.setCastShown(context, on)), Tiles.FX_TOP_BAR));
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_chips),
+                context.getString(R.string.mobile_settings_home_chips_summary),
+                () -> com.newtube.mobile.ui.common.HomeBar.chipsShown(context),
+                on -> com.newtube.mobile.ui.common.HomeBar.setChipsShown(context, on)), Tiles.FX_TOP_BAR));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_effects)));
 
@@ -264,6 +270,44 @@ final class AppPages {
                 .bind(() -> com.newtube.mobile.ui.common.Glass.playerButtons(context),
                         style -> com.newtube.mobile.ui.common.Glass.setPlayerButtons(context, style))
                 .needsRestart(), 72, Tiles.BUTTONS_SEE_THROUGH, Tiles.FX_FROST, Tiles.BUTTONS_MINIMAL));
+
+        // MEETUBE(glass segmented): Home's topic chips and the search filters.
+        rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_chip_style))
+                .option(context.getString(R.string.mobile_settings_chip_style_segment),
+                        context.getString(R.string.mobile_settings_chip_style_segment_desc),
+                        com.newtube.mobile.ui.common.Glass.CHIPS_SEGMENT)
+                .option(context.getString(R.string.mobile_settings_chip_style_pills),
+                        context.getString(R.string.mobile_settings_chip_style_pills_desc),
+                        com.newtube.mobile.ui.common.Glass.CHIPS_PILLS)
+                .bind(() -> com.newtube.mobile.ui.common.Glass.chipStyle(context),
+                        style -> com.newtube.mobile.ui.common.Glass.setChipStyle(context, style)),
+                56, Tiles.CHIPS_SEGMENT, Tiles.CHIPS_PILLS));
+
+        // MEETUBE(seek thumb): the player seek bar's dot, or a picture the user picks.
+        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_seek_thumb))
+                .option(context.getString(R.string.mobile_settings_seek_thumb_dot), null,
+                        com.newtube.mobile.ui.playback.SeekThumb.DOT)
+                .option(context.getString(R.string.mobile_settings_seek_thumb_picture),
+                        context.getString(R.string.mobile_settings_seek_thumb_picture_desc),
+                        com.newtube.mobile.ui.playback.SeekThumb.PICTURE)
+                .bind(() -> com.newtube.mobile.ui.playback.SeekThumb.type(context),
+                        v -> com.newtube.mobile.ui.playback.SeekThumb.setType(context, v)));
+
+        // MEETUBE(issue #188): the floating mini player's type (a pinch on the Default card sizes it).
+        rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_mini_type))
+                .option(context.getString(R.string.mobile_settings_mini_type_default),
+                        context.getString(R.string.mobile_settings_mini_type_default_desc),
+                        com.newtube.mobile.ui.playback.MiniSize.DEFAULT)
+                .option(context.getString(R.string.mobile_settings_mini_type_minimal), null,
+                        com.newtube.mobile.ui.playback.MiniSize.MINIMAL)
+                .option(context.getString(R.string.mobile_settings_mini_type_minimal2), null,
+                        com.newtube.mobile.ui.playback.MiniSize.MINIMAL2)
+                .option(context.getString(R.string.mobile_settings_mini_type_disabled),
+                        context.getString(R.string.mobile_settings_mini_type_disabled_desc),
+                        com.newtube.mobile.ui.playback.MiniSize.DISABLED)
+                .bind(() -> com.newtube.mobile.ui.playback.MiniSize.type(context),
+                        v -> com.newtube.mobile.ui.playback.MiniSize.setType(context, v)),
+                72, Tiles.MINI_DEFAULT, Tiles.MINI_MINIMAL, Tiles.MINI_MINIMAL2, Tiles.MINI_OFF));
 
         // MEETUBE(nav lens): the tab switch's lens and wiggle; off by default on a low-end phone.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_tab_motion),
@@ -331,46 +375,6 @@ final class AppPages {
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_customize), rows);
     }
 
-    static SettingsPages.Page downloads(Context context) {
-        List<SettingsRow> rows = new ArrayList<>();
-        rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_quality_title),
-                () -> DownloadQuality.label(context), AppPages::showDownloadQualityOptions));
-        return new SettingsPages.Page(context.getString(R.string.mobile_settings_downloads), rows);
-    }
-
-    private static void showDownloadQualityOptions(SettingsPageFragment page) {
-        Context context = page.requireContext();
-        CharSequence[] choices = {
-                context.getString(R.string.mobile_download_quality_ask),
-                context.getString(R.string.mobile_download_quality_select)
-        };
-        page.showDialog(new MaterialAlertDialogBuilder(context, R.style.MobileAlertDialog)
-                .setTitle(R.string.mobile_download_quality_title)
-                .setItems(choices, (dialog, which) -> {
-                    if (which == 0) {
-                        DownloadQuality.setPreferredHeight(context, DownloadQuality.ASK_EVERY_TIME);
-                        page.rebuild();
-                    } else {
-                        showDownloadResolutionOptions(page);
-                    }
-                }).show());
-    }
-
-    private static void showDownloadResolutionOptions(SettingsPageFragment page) {
-        Context context = page.requireContext();
-        int[] heights = DownloadQuality.heights();
-        CharSequence[] choices = new CharSequence[heights.length];
-        for (int i = 0; i < heights.length; i++) {
-            choices[i] = context.getString(R.string.mobile_download_quality_resolution, heights[i]);
-        }
-        page.showDialog(new MaterialAlertDialogBuilder(context, R.style.MobileAlertDialog)
-                .setTitle(R.string.mobile_download_quality_select)
-                .setItems(choices, (dialog, which) -> {
-                    DownloadQuality.setPreferredHeight(context, heights[which]);
-                    page.rebuild();
-                }).show());
-    }
-
     /** MEETUBE(watch-look): which buttons the player shows (PlayerButton hides the rest). */
     static SettingsPages.Page playerButtons(Context context) {
         List<SettingsRow> rows = new ArrayList<>();
@@ -411,12 +415,20 @@ final class AppPages {
     private static SettingsRow startScreen(Context context) {
         SidebarService sidebar = SidebarService.instance(context);
         SettingsRow.Choice<Integer> choice = SettingsRow.choice(context.getString(R.string.mobile_settings_start_screen));
-        int boot = sidebar.getBootSectionId();
+        // MEETUBE(issue #213): a removed Home is not offered; a start screen still set to it opens
+        // the tab that took Home's place (MobileBrowseActivity), so that is what the row shows.
+        boolean home = NavTabs.showHome(context);
+        int landing = NavTabs.landingSectionId(context);
+        Supplier<Integer> current = () -> {
+            int boot = sidebar.getBootSectionId();
+            return boot == MediaGroup.TYPE_HOME && !home && landing != NavTabs.NONE ? landing : boot;
+        };
+        int shown = current.get();
         for (Map.Entry<Integer, Integer> section : sidebar.getDefaultSections().entrySet()) {
             int sectionId = section.getValue();
-            boolean current = sectionId == boot;
-            if (!current && (sectionId == MediaGroup.TYPE_SHORTS || sectionId == MediaGroup.TYPE_SETTINGS
-                    || !sidebar.isSectionPinned(sectionId))) {
+            if (sectionId == MediaGroup.TYPE_SHORTS || sectionId == MediaGroup.TYPE_SETTINGS
+                    || (sectionId == MediaGroup.TYPE_HOME && !home)
+                    || (sectionId != shown && !sidebar.isSectionPinned(sectionId))) {
                 continue;
             }
             choice.option(context.getString(sectionTitle(section.getKey())), sectionId);
@@ -426,7 +438,7 @@ final class AppPages {
                 choice.option(item.getTitle(), item.getId());
             }
         }
-        return choice.bind(sidebar::getBootSectionId, sidebar::setBootSectionId);
+        return choice.bind(current, sidebar::setBootSectionId);
     }
 
     /**
@@ -529,6 +541,7 @@ final class AppPages {
                     NavTabs.setLayout(context, MediaGroup.TYPE_SHORTS, MediaGroup.TYPE_SUBSCRIPTIONS, 1, false);
                     page.rebuild();
                 }));
+        rows.add(startScreen(context)); // MEETUBE(start screen): next to the bar it opens on
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_tabs_you)));
         addSectionToggles(context, rows, sections, you, true);
         rows.add(SettingsRow.header(context.getString(R.string.mobile_you_explore)));
