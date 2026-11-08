@@ -328,6 +328,12 @@
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+        <!-- MEETUBE(seek thumb): invisible host for the image picker of the seek bar's picture. -->
+        <activity
+            android:name="com.newtube.mobile.ui.playback.SeekThumb"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <!--
           Touch AppDialog renderer (Wave 3). configChanges/launchMode mirror the other
           registered View Activities: ViewManager.startActivity() always launches with

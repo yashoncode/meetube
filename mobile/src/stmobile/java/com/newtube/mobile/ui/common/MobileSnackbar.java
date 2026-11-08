@@ -248,7 +248,8 @@ public final class MobileSnackbar {
         return activity instanceof MobileAppDialogActivity || activity instanceof MobileUpdateActivity
                 // MEETUBE(toasts): invisible screens that close at once (a folder or file picker's)
                 || activity instanceof com.newtube.mobile.downloads.DownloadFolderActivity
-                || activity instanceof com.newtube.mobile.ui.settings.SettingsTransferActivity;
+                || activity instanceof com.newtube.mobile.ui.settings.SettingsTransferActivity
+                || activity instanceof com.newtube.mobile.ui.playback.SeekThumb;
     }
 
     private static void make(Activity activity, CharSequence text, @Nullable CharSequence action,

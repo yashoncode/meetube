@@ -267,6 +267,11 @@
     <string name="mobile_settings_screen_off">Keep playing with the screen off</string>
     <string name="mobile_settings_screen_off_on">Allowed: battery saver won\'t stop the audio</string>
     <string name="mobile_settings_screen_off_off">Battery saver may stop the audio. Tap to allow MeeTube in the background</string>
+    <string name="mobile_settings_seek_thumb">Seek bar thumb</string>
+    <string name="mobile_settings_seek_thumb_dot">Dot</string>
+    <string name="mobile_settings_seek_thumb_picture">Your picture</string>
+    <string name="mobile_settings_seek_thumb_picture_desc">Pick an image from your phone; a GIF moves</string>
+    <string name="mobile_settings_seek_thumb_failed">Couldn’t use that picture (5 MB at most)</string>
     <string name="mobile_settings_mini_type">Mini player type</string>
     <string name="mobile_settings_mini_type_default">Default</string>
     <string name="mobile_settings_mini_type_default_desc">A floating card. Pinch it in or out to change its size</string>
