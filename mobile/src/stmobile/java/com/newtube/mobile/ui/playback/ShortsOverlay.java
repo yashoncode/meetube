@@ -477,10 +477,11 @@ final class ShortsOverlay {
         mFlash.setImageResource(playing ? R.drawable.ic_player_pause : R.drawable.ic_player_play); // paused shows play
         mFlash.animate().cancel();
         mFlash.setAlpha(1f);
-        mFlash.setScaleX(0.8f);
-        mFlash.setScaleY(0.8f);
-        mFlash.animate().scaleX(1f).scaleY(1f).setDuration(150).withEndAction(() ->
-                mFlash.animate().alpha(0f).setStartDelay(450).setDuration(200).start()).start();
+        // MEETUBE(issue #216): a quick pop that keeps up with the finger (was 150 + 450 held + 200 ms).
+        mFlash.setScaleX(0.85f);
+        mFlash.setScaleY(0.85f);
+        mFlash.animate().scaleX(1f).scaleY(1f).setStartDelay(0).setDuration(90).withEndAction(() ->
+                mFlash.animate().alpha(0f).setStartDelay(220).setDuration(140).start()).start();
     }
 
     /** Double tap: a big heart springs in and floats off. */

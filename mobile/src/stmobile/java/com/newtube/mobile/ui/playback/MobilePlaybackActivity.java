@@ -1291,7 +1291,9 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerView.setOnClickListener(v -> {
             if (isShortsMode()) {
                 mVideoArea.removeCallbacks(mShortsSingleTap);
-                mVideoArea.postDelayed(mShortsSingleTap, 260);
+                // MEETUBE(issue #216): from the release, about the rest of the system's 300 ms
+                // double-tap window (counted from the touch down), so a pause follows the finger.
+                mVideoArea.postDelayed(mShortsSingleTap, 200);
                 return;
             }
             if (mMoreVideos != null && mMoreVideos.isShown()) {
