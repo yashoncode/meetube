@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.3.5** Sentinel](#335-sentinel) | 2026-11-08 | Immersive |
 | [**3.3.1** Pluto](#331-pluto) | 2026-11-04 | Tuned |
 | [**3.3.0** Glitch](#330-glitch) | 2026-11-03 | Polished |
 | [**3.2.7** HotLight](#327-hotlight) | 2026-11-02 | Lighter |
@@ -42,6 +43,54 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.3.5 Sentinel
+
+> **Immersive**<br>
+> 📅 2026-11-08 · closes #188, #195, #196, #199, #201, #202, #203, #205, #213, #214, #215, #216, #217, #218 and #219
+
+### ✨ Highlights
+
+- **Home autoplay:** the card in the middle of your feed plays muted right in its thumbnail, with mute and captions buttons and a countdown. Pick Wi-Fi only, always or off in Settings > Playback.
+- **Smart downloads:** a new Settings > Downloads page. Pick the folder and a default quality so one tap downloads, or turn on auto download for new uploads from the channels and playlists you choose (#202, #203).
+- **Dolby Atmos:** when a video has a Dolby Atmos or 5.1 track and your phone can decode it, MeeTube plays it instead of stereo. It's on by default, and you can turn it off in Settings > Audio.
+- **Your own seek bar thumb:** swap the player's dot for any picture from your phone in Customization > Seek bar thumb. GIFs and animated WebP move too.
+- **iOS-style segment pills:** Home chips, search filters and Up next sit in a glass segment bar with a springy pill you can drag. Customization > Chips style brings the old pills back.
+
+### New
+
+- Drag the seek bar and a filmstrip rolls under your finger, with a big time and the chapter title (#195).
+- A More videos button in the fullscreen controls (#196).
+- Mini player styles in Customization: Default (pinch to resize), Minimal, Minimal 2 or Disabled. It also stays wherever you let it go (#188).
+- Home can be removed from the bottom bar (#213).
+- Settings > Install on TV puts MeeTube TV on your Android TV, Google TV or Fire TV straight from your phone, with a step-by-step guide.
+- A Haptics toggle in Settings > App turns off every vibration.
+- Customization toggles to hide the Cast button and Home's topic chips.
+- Sudo brew coffee in About now asks where you are: UPI for India, Buy Me a Coffee everywhere else.
+- MeeTube speaks Russian, thanks to @MAKAKAIglitch (#194).
+
+### Changed
+
+- The liquid glass switch has a jelly lens you can drag. Weaker phones get a plain switch.
+- The Equalizer and Player volume use glass spring sliders, and volume changes live as you drag.
+- Panels have a drag handle at the top, and Chapters and Description open under the video like Comments (#217, #218, #219).
+- Home chips, shelves and channel cards line up on the same margins as the video cards (#199).
+- Channels show as glass cards, and the You page menu fits two to a row.
+- The locked player shows only a padlock, with no dot and no gap at the bottom (#201).
+- The Shorts header is glass lettering, and the Shorts play/pause icon is quicker (#216).
+- Settings' frosted top bar blends up through the status bar.
+- The watch action pills fade out at the edges instead of being cut off.
+
+### Fixed
+
+- No more grey block behind landscape comments; the video slides aside smoothly (#214).
+- The History row on the You page no longer jumps one video in (#215).
+- No gap under a one-line title in portrait fullscreen (#205).
+- No more still play icon or black frame before the launch animation.
+
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @KrishnakantShedge, @Ishaanj2007, @dhanunjay333i-cyber, @Evergreenpro, @Reird, @upt8543-eng and @MAKAKAIglitch.
 
 ## 3.3.1 Pluto
 
