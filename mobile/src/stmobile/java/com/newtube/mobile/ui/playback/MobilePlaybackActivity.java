@@ -227,6 +227,9 @@ public class MobilePlaybackActivity extends MobileActivity
     // comes back with the panel under the video, and the fullscreen returns when it closes.
     private boolean mDescriptionAfterFullscreen;
     private boolean mFullAfterDescription;
+    // MEETUBE(issue #219): the Chapters list does the same from the vertical fullscreen.
+    private boolean mChaptersAfterFullscreen;
+    private boolean mFullAfterChapters;
     /** Landscape comments: the panel in a column beside the video (layOutCommentsSide). */
     private boolean mCommentsSide;
     private boolean mChatSide; // MEETUBE(live chat, issue #32): the landscape video beside the chat column
@@ -1740,6 +1743,9 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             if (mDescriptionAfterFullscreen && !isTallMode()) { // MEETUBE(issue #217)
                 OneShotPreDrawListener.add(mWatchRoot, this::showDescriptionSheet);
+            }
+            if (mChaptersAfterFullscreen && !isTallMode()) { // MEETUBE(issue #219)
+                OneShotPreDrawListener.add(mWatchRoot, this::showChaptersSheet);
             }
             // Portrait already presents the complete title immediately below the video. Repeating
             // it in the overlay squeezes five useful controls into half the top bar and makes the
@@ -9153,6 +9159,7 @@ public class MobilePlaybackActivity extends MobileActivity
     /** Store the current video's chapters (null/empty clears them). */
     private void setChapters(List<Video> chapters) {
         if (mChaptersSheet != null && !sameChapters(mChapterVideos, chapters)) {
+            mFullAfterChapters = false; // another video's chapters: no fullscreen to return to
             mChaptersSheet.dismiss();
             mChaptersSheet = null;
         }
@@ -9450,6 +9457,15 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mChapterVideos.isEmpty()) {
             return;
         }
+        // MEETUBE(issue #219): like the comments - upright fullscreen goes back to the page, the list
+        // opens under the video, and the fullscreen comes back when it closes.
+        if (mPortraitFull && !isLandscape()) {
+            mChaptersAfterFullscreen = true;
+            setPortraitFull(false);
+            return;
+        }
+        boolean fromFull = mChaptersAfterFullscreen;
+        mChaptersAfterFullscreen = false;
         cancelAutoHide();
 
         releaseImageRequests("chapters-sheet"); // like the chat sheet: its frames are what's on screen now
@@ -9460,9 +9476,24 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mChaptersSheet == d) {
                 mChaptersSheet = null;
             }
+            if (mFullAfterChapters) {
+                mFullAfterChapters = false;
+                if (!isFinishing() && mMorphFraction == 0f) {
+                    setPortraitFull(true);
+                }
+            }
         });
         mChaptersSheet = dialog;
-        showPlayerSheet(dialog);
+        mFullAfterChapters = fromFull;
+        // MEETUBE(issue #219): no dim over the video; sideways a card on the right beside it, as the
+        // description and comments.
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setDimAmount(0f);
+        }
+        showPlayerSheet(dialog, true);
+        if (isLandscape()) {
+            hideControls(); // the picture beside the card, clear
+        }
     }
 
     /**
