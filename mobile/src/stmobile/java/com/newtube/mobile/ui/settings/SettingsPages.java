@@ -45,7 +45,6 @@ public final class SettingsPages {
     public static final String AUDIO = "audio";
     public static final String CAPTIONS = "captions";
     public static final String SPONSORBLOCK = "sponsorblock";
-    public static final String SPONSORBLOCK_MARKS = "sponsorblock_marks";
     public static final String DEARROW = "dearrow";
     public static final String DOWNLOADS = "downloads";
     public static final String BACKUP = "backup";
@@ -98,8 +97,6 @@ public final class SettingsPages {
                 return PlayerPages.captions(context);
             case SPONSORBLOCK:
                 return PlayerPages.sponsorBlock(context);
-            case SPONSORBLOCK_MARKS:
-                return PlayerPages.sponsorBlockMarks(context);
             case DEARROW:
                 return PlayerPages.deArrow(context);
             case DOWNLOADS:

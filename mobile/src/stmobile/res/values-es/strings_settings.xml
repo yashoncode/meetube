@@ -261,12 +261,6 @@
     <string name="mobile_settings_sponsorblock_summary">Salta las partes de los vídeos que la comunidad ha marcado</string>
     <string name="mobile_settings_sponsorblock_segments">Cuando empieza una parte</string>
     <string name="mobile_settings_segment_skip">Saltar</string>
-    <string name="mobile_settings_segment_skip_notify">Saltar y avisar</string>
-    <string name="mobile_settings_segment_ask">Preguntarme</string>
-    <string name="mobile_settings_segment_nothing">No saltar</string>
-    <string name="mobile_settings_segment_marks">Marcas en la barra</string>
-    <string name="mobile_settings_segment_marks_summary">%1$d de %2$d tipos marcados</string>
-    <string name="mobile_settings_segment_marks_note">Las marcas de color en la barra de progreso muestran dónde está cada tipo de parte, aunque no se salte.</string>
     <string name="mobile_settings_segment_min">No saltar partes de menos de</string>
     <string name="mobile_settings_segment_once">Saltar cada parte una sola vez</string>
     <string name="mobile_settings_segment_once_summary">Si vuelves a una parte que se saltó, se reproduce</string>

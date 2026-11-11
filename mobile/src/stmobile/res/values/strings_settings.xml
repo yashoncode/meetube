@@ -360,12 +360,9 @@
     <string name="mobile_settings_sponsorblock_summary">Skips the parts of videos the community marked</string>
     <string name="mobile_settings_sponsorblock_segments">When a part starts</string>
     <string name="mobile_settings_segment_skip">Skip</string>
-    <string name="mobile_settings_segment_skip_notify">Skip and say so</string>
-    <string name="mobile_settings_segment_ask">Ask me</string>
-    <string name="mobile_settings_segment_nothing">Don\'t skip</string>
-    <string name="mobile_settings_segment_marks">Marks on the seek bar</string>
-    <string name="mobile_settings_segment_marks_summary">%1$d of %2$d kinds marked</string>
-    <string name="mobile_settings_segment_marks_note">Coloured marks on the seek bar show where each kind of part is, even ones that aren\'t skipped.</string>
+    <string name="mobile_settings_segment_ask_short">Ask</string>
+    <string name="mobile_settings_segment_show">Show</string>
+    <string name="mobile_settings_segment_modes_note">Skip it, ask with a button, only show it on the seek bar, or leave it off.</string>
     <string name="mobile_settings_segment_min">Don\'t skip parts shorter than</string>
     <string name="mobile_settings_segment_once">Skip each part only once</string>
     <string name="mobile_settings_segment_once_summary">If you go back into a part you skipped, it plays</string>
