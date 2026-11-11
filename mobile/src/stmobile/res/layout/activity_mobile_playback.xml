@@ -544,6 +544,17 @@
                 android:visibility="gone"
                 tools:text="2:10:42   Dictionaries" />
 
+            <!-- MEETUBE(issue #223): Chapter pop-ups - the chapter that just started, for a few
+                 seconds over the hidden controls; a tap goes to the next one. -->
+            <TextView
+                android:id="@+id/mobile_player_chapter_pill"
+                style="@style/MobilePlayerPill"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="@dimen/mobile_player_scrub_pill_margin"
+                android:maxWidth="320dp"
+                android:visibility="gone"
+                tools:text="Folding Measuring Spoon" />
+
             <!-- Top pill: "Release to cancel" while a drag rests where playback was, "2x" while
                  press-and-hold speeds the video up. -->
             <TextView
