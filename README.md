@@ -104,8 +104,6 @@ Releases are made by pushing a `vX.Y.Z` tag: [release.yml](.github/workflows/rel
 
 ## Support MeeTube
 
-MeeTube is free, has no ads and always will. I build it in my spare time because I love using it.
-
 Behind every little feature are hours of my life, a few sleepless nights, and a lot of hope that someone out there finds it useful.
 
 ❤️ If you love my work, buy me a coffee. ☕<br>
