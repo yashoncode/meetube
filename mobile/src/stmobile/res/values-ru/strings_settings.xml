@@ -389,7 +389,7 @@
 
     <!-- About -->
     <string name="mobile_settings_version">Версия</string>
-    <string name="mobile_settings_update_notify_summary">Сообщает о выходе новой версии</string>
+    <string name="mobile_settings_update_notify_summary">Сообщает о выходе новой версии, даже когда приложение закрыто</string>
     <!-- MEETUBE(customize): the Customization page's groups and its tiles' short names -->
     <string name="mobile_settings_customize_look">Внешний вид</string>
     <string name="mobile_settings_customize_layout">Макет</string>

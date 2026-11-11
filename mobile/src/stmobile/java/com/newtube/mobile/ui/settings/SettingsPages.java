@@ -197,7 +197,11 @@ public final class SettingsPages {
             AppUpdateChecker checker = new AppUpdateChecker(context, null);
             rows.add(icon(R.drawable.ic_about_notifications, SettingsRow.toggle(context.getString(R.string.check_updates_auto),
                     context.getString(R.string.mobile_settings_update_notify_summary),
-                    checker::isUpdateCheckEnabled, checker::setUpdateCheckEnabled)));
+                    checker::isUpdateCheckEnabled, on -> {
+                        checker.setUpdateCheckEnabled(on);
+                        // MEETUBE(update notify): the background check follows this switch
+                        com.newtube.mobile.update.UpdateNotifyWorker.schedule(context);
+                    })));
             // MEETUBE(update pop-up): "Don't ask again" on the pop-up turns this off.
             com.newtube.mobile.update.AppUpdates updates = com.newtube.mobile.update.AppUpdates.instance(context);
             rows.add(icon(R.drawable.ic_about_campaign, SettingsRow.toggle(context.getString(R.string.mobile_settings_update_prompt),

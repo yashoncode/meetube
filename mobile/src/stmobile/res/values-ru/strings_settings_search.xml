@@ -36,7 +36,7 @@
     <string name="mobile_settings_search_kw_dns">dns ipv4 ipv6 servers днс серверы</string>
     <string name="mobile_settings_search_kw_conscrypt">ssl tls certificates security censorship blocked byebyedpi сертификаты безопасность блокировка заблокировано</string>
     <string name="mobile_settings_search_kw_multi_profiles">profiles per account own different профили для каждого аккаунта отдельные разные</string>
-    <string name="mobile_settings_search_kw_updates">update version new release обновление версия новый релиз</string>
+    <string name="mobile_settings_search_kw_updates">update version new release обновление версия новый релиз уведомление уведомления</string>
     <string name="mobile_settings_search_kw_diagnostic_log">bug report logs debug ошибка отчёт журнал логи диагностика отладка</string>
     <string name="mobile_settings_search_kw_gesture_levels">gestures brightness volume жесты яркость громкость</string>
     <string name="mobile_settings_search_kw_gesture_seek">gestures scrub skip forward rewind жесты перемотка вперёд назад пропуск</string>
