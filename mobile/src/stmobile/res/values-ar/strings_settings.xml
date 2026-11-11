@@ -417,4 +417,18 @@
     <string name="mobile_settings_equalizer_unavailable">معادل الصوت غير متاح على هذا الجهاز</string>
     <string name="mobile_settings_seek_line">خط التقدّم أسفل الفيديو</string>
     <string name="mobile_settings_seek_line_summary">الخط الرفيع لما شوهد على حافة الفيديو عند إخفاء عناصر التحكم، في الوضع العمودي</string>
+    <string name="mobile_settings_progress_color">لوحة ألوان التمييز</string>
+    <string name="mobile_settings_progress_color_player">شريط تقدم المشغل</string>
+    <string name="mobile_settings_progress_color_shorts">شريط تقدم Shorts</string>
+    <string name="mobile_settings_progress_color_default">افتراضي</string>
+    <string name="mobile_settings_accent">لون التمييز</string>
+    <string name="mobile_settings_progress_color_match">مثل لون التمييز</string>
+    <string name="mobile_accent_ember">جمر</string>
+    <string name="mobile_accent_sakura">ساكورا</string>
+    <string name="mobile_accent_sunset">غروب</string>
+    <string name="mobile_accent_honey">عسل</string>
+    <string name="mobile_accent_jade">يشم</string>
+    <string name="mobile_accent_ocean">محيط</string>
+    <string name="mobile_accent_amethyst">جمشت</string>
+    <string name="mobile_accent_pearl">لؤلؤ</string>
 </resources>

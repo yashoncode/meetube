@@ -113,6 +113,10 @@ final class AppPages {
                 .bind(ThemeMode::get, mode -> ThemeMode.set(context, mode)),
                 132, Tiles.THEME_SYSTEM, Tiles.THEME_LIGHT, Tiles.THEME_DARK));
 
+        // MEETUBE(accent): the accent colour palette, and the Player and Shorts progress lines, in one sheet.
+        rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_progress_color),
+                () -> ProgressColorSheet.summary(context), ProgressColorSheet::show));
+
         // MEETUBE(app icon): the launcher may take a few seconds to redraw it.
         rows.add(Tiles.of(SettingsRow.<String>choice(context.getString(R.string.mobile_settings_app_icon))
                 .option(context.getString(R.string.mobile_app_icon_default), R.mipmap.app_icon,

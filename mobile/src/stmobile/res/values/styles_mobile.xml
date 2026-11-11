@@ -40,7 +40,10 @@
         <item name="android:progressBarStyle">@style/Widget.MeeTube.Loader</item>
         <item name="android:progressBarStyleLarge">@style/Widget.MeeTube.Loader.Large</item>
         <item name="android:progressBarStyleSmall">@style/Widget.MeeTube.Loader.Small</item>
-        <item name="colorPrimary">@color/mobile_color_primary</item>
+        <!-- MEETUBE(accent): Ember, the red; Accent applies another palette's overlay. -->
+        <item name="meetubeAccent">#FFFF453A</item>
+        <item name="meetubeAccentDeep">#FFD7372D</item>
+        <item name="colorPrimary">?attr/meetubeAccent</item>
         <item name="colorPrimaryDark">@color/mobile_color_primary_dark</item>
         <!-- Selection controls (checkbox, radio, switch, text caret) and any untinted
              indeterminate ProgressBar read the accent. Left at the framework default this
@@ -622,6 +625,39 @@
     </style>
 
     <!-- MEETUBE(loader): the other loaders of the picker (Loader), over the default neon ring. -->
+    <!-- MEETUBE(accent): one per palette (ui.common.Accent). -->
+    <style name="ThemeOverlay.MeeTube.Accent.Ember" parent="">
+        <item name="meetubeAccent">#FFFF453A</item>
+        <item name="meetubeAccentDeep">#FFD7372D</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Accent.Sakura" parent="">
+        <item name="meetubeAccent">#FFFF2D87</item>
+        <item name="meetubeAccentDeep">#FFD61F6E</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Accent.Sunset" parent="">
+        <item name="meetubeAccent">#FFFF7A00</item>
+        <item name="meetubeAccentDeep">#FFC25E00</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Accent.Honey" parent="">
+        <item name="meetubeAccent">#FFFFC300</item>
+        <item name="meetubeAccentDeep">#FF9A7400</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Accent.Jade" parent="">
+        <item name="meetubeAccent">#FF1FD67A</item>
+        <item name="meetubeAccentDeep">#FF138A4F</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Accent.Ocean" parent="">
+        <item name="meetubeAccent">#FF0A84FF</item>
+        <item name="meetubeAccentDeep">#FF0062CC</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Accent.Amethyst" parent="">
+        <item name="meetubeAccent">#FF8E5CFF</item>
+        <item name="meetubeAccentDeep">#FF6E3FD9</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Accent.Pearl" parent="">
+        <item name="meetubeAccent">#FFF2F2F7</item>
+        <item name="meetubeAccentDeep">#FF48484A</item>
+    </style>
     <style name="ThemeOverlay.MeeTube.Loader.Frosted" parent="">
         <item name="meetubeLoader">@drawable/avd_frosted_ring</item>
     </style>
