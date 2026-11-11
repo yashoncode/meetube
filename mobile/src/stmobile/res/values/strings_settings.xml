@@ -439,7 +439,7 @@
 
     <!-- About -->
     <string name="mobile_settings_version">Version</string>
-    <string name="mobile_settings_update_notify_summary">Tells you when a new version is out</string>
+    <string name="mobile_settings_update_notify_summary">Tells you when a new version is out, even with the app closed</string>
     <!-- MEETUBE(customize): the Customization page's groups and its tiles' short names -->
     <string name="mobile_settings_customize_look">Look</string>
     <string name="mobile_settings_customize_layout">Layout</string>

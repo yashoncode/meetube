@@ -265,6 +265,7 @@ public class MobileUpdateActivity extends MobileActivity implements AppUpdates.L
         mResumed = true;
         // Back in front (a Home press while the download finished posted it): the sheet says it now
         UpdateDownloadService.clearReady(this);
+        com.newtube.mobile.update.UpdateNotifyWorker.clear(this);
 
         if (mAwaitingPermission && canInstallPackages()) {
             // Back from "Install unknown apps" with the switch on: carry on with the install

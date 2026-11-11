@@ -392,6 +392,11 @@
     <string name="mobile_update_row_ready">Обновление готово к установке</string>
     <string name="mobile_update_channel_name">Обновления приложения</string>
     <string name="mobile_update_channel_desc">Загрузка обновления MeeTube</string>
+    <string name="mobile_update_notify_channel">Новые версии</string>
+    <string name="mobile_update_notify_channel_desc">Когда выходит новая версия MeeTube</string>
+    <string name="mobile_update_notify_title">Доступно обновление ✨</string>
+    <string name="mobile_update_notify_text">MeeTube %1$s уже здесь. Нажмите, чтобы узнать, что нового</string>
+    <string name="mobile_update_notify_love">Сделано с любовью и парой бессонных ночей. Если MeeTube делает ваш день чуточку лучше, чашка кофе ☕ поможет ему расти. Это необязательно ❤️</string>
     <string name="mobile_theme">Тема</string>
     <string name="mobile_theme_system">Системная по умолчанию</string>
     <string name="mobile_theme_light">Светлая</string>

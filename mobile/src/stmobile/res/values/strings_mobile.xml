@@ -589,6 +589,11 @@
     <string name="mobile_update_row_ready">Update ready to install</string>
     <string name="mobile_update_channel_name">App updates</string>
     <string name="mobile_update_channel_desc">Downloading a MeeTube update</string>
+    <string name="mobile_update_notify_channel">New versions</string>
+    <string name="mobile_update_notify_channel_desc">When a new MeeTube version is out</string>
+    <string name="mobile_update_notify_title">New update available ✨</string>
+    <string name="mobile_update_notify_text">MeeTube %1$s is here. Tap to see what\'s new</string>
+    <string name="mobile_update_notify_love">Built with love and a few sleepless nights. If MeeTube makes your day a little better, a coffee ☕ keeps it going. No pressure ❤️</string>
     <!-- NEWTUBE(theme): Settings > User interface > Theme. -->
     <string name="mobile_theme">Theme</string>
     <string name="mobile_theme_system">System default</string>

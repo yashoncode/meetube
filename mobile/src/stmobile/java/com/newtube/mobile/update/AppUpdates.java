@@ -85,6 +85,8 @@ public final class AppUpdates implements AppUpdateCheckerListener {
     private static final String KEY_PROMPT_OFF = "prompt_off";
     private static final String KEY_PROMPTED_CODE = "prompted_version_code";
     private static final String KEY_PROMPTED_AT = "prompted_at_ms";
+    /** MEETUBE(update notify): the version the background check last posted a notification for. */
+    private static final String KEY_NOTIFIED_CODE = "notified_version_code";
     /** An automatic check that got no answer is not retried sooner than this in one run. */
     private static final long AUTO_RETRY_MS = 5 * 60 * 1_000L;
     /** A user check joins an automatic one still waiting for its answer if it is younger than this. */
@@ -190,9 +192,9 @@ public final class AppUpdates implements AppUpdateCheckerListener {
      * user isn't in the flow, and the last answer is older than {@link #AUTO_CHECK_MS}. A newer
      * version shows up as the You tab's row and dot; nothing else is said.
      */
-    public void checkIfDue(String reason) {
+    public boolean checkIfDue(String reason) {
         if (!BuildConfig.IN_APP_UPDATES) {
-            return; // store build (-Pfdroid): the store delivers updates, nothing is checked
+            return false; // store build (-Pfdroid): the store delivers updates, nothing is checked
         }
 
         // Only while nothing is on offer: with an update found (the You row already shows it) a
@@ -200,14 +202,14 @@ public final class AppUpdates implements AppUpdateCheckerListener {
         // shared checker would then validate the download against the wrong version.
         if ((mPhase != Phase.IDLE && mPhase != Phase.UP_TO_DATE) || !mChecker.isUpdateCheckEnabled()
                 || !isOnline()) {
-            return; // offline: the shared checker would toast "Internet connection not available!"
+            return false; // offline: the shared checker would toast "Internet connection not available!"
         }
 
         long lastAnswerAt = mPrefs.getLong(KEY_CHECKED_AT, 0);
         long now = SystemClock.elapsedRealtime();
 
         if (!isAutoCheckDue(System.currentTimeMillis(), lastAnswerAt, now, mAutoCheckAtMs)) {
-            return;
+            return false;
         }
 
         mAutoCheckAtMs = now;
@@ -219,6 +221,7 @@ public final class AppUpdates implements AppUpdateCheckerListener {
         // do (setDownloadOnCheck(false)). Answers through the listener; a failure stays quiet
         // (onUpdateError ignores it outside CHECKING).
         mChecker.forceCheckForUpdates(mManifestUrls);
+        return true;
     }
 
     /**
@@ -495,6 +498,25 @@ public final class AppUpdates implements AppUpdateCheckerListener {
         mPrefs.edit().putBoolean(KEY_PROMPT_OFF, off).apply();
     }
 
+    /**
+     * MEETUBE(update notify): a found update the user hasn't opened and hasn't been notified of.
+     * One notification per version: "Notify about updates" off means no checks, so none at all.
+     */
+    boolean shouldNotify() {
+        return BuildConfig.IN_APP_UPDATES && hasUnseenUpdate()
+                && getUpdateVersionCode() != mPrefs.getInt(KEY_NOTIFIED_CODE, 0);
+    }
+
+    void markNotified() {
+        mPrefs.edit().putInt(KEY_NOTIFIED_CODE, getUpdateVersionCode()).apply();
+    }
+
+    /** The newest release's notes, for the notification (null when the check carried none). */
+    @Nullable
+    ReleaseNotes getNewestNotes() {
+        return mInfo != null && mInfo.newReleases != null && !mInfo.newReleases.isEmpty() ? mInfo.newReleases.get(0) : null;
+    }
+
     /** ...and the user hasn't opened its update sheet yet. */
     public boolean hasUnseenUpdate() {
         return hasUpdate() && getUpdateVersionCode() > mPrefs.getInt(KEY_SEEN_CODE, 0);
@@ -593,7 +615,10 @@ public final class AppUpdates implements AppUpdateCheckerListener {
         mAutoCheckInFlight = false;
 
         if (mPhase != Phase.CHECKING) {
-            return; // the launch check: disabled, not due yet, or offline - nothing to say
+            // the launch check: disabled, not due yet, or offline - nothing to say; the listeners
+            // still hear that it ended (UpdateNotifyWorker waits on it)
+            notifyListeners();
+            return;
         }
 
         Log.e(TAG, "update check failed: " + error);
