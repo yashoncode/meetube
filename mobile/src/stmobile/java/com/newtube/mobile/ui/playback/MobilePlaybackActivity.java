@@ -1681,7 +1681,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 setResizeMode(PlayerData.instance(this).getResizeMode()); // the pinch's choice again
             }
             if (mAmbient != null) {
-                mAmbient.setFill(null);
+                mAmbient.setFill(mVideoArea); // MEETUBE(ambient): sideways, the bands beside the video glow too
             }
             lp.height = LinearLayout.LayoutParams.MATCH_PARENT;
             layOutCommentsSide(lp, mCommentsSide);
@@ -1718,6 +1718,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 mChatSide = false;
                 mChatMargin = 0;
                 if (mChatSlide != null) {
+            if (mAmbient != null && !isTallMode()) {
+                mAmbient.setFill(null); // upright, the page's glow is around the video, not in it
+            }
                     mChatSlide.cancel();
                 }
                 lp.setMarginEnd(0);
@@ -5319,7 +5322,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (mAmbient != null) {
             mAmbient.start();
-            mAmbient.setFill(isTallMode() ? mVideoArea : null);
+            mAmbient.setFill(isTallMode() || isLandscape() ? mVideoArea : null);
         }
     }
 
@@ -7395,7 +7398,7 @@ public class MobilePlaybackActivity extends MobileActivity
         applyWatchLayoutForOrientation(layoutOrientation());
         setResizeMode(PlayerData.instance(this).getResizeMode());
         if (mAmbient != null) {
-            mAmbient.setFill(isTallMode() ? mVideoArea : null); // the bands around a short glow
+            mAmbient.setFill(isTallMode() || isLandscape() ? mVideoArea : null); // the bands around a short glow
         }
         updateSeekBarLine();
         if (!mControlsVisible) {
