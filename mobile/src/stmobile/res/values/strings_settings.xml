@@ -591,4 +591,18 @@
     <string name="mobile_settings_tv_footer">You can turn debugging off on the TV afterwards.</string>
     <string name="mobile_settings_seek_line">Progress line under the video</string>
     <string name="mobile_settings_seek_line_summary">The thin played line on the video edge while the controls are hidden, in portrait</string>
+    <string name="mobile_settings_progress_color">Accent colour palette</string>
+    <string name="mobile_settings_progress_color_player">Player progress line</string>
+    <string name="mobile_settings_progress_color_shorts">Shorts progress line</string>
+    <string name="mobile_settings_progress_color_default">Default</string>
+    <string name="mobile_settings_accent">Accent</string>
+    <string name="mobile_settings_progress_color_match">Match accent</string>
+    <string name="mobile_accent_ember">Ember</string>
+    <string name="mobile_accent_sakura">Sakura</string>
+    <string name="mobile_accent_sunset">Sunset</string>
+    <string name="mobile_accent_honey">Honey</string>
+    <string name="mobile_accent_jade">Jade</string>
+    <string name="mobile_accent_ocean">Ocean</string>
+    <string name="mobile_accent_amethyst">Amethyst</string>
+    <string name="mobile_accent_pearl">Pearl</string>
 </resources>

@@ -451,4 +451,18 @@
     <string name="mobile_settings_equalizer_unavailable">Эквалайзер недоступен на этом устройстве</string>
     <string name="mobile_settings_seek_line">Полоса прогресса под видео</string>
     <string name="mobile_settings_seek_line_summary">Тонкая полоса просмотренного на краю видео, когда элементы управления скрыты, в портретном режиме</string>
+    <string name="mobile_settings_progress_color">Палитра акцентного цвета</string>
+    <string name="mobile_settings_progress_color_player">Полоса прогресса плеера</string>
+    <string name="mobile_settings_progress_color_shorts">Полоса прогресса Shorts</string>
+    <string name="mobile_settings_progress_color_default">По умолчанию</string>
+    <string name="mobile_settings_accent">Акцент</string>
+    <string name="mobile_settings_progress_color_match">Как акцент</string>
+    <string name="mobile_accent_ember">Жар</string>
+    <string name="mobile_accent_sakura">Сакура</string>
+    <string name="mobile_accent_sunset">Закат</string>
+    <string name="mobile_accent_honey">Мёд</string>
+    <string name="mobile_accent_jade">Нефрит</string>
+    <string name="mobile_accent_ocean">Океан</string>
+    <string name="mobile_accent_amethyst">Аметист</string>
+    <string name="mobile_accent_pearl">Жемчуг</string>
 </resources>

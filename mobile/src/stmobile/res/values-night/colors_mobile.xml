@@ -8,7 +8,6 @@
     <color name="mobile_color_background">#000000</color>
     <color name="mobile_color_surface">#1C1C21</color>
     <color name="mobile_color_on_surface">#F5F5F7</color>
-    <color name="mobile_color_section_title">#FF453A</color>
     <color name="mobile_color_on_surface_secondary">#99FFFFFF</color>
     <color name="mobile_color_placeholder">#1C1C21</color>
     <!-- NEWTUBE(motion): the light that sweeps over skeleton blocks (ShimmerLinearLayout). -->
@@ -58,8 +57,6 @@
     <!-- MEETUBE(glass): the frosted top bar - the page colour at ~75%. -->
     <color name="meetube_bar_tint">#B8000000</color>
     <color name="meetube_switch_off">#3A3A3F</color>
-    <color name="meetube_accent">#FF453A</color>
-    <color name="meetube_switch_on">@color/meetube_accent</color>
     <color name="splash_mono">#FFFFFFFF</color>
     <color name="splash_glass_start">#E6FFFFFF</color>
     <color name="splash_glass_end">#59FFFFFF</color>

@@ -29,7 +29,7 @@ import java.util.function.BooleanSupplier;
 /**
  * MEETUBE(home autoplay): YouTube's Home preview. When the feed settles, the card nearest the
  * middle of the screen plays muted right in its thumbnail, with a mute and a captions button on
- * it and a thin progress line; scroll it away and it stops, the next centred card takes over.
+ * it and a thin progress line, which a drag scrubs; scroll it away and it stops, the next centred card takes over.
  * Tapping the card still opens the video (the overlay only swallows its two buttons).
  * Settings > Customization > Home autoplay picks Off / Wi-Fi only / Always.
  */
@@ -62,7 +62,11 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     private final FrameLayout mOverlay;
     private final TextureView mTexture;
     private final TextView mCues;
-    private final View mProgress;
+    private final com.newtube.mobile.ui.common.GlowProgressBar mProgress; // glows at its head, as the player's
+    private final View mScrub; // the touch strip over the progress line
+    private final View mThumb;
+    private final GradientDrawable mDot;
+    private boolean mDragging;
     private final ImageView mMute;
     private final ImageView mCc;
     private HomePreviewPlayer mPlayer;
@@ -78,9 +82,9 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         @Override
         public void run() {
             if (mHolder != null) {
-                View frame = mHolder.thumbnailFrame();
-                mProgress.getLayoutParams().width = Math.round(frame.getWidth() * mPlayer.progress());
-                mProgress.requestLayout();
+                if (!mDragging) {
+                    showProgress(mPlayer.progress());
+                }
                 long left = mPlayer.remainingMs();
                 TextView badge = mHolder.badge();
                 if (left >= 0 && badge.getVisibility() == View.VISIBLE) { // the duration counts down, as on YouTube
@@ -116,10 +120,50 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         cues.bottomMargin = dp(10);
         cues.leftMargin = cues.rightMargin = dp(40);
         mOverlay.addView(mCues, cues);
-        mProgress = new View(mContext);
-        mProgress.setBackgroundColor(0xFFFF0033);
+        mProgress = new com.newtube.mobile.ui.common.GlowProgressBar(mContext, null);
+        mProgress.setMax(1000);
+        mProgress.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.TRANSPARENT));
         mProgress.setVisibility(View.GONE);
-        mOverlay.addView(mProgress, new FrameLayout.LayoutParams(0, dp(3), Gravity.BOTTOM | Gravity.START));
+        mOverlay.addView(mProgress, new FrameLayout.LayoutParams(-1, dp(3), Gravity.BOTTOM));
+        mThumb = new View(mContext);
+        GradientDrawable dot = new GradientDrawable();
+        dot.setShape(GradientDrawable.OVAL);
+        dot.setColor(0xFFFF0033);
+        mThumb.setBackground(dot);
+        mDot = dot;
+        mThumb.setVisibility(View.GONE);
+        FrameLayout.LayoutParams thumb = new FrameLayout.LayoutParams(dp(12), dp(12), Gravity.BOTTOM | Gravity.START);
+        mOverlay.addView(mThumb, thumb);
+        mScrub = new View(mContext);
+        mScrub.setVisibility(View.GONE);
+        mScrub.setOnTouchListener((v, e) -> {
+            float f = Math.max(0f, Math.min(1f, e.getX() / Math.max(1, v.getWidth())));
+            switch (e.getActionMasked()) {
+                case android.view.MotionEvent.ACTION_DOWN:
+                    v.getParent().requestDisallowInterceptTouchEvent(true); // not a feed scroll or a card tap
+                    mDragging = true;
+                    mProgress.getLayoutParams().height = dp(5);
+                    mThumb.setVisibility(View.VISIBLE);
+                    showProgress(f);
+                    break;
+                case android.view.MotionEvent.ACTION_MOVE:
+                    showProgress(f);
+                    break;
+                case android.view.MotionEvent.ACTION_UP:
+                    mPlayer.seekTo(f);
+                    // fall through
+                case android.view.MotionEvent.ACTION_CANCEL:
+                    mDragging = false;
+                    mProgress.getLayoutParams().height = dp(3);
+                    mThumb.setVisibility(View.GONE);
+                    showProgress(e.getActionMasked() == android.view.MotionEvent.ACTION_UP ? f : mPlayer.progress());
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        });
+        mOverlay.addView(mScrub, new FrameLayout.LayoutParams(-1, dp(28), Gravity.BOTTOM));
         mMute = button(0);
         mMute.setOnClickListener(v -> {
             mMuted = !mMuted;
@@ -240,6 +284,10 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         card.badge().setBackground(grey);
         mTexture.setAlpha(0f);
         mProgress.setVisibility(View.GONE);
+        mScrub.setVisibility(View.GONE);
+        mThumb.setVisibility(View.GONE);
+        mDragging = false;
+        mProgress.getLayoutParams().height = dp(3);
         mMute.setVisibility(View.GONE);
         mCc.setVisibility(View.GONE);
         ViewGroup frame = (ViewGroup) card.thumbnailFrame();
@@ -273,7 +321,11 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     @Override
     public void onFrame() {
         mTexture.animate().alpha(1f).setDuration(200).start();
+        int color = com.newtube.mobile.ui.common.ProgressColor.videoColors(mContext)[0];
+        mProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(color));
+        mDot.setColor(color);
         mProgress.setVisibility(View.VISIBLE);
+        mScrub.setVisibility(View.VISIBLE);
         mMute.setVisibility(View.VISIBLE);
         syncButtons();
         mMain.removeCallbacks(mTick);
@@ -294,6 +346,12 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     @Override
     public void onEnded() {
         stop();
+    }
+
+    private void showProgress(float fraction) {
+        mProgress.setProgress(Math.round(1000 * fraction));
+        mProgress.requestLayout(); // a drag changes its height
+        mThumb.setTranslationX(Math.round(mOverlay.getWidth() * fraction) - dp(6));
     }
 
     private void syncButtons() {

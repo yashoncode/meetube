@@ -370,4 +370,18 @@
     <string name="mobile_settings_equalizer_unavailable">El ecualizador no está disponible en este dispositivo</string>
     <string name="mobile_settings_seek_line">Línea de progreso bajo el vídeo</string>
     <string name="mobile_settings_seek_line_summary">La línea fina de lo reproducido en el borde del vídeo con los controles ocultos, en vertical</string>
+    <string name="mobile_settings_progress_color">Paleta de color de acento</string>
+    <string name="mobile_settings_progress_color_player">Barra de progreso del reproductor</string>
+    <string name="mobile_settings_progress_color_shorts">Barra de progreso de Shorts</string>
+    <string name="mobile_settings_progress_color_default">Predeterminado</string>
+    <string name="mobile_settings_accent">Acento</string>
+    <string name="mobile_settings_progress_color_match">Igual que el acento</string>
+    <string name="mobile_accent_ember">Brasa</string>
+    <string name="mobile_accent_sakura">Sakura</string>
+    <string name="mobile_accent_sunset">Atardecer</string>
+    <string name="mobile_accent_honey">Miel</string>
+    <string name="mobile_accent_jade">Jade</string>
+    <string name="mobile_accent_ocean">Océano</string>
+    <string name="mobile_accent_amethyst">Amatista</string>
+    <string name="mobile_accent_pearl">Perla</string>
 </resources>

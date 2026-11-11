@@ -3,7 +3,6 @@
     <!-- NEWTUBE(theme): these are the LIGHT values; values-night/colors_mobile.xml holds the dark
          ones (the palette the app shipped before the Theme setting, unchanged). A colour with no
          night entry is the same in both themes: the accent, and everything drawn over pictures. -->
-    <color name="mobile_color_primary">#FF453A</color>
     <color name="mobile_color_primary_dark">#D7372D</color>
     <!-- Cast: the only place the app tints an icon to show a live connection. Was the stock
          Material pink (#FF4081) inherited from the theme's colorAccent, which leaked into
@@ -13,7 +12,6 @@
     <color name="mobile_color_surface">#FFFFFF</color>
     <color name="mobile_color_on_surface">#0F0F0F</color>
     <!-- Group titles in Settings and dialogs: the accent, dark enough for small text on white (5:1). -->
-    <color name="mobile_color_section_title">#D7372D</color>
     <color name="mobile_color_on_surface_secondary">#606060</color>
     <color name="mobile_color_badge_bg">#73000000</color>
     <color name="mobile_color_badge_live_bg">#CCD32F2F</color>
@@ -21,7 +19,6 @@
     <!-- NEWTUBE(seek bar): YouTube's red since its 2024 refresh, the seek bar's played colour
          (PlayerTimeBar.PLAYED_COLOR), so every progress line - watched bars on thumbnails, the
          mini player's - matches the player's. -->
-    <color name="mobile_color_progress">#FF453A</color>
     <color name="mobile_color_placeholder">#E5E5E5</color>
     <!-- NEWTUBE(motion): the light that sweeps over skeleton blocks (ShimmerLinearLayout). -->
     <color name="mobile_color_skeleton_highlight">#F6F6F6</color>
@@ -104,8 +101,6 @@
     <color name="meetube_bar_tint">#C7FFFFFF</color>
     <color name="meetube_switch_off">#E3E3E8</color>
     <!-- MEETUBE(accent): the app's accent - switches and choice radios (a picker can come later). -->
-    <color name="meetube_accent">#D7372D</color>
-    <color name="meetube_switch_on">@color/meetube_accent</color>
     <!-- MEETUBE(launch): the launch animation (avd_splash_glass) in the red accent (mobile_color_primary):
          the solid play symbol, then its glass - deepest top-left, see-through bottom-right. White on night. -->
     <color name="splash_mono">#FFFF453A</color>
