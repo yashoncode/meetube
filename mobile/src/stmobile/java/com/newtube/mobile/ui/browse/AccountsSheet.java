@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.newtube.mobile.ui.common.GlassChipTrack;
 import com.liskovsoft.mediaserviceinterfaces.oauth.Account;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.YTSignInPresenter;
@@ -19,6 +20,9 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AccountSelec
 import com.liskovsoft.smartyoutubetv2.common.misc.MediaServiceManager;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.Haptics;
+import com.newtube.mobile.ui.common.MobileSnackbar;
+import com.newtube.mobile.ui.signin.WebSignInSheet;
+import com.newtube.mobile.ui.signin.WebSignInState;
 import com.liskovsoft.youtubeapi.service.YouTubeServiceManager;
 
 import java.util.List;
@@ -45,9 +49,8 @@ public final class AccountsSheet {
     }
 
     /**
-     * Entry point. No stored accounts -> straight to the sign-in screen (a sheet with only
-     * "Add account" would be noise); otherwise the sheet, even when browsing signed-out, so a
-     * stored account is always re-selectable (the old dialog was unreachable in that state).
+     * Entry point: always the sheet (its Web accounts tab is reachable with no main account), even
+     * when browsing signed-out, so a stored account is always re-selectable.
      */
     public static void show(Activity activity, Runnable onAccountsChanged) {
         MediaServiceManager.instance().loadAccounts(accounts -> {
@@ -55,12 +58,7 @@ public final class AccountsSheet {
                 return;
             }
 
-            if (accounts == null || accounts.isEmpty()) {
-                YTSignInPresenter.instance(activity).start();
-                return;
-            }
-
-            buildAndShow(activity, accounts, onAccountsChanged);
+            buildAndShow(activity, accounts != null ? accounts : java.util.Collections.emptyList(), onAccountsChanged);
         });
     }
 
@@ -90,7 +88,7 @@ public final class AccountsSheet {
             onAccountsChanged.run();
         });
 
-        addActionRow(activity, actions, R.drawable.ic_mobile_add, R.string.dialog_add_account, () -> {
+        addActionRow(activity, actions, R.drawable.ic_mobile_add, R.string.mobile_accounts_add, () -> {
             sheet.dismiss();
             YTSignInPresenter.instance(activity).start();
         });
@@ -101,8 +99,74 @@ public final class AccountsSheet {
                     () -> confirmSignOut(activity, sheet, selectedAccount, onAccountsChanged));
         }
 
+        addWebSignInRow(activity, content.findViewById(R.id.accounts_sheet_web), sheet);
+        installTabs(content);
+
         sheet.setContentView(content);
         sheet.show();
+    }
+
+    /** Main accounts | Web accounts: one section at a time. */
+    private static void installTabs(View content) {
+        GlassChipTrack tabs = content.findViewById(R.id.accounts_sheet_tabs);
+        View main = content.findViewById(R.id.accounts_sheet_main);
+        View web = content.findViewById(R.id.accounts_sheet_web);
+        tabs.setGlassSource(null); // over the sheet's own frost, as the watch page's Up next chips
+        tabs.setChips(java.util.Arrays.asList(content.getContext().getString(R.string.mobile_accounts_tab_main),
+                content.getContext().getString(R.string.mobile_accounts_tab_web)));
+        tabs.setSelected(0);
+        tabs.setOnPicked(index -> {
+            main.setVisibility(index == 0 ? View.VISIBLE : View.GONE);
+            web.setVisibility(index == 1 ? View.VISIBLE : View.GONE);
+        });
+    }
+
+    /**
+     * The web sign-ins, apart from the accounts above: every Google account signed in on the web
+     * (tap = the one live chat and likes use), then Add and Sign out (of all of them: Google keeps
+     * them in one session).
+     */
+    private static void addWebSignInRow(Activity activity, LinearLayout parent, BottomSheetDialog sheet) {
+        if (!WebSignInState.isSignedIn(activity)) {
+            addWebRow(activity, parent, R.drawable.ic_mobile_add, activity.getString(R.string.mobile_web_signin_google),
+                    activity.getString(R.string.mobile_web_signin_optional), false, () -> {
+                        sheet.dismiss();
+                        WebSignInSheet.manage(activity, () -> { });
+                    });
+            return;
+        }
+        int selected = WebSignInState.selectedSlot(activity);
+        for (WebSignInState.Account account : WebSignInState.accounts(activity)) {
+            View row = addWebRow(activity, parent, R.drawable.ic_mobile_account, account.name, null,
+                    account.slot == selected, () -> {
+                        sheet.dismiss();
+                        WebSignInState.select(activity, account.slot);
+                    });
+            WebSignInSheet.loadAvatar(activity, row.findViewById(R.id.mobile_account_row_avatar), account.photo);
+        }
+        addActionRow(activity, parent, R.drawable.ic_mobile_add, R.string.mobile_web_signin_add, () -> {
+            sheet.dismiss();
+            activity.startActivity(WebSignInSheet.addAccountIntent(activity));
+        });
+        addActionRow(activity, parent, R.drawable.ic_mobile_logout, R.string.mobile_accounts_sign_out, () -> {
+            sheet.dismiss();
+            WebSignInSheet.manage(activity, () -> MobileSnackbar.show(activity, R.string.mobile_web_signin_signed_out));
+        });
+    }
+
+    private static View addWebRow(Activity activity, LinearLayout parent, int icon, String name, String summary,
+                                  boolean checked, Runnable onClick) {
+        View row = inflateAccountRow(activity, parent);
+        ImageView avatarView = row.findViewById(R.id.mobile_account_row_avatar);
+        avatarView.setImageResource(icon);
+        tintLikeIcon(activity, avatarView);
+        ((TextView) row.findViewById(R.id.mobile_account_row_name)).setText(name);
+        TextView summaryView = row.findViewById(R.id.mobile_account_row_email);
+        summaryView.setText(summary);
+        summaryView.setVisibility(summary != null ? View.VISIBLE : View.GONE);
+        row.findViewById(R.id.mobile_account_row_check).setVisibility(checked ? View.VISIBLE : View.INVISIBLE);
+        row.setOnClickListener(v -> onClick.run());
+        return row;
     }
 
     private static void addAccountRow(Activity activity, LinearLayout parent, Account account, Runnable onClick) {

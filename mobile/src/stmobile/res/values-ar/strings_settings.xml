@@ -303,12 +303,6 @@
     <string name="mobile_settings_sponsorblock_summary">تخطّي أجزاء الفيديوهات التي حدّدها المجتمع</string>
     <string name="mobile_settings_sponsorblock_segments">عند بدء أحد الأجزاء</string>
     <string name="mobile_settings_segment_skip">تخطّي</string>
-    <string name="mobile_settings_segment_skip_notify">التخطّي مع إشعار</string>
-    <string name="mobile_settings_segment_ask">سؤالي</string>
-    <string name="mobile_settings_segment_nothing">عدم التخطّي</string>
-    <string name="mobile_settings_segment_marks">العلامات على شريط التقدّم</string>
-    <string name="mobile_settings_segment_marks_summary">تم وضع علامات على %1$d من أصل %2$d أنواع</string>
-    <string name="mobile_settings_segment_marks_note">تُظهر العلامات الملوّنة على شريط التقدّم مواضع الأجزاء من كل نوع، حتى تلك التي لا يتم تخطّيها.</string>
     <string name="mobile_settings_segment_min">عدم تخطّي الأجزاء الأقصر من</string>
     <string name="mobile_settings_segment_once">تخطّي كل جزء مرة واحدة فقط</string>
     <string name="mobile_settings_segment_once_summary">يُشغّل الجزء إذا عدت إليه بعد تخطّيه</string>
@@ -421,4 +415,20 @@
     <string name="mobile_settings_equalizer_custom">مخصّص</string>
     <string name="mobile_settings_equalizer_reset">إعادة الضبط</string>
     <string name="mobile_settings_equalizer_unavailable">معادل الصوت غير متاح على هذا الجهاز</string>
+    <string name="mobile_settings_seek_line">خط التقدّم أسفل الفيديو</string>
+    <string name="mobile_settings_seek_line_summary">الخط الرفيع لما شوهد على حافة الفيديو عند إخفاء عناصر التحكم، في الوضع العمودي</string>
+    <string name="mobile_settings_progress_color">لوحة ألوان التمييز</string>
+    <string name="mobile_settings_progress_color_player">شريط تقدم المشغل</string>
+    <string name="mobile_settings_progress_color_shorts">شريط تقدم Shorts</string>
+    <string name="mobile_settings_progress_color_default">افتراضي</string>
+    <string name="mobile_settings_accent">لون التمييز</string>
+    <string name="mobile_settings_progress_color_match">مثل لون التمييز</string>
+    <string name="mobile_accent_ember">جمر</string>
+    <string name="mobile_accent_sakura">ساكورا</string>
+    <string name="mobile_accent_sunset">غروب</string>
+    <string name="mobile_accent_honey">عسل</string>
+    <string name="mobile_accent_jade">يشم</string>
+    <string name="mobile_accent_ocean">محيط</string>
+    <string name="mobile_accent_amethyst">جمشت</string>
+    <string name="mobile_accent_pearl">لؤلؤ</string>
 </resources>

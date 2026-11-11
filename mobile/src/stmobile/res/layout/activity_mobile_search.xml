@@ -107,13 +107,17 @@
 
         <!-- Suggestions/history: a full-height vertical list OVER the results while the user
              is editing the query (YouTube-style; was a one-line horizontal chip strip).
-             Empty query = search history (clock rows), typed query = live suggestions. -->
+             Empty query = search history (clock rows), typed query = live suggestions.
+             Elevation 8dp, no shadow: the chips above carry 4dp, which drew them over this
+             list despite the order (issue #224). -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/mobile_search_suggestions"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/mobile_color_background"
             android:clipToPadding="false"
+            android:elevation="8dp"
+            android:outlineProvider="none"
             android:paddingTop="@dimen/mobile_title_bar_height"
             android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -136,14 +140,26 @@
         android:orientation="horizontal"
         android:paddingHorizontal="4dp">
 
-        <ImageButton
-            android:id="@+id/mobile_search_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/mobile_back"
-            android:padding="12dp"
-            android:src="@drawable/ic_mobile_back_arrow" />
+        <!-- A frosted circle like the search pill beside it (same tint, height and lift). -->
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/mobile_search_back_glass"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="4dp"
+            android:elevation="6dp"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/meetube_search_glass_tint">
+
+            <ImageButton
+                android:id="@+id/mobile_search_back"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/mobile_back"
+                android:padding="10dp"
+                android:src="@drawable/ic_mobile_back_arrow" />
+
+        </com.newtube.mobile.ui.common.GlassView>
 
         <com.newtube.mobile.ui.common.GlassView
             android:id="@+id/mobile_search_glass"
@@ -207,14 +223,26 @@
         </com.newtube.mobile.ui.common.GlassView>
 
         <!-- MEETUBE(search filters): upload date, duration, type, features, sort. -->
-        <ImageButton
-            android:id="@+id/mobile_search_filters"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/mobile_search_filters"
-            android:padding="12dp"
-            android:src="@drawable/ic_mobile_tune" />
+        <!-- A frosted circle like the search pill beside it (same tint, height and lift). -->
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/mobile_search_filters_glass"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="4dp"
+            android:elevation="6dp"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/meetube_search_glass_tint">
+
+            <ImageButton
+                android:id="@+id/mobile_search_filters"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/mobile_search_filters"
+                android:padding="10dp"
+                android:src="@drawable/ic_mobile_tune" />
+
+        </com.newtube.mobile.ui.common.GlassView>
 
     </LinearLayout>
 

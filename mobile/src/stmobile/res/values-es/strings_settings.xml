@@ -261,12 +261,6 @@
     <string name="mobile_settings_sponsorblock_summary">Salta las partes de los vídeos que la comunidad ha marcado</string>
     <string name="mobile_settings_sponsorblock_segments">Cuando empieza una parte</string>
     <string name="mobile_settings_segment_skip">Saltar</string>
-    <string name="mobile_settings_segment_skip_notify">Saltar y avisar</string>
-    <string name="mobile_settings_segment_ask">Preguntarme</string>
-    <string name="mobile_settings_segment_nothing">No saltar</string>
-    <string name="mobile_settings_segment_marks">Marcas en la barra</string>
-    <string name="mobile_settings_segment_marks_summary">%1$d de %2$d tipos marcados</string>
-    <string name="mobile_settings_segment_marks_note">Las marcas de color en la barra de progreso muestran dónde está cada tipo de parte, aunque no se salte.</string>
     <string name="mobile_settings_segment_min">No saltar partes de menos de</string>
     <string name="mobile_settings_segment_once">Saltar cada parte una sola vez</string>
     <string name="mobile_settings_segment_once_summary">Si vuelves a una parte que se saltó, se reproduce</string>
@@ -374,4 +368,23 @@
     <string name="mobile_settings_equalizer_custom">Personalizado</string>
     <string name="mobile_settings_equalizer_reset">Restablecer</string>
     <string name="mobile_settings_equalizer_unavailable">El ecualizador no está disponible en este dispositivo</string>
+    <string name="mobile_settings_seek_line">Línea de progreso bajo el vídeo</string>
+    <string name="mobile_settings_seek_line_summary">La línea fina de lo reproducido en el borde del vídeo con los controles ocultos, en vertical</string>
+    <string name="mobile_settings_progress_color">Paleta de color de acento</string>
+    <string name="mobile_settings_progress_color_player">Barra de progreso del reproductor</string>
+    <string name="mobile_settings_progress_color_shorts">Barra de progreso de Shorts</string>
+    <string name="mobile_settings_progress_color_default">Predeterminado</string>
+    <string name="mobile_settings_accent">Acento</string>
+    <string name="mobile_settings_progress_color_match">Igual que el acento</string>
+    <string name="mobile_accent_ember">Brasa</string>
+    <string name="mobile_accent_sakura">Sakura</string>
+    <string name="mobile_accent_sunset">Atardecer</string>
+    <string name="mobile_accent_honey">Miel</string>
+    <string name="mobile_accent_jade">Jade</string>
+    <string name="mobile_accent_ocean">Océano</string>
+    <string name="mobile_accent_amethyst">Amatista</string>
+    <string name="mobile_accent_pearl">Perla</string>
+    <string name="mobile_web_signin_setting">Inicio de sesión web de YouTube</string>
+    <string name="mobile_web_signin_optional">Opcional. Necesario para enviar mensajes en el chat en directo</string>
+    <string name="mobile_web_signin_signed_as">Sesión iniciada como %1$s</string>
 </resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_channel_posts">Публикации</string>
+    <string name="mobile_posts_title">Публикации: %1$s</string>
+    <string name="mobile_posts_empty">Публикаций пока нет</string>
+    <string name="mobile_posts_image">Изображение публикации</string>
+    <plurals name="mobile_posts_images">
+        <item quantity="one">%1$d изображение</item>
+        <item quantity="few">%1$d изображения</item>
+        <item quantity="many">%1$d изображений</item>
+        <item quantity="other">%1$d изображения</item>
+    </plurals>
+    <string name="mobile_posts_like">Нравится</string>
+    <string name="mobile_posts_like_failed">Не удалось отметить публикацию. Повторите попытку.</string>
+    <string name="mobile_posts_likes">Нравится: %1$s</string>
+    <string name="mobile_posts_replies">Ответов: %1$s</string>
+    <string name="mobile_comments_just_now">Только что</string>
+    <string name="mobile_posts_comments_read_only">Лайки и ответы на комментарии к публикациям пока недоступны</string>
+</resources>

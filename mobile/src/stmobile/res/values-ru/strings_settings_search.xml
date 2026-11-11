@@ -51,4 +51,7 @@
     <string name="mobile_settings_search_kw_home_cast">cast casting button top bar hide show tv television chromecast connect screen mirror трансляция транслировать трансляции телевизор телевизоре тв каст chromecast передача экрана дублирование экрана кнопка трансляции верхняя панель скрыть показать подключение подключить</string>
     <string name="mobile_settings_search_kw_home_chips">chips topics categories filters home hide show feed recommendations main page фильтры фильтр темы тема тематические категории категория главная главной главном экране лента рекомендации плашки кнопки чипы показать скрыть</string>
     <string name="mobile_settings_search_kw_haptics">haptics vibration vibrate buzz tick feedback touch off tactile response haptic feedback вибрация вибрацию вибрации виброотклик тактильный тактильная отклик отдача обратная связь касание касания нажатие нажатия удержание перетаскивание отключить выключить</string>
+    <string name="mobile_settings_search_kw_badge_icons">mix music note icon symbol pill badge duration time микс музыка нота значок иконка плашка длительность время</string>
+    <string name="mobile_settings_search_kw_seek_pill">double tap skip seek forward rewind 10 seconds animation ripple pill двойное касание перемотка вперёд назад 10 секунд анимация волна плашка</string>
+    <string name="mobile_settings_search_web_signin">chat google login cookies account session send message чат вход аккаунт google сессия отправить сообщение веб</string>
 </resources>

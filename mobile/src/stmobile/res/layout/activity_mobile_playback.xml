@@ -81,7 +81,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone"
-                app:yt_animationDuration="500"
+                app:yt_animationDuration="600"
                 app:yt_seekSeconds="10" />
 
             <!-- MEETUBE(shorts): vertical-player overlay, under the controls. -->
@@ -436,11 +436,33 @@
                         android:contentDescription="@string/mobile_watch_like"
                         android:src="@drawable/ic_watch_thumb_up_outline" />
 
+                    <!-- MEETUBE(issue #230): the watch page's count, beside its button. -->
+                    <TextView
+                        android:id="@+id/mobile_player_like_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:gravity="center_vertical"
+                        android:paddingEnd="8dp"
+                        android:textColor="@color/mobile_player_on_video"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
                     <com.newtube.mobile.ui.playback.PlayerButton
                         android:id="@+id/mobile_player_dislike"
                         style="@style/MobilePlayerAction"
                         android:contentDescription="@string/mobile_watch_dislike"
                         android:src="@drawable/ic_watch_thumb_down_outline" />
+
+                    <!-- MEETUBE(issue #230): the watch page's count, beside its button. -->
+                    <TextView
+                        android:id="@+id/mobile_player_dislike_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:gravity="center_vertical"
+                        android:paddingEnd="8dp"
+                        android:textColor="@color/mobile_player_on_video"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
 
                     <com.newtube.mobile.ui.playback.PlayerButton
                         android:id="@+id/mobile_player_comments"
@@ -543,6 +565,17 @@
                 android:layout_marginBottom="@dimen/mobile_player_scrub_pill_margin"
                 android:visibility="gone"
                 tools:text="2:10:42   Dictionaries" />
+
+            <!-- MEETUBE(issue #223): Chapter pop-ups - the chapter that just started, for a few
+                 seconds over the hidden controls; a tap goes to the next one. -->
+            <TextView
+                android:id="@+id/mobile_player_chapter_pill"
+                style="@style/MobilePlayerPill"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="@dimen/mobile_player_scrub_pill_margin"
+                android:maxWidth="320dp"
+                android:visibility="gone"
+                tools:text="Folding Measuring Spoon" />
 
             <!-- Top pill: "Release to cancel" while a drag rests where playback was, "2x" while
                  press-and-hold speeds the video up. -->
@@ -1150,5 +1183,35 @@
         </FrameLayout>
 
     </com.newtube.mobile.ui.playback.WatchRootLayout>
+
+    <!-- MEETUBE(issue #230): a wide landscape window's right column, YouTube's tablet page. The
+         related views move in here from mobile_watch_content while it shows, and the comments,
+         description, lyrics and transcript panels from mobile_watch_area, so they open full height
+         over Up next (applyWatchSide). -->
+    <FrameLayout
+        android:id="@+id/mobile_watch_side"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:visibility="gone">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/mobile_watch_side_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/mobile_color_background"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/mobile_watch_side_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="24dp" />
+
+        </androidx.core.widget.NestedScrollView>
+
+    </FrameLayout>
 
 </com.newtube.mobile.ui.playback.PlayerContainerLayout>

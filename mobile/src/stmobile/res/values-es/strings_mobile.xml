@@ -74,6 +74,9 @@
     <string name="mobile_accounts_title">Cuentas</string>
     <string name="mobile_accounts_signed_out">Usar sin cuenta</string>
     <string name="mobile_accounts_sign_out">Cerrar sesión</string>
+    <string name="mobile_accounts_tab_main">Cuentas principales</string>
+    <string name="mobile_accounts_tab_web">Cuentas web</string>
+    <string name="mobile_accounts_add">Añadir cuenta</string>
     <string name="mobile_accounts_sign_out_title">¿Cerrar sesión?</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s se eliminará de este dispositivo. Puedes volver a iniciar sesión cuando quieras.</string>
     <!-- Playlist page header -->
@@ -528,6 +531,7 @@
     <string name="mobile_about_credit_smarttube">SmartTube: el reproductor y el backend de YouTube sobre los que funciona MeeTube</string>
     <string name="mobile_about_credit_newtube">NewTube: la app para teléfonos de la que nació MeeTube</string>
     <string name="mobile_about_credit_backdrop">Backdrop: la lente de vidrio líquido de las barras</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: los perfiles de corrección de auriculares</string>
     <string name="mobile_about_star_desc">Libre y de código abierto. Una estrella ayuda a que otros lo encuentren</string>
     <string name="mobile_about_share">Compartir MeeTube</string>
     <string name="mobile_about_share_desc">Envía el enlace a quien le pueda gustar</string>
@@ -548,4 +552,7 @@
     <string name="mobile_greet_afternoon_line">¿Un pequeño descanso?</string>
     <string name="mobile_greet_evening_line">Relájate con un par de vídeos</string>
     <string name="mobile_greet_night_line">Un vídeo más y a dormir</string>
+    <string name="mobile_shorts_clean_on">Botones ocultos. Mantén pulsado para que vuelvan</string>
+    <string name="mobile_shorts_clean_off">Botones de vuelta. Mantén pulsado para ocultarlos</string>
+    <string name="mobile_shorts_clean_tip">Consejo: mantén pulsado un Short para ocultar sus botones</string>
 </resources>

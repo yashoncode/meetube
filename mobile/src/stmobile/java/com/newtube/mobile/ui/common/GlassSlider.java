@@ -58,7 +58,7 @@ public class GlassSlider extends SeekBar {
         mDp = getResources().getDisplayMetrics().density;
         mSimple = NavLens.lowEnd(context);
         mRail = ContextCompat.getColor(context, R.color.meetube_switch_off);
-        mFill = ContextCompat.getColor(context, R.color.meetube_switch_on);
+        mFill = ContextCompat.getColor(context, R.color.meetube_accent);
         setBackground(null);
         setThumb(new ColorDrawable(Color.TRANSPARENT));
         setProgressDrawable(new ColorDrawable(Color.TRANSPARENT));

@@ -16,6 +16,7 @@ import com.google.android.material.chip.ChipGroup;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.player.AudioEffects;
 import com.newtube.mobile.player.AudioPreferences;
+import com.newtube.mobile.player.HeadphoneEq;
 import com.newtube.mobile.ui.common.FocusRing;
 import com.newtube.mobile.ui.common.GlassSwitch;
 import com.newtube.mobile.ui.common.MobileSheets;
@@ -43,6 +44,14 @@ final class EqualizerSheet {
         enabled.setChecked(AudioPreferences.isEqualizerEnabled(context));
         enabled.setOnCheckedChangeListener((button, on) -> AudioPreferences.setEqualizerEnabled(context, on));
         content.findViewById(R.id.equalizer_enabled_row).setOnClickListener(v -> enabled.toggle());
+
+        TextView autoEq = content.findViewById(R.id.equalizer_autoeq_summary);
+        Runnable showAutoEq = () -> {
+            String name = HeadphoneEq.name(context);
+            autoEq.setText(name.isEmpty() ? context.getString(R.string.mobile_settings_autoeq_summary) : name);
+        };
+        showAutoEq.run();
+        content.findViewById(R.id.equalizer_autoeq_row).setOnClickListener(v -> HeadphonePicker.show(context, showAutoEq));
 
         if (mBands != null) {
             for (int preset = 0; preset < mBands.presets.length; preset++) {

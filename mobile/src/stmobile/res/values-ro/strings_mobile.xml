@@ -189,6 +189,9 @@
     <string name="mobile_accounts_title">Conturi</string>
     <string name="mobile_accounts_signed_out">Utilizează fără cont</string>
     <string name="mobile_accounts_sign_out">Deconectare</string>
+    <string name="mobile_accounts_tab_main">Conturi principale</string>
+    <string name="mobile_accounts_tab_web">Conturi web</string>
+    <string name="mobile_accounts_add">Adaugă cont</string>
     <string name="mobile_accounts_sign_out_title">Vrei să te deconectezi?</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s va fi eliminat de pe acest dispozitiv. Te poți autentifica din nou oricând.</string>
     <string name="mobile_empty_signin_section">Conectează-te pentru a-ți vedea %1$s</string>

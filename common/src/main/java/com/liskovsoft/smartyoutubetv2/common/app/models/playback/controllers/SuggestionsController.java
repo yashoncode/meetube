@@ -1348,6 +1348,16 @@ public class SuggestionsController extends BasePlayerController {
             return;
         }
 
+        // MEETUBE(issue #223): the phone shows it as a pill that goes by itself, never the dialog.
+        if (chapter != null && getPlayer() != null && !getPlayer().isOverlayShown() && !Utils.isScreenOff(getContext())
+                && getPlayer().showChapterPill(chapter.getTitle(), () -> {
+                    ChapterItem nextChapter = getNextChapter();
+                    getPlayer().setPositionMs(nextChapter != null ? nextChapter.getStartTimeMs() : getPlayer().getDurationMs());
+                })) {
+            mLastShownChapterStartMs = chapter.getStartTimeMs();
+            return;
+        }
+
         AppDialogPresenter dialogPresenter = AppDialogPresenter.instance(getContext());
 
         if (dialogPresenter.isDialogShown() && dialogPresenter.getId() != CHAPTER_NOTIFICATION_Id) {

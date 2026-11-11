@@ -63,6 +63,7 @@ public final class Loader {
         if (overlay != 0) {
             theme.applyStyle(overlay, true);
         }
+        Accent.applyTo(context, theme); // MEETUBE(accent): the same two call sites
     }
 
     private static SharedPreferences prefs(Context context) {

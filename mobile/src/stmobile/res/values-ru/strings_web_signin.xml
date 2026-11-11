@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_web_signin_title">Вход в YouTube</string>
+    <string name="mobile_web_signin_privacy">Это собственная страница Google. MeeTube не видит ваш пароль.</string>
+    <string name="mobile_web_signin_loading">Открываем Google</string>
+    <string name="mobile_web_signin_finishing">Завершаем вход</string>
+    <string name="mobile_web_signin_failed">Не удалось войти в YouTube. Проверьте подключение и повторите попытку.</string>
+    <string name="mobile_web_signin_retry">Повторить</string>
+    <string name="mobile_web_signin_explain_title">Ещё один вход</string>
+    <string name="mobile_web_signin_explain_need">Чтобы писать в чат трансляций и ставить лайки публикациям, нужно войти на веб-странице YouTube. Это займёт минуту и делается один раз.</string>
+    <string name="mobile_web_signin_explain_current">Текущий вход останется как есть и продолжит отвечать за видео, историю и подписки.</string>
+    <string name="mobile_web_signin_explain_risk">Используйте тот же аккаунт Google. Google не одобряет неофициальные приложения, поэтому для используемого аккаунта есть небольшой риск.</string>
+    <string name="mobile_web_signin_google">Войти через Google</string>
+    <string name="mobile_web_signin_not_now">Не сейчас</string>
+    <string name="mobile_web_signin_expired">Срок веб-входа в YouTube истёк. Войдите снова.</string>
+    <string name="mobile_web_signin_sign_out">Выйти из веб-входа в YouTube?</string>
+    <string name="mobile_web_signin_sign_out_confirm">Чтобы снова писать в чат трансляций, нужно будет войти ещё раз. Текущий вход в MeeTube останется как есть.</string>
+    <string name="mobile_web_signin_sign_out_failed">Не удалось выйти. Повторите попытку.</string>
+    <string name="mobile_web_signin_signed_out">Выполнен выход из веб-входа в YouTube</string>
+    <string name="mobile_web_signin_add">Добавить веб-аккаунт</string>
+    <string name="mobile_web_signin_switch">Сменить веб-аккаунт</string>
+    <string name="mobile_web_signin_choose">Писать в чат как</string>
+    <string name="mobile_chat_as">Вы пишете как %1$s</string>
+    <string name="mobile_chat_hint">Напишите что-нибудь</string>
+    <string name="mobile_chat_send">Отправить сообщение</string>
+    <string name="mobile_chat_send_failed">Не удалось отправить сообщение. Повторите попытку.</string>
+    <string name="mobile_chat_not_ready">Чат ещё не готов. Повторите попытку через минуту.</string>
+</resources>

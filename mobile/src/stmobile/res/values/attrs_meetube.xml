@@ -2,6 +2,9 @@
 <resources>
     <!-- MEETUBE(loader): the picked loader drawable (Widget.MeeTube.GlassSpinner, Widget.MeeTube.Loader). -->
     <attr name="meetubeLoader" format="reference" />
+    <!-- MEETUBE(accent): the picked accent (ui.common.Accent), bright and a deeper one for a light page. -->
+    <attr name="meetubeAccent" format="color" />
+    <attr name="meetubeAccentDeep" format="color" />
     <!-- MEETUBE(glass): GlassView's shape and tint. -->
     <declare-styleable name="GlassView">
         <attr name="glassCornerRadius" format="dimension" />

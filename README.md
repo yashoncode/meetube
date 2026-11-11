@@ -110,15 +110,17 @@ It's completely optional, and every coffee is truly appreciated. ☕
 
 <p align="center"><a href="https://buymeacoffee.com/yashwynth"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy me a coffee"></a></p>
 
-In India? Scan to send a coffee over UPI (`yashwynth@ptaxis`):
+In India? Scan to send a coffee over UPI (`yashwynth@slc`):
 
-<p align="center"><img src=".github/assets/meetube/donation.jpeg" width="240" alt="UPI QR code for yashwynth@ptaxis"></p>
+<p align="center"><img src=".github/assets/meetube/upi-qr.jpeg" width="240" alt="UPI QR code for yashwynth@slc"></p>
 
 A star on GitHub or sharing MeeTube with a friend helps just as much. Thank you for using it! ❤️
 
 ## Credits
 
 Big thanks to [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov) and [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala). Their open source work made MeeTube and MeeTube TV possible.
+
+Headphone correction uses the profiles from [AutoEq](https://github.com/jaakkopasanen/AutoEq) by [@jaakkopasanen](https://github.com/jaakkopasanen).
 
 And thank you to everyone who sent a fix, reported a bug or suggested an idea. MeeTube is better because of you:
 

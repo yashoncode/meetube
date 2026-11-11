@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Symbols Outlined "hard_drive_2"-style storage stack (Apache 2.0), a Settings top-level icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+  <path
+      android:fillColor="@android:color/white"
+      android:pathData="M120,800L120,560L840,560L840,800L120,800ZM200,720L760,720L760,640L200,640L200,720ZM120,400L120,160L840,160L840,400L120,400ZM200,320L760,320L760,240L200,240L200,320ZM680,700Q697,700 708.5,688.5Q720,677 720,660Q720,643 708.5,631.5Q697,620 680,620Q663,620 651.5,631.5Q640,643 640,660Q640,677 651.5,688.5Q663,700 680,700ZM680,300Q697,300 708.5,288.5Q720,277 720,260Q720,243 708.5,231.5Q697,220 680,220Q663,220 651.5,231.5Q640,243 640,260Q640,277 651.5,288.5Q663,300 680,300Z"/>
+</vector>

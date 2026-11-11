@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_channel_posts">Posts</string>
+    <string name="mobile_posts_title">%1$s posts</string>
+    <string name="mobile_posts_empty">No posts yet</string>
+    <string name="mobile_posts_image">Post image</string>
+    <string name="mobile_posts_likes">%1$s likes</string>
+    <string name="mobile_posts_replies">%1$s replies</string>
+    <string name="mobile_posts_like">Like this post</string>
+    <string name="mobile_posts_like_failed">Could not like this post. Try again.</string>
+    <string name="mobile_posts_comments_read_only">Liking and replying to post comments is not available yet</string>
+    <string name="mobile_comments_just_now">Just now</string>
+    <plurals name="mobile_posts_images">
+        <item quantity="one">%1$d image</item>
+        <item quantity="other">%1$d images</item>
+    </plurals>
+</resources>

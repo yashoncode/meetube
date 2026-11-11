@@ -43,6 +43,14 @@ public interface PlaybackView extends PlayerManager {
         return false;
     }
 
+    /**
+     * MEETUBE(issue #223): the chapter that just started, as a short-lived pill on the player
+     * ({@code next} on a tap). Return false (the default) for the TV's dialog.
+     */
+    default boolean showChapterPill(String title, Runnable next) {
+        return false;
+    }
+
     /** MEETUBE(sponsorblock): take the skip pill down (skipped, or the segment is over). */
     default void hideSkipSegment() {}
 }

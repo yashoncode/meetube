@@ -190,6 +190,9 @@
     <string name="mobile_accounts_title">Аккаунты</string>
     <string name="mobile_accounts_signed_out">Использовать без аккаунта</string>
     <string name="mobile_accounts_sign_out">Выйти</string>
+    <string name="mobile_accounts_tab_main">Основные аккаунты</string>
+    <string name="mobile_accounts_tab_web">Веб-аккаунты</string>
+    <string name="mobile_accounts_add">Добавить аккаунт</string>
     <string name="mobile_accounts_sign_out_title">Выйти?</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s будет удалён с этого устройства. Вы можете снова войти в любое время.</string>
     <string name="mobile_empty_signin_section">Войдите, чтобы увидеть свои %1$s</string>
@@ -513,6 +516,7 @@
     <string name="mobile_about_credit_smarttube">SmartTube: плеер и серверная часть YouTube, на которых работает MeeTube</string>
     <string name="mobile_about_credit_newtube">NewTube: мобильное приложение, на основе которого появился MeeTube</string>
     <string name="mobile_about_credit_backdrop">Backdrop: эффект жидкого стекла на панелях</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: профили коррекции наушников</string>
     <string name="mobile_next_in">Следующее через %1$d</string>
     <string name="mobile_next_play">Воспроизвести сейчас</string>
     <string name="mobile_next_cancel">Отмена</string>
@@ -524,4 +528,7 @@
     <string name="mobile_greet_afternoon_line">Может, пора немного отдохнуть?</string>
     <string name="mobile_greet_evening_line">Расслабьтесь за просмотром пары видео</string>
     <string name="mobile_greet_night_line">Ещё одно видео — и спать</string>
+    <string name="mobile_shorts_clean_on">Кнопки скрыты. Удерживайте, чтобы вернуть их</string>
+    <string name="mobile_shorts_clean_off">Кнопки вернулись. Удерживайте, чтобы скрыть их</string>
+    <string name="mobile_shorts_clean_tip">Совет: удерживайте Short, чтобы скрыть кнопки</string>
 </resources>

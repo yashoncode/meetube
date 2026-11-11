@@ -233,6 +233,7 @@ final class ShortsOverlay {
 
         round(mAvatar);
         mProgress.getThumb().mutate().setAlpha(0);
+        applyProgressColor();
         mProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
@@ -565,6 +566,14 @@ final class ShortsOverlay {
         }
     }
 
+    /** MEETUBE(progress colour): the scrub line and its thumb in the Shorts colour, white by default. */
+    private void applyProgressColor() {
+        android.content.res.ColorStateList tint = com.newtube.mobile.ui.common.ProgressColor.shorts(mProgress.getContext()) == com.newtube.mobile.ui.common.ProgressColor.DEFAULT
+                ? null : android.content.res.ColorStateList.valueOf(com.newtube.mobile.ui.common.ProgressColor.shortsColors(mProgress.getContext())[0]);
+        mProgress.setProgressTintList(tint);
+        mProgress.setThumbTintList(tint);
+    }
+
     /** The slide is over (or cut short): the new short takes the screen. */
     private void endPaging() {
         if (!mPaging) {
@@ -574,6 +583,7 @@ final class ShortsOverlay {
         openPaged(); // a slide cut short before its open: open now
         mPaging = false;
         mProgress.setProgress(0);
+        applyProgressColor();
         // The thumbnail now fills the screen: it stays there, over the new short's opening video,
         // until the new one is bound (bind hides it) - by now usually already playing under it.
         mPeekDir = 0;
@@ -683,7 +693,11 @@ final class ShortsOverlay {
     private void pageQueueIfLow() {
         List<Video> queue = Playlist.instance().getAll();
         Video last = queue.isEmpty() ? null : queue.get(queue.size() - 1);
-        if (last != null && last != mPagedFrom && last.belongsToShorts() && neighbour(QUEUE_LOW) == null) {
+        if (last == null || !last.belongsToShorts() || neighbour(QUEUE_LOW) != null) {
+            return;
+        }
+        // MEETUBE(issue #227): a Home shelf's queue grows from the Shorts feed; Home itself has no page for it.
+        if (!com.newtube.mobile.ui.common.ShortsFeedTail.extend() && last != mPagedFrom) {
             mPagedFrom = last; // one request per page
             BrowsePresenter.instance(mOverlay.getContext().getApplicationContext()).onScrollEnd(last);
         }

@@ -43,7 +43,7 @@ Settings
     DeArrow                     Better titles · Better thumbnails
   Other
     Backup and restore          Back up now · Restore · Automatic backup
-    Advanced                    Streaming · Live streams · Player · Network · Accounts · Tabs and feeds
+    Advanced                    Streaming · Live streams · Player · Network · Accounts (YouTube web sign-in) · Tabs and feeds
     About                       updates · diagnostic log · star / share · source · license
 ```
 

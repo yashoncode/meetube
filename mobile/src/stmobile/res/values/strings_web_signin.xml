@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_web_signin_title">Sign in to YouTube</string>
+    <string name="mobile_web_signin_privacy">This is Google\'s own page. MeeTube never sees your password.</string>
+    <string name="mobile_web_signin_loading">Opening Google</string>
+    <string name="mobile_web_signin_finishing">Finishing sign-in</string>
+    <string name="mobile_web_signin_failed">Could not finish signing in to YouTube. Check your connection and try again.</string>
+    <string name="mobile_web_signin_retry">Retry</string>
+    <string name="mobile_web_signin_explain_title">One more sign-in</string>
+    <string name="mobile_web_signin_explain_need">Sending live chat messages and liking posts need you to sign in on YouTube\'s own web page. It takes a minute and you only do it once.</string>
+    <string name="mobile_web_signin_explain_current">Your current sign-in stays as it is and keeps handling videos, history and subscriptions.</string>
+    <string name="mobile_web_signin_explain_risk">Use the same Google account. Google does not approve of unofficial apps, so there is a small risk to the account you use.</string>
+    <string name="mobile_web_signin_google">Sign in with Google</string>
+    <string name="mobile_web_signin_not_now">Not now</string>
+    <string name="mobile_web_signin_sign_out">Sign out of YouTube web sign-in?</string>
+    <string name="mobile_web_signin_sign_out_confirm">You will need to sign in again to send live chat messages. Your current MeeTube sign-in stays as it is.</string>
+    <string name="mobile_web_signin_sign_out_failed">Could not sign out. Try again.</string>
+    <string name="mobile_web_signin_signed_out">Signed out of YouTube web sign-in</string>
+    <string name="mobile_web_signin_add">Add web account</string>
+    <string name="mobile_web_signin_choose">Chat as</string>
+    <string name="mobile_web_signin_switch">Switch web account</string>
+    <string name="mobile_web_signin_expired">Your YouTube web sign-in expired. Sign in again.</string>
+    <string name="mobile_chat_as">Chat as %1$s</string>
+    <string name="mobile_chat_hint">Say something</string>
+    <string name="mobile_chat_send">Send message</string>
+    <string name="mobile_chat_send_failed">Could not send your message. Try again.</string>
+    <string name="mobile_chat_not_ready">Chat is not ready yet. Try again in a moment.</string>
+</resources>

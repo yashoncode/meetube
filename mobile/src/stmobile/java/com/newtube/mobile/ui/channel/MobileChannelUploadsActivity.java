@@ -523,7 +523,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
         if (lastVisible >= itemCount - SCROLL_END_THRESHOLD_ITEMS && itemCount != mLastPaginationTriggerCount) {
             Video last = mVideos.get(mVideos.size() - 1);
             if (userScroll) {
-                mTopUp.onUserAction(); // NEWTUBE(shorts): the user asked for more
+                mTopUp.onUserAction(mVideos.size()); // NEWTUBE(shorts): the user asked for more
             } else if (!mTopUp.takeAutomatic(last.getGroup() != null && last.getGroup().getNextPageKey() != null)) {
                 return; // a layout pass, not the user: only within the top-up budget
             }
