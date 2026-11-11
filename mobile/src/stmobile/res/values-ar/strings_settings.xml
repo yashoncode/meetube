@@ -415,4 +415,6 @@
     <string name="mobile_settings_equalizer_custom">مخصّص</string>
     <string name="mobile_settings_equalizer_reset">إعادة الضبط</string>
     <string name="mobile_settings_equalizer_unavailable">معادل الصوت غير متاح على هذا الجهاز</string>
+    <string name="mobile_settings_seek_line">خط التقدّم أسفل الفيديو</string>
+    <string name="mobile_settings_seek_line_summary">الخط الرفيع لما شوهد على حافة الفيديو عند إخفاء عناصر التحكم، في الوضع العمودي</string>
 </resources>

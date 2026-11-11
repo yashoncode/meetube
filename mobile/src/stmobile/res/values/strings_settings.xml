@@ -589,4 +589,6 @@
     <string name="mobile_settings_tv_busy">An install is already running. Give it a moment.</string>
     <string name="mobile_settings_tv_permission">Allow local network access to find and connect to your TV.</string>
     <string name="mobile_settings_tv_footer">You can turn debugging off on the TV afterwards.</string>
+    <string name="mobile_settings_seek_line">Progress line under the video</string>
+    <string name="mobile_settings_seek_line_summary">The thin played line on the video edge while the controls are hidden, in portrait</string>
 </resources>

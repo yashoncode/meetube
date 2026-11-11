@@ -368,4 +368,6 @@
     <string name="mobile_settings_equalizer_custom">Personalizado</string>
     <string name="mobile_settings_equalizer_reset">Restablecer</string>
     <string name="mobile_settings_equalizer_unavailable">El ecualizador no está disponible en este dispositivo</string>
+    <string name="mobile_settings_seek_line">Línea de progreso bajo el vídeo</string>
+    <string name="mobile_settings_seek_line_summary">La línea fina de lo reproducido en el borde del vídeo con los controles ocultos, en vertical</string>
 </resources>

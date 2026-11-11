@@ -449,4 +449,6 @@
     <string name="mobile_settings_equalizer_custom">Пользовательский</string>
     <string name="mobile_settings_equalizer_reset">Сбросить</string>
     <string name="mobile_settings_equalizer_unavailable">Эквалайзер недоступен на этом устройстве</string>
+    <string name="mobile_settings_seek_line">Полоса прогресса под видео</string>
+    <string name="mobile_settings_seek_line_summary">Тонкая полоса просмотренного на краю видео, когда элементы управления скрыты, в портретном режиме</string>
 </resources>
