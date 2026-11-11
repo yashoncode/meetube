@@ -82,6 +82,9 @@ jobs:
           awk -v h="## $NAME" '$0 == h {on=1; next} on && /^## / {exit} on' CHANGELOG.md > changes.md
           test -s changes.md
           url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/MeeTube_${TAG#v}"
+          # MeeTube TV ships from branch tv under tv-vX.Y.Z tags: the newest non-beta one's universal APK.
+          tv=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --limit 100 --json tagName \
+            --jq '[.[].tagName | select(startswith("tv-v"))][0] // empty')
           {
             echo "### Download"
             echo
@@ -90,6 +93,9 @@ jobs:
             echo "| **Most phones** | [arm64-v8a](${url}_arm64-v8a.apk) |"
             echo "| **Low end phones** (older or 32-bit) | [armeabi-v7a](${url}_armeabi-v7a.apk) |"
             echo "| **Universal** (not sure? this one works on all) | [universal](${url}_universal.apk) |"
+            if [ -n "$tv" ]; then
+              echo "| **TV** (Android TV, Google TV, Fire TV) | [universal](https://github.com/$GITHUB_REPOSITORY/releases/download/$tv/MeeTubeTV_${tv#tv-v}_universal.apk) |"
+            fi
             echo
             cat changes.md
           } > notes.md
