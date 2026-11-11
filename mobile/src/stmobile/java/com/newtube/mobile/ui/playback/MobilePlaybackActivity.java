@@ -2189,6 +2189,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mTimeBar.setVisibility(View.VISIBLE);
             updateSeekBarLine();
         }
+        updateSeekBarLine(); // MEETUBE(issue #200): back from Settings with the line turned off
         // The PiP exit ended in the fullscreen UI, so it was an expand, not a dismiss.
         mPipDismissPending = false;
         mPipToAudio = false;
@@ -3098,7 +3099,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         Video video = getVideo();
         boolean casting = mCastOverlay != null && mCastOverlay.getVisibility() == View.VISIBLE;
-        boolean line = !isLandscape() && !mIsInPip && !mPipEnterPending && !casting
+        boolean line = PlayerTimeBar.isLineOn(this) && !isLandscape() && !mIsInPip && !mPipEnterPending && !casting
                 && (video == null || !video.isLive)
                 && !isShortsMode(); // MEETUBE(shorts): the overlay draws its own scrub line
         if (line != mTimeBar.isLineWhenHidden()) {

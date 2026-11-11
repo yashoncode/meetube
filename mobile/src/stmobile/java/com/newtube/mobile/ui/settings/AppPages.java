@@ -285,6 +285,12 @@ final class AppPages {
                 .bind(() -> com.newtube.mobile.ui.playback.SeekThumb.type(context),
                         v -> com.newtube.mobile.ui.playback.SeekThumb.setType(context, v)));
 
+        // MEETUBE(issue #200): the seek bar's line on the video's bottom edge while the controls hide.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_seek_line),
+                context.getString(R.string.mobile_settings_seek_line_summary),
+                () -> com.newtube.mobile.ui.playback.PlayerTimeBar.isLineOn(context),
+                on -> com.newtube.mobile.ui.playback.PlayerTimeBar.setLineOn(context, on)));
+
         // MEETUBE(issue #188): the floating mini player's type (a pinch on the Default card sizes it).
         rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_mini_type))
                 .option(context.getString(R.string.mobile_settings_mini_type_default),

@@ -258,6 +258,15 @@ public class PlayerTimeBar extends View implements TimeBar {
         }
     }
 
+    /** MEETUBE(issue #200): Settings > Customize can turn the portrait line off; on by default. */
+    public static boolean isLineOn(Context context) {
+        return context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).getBoolean("seek_line", true);
+    }
+
+    public static void setLineOn(Context context, boolean on) {
+        context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).edit().putBoolean("seek_line", on).apply();
+    }
+
     /** Whether the played part stays on screen as a line while the controls are hidden. */
     public void setLineWhenHidden(boolean line) {
         if (mLineWhenHidden != line) {
