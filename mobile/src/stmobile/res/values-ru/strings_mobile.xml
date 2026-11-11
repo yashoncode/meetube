@@ -513,6 +513,7 @@
     <string name="mobile_about_credit_smarttube">SmartTube: плеер и серверная часть YouTube, на которых работает MeeTube</string>
     <string name="mobile_about_credit_newtube">NewTube: мобильное приложение, на основе которого появился MeeTube</string>
     <string name="mobile_about_credit_backdrop">Backdrop: эффект жидкого стекла на панелях</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: профили коррекции наушников</string>
     <string name="mobile_next_in">Следующее через %1$d</string>
     <string name="mobile_next_play">Воспроизвести сейчас</string>
     <string name="mobile_next_cancel">Отмена</string>

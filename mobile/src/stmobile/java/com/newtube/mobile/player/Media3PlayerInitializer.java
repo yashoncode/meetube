@@ -516,6 +516,18 @@ public class Media3PlayerInitializer {
 
         private static int sDebugDecoderFailuresLeft = 4;
 
+        /** The stock sink plus MEETUBE(autoeq)'s headphone correction ({@link HeadphoneEq}). */
+        @Override
+        protected androidx.media3.exoplayer.audio.AudioSink buildAudioSink(Context context,
+                boolean enableFloatOutput, boolean enableAudioOutputPlaybackParams) {
+            return new androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
+                    .setEnableFloatOutput(enableFloatOutput)
+                    .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParams)
+                    .setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[] {
+                            HeadphoneEq.processor(context)})
+                    .build();
+        }
+
         @Override
         protected void buildAudioRenderers(Context context, int extensionRendererMode,
                 androidx.media3.exoplayer.mediacodec.MediaCodecSelector mediaCodecSelector,

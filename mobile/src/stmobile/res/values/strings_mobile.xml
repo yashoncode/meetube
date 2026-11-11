@@ -629,6 +629,7 @@
     <string name="mobile_about_credit_smarttube">SmartTube: the player and the YouTube backend MeeTube runs on</string>
     <string name="mobile_about_credit_newtube">NewTube: the phone app MeeTube grew from</string>
     <string name="mobile_about_credit_backdrop">Backdrop: the liquid glass lens on the bars</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: the headphone correction profiles</string>
     <string name="mobile_about_site_url" translatable="false">https://github.com/yashoncode/meetube</string>
     <!-- Experimental SABR playback (was strings_sabr.xml) -->
     <string name="sabr_vod_option">Prefer SABR even when links work (experimental; next VOD)</string>
