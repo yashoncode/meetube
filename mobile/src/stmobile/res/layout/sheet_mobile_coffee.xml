@@ -135,39 +135,6 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/coffee_cups"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:selectionRequired="false"
-                    app:singleSelection="true" />
-
-                <EditText
-                    android:id="@+id/coffee_custom"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:hint="@string/mobile_settings_coffee_custom"
-                    android:imeOptions="actionDone"
-                    android:importantForAutofill="no"
-                    android:inputType="number"
-                    android:maxLength="6"
-                    android:singleLine="true"
-                    android:textColor="@color/mobile_color_on_surface"
-                    android:textColorHint="@color/mobile_color_on_surface_secondary"
-                    android:textSize="16sp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/coffee_pay"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:minHeight="48dp"
-                    android:textAllCaps="false"
-                    android:textColor="@color/mobile_color_on_inverse_surface"
-                    app:backgroundTint="@color/mobile_color_inverse_surface"
-                    app:cornerRadius="28dp" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
