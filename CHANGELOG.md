@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.3.7** Melmo](#337-melmo) | 2026-11-12 | Connected |
 | [**3.3.5** Sentinel](#335-sentinel) | 2026-11-08 | Immersive |
 | [**3.3.1** Pluto](#331-pluto) | 2026-11-04 | Tuned |
 | [**3.3.0** Glitch](#330-glitch) | 2026-11-03 | Polished |
@@ -50,6 +51,55 @@ Every MeeTube release, newest first.<br>
 
 - Sorry if you thought of donating and my UPI wasn't working earlier. It's fixed now: Sudo brew coffee in About and the README have a new QR and UPI ID (`yashwynth@slc`).
 
+
+## 3.3.7 Melmo
+
+> **Connected**<br>
+> 📅 2026-11-12 · closes #173, #200, #223, #224, #225, #226, #227, #229 and #230
+
+### ✨ Highlights
+
+- **Community posts:** channels have a Posts tab. Like posts, comment and reply right in MeeTube, with counts that update at once and a little pop on every like.
+- **Live chat on live videos:** chat along with the stream from a real comment box, pick which Google account to chat as (with avatars), and see the full Live chat feed with its history the moment it opens.
+- **AutoEq headphone correction:** search about 9,000 headphone profiles from AutoEq in the Equalizer and MeeTube tunes the sound for your exact pair, exact on every phone and kept for offline use.
+- **Update notifications:** a new MeeTube version now shows up in your notification shade, even with the app closed. Settings > About > Notify about updates turns it off.
+
+### New
+
+- Web accounts for chatting and posts sit in their own tab in the Accounts sheet, separate from your main account, and Sign in is now Add account.
+- Accent colour palette: pick the app's accent from eight gradient palettes in Customization, and the Player and Shorts progress line colours with it.
+- Double tap to skip shows a springy glass seek pill that counts up +10, +20, +30 as you tap. Customization > Seek pill brings back the classic ripple.
+- Settings > Storage shows how full your phone is, what MeeTube takes, and clears the cache in one tap while your downloads stay.
+- Mix and playlist cards are a stack, with two cards peeking above the thumbnail.
+- Time pills show radio waves before a Mix and a music note before a music video. Customization > Icons on time pills turns them off.
+- Ambient mode in landscape: the bands beside a video that doesn't fill the screen glow with its colours.
+- Tablets in landscape keep a horizontal watch page, with Up next in its own column (#230).
+- The progress line under the video can be turned off in Customization (#200).
+- A long press hides a Short's buttons for every Short after it, until another long press brings them back (#173).
+- The Minimal mini player is the video itself, with the title and buttons over a soft shade (#226).
+- A new UPI ID for coffee in About > Sudo brew coffee, with a QR to scan.
+
+### Changed
+
+- SponsorBlock: every kind of part picks Skip, Ask, Show or Off right on its row.
+- Chapter titles show as a frosted pill above the seek bar instead of a pop-up that stuck over the video (#223).
+- The Storage page is all glass: a frosted Clear cache button and a glowing storage line in your accent.
+- Back from a channel's Posts returns to the channel.
+- More of MeeTube speaks Russian, thanks to @MAKAKAIglitch (#221).
+
+### Fixed
+
+- Shorts from Home's shelf keep going past the first 6 or 7 (#227).
+- Videos no longer stutter after visiting the You page (#229).
+- Search suggestions sit above the filter chips again (#224).
+- The mini player bar keeps the video's real shape (#225).
+- Fullscreen comments open again in landscape, and their glass rim no longer lingers on a drag.
+- Shorts from the You page's History row always open in the Shorts player.
+- The You page's History row no longer blinks out on a revisit.
+
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @Ishaanj2007, @dhanunjay333i-cyber, @KrishnakantShedge, @nouse8192-tech and @MAKAKAIglitch.
 
 ## 3.3.5 Sentinel
 
