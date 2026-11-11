@@ -10242,7 +10242,9 @@ public class MobilePlaybackActivity extends MobileActivity
             // MEETUBE(issue #214): beside the video, the card's rim leaves with the panel.
             View area = mCommentsSide ? findViewById(R.id.mobile_watch_area) : null;
             if (area != null && area.getForeground() != null) {
-                area.getForeground().setAlpha(Math.round(255 * (1f - gone)));
+                // Gone within the drag's first sixth: it stays at the card's top while the panel
+                // goes down, so a slow fade left a lone outline above the dragged panel.
+                area.getForeground().setAlpha(Math.round(255 * Math.max(0f, 1f - gone * 6f)));
             }
             // MEETUBE(shorts): as the comments slide the short grows or shrinks with them.
             followShortsComments(gone);
