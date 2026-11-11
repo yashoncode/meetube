@@ -35,6 +35,25 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
     private var rootLayout: ConstraintLayout
     private var secondsView: SecondsView
     private var circleClipTapView: CircleClipTapView
+    private var seekPill: com.github.vkay94.dtpv3.youtube.views.SeekBurstPill
+    /** Seconds the pill shows: one burst of taps in one direction. */
+    private var pillSeconds = 0
+    private var classicTapColor = 0
+    private var classicBackgroundColor = 0
+
+    /**
+     * MEETUBE(seek pill): true = the count pill (the ripple only keeps time, its end hides the
+     * overlay); false = the original ripple with the three triangles and "10 seconds".
+     */
+    var pillStyle = true
+        private set
+
+    fun pillStyle(on: Boolean) = apply {
+        pillStyle = on
+        tapCircleColor = if (on) 0 else classicTapColor
+        circleBackgroundColor = if (on) 0 else classicBackgroundColor
+        if (!on) seekPill.reset()
+    }
 
     constructor(context: Context) : this(context, null) {
         // Hide overlay initially when added programmatically
@@ -53,19 +72,24 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
         rootLayout = findViewById(R.id.root_constraint_layout)
         secondsView = findViewById(R.id.seconds_view)
         circleClipTapView = findViewById(R.id.circle_clip_tap_view)
+        seekPill = findViewById(R.id.seek_pill)
 
         // Initialize UI components
         initializeAttributes()
+        classicTapColor = tapCircleColor
+        classicBackgroundColor = circleBackgroundColor
+        pillStyle(true)
         secondsView.isForward = true
         changeConstraints(true)
 
         // This code snippet is executed when the circle scale animation is finished
         circleClipTapView.performAtEnd = {
-            performListener?.onAnimationEnd()
-
             secondsView.visibility = View.INVISIBLE
             secondsView.seconds = 0
             secondsView.stop()
+            pillSeconds = 0
+            // MEETUBE(seek pill): the pill fades out first; a tap meanwhile cancels this and goes on.
+            if (pillStyle) seekPill.hide { performListener?.onAnimationEnd() } else performListener?.onAnimationEnd()
         }
     }
 
@@ -345,8 +369,11 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
         if (this.visibility != View.VISIBLE) {
             if (shouldForward != null) {
                 performListener?.onAnimationStart()
-                secondsView.visibility = View.VISIBLE
-                secondsView.start()
+                pillSeconds = 0
+                if (!pillStyle) {
+                    secondsView.visibility = View.VISIBLE
+                    secondsView.start()
+                }
             } else
                 return
         }
@@ -361,6 +388,7 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
                         isForward = false
                         seconds = 0
                     }
+                    pillSeconds = 0
                 }
 
                 // Cancel ripple and start new without triggering overlay disappearance
@@ -379,6 +407,7 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
                         isForward = true
                         seconds = 0
                     }
+                    pillSeconds = 0
                 }
 
                 // Cancel ripple and start new without triggering overlay disappearance
@@ -433,12 +462,23 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
 
     private fun forwarding() {
         secondsView.seconds += seekSeconds
+        showPill(true)
         seekToPosition(player?.currentPosition?.plus(seekSeconds * 1000))
     }
 
     private fun rewinding() {
         secondsView.seconds += seekSeconds
+        showPill(false)
         seekToPosition(player?.currentPosition?.minus(seekSeconds * 1000))
+    }
+
+    /** MEETUBE(seek pill): the count grows per tap; the host pops the video with it. */
+    private fun showPill(forward: Boolean) {
+        if (!pillStyle) return
+        val first = pillSeconds == 0
+        pillSeconds += seekSeconds
+        seekPill.tap(forward, pillSeconds, first, width > height)
+        performListener?.onSeekTap(forward)
     }
 
     private fun changeConstraints(forward: Boolean) {
@@ -454,6 +494,7 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
                 connect(secondsView.id, ConstraintSet.START,
                     ConstraintSet.PARENT_ID, ConstraintSet.START)
             }
+            setGuidelinePercent(R.id.seek_pill_center, if (forward) 0.78f else 0.22f)
             secondsView.start()
             applyTo(rootLayout)
         }
@@ -471,6 +512,9 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
          * Visibility of the overlay should be set to GONE within this interface method.
          */
         fun onAnimationEnd()
+
+        /** MEETUBE(seek pill): one tap's seek, for the host's own feedback (the video's pop). */
+        fun onSeekTap(forward: Boolean)
 
         /**
          * Determines whether the player should forward, rewind or skip this tap by doing

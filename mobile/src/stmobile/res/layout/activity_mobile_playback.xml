@@ -81,7 +81,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone"
-                app:yt_animationDuration="500"
+                app:yt_animationDuration="600"
                 app:yt_seekSeconds="10" />
 
             <!-- MEETUBE(shorts): vertical-player overlay, under the controls. -->

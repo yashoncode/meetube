@@ -476,6 +476,8 @@
     <string name="mobile_settings_watched_bar_summary">How much of a video you have watched, under its thumbnail</string>
     <string name="mobile_settings_badge_icons">Icons on time pills</string>
     <string name="mobile_settings_badge_icons_summary">Radio waves before Mix, a music note before a music video time</string>
+    <string name="mobile_settings_seek_pill">Seek pill</string>
+    <string name="mobile_settings_seek_pill_summary">Double tap to skip shows a springy +10 pill and nudges the video; off for the classic ripple</string>
     <string name="mobile_settings_home_cast">Cast button</string>
     <string name="mobile_settings_home_cast_summary">Show the Cast button in the top bar of Home</string>
     <string name="mobile_settings_home_chips">Home chips</string>

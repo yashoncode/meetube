@@ -2100,6 +2100,15 @@ public class MobilePlaybackActivity extends MobileActivity
                         // FAST-SEEK: the overlay seeks the raw player during the animation; the
                         // directional keyframe-snap is installed per tap in shouldForward.
                         mYouTubeOverlay.setVisibility(View.VISIBLE);
+                        // MEETUBE(seek pill): Settings > Customization picks it per burst.
+                        mYouTubeOverlay.pillStyle(com.newtube.mobile.ui.common.SeekStyle.isPill(MobilePlaybackActivity.this));
+                    }
+
+                    @Override
+                    public void onSeekTap(boolean forward) {
+                        if (mVideoArea != null) {
+                            mVideoArea.pop(forward);
+                        }
                     }
 
                     @Override

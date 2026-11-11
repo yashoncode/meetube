@@ -206,8 +206,57 @@ public class PinchZoomLayout extends FrameLayout {
         mZoomTarget = target;
     }
 
+    private android.animation.ValueAnimator mPop;
+
+    /**
+     * MEETUBE(seek pill): one double-tap seek nudges the picture 3% bigger and 5dp toward the
+     * tapped side, peaking at 130 ms and settled by 440 ms, over whatever zoom it is at.
+     */
+    public void pop(boolean forward) {
+        View target = mZoomTarget;
+        if (target == null) {
+            return;
+        }
+        stopPop();
+        float baseX = target.getTranslationX();
+        float shift = (forward ? 1 : -1) * 5 * getResources().getDisplayMetrics().density;
+        mPop = android.animation.ValueAnimator.ofFloat(0f, 1f);
+        mPop.setDuration(440);
+        mPop.setInterpolator(null); // linear: the keyframes below are the curve
+        mPop.addUpdateListener(a -> {
+            float ms = a.getAnimatedFraction() * 440;
+            float n = ms < 130 ? ms / 130 : 1 - (ms - 130) / 310;
+            target.setScaleX(mZoom * (1 + 0.03f * n));
+            target.setScaleY(mZoom * (1 + 0.03f * n));
+            target.setTranslationX(baseX + shift * n);
+        });
+        mPop.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override public void onAnimationCancel(android.animation.Animator animation) {
+                settle();
+            }
+            @Override public void onAnimationEnd(android.animation.Animator animation) {
+                settle();
+            }
+            private void settle() {
+                target.setScaleX(mZoom);
+                target.setScaleY(mZoom);
+                target.setTranslationX(baseX);
+            }
+        });
+        mPop.start();
+    }
+
+    private void stopPop() {
+        if (mPop != null) {
+            android.animation.ValueAnimator pop = mPop;
+            mPop = null;
+            pop.cancel(); // its listener puts the picture back where the zoom left it
+        }
+    }
+
     /** Back to 1x, centred: a new video, a turn of the phone, a new resize mode. */
     public void resetZoom() {
+        stopPop();
         if (mZoom == 1f) {
             return;
         }
@@ -233,6 +282,7 @@ public class PinchZoomLayout extends FrameLayout {
         if (target.getWidth() == 0 || box == null) {
             return;
         }
+        stopPop();
         float zoom = Math.max(1f, Math.min(MAX_ZOOM, mZoom * factor));
         float f = zoom / mZoom;
         mZoomBox.set(0, 0, box.getWidth(), box.getHeight());
