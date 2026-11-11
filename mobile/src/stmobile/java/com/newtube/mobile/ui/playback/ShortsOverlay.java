@@ -683,7 +683,11 @@ final class ShortsOverlay {
     private void pageQueueIfLow() {
         List<Video> queue = Playlist.instance().getAll();
         Video last = queue.isEmpty() ? null : queue.get(queue.size() - 1);
-        if (last != null && last != mPagedFrom && last.belongsToShorts() && neighbour(QUEUE_LOW) == null) {
+        if (last == null || !last.belongsToShorts() || neighbour(QUEUE_LOW) != null) {
+            return;
+        }
+        // MEETUBE(issue #227): a Home shelf's queue grows from the Shorts feed; Home itself has no page for it.
+        if (!com.newtube.mobile.ui.common.ShortsFeedTail.extend() && last != mPagedFrom) {
             mPagedFrom = last; // one request per page
             BrowsePresenter.instance(mOverlay.getContext().getApplicationContext()).onScrollEnd(last);
         }

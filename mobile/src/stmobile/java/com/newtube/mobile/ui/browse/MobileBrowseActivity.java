@@ -2570,6 +2570,7 @@ public class MobileBrowseActivity extends MobileActivity
         List<Video> shelf = shelfOf(video);
         if (shelf != null) {
             ShortsFilter.queueAround(shelf, video); // MEETUBE(issue #43): Home pages add theirs (extendShortsQueue)
+            com.newtube.mobile.ui.common.ShortsFeedTail.arm(); // MEETUBE(issue #227): then the Shorts feed, without end
         } else if (video.belongsToShorts() && video.hasVideo()) {
             queueShorts(video);
         } else if (video.belongsToHistory() && video.hasVideo() && ShortsFilter.isShort(video)) {
