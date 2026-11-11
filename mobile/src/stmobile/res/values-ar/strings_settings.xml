@@ -303,12 +303,6 @@
     <string name="mobile_settings_sponsorblock_summary">تخطّي أجزاء الفيديوهات التي حدّدها المجتمع</string>
     <string name="mobile_settings_sponsorblock_segments">عند بدء أحد الأجزاء</string>
     <string name="mobile_settings_segment_skip">تخطّي</string>
-    <string name="mobile_settings_segment_skip_notify">التخطّي مع إشعار</string>
-    <string name="mobile_settings_segment_ask">سؤالي</string>
-    <string name="mobile_settings_segment_nothing">عدم التخطّي</string>
-    <string name="mobile_settings_segment_marks">العلامات على شريط التقدّم</string>
-    <string name="mobile_settings_segment_marks_summary">تم وضع علامات على %1$d من أصل %2$d أنواع</string>
-    <string name="mobile_settings_segment_marks_note">تُظهر العلامات الملوّنة على شريط التقدّم مواضع الأجزاء من كل نوع، حتى تلك التي لا يتم تخطّيها.</string>
     <string name="mobile_settings_segment_min">عدم تخطّي الأجزاء الأقصر من</string>
     <string name="mobile_settings_segment_once">تخطّي كل جزء مرة واحدة فقط</string>
     <string name="mobile_settings_segment_once_summary">يُشغّل الجزء إذا عدت إليه بعد تخطّيه</string>
