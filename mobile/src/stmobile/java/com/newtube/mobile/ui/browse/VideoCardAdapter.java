@@ -674,8 +674,17 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
                     (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) mThumbnailFrame.getLayoutParams();
             String ratio = video.belongsToShorts() ? "9:16" : "16:9";
-            if (!ratio.equals(lp.dimensionRatio)) {
+            // MEETUBE(mix stack): a Mix or playlist shows two cards behind it; the thumbnail drops below them.
+            View back = itemView.findViewById(R.id.video_stack_back);
+            boolean stack = back != null && !video.belongsToShorts() && (video.isMix() || video.isPlaylistCard());
+            int top = stack ? Math.round(10 * itemView.getResources().getDisplayMetrics().density) : 0;
+            if (back != null) {
+                back.setVisibility(stack ? View.VISIBLE : View.GONE);
+                itemView.findViewById(R.id.video_stack_mid).setVisibility(stack ? View.VISIBLE : View.GONE);
+            }
+            if (!ratio.equals(lp.dimensionRatio) || lp.topMargin != top) {
                 lp.dimensionRatio = ratio;
+                lp.topMargin = top;
                 mThumbnailFrame.setLayoutParams(lp);
             }
         }
