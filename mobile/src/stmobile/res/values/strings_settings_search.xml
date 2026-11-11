@@ -42,6 +42,7 @@
     <string name="mobile_settings_search_kw_gesture_seek">gestures scrub skip forward rewind</string>
     <string name="mobile_settings_search_kw_double_tap_seek">double tap seek skip forward rewind seconds jump interval</string>
     <string name="mobile_settings_search_kw_loader">loader loading spinner progress neon frosted glass cookie liquid ring orb blob orbit</string>
+    <string name="mobile_settings_search_kw_badge_icons">mix music note icon symbol pill badge duration time</string>
     <string name="mobile_settings_search_kw_watched_bar">watched progress red line bar history seen thumbnail</string>
     <string name="mobile_settings_search_kw_home_cast">cast button top bar hide show tv chromecast</string>
     <string name="mobile_settings_search_kw_home_chips">chips topics categories filters home hide show</string>
