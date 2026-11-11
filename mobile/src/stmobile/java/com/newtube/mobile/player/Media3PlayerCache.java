@@ -144,4 +144,23 @@ public final class Media3PlayerCache {
 
         return sCache;
     }
+
+    /**
+     * MEETUBE(storage): empty the media cache through the open {@link SimpleCache} (its folder can't
+     * just be deleted while the cache owns it). Slow: call off the main thread.
+     */
+    public static void clear(Context context) {
+        Cache cache = get(context);
+        if (cache == null) {
+            return;
+        }
+        for (String key : cache.getKeys()) {
+            cache.removeResource(key);
+        }
+    }
+
+    /** The cache's folder, for the Storage page to size. */
+    public static File dir(Context context) {
+        return new File(context.getApplicationContext().getCacheDir(), CACHE_DIR_NAME);
+    }
 }
