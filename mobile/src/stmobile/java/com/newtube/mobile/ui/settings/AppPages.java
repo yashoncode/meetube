@@ -166,6 +166,12 @@ final class AppPages {
                 () -> com.newtube.mobile.ui.common.BadgeIcons.isShown(context),
                 on -> com.newtube.mobile.ui.common.BadgeIcons.setShown(context, on)).needsRestart());
 
+        // MEETUBE(seek pill): off brings back the original double-tap ripple.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_seek_pill),
+                context.getString(R.string.mobile_settings_seek_pill_summary),
+                () -> com.newtube.mobile.ui.common.SeekStyle.isPill(context),
+                on -> com.newtube.mobile.ui.common.SeekStyle.setPill(context, on)));
+
         // MEETUBE(issue #120): the pop when a pull-to-refresh lets go; off by default.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_refresh_sound),
                 context.getString(R.string.mobile_settings_refresh_sound_summary),
