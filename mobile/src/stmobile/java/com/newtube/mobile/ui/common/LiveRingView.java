@@ -124,7 +124,22 @@ public final class LiveRingView extends View {
     @Override
     public void onVisibilityAggregated(boolean isVisible) {
         super.onVisibilityAggregated(isVisible);
-        if (isVisible && mLoop == null) {
+        mShown = isVisible;
+        syncLoop();
+    }
+
+    private boolean mShown;
+
+    /** The player opens over Browse without hiding it: spin only in a focused window (issue #229). */
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        syncLoop();
+    }
+
+    private void syncLoop() {
+        boolean run = mShown && hasWindowFocus();
+        if (run && mLoop == null) {
             mLoop = ValueAnimator.ofFloat(0f, 1f);
             mLoop.setDuration(LOOP_MS);
             mLoop.setRepeatCount(ValueAnimator.INFINITE);
@@ -134,7 +149,7 @@ public final class LiveRingView extends View {
                 invalidate();
             });
             mLoop.start();
-        } else if (!isVisible && mLoop != null) {
+        } else if (!run && mLoop != null) {
             mLoop.cancel();
             mLoop = null;
         }

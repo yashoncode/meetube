@@ -103,6 +103,29 @@ public final class RgbGlow extends View {
             mBand.invalidateSelf(); // every frame: also follows the page as it scrolls
         });
         mCycle.start();
+        syncCycle(); // attached under the hidden You panel: no frames until it shows
+    }
+
+    /**
+     * Runs only while shown AND its window has focus. The player opens over Browse without hiding
+     * it, so visibility alone kept two full-width gradients repainting every frame behind the
+     * video, which then stuttered (issue #229).
+     */
+    private void syncCycle() {
+        if (mCycle == null) {
+            return;
+        }
+        if (mShown && hasWindowFocus()) {
+            mCycle.resume();
+        } else {
+            mCycle.pause();
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        syncCycle();
     }
 
     /** 0..1: the page colour over the status bar strip, to match a bar below it turning solid. */
@@ -134,14 +157,11 @@ public final class RgbGlow extends View {
             mBandHost.setBackground(null);
             mBandHost = null;
         }
-        if (mCycle != null) {
-            if (isVisible) {
-                mCycle.resume();
-            } else {
-                mCycle.pause(); // off screen (the You panel hidden, the app behind): no frames
-            }
-        }
+        mShown = isVisible;
+        syncCycle(); // off screen (the You panel hidden, the app behind): no frames
     }
+
+    private boolean mShown;
 
     @Override
     protected void onDraw(Canvas canvas) {
