@@ -25,7 +25,7 @@ import java.util.List;
  * <pre>
  * Settings
  *   [ Search settings ]          (SettingsSearchFragment: every row of every page)
- *   App:    General · Customization · Feeds · History and privacy
+ *   App:    General · Customization · Downloads · Feeds · History and privacy
  *   Video:  Playback · Video quality · Audio quality · Captions · SponsorBlock · DeArrow
  *   Other:  Backup and restore · Advanced · About
  * </pre>

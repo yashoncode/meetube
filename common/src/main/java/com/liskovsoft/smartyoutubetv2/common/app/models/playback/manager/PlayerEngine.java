@@ -35,6 +35,10 @@ public interface PlayerEngine extends PlayerConstants {
     void openDashUrl(String dashManifestUrl);
     void openHlsUrl(String hlsPlaylistUrl);
     void openUrlList(List<String> urlList);
+    /** Opens a local video with an optional sidecar subtitle; legacy engines can ignore it. */
+    default void openLocalVideo(String videoUri, String subtitleUri) {
+        openUrlList(java.util.Collections.singletonList(videoUri));
+    }
     /**
      * NEWTUBE(delivery): a VOD answer with no usable adaptive formats, over its HLS manifest
      * ({@link MediaItemFormatInfo#isHlsVodSelected()}). Engines that do not know it open the URL.

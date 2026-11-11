@@ -509,7 +509,7 @@ public class VideoLoaderController extends BasePlayerController {
         if (video.isLocal()) {
             mPreMediaRetry.clear();
             getPlayer().showProgressBar(false);
-            getPlayer().openUrlList(java.util.Collections.singletonList(video.localUri));
+            getPlayer().openLocalVideo(video.localUri, VideoDownloads.subtitleUriFor(video.videoId));
             return;
         }
 
@@ -527,7 +527,8 @@ public class VideoLoaderController extends BasePlayerController {
                                String localCopy = VideoDownloads.localUriFor(video.videoId);
                                if (localCopy != null && getPlayer() != null) {
                                    video.localUri = localCopy;
-                                   getPlayer().openUrlList(java.util.Collections.singletonList(localCopy));
+                                   getPlayer().openLocalVideo(localCopy,
+                                           VideoDownloads.subtitleUriFor(video.videoId));
                                    return;
                                }
                                mErrorFixerController.runFormatErrorAction(error);

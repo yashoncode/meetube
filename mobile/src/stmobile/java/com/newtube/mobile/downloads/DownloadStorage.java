@@ -100,6 +100,43 @@ final class DownloadStorage {
         return new Target(Uri.fromFile(file), file, null);
     }
 
+    Target createSubtitle(String fileName) throws IOException {
+        Uri tree = DownloadFolder.get(mContext);
+        if (tree != null) {
+            try {
+                return createInTree(tree, fileName, "text/vtt");
+            } catch (IOException | RuntimeException e) {
+                Log.w(TAG, "custom folder unusable for subtitle, using the default: " + e);
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "text/vtt");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Movies" + File.separator + FOLDER);
+            values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+            Uri collection = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            Uri uri = mContext.getContentResolver().insert(collection, values);
+            if (uri == null) {
+                throw new IOException("media store refused the subtitle");
+            }
+            ParcelFileDescriptor pfd = mContext.getContentResolver().openFileDescriptor(uri, "rw");
+            if (pfd == null) {
+                mContext.getContentResolver().delete(uri, null, null);
+                throw new IOException("media store subtitle not writable");
+            }
+            return new Target(uri, null, pfd);
+        }
+
+        File dir = legacyDir();
+        if (dir == null) {
+            throw new IOException("no external storage");
+        }
+        File file = uniqueFile(dir, fileName);
+        return new Target(Uri.fromFile(file), file, null);
+    }
+
     private Target createInTree(Uri tree, String fileName, String mime) throws IOException {
         ContentResolver resolver = mContext.getContentResolver();
         Uri dir = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree));

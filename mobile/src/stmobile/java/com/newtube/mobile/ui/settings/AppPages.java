@@ -131,8 +131,16 @@ final class AppPages {
                 .option(context.getString(R.string.mobile_app_icon_play), R.mipmap.app_icon_play, AppIcon.PLAY)
                 .option(context.getString(R.string.mobile_app_icon_play_dark), R.mipmap.app_icon_play_dark, AppIcon.PLAY_DARK)
                 .option(context.getString(R.string.mobile_app_icon_blaze), R.mipmap.app_icon_blaze, AppIcon.BLAZE)
+                .option(context.getString(R.string.mobile_app_icon_red_crt), R.mipmap.app_icon_red_crt, AppIcon.RED_CRT)
+                .option(context.getString(R.string.mobile_app_icon_chrome), R.mipmap.app_icon_chrome, AppIcon.CHROME)
+                .option(context.getString(R.string.mobile_app_icon_pixel_play), R.mipmap.app_icon_pixel_play, AppIcon.PIXEL_PLAY)
+                .option(context.getString(R.string.mobile_app_icon_starry_night), R.mipmap.app_icon_starry_night,
+                        AppIcon.STARRY_NIGHT)
+                .option(context.getString(R.string.mobile_app_icon_gta_vi), R.mipmap.app_icon_gta_vi, AppIcon.VICE_CITY)
                 .bind(() -> AppIcon.current(context), icon -> AppIcon.set(context, icon)),
-                88, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON));
+                88, 8, context.getString(R.string.mobile_settings_more),
+                Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON,
+                Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON, Tiles.ICON));
 
         // MEETUBE(loader): every spinner in the app, from this list; each tile spins its own.
         rows.add(Tiles.of(SettingsRow.<String>choice(context.getString(R.string.mobile_settings_loader))

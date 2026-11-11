@@ -8,6 +8,7 @@ import android.os.Looper;
 import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
+import com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle;
 import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.UiOptionItem;
@@ -86,20 +87,20 @@ public final class DownloadPicker {
         String cardImage = video.getCardImageUrl();
         String thumb = cardImage != null && cardImage.startsWith("http") ? cardImage
                 : "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg";
+        MediaSubtitle englishAutoSubtitle = DownloadOptions.pickEnglishSubtitle(info.getSubtitles());
 
+        DownloadRegistry registry = DownloadRegistry.instance(context);
         // MEETUBE(download quality): Settings > Downloads can set one, then a tap downloads at once.
         DownloadOption preset = AutoDownload.defaultQuality(context) == AutoDownload.ASK ? null
                 : AutoDownload.pick(options, AutoDownload.defaultQuality(context));
         if (preset != null) {
-            DownloadItem existing = DownloadRegistry.instance(context).findDone(video.videoId, preset.kind);
-            start(context, video, title, author, thumb, preset, existing != null && (preset.isAudioOnly()
-                    || (existing.qualityLabel != null && existing.qualityLabel.equals(preset.qualityLabel))));
+            DownloadItem existing = registry.findDone(video.videoId, preset.kind);
+            start(context, video, title, author, thumb, preset, alreadyHere(preset, existing),
+                    englishAutoSubtitle);
             return;
         }
 
         AppDialogPresenter dialog = AppDialogPresenter.instance(context);
-        DownloadRegistry registry = DownloadRegistry.instance(context);
-
         for (DownloadOption option : options) {
             String label = option.isAudioOnly()
                     ? context.getString(R.string.mobile_download_audio_only)
@@ -109,15 +110,14 @@ public final class DownloadPicker {
             String description = size.isEmpty() ? format : format + MetaSeparator.DOT + size;
 
             DownloadItem existing = registry.findDone(video.videoId, option.kind);
-            boolean alreadyHere = existing != null && (option.isAudioOnly()
-                    || (existing.qualityLabel != null && existing.qualityLabel.equals(option.qualityLabel)));
+            boolean alreadyHere = alreadyHere(option, existing);
             if (alreadyHere) {
                 description += MetaSeparator.DOT + context.getString(R.string.mobile_download_already);
             }
 
             dialog.appendSingleButton(UiOptionItem.from(label, description, optionItem -> {
                 dialog.closeDialog();
-                start(context, video, title, author, thumb, option, alreadyHere);
+                start(context, video, title, author, thumb, option, alreadyHere, englishAutoSubtitle);
             }));
         }
 
@@ -125,7 +125,8 @@ public final class DownloadPicker {
     }
 
     private static void start(Context context, Video video, String title, String author, String thumb,
-                              DownloadOption option, boolean alreadyHere) {
+                              DownloadOption option, boolean alreadyHere,
+                              @Nullable MediaSubtitle englishAutoSubtitle) {
         if (alreadyHere) {
             // NEWTUBE(snackbar): the same file is already on the device - say so rather
             // than queue a second copy under a "Download started".
@@ -135,7 +136,7 @@ public final class DownloadPicker {
         }
         String size = DownloadOptions.formatBytes(option.totalBytes);
         DownloadItem item = DownloadItem.create(video.videoId, title != null ? title : video.videoId,
-                author, thumb, option);
+                author, thumb, option, option.isAudioOnly() ? null : englishAutoSubtitle);
         MobileDownloadService.enqueue(context, item);
         // NEWTUBE(snackbar): confirm with the size, and a way to the Downloads tab.
         String started = size.isEmpty()
@@ -168,6 +169,11 @@ public final class DownloadPicker {
         };
         registry.addListener(holder[0]);
         main.postDelayed(release, REWORD_WINDOW_MS);
+    }
+
+    private static boolean alreadyHere(DownloadOption option, @Nullable DownloadItem existing) {
+        return existing != null && (option.isAudioOnly()
+                || (existing.qualityLabel != null && existing.qualityLabel.equals(option.qualityLabel)));
     }
 
     /** The Downloads tab, as the download notification opens it. */

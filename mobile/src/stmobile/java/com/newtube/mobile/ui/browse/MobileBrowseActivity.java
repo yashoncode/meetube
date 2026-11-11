@@ -168,6 +168,7 @@ public class MobileBrowseActivity extends MobileActivity
     private boolean mGridHiddenForSkeleton;
     private GridLayoutManager mLayoutManager;
     private VideoCardAdapter mAdapter;
+    @Nullable private InlineFeedPlayback mInlinePlayback;
     // MEETUBE(feed-strip, 2.9.8): Home's topic chips / Subscriptions' channel avatars above the feed.
     private FeedStrip mStrip;
     private RecyclerView mChipRow;
@@ -1174,6 +1175,9 @@ public class MobileBrowseActivity extends MobileActivity
         mFeedAdapter = new androidx.recyclerview.widget.ConcatAdapter(mStrip, mAdapter);
         mRowsFeedAdapter = new androidx.recyclerview.widget.ConcatAdapter(mStrip, mRows);
         mContentGrid.setAdapter(mFeedAdapter);
+        mInlinePlayback = new InlineFeedPlayback(this, mContentGrid);
+        mInlinePlayback.watchAdapter(mAdapter);
+        mInlinePlayback.watchAdapter(mRows);
         // SCROLL-JANK FIX: the grid's own bounds never depend on item content (cards size themselves
         // to the fixed column width), so skip the full requestLayout on every adapter change; and keep
         // more offscreen holders around (default 2) so a fling-back rebinds/redecodes far fewer cards.
@@ -2567,6 +2571,9 @@ public class MobileBrowseActivity extends MobileActivity
         if (mPresenter == null) {
             return;
         }
+        if (mInlinePlayback != null) {
+            mInlinePlayback.handoff(video);
+        }
 
         // NEWTUBE(downloads): a card that is still downloading (or paused, or failed) has no file to
         // play yet - its tap opens the download's own menu (pause / resume / cancel / retry / delete). A finished one
@@ -3482,6 +3489,9 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onResume() {
         super.onResume();
+        if (mInlinePlayback != null) {
+            mInlinePlayback.onResume();
+        }
         mPreview.schedule();
         mTopBar.syncMark(this);
         mBottomNav.setLabelVisibilityMode(NavTabs.showLabels(this) // MEETUBE(nav labels)
@@ -3644,6 +3654,9 @@ public class MobileBrowseActivity extends MobileActivity
 
     @Override
     protected void onPause() {
+        if (mInlinePlayback != null) {
+            mInlinePlayback.onStop();
+        }
         super.onPause();
         mPreview.stop();
         mBottomNav.removeCallbacks(mLeaveShortsTab);
@@ -3710,6 +3723,9 @@ public class MobileBrowseActivity extends MobileActivity
     @Override
     protected void onStop() {
         super.onStop();
+        if (mInlinePlayback != null) {
+            mInlinePlayback.onStop();
+        }
         if (mMiniPip != null) {
             mMiniPip.onStop();
         }
@@ -3806,6 +3822,9 @@ public class MobileBrowseActivity extends MobileActivity
 
     @Override
     protected void onDestroy() {
+        if (mInlinePlayback != null) {
+            mInlinePlayback.release();
+        }
         unwatchMiniScreenOn(); // the shared player outlives this Activity
         mPreview.release();
         mNavHandler.removeCallbacks(mNavRebuild);

@@ -34,6 +34,12 @@
     <string name="mobile_settings_general">إعدادات عامة</string>
     <string name="mobile_settings_general_summary">اللغة والبلد والبحث الصوتي والساعة</string>
     <string name="mobile_settings_customize">التخصيص</string>
+    <string name="mobile_settings_downloads">التنزيلات</string>
+    <string name="mobile_settings_downloads_summary">المجلد، الجودة، التنزيل التلقائي</string>
+    <string name="mobile_download_quality_title">جودة التنزيل الافتراضية</string>
+    <string name="mobile_download_quality_ask">السؤال في كل مرة</string>
+    <string name="mobile_download_quality_select">اختيار الدقة</string>
+    <string name="mobile_download_quality_resolution">%1$dp</string>
     <string name="mobile_settings_customize_summary">المظهر وعلامات التبويب وتنسيق الصفحة الرئيسية وقائمة الفيديو</string>
     <string name="mobile_settings_customize_summary_value">المظهر: %1$s، وعلامات التبويب وتنسيق الصفحة الرئيسية وقائمة الفيديو</string>
     <string name="mobile_settings_theme_system_short">النظام</string>
@@ -45,6 +51,11 @@
     <string name="mobile_settings_privacy_summary">سجلّ المشاهدة والبحث</string>
     <string name="mobile_settings_playback">التشغيل</string>
     <string name="mobile_settings_playback_summary">التشغيل التلقائي والتشغيل في الخلفية والسرعة</string>
+    <string name="mobile_settings_feed_playback">التشغيل في الخلاصات</string>
+    <string name="mobile_settings_feed_playback_always">دائمًا</string>
+    <string name="mobile_settings_feed_playback_wifi">Wi-Fi فقط</string>
+    <string name="mobile_settings_feed_playback_off">إيقاف</string>
+    <string name="mobile_settings_feed_playback_note">اضغط مطولًا على فيديو عادي لتشغيله داخل الخلاصة عندما يكون ذلك مسموحًا. إذا كان التشغيل متوقفًا أو كان وضع Wi-Fi فقط محظورًا بسبب بيانات الهاتف أو كانت البطاقة لفيديو قصير أو بث مباشر، فسيُفتح قائمة الفيديو بالضغط المطول. اضغط على ⋮ لفتح القائمة في أي وقت.</string>
     <string name="mobile_settings_quality">جودة الفيديو</string>
     <string name="mobile_settings_audio_quality">جودة الصوت</string>
     <string name="mobile_settings_audio_quality_summary">ثبات مستوى الصوت وتعزيزه ومعادل الصوت</string>

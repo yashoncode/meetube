@@ -521,6 +521,14 @@ public class Media3PlayerController implements Player.Listener {
         openMediaSource(mMediaSourceFactory.fromUrlList(urlList), "progressive");
     }
 
+    public void openLocalVideo(String videoUri, String subtitleUri) {
+        mReadinessAnswer = null;
+        openMediaSource(mMediaSourceFactory.fromLocalVideo(videoUri, subtitleUri), "local");
+        if (subtitleUri != null && mTrackAdapter != null) {
+            mTrackAdapter.selectLocalSubtitleDefault();
+        }
+    }
+
     /**
      * NEWTUBE(delivery): a VOD answer with no usable adaptive formats, over its HLS manifest
      * (VodDelivery), behind the answer's readiness gate like generated DASH.
