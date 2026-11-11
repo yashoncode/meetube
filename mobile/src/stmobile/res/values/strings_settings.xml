@@ -507,6 +507,16 @@
     <string name="mobile_settings_equalizer_enable">Use equalizer</string>
     <string name="mobile_settings_equalizer_custom">Custom</string>
     <string name="mobile_settings_equalizer_reset">Reset</string>
+    <string name="mobile_settings_autoeq">Headphone correction</string>
+    <string name="mobile_settings_autoeq_summary">Off. Pick your headphones to make them sound neutral</string>
+    <string name="mobile_settings_autoeq_credit">Profiles by AutoEq (github.com/jaakkopasanen/AutoEq)</string>
+    <string name="mobile_settings_autoeq_search">Search headphones</string>
+    <string name="mobile_settings_autoeq_loading">Loading the headphone list…</string>
+    <string name="mobile_settings_autoeq_fetching">Getting %1$s…</string>
+    <string name="mobile_settings_autoeq_failed">Could not reach AutoEq. Check your connection and try again.</string>
+    <string name="mobile_settings_autoeq_applied">Tuned for %1$s</string>
+    <string name="mobile_settings_autoeq_off">Off (no correction)</string>
+    <string name="mobile_settings_autoeq_by">Measured by %1$s</string>
     <string name="mobile_settings_equalizer_unavailable">The equalizer is unavailable on this device</string>
     <string name="mobile_settings_home_autoplay">Home autoplay</string>
     <string name="mobile_settings_home_autoplay_wifi">On Wi-Fi only</string>

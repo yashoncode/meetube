@@ -511,6 +511,7 @@
     <string name="mobile_about_credit_smarttube">SmartTube: المشغّل وخدمات YouTube الخلفية التي يعتمد عليها MeeTube</string>
     <string name="mobile_about_credit_newtube">NewTube: تطبيق الهاتف الذي نشأ منه MeeTube</string>
     <string name="mobile_about_credit_backdrop">Backdrop: عدسة الزجاج السائل على الأشرطة</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: ملفات تصحيح صوت سماعات الرأس</string>
     <string name="sabr_vod_option">تفضيل SABR حتى عندما تعمل الروابط (تجريبي؛ من VOD التالي)</string>
     <string name="sabr_vod_stopped">توقّف التشغيل التجريبي عبر SABR. انقر على زر التشغيل لإعادة المحاولة، أو أوقِف SABR في الإعدادات.</string>
     <string name="mobile_next_in">الفيديو التالي بعد %1$d</string>

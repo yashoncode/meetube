@@ -65,6 +65,7 @@ final class AboutPeople {
         rows.add(person("yuliskov", context.getString(R.string.mobile_about_credit_smarttube)));
         rows.add(person("aleixrodriala", context.getString(R.string.mobile_about_credit_newtube)));
         rows.add(person("Kyant0", context.getString(R.string.mobile_about_credit_backdrop)));
+        rows.add(person("jaakkopasanen", context.getString(R.string.mobile_about_credit_autoeq)));
         return new SettingsPages.Page(context.getString(R.string.mobile_about_contributors), rows);
     }
 

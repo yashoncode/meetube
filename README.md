@@ -120,6 +120,8 @@ A star on GitHub or sharing MeeTube with a friend helps just as much. Thank you 
 
 Big thanks to [SmartTube](https://github.com/yuliskov/SmartTube) by [@yuliskov](https://github.com/yuliskov) and [NewTube](https://github.com/aleixrodriala/newtube) by [@aleixrodriala](https://github.com/aleixrodriala). Their open source work made MeeTube and MeeTube TV possible.
 
+Headphone correction uses the profiles from [AutoEq](https://github.com/jaakkopasanen/AutoEq) by [@jaakkopasanen](https://github.com/jaakkopasanen).
+
 And thank you to everyone who sent a fix, reported a bug or suggested an idea. MeeTube is better because of you:
 
 <p align="center">
