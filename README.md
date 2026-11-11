@@ -112,7 +112,7 @@ It's completely optional, and every coffee is truly appreciated. ☕
 
 In India? Scan to send a coffee over UPI (`yashwynth@slc`):
 
-<p align="center"><img src=".github/assets/meetube/donation.jpeg" width="240" alt="UPI QR code for yashwynth@slc"></p>
+<p align="center"><img src=".github/assets/meetube/upi-qr.jpeg" width="240" alt="UPI QR code for yashwynth@slc"></p>
 
 A star on GitHub or sharing MeeTube with a friend helps just as much. Thank you for using it! ❤️
 
