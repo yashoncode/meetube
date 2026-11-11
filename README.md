@@ -62,8 +62,6 @@
 
 Get the APK for your phone from [Releases](https://github.com/yashoncode/meetube/releases/latest):
 
-> **Coming from MeTube?** MeTube is now MeeTube, with a new app id, so it installs as a separate app. Install MeeTube, then uninstall the old MeTube.
-
 | Your device | File |
 |:--|:--|
 | Most phones (64-bit) | `MeeTube_<version>_arm64-v8a.apk` |
