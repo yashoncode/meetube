@@ -538,16 +538,10 @@
     <string name="mobile_settings_coffee_elsewhere_emoji">🌍</string>
     <string name="mobile_settings_coffee_elsewhere">Elsewhere</string>
     <string name="mobile_settings_coffee_elsewhere_summary">Buy Me a Coffee · $</string>
-    <string name="mobile_settings_coffee_cold">Cold coffee ₹200</string>
-    <string name="mobile_settings_coffee_custom">Or your own amount in ₹</string>
-    <string name="mobile_settings_coffee_pay_custom">Pay with UPI</string>
-    <string name="mobile_settings_coffee_pay">Pay ₹%1$s with UPI</string>
-    <string name="mobile_settings_coffee_payment_note">Coffee for MeeTube</string>
     <string name="mobile_settings_coffee_upi_label">UPI ID</string>
-    <string name="mobile_settings_coffee_upi_id" translatable="false">yashwynth@ptaxis</string>
+    <string name="mobile_settings_coffee_upi_id" translatable="false">yashwynth@slc</string>
     <string name="mobile_settings_coffee_copy">Copy</string>
     <string name="mobile_settings_coffee_copied">UPI ID copied</string>
-    <string name="mobile_settings_coffee_no_app">No UPI app found, UPI ID copied</string>
     <string name="mobile_settings_coffee_qr">UPI QR code</string>
     <string name="mobile_settings_coffee_scan">Or scan from another phone</string>
     <string name="mobile_settings_coffee_footer">Totally optional. A ⭐ on GitHub helps just as much ❤️</string>
