@@ -527,4 +527,7 @@
     <string name="mobile_greet_afternoon_line">حان وقت استراحة قصيرة؟</string>
     <string name="mobile_greet_evening_line">استرخِ مع فيديو أو اثنين</string>
     <string name="mobile_greet_night_line">فيديو آخر، ثم النوم</string>
+    <string name="mobile_shorts_clean_on">الأزرار مخفية. اضغط مطولًا لإعادتها</string>
+    <string name="mobile_shorts_clean_off">عادت الأزرار. اضغط مطولًا لإخفائها</string>
+    <string name="mobile_shorts_clean_tip">نصيحة: اضغط مطولًا على أي Short لإخفاء أزراره</string>
 </resources>

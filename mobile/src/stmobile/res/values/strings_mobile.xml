@@ -649,4 +649,7 @@
     <string name="mobile_greet_afternoon_line">Time for a little break?</string>
     <string name="mobile_greet_evening_line">Wind down with a video or two</string>
     <string name="mobile_greet_night_line">One more video, then sleep</string>
+    <string name="mobile_shorts_clean_on">Buttons hidden. Long press to bring them back</string>
+    <string name="mobile_shorts_clean_off">Buttons are back. Long press to hide them</string>
+    <string name="mobile_shorts_clean_tip">Tip: long press a Short to hide its buttons</string>
 </resources>

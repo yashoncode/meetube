@@ -549,4 +549,7 @@
     <string name="mobile_greet_afternoon_line">¿Un pequeño descanso?</string>
     <string name="mobile_greet_evening_line">Relájate con un par de vídeos</string>
     <string name="mobile_greet_night_line">Un vídeo más y a dormir</string>
+    <string name="mobile_shorts_clean_on">Botones ocultos. Mantén pulsado para que vuelvan</string>
+    <string name="mobile_shorts_clean_off">Botones de vuelta. Mantén pulsado para ocultarlos</string>
+    <string name="mobile_shorts_clean_tip">Consejo: mantén pulsado un Short para ocultar sus botones</string>
 </resources>

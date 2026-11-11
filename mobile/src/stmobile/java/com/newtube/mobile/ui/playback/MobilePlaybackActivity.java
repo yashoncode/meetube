@@ -1123,7 +1123,17 @@ public class MobilePlaybackActivity extends MobileActivity
                 applyShortsLayout();
                 if (on) {
                     hideControls();
-                } else if (mShortsMuted) {
+                    // MEETUBE(issue #173): once, tell that a long press hides the buttons.
+                    android.content.SharedPreferences prefs = getSharedPreferences("meetube_app", MODE_PRIVATE);
+                    if (!prefs.getBoolean("shorts_clean_tip", false)) {
+                        prefs.edit().putBoolean("shorts_clean_tip", true).apply();
+                        mVideoArea.postDelayed(() -> showZoomHint(getString(R.string.mobile_shorts_clean_tip), 3_500), 1_500);
+                    }
+                } else if (mShortsClean) {
+                    mShortsClean = false; // the next visit to Shorts starts with its buttons
+                    mShorts.setClean(false);
+                }
+                if (!on && mShortsMuted) {
                     toggleShortsMute(); // a long video after the shorts plays with its sound
                     mShorts.showMuted(false);
                 }
@@ -1331,12 +1341,17 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override
             public boolean onHoldStart(float x, float y) {
                 if (isShortsMode() && mShorts != null) {
-                    // MEETUBE(shorts): a held short shows only itself; held in its top-right
-                    // quarter, also at 2x (where it can).
-                    mShorts.setClean(true);
-                    mShortsStayClean = !(x > mPlayerView.getWidth() / 2f && y < mPlayerView.getHeight() / 2f);
-                    if (!mShortsStayClean) {
+                    // MEETUBE(shorts): held in its top-right quarter, 2x (where it can) and clean
+                    // for the hold. Held anywhere else, issue #173: the buttons go and stay gone,
+                    // swipe after swipe, until the next such hold brings them back.
+                    if (x > mPlayerView.getWidth() / 2f && y < mPlayerView.getHeight() / 2f) {
+                        mShorts.setClean(true);
                         beginHoldSpeed();
+                    } else {
+                        mShortsClean = !mShortsClean;
+                        mShorts.setClean(mShortsClean);
+                        showZoomHint(getString(mShortsClean ? R.string.mobile_shorts_clean_on
+                                : R.string.mobile_shorts_clean_off), 2_000);
                     }
                     return true;
                 }
@@ -1346,7 +1361,7 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override
             public void onHoldEnd() {
                 endHoldSpeed();
-                if (mShorts != null && !mShortsStayClean) { // a clean hold stays clean until the next touch
+                if (mShorts != null && !mShortsClean) { // a 2x hold's clean ends with it
                     mShorts.setClean(false);
                 }
             }
@@ -1703,6 +1718,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 mTitleView.setVisibility(View.VISIBLE);
             }
         } else {
+            if (mAmbient != null && !isTallMode()) {
+                mAmbient.setFill(null); // upright, the page's glow is around the video, not in it
+            }
             // Configuration width is already updated when display metrics/window views can still
             // have the previous landscape bounds. The layout listener above then makes this exact
             // for split-screen, inset and resize changes once the new window has been laid out.
@@ -1718,9 +1736,6 @@ public class MobilePlaybackActivity extends MobileActivity
                 mChatSide = false;
                 mChatMargin = 0;
                 if (mChatSlide != null) {
-            if (mAmbient != null && !isTallMode()) {
-                mAmbient.setFill(null); // upright, the page's glow is around the video, not in it
-            }
                     mChatSlide.cancel();
                 }
                 lp.setMarginEnd(0);
@@ -1892,6 +1907,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** Show the YouTube-style zoom chip, re-arming the fade-out if a pinch fires again mid-show. */
     private void showZoomHint(CharSequence text) {
+        showZoomHint(text, 900);
+    }
+
+    private void showZoomHint(CharSequence text, long showMs) {
         if (mZoomHintView == null) {
             return;
         }
@@ -1903,7 +1922,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mZoomHintView.setVisibility(View.VISIBLE);
         }
         mZoomHintView.animate().alpha(1f).setDuration(120).start();
-        mZoomHintView.postDelayed(mHideZoomHint, 900);
+        mZoomHintView.postDelayed(mHideZoomHint, showMs);
     }
 
     private void createPlayerObjects() {
@@ -7131,20 +7150,6 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             return true;
         }
-        if (action == android.view.MotionEvent.ACTION_DOWN && mShortsStayClean) {
-            // MEETUBE(shorts): the touch after a clean hold only brings the buttons back
-            mShortsStayClean = false;
-            mShortsRevealTouch = true;
-            if (mShorts != null) {
-                mShorts.setClean(false);
-            }
-        }
-        if (mShortsRevealTouch) {
-            if (action == android.view.MotionEvent.ACTION_UP || action == android.view.MotionEvent.ACTION_CANCEL) {
-                mShortsRevealTouch = false;
-            }
-            return true;
-        }
         return pullToPortraitFull(event) || super.dispatchTouchEvent(event);
     }
 
@@ -7247,10 +7252,8 @@ public class MobilePlaybackActivity extends MobileActivity
         return x >= 0 && y >= 0 && x < view.getWidth() && y < view.getHeight();
     }
 
-    /** MEETUBE(shorts): a short held clean (not at 2x) stays clean after the finger lifts. */
-    private boolean mShortsStayClean;
-    /** The gesture that brought a clean short's buttons back - swallowed whole. */
-    private boolean mShortsRevealTouch;
+    /** MEETUBE(issue #173): Shorts without their buttons, toggled by a long press, kept across swipes. */
+    private boolean mShortsClean;
 
     /** True while the gesture is the pull that entered the vertical fullscreen (it is swallowed). */
     private boolean pullToPortraitFull(android.view.MotionEvent event) {
