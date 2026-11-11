@@ -985,6 +985,7 @@ public class MobilePlaybackActivity extends MobileActivity
             });
         }
         mWatchContent = findViewById(R.id.mobile_watch_content);
+        mWatchSide = findViewById(R.id.mobile_watch_side);
         mWatchTitle = findViewById(R.id.mobile_watch_title);
         mWatchMeta = findViewById(R.id.mobile_watch_meta);
         mWatchDescription = findViewById(R.id.mobile_watch_description);
@@ -994,6 +995,18 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchDislike = findViewById(R.id.mobile_watch_dislike);
         mWatchDislikeIcon = findViewById(R.id.mobile_watch_dislike_icon);
         mWatchDislikeCount = findViewById(R.id.mobile_watch_dislike_count);
+        // MEETUBE(issue #230): the fullscreen pill shows the page's like and dislike counts too.
+        android.text.TextWatcher countMirror = new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            @Override public void afterTextChanged(android.text.Editable s) {
+                syncPillCounts();
+            }
+        };
+        if (mWatchLikeCount != null && mWatchDislikeCount != null) {
+            mWatchLikeCount.addTextChangedListener(countMirror);
+            mWatchDislikeCount.addTextChangedListener(countMirror);
+        }
         mWatchShare = findViewById(R.id.mobile_watch_share);
         mWatchMusic = findViewById(R.id.mobile_watch_music);
         mWatchMusic.setOnClickListener(v -> showLyricsSheet());
@@ -1628,17 +1641,19 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         // Related-list paging: when the content is scrolled near the bottom, page the last row.
-        mWatchScroll.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener)
-                (v, scrollX, scrollY, oldX, oldY) -> {
-                    View child = v.getChildAt(0);
-                    if (child == null) {
-                        return;
-                    }
-                    int distanceToBottom = child.getBottom() - (v.getHeight() + scrollY);
-                    if (distanceToBottom <= SUGGESTIONS_PAGE_THRESHOLD_PX) {
-                        maybePageSuggestions();
-                    }
-                });
+        NestedScrollView.OnScrollChangeListener paging = (v, scrollX, scrollY, oldX, oldY) -> {
+            View child = v.getChildAt(0);
+            if (child == null) {
+                return;
+            }
+            int distanceToBottom = child.getBottom() - (v.getHeight() + scrollY);
+            if (distanceToBottom <= SUGGESTIONS_PAGE_THRESHOLD_PX) {
+                maybePageSuggestions();
+            }
+        };
+        mWatchScroll.setOnScrollChangeListener(paging);
+        // MEETUBE(issue #230): Up next in its own column
+        ((NestedScrollView) findViewById(R.id.mobile_watch_side_scroll)).setOnScrollChangeListener(paging);
 
         // Reflect the initial (empty) button states.
         updateButtonVisual(R.id.action_thumbs_up, BUTTON_OFF);
@@ -1698,6 +1713,7 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mAmbient != null) {
                 mAmbient.setFill(mVideoArea); // MEETUBE(ambient): sideways, the bands beside the video glow too
             }
+            applyWatchSide(0); // fullscreen: the video alone
             lp.height = LinearLayout.LayoutParams.MATCH_PARENT;
             layOutCommentsSide(lp, mCommentsSide);
             mVideoArea.setLayoutParams(lp);
@@ -1727,6 +1743,7 @@ public class MobilePlaybackActivity extends MobileActivity
             Configuration config = getResources().getConfiguration();
             int width = Math.round(config.screenWidthDp
                     * getResources().getDisplayMetrics().density);
+            width -= applyWatchSide(width); // MEETUBE(issue #230): the page beside Up next
             if (mCommentsSide) { // an open panel goes back under the video
                 mCommentsSide = false;
                 setResizeMode(PlayerData.instance(this).getResizeMode());
@@ -1778,6 +1795,56 @@ public class MobilePlaybackActivity extends MobileActivity
                 mTitleView.setVisibility(mPortraitFull ? View.VISIBLE : View.GONE);
             }
         }
+    }
+
+    /**
+     * MEETUBE(issue #230): YouTube's tablet page. In a wide landscape window that shows the page
+     * (a tablet out of fullscreen), Up next moves out from under the video into its own column on
+     * the right, and the video, its details and the comments take the rest. Anything else (a phone,
+     * fullscreen, Shorts, the vertical fullscreen, PiP) puts it back. Returns the column's width;
+     * {@code width} is the window's, 0 to put the column away.
+     */
+    private int applyWatchSide(int width) {
+        if (mWatchSide == null || mWatchContent == null || mWatchRelatedLabel == null) {
+            return 0;
+        }
+        Configuration config = getResources().getConfiguration();
+        boolean side = width > 0 && isTablet() && config.screenWidthDp >= 840 && config.screenWidthDp > config.screenHeightDp
+                && !isTallMode() && !mIsInPip && !mPipEnterPending && (mShorts == null || !mShorts.isActive());
+        int columnWidth = side ? Math.max(dp(320), Math.round(width * 0.34f)) : 0;
+        ViewGroup column = findViewById(R.id.mobile_watch_side_content);
+        boolean moved = mWatchRelatedLabel.getParent() == column;
+        if (side != moved) {
+            ViewGroup from = side ? (ViewGroup) mWatchContent : column;
+            ViewGroup to = side ? column : (ViewGroup) mWatchContent;
+            // The related views are the page's last ones, label to list: they move as a block.
+            int start = from.indexOfChild(mWatchRelatedLabel);
+            while (start >= 0 && from.getChildCount() > start) {
+                View view = from.getChildAt(start);
+                from.removeViewAt(start);
+                to.addView(view);
+            }
+            // The panels open over the whole column, not in the strip under the video.
+            ViewGroup area = findViewById(R.id.mobile_watch_area);
+            for (int id : new int[] {R.id.mobile_comments_panel, R.id.mobile_description_panel,
+                    R.id.mobile_lyrics_panel, R.id.mobile_transcript_panel}) {
+                View panel = findViewById(id);
+                if (panel != null && area != null) {
+                    ((ViewGroup) panel.getParent()).removeView(panel);
+                    (side ? mWatchSide : area).addView(panel);
+                }
+            }
+        }
+        mWatchSide.setVisibility(side ? View.VISIBLE : View.GONE);
+        ViewGroup.LayoutParams columnLp = mWatchSide.getLayoutParams();
+        ViewGroup.MarginLayoutParams rootLp = (ViewGroup.MarginLayoutParams) mWatchRoot.getLayoutParams();
+        if (columnLp.width != columnWidth || rootLp.getMarginEnd() != columnWidth) {
+            columnLp.width = columnWidth;
+            mWatchSide.setLayoutParams(columnLp);
+            rootLp.setMarginEnd(columnWidth);
+            mWatchRoot.setLayoutParams(rootLp);
+        }
+        return columnWidth;
     }
 
     /**
@@ -3083,6 +3150,7 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean actions = !inline && mActionsShown && !mLockedChrome;
         if (mActionsRow != null && mActionsToggle != null) {
             mActionsRow.setVisibility(actions ? View.VISIBLE : View.GONE);
+            syncPillCounts();
             setMargins(mActionsRow, dp(8), 0, 0, lift);
             mActionsToggle.setVisibility(inline ? View.GONE : View.VISIBLE);
             mActionsToggle.setRotation(actions ? 0f : 180f);
@@ -3412,6 +3480,9 @@ public class MobilePlaybackActivity extends MobileActivity
         return height;
     }
 
+    /** MEETUBE(issue #230): Up next's own column beside the page, wide landscape windows only. */
+    @Nullable private ViewGroup mWatchSide;
+
     /** MEETUBE(issue #13): the playing video's shape for the inline box; 0 = not known, 16:9. */
     private float mInlineAspect;
 
@@ -3618,6 +3689,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mCommentsPanel.setSuspended(true);
         }
         closeSidePanelsImmediately();
+        applyWatchSide(0); // MEETUBE(issue #230): no Up next column in the pinned window
         if (mVideoArea != null) {
             mVideoArea.setVisibility(View.VISIBLE);
             LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
@@ -8013,6 +8085,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mWatchContent != null) {
             mWatchContent.setAlpha(contentAlpha);
         }
+        if (mWatchSide != null) {
+            mWatchSide.setAlpha(contentAlpha); // MEETUBE(issue #230): the Up next column goes with the page
+        }
         float backdrop = morphBackdropAlpha(settled, mMorphOverOwnBackdrop); // NEWTUBE(no-host-minimize)
         if (setMorphBlur(settled)) {
             // MEETUBE(minimize blur): Home shows through blurred, not under a black sheet - the black
@@ -8152,6 +8227,9 @@ public class MobilePlaybackActivity extends MobileActivity
         restoreVideoAreaOutline();
         if (mWatchContent != null) {
             mWatchContent.setAlpha(1f);
+        }
+        if (mWatchSide != null) {
+            mWatchSide.setAlpha(1f);
         }
         if (mWatchScroll != null && mWatchScroll.getBackground() != null) {
             mWatchScroll.getBackground().mutate().setAlpha(255);
@@ -10719,6 +10797,26 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private boolean showsDislikeCount() {
         return PlayerTweaksData.instance(this).isReturnYouTubeDislikeEnabled();
+    }
+
+    /** MEETUBE(issue #230): the tablet layouts (Up next column, counts on the pill); never a phone. */
+    private boolean isTablet() {
+        return getApplicationContext().getResources().getConfiguration().smallestScreenWidthDp >= 600;
+    }
+
+    /** MEETUBE(issue #230): on a tablet, the fullscreen pill's counts follow the watch page's. */
+    private void syncPillCounts() {
+        mirrorCount(mWatchLikeCount, findViewById(R.id.mobile_player_like_count));
+        mirrorCount(mWatchDislikeCount, findViewById(R.id.mobile_player_dislike_count));
+    }
+
+    private void mirrorCount(@Nullable TextView page, @Nullable TextView pill) {
+        if (page == null || pill == null) {
+            return;
+        }
+        boolean shown = isTablet() && page.getVisibility() == View.VISIBLE && !isCountUnset(page);
+        pill.setText(shown ? page.getText() : null);
+        pill.setVisibility(shown ? View.VISIBLE : View.GONE);
     }
 
     private boolean isCountUnset(TextView view) {
