@@ -779,12 +779,16 @@ final class Tiles {
                         pic = new RectF(bar.left + bh * 0.3f, bar.top + in, bar.left + bh * 0.3f + vw, bar.bottom - in);
                         textLeft = pic.right + in;
                         textRight = bar.right - bh * 1.5f;
-                    } else { // the title, then the picture
+                    } else { // MEETUBE(issue #226): the bar is the video, the title over it
+                        pic = new RectF(bar);
                         textLeft = bar.left + in * 2;
-                        textRight = textLeft + bar.width() * 0.28f;
-                        pic = new RectF(textRight + in, bar.top + in, textRight + in + vw, bar.bottom - in);
+                        textRight = bar.right - bh * 1.5f;
                     }
-                    video(canvas, pic, in);
+                    video(canvas, pic, frost ? in : bh * 0.3f);
+                    if (!frost) {
+                        mPaint.setColor(0x80000000); // the shade under the title and buttons
+                        canvas.drawRoundRect(bar, bh * 0.3f, bh * 0.3f, mPaint);
+                    }
                     block(canvas, textLeft, bar.top + bh * 0.3f, textRight, bar.top + bh * 0.44f, 0xFFE8E8E8);
                     block(canvas, textLeft, bar.top + bh * 0.56f, textLeft + (textRight - textLeft) * 0.6f, bar.top + bh * 0.68f, 0xFF8E8E93);
                     mPaint.setColor(0x40FFFFFF);

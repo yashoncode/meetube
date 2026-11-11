@@ -3,11 +3,14 @@ package com.newtube.mobile.ui.playback;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import androidx.media3.ui.AspectRatioFrameLayout;
 
 import com.google.android.material.card.MaterialCardView;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
@@ -20,12 +23,14 @@ import com.newtube.mobile.ui.common.GlassSource;
  * its compact corner buttons, small and set in from the corners so a tap on the picture to expand
  * does not land on Close or Audio.
  *
- * <p>Default is the 16:9 card (pinch to resize it). Minimal and Minimal 2 are a bar with the
- * picture, the title and channel, pause and close; Disabled has no card: minimizing closes.
+ * <p>Default is the 16:9 card (pinch to resize it). Minimal is a bar that is the video itself,
+ * cropped to fill it, with the title and channel, pause and close over it (issue #226). Minimal 2
+ * is a frosted pill with the whole video in a 16:9 window, then the title. Disabled has no card:
+ * minimizing closes.
  */
 public final class MiniSize {
     public static final int DEFAULT = 0;
-    public static final int MINIMAL = 1; // AMOLED black bar, title column then the picture
+    public static final int MINIMAL = 1; // the bar is the video (issue #226), title and buttons over it
     public static final int MINIMAL2 = 2; // frosted glass pill, the picture then the title
     public static final int DISABLED = 3;
 
@@ -73,6 +78,9 @@ public final class MiniSize {
     }
 
     public static int width(Context context) {
+        if (type(context) == MINIMAL) {
+            return cardWidth(context); // MEETUBE(issue #226): the whole bar
+        }
         if (isBar(context)) {
             return Math.round(height(context) * 16f / 9f);
         }
@@ -88,9 +96,9 @@ public final class MiniSize {
         return Math.round(Math.min(context.getResources().getDisplayMetrics().widthPixels - 24 * dp, 520 * dp));
     }
 
-    /** Where the picture starts inside the card: after Minimal's title column. */
+    /** Where the picture starts inside the card: always its left edge. */
     public static int pictureOffset(Context context) {
-        return type(context) == MINIMAL ? Math.round(112 * dp(context)) : 0;
+        return 0;
     }
 
     /** A pinch on the Default card: resizes it live and keeps the size. */
@@ -118,15 +126,22 @@ public final class MiniSize {
             card.setCardElevation(frosted ? 0 : 8 * dp); // a shadow shows through a see-through card
             card.setRadius(frosted ? height(activity) / 2f : 18 * dp);
             frost((ViewGroup) card.getChildAt(0), frosted, activity);
+            scrim((ViewGroup) card.getChildAt(0), type(activity) == MINIMAL);
         }
         View frame = activity.findViewById(R.id.mobile_mini_player_frame);
         if (frame != null) {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) frame.getLayoutParams();
             params.width = bar ? width(activity) : ViewGroup.LayoutParams.MATCH_PARENT;
             params.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            params.gravity = bar ? Gravity.START | Gravity.CENTER_VERTICAL : Gravity.CENTER;
+            params.gravity = bar && type(activity) != MINIMAL ? Gravity.START | Gravity.CENTER_VERTICAL : Gravity.CENTER;
             params.setMarginStart(bar ? pictureOffset(activity) : 0);
             frame.setLayoutParams(params);
+            if (frame instanceof AspectRatioFrameLayout) {
+                // MEETUBE(issue #226): Minimal's video fills the bar, cropped; elsewhere it is
+                // whole, letterboxed in its window (issue #9, #225).
+                ((AspectRatioFrameLayout) frame).setResizeMode(type(activity) == MINIMAL
+                        ? AspectRatioFrameLayout.RESIZE_MODE_ZOOM : AspectRatioFrameLayout.RESIZE_MODE_FIT);
+            }
         }
         int box = Math.round(36 * dp);
         int pad = Math.round(9 * dp);
@@ -168,12 +183,18 @@ public final class MiniSize {
             text.setVisibility(bar ? View.VISIBLE : View.GONE);
             if (bar) {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) text.getLayoutParams();
-                boolean first = type(activity) == MINIMAL;
+                boolean over = type(activity) == MINIMAL; // over the video, left of the buttons
                 params.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
-                params.width = first ? Math.round(94 * dp)
+                params.width = over ? cardWidth(activity) - Math.round(124 * dp)
                         : cardWidth(activity) - width(activity) - Math.round(108 * dp);
-                params.setMarginStart(first ? Math.round(12 * dp) : width(activity) + Math.round(10 * dp));
+                params.setMarginStart(over ? Math.round(14 * dp) : width(activity) + Math.round(10 * dp));
                 text.setLayoutParams(params);
+                for (int id : new int[] {R.id.mobile_mini_title, R.id.mobile_mini_channel}) {
+                    TextView line = activity.findViewById(id);
+                    if (line != null) { // readable over a bright frame
+                        line.setShadowLayer(over ? 4 * dp : 0, 0, over ? dp : 0, 0xCC000000);
+                    }
+                }
             }
         }
     }
@@ -201,6 +222,32 @@ public final class MiniSize {
         }
         glass.setSource(source instanceof GlassSource ? (GlassSource) source : null);
         inner.addView(glass, 0, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    /**
+     * MEETUBE(issue #226): Minimal's shade over the video, dark under the title on the left and the
+     * buttons on the right, lighter between, so both read over any frame.
+     */
+    private static void scrim(ViewGroup inner, boolean on) {
+        View existing = inner.findViewWithTag("mini_scrim");
+        if (!on) {
+            if (existing != null) {
+                inner.removeView(existing);
+            }
+            return;
+        }
+        if (existing != null) {
+            return;
+        }
+        View shade = new View(inner.getContext());
+        shade.setTag("mini_scrim");
+        shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[] {0xD9000000, 0x8C000000, 0x33000000, 0xA6000000}));
+        shade.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        // Right over the video (index 0 is the frame, or the frost under it).
+        int at = inner.indexOfChild(inner.findViewById(R.id.mobile_mini_player_frame)) + 1;
+        inner.addView(shade, at, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
