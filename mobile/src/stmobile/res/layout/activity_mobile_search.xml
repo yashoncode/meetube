@@ -107,13 +107,17 @@
 
         <!-- Suggestions/history: a full-height vertical list OVER the results while the user
              is editing the query (YouTube-style; was a one-line horizontal chip strip).
-             Empty query = search history (clock rows), typed query = live suggestions. -->
+             Empty query = search history (clock rows), typed query = live suggestions.
+             Elevation 8dp, no shadow: the chips above carry 4dp, which drew them over this
+             list despite the order (issue #224). -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/mobile_search_suggestions"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/mobile_color_background"
             android:clipToPadding="false"
+            android:elevation="8dp"
+            android:outlineProvider="none"
             android:paddingTop="@dimen/mobile_title_bar_height"
             android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
