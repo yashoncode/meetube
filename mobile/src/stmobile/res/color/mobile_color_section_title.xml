@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(accent): group titles: the accent, deep enough for small text on white, the accent palette picked in Settings > Customization (Accent). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/meetubeAccentDeep" />
+</selector>

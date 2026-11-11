@@ -128,6 +128,20 @@ public class MobileMainApplication extends MainApplication {
 
     @Override
     public void onCreate() {
+        // Optional WEB auth: installing the bridge does not load WebView or construct OkHttp.
+        com.liskovsoft.youtubeapi.web.WebSession.setCookieStore(new com.liskovsoft.youtubeapi.web.CookieStore() {
+            @Override public String get(String url) {
+                return android.webkit.CookieManager.getInstance().getCookie(url);
+            }
+            @Override public void put(String url, String setCookie) {
+                android.webkit.CookieManager manager = android.webkit.CookieManager.getInstance();
+                manager.setCookie(url, setCookie);
+                manager.flush();
+            }
+        });
+        com.newtube.mobile.ui.signin.WebSignInState.restore(this);
+        com.liskovsoft.youtubeapi.web.WebSession.setOnRejected(() ->
+                com.newtube.mobile.ui.signin.WebSignInState.clear(this));
         // The shell-protected benchmark fixture uses only bundled media. Suppress speculative
         // server warmups for that offline run; production builds never enable this path.
         boolean offlineBenchmark = (com.liskovsoft.smartyoutubetv2.tv.BuildConfig.BENCHMARK

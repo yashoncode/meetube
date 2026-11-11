@@ -113,6 +113,10 @@ final class AppPages {
                 .bind(ThemeMode::get, mode -> ThemeMode.set(context, mode)),
                 132, Tiles.THEME_SYSTEM, Tiles.THEME_LIGHT, Tiles.THEME_DARK));
 
+        // MEETUBE(accent): the accent colour palette, and the Player and Shorts progress lines, in one sheet.
+        rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_progress_color),
+                () -> ProgressColorSheet.summary(context), ProgressColorSheet::show));
+
         // MEETUBE(app icon): the launcher may take a few seconds to redraw it.
         rows.add(Tiles.of(SettingsRow.<String>choice(context.getString(R.string.mobile_settings_app_icon))
                 .option(context.getString(R.string.mobile_app_icon_default), R.mipmap.app_icon,
@@ -155,6 +159,18 @@ final class AppPages {
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_watched_bar),
                 context.getString(R.string.mobile_settings_watched_bar_summary),
                 () -> WatchedBar.isShown(context), on -> WatchedBar.setShown(context, on)).needsRestart(), Tiles.FX_WATCHED));
+
+        // MEETUBE(badge icons): the waves before "Mix" and the note before a music video's time.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_badge_icons),
+                context.getString(R.string.mobile_settings_badge_icons_summary),
+                () -> com.newtube.mobile.ui.common.BadgeIcons.isShown(context),
+                on -> com.newtube.mobile.ui.common.BadgeIcons.setShown(context, on)).needsRestart());
+
+        // MEETUBE(seek pill): off brings back the original double-tap ripple.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_seek_pill),
+                context.getString(R.string.mobile_settings_seek_pill_summary),
+                () -> com.newtube.mobile.ui.common.SeekStyle.isPill(context),
+                on -> com.newtube.mobile.ui.common.SeekStyle.setPill(context, on)));
 
         // MEETUBE(issue #120): the pop when a pull-to-refresh lets go; off by default.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_refresh_sound),
@@ -284,6 +300,12 @@ final class AppPages {
                         com.newtube.mobile.ui.playback.SeekThumb.PICTURE)
                 .bind(() -> com.newtube.mobile.ui.playback.SeekThumb.type(context),
                         v -> com.newtube.mobile.ui.playback.SeekThumb.setType(context, v)));
+
+        // MEETUBE(issue #200): the seek bar's line on the video's bottom edge while the controls hide.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_seek_line),
+                context.getString(R.string.mobile_settings_seek_line_summary),
+                () -> com.newtube.mobile.ui.playback.PlayerTimeBar.isLineOn(context),
+                on -> com.newtube.mobile.ui.playback.PlayerTimeBar.setLineOn(context, on)));
 
         // MEETUBE(issue #188): the floating mini player's type (a pinch on the Default card sizes it).
         rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_mini_type))

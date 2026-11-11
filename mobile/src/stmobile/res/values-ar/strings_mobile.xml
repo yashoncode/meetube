@@ -258,6 +258,9 @@
     <string name="mobile_accounts_title">الحسابات</string>
     <string name="mobile_accounts_signed_out">الاستخدام بدون حساب</string>
     <string name="mobile_accounts_sign_out">تسجيل الخروج</string>
+    <string name="mobile_accounts_tab_main">الحسابات الرئيسية</string>
+    <string name="mobile_accounts_tab_web">حسابات الويب</string>
+    <string name="mobile_accounts_add">إضافة حساب</string>
     <string name="mobile_accounts_sign_out_title">هل تريد تسجيل الخروج؟</string>
     <string name="mobile_accounts_sign_out_confirm">ستتم إزالة %1$s من هذا الجهاز. يمكنك تسجيل الدخول مجددًا في أي وقت.</string>
     <string name="mobile_empty_signin_section">سجّل الدخول لعرض %1$s</string>
@@ -511,6 +514,7 @@
     <string name="mobile_about_credit_smarttube">SmartTube: المشغّل وخدمات YouTube الخلفية التي يعتمد عليها MeeTube</string>
     <string name="mobile_about_credit_newtube">NewTube: تطبيق الهاتف الذي نشأ منه MeeTube</string>
     <string name="mobile_about_credit_backdrop">Backdrop: عدسة الزجاج السائل على الأشرطة</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: ملفات تصحيح صوت سماعات الرأس</string>
     <string name="sabr_vod_option">تفضيل SABR حتى عندما تعمل الروابط (تجريبي؛ من VOD التالي)</string>
     <string name="sabr_vod_stopped">توقّف التشغيل التجريبي عبر SABR. انقر على زر التشغيل لإعادة المحاولة، أو أوقِف SABR في الإعدادات.</string>
     <string name="mobile_next_in">الفيديو التالي بعد %1$d</string>
@@ -526,4 +530,7 @@
     <string name="mobile_greet_afternoon_line">حان وقت استراحة قصيرة؟</string>
     <string name="mobile_greet_evening_line">استرخِ مع فيديو أو اثنين</string>
     <string name="mobile_greet_night_line">فيديو آخر، ثم النوم</string>
+    <string name="mobile_shorts_clean_on">الأزرار مخفية. اضغط مطولًا لإعادتها</string>
+    <string name="mobile_shorts_clean_off">عادت الأزرار. اضغط مطولًا لإخفائها</string>
+    <string name="mobile_shorts_clean_tip">نصيحة: اضغط مطولًا على أي Short لإخفاء أزراره</string>
 </resources>

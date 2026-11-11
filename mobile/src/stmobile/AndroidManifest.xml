@@ -380,6 +380,14 @@
             android:theme="@style/Theme.NewTube" />
 
         <activity
+            android:name="com.newtube.mobile.ui.channel.MobileChannelPostsActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|keyboardHidden|uiMode"
+            android:screenOrientation="unspecified"
+            android:theme="@style/Theme.NewTube" />
+
+        <activity
             android:name="com.newtube.mobile.ui.channel.MobileChannelActivity"
             android:exported="false"
             android:launchMode="singleTop"
@@ -416,6 +424,13 @@
             android:launchMode="singleTop"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|keyboardHidden|uiMode"
             android:screenOrientation="unspecified"
+            android:theme="@style/Theme.NewTube" />
+
+        <activity
+            android:name="com.newtube.mobile.ui.signin.MobileWebSignInActivity"
+            android:exported="false"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|keyboardHidden|uiMode"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.NewTube" />
 
         <!--

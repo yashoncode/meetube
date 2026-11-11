@@ -200,16 +200,20 @@ public final class AmbientGlow implements Runnable {
 
         @Override
         public void draw(@NonNull Canvas canvas) {
+            // Its own box only: the video area does not clip its children's parent (clipChildren
+            // off), so a whole-canvas fill blacked out the comments beside a landscape video.
+            int save = canvas.save();
+            canvas.clipRect(getBounds());
             canvas.drawColor(Color.BLACK);
-            if (mCurrent == null) {
-                return;
+            if (mCurrent != null) {
+                if (mPrevious != null && mMix < 1f) {
+                    mFrame.setAlpha(Math.round(255 * (1f - mMix)));
+                    canvas.drawBitmap(mPrevious, null, getBounds(), mFrame);
+                }
+                mFrame.setAlpha(Math.round(255 * mMix));
+                canvas.drawBitmap(mCurrent, null, getBounds(), mFrame);
             }
-            if (mPrevious != null && mMix < 1f) {
-                mFrame.setAlpha(Math.round(255 * (1f - mMix)));
-                canvas.drawBitmap(mPrevious, null, getBounds(), mFrame);
-            }
-            mFrame.setAlpha(Math.round(255 * mMix));
-            canvas.drawBitmap(mCurrent, null, getBounds(), mFrame);
+            canvas.restoreToCount(save);
         }
 
         @Override

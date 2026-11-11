@@ -327,6 +327,9 @@
     <string name="mobile_accounts_title">Accounts</string>
     <string name="mobile_accounts_signed_out">Use without account</string>
     <string name="mobile_accounts_sign_out">Sign out</string>
+    <string name="mobile_accounts_tab_main">Main accounts</string>
+    <string name="mobile_accounts_tab_web">Web accounts</string>
+    <string name="mobile_accounts_add">Add account</string>
     <string name="mobile_accounts_sign_out_title">Sign out?</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s will be removed from this device. You can sign in again anytime.</string>
 
@@ -629,6 +632,7 @@
     <string name="mobile_about_credit_smarttube">SmartTube: the player and the YouTube backend MeeTube runs on</string>
     <string name="mobile_about_credit_newtube">NewTube: the phone app MeeTube grew from</string>
     <string name="mobile_about_credit_backdrop">Backdrop: the liquid glass lens on the bars</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: the headphone correction profiles</string>
     <string name="mobile_about_site_url" translatable="false">https://github.com/yashoncode/meetube</string>
     <!-- Experimental SABR playback (was strings_sabr.xml) -->
     <string name="sabr_vod_option">Prefer SABR even when links work (experimental; next VOD)</string>
@@ -648,4 +652,7 @@
     <string name="mobile_greet_afternoon_line">Time for a little break?</string>
     <string name="mobile_greet_evening_line">Wind down with a video or two</string>
     <string name="mobile_greet_night_line">One more video, then sleep</string>
+    <string name="mobile_shorts_clean_on">Buttons hidden. Long press to bring them back</string>
+    <string name="mobile_shorts_clean_off">Buttons are back. Long press to hide them</string>
+    <string name="mobile_shorts_clean_tip">Tip: long press a Short to hide its buttons</string>
 </resources>

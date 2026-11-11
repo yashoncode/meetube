@@ -674,8 +674,17 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
                     (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) mThumbnailFrame.getLayoutParams();
             String ratio = video.belongsToShorts() ? "9:16" : "16:9";
-            if (!ratio.equals(lp.dimensionRatio)) {
+            // MEETUBE(mix stack): a Mix or playlist shows two cards behind it; the thumbnail drops below them.
+            View back = itemView.findViewById(R.id.video_stack_back);
+            boolean stack = back != null && !video.belongsToShorts() && (video.isMix() || video.isPlaylistCard());
+            int top = stack ? Math.round(10 * itemView.getResources().getDisplayMetrics().density) : 0;
+            if (back != null) {
+                back.setVisibility(stack ? View.VISIBLE : View.GONE);
+                itemView.findViewById(R.id.video_stack_mid).setVisibility(stack ? View.VISIBLE : View.GONE);
+            }
+            if (!ratio.equals(lp.dimensionRatio) || lp.topMargin != top) {
                 lp.dimensionRatio = ratio;
+                lp.topMargin = top;
                 mThumbnailFrame.setLayoutParams(lp);
             }
         }
@@ -704,6 +713,15 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             }
         }
 
+        /** MEETUBE(badge icons): radio waves before "Mix", a note before a music video's time. */
+        public static void badgeIcon(android.widget.TextView badge, Video video) {
+            int icon = video == null || video.isLive
+                    || !com.newtube.mobile.ui.common.BadgeIcons.isShown(badge.getContext()) ? 0 : video.isMix() ? R.drawable.ic_badge_mix
+                    : video.isMusic ? R.drawable.ic_badge_music : 0;
+            badge.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
+            badge.setCompoundDrawablePadding(icon == 0 ? 0 : Math.round(3 * badge.getResources().getDisplayMetrics().density));
+        }
+
         private void bindBadge(Context context, Video video) {
             String badgeText;
             if (video.hasNewContent) {
@@ -720,6 +738,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 mBadge.setVisibility(View.GONE);
             } else {
                 mBadge.setText(badgeText);
+                badgeIcon(mBadge, badgeText.equals(video.badge) ? video : null);
                 // a live / upcoming badge stays a solid red pill; everything else is the glass
                 if (video.isLive || video.isUpcoming) {
                     android.graphics.drawable.GradientDrawable live = (android.graphics.drawable.GradientDrawable)

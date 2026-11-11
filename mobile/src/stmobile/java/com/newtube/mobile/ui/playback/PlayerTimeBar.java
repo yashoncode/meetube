@@ -201,6 +201,9 @@ public class PlayerTimeBar extends View implements TimeBar {
     private float mGainLeft = 1f;
     private float mGainRight = 1f;
     private final int[] mLocation = new int[2];
+    private int mColor = Integer.MIN_VALUE; // the ProgressColor key applied; none before the first
+    private int mHeadColor;
+    private int mTailColor;
     /** px per physical dp, for the touch distances. */
     private final float mTouchDensity;
 
@@ -217,9 +220,7 @@ public class PlayerTimeBar extends View implements TimeBar {
         mDensity = getResources().getDisplayMetrics().density;
         mTouchDensity = context.getApplicationContext().getResources().getConfiguration().densityDpi / 160f;
         mTailPx = dp(TAIL_DP);
-        mPlayedPaint.setColor(PLAYED_COLOR);
-        mPlayedPaint.setShader(new LinearGradient(0f, 0f, mTailPx, 0f,
-                PLAYED_COLOR, PLAYED_TAIL_COLOR, Shader.TileMode.CLAMP));
+        applyColor(com.newtube.mobile.ui.common.ProgressColor.videoKey(context));
         setFocusable(true);
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
     }
@@ -256,6 +257,15 @@ public class PlayerTimeBar extends View implements TimeBar {
             mDotHidden = hidden;
             invalidate();
         }
+    }
+
+    /** MEETUBE(issue #200): Settings > Customize can turn the portrait line off; on by default. */
+    public static boolean isLineOn(Context context) {
+        return context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).getBoolean("seek_line", true);
+    }
+
+    public static void setLineOn(Context context, boolean on) {
+        context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).edit().putBoolean("seek_line", on).apply();
     }
 
     /** Whether the played part stays on screen as a line while the controls are hidden. */
@@ -439,8 +449,23 @@ public class PlayerTimeBar extends View implements TimeBar {
     // Drawing
     // ---------------------------------------------------------------------------------
 
+    /** MEETUBE(progress colour): the played line in the picked palette's gradient (Ember: red to pink). */
+    private void applyColor(int key) {
+        mColor = key;
+        int[] colors = com.newtube.mobile.ui.common.ProgressColor.videoColors(getContext());
+        mHeadColor = colors[0];
+        mTailColor = colors[1];
+        mPlayedPaint.setColor(mHeadColor);
+        mPlayedPaint.setShader(new LinearGradient(0f, 0f, mTailPx, 0f,
+                mHeadColor, mTailColor, Shader.TileMode.CLAMP));
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
+        int color = com.newtube.mobile.ui.common.ProgressColor.videoKey(getContext());
+        if (color != mColor) {
+            applyColor(color); // changed in Settings while this bar lived
+        }
         float left = trackLeft();
         float right = trackRight();
         if (right <= left || (mShown <= 0f && !mLineWhenHidden)) {
@@ -511,8 +536,8 @@ public class PlayerTimeBar extends View implements TimeBar {
         // MEETUBE(progress glow): the played part's head glows, under the dot when it shows.
         if (hasDuration && playedX > left && playedX < right) {
             // The head's colour is the tail's end of the played gradient.
-            mGlow.draw(getContext(), canvas, playedX, (top + bottom) / 2f, dp(10), PLAYED_TAIL_COLOR);
-            mGlow.cap(canvas, playedX, (top + bottom) / 2f, track, PLAYED_TAIL_COLOR);
+            mGlow.draw(getContext(), canvas, playedX, (top + bottom) / 2f, dp(10), mTailColor);
+            mGlow.cap(canvas, playedX, (top + bottom) / 2f, track, mTailColor);
         }
 
         // The dot grows in with the controls and a little more under the finger.
@@ -527,7 +552,7 @@ public class PlayerTimeBar extends View implements TimeBar {
                 mThumb.setBounds(Math.round(cx) - half, cy - half, Math.round(cx) + half, cy + half);
                 mThumb.draw(canvas);
             } else {
-                mPaint.setColor(PLAYED_COLOR);
+                mPaint.setColor(mHeadColor);
                 canvas.drawCircle(cx, (top + bottom) / 2f, radius, mPaint);
             }
         }

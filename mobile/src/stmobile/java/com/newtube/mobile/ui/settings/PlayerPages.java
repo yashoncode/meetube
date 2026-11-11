@@ -6,6 +6,11 @@ import android.provider.Settings;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 
@@ -32,6 +37,9 @@ import com.newtube.mobile.player.AudioEffects;
 import com.newtube.mobile.player.AudioPreferences;
 import com.newtube.mobile.ui.playback.PlayerGesturePrefs;
 import com.newtube.mobile.ui.common.MobileSnackbar;
+import com.newtube.mobile.ui.signin.WebSignInSheet;
+import com.newtube.mobile.ui.signin.WebSignInState;
+
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -556,22 +564,15 @@ final class PlayerPages {
                 data::isSponsorBlockEnabled, data::setSponsorBlockEnabled));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_sponsorblock_segments)));
+        rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_segment_modes_note)));
         for (String category : data.getAllCategories()) {
             if (SEGMENT_HIGHLIGHT.equals(category)) {
                 continue;
             }
-            rows.add(SettingsRow.<Integer>choice(segmentTitle(context, data, category))
-                    .option(context.getString(R.string.mobile_settings_segment_skip), SponsorBlockData.ACTION_SKIP_ONLY)
-                    .option(context.getString(R.string.mobile_settings_segment_skip_notify), SponsorBlockData.ACTION_SKIP_WITH_TOAST)
-                    .option(context.getString(R.string.mobile_settings_segment_ask), SponsorBlockData.ACTION_SHOW_DIALOG)
-                    .option(context.getString(R.string.mobile_settings_segment_nothing), SponsorBlockData.ACTION_DO_NOTHING)
-                    .bind(() -> data.getAction(category), action -> data.setAction(category, action))
-                    .enabledWhen(data::isSponsorBlockEnabled));
+            rows.add(segmentModes(context, data, category).enabledWhen(data::isSponsorBlockEnabled));
         }
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_more)));
-        rows.add(SettingsRow.page(context.getString(R.string.mobile_settings_segment_marks),
-                () -> markSummary(context, data), SettingsPages.SPONSORBLOCK_MARKS).enabledWhen(data::isSponsorBlockEnabled));
         rows.add(SettingsRow.fromRadio(AppDialogUtil.createIgnoreShortSegmentsCategory(context),
                 context.getString(R.string.mobile_settings_segment_min)).enabledWhen(data::isSponsorBlockEnabled));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_segment_once),
@@ -586,45 +587,91 @@ final class PlayerPages {
         return new SettingsPages.Page(context.getString(R.string.content_block_provider), rows);
     }
 
-    static SettingsPages.Page sponsorBlockMarks(Context context) {
-        List<SettingsRow> rows = new ArrayList<>();
-        SponsorBlockData data = SponsorBlockData.instance(context);
-        rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_segment_marks_note)));
-        for (String category : data.getAllCategories()) {
-            if (SEGMENT_HIGHLIGHT.equals(category)) {
-                continue;
-            }
-            rows.add(SettingsRow.toggle(segmentTitle(context, data, category), null,
-                    () -> data.isColorMarkerEnabled(category),
-                    on -> {
-                        if (on) {
-                            data.enableColorMarker(category);
-                        } else {
-                            data.disableColorMarker(category);
-                        }
-                    }));
-        }
-        return new SettingsPages.Page(context.getString(R.string.mobile_settings_segment_marks), rows);
-    }
-
     static CharSequence sponsorBlockSummary(Context context) {
         return context.getString(SponsorBlockData.instance(context).isSponsorBlockEnabled()
                 ? R.string.mobile_settings_sponsorblock_on : R.string.mobile_settings_off);
     }
 
-    private static CharSequence markSummary(Context context, SponsorBlockData data) {
-        int total = 0;
-        int marked = 0;
-        for (String category : data.getAllCategories()) {
-            if (SEGMENT_HIGHLIGHT.equals(category)) {
-                continue;
+    /**
+     * MEETUBE(sponsorblock modes): one row per kind of part - its name, then Skip / Ask / Show / Off
+     * side by side. Show = only its mark on the seek bar; Off = no mark, no skip. Skip and Ask mark it
+     * too. Picking Skip keeps a "skip without a word" choice made before (the old list had both).
+     */
+    private static SettingsRow segmentModes(Context context, SponsorBlockData data, String category) {
+        CharSequence title = segmentTitle(context, data, category);
+        return SettingsRow.custom(title, (parent, page) -> {
+            LinearLayout root = Tiles.column(parent.getContext());
+            Tiles.heading(root, title);
+            LinearLayout modes = new LinearLayout(parent.getContext());
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.topMargin = dp(context, 8);
+            root.addView(modes, params);
+            int[] labels = {R.string.mobile_settings_segment_skip, R.string.mobile_settings_segment_ask_short,
+                    R.string.mobile_settings_segment_show, R.string.mobile_settings_off};
+            for (int i = 0; i < labels.length; i++) {
+                TextView mode = new TextView(parent.getContext());
+                mode.setText(labels[i]);
+                mode.setGravity(Gravity.CENTER);
+                mode.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                mode.setPadding(0, dp(context, 8), 0, dp(context, 8));
+                int index = i;
+                mode.setOnClickListener(v -> {
+                    setSegmentMode(data, category, index);
+                    paintModes(modes, index);
+                });
+                modes.addView(mode, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
             }
-            total++;
-            if (data.isColorMarkerEnabled(category)) {
-                marked++;
+            paintModes(modes, segmentMode(data, category));
+            return root;
+        });
+    }
+
+    private static int segmentMode(SponsorBlockData data, String category) {
+        int action = data.getAction(category);
+        if (action == SponsorBlockData.ACTION_SKIP_ONLY || action == SponsorBlockData.ACTION_SKIP_WITH_TOAST) {
+            return 0;
+        }
+        if (action == SponsorBlockData.ACTION_SHOW_DIALOG) {
+            return 1;
+        }
+        return data.isColorMarkerEnabled(category) ? 2 : 3;
+    }
+
+    private static void setSegmentMode(SponsorBlockData data, String category, int mode) {
+        int action = data.getAction(category);
+        boolean skipping = action == SponsorBlockData.ACTION_SKIP_ONLY || action == SponsorBlockData.ACTION_SKIP_WITH_TOAST;
+        data.setAction(category, mode == 0 ? (skipping ? action : SponsorBlockData.ACTION_SKIP_WITH_TOAST)
+                : mode == 1 ? SponsorBlockData.ACTION_SHOW_DIALOG : SponsorBlockData.ACTION_DO_NOTHING);
+        if (mode == 3) {
+            data.disableColorMarker(category);
+        } else {
+            data.enableColorMarker(category);
+        }
+    }
+
+    /** The picked mode on a rounded pill, full colour; the rest quieter. */
+    private static void paintModes(LinearLayout modes, int picked) {
+        Context context = modes.getContext();
+        for (int i = 0; i < modes.getChildCount(); i++) {
+            TextView mode = (TextView) modes.getChildAt(i);
+            boolean on = i == picked;
+            mode.setSelected(on);
+            mode.setTextColor(ContextCompat.getColor(context,
+                    on ? R.color.mobile_color_on_surface : R.color.mobile_color_on_surface_secondary));
+            if (on) {
+                android.graphics.drawable.GradientDrawable pill = new android.graphics.drawable.GradientDrawable();
+                pill.setCornerRadius(dp(context, 12));
+                pill.setColor(ContextCompat.getColor(context, R.color.mobile_color_pill));
+                mode.setBackground(pill);
+            } else {
+                mode.setBackground(null);
             }
         }
-        return context.getString(R.string.mobile_settings_segment_marks_summary, marked, total);
+    }
+
+    private static int dp(Context context, int dp) {
+        return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
     /** "● Sponsor", the dot in the segment's seek-bar colour. */
@@ -753,6 +800,19 @@ final class PlayerPages {
 
         // From the TV's Account settings dialog, the one of its three rows the phone has a use for.
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_accounts)));
+        rows.add(SettingsRow.action(context.getString(R.string.mobile_web_signin_setting), null,
+                page -> {
+                    android.app.Activity activity = page.requireActivity();
+                    if (WebSignInState.isSignedIn(activity)) {
+                        WebSignInSheet.pickAccount(activity, page::rebuild,
+                                () -> activity.startActivity(WebSignInSheet.addAccountIntent(activity)));
+                    } else {
+                        WebSignInSheet.manage(activity, page::rebuild);
+                    }
+                }).summary(() -> WebSignInState.isSignedIn(context)
+                ? context.getString(R.string.mobile_web_signin_signed_as,
+                        WebSignInState.accountName(context))
+                : context.getString(R.string.mobile_web_signin_optional)));
         AppPrefs prefs = AppPrefs.instance(context);
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_multi_profiles),
                 context.getString(R.string.mobile_settings_multi_profiles_summary),

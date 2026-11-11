@@ -166,6 +166,10 @@ public class MobileSearchActivity extends MobileActivity
         setupChips();
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_search_glass),
                 findViewById(R.id.mobile_search_glass_source));
+        for (int glass : new int[] {R.id.mobile_search_back_glass, R.id.mobile_search_filters_glass}) {
+            com.newtube.mobile.ui.common.Glass.blur(findViewById(glass),
+                    findViewById(R.id.mobile_search_glass_source));
+        }
         if (savedInstanceState == null) {
             getWindow().getDecorView().post(() -> SiriGlow.play(this)); // MEETUBE(search glow)
         }
@@ -716,7 +720,7 @@ public class MobileSearchActivity extends MobileActivity
                 return; // the results have ended
             }
             if (userScroll) {
-                mTopUp.onUserAction(); // NEWTUBE(shorts): the user asked for more
+                mTopUp.onUserAction(mVideos.size()); // NEWTUBE(shorts): the user asked for more
             } else if (!mTopUp.takeAutomatic(true)) {
                 return; // a layout pass, not the user: only within the top-up budget
             }

@@ -39,6 +39,20 @@ Backup/Restore, About. (Remote control and Auto Frame Rate are hidden. The packa
 `AppDialogPresenter` tree drawn by `MobileAppDialogActivity`/`DialogRowAdapter`, which does render row
 descriptions. **Opening Settings never asks for a password** (`openSettings` has no check).
 
+## Optional YouTube web sign-in (2026-11-11)
+
+| Row | Getter / setter | Default | Phone reader | Verdict | Side effects / notes |
+|---|---|---|---|---|---|
+| Advanced > Accounts > YouTube web sign-in | `WebSignInState.isSignedIn/accountName`; `signedIn/clear` | Off | `LiveChatSheet` gates sending and labels the composer; `WebSession` authenticates only explicit WEB calls | LIVE by inspection; runtime untested | Off opens `WebSignInSheet` then Google's page in `MobileWebSignInActivity`. On confirms sign-out, expires Google/YouTube cookies on a worker and clears the UI hint. The settings index includes the row and chat/login keywords. No TV OAuth account or playback/feed/history preferences are changed. |
+
+The WebView jar is the only session store. Preferences contain a boolean and display name only;
+HTTP 401/403 clears that hint through `WebSession.onRejected`, even if the caller has closed.
+Both Android backup formats exclude `root/app_webview/` and the UI hint preferences, including device
+transfer. Google/YouTube cookies are cleared before each new web sign-in and on sign-out;
+`MobileWebBrowserActivity` hands links to the external browser and does not share this jar.
+There is no account matching or switching between web and TV credentials; the explainer asks for
+the same Google account. The active web account's display name comes from `account/account_menu`.
+
 ---
 
 ## 1. General (`GSP.show()`, GSP:75; screen title "General")

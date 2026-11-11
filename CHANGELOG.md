@@ -44,6 +44,13 @@ Every MeeTube release, newest first.<br>
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
 
+## Next release
+
+### Fixed
+
+- Sorry if you thought of donating and my UPI wasn't working earlier. It's fixed now: Sudo brew coffee in About and the README have a new QR and UPI ID (`yashwynth@slc`).
+
+
 ## 3.3.5 Sentinel
 
 > **Immersive**<br>

@@ -172,6 +172,13 @@ public final class HomePreviewPlayer {
         return Math.min(1f, (float) mPlayer.getCurrentPosition() / mPlayer.getDuration());
     }
 
+    /** Jumps to {@code fraction} (0..1) of the video. */
+    public void seekTo(float fraction) {
+        if (mPlayer != null && mPlayer.getDuration() > 0) {
+            mPlayer.seekTo((long) (mPlayer.getDuration() * fraction));
+        }
+    }
+
     /** Ends the current preview but keeps the decoder for the next one. */
     public void stop() {
         mGeneration++;

@@ -24,6 +24,32 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <!-- MEETUBE(mix stack): a Mix or playlist is a stack of cards, two peeking above its
+             thumbnail, as on YouTube. Before the thumbnail so it draws over them. -->
+        <View
+            android:id="@+id/video_stack_back"
+            android:layout_width="0dp"
+            android:layout_height="24dp"
+            android:layout_marginHorizontal="28dp"
+            android:alpha="0.14"
+            android:background="@drawable/bg_card_stack"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <View
+            android:id="@+id/video_stack_mid"
+            android:layout_width="0dp"
+            android:layout_height="24dp"
+            android:layout_marginHorizontal="14dp"
+            android:layout_marginTop="5dp"
+            android:alpha="0.26"
+            android:background="@drawable/bg_card_stack"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <!-- MaterialCardView (a FrameLayout) clips the thumbnail + badge + progress to rounded
              corners; the watched-progress bar stays inside the rounded shape like YouTube. -->
         <com.google.android.material.card.MaterialCardView

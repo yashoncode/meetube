@@ -9,6 +9,7 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 /**
  * MEETUBE(about): the About card leans with the phone - it tilts a few degrees and the photo floats
@@ -59,17 +60,47 @@ public final class TiltParallax implements SensorEventListener, View.OnAttachSta
         card.addOnAttachStateChangeListener(new TiltParallax(card, floating, sensors, gravity, strength));
     }
 
+    /**
+     * Issue #229: listen only while the card is on screen in a focused window. The You panel stays
+     * attached while hidden and the player opens over Browse without hiding it, so listening from
+     * attach to detach repainted Browse at the sensor's ~50 Hz behind every video once You had
+     * been opened. A visibility change re-lays the window, and the player takes the focus.
+     */
+    private final ViewTreeObserver.OnGlobalLayoutListener mSyncOnLayout = this::sync;
+    private final ViewTreeObserver.OnWindowFocusChangeListener mSyncOnFocus = focused -> sync();
+    private boolean mListening;
+
     @Override
     public void onViewAttachedToWindow(View v) {
-        mHasBase = false;
-        mSensors.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
+        v.getViewTreeObserver().addOnGlobalLayoutListener(mSyncOnLayout);
+        v.getViewTreeObserver().addOnWindowFocusChangeListener(mSyncOnFocus);
+        sync();
     }
 
     @Override
     public void onViewDetachedFromWindow(View v) {
-        mSensors.unregisterListener(this);
-        mX = mY = 0f;
-        apply();
+        v.getViewTreeObserver().removeOnGlobalLayoutListener(mSyncOnLayout);
+        v.getViewTreeObserver().removeOnWindowFocusChangeListener(mSyncOnFocus);
+        listen(false);
+    }
+
+    private void sync() {
+        listen(mCard.isShown() && mCard.hasWindowFocus());
+    }
+
+    private void listen(boolean on) {
+        if (on == mListening) {
+            return;
+        }
+        mListening = on;
+        if (on) {
+            mHasBase = false;
+            mSensors.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
+        } else {
+            mSensors.unregisterListener(this);
+            mX = mY = 0f;
+            apply();
+        }
     }
 
     @Override

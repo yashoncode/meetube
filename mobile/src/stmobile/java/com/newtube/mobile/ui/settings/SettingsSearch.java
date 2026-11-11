@@ -67,6 +67,7 @@ final class SettingsSearch {
      * per language (strings_settings_search.xml), so the Spanish list holds Spanish words.
      */
     private static final int[][] KEYWORDS = {
+            {R.string.mobile_web_signin_setting, R.string.mobile_settings_search_web_signin},
             {R.string.mobile_settings_account, R.string.mobile_settings_search_kw_account},
             {R.string.mobile_theme, R.string.mobile_settings_search_kw_theme},
             {R.string.mobile_settings_customize, R.string.mobile_settings_search_kw_customize},
@@ -92,6 +93,8 @@ final class SettingsSearch {
             {R.string.mobile_settings_app_icon, R.string.mobile_settings_search_kw_app_icon},
             {R.string.mobile_settings_loader, R.string.mobile_settings_search_kw_loader},
             {R.string.mobile_settings_watched_bar, R.string.mobile_settings_search_kw_watched_bar},
+            {R.string.mobile_settings_badge_icons, R.string.mobile_settings_search_kw_badge_icons},
+            {R.string.mobile_settings_seek_pill, R.string.mobile_settings_search_kw_seek_pill},
             {R.string.mobile_settings_home_cast, R.string.mobile_settings_search_kw_home_cast},
             {R.string.mobile_settings_home_chips, R.string.mobile_settings_search_kw_home_chips},
             {R.string.mobile_settings_haptics, R.string.mobile_settings_search_kw_haptics},

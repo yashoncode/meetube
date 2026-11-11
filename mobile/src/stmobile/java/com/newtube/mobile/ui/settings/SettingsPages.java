@@ -45,10 +45,10 @@ public final class SettingsPages {
     public static final String AUDIO = "audio";
     public static final String CAPTIONS = "captions";
     public static final String SPONSORBLOCK = "sponsorblock";
-    public static final String SPONSORBLOCK_MARKS = "sponsorblock_marks";
     public static final String DEARROW = "dearrow";
     public static final String DOWNLOADS = "downloads";
     public static final String BACKUP = "backup";
+    public static final String STORAGE = "storage";
     public static final String ADVANCED = "advanced";
     public static final String ABOUT = "about";
     public static final String TV_INSTALL = "tv_install";
@@ -98,14 +98,14 @@ public final class SettingsPages {
                 return PlayerPages.captions(context);
             case SPONSORBLOCK:
                 return PlayerPages.sponsorBlock(context);
-            case SPONSORBLOCK_MARKS:
-                return PlayerPages.sponsorBlockMarks(context);
             case DEARROW:
                 return PlayerPages.deArrow(context);
             case DOWNLOADS:
                 return DownloadPages.downloads(context);
             case BACKUP:
                 return AppPages.backup(context);
+            case STORAGE:
+                return StoragePage.page(context);
             case ADVANCED:
                 return PlayerPages.advanced(context);
             case ABOUT:
@@ -156,6 +156,8 @@ public final class SettingsPages {
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_other)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_backup, context.getString(R.string.mobile_settings_backup),
                 context.getString(R.string.mobile_settings_backup_summary), BACKUP));
+        rows.add(SettingsRow.page(R.drawable.ic_settings_storage, context.getString(R.string.mobile_settings_storage),
+                context.getString(R.string.mobile_settings_storage_summary), STORAGE));
         rows.add(SettingsRow.page(R.drawable.ic_settings_advanced, context.getString(R.string.mobile_settings_advanced),
                 context.getString(R.string.mobile_settings_advanced_summary), ADVANCED));
         rows.add(SettingsRow.page(R.drawable.ic_settings_about, context.getString(R.string.mobile_settings_about),

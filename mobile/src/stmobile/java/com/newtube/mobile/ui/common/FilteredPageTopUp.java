@@ -28,12 +28,15 @@ public final class FilteredPageTopUp {
     public static final int MAX_PAGES = 5;
 
     private int mPages;
+    /** Items the list kept when the user last scrolled for more: "enough" is counted from here. */
+    private int mBase;
     private boolean mDropped;
     private boolean mLanded;
 
     /** A new list: nothing dropped or landed yet, a fresh budget. */
     public void clear() {
         mPages = 0;
+        mBase = 0;
         mDropped = false;
         mLanded = false;
     }
@@ -41,6 +44,17 @@ public final class FilteredPageTopUp {
     /** The user asked for more (scrolled to the end, picked a tab): a fresh budget. */
     public void onUserAction() {
         mPages = 0;
+    }
+
+    /**
+     * The user scrolled to the end of a list that keeps {@code kept} items. A page that is nearly
+     * all Shorts adds a card or two (a search gave 2 of every 20), which read as "the loader spins
+     * and nothing loads": so the pages after it are fetched until this scroll has added
+     * {@link #ENOUGH} cards, within the same budget.
+     */
+    public void onUserAction(int kept) {
+        mPages = 0;
+        mBase = kept;
     }
 
     /** A page of this list has landed; {@code dropped} of its items were Shorts. */
@@ -69,7 +83,7 @@ public final class FilteredPageTopUp {
     public boolean take(int kept, boolean hasMore) {
         boolean landed = mLanded;
         mLanded = false;
-        if (!landed || !mDropped || kept >= ENOUGH || !hasMore || mPages >= MAX_PAGES) {
+        if (!landed || !mDropped || kept - mBase >= ENOUGH || !hasMore || mPages >= MAX_PAGES) {
             return false;
         }
         mPages++;

@@ -932,6 +932,10 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private CharSequence buildMeta(CommentItem item, @Nullable String creatorHandle) {
             String handle = item.getAuthorName() != null ? item.getAuthorName() : "";
             String date = item.getPublishedDate();
+            // A comment posted a moment ago comes back as "0 seconds ago", and stays that way.
+            if (date != null && date.matches("(.*\\D)?0(\\D.*)?")) {
+                date = itemView.getContext().getString(R.string.mobile_comments_just_now);
+            }
             SpannableStringBuilder meta = new SpannableStringBuilder();
             if (!handle.isEmpty()) {
                 meta.append(FSI).append(handle).append(PDI);
