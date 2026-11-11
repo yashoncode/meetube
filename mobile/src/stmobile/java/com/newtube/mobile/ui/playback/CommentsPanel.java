@@ -77,10 +77,10 @@ import io.reactivex.rxjava3.disposables.Disposable;
  * post shows at once - on top of the list or the thread, and on top of any order or replies page
  * loaded later - and what they closed without posting stays as a draft until the video changes.</p>
  */
-final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayout.Callback,
+public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayout.Callback,
         CommentComposer.Callback {
 
-    interface Host {
+    public interface Host {
         /** A timestamp in a comment on the video that is playing. */
         void onCommentTimestamp(long positionMs);
 
@@ -100,6 +100,10 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
 
         /** MEETUBE(watch-look): the top comments' first page arrived (the watch page shows them one by one). */
         default void onTopComments(List<CommentItem> comments) {
+        }
+
+        /** The person posted or deleted a comment: the video's count as it stands now. */
+        default void onCommentsCountChanged(String count) {
         }
     }
 
@@ -274,7 +278,29 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
     private final Set<CommentsAdapter.Entry> mTranslating = new HashSet<>();
     private final Set<CommentsAdapter.Entry> mDetecting = new HashSet<>();
 
-    CommentsPanel(FragmentActivity activity, CommentsPanelLayout layout, Host host) {
+    /**
+     * Post comments (channel Posts): written and answered as the web sign-in's account (the TV
+     * sign-in can't post there), no like or delete.
+     */
+    private boolean mReadOnly;
+
+    public void setReadOnly() {
+        mReadOnly = true;
+    }
+
+    /** The count is YouTube's text: only a plain number can be moved by one. */
+    private void bumpCount(int by) {
+        if (mReadOnly && TextUtils.isEmpty(mCount)) {
+            mCount = "0"; // a post with no comments yet has no count text
+        }
+        if (mCount != null && Helpers.isInteger(mCount)) {
+            mCount = String.valueOf(Math.max(0, Helpers.parseInt(mCount) + by));
+            updateCount();
+            mHost.onCommentsCountChanged(mCount);
+        }
+    }
+
+    public CommentsPanel(FragmentActivity activity, CommentsPanelLayout layout, Host host) {
         mActivity = activity;
         mHost = host;
         mLayout = layout;
@@ -524,7 +550,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
     }
 
     /** The video's metadata named where its comments are (null keys = comments are off). */
-    void setSource(@Nullable String videoId, @Nullable String topKey, @Nullable String newestKey,
+    public void setSource(@Nullable String videoId, @Nullable String topKey, @Nullable String newestKey,
                    @Nullable String count) {
         if (!Helpers.equals(videoId, mVideoId)) {
             onVideoChanged(videoId);
@@ -573,7 +599,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
     // Open / close
     // ---------------------------------------------------------------------------------
 
-    void open() {
+    public void open() {
         Feed feed = currentFeed();
         if (feed == null || mLayout.isOpen() || mReleased) {
             return;
@@ -674,7 +700,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
     }
 
     /** The activity is going: nothing here may start again (requests, fades, posted work). */
-    void release() {
+    public void release() {
         mReleased = true;
         dismissSortMenu(false);
         dismissCommentMenu();
@@ -1467,6 +1493,10 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
 
     @Override
     public void onLikeClicked(CommentsAdapter.Entry entry) {
+        if (mReadOnly) {
+            MobileSnackbar.show(mActivity, R.string.mobile_posts_comments_read_only);
+            return;
+        }
         if (WatchActionFeedback.blockIfSignedOut(mActivity, R.string.mobile_comments_sign_in_to_like)) {
             return;
         }
@@ -1562,6 +1592,20 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
 
     /** Who is signed in: their avatar on the "Add a comment…" rows, their handle for the ⋮. */
     private void refreshAccount() {
+        if (mReadOnly) {
+            boolean signedIn = com.newtube.mobile.ui.signin.WebSignInState.isSignedIn(mActivity);
+            String photo = signedIn ? com.newtube.mobile.ui.signin.WebSignInState.accountPhoto(mActivity) : null;
+            mSignedIn = signedIn;
+            mUiTest = false;
+            mMyHandle = null;
+            mAccountKey = signedIn ? "web:" + com.newtube.mobile.ui.signin.WebSignInState.selectedSlot(mActivity) : null;
+            if (!Helpers.equals(photo, mMyPhoto)) {
+                mMyPhoto = photo;
+                mListAdapter.setComposePhoto(photo);
+                mRepliesAdapter.setComposePhoto(photo);
+            }
+            return;
+        }
         Account account = null;
         try {
             account = YouTubeSignInService.instance().getSelectedAccount();
@@ -1618,7 +1662,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
 
     @Override
     public boolean isOwnComment(CommentsAdapter.Entry entry) {
-        if (!mSignedIn) {
+        if (mReadOnly || !mSignedIn) {
             return mUiTest;
         }
         String id = entry.item.getId();
@@ -1668,7 +1712,12 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
             return;
         }
         refreshAccount();
-        if (!mUiTest && WatchActionFeedback.blockIfSignedOut(mActivity, R.string.mobile_comments_sign_in_to_comment)) {
+        if (mReadOnly && !mSignedIn) {
+            com.newtube.mobile.ui.signin.WebSignInSheet.show(mActivity, () -> mActivity.startActivity(
+                    new android.content.Intent(mActivity, com.newtube.mobile.ui.signin.MobileWebSignInActivity.class)));
+            return;
+        }
+        if (!mReadOnly && !mUiTest && WatchActionFeedback.blockIfSignedOut(mActivity, R.string.mobile_comments_sign_in_to_comment)) {
             return;
         }
         dismissSortMenu(false);
@@ -1743,9 +1792,11 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
         }
         String accountKey = mAccountKey;
         composer.setSending(true);
+        // A post's comments are written to its "post:" key (YouTubeCommentsService routes it).
+        String target = mReadOnly && mTop != null ? mTop.firstKey : videoId;
         Observable<CommentItem> post = parent == null
-                ? mService.createCommentObserve(videoId, text)
-                : mService.createReplyObserve(videoId, parent.item.getId(), text);
+                ? mService.createCommentObserve(target, text)
+                : mService.createReplyObserve(target, parent.item.getId(), text);
         mPostRequest = post.subscribe(
                 item -> {
                     mPostRequest = null;
@@ -1769,6 +1820,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
     }
 
     private void onPosted(@Nullable CommentsAdapter.Entry parent, CommentItem item, String accountKey) {
+        bumpCount(1);
         String id = item.getId();
         if (id == null) {
             // YouTube took it but did not describe it: it shows once the list is loaded again.
@@ -2148,6 +2200,7 @@ final class CommentsPanel implements CommentsAdapter.Listener, CommentsPanelLayo
     private void removeComment(CommentsAdapter.Entry entry, String id, @Nullable String parentId) {
         sPostedBy.remove(id);
         mDeletedIds.add(id);
+        bumpCount(-1);
         if (entry.isReply) {
             if (mThread != null) {
                 removeId(mThread.entries, id);

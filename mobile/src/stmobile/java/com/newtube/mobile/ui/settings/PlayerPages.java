@@ -37,6 +37,9 @@ import com.newtube.mobile.player.AudioEffects;
 import com.newtube.mobile.player.AudioPreferences;
 import com.newtube.mobile.ui.playback.PlayerGesturePrefs;
 import com.newtube.mobile.ui.common.MobileSnackbar;
+import com.newtube.mobile.ui.signin.WebSignInSheet;
+import com.newtube.mobile.ui.signin.WebSignInState;
+
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -797,6 +800,19 @@ final class PlayerPages {
 
         // From the TV's Account settings dialog, the one of its three rows the phone has a use for.
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_accounts)));
+        rows.add(SettingsRow.action(context.getString(R.string.mobile_web_signin_setting), null,
+                page -> {
+                    android.app.Activity activity = page.requireActivity();
+                    if (WebSignInState.isSignedIn(activity)) {
+                        WebSignInSheet.pickAccount(activity, page::rebuild,
+                                () -> activity.startActivity(WebSignInSheet.addAccountIntent(activity)));
+                    } else {
+                        WebSignInSheet.manage(activity, page::rebuild);
+                    }
+                }).summary(() -> WebSignInState.isSignedIn(context)
+                ? context.getString(R.string.mobile_web_signin_signed_as,
+                        WebSignInState.accountName(context))
+                : context.getString(R.string.mobile_web_signin_optional)));
         AppPrefs prefs = AppPrefs.instance(context);
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_multi_profiles),
                 context.getString(R.string.mobile_settings_multi_profiles_summary),

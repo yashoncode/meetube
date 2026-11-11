@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/mobile_card_spacing"
+    app:cardBackgroundColor="@color/mobile_color_surface"
+    app:cardCornerRadius="@dimen/mobile_card_corner_radius"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/mobile_color_divider"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/mobile_post_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@null" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/mobile_post_author"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/mobile_color_on_surface"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/mobile_post_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/mobile_color_on_surface_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/mobile_post_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:ellipsize="end"
+            android:lineSpacingExtra="2sp"
+            android:maxLines="6"
+            android:textColor="@color/mobile_color_on_surface"
+            android:textColorLink="@color/mobile_color_link"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/mobile_post_read_more"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackground"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center_vertical"
+            android:paddingEnd="16dp"
+            android:text="@string/mobile_comments_read_more"
+            android:textColor="@color/mobile_color_link"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/mobile_post_attachment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/mobile_post_likes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:gravity="center_vertical"
+                android:paddingStart="14dp"
+                android:paddingEnd="16dp"
+                android:paddingVertical="14dp"
+                android:background="@drawable/mobile_watch_pill_bg_touch"
+                android:drawableStart="@drawable/ic_watch_thumb_up_outline"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/mobile_color_on_surface"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/mobile_post_replies"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:minHeight="48dp"
+                android:gravity="center_vertical"
+                android:paddingStart="14dp"
+                android:paddingEnd="16dp"
+                android:paddingVertical="14dp"
+                android:background="@drawable/mobile_watch_pill_bg_touch"
+                android:drawableStart="@drawable/ic_watch_comment"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/mobile_color_on_surface"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

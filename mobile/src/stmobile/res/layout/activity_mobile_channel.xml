@@ -150,6 +150,21 @@
             android:textStyle="bold"
             tools:text="Some Channel" />
 
+        <TextView
+            android:id="@+id/mobile_channel_posts"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mobile_watch_pill_bg_touch"
+            android:clickable="true"
+            android:focusable="true"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:paddingHorizontal="14dp"
+            android:text="@string/mobile_channel_posts"
+            android:textColor="@color/mobile_color_on_surface"
+            android:textSize="13sp" />
+
         <!-- MEETUBE(channel sort, issue #5): Latest / Popular / Oldest for the open tab. -->
         <ImageButton
             android:id="@+id/mobile_channel_sort"

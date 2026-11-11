@@ -424,6 +424,8 @@ public class MobilePlaybackActivity extends MobileActivity
     // accumulate into a bounded buffer that the LiveChatSheet seeds from and observes live.
     private static final int MAX_CHAT_ITEMS = 250;
     private final List<ChatItem> mChatItems = new ArrayList<>();
+    // Only sent-message echoes are suppressed; the existing receive-only path stays as it was.
+    private final java.util.Set<String> mSentChatIds = new java.util.HashSet<>();
     private ChatReceiver mChatReceiver;
     private LiveChatSheet.Observer mChatObserver;
     private Disposable mLiveChatAction;
@@ -9233,14 +9235,16 @@ public class MobilePlaybackActivity extends MobileActivity
         // (and null when it is torn down). Subscribe to it: each incoming ChatItem is buffered and
         // forwarded to an open LiveChatSheet. Best-effort - if the video isn't live this is never
         // called and the chat panel stays hidden.
+        // Hooked up now, not on the UI thread: the first poll (the whole backlog) can land before
+        // a posted runnable runs, and the receiver drops items while it has no callback.
+        // onChatItemReceived hops to the UI thread itself.
+        if (chatReceiver != null) chatReceiver.setCallback(this::onChatItemReceived);
         runOnUiThread(() -> {
             mChatReceiver = chatReceiver;
 
             if (chatReceiver == null) {
                 return;
             }
-
-            chatReceiver.setCallback(this::onChatItemReceived);
 
             // Chat is now streaming; make sure the entry is reachable even if metadata was slow.
             setChatEntryVisible(true);
@@ -9252,6 +9256,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         runOnUiThread(() -> {
+            if (item.getId() != null && mSentChatIds.contains(item.getId())) return;
             mChatItems.add(item);
             while (mChatItems.size() > MAX_CHAT_ITEMS) {
                 mChatItems.remove(0);
@@ -10289,6 +10294,13 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private final CommentsPanel.Host mCommentsHost = new CommentsPanel.Host() {
         @Override
+        public void onCommentsCountChanged(String count) {
+            if (mWatchCommentsCount != null) {
+                mWatchCommentsCount.setText(count);
+            }
+        }
+
+        @Override
         public void onTopComments(List<CommentItem> comments) {
             if (mCommentTeaser == null) {
                 return; // classic watch page: no teaser
@@ -10392,6 +10404,29 @@ public class MobilePlaybackActivity extends MobileActivity
     // ---------------------------------------------------------------------------------
     // LiveChatSheet.Host - expose the buffered chat stream to the open sheet.
     // ---------------------------------------------------------------------------------
+
+    @Override
+    public Video getChatVideo() {
+        return getVideo();
+    }
+
+    @Override
+    public void onChatMessageSent(ChatItem item) {
+        runOnUiThread(() -> {
+            String id = item.getId();
+            if (id != null) {
+                // A fast poll can beat the send response to the list.
+                for (ChatItem existing : mChatItems) {
+                    if (id.equals(existing.getId())) {
+                        mSentChatIds.add(id);
+                        return;
+                    }
+                }
+            }
+            onChatItemReceived(item);
+            if (id != null) mSentChatIds.add(id);
+        });
+    }
 
     @Override
     public List<ChatItem> getChatSnapshot() {
@@ -10597,6 +10632,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         setChatEntryVisible(false);
         mChatItems.clear();
+        mSentChatIds.clear();
         RxHelper.disposeActions(mLiveChatAction);
         mLiveChatAction = null;
         mChatReceiver = null;

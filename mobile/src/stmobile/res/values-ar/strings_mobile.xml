@@ -258,6 +258,9 @@
     <string name="mobile_accounts_title">الحسابات</string>
     <string name="mobile_accounts_signed_out">الاستخدام بدون حساب</string>
     <string name="mobile_accounts_sign_out">تسجيل الخروج</string>
+    <string name="mobile_accounts_tab_main">الحسابات الرئيسية</string>
+    <string name="mobile_accounts_tab_web">حسابات الويب</string>
+    <string name="mobile_accounts_add">إضافة حساب</string>
     <string name="mobile_accounts_sign_out_title">هل تريد تسجيل الخروج؟</string>
     <string name="mobile_accounts_sign_out_confirm">ستتم إزالة %1$s من هذا الجهاز. يمكنك تسجيل الدخول مجددًا في أي وقت.</string>
     <string name="mobile_empty_signin_section">سجّل الدخول لعرض %1$s</string>

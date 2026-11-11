@@ -190,6 +190,9 @@
     <string name="mobile_accounts_title">Аккаунты</string>
     <string name="mobile_accounts_signed_out">Использовать без аккаунта</string>
     <string name="mobile_accounts_sign_out">Выйти</string>
+    <string name="mobile_accounts_tab_main">Основные аккаунты</string>
+    <string name="mobile_accounts_tab_web">Веб-аккаунты</string>
+    <string name="mobile_accounts_add">Добавить аккаунт</string>
     <string name="mobile_accounts_sign_out_title">Выйти?</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s будет удалён с этого устройства. Вы можете снова войти в любое время.</string>
     <string name="mobile_empty_signin_section">Войдите, чтобы увидеть свои %1$s</string>
