@@ -149,4 +149,16 @@ public class FilteredPageTopUpTest {
             topUp.onPageLanded(1);
         }
     }
+
+    @Test
+    public void aScrollThatAddedTooFewCardsFetchesTheNextPage() {
+        FilteredPageTopUp topUp = new FilteredPageTopUp();
+        topUp.onUserAction(86); // scrolled to the end of 86 cards
+        topUp.onPageLanded(18); // 20 results, 18 of them Shorts
+        assertTrue("2 new cards are not a page", topUp.take(88, true));
+        topUp.onPageLanded(18);
+        assertTrue(topUp.take(90, true));
+        topUp.onPageLanded(10);
+        assertFalse("10 new cards are enough", topUp.take(100, true));
+    }
 }

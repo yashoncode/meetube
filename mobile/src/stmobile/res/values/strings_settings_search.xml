@@ -51,4 +51,5 @@
     <string name="mobile_settings_search_kw_short_ends">shorts loop repeat autoscroll auto scroll next swipe</string>
     <string name="mobile_settings_search_kw_stable_volume">stable volume drc compression dynamic range audio loud quiet</string>
     <string name="mobile_settings_search_kw_equalizer">equalizer eq audio bass treble frequencies bands presets custom sound</string>
+    <string name="mobile_settings_search_web_signin">chat google login cookies account session send message</string>
 </resources>

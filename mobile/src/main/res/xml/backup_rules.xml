@@ -16,5 +16,7 @@
 -->
 <full-backup-content>
     <exclude domain="file" path="global_prefs/" />
+    <exclude domain="root" path="app_webview/" />
+    <exclude domain="sharedpref" path="youtube_web_signin.xml" />
     <exclude domain="sharedpref" path="AuthTokenCache.xml" />
 </full-backup-content>

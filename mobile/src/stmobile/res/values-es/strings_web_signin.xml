@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_web_signin_title">Iniciar sesión en YouTube</string>
+    <string name="mobile_web_signin_privacy">Esta es la página de Google. MeeTube nunca ve tu contraseña.</string>
+    <string name="mobile_web_signin_loading">Abriendo Google</string>
+    <string name="mobile_web_signin_finishing">Terminando el inicio de sesión</string>
+    <string name="mobile_web_signin_failed">No se pudo terminar de iniciar sesión en YouTube. Comprueba tu conexión e inténtalo de nuevo.</string>
+    <string name="mobile_web_signin_retry">Reintentar</string>
+    <string name="mobile_web_signin_explain_title">Un inicio de sesión más</string>
+    <string name="mobile_web_signin_explain_need">Para enviar mensajes en el chat en directo y marcar Me gusta en publicaciones, necesitas iniciar sesión en la página web de YouTube. Solo tardas un minuto y lo haces una vez.</string>
+    <string name="mobile_web_signin_explain_current">Tu sesión actual se queda como está y sigue gestionando los vídeos, el historial y las suscripciones.</string>
+    <string name="mobile_web_signin_explain_risk">Usa la misma cuenta de Google. Google no aprueba las aplicaciones no oficiales, por lo que existe un pequeño riesgo para la cuenta que uses.</string>
+    <string name="mobile_web_signin_google">Iniciar sesión con Google</string>
+    <string name="mobile_web_signin_not_now">Ahora no</string>
+    <string name="mobile_web_signin_sign_out">¿Cerrar la sesión web de YouTube?</string>
+    <string name="mobile_web_signin_sign_out_confirm">Tendrás que volver a iniciar sesión para enviar mensajes en el chat en directo. Tu sesión actual de MeeTube se queda como está.</string>
+    <string name="mobile_web_signin_sign_out_failed">No se pudo cerrar sesión. Inténtalo de nuevo.</string>
+    <string name="mobile_web_signin_signed_out">Sesión web de YouTube cerrada</string>
+    <string name="mobile_web_signin_add">Añadir cuenta web</string>
+    <string name="mobile_web_signin_choose">Chatear como</string>
+    <string name="mobile_web_signin_switch">Cambiar de cuenta web</string>
+    <string name="mobile_web_signin_expired">Tu sesión web de YouTube ha caducado. Vuelve a iniciar sesión.</string>
+    <string name="mobile_chat_as">Chatear como %1$s</string>
+    <string name="mobile_chat_hint">Di algo</string>
+    <string name="mobile_chat_send">Enviar mensaje</string>
+    <string name="mobile_chat_send_failed">No se pudo enviar tu mensaje. Inténtalo de nuevo.</string>
+    <string name="mobile_chat_not_ready">El chat aún no está listo. Inténtalo de nuevo en un momento.</string>
+</resources>

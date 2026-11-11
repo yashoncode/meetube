@@ -41,4 +41,5 @@
     <string name="mobile_settings_search_kw_short_ends">shorts bucle repetir desplazamiento automático siguiente deslizar</string>
     <string name="mobile_settings_search_kw_stable_volume">volumen estable drc compresión rango dinámico audio fuerte suave</string>
     <string name="mobile_settings_search_kw_equalizer">ecualizador eq audio graves agudos frecuencias bandas preajustes personalizado sonido</string>
+    <string name="mobile_settings_search_web_signin">chat google acceso cookies cuenta sesión enviar mensaje directo</string>
 </resources>

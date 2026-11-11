@@ -167,6 +167,8 @@ public class MobileChannelActivity extends MobileActivity
         setupNavPill();
 
         mBackButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        findViewById(R.id.mobile_channel_posts).setOnClickListener(v ->
+                MobileChannelPostsActivity.open(this, sortChannelId(), mTitleView.getText().toString()));
         findViewById(R.id.mobile_channel_sort).setOnClickListener(v -> {
             if (mPresenter != null && mActiveSectionId != -1) {
                 mSortTargetId = mActiveSectionId;

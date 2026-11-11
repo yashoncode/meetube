@@ -327,6 +327,9 @@
     <string name="mobile_accounts_title">Accounts</string>
     <string name="mobile_accounts_signed_out">Use without account</string>
     <string name="mobile_accounts_sign_out">Sign out</string>
+    <string name="mobile_accounts_tab_main">Main accounts</string>
+    <string name="mobile_accounts_tab_web">Web accounts</string>
+    <string name="mobile_accounts_add">Add account</string>
     <string name="mobile_accounts_sign_out_title">Sign out?</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s will be removed from this device. You can sign in again anytime.</string>
 

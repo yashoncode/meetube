@@ -74,6 +74,9 @@
     <string name="mobile_accounts_title">Cuentas</string>
     <string name="mobile_accounts_signed_out">Usar sin cuenta</string>
     <string name="mobile_accounts_sign_out">Cerrar sesión</string>
+    <string name="mobile_accounts_tab_main">Cuentas principales</string>
+    <string name="mobile_accounts_tab_web">Cuentas web</string>
+    <string name="mobile_accounts_add">Añadir cuenta</string>
     <string name="mobile_accounts_sign_out_title">¿Cerrar sesión?</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s se eliminará de este dispositivo. Puedes volver a iniciar sesión cuando quieras.</string>
     <!-- Playlist page header -->

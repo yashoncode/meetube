@@ -1,30 +1,55 @@
 package com.newtube.mobile.ui.playback;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.snackbar.Snackbar;
 import com.liskovsoft.mediaserviceinterfaces.data.ChatItem;
+import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.liskovsoft.youtubeapi.service.YouTubeServiceManager;
+import com.liskovsoft.youtubeapi.web.WebSessionException;
 import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.common.MobileSheets;
+import com.newtube.mobile.ui.common.MobileSnackbar;
+import com.newtube.mobile.ui.signin.MobileWebSignInActivity;
+import com.newtube.mobile.ui.signin.WebSignInSheet;
+import com.newtube.mobile.ui.signin.WebSignInState;
 
 import java.util.List;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 /**
  * Live-chat panel for the touch watch page. The hosting Activity owns the actual chat stream (it
@@ -40,6 +65,8 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
     /** Implemented by the hosting Activity to expose the live-chat stream to the sheet. */
     public interface Host {
         List<ChatItem> getChatSnapshot();
+        @Nullable Video getChatVideo();
+        void onChatMessageSent(ChatItem item);
         void registerChatObserver(Observer observer);
         void unregisterChatObserver(Observer observer);
         /** The panel was closed by the user: stop the live-chat stream the Activity opened for it. */
@@ -64,6 +91,30 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
     private RecyclerView mList;
     private TextView mEmpty;
     private Host mHost;
+    private View mComposer;
+    private EditText mInput;
+    private ImageButton mSend;
+    private android.widget.ImageView mAccount;
+    private View mSendProgress;
+    private Disposable mSendAction;
+    private boolean mSending;
+    private String mVideoId;
+    private String mDraft = "";
+    private Snackbar mFeedback;
+
+    private final ActivityResultLauncher<Intent> mWebSignIn = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && mInput != null) {
+                    bindComposer();
+                    if (!isLiveChat()) return;
+                    mInput.requestFocus();
+                    mInput.post(() -> {
+                        if (mInput == null) return;
+                        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) imm.showSoftInput(mInput, InputMethodManager.SHOW_IMPLICIT);
+                    });
+                }
+            });
 
     private final Observer mObserver = new Observer() {
         @Override
@@ -111,6 +162,10 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
         lm.setStackFromEnd(true); // newest at the bottom, list starts pinned to the end
         mList.setLayoutManager(lm);
         mList.setAdapter(mAdapter);
+        Video video = mHost != null ? mHost.getChatVideo() : null;
+        mVideoId = video != null ? video.videoId : null;
+        if (savedInstanceState != null) mDraft = savedInstanceState.getString("chat_draft", "");
+        installComposer(view);
 
         if (mHost != null) {
             List<ChatItem> snapshot = mHost.getChatSnapshot();
@@ -123,10 +178,158 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
         }
     }
 
+    private void installComposer(View root) {
+        root.setFocusableInTouchMode(true);
+        root.requestFocus();
+        mComposer = root.findViewById(R.id.chat_sheet_composer);
+        mInput = mComposer.findViewById(R.id.comment_composer_input);
+        mSend = mComposer.findViewById(R.id.comment_composer_send);
+        mSendProgress = mComposer.findViewById(R.id.comment_composer_progress);
+        // The avatar slot is the web account switch (shown once signed in, in bindComposer).
+        mAccount = mComposer.findViewById(R.id.comment_composer_avatar);
+        mAccount.setContentDescription(getString(R.string.mobile_web_signin_switch));
+        mAccount.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+        mAccount.setOnClickListener(v -> WebSignInSheet.pickAccount(requireActivity(), this::bindComposer,
+                () -> mWebSignIn.launch(WebSignInSheet.addAccountIntent(requireActivity()))));
+        mInput.setMaxLines(3);
+        mInput.setText(mDraft);
+        mInput.setFilters(new InputFilter[] {(source, start, end, dest, dstart, dend) ->
+                mSending ? dest.subSequence(dstart, dend) : null, new InputFilter.LengthFilter(200)});
+        mInput.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) { updateSend(); }
+        });
+        mInput.setOnClickListener(v -> { if (!WebSignInState.isSignedIn(requireContext())) requestWebSignIn(); });
+        mComposer.setOnClickListener(v -> { if (!WebSignInState.isSignedIn(requireContext())) requestWebSignIn(); });
+        mSend.setContentDescription(getString(R.string.mobile_chat_send));
+        mSend.setOnClickListener(v -> sendMessage());
+        // No keyboard handling of our own: the bottom sheet already pads itself by the keyboard,
+        // and a margin on top of that squeezed the list and this bar out of the sheet.
+        bindComposer();
+    }
+
+    private boolean isLiveChat() {
+        Video video = mHost != null ? mHost.getChatVideo() : null;
+        return video != null && video.isLive && !video.isLiveEnd
+                && mVideoId != null && mVideoId.equals(video.videoId);
+    }
+
+    @Override public void onResume() {
+        super.onResume();
+        bindComposer();
+    }
+
+    private void bindComposer() {
+        if (mComposer == null) return;
+        mComposer.setVisibility(isLiveChat() ? View.VISIBLE : View.GONE);
+        boolean signedIn = WebSignInState.isSignedIn(requireContext());
+        mInput.setHint(signedIn ? getString(R.string.mobile_chat_as, WebSignInState.accountName(requireContext()))
+                : getString(R.string.mobile_chat_hint));
+        mInput.setFocusable(signedIn);
+        mInput.setFocusableInTouchMode(signedIn);
+        mInput.setCursorVisible(signedIn);
+        mAccount.setVisibility(signedIn ? View.VISIBLE : View.GONE);
+        if (signedIn) WebSignInSheet.loadAvatar(requireActivity(), mAccount, WebSignInState.accountPhoto(requireContext()));
+        View pill = (View) mInput.getParent().getParent();
+        ViewGroup.MarginLayoutParams pillParams = (ViewGroup.MarginLayoutParams) pill.getLayoutParams();
+        int start = signedIn ? Math.round(12 * getResources().getDisplayMetrics().density) : 0;
+        if (pillParams.getMarginStart() != start) {
+            pillParams.setMarginStart(start);
+            pill.setLayoutParams(pillParams);
+        }
+        updateSend();
+    }
+
+    private void updateSend() {
+        if (mSend == null) return;
+        boolean ready = !mSending && (!WebSignInState.isSignedIn(requireContext())
+                || !mInput.getText().toString().trim().isEmpty());
+        mInput.setEnabled(!mSending);
+        mSend.setEnabled(ready);
+        mSend.setColorFilter(ContextCompat.getColor(requireContext(), ready
+                ? R.color.mobile_color_on_surface : R.color.mobile_color_on_surface_secondary));
+        mSend.setAlpha(ready ? 1f : 0.5f);
+        mSend.setVisibility(mSending ? View.INVISIBLE : View.VISIBLE);
+        mSendProgress.setVisibility(mSending ? View.VISIBLE : View.GONE);
+    }
+
+    private void requestWebSignIn() {
+        WebSignInSheet.show(requireActivity(), () -> mWebSignIn.launch(
+                new Intent(requireContext(), MobileWebSignInActivity.class)));
+    }
+
+    private void sendMessage() {
+        if (mSending || !isLiveChat()) return;
+        if (!WebSignInState.isSignedIn(requireContext())) {
+            requestWebSignIn();
+            return;
+        }
+        String text = mInput.getText().toString().trim();
+        if (text.isEmpty()) return;
+        Video video = mHost.getChatVideo();
+        if (video == null || video.channelId == null || video.channelId.isEmpty()) {
+            showChatError(getString(R.string.mobile_chat_not_ready), false);
+            return;
+        }
+        mSending = true;
+        updateSend();
+        mSendAction = YouTubeServiceManager.instance().getLiveChatService()
+                .sendLiveChatMessageObserve(mVideoId, video.channelId, text)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    mSending = false;
+                    updateSend();
+                    if (!result.isSuccess()) {
+                        showChatError(result.getError(), false);
+                        return;
+                    }
+                    mInput.setText("");
+                    // YouTube often answers without the message itself, and Top chat may never
+                    // show it: echo it from what was typed, as YouTube's own page does.
+                    ChatItem sent = result.getItem() != null ? result.getItem() : ownMessage(text);
+                    if (isLiveChat()) mHost.onChatMessageSent(sent);
+                }, error -> {
+                    mSending = false;
+                    boolean expired = error instanceof WebSessionException
+                            && (((WebSessionException) error).getKind() == WebSessionException.Kind.REJECTED
+                            || ((WebSessionException) error).getKind() == WebSessionException.Kind.NOT_SIGNED_IN);
+                    if (expired) WebSignInState.clear(requireContext());
+                    bindComposer();
+                    showChatError(getString(expired ? R.string.mobile_web_signin_expired
+                            : R.string.mobile_chat_send_failed), expired);
+                });
+    }
+
+    private ChatItem ownMessage(String text) {
+        String name = WebSignInState.accountName(requireContext());
+        String photo = WebSignInState.accountPhoto(requireContext());
+        return new ChatItem() {
+            @Override public String getId() { return null; }
+            @Override public String getMessage() { return text; }
+            @Override public String getAuthorName() { return name; }
+            @Override public String getAuthorPhoto() { return photo; }
+        };
+    }
+
+    private void showChatError(String text, boolean expired) {
+        if (mFeedback != null) mFeedback.dismiss();
+        mFeedback = Snackbar.make(requireView(), text, Snackbar.LENGTH_LONG).setAnchorView(mComposer);
+        if (expired) mFeedback.setAction(R.string.mobile_web_signin_google, v -> requestWebSignIn());
+        MobileSnackbar.style(requireActivity(), mFeedback);
+        mFeedback.show();
+    }
+
+    @Override public void onSaveInstanceState(@NonNull Bundle state) {
+        state.putString("chat_draft", mInput != null ? mInput.getText().toString() : mDraft);
+        super.onSaveInstanceState(state);
+    }
+
     private void appendMessage(ChatItem item) {
         if (mAdapter == null) {
             return;
         }
+        bindComposer();
         int count = mAdapter.addItem(item);
         if (count > 0) {
             mEmpty.setVisibility(View.GONE);
@@ -137,6 +340,11 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
     @Override
     public void onStart() {
         super.onStart();
+        Window window = requireDialog().getWindow();
+        if (window != null) {
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            WindowCompat.setDecorFitsSystemWindows(window, false);
+        }
         placeBesideVideo();
         // The player rotates in place (configChanges) and its bars come and go after that: the
         // panel follows every layout of the page, not just the first one after a rotation.
@@ -198,7 +406,9 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
         // window's top - an empty strip above the handle. Consumed at the root, no layer sees them.
         View decor = window.getDecorView();
         ViewCompat.setOnApplyWindowInsetsListener(decor, (v, insets) ->
-                mColumn ? WindowInsetsCompat.CONSUMED : ViewCompat.onApplyWindowInsets(v, insets));
+                mColumn ? new WindowInsetsCompat.Builder(insets)
+                        .setInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout(), Insets.NONE)
+                        .build() : ViewCompat.onApplyWindowInsets(v, insets));
         decor.requestApplyInsets();
         View frame = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
         if (frame != null) {
@@ -310,6 +520,20 @@ public class LiveChatSheet extends BottomSheetDialogFragment {
 
     @Override
     public void onDestroyView() {
+        if (mSendAction != null) mSendAction.dispose();
+        if (mFeedback != null) mFeedback.dismiss();
+        mSendAction = null;
+        mFeedback = null;
+        mEmpty = null;
+        if (mInput != null) mDraft = mInput.getText().toString();
+        mSending = false;
+        mComposer = null;
+        mInput = null;
+        mSend = null;
+        mAccount = null;
+        mSendProgress = null;
+        mList = null;
+        mAdapter = null;
         if (mHost != null) {
             mHost.unregisterChatObserver(mObserver);
         }

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/mobile_color_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/mobile_title_bar_height"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/mobile_posts_back"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/mobile_back"
+                android:padding="12dp"
+                android:src="@drawable/ic_mobile_back_arrow" />
+
+            <TextView
+                android:id="@+id/mobile_posts_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingEnd="16dp"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <com.newtube.mobile.ui.common.HapticSwipeRefreshLayout
+                android:id="@+id/mobile_posts_swipe"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/mobile_posts_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="@dimen/mobile_card_spacing"
+                    android:paddingBottom="@dimen/mobile_card_spacing"
+                    android:scrollbars="none" />
+            </com.newtube.mobile.ui.common.HapticSwipeRefreshLayout>
+
+            <include layout="@layout/mobile_page_load_state" />
+
+            <ProgressBar
+                android:id="@+id/mobile_posts_progress"
+                style="@style/Widget.MeeTube.GlassSpinner"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+            <!-- A post's comments: the watch page's panel, read-only here. -->
+            <include layout="@layout/mobile_comments_panel" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <include layout="@layout/mobile_mini_player_overlay" />
+</FrameLayout>

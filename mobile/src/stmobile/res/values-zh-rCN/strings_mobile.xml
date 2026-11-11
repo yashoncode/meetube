@@ -183,6 +183,9 @@
     <string name="mobile_accounts_title">账号</string>
     <string name="mobile_accounts_signed_out">不使用账号</string>
     <string name="mobile_accounts_sign_out">退出登录</string>
+    <string name="mobile_accounts_tab_main">主账号</string>
+    <string name="mobile_accounts_tab_web">网页账号</string>
+    <string name="mobile_accounts_add">添加账号</string>
     <string name="mobile_accounts_sign_out_title">退出登录？</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s 将从此设备中移除。你可以随时重新登录。</string>
     <string name="mobile_empty_signin_section">登录后查看你的 %1$s</string>

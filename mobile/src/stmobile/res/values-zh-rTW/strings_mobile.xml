@@ -307,6 +307,9 @@
     <string name="mobile_accounts_title">帳號</string>
     <string name="mobile_accounts_signed_out">不使用帳號</string>
     <string name="mobile_accounts_sign_out">登出</string>
+    <string name="mobile_accounts_tab_main">主帳號</string>
+    <string name="mobile_accounts_tab_web">網頁帳號</string>
+    <string name="mobile_accounts_add">新增帳號</string>
     <string name="mobile_accounts_sign_out_title">要登出嗎？</string>
     <string name="mobile_accounts_sign_out_confirm">%1$s 會從這台裝置移除。你隨時可以重新登入。</string>
     <string name="mobile_empty_signin_section">登入後才能看到你的%1$s</string>
