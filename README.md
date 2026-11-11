@@ -105,12 +105,17 @@ Releases are made by pushing a `vX.Y.Z` tag: [release.yml](.github/workflows/rel
 ## Support MeeTube
 
 MeeTube is free, has no ads and always will. I build it in my spare time because I love using it.
-If it makes your YouTube a little nicer and you'd like to say thanks, you can buy me a coffee.
-It's completely optional, and every coffee is truly appreciated. ☕
+
+Behind every little feature are hours of my life, a few sleepless nights, and a lot of hope that someone out there finds it useful.
+
+❤️ If you love my work, buy me a coffee. ☕<br>
+If you don't, maybe buy me a tea? 🍵
+
+No pressure, though. I built this with love, not expectations. ❤️
 
 <p align="center"><a href="https://buymeacoffee.com/yashwynth"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy me a coffee"></a></p>
 
-In India? Scan to send a coffee over UPI (`yashwynth@slc`):
+In India? Scan to send a coffee (or a chai) over UPI (`yashwynth@slc`):
 
 <p align="center"><img src=".github/assets/meetube/upi-qr.jpeg" width="240" alt="UPI QR code for yashwynth@slc"></p>
 
