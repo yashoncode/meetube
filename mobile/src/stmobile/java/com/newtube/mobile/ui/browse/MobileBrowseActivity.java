@@ -2040,7 +2040,17 @@ public class MobileBrowseActivity extends MobileActivity
 
         // MEETUBE(you page): History's latest videos, two and a bit across like YouTube's You page.
         int cardWidth = Math.round(getResources().getDisplayMetrics().widthPixels / 2.4f);
-        mYouHistoryAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked) {
+        // MEETUBE(shorts): the row says its taps are History's. The card's own group is a weak
+        // reference, so belongsToHistory() turned false whenever the GC took it, and a Short opened
+        // as a normal video, now and then.
+        mYouHistoryAdapter = new VideoCardAdapter(video -> {
+            mYouHistoryTap = true;
+            try {
+                onVideoClicked(video);
+            } finally {
+                mYouHistoryTap = false;
+            }
+        }, this::onVideoLongClicked) {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -2573,7 +2583,7 @@ public class MobileBrowseActivity extends MobileActivity
             com.newtube.mobile.ui.common.ShortsFeedTail.arm(); // MEETUBE(issue #227): then the Shorts feed, without end
         } else if (video.belongsToShorts() && video.hasVideo()) {
             queueShorts(video);
-        } else if (video.belongsToHistory() && video.hasVideo() && ShortsFilter.isShort(video)) {
+        } else if ((video.belongsToHistory() || mYouHistoryTap) && video.hasVideo() && ShortsFilter.isShort(video)) {
             video = queueHistoryShorts(video);
         }
 
@@ -2631,9 +2641,15 @@ public class MobileBrowseActivity extends MobileActivity
      * MEETUBE(shorts): History lists Shorts as ordinary cards; a tapped one plays in the Shorts
      * player with History's other Shorts as its queue. Marked copies, so the grid's cards stay.
      */
+    /** True during a tap on the You page's History row (its cards may have lost their group). */
+    private boolean mYouHistoryTap;
+
     private Video queueHistoryShorts(Video tapped) {
         Video opened = queueHistoryShorts(tapped, mCurrentVideos);
         // The You page's History row is not the grid on screen: its own History list is the queue.
+        if (opened == null && mYouHistoryTap) {
+            opened = queueHistoryShorts(tapped, mYouHistoryAdapter.getCurrentList());
+        }
         if (opened == null && tapped.getGroup() != null) {
             opened = queueHistoryShorts(tapped, tapped.getGroup().getVideos());
         }
