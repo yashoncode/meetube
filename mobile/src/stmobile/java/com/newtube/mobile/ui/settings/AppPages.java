@@ -160,6 +160,12 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_watched_bar_summary),
                 () -> WatchedBar.isShown(context), on -> WatchedBar.setShown(context, on)).needsRestart(), Tiles.FX_WATCHED));
 
+        // MEETUBE(badge icons): the waves before "Mix" and the note before a music video's time.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_badge_icons),
+                context.getString(R.string.mobile_settings_badge_icons_summary),
+                () -> com.newtube.mobile.ui.common.BadgeIcons.isShown(context),
+                on -> com.newtube.mobile.ui.common.BadgeIcons.setShown(context, on)).needsRestart());
+
         // MEETUBE(issue #120): the pop when a pull-to-refresh lets go; off by default.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_refresh_sound),
                 context.getString(R.string.mobile_settings_refresh_sound_summary),

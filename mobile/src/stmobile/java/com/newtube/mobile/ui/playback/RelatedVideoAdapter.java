@@ -222,6 +222,7 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
             // than knowing where you are, and this needs no extra view in the row layout.
             if (isCurrent) {
                 mBadge.setText(R.string.mobile_watch_queue_now_playing);
+                com.newtube.mobile.ui.browse.VideoCardAdapter.VideoViewHolder.badgeIcon(mBadge, null);
                 mBadge.setVisibility(View.VISIBLE);
                 return;
             }
@@ -237,6 +238,7 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
                 mBadge.setVisibility(View.GONE);
             } else {
                 mBadge.setText(badgeText);
+                com.newtube.mobile.ui.browse.VideoCardAdapter.VideoViewHolder.badgeIcon(mBadge, badgeText.equals(video.badge) ? video : null);
                 mBadge.setVisibility(View.VISIBLE);
             }
         }

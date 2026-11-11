@@ -2101,8 +2101,12 @@ public class MobileBrowseActivity extends MobileActivity
         // MEETUBE(issue #168): the row opens at its start; it kept the last visit's scroll for a frame.
         ((RecyclerView) findViewById(R.id.mobile_you_history_list)).scrollToPosition(0);
         mYouHistoryToStart = true;
+        // MEETUBE(you refresh): with nothing cached the row keeps its cards until the fresh ones land;
+        // an empty list hid it and the fetch brought it back, a blink on every visit.
         List<Video> cached = FeedCache.get(MediaGroup.TYPE_HISTORY);
-        showYouHistory(cached);
+        if (cached != null || mYouHistoryAdapter.getItemCount() == 0) {
+            showYouHistory(cached);
+        }
         com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mYouHistoryAction);
         mYouHistoryAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
                 com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService().getHistoryObserve(),

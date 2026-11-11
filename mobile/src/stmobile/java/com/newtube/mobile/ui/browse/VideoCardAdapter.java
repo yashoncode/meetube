@@ -713,6 +713,15 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             }
         }
 
+        /** MEETUBE(badge icons): radio waves before "Mix", a note before a music video's time. */
+        public static void badgeIcon(android.widget.TextView badge, Video video) {
+            int icon = video == null || video.isLive
+                    || !com.newtube.mobile.ui.common.BadgeIcons.isShown(badge.getContext()) ? 0 : video.isMix() ? R.drawable.ic_badge_mix
+                    : video.isMusic ? R.drawable.ic_badge_music : 0;
+            badge.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
+            badge.setCompoundDrawablePadding(icon == 0 ? 0 : Math.round(3 * badge.getResources().getDisplayMetrics().density));
+        }
+
         private void bindBadge(Context context, Video video) {
             String badgeText;
             if (video.hasNewContent) {
@@ -729,6 +738,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 mBadge.setVisibility(View.GONE);
             } else {
                 mBadge.setText(badgeText);
+                badgeIcon(mBadge, badgeText.equals(video.badge) ? video : null);
                 // a live / upcoming badge stays a solid red pill; everything else is the glass
                 if (video.isLive || video.isUpcoming) {
                     android.graphics.drawable.GradientDrawable live = (android.graphics.drawable.GradientDrawable)
