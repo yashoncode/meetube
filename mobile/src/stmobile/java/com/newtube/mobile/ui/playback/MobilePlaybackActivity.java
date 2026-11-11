@@ -258,6 +258,9 @@ public class MobilePlaybackActivity extends MobileActivity
     /** MEETUBE(sponsorblock): "Skip Sponsor" by the fullscreen button (showSkipSegment). */
     private TextView mSkipSegmentPill;
     private final Runnable mHideSkipSegment = this::hideSkipSegment;
+    /** MEETUBE(issue #223): Chapter pop-ups (showChapterPill). */
+    private TextView mChapterPill;
+    private final Runnable mHideChapterPill = this::hideChapterPill;
     /** MEETUBE(up-next): the "Up next in N" card over an ended video. */
     private NextCountdown mNextCountdown;
     private ImageButton mSubtitlesButton;
@@ -949,7 +952,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // each only costs while it shows.
         int pillTint = ContextCompat.getColor(this, R.color.meetube_toast_glass);
         for (View pill : new View[] {mZoomHintView, mTopPill, mLevelPill, mNoticeView,
-                findViewById(R.id.mobile_player_scrub_chapter), mSkipSegmentPill}) {
+                findViewById(R.id.mobile_player_scrub_chapter), findViewById(R.id.mobile_player_chapter_pill),
+                mSkipSegmentPill}) {
             if (pill != null) {
                 com.newtube.mobile.ui.common.GlassDrawable.apply(pill,
                         findViewById(R.id.mobile_player_glass), 0, pillTint);
@@ -1198,6 +1202,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mCommentTeaserText = findViewById(R.id.mobile_watch_comment_text);
         mWatchChatEntry = findViewById(R.id.mobile_watch_chat_entry);
         mScrubChapterView = findViewById(R.id.mobile_player_scrub_chapter);
+        mChapterPill = findViewById(R.id.mobile_player_chapter_pill);
         mSeekFilmstrip = findViewById(R.id.mobile_player_seek_filmstrip);
         mChapterButton = findViewById(R.id.mobile_player_chapter);
         mChapterButton.setOnClickListener(v -> showChaptersSheet());
@@ -3072,6 +3077,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 getResources().getDimensionPixelSize(R.dimen.mobile_player_bottom_row_margin) + lift);
         setMargins(mScrubChapterView, 0, 0, 0,
                 getResources().getDimensionPixelSize(R.dimen.mobile_player_scrub_pill_margin) + bottom + lift);
+        setMargins(mChapterPill, 0, 0, 0,
+                getResources().getDimensionPixelSize(R.dimen.mobile_player_scrub_pill_margin) + bottom + lift);
         setMargins(mTopPill, 0, top + dp(12), 0, 0);
         setMargins(mLevelPill, 0, top + dp(12), 0, 0);
         // The playback notice sits just over the row (60 dp in portrait, as in the layout).
@@ -3556,7 +3563,7 @@ public class MobilePlaybackActivity extends MobileActivity
         cancelHoldSpeed();
         // NEWTUBE(seek bar): the pills beside the controls go at once, not on a fade that the
         // pinned window would show.
-        for (View pill : new View[] {mTopPill, mScrubChapterView}) {
+        for (View pill : new View[] {mTopPill, mScrubChapterView, mChapterPill}) {
             if (pill != null) {
                 pill.animate().cancel();
                 pill.setVisibility(View.GONE);
@@ -4701,6 +4708,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (isShortsMode()) {
             return; // MEETUBE(shorts): the overlay is the chrome
         }
+        hideChapterPill(); // the chapter button above the bar names it now
         if (mIsInPip || mPipEnterPending) {
             // The pinned window is all video. Most callers checked mIsInPip on their own, the
             // presenter's showOverlay did not: right after a home-gesture PiP the full controls
@@ -8648,6 +8656,34 @@ public class MobilePlaybackActivity extends MobileActivity
         mSkipSegmentPill.removeCallbacks(mHideSkipSegment);
         mSkipSegmentPill.postDelayed(mHideSkipSegment, Math.max(timeoutMs, 3_000));
         return true;
+    }
+
+    /**
+     * MEETUBE(issue #223): Chapter pop-ups used to open the shared dialog, which on the phone is a
+     * whole sheet activity - a dimmed scrim over the video that took focus and stayed until the
+     * next chapter. Now a pill above the bar for a few seconds; a tap goes to the next chapter.
+     */
+    @Override
+    public boolean showChapterPill(String title, Runnable next) {
+        if (mChapterPill == null || mIsInPip || mScrubbing || (mShorts != null && mShorts.isActive())) {
+            return mChapterPill != null; // handled: nothing to show now
+        }
+        mChapterPill.setText(title);
+        mChapterPill.setOnClickListener(v -> {
+            hideChapterPill();
+            next.run();
+        });
+        fadePill(mChapterPill, true);
+        mChapterPill.removeCallbacks(mHideChapterPill);
+        mChapterPill.postDelayed(mHideChapterPill, 3_000);
+        return true;
+    }
+
+    private void hideChapterPill() {
+        if (mChapterPill != null) {
+            mChapterPill.removeCallbacks(mHideChapterPill);
+            fadePill(mChapterPill, false);
+        }
     }
 
     @Override
