@@ -1,8 +1,15 @@
 package com.newtube.mobile.ui.settings;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.text.format.Formatter;
@@ -10,6 +17,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +31,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.downloads.DownloadRegistry;
 import com.newtube.mobile.player.Media3PlayerCache;
 import com.newtube.mobile.ui.common.GlassDrawable;
+import com.newtube.mobile.ui.common.NavLens;
 
 import java.io.File;
 import java.util.Collections;
@@ -112,26 +121,14 @@ final class StoragePage {
         LinearLayout root = Tiles.column(context);
 
         Tiles.heading(root, context.getString(R.string.mobile_settings_storage_device));
-        LinearLayout bar = new LinearLayout(context);
-        bar.setBackground(rounded(ContextCompat.getColor(context, R.color.mobile_color_track), dp(context, 5)));
-        View used = new View(context);
         int primary = ContextCompat.getColor(context, R.color.mobile_color_primary);
-        GradientDrawable fill = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[] {primary, ColorUtils.blendARGB(primary, 0xFFFFFFFF, 0.6f)});
-        fill.setCornerRadius(dp(context, 5));
-        used.setBackground(fill);
-        View free = new View(context);
-        bar.addView(used, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 0f));
-        bar.addView(free, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
-        LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(context, 10));
-        barParams.topMargin = dp(context, 12);
-        root.addView(bar, barParams);
-
         StatFs fs = new StatFs(Environment.getDataDirectory().getPath());
         long total = fs.getTotalBytes();
         long available = fs.getAvailableBytes();
-        ((LinearLayout.LayoutParams) used.getLayoutParams()).weight = total - available;
-        ((LinearLayout.LayoutParams) free.getLayoutParams()).weight = available;
+        GlowBar bar = new GlowBar(context, total > 0 ? (float) (total - available) / total : 0f);
+        LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(context, 26));
+        barParams.topMargin = dp(context, 4);
+        root.addView(bar, barParams);
         TextView[] device = line(root, context.getString(R.string.mobile_settings_storage_used,
                 size(context, total - available), size(context, total)), 8);
         device[0].setTypeface(Typeface.DEFAULT_BOLD);
@@ -154,15 +151,17 @@ final class StoragePage {
 
         TextView clear = new TextView(context);
         clear.setText(R.string.mobile_settings_storage_clear);
-        clear.setTextColor(primary);
+        int onSurface = ContextCompat.getColor(context, R.color.mobile_color_on_surface);
+        clear.setTextColor(onSurface);
         clear.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        clear.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         clear.setGravity(Gravity.CENTER);
         clear.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_menu_delete, 0, 0, 0);
-        clear.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(primary));
+        clear.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(onSurface));
         clear.setCompoundDrawablePadding(dp(context, 8));
         clear.setPadding(dp(context, 16), dp(context, 14), dp(context, 16), dp(context, 14));
-        // MEETUBE(glass): a frosted pill, red-tinted; no source - the list it sits in is the glass source
-        GlassDrawable.apply(clear, null, 0, ColorUtils.setAlphaComponent(primary, 0x33));
+        // MEETUBE(glass): a plain frosted pill, the buttons' own tint; no source - the list it sits in is the glass source
+        GlassDrawable.apply(clear, null, 0);
         LinearLayout.LayoutParams clearParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         clearParams.topMargin = dp(context, 20);
@@ -237,11 +236,91 @@ final class StoragePage {
         return new TextView[] {left, right};
     }
 
-    private static GradientDrawable rounded(int color, int radius) {
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setColor(color);
-        drawable.setCornerRadius(radius);
-        return drawable;
+    /**
+     * MEETUBE(storage): the device bar - a slim glass rail with the accent filling it to the used
+     * share, a soft accent glow under the fill and a light sheen on its top; it fills in from empty
+     * when the page opens. No glow on a weak phone.
+     */
+    private static final class GlowBar extends View {
+        private static final float BAR_H = 8f;
+        private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF mRect = new RectF();
+        private final float mDp;
+        private final int mAccent;
+        private final int mRail;
+        private final boolean mGlow;
+        private final float mTarget;
+        private float mShown;
+
+        GlowBar(Context context, float fraction) {
+            super(context);
+            mDp = context.getResources().getDisplayMetrics().density;
+            mAccent = ContextCompat.getColor(context, R.color.meetube_accent);
+            mRail = ContextCompat.getColor(context, R.color.meetube_switch_off);
+            mGlow = !NavLens.lowEnd(context);
+            mTarget = Math.max(0f, Math.min(1f, fraction));
+            if (mGlow && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+                setLayerType(LAYER_TYPE_SOFTWARE, null); // shadow layers on shapes need P+ in hardware
+            }
+        }
+
+        @Override
+        protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            ValueAnimator fill = ValueAnimator.ofFloat(0f, mTarget);
+            fill.setDuration(900);
+            fill.setInterpolator(new DecelerateInterpolator(2f));
+            fill.addUpdateListener(a -> {
+                mShown = (float) a.getAnimatedValue();
+                invalidate();
+            });
+            fill.start();
+        }
+
+        @Override
+        protected void onDraw(@NonNull Canvas canvas) {
+            float h = BAR_H * mDp;
+            float r = h / 2f;
+            float inset = 6 * mDp; // room for the glow at the ends
+            float left = inset;
+            float right = getWidth() - inset;
+            float top = (getHeight() - h) / 2f;
+
+            mPaint.setShader(null);
+            mPaint.clearShadowLayer();
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setColor(mRail);
+            mRect.set(left, top, right, top + h);
+            canvas.drawRoundRect(mRect, r, r, mPaint);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeWidth(0.8f * mDp);
+            mPaint.setColor(0x24FFFFFF);
+            canvas.drawRoundRect(mRect, r, r, mPaint);
+
+            if (mShown <= 0f) {
+                return;
+            }
+            float end = Math.max(left + h, left + (right - left) * mShown);
+            mRect.set(left, top, end, top + h);
+            mPaint.setStyle(Paint.Style.FILL);
+            mPaint.setColor(mAccent);
+            if (mGlow) {
+                mPaint.setShadowLayer(6 * mDp, 0, 0, ColorUtils.setAlphaComponent(mAccent, 0xAA));
+                canvas.drawRoundRect(mRect, r, r, mPaint);
+                mPaint.clearShadowLayer();
+            }
+            mPaint.setShader(new LinearGradient(left, 0, end, 0,
+                    ColorUtils.blendARGB(mAccent, Color.BLACK, 0.12f), ColorUtils.blendARGB(mAccent, Color.WHITE, 0.35f),
+                    Shader.TileMode.CLAMP));
+            canvas.drawRoundRect(mRect, r, r, mPaint);
+            mPaint.setShader(null);
+            // the sheen: a thin light line along the fill's upper half
+            mPaint.setColor(0x40FFFFFF);
+            mRect.set(left + r, top + 1.5f * mDp, end - r, top + 2.5f * mDp);
+            if (mRect.width() > 0) {
+                canvas.drawRoundRect(mRect, mDp / 2, mDp / 2, mPaint);
+            }
+        }
     }
 
     private static String size(Context context, long bytes) {
