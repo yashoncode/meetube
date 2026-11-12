@@ -40,7 +40,7 @@ final class ProgressColorSheet {
 
     static void show(SettingsPageFragment page) {
         Context context = page.requireContext();
-        int accentBefore = Accent.index(context);
+        int accentBefore = Accent.key(context);
         BottomSheetDialog sheet = new BottomSheetDialog(context);
         Context c = sheet.getContext();
         float dp = c.getResources().getDisplayMetrics().density;
@@ -65,7 +65,7 @@ final class ProgressColorSheet {
         sheet.getBehavior().setSkipCollapsed(true);
         sheet.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);
         sheet.setOnDismissListener(dialog -> {
-            if (Accent.index(context) != accentBefore && page.getActivity() != null) {
+            if (Accent.key(context) != accentBefore && page.getActivity() != null) {
                 page.getActivity().recreate(); // the accent is in the theme
             } else {
                 page.rebuild();
@@ -77,7 +77,9 @@ final class ProgressColorSheet {
 
     /** "Ember", the row's summary: the accent's name. */
     static CharSequence summary(Context context) {
-        return context.getString(Accent.NAMES[Accent.index(context)]);
+        int i = Accent.index(context);
+        return i == Accent.CUSTOM ? context.getString(R.string.mobile_accent_custom) + String.format(" #%06X", Accent.custom(context) & 0xFFFFFF)
+                : context.getString(Accent.NAMES[i]);
     }
 
     /**
@@ -123,17 +125,24 @@ final class ProgressColorSheet {
         content.addView(scroll, scrollLp);
 
         int first = withDefault ? ProgressColor.DEFAULT : 0; // dot k is value first + k
-        int count = Accent.START.length + (withDefault ? 1 : 0);
+        int count = withDefault ? Accent.CUSTOM + 1 : Accent.START.length; // Custom: the accent's only
+        int[] values = new int[count]; // dot k's value; the accent's Custom comes first, where it is seen
+        for (int k = 0; k < count; k++) {
+            values[k] = withDefault ? first + k : k == 0 ? Accent.CUSTOM : k - 1;
+        }
         GradientDrawable[] circles = new GradientDrawable[count];
         ImageView[] checks = new ImageView[count];
         GlowProgressBar preview = line;
         Runnable sync = () -> {
             int value = current.getAsInt();
             for (int k = 0; k < count; k++) {
-                int[] colors = colorsOf(first + k, defaultColors);
-                circles[k].setColors(colors);
+                int[] colors = colorsOf(values[k], defaultColors);
+                boolean rainbow = values[k] == Accent.CUSTOM && value != Accent.CUSTOM; // "any colour" until picked
+                circles[k].setGradientType(rainbow ? GradientDrawable.SWEEP_GRADIENT : GradientDrawable.LINEAR_GRADIENT);
+                circles[k].setColors(rainbow ? new int[] {0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
+                        0xFF0000FF, 0xFFFF00FF, 0xFFFF0000} : colors);
                 checks[k].setColorFilter(Color.luminance(colors[0]) > 0.6f ? Color.BLACK : Color.WHITE);
-                checks[k].setVisibility(first + k == value ? View.VISIBLE : View.GONE);
+                checks[k].setVisibility(values[k] == value ? View.VISIBLE : View.GONE);
             }
             chosen.setText(value == ProgressColor.DEFAULT && withDefault ? c.getString(defaultName)
                     : c.getString(Accent.NAMES[value]));
@@ -143,7 +152,7 @@ final class ProgressColorSheet {
             }
         };
         for (int k = 0; k < count; k++) {
-            int value = first + k;
+            int value = values[k];
             FrameLayout dot = new FrameLayout(c);
             GradientDrawable circle = new GradientDrawable();
             circle.setShape(GradientDrawable.OVAL);
@@ -168,6 +177,15 @@ final class ProgressColorSheet {
             caption.setSingleLine(true);
             item.addView(caption, new LinearLayout.LayoutParams(-1, -2));
             item.setOnClickListener(v -> {
+                if (value == Accent.CUSTOM) {
+                    ColorPickerSheet.show(c, Accent.custom(c), color -> {
+                        Accent.setCustom(c, color);
+                        for (Runnable each : syncs) {
+                            each.run();
+                        }
+                    });
+                    return;
+                }
                 pick.accept(value);
                 for (Runnable each : syncs) {
                     each.run();

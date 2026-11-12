@@ -61,7 +61,7 @@ public abstract class MobileActivity extends MotherActivity {
     protected void onApplyThemeResource(Resources.Theme theme, int resid, boolean first) {
         super.onApplyThemeResource(theme, resid, first);
         mLoader = Loader.current(this);
-        mAccent = Accent.index(this);
+        mAccent = Accent.key(this);
         Loader.applyTo(this, theme);
     }
 
@@ -343,7 +343,7 @@ public abstract class MobileActivity extends MotherActivity {
         checkTheme();
         // MEETUBE(loader): Settings picked another loader while this screen was open. Not the
         // player: it keeps playing, and its spinner changes the next time it opens.
-        if (mLoader != null && (!mLoader.equals(Loader.current(this)) || mAccent != Accent.index(this)) && !mRecreating
+        if (mLoader != null && (!mLoader.equals(Loader.current(this)) || mAccent != Accent.key(this)) && !mRecreating
                 && !(this instanceof com.newtube.mobile.ui.playback.MobilePlaybackActivity)) {
             mRecreating = true;
             recreate();
