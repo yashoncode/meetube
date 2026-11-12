@@ -9,9 +9,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.google.android.material.transition.MaterialSharedAxis;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.browse.AccountsSheet;
+import com.newtube.mobile.ui.common.FrostTransition;
 import com.newtube.mobile.ui.common.MobileActivity;
 
 /**
@@ -25,7 +25,7 @@ import com.newtube.mobile.ui.common.MobileActivity;
  * power-user knobs under Advanced. The rows read and write the same prefs classes the TV
  * presenters did, so nothing a user set is lost.</p>
  *
- * <p>One page at a time, as a fragment with the shared-axis motion of Android's own Settings; the
+ * <p>One page at a time, as a fragment; pages frost in and out like Home's tabs. The
  * fragment back stack is the page stack, so a theme switch (which recreates this screen) comes
  * back on the same page with the same pages behind it.</p>
  */
@@ -106,7 +106,7 @@ public class MobileSettingsActivity extends MobileActivity {
 
     /**
      * {@code from}: the page asking, or null. A second tap that lands before the first one's page
-     * replaced it, or while that page slides in over it, finds {@code from} no longer on top and is
+     * replaced it, or while that page frosts in over it, finds {@code from} no longer on top and is
      * dropped: a double tap opens one page, not two.
      */
     private void push(@Nullable Fragment from, @NonNull Fragment next, @NonNull String name, boolean animate) {
@@ -120,11 +120,11 @@ public class MobileSettingsActivity extends MobileActivity {
             return;
         }
         if (animate) {
-            next.setEnterTransition(new MaterialSharedAxis(MaterialSharedAxis.X, true));
-            next.setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.X, false));
+            next.setEnterTransition(new FrostTransition());
+            next.setReturnTransition(new FrostTransition());
             if (current != null) {
-                current.setExitTransition(new MaterialSharedAxis(MaterialSharedAxis.X, true));
-                current.setReenterTransition(new MaterialSharedAxis(MaterialSharedAxis.X, false));
+                current.setExitTransition(new FrostTransition());
+                current.setReenterTransition(new FrostTransition());
             }
         }
         fragments.beginTransaction()

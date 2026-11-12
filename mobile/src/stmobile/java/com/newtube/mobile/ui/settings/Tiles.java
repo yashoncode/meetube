@@ -1,9 +1,14 @@
 package com.newtube.mobile.ui.settings;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
@@ -13,6 +18,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
@@ -30,6 +36,7 @@ import com.google.android.material.slider.Slider;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.Haptics;
+import com.newtube.mobile.ui.common.Motion;
 
 import java.util.Locale;
 
@@ -91,6 +98,11 @@ final class Tiles {
     static final int MINI_OFF = 38;
     static final int CHIPS_SEGMENT = 39;
     static final int CHIPS_PILLS = 40;
+    static final int FX_BADGES = 41;
+    static final int FX_SEEK_PILL = 42;
+    static final int FX_SEEK_LINE = 43;
+    static final int SEEK_DOT = 44;
+    static final int SEEK_PICTURE = 45;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -139,6 +151,7 @@ final class Tiles {
             toggleView.setChecked(on);
             drawable.setLit(on);
             icon.setAlpha(on ? 1f : OFF_ALPHA);
+            pressScale(view, icon);
             view.setOnClickListener(v -> {
                 if (row.checked == null || row.toggle == null) {
                     return;
@@ -146,10 +159,15 @@ final class Tiles {
                 boolean next = !row.checked.getAsBoolean();
                 Haptics.click(v);
                 toggleView.setChecked(next);
-                drawable.setLit(next);
-                icon.animate().alpha(next ? 1f : OFF_ALPHA).setDuration(200).start();
+                drawable.animateLit(next, icon);
                 if (next) {
                     bounce(icon);
+                } else {
+                    icon.animate().cancel();
+                    icon.setScaleX(0.92f);
+                    icon.setScaleY(0.92f);
+                    icon.animate().scaleX(1f).scaleY(1f).setDuration(180)
+                            .setInterpolator(Motion.STANDARD_DECELERATE).start();
                 }
                 row.toggle.set(next);
                 if (row.restart && page instanceof SettingsPageFragment) {
@@ -246,6 +264,7 @@ final class Tiles {
             strip.addView(tile, tileParams);
 
             int which = i;
+            pressScale(tile, tile);
             tile.setOnClickListener(v -> {
                 bounce(frame);
                 if (which == row.currentIndex()) {
@@ -304,9 +323,31 @@ final class Tiles {
         summary.setVisibility(description != null ? View.VISIBLE : View.GONE);
     }
 
+    /** MEETUBE(press): the row tracks touch for its picture; tiles scale around their own pop. */
+    private static void pressScale(View target, View picture) {
+        target.setOnTouchListener((v, event) -> {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    picture.animate().cancel();
+                    picture.animate().scaleX(0.96f).scaleY(0.96f).setDuration(90)
+                            .setInterpolator(Motion.STANDARD).start();
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    picture.animate().cancel();
+                    picture.animate().scaleX(1f).scaleY(1f).setDuration(160)
+                            .setInterpolator(Motion.STANDARD_DECELERATE).start();
+                    break;
+                default:
+                    break;
+            }
+            return false;
+        });
+    }
+
     private static void bounce(View view) {
         view.animate().cancel();
-        view.animate().scaleX(0.9f).scaleY(0.9f).setDuration(90).withEndAction(() ->
+        view.animate().scaleX(0.9f).scaleY(0.9f).setDuration(90).setInterpolator(Motion.STANDARD).withEndAction(() ->
                 view.animate().scaleX(1f).scaleY(1f).setDuration(340).setInterpolator(new OvershootInterpolator(3f)).start())
                 .start();
     }
@@ -455,10 +496,14 @@ final class Tiles {
         private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final RectF mRect = new RectF();
         private final Path mPath = new Path();
+        private final ColorMatrix mSaturation = new ColorMatrix();
+        private float mLit = 1f;
+        private ValueAnimator mLitAnimator;
 
         Picture(Context context, int kind) {
             mKind = kind;
-            boolean dark = kind == THEME_DARK || kind != THEME_LIGHT && kind != THEME_SYSTEM
+            boolean dark = kind == THEME_DARK || kind == FX_SEEK_PILL || kind == FX_SEEK_LINE
+                    || kind != THEME_LIGHT && kind != THEME_SYSTEM
                     && (context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                     == Configuration.UI_MODE_NIGHT_YES;
             mScreen = dark ? 0xFF0F0F0F : 0xFFFFFFFF;
@@ -469,9 +514,40 @@ final class Tiles {
 
         /** A switch's picture: in colour when on, grey when off. */
         void setLit(boolean lit) {
-            android.graphics.ColorMatrix grey = new android.graphics.ColorMatrix();
-            grey.setSaturation(0f);
-            mPaint.setColorFilter(lit ? null : new android.graphics.ColorMatrixColorFilter(grey));
+            if (mLitAnimator != null) {
+                mLitAnimator.cancel();
+            }
+            setLitFraction(lit ? 1f : 0f);
+        }
+
+        /** MEETUBE(toggle): saturation and opacity share a fade, independent of the scale pop. */
+        void animateLit(boolean lit, View picture) {
+            if (mLitAnimator != null) {
+                mLitAnimator.cancel();
+            }
+            ValueAnimator animator = ValueAnimator.ofFloat(mLit, lit ? 1f : 0f);
+            animator.setDuration(220);
+            animator.setInterpolator(Motion.STANDARD);
+            animator.addUpdateListener(a -> {
+                setLitFraction((float) a.getAnimatedValue());
+                picture.setAlpha(OFF_ALPHA + (1f - OFF_ALPHA) * mLit);
+            });
+            animator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if (mLitAnimator == animation) {
+                        mLitAnimator = null;
+                    }
+                }
+            });
+            mLitAnimator = animator;
+            animator.start();
+        }
+
+        private void setLitFraction(float lit) {
+            mLit = lit;
+            mSaturation.setSaturation(lit);
+            mPaint.setColorFilter(lit >= 1f ? null : new ColorMatrixColorFilter(mSaturation));
             invalidateSelf();
         }
 
@@ -828,6 +904,102 @@ final class Tiles {
                     mPaint.setColor(ACCENT);
                     canvas.drawCircle(icon, cy, ph * 0.24f, mPaint);
                     block(canvas, icon + ph * 0.45f, cy - ph * 0.09f, brand.right - ph * 0.4f, cy + ph * 0.09f, mInk);
+                    break;
+                }
+                case FX_BADGES: {
+                    RectF thumb = new RectF(b.left, b.top + h * 0.02f, b.right, b.top + h * 0.76f);
+                    video(canvas, thumb, h * 0.1f);
+                    float top = b.top + h * 0.43f;
+                    float bottom = top + h * 0.25f;
+                    float left = b.left + w * 0.04f;
+                    pill(canvas, left, top, b.left + w * 0.47f, bottom, mBlock);
+                    for (int i = 0; i < 3; i++) {
+                        float x = left + w * (0.035f + i * 0.035f);
+                        float wave = h * (i == 1 ? 0.15f : 0.09f);
+                        block(canvas, x, (top + bottom - wave) / 2, x + w * 0.018f,
+                                (top + bottom + wave) / 2, ACCENT);
+                    }
+                    mPaint.setColor(mInk);
+                    mPaint.setTextSize(h * 0.18f);
+                    mPaint.setTextAlign(Paint.Align.LEFT);
+                    canvas.drawText("Mix", left + w * 0.16f, bottom - h * 0.06f, mPaint);
+
+                    left = b.left + w * 0.53f;
+                    pill(canvas, left, top, b.right - w * 0.04f, bottom, mBlock);
+                    float noteX = left + w * 0.065f;
+                    float noteY = bottom - h * 0.075f;
+                    mPaint.setColor(ACCENT);
+                    canvas.drawCircle(noteX, noteY, h * 0.035f, mPaint);
+                    block(canvas, noteX + h * 0.02f, top + h * 0.055f, noteX + h * 0.045f, noteY, ACCENT);
+                    block(canvas, noteX + h * 0.02f, top + h * 0.055f, noteX + h * 0.095f, top + h * 0.085f, ACCENT);
+                    mPaint.setColor(mInk);
+                    mPaint.setTextSize(h * 0.16f);
+                    canvas.drawText("3:21", left + w * 0.15f, bottom - h * 0.065f, mPaint);
+                    block(canvas, b.left + w * 0.04f, b.top + h * 0.84f, b.right - w * 0.2f, b.top + h * 0.91f, mLine);
+                    break;
+                }
+                case FX_SEEK_PILL:
+                case FX_SEEK_LINE: {
+                    float corner = h * 0.14f;
+                    video(canvas, b, corner);
+                    if (mKind == FX_SEEK_LINE) {
+                        canvas.save();
+                        mPath.reset();
+                        mPath.addRoundRect(b, corner, corner, Path.Direction.CW);
+                        canvas.clipPath(mPath);
+                        float top = b.bottom - h * 0.045f;
+                        mPaint.setColor(mLine);
+                        canvas.drawRect(b.left, top, b.right, b.bottom, mPaint);
+                        mPaint.setColor(ACCENT);
+                        canvas.drawRect(b.left, top, b.left + w * 0.62f, b.bottom, mPaint);
+                        canvas.restore();
+                        break;
+                    }
+                    RectF seek = new RectF(b.left + w * 0.68f, b.top + h * 0.24f,
+                            b.right - w * 0.04f, b.bottom - h * 0.24f);
+                    pill(canvas, seek.left, seek.top, seek.right, seek.bottom, mBlock);
+                    mPaint.setStyle(Paint.Style.STROKE);
+                    mPaint.setStrokeWidth(Math.max(1f, h * 0.025f));
+                    mPaint.setStrokeCap(Paint.Cap.ROUND);
+                    mPaint.setColor(mInk);
+                    for (int i = 0; i < 2; i++) {
+                        float x = seek.centerX() + (i - 0.5f) * h * 0.11f;
+                        mPath.reset();
+                        mPath.moveTo(x - h * 0.035f, cy - h * 0.16f);
+                        mPath.lineTo(x + h * 0.035f, cy - h * 0.09f);
+                        mPath.lineTo(x - h * 0.035f, cy - h * 0.02f);
+                        canvas.drawPath(mPath, mPaint);
+                    }
+                    mPaint.setStyle(Paint.Style.FILL);
+                    mPaint.setStrokeCap(Paint.Cap.BUTT);
+                    mPaint.setTextAlign(Paint.Align.CENTER);
+                    mPaint.setTextSize(h * 0.17f);
+                    canvas.drawText("+10", seek.centerX(), cy + h * 0.16f, mPaint);
+                    mPaint.setTextSize(h * 0.14f);
+                    canvas.drawText("1:24", cx, cy + h * 0.05f, mPaint);
+                    break;
+                }
+                case SEEK_DOT:
+                case SEEK_PICTURE: {
+                    float left = b.left + w * 0.08f;
+                    float right = b.right - w * 0.08f;
+                    float head = left + (right - left) * 0.58f;
+                    float thickness = h * 0.025f;
+                    block(canvas, left, cy - thickness, right, cy + thickness, mLine);
+                    block(canvas, left, cy - thickness, head, cy + thickness, ACCENT);
+                    if (mKind == SEEK_DOT) {
+                        mPaint.setColor(ACCENT);
+                        canvas.drawCircle(head, cy, h * 0.12f, mPaint);
+                    } else {
+                        float half = h * 0.24f;
+                        RectF thumb = new RectF(head - half, cy - half, head + half, cy + half);
+                        video(canvas, thumb, h * 0.08f);
+                        mPaint.setColor(ACCENT);
+                        mPaint.setStyle(Paint.Style.STROKE);
+                        mPaint.setStrokeWidth(Math.max(1f, h * 0.025f));
+                        canvas.drawRoundRect(thumb, h * 0.08f, h * 0.08f, mPaint);
+                        mPaint.setStyle(Paint.Style.FILL);
+                    }
                     break;
                 }
                 case FX_MOTION: {
