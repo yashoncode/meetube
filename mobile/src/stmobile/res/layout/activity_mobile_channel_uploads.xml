@@ -18,30 +18,109 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<LinearLayout
+<FrameLayout
     android:id="@+id/mobile_channel_uploads_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/mobile_color_background"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
+
+    <!-- MEETUBE(glass): the page is a GlassSource; the top bar (and Select videos' bar) frost it. -->
+    <com.newtube.mobile.ui.common.GlassSource
+        android:id="@+id/mobile_channel_uploads_glass"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/mobile_color_background">
+
+    <!-- MEETUBE(playlist page): follows the scrolling header, full bleed behind the toolbar and cards. -->
+    <FrameLayout
+        android:id="@+id/mobile_channel_uploads_ambient"
+        android:layout_width="match_parent"
+        android:layout_height="640dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/mobile_channel_uploads_backdrop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:scaleX="1.15"
+            android:scaleY="1.15" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/mobile_playlist_header_scrim" />
+
+    </FrameLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Pull-to-refresh reloads the list (ChannelUploadsPresenter.reload), like Home; the items
+             on screen stay until fresh ones land. Also the retry gesture over the failure state,
+             which doesn't consume touches. -->
+        <com.newtube.mobile.ui.common.HapticSwipeRefreshLayout
+            android:id="@+id/mobile_channel_uploads_swipe"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mobile_channel_uploads_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingHorizontal="@dimen/mobile_card_spacing"
+                android:paddingTop="@dimen/mobile_title_bar_height"
+                android:paddingBottom="@dimen/mobile_card_spacing"
+                android:scrollbars="none"
+                tools:listitem="@layout/item_video_card" />
+
+        </com.newtube.mobile.ui.common.HapticSwipeRefreshLayout>
+
+        <!-- First page failed / came back empty: message + Try again (PageLoadState). The grid
+             (and with it the playlist header row) is GONE while this shows. -->
+        <include layout="@layout/mobile_page_load_state" />
+
+        <ProgressBar
+            style="@style/Widget.MeeTube.GlassSpinner"
+            android:id="@+id/mobile_channel_uploads_progress"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+    </com.newtube.mobile.ui.common.GlassSource>
+
+    <!-- The top bar: frosted over the page, thinning out at its bottom edge like Settings'. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/mobile_channel_uploads_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/mobile_playlist_bar_glass"
+        app:glassCornerRadius="0dp"
+        app:glassFadeBottom="@dimen/mobile_settings_bar_fade"
+        app:glassLiquid="false"
+        app:glassTint="@color/meetube_glass_tint">
 
     <LinearLayout
         android:id="@+id/mobile_channel_uploads_toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/mobile_title_bar_height"
-        android:background="@color/mobile_color_background"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/mobile_channel_uploads_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_glass_circle"
             android:contentDescription="@string/mobile_back"
-            android:padding="12dp"
-            android:src="@drawable/ic_mobile_back_arrow" />
+            android:padding="8dp"
+            android:src="@drawable/ic_mobile_back_arrow"
+            android:stateListAnimator="@animator/press_3d" />
 
         <TextView
             android:id="@+id/mobile_channel_uploads_title"
@@ -82,44 +161,9 @@
 
     </LinearLayout>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+    </com.newtube.mobile.ui.common.GlassView>
 
-        <!-- Pull-to-refresh reloads the list (ChannelUploadsPresenter.reload), like Home; the items
-             on screen stay until fresh ones land. Also the retry gesture over the failure state,
-             which doesn't consume touches. -->
-        <com.newtube.mobile.ui.common.HapticSwipeRefreshLayout
-            android:id="@+id/mobile_channel_uploads_swipe"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/mobile_channel_uploads_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingHorizontal="@dimen/mobile_card_spacing"
-                android:paddingBottom="@dimen/mobile_card_spacing"
-                android:scrollbars="none"
-                tools:listitem="@layout/item_video_card" />
-
-        </com.newtube.mobile.ui.common.HapticSwipeRefreshLayout>
-
-        <!-- First page failed / came back empty: message + Try again (PageLoadState). The grid
-             (and with it the playlist header row) is GONE while this shows. -->
-        <include layout="@layout/mobile_page_load_state" />
-
-        <ProgressBar
-            style="@style/Widget.MeeTube.GlassSpinner"
-            android:id="@+id/mobile_channel_uploads_progress"
-            android:layout_gravity="center"
-            android:visibility="gone" />
-
-    </FrameLayout>
-
-</LinearLayout>
+</FrameLayout>
 
     <!-- Minimizing a video opened from this list keeps playback alive in this overlay. -->
     <include layout="@layout/mobile_mini_player_overlay" />

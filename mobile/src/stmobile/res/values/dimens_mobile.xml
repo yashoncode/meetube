@@ -47,6 +47,8 @@
          the text at 60dp, 56dp one-line rows, a 64dp bar with the title at 72dp. -->
     <dimen name="mobile_settings_bar_height">64dp</dimen>
     <!-- The bar's frost fading out under it, and where the rows start: clear of both. -->
+    <!-- Playlist page top bar: the 56dp bar plus its fade. -->
+    <dimen name="mobile_playlist_bar_glass">76dp</dimen>
     <dimen name="mobile_settings_bar_fade">20dp</dimen>
     <dimen name="mobile_settings_list_top">84dp</dimen>
     <dimen name="mobile_settings_title_inset">20dp</dimen>

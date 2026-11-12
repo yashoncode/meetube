@@ -24,6 +24,7 @@ public class SidebarService implements ProfileChangeListener {
     private static SidebarService sInstance;
     private final Context mContext;
     private List<Video> mPinnedItems;
+    private List<Integer> mSectionOrder;
     private final Map<Integer, Integer> mDefaultSections = new LinkedHashMap<>();
     private final AppPrefs mPrefs;
     private boolean mIsSettingsSectionEnabled;
@@ -171,6 +172,79 @@ public class SidebarService implements ProfileChangeListener {
         int index = findPinnedItemIndex(sectionId);
 
         return index;
+    }
+
+    /** MEETUBE(you order): retain disabled choices, with enabled choices in the live sidebar order. */
+    public List<Integer> getSectionOrder(List<Integer> sectionIds) {
+        List<Integer> order = new ArrayList<>();
+        for (int sectionId : mSectionOrder) {
+            if (sectionIds.contains(sectionId) && mDefaultSections.containsValue(sectionId) && !order.contains(sectionId)) {
+                order.add(sectionId);
+            }
+        }
+        for (int sectionId : sectionIds) {
+            if (mDefaultSections.containsValue(sectionId) && !order.contains(sectionId)) {
+                order.add(sectionId);
+            }
+        }
+        List<Integer> pinned = new ArrayList<>();
+        for (int sectionId : order) {
+            if (getSectionIndex(sectionId) >= 0) {
+                pinned.add(sectionId);
+            }
+        }
+        Collections.sort(pinned, (a, b) -> Integer.compare(getSectionIndex(a), getSectionIndex(b)));
+        int next = 0;
+        for (int i = 0; i < order.size(); i++) {
+            if (getSectionIndex(order.get(i)) >= 0) {
+                order.set(i, pinned.get(next++));
+            }
+        }
+        return order;
+    }
+
+    /** MEETUBE(you order): reorder these choices in their sidebar slots and remember disabled rows too. */
+    public void setSectionOrder(List<Integer> sectionIds) {
+        List<Integer> current = new ArrayList<>();
+        List<Integer> order = new ArrayList<>();
+        for (int sectionId : sectionIds) {
+            if (mDefaultSections.containsValue(sectionId) && !order.contains(sectionId)) {
+                order.add(sectionId);
+                if (getSectionIndex(sectionId) >= 0) {
+                    current.add(sectionId);
+                }
+            }
+        }
+        Collections.sort(current, (a, b) -> Integer.compare(getSectionIndex(a), getSectionIndex(b)));
+        int next = 0;
+        for (int sectionId : order) {
+            int index = getSectionIndex(sectionId);
+            if (index < 0) {
+                continue;
+            }
+            int displacedId = current.get(next);
+            int target = getSectionIndex(displacedId);
+            if (index != target) {
+                moveSectionTo(sectionId, target);
+                moveSectionTo(displacedId, index);
+                Collections.swap(current, next, current.indexOf(sectionId));
+            }
+            next++;
+        }
+        mSectionOrder = order;
+        persistState();
+    }
+
+    private void moveSectionTo(int sectionId, int target) {
+        int index = getSectionIndex(sectionId);
+        while (index > target) {
+            moveSectionUp(sectionId);
+            index--;
+        }
+        while (index < target) {
+            moveSectionDown(sectionId);
+            index++;
+        }
     }
 
     public void renameSection(int sectionId, String newTitle) {
@@ -331,6 +405,7 @@ public class SidebarService implements ProfileChangeListener {
         mPinnedItems = Helpers.parseList(split, 0, Video::fromString);
         mBootSectionId = Helpers.parseInt(split, 1, MediaGroup.TYPE_HOME);
         mIsSettingsSectionEnabled = Helpers.parseBoolean(split, 2, true);
+        mSectionOrder = Helpers.parseIntList(split, 3);
 
         transferOldPinnedItems();
 
@@ -357,7 +432,9 @@ public class SidebarService implements ProfileChangeListener {
     }
 
     public void persistState() {
-        mPrefs.setSidebarData(Helpers.mergeData(mPinnedItems, mBootSectionId, mIsSettingsSectionEnabled));
+        // MEETUBE(you order): long-press section moves also update the remembered positions of enabled choices.
+        mSectionOrder = getSectionOrder(mSectionOrder);
+        mPrefs.setSidebarData(Helpers.mergeData(mPinnedItems, mBootSectionId, mIsSettingsSectionEnabled, mSectionOrder));
     }
 
     @Override

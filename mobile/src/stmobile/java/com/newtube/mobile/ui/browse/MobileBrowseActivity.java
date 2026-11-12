@@ -82,7 +82,9 @@ import com.newtube.mobile.ui.playback.PlayerGesturePrefs;
 import com.newtube.mobile.ui.playback.SystemPipBridge;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Touch Home shell - Wave 1 vertical slice.
@@ -273,6 +275,9 @@ public class MobileBrowseActivity extends MobileActivity
         public void onEvents(Player player, Player.Events events) {
             if (events.containsAny(Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED)) {
                 setMiniKeepScreenOn(isMiniActivelyPlaying(player));
+                if (mMiniPip != null) {
+                    mMiniPip.update(); // MEETUBE(issue #233): disarm even while the host tick is stopped
+                }
             }
         }
     };
@@ -734,6 +739,9 @@ public class MobileBrowseActivity extends MobileActivity
             MiniPlayerBridge.setVolume(0f); // released with the session right after
         }
         MiniPlayerBridge.setClosing(this::abortMiniClose);
+        if (mMiniPip != null) {
+            mMiniPip.update(); // MEETUBE(issue #233): disarm before detaching and fading the playing card
+        }
         MiniPlayerBridge.clearPendingCardFold(mMiniCardFold);
         detachMiniTexture();
         stopMiniSwipe();
@@ -2180,30 +2188,15 @@ public class MobileBrowseActivity extends MobileActivity
         updateChipRow();
     }
 
-    /**
-     * Personal-content section ids (the user's own stuff). These lead the You list, official-app
-     * style; every other non-nav section is a discovery feed and goes under the "Explore" label.
-     */
-    private static boolean isPersonalSection(int sectionId) {
-        switch (sectionId) {
-            case MediaGroup.TYPE_USER_PLAYLISTS:
-            case MediaGroup.TYPE_MY_VIDEOS:
-            case MediaGroup.TYPE_CHANNEL_UPLOADS:
-            case MediaGroup.TYPE_PLAYBACK_QUEUE:
-            case MediaGroup.TYPE_NOTIFICATIONS:
-                return true;
-            default:
-                return false;
-        }
+    /** MEETUBE(you page): Subscriptions and Downloads stay in Library while on the bottom bar too. */
+    private static boolean isAlwaysInLibrary(int sectionId) {
+        return sectionId == MediaGroup.TYPE_SUBSCRIPTIONS || sectionId == VideoDownloads.SECTION_ID;
     }
 
     /**
-     * Rebuild the panel's section list, grouped like the official You page: the user's own
-     * content first (Playlists, My videos, Channels, ...), then the discovery feeds under an
-     * "Explore" label, then Settings behind a divider. Sections shown in the bottom nav (and
-     * Settings/Shorts) are excluded - Settings gets its own trailing row, and NewTube has no
-     * Shorts (see ShortsFilter). Long-press on a section row opens the section-management menu
-     * (the old drawer rows' "..." overflow).
+     * MEETUBE(you order): Library follows NavTabs; Explore follows the presenter's sidebar order.
+     * Sections on the bottom bar are excluded except Subscriptions and Downloads. Pinned channels
+     * and playlists have their own group. Long-press on a section opens its management menu.
      */
     private void rebuildYouRows() {
         mYouRows.removeAllViews();
@@ -2214,16 +2207,19 @@ public class MobileBrowseActivity extends MobileActivity
         }
 
         List<BrowseSection> navSections = selectNavSections();
-        List<BrowseSection> personal = new ArrayList<>();
+        List<String> libraryOrder = NavTabs.libraryOrder(this);
+        Map<String, BrowseSection> personal = new HashMap<>();
         List<BrowseSection> pinned = new ArrayList<>();
         List<BrowseSection> explore = new ArrayList<>();
 
         for (BrowseSection section : mSections) {
             if (!section.isEnabled()
-                    || navSections.contains(section)
+                    || (navSections.contains(section) && !isAlwaysInLibrary(section.getId()))
                     || section.getId() == MediaGroup.TYPE_SETTINGS
                     || section.getId() == MediaGroup.TYPE_SHORTS
+                    || section.getId() == MediaGroup.TYPE_HOME
                     || section.getId() == MediaGroup.TYPE_HISTORY // MEETUBE(you page): its own row up top
+                    || section.getId() == MediaGroup.TYPE_CHANNEL_UPLOADS // MEETUBE: Subscriptions' channels again
                     || section.getId() == MediaGroup.TYPE_TRENDING) { // MEETUBE: an empty feed now
                 continue;
             }
@@ -2233,57 +2229,106 @@ public class MobileBrowseActivity extends MobileActivity
                 pinned.add(section);
                 continue;
             }
-            (isPersonalSection(section.getId()) ? personal : explore).add(section);
+            String key = String.valueOf(section.getId());
+            if (libraryOrder.contains(key)) {
+                personal.put(key, section);
+            } else {
+                explore.add(section);
+            }
         }
 
-        if (!personal.isEmpty()) {
+        // MEETUBE(you order): sections and account playlists follow the same saved Library order.
+        List<View> library = new ArrayList<>();
+        for (String key : libraryOrder) {
+            if ("WL".equals(key) || "LL".equals(key)) {
+                if (NavTabs.showLibraryPlaylist(this, key)) {
+                    library.add(youLibraryPlaylistRow(key));
+                }
+            } else if (personal.containsKey(key)) {
+                library.add(youSectionRow(personal.get(key), true));
+            }
+        }
+        if (!library.isEmpty()) {
             addYouGroupLabel(getString(R.string.mobile_you_library));
-            addYouSectionRows(personal);
+            addYouLines(library, 4); // MEETUBE(you page): small tiles, like Explore
         }
 
         if (!pinned.isEmpty()) {
             addYouGroupLabel(getString(R.string.mobile_you_pinned));
-            addYouSectionRows(pinned);
+            addYouSectionRows(pinned, 1);
         }
 
         if (!explore.isEmpty()) {
             addYouGroupLabel(getString(R.string.mobile_you_explore));
-            addYouSectionRows(explore);
+            addYouSectionRows(explore, 4);
         }
     }
 
-    /** MEETUBE(you page): a group's rows two to a line, so the right half is not left empty. */
-    private void addYouSectionRows(List<BrowseSection> sections) {
-        for (int i = 0; i < sections.size(); i += 2) {
+    /**
+     * MEETUBE(you page): Pinned is full-width glass pills (icon, name, chevron), one to a line;
+     * Library and Explore are glass tiles, the icon over its name, {@code perLine} to a line.
+     */
+    private void addYouSectionRows(List<BrowseSection> sections, int perLine) {
+        List<View> rows = new ArrayList<>();
+        for (BrowseSection section : sections) {
+            rows.add(youSectionRow(section, perLine > 1));
+        }
+        addYouLines(rows, perLine);
+    }
+
+    private void addYouLines(List<View> rows, int perLine) {
+        float density = getResources().getDisplayMetrics().density;
+        for (int i = 0; i < rows.size(); i += perLine) {
             LinearLayout line = new LinearLayout(this);
             line.setOrientation(LinearLayout.HORIZONTAL);
-            for (int j = i; j < i + 2; j++) {
-                if (j < sections.size()) {
-                    line.addView(youSectionRow(sections.get(j)));
+            for (int j = i; j < i + perLine; j++) {
+                if (j < rows.size()) {
+                    line.addView(rows.get(j));
                 } else {
-                    line.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1f)); // keeps the half width
+                    line.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1f)); // keeps the tiles' width
                 }
             }
-            line.setPadding(Math.round(12 * getResources().getDisplayMetrics().density), 0,
-                    Math.round(12 * getResources().getDisplayMetrics().density), 0);
+            line.setPadding(Math.round(11 * density), 0, Math.round(11 * density), 0);
             mYouRows.addView(line);
         }
     }
 
-    private View youSectionRow(BrowseSection section) {
+    private View youSectionRow(BrowseSection section, boolean tile) {
         int sectionId = section.getId();
-        View row = addYouRow(section.getResId(), section.getTitle(), () -> openFromYou(sectionId));
+        View row = addYouRow(tile ? R.layout.item_mobile_you_tile : R.layout.item_mobile_you_pill,
+                section.getResId(), section.getTitle(), () -> openFromYou(sectionId));
         float density = getResources().getDisplayMetrics().density;
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Math.round(56 * density), 1f);
-        lp.setMargins(Math.round(4 * density), Math.round(4 * density), Math.round(4 * density), Math.round(4 * density));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0,
+                Math.round((tile ? 88 : 64) * density), 1f);
+        int margin = Math.round(5 * density);
+        lp.setMargins(margin, margin, margin, margin);
         row.setLayoutParams(lp);
-        row.setPadding(Math.round(10 * density), 0, Math.round(8 * density), 0);
         row.setOnLongClickListener(v -> {
             if (mPresenter != null) {
                 mPresenter.onSectionLongPressed(sectionId);
             }
             return true;
         });
+        return row;
+    }
+
+    /** MEETUBE(you page): the account's Watch later and Liked videos open like any playlist. */
+    private View youLibraryPlaylistRow(String playlistId) {
+        boolean watchLater = "WL".equals(playlistId);
+        String title = getString(watchLater ? R.string.mobile_you_watch_later : R.string.mobile_you_liked_videos);
+        int icon = watchLater ? R.drawable.ic_menu_watch_later : R.drawable.ic_watch_thumb_up_outline;
+        View row = addYouRow(R.layout.item_mobile_you_tile, icon, title, () -> {
+            Video playlist = new Video();
+            playlist.playlistId = playlistId;
+            playlist.title = title;
+            com.liskovsoft.smartyoutubetv2.common.app.presenters.ChannelUploadsPresenter.instance(this)
+                    .openChannel(playlist);
+        });
+        float density = getResources().getDisplayMetrics().density;
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Math.round(88 * density), 1f);
+        int margin = Math.round(5 * density);
+        lp.setMargins(margin, margin, margin, margin);
+        row.setLayoutParams(lp);
         return row;
     }
 
@@ -2406,11 +2451,11 @@ public class MobileBrowseActivity extends MobileActivity
         TextView label = new TextView(this);
         label.setText(text);
         label.setTextColor(getColorInt(R.color.mobile_color_on_surface));
-        label.setTextSize(20);
+        label.setTextSize(24);
         label.setTypeface(label.getTypeface(), android.graphics.Typeface.BOLD);
         float density = getResources().getDisplayMetrics().density;
-        label.setPadding(Math.round(16 * density), Math.round(20 * density), Math.round(16 * density),
-                Math.round(6 * density));
+        label.setPadding(Math.round(16 * density), Math.round(24 * density), Math.round(16 * density),
+                Math.round(10 * density));
         mYouRows.addView(label);
     }
 
@@ -2427,8 +2472,8 @@ public class MobileBrowseActivity extends MobileActivity
         mYouRows.addView(divider);
     }
 
-    private View addYouRow(int iconRes, CharSequence title, Runnable action) {
-        View row = LayoutInflater.from(this).inflate(R.layout.item_mobile_you_row, mYouRows, false);
+    private View addYouRow(int layoutRes, int iconRes, CharSequence title, Runnable action) {
+        View row = LayoutInflater.from(this).inflate(layoutRes, mYouRows, false);
 
         ImageView icon = row.findViewById(R.id.mobile_you_row_icon);
         if (iconRes > 0) {
@@ -3997,6 +4042,12 @@ public class MobileBrowseActivity extends MobileActivity
     public void selectSection(int index, boolean focusOnContent) {
         runOnUiThread(() -> {
             if (index < 0 || index >= mSections.size()) {
+                return;
+            }
+
+            // MEETUBE(you order): a presenter refresh after Settings or a section move keeps You open.
+            if (mYouShowing && !focusOnContent) {
+                rebuildNavigation();
                 return;
             }
 

@@ -135,8 +135,8 @@ public final class AmbientGlow implements Runnable {
         mHost.postDelayed(this, INTERVAL_MS);
     }
 
-    /** Separable box blur, two passes: at 48x27 this costs nothing and reads as a wide gaussian. */
-    private static void blur(Bitmap bitmap) {
+    /** MEETUBE(playlist page): shared tiny-bitmap box blur for ambient video frames and playlist covers. */
+    public static void blur(Bitmap bitmap) {
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
         int[] px = new int[w * h];

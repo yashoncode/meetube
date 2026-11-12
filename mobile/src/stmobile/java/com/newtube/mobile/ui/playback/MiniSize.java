@@ -2,12 +2,14 @@ package com.newtube.mobile.ui.playback;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.media3.ui.AspectRatioFrameLayout;
@@ -38,7 +40,7 @@ public final class MiniSize {
     private static final String KEY = "size_percent";
     private static final String KEY_TYPE = "type";
     private static final int MIN_PERCENT = 60;
-    private static final int MAX_PERCENT = 160;
+    private static final int MAX_PERCENT = 500;
 
     private MiniSize() {
     }
@@ -74,7 +76,7 @@ public final class MiniSize {
         if (isBar(context)) {
             return Math.round(64 * dp(context)); // a pinch sizes only the Default card
         }
-        return Math.round(context.getResources().getDimension(R.dimen.meetube_mini_height) * percent(context) / 100f);
+        return Math.round(width(context) * 9f / 16f);
     }
 
     public static int width(Context context) {
@@ -84,7 +86,8 @@ public final class MiniSize {
         if (isBar(context)) {
             return Math.round(height(context) * 16f / 9f);
         }
-        return Math.round(context.getResources().getDimension(R.dimen.meetube_mini_width) * percent(context) / 100f);
+        return Math.round(Math.min(baseWidth(context) * percent(context) / 100f,
+                context.getResources().getDisplayMetrics().widthPixels - 16 * dp(context)));
     }
 
     /** The card's own width: the picture for Default, a bar across the screen otherwise. */
@@ -101,13 +104,29 @@ public final class MiniSize {
         return 0;
     }
 
-    /** A pinch on the Default card: resizes it live and keeps the size. */
-    static void pinch(View card, float factor) {
+    private static float baseWidth(Context context) {
+        return context.getResources().getDimension(R.dimen.meetube_mini_width);
+    }
+
+    /** MEETUBE(issue #233): the Default card can grow almost edge to edge in its actual parent. */
+    static float maxWidth(View card) {
         Context context = card.getContext();
-        setPercent(context, Math.round(percent(context) * factor));
+        View parent = (View) card.getParent();
+        int width = parent != null && parent.getWidth() > 0 ? parent.getWidth()
+                : context.getResources().getDisplayMetrics().widthPixels;
+        return Math.min(baseWidth(context) * MAX_PERCENT / 100f, width - 16 * dp(context));
+    }
+
+    static float minWidth(View card) {
+        return Math.min(baseWidth(card.getContext()) * MIN_PERCENT / 100f, maxWidth(card));
+    }
+
+    /** MEETUBE(issue #233): persist and relayout once, after the transform-only pinch ends. */
+    static void commitWidth(View card, float width) {
+        setPercent(card.getContext(), Math.round(width * 100f / baseWidth(card.getContext())));
         ViewGroup.LayoutParams params = card.getLayoutParams();
-        params.width = width(context);
-        params.height = height(context);
+        params.width = Math.round(width);
+        params.height = Math.round(width * 9f / 16f);
         card.setLayoutParams(params);
     }
 
@@ -118,13 +137,16 @@ public final class MiniSize {
         MaterialCardView card = activity.findViewById(R.id.mobile_mini_player);
         if (card != null) {
             ViewGroup.LayoutParams params = card.getLayoutParams();
-            params.width = cardWidth(activity);
-            params.height = height(activity);
+            params.width = bar ? cardWidth(activity) : Math.round(Math.min(width(activity), maxWidth(card)));
+            params.height = bar ? height(activity) : Math.round(params.width * 9f / 16f);
+            ((ViewGroup.MarginLayoutParams) params).setMarginEnd(Math.round((bar ? 12 : 8) * dp));
             card.setLayoutParams(params);
             boolean frosted = type(activity) == MINIMAL2;
             card.setCardBackgroundColor(frosted ? Color.TRANSPARENT : Color.BLACK);
             card.setCardElevation(frosted ? 0 : 8 * dp); // a shadow shows through a see-through card
             card.setRadius(frosted ? height(activity) / 2f : 18 * dp);
+            card.setStrokeWidth(bar ? Math.round(dp) : 0);
+            card.setPreventCornerOverlap(bar); // MEETUBE(issue #233): the picture reaches the rounded edge
             frost((ViewGroup) card.getChildAt(0), frosted, activity);
             scrim((ViewGroup) card.getChildAt(0), type(activity) == MINIMAL);
         }
@@ -162,6 +184,8 @@ public final class MiniSize {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) audio.getLayoutParams();
             params.width = bar ? 0 : box; // a bar has no audio button
             params.height = bar ? 0 : box;
+            // MEETUBE(issue #233): bottom-left, YouTube's place for it; pause keeps top-left.
+            params.gravity = Gravity.BOTTOM | Gravity.LEFT;
             params.setMargins(margin, margin, margin, margin);
             audio.setLayoutParams(params);
             int audioPad = bar ? 0 : pad; // padding on a 0-size button still drew its icon over the bar
@@ -172,11 +196,17 @@ public final class MiniSize {
         }
         if (pause != null) {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) pause.getLayoutParams();
-            params.width = bar ? box : Math.round(40 * dp);
+            params.width = box;
             params.height = params.width;
-            params.gravity = bar ? Gravity.END | Gravity.CENTER_VERTICAL : Gravity.CENTER;
-            params.setMarginEnd(bar ? Math.round(48 * dp) : 0);
+            params.gravity = bar ? Gravity.END | Gravity.CENTER_VERTICAL : Gravity.TOP | Gravity.START;
+            // MEETUBE(issue #233): small corner controls; the bars keep their original placement.
+            params.setMargins(bar ? 0 : margin, bar ? 0 : margin, bar ? Math.round(48 * dp) : margin, bar ? 0 : margin);
             pause.setLayoutParams(params);
+        }
+        ProgressBar progress = activity.findViewById(R.id.mobile_mini_progress);
+        if (progress != null) {
+            progress.setProgressTintList(ColorStateList.valueOf(bar
+                    ? androidx.core.content.ContextCompat.getColor(activity, R.color.mobile_color_progress) : Color.RED));
         }
         View text = activity.findViewById(R.id.mobile_mini_text);
         if (text != null) {
