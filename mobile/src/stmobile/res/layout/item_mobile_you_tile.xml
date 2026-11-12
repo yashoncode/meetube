@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(you page): an Explore tile on the You tab, four to a line: a glass square, the icon
+<!-- MEETUBE(you page): an Explore tile on the You tab, four to a line: a plain dark square on the accent card, the icon
      over its name. Wired in MobileBrowseActivity.youSectionRow(). -->
-<com.newtube.mobile.ui.common.GlassView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/mobile_you_row_glass"
     android:layout_width="0dp"
     android:layout_height="88dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    app:glassCornerRadius="22dp"
-    app:glassTint="@color/meetube_glass_button">
+    android:background="@drawable/mobile_you_tile_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,8 +19,8 @@
 
         <ImageView
             android:id="@+id/mobile_you_row_icon"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:contentDescription="@null"
             android:scaleType="fitCenter"
             android:tint="@color/mobile_color_on_surface" />
@@ -33,11 +31,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:ellipsize="end"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="sans-serif"
             android:maxLines="1"
             android:textColor="@color/mobile_color_on_surface"
-            android:textSize="13sp" />
+            android:textSize="11sp" />
 
     </LinearLayout>
 
-</com.newtube.mobile.ui.common.GlassView>
+</FrameLayout>

@@ -104,6 +104,9 @@ final class Tiles {
     static final int SEEK_DOT = 44;
     static final int SEEK_PICTURE = 45;
     static final int FX_HEATMAP = 46;
+    // The You page's top: its corner light in the accent, or in shifting colours.
+    static final int YOU_GLOW_ACCENT = 47;
+    static final int YOU_GLOW_RGB = 48;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -533,9 +536,13 @@ final class Tiles {
         private float mLit = 1f;
         private ValueAnimator mLitAnimator;
 
+        private final Context mContext;
+
         Picture(Context context, int kind) {
+            mContext = context;
             mKind = kind;
             boolean dark = kind == THEME_DARK || kind == FX_SEEK_PILL || kind == FX_SEEK_LINE || kind == FX_HEATMAP
+                    || kind == YOU_GLOW_ACCENT || kind == YOU_GLOW_RGB
                     || kind != THEME_LIGHT && kind != THEME_SYSTEM
                     && (context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                     == Configuration.UI_MODE_NIGHT_YES;
@@ -969,6 +976,34 @@ final class Tiles {
                     mPaint.setTextSize(h * 0.16f);
                     canvas.drawText("3:21", left + w * 0.15f, bottom - h * 0.065f, mPaint);
                     block(canvas, b.left + w * 0.04f, b.top + h * 0.84f, b.right - w * 0.2f, b.top + h * 0.91f, mLine);
+                    break;
+                }
+                case YOU_GLOW_ACCENT:
+                case YOU_GLOW_RGB: {
+                    // A dark page, the light in its top left, then the avatar, a name and two pills
+                    float corner = h * 0.14f;
+                    mPath.reset();
+                    mPath.addRoundRect(b, corner, corner, Path.Direction.CW);
+                    canvas.save();
+                    canvas.clipPath(mPath);
+                    mPaint.setColor(mScreen);
+                    canvas.drawRect(b, mPaint);
+                    if (mKind == YOU_GLOW_RGB) {
+                        glow(canvas, b.left + w * 0.08f, b.top, w * 0.55f, 0xFF5E9BFF);
+                        glow(canvas, b.left + w * 0.5f, b.top - h * 0.1f, w * 0.4f, 0xFFFF6A88);
+                    } else {
+                        int i = com.newtube.mobile.ui.common.Accent.index(mContext);
+                        glow(canvas, b.left + w * 0.08f, b.top, w * 0.55f, com.newtube.mobile.ui.common.Accent.START[i]);
+                        glow(canvas, b.left + w * 0.5f, b.top - h * 0.1f, w * 0.4f, com.newtube.mobile.ui.common.Accent.END[i]);
+                    }
+                    float avatar = h * 0.13f;
+                    mPaint.setColor(mInk);
+                    canvas.drawCircle(b.left + w * 0.16f, b.top + h * 0.38f, avatar, mPaint);
+                    block(canvas, b.left + w * 0.32f, b.top + h * 0.31f, b.left + w * 0.62f, b.top + h * 0.38f, mInk);
+                    block(canvas, b.left + w * 0.32f, b.top + h * 0.43f, b.left + w * 0.52f, b.top + h * 0.48f, mLine);
+                    pill(canvas, b.left + w * 0.06f, b.top + h * 0.64f, b.left + w * 0.48f, b.top + h * 0.8f, 0x33FFFFFF);
+                    pill(canvas, b.left + w * 0.52f, b.top + h * 0.64f, b.right - w * 0.06f, b.top + h * 0.8f, 0x33FFFFFF);
+                    canvas.restore();
                     break;
                 }
                 case FX_HEATMAP: {
