@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE: a chip inside Home's segmented track: the active feed is the white pill, focus a lit ring. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:insetTop="4dp" android:insetBottom="4dp">
+    <selector>
+        <item android:state_activated="true">
+            <shape>
+                <solid android:color="#F2FFFFFF" />
+                <corners android:radius="19dp" />
+            </shape>
+        </item>
+        <item android:state_focused="true">
+            <shape>
+                <solid android:color="#40FFFFFF" />
+                <stroke android:width="2dp" android:color="#FFFFFFFF" />
+                <corners android:radius="19dp" />
+            </shape>
+        </item>
+        <item>
+            <color android:color="@android:color/transparent" />
+        </item>
+    </selector>
+</inset>

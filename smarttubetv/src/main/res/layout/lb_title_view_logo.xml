@@ -26,10 +26,24 @@
         android:background="@drawable/browse_glass_title_pill"
         android:visibility="gone" />
 
-    <!-- Global clock -->
-    <LinearLayout android:layout_width="wrap_content"
+    <!-- MEETUBE: the heart and the clock share one pill (BrowseGlassDecoration styles it). -->
+    <LinearLayout android:id="@+id/title_clock_pill"
+                  android:layout_width="wrap_content"
                   android:layout_height="@dimen/lb_search_orb_size"
                   android:layout_gravity="center_vertical"
+                  android:gravity="center_vertical"
+                  android:orientation="horizontal">
+    <ImageView
+        android:id="@+id/title_heart"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:src="@mipmap/app_icon"
+        android:scaleType="fitCenter"
+        android:importantForAccessibility="no" />
+    <!-- Global clock -->
+    <LinearLayout android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginStart="8dp"
                   android:gravity="center"
                   android:orientation="vertical">
         <com.liskovsoft.smartyoutubetv2.tv.ui.widgets.time.DateTimeView
@@ -63,10 +77,12 @@
             style="?attr/browseTitleTextStyle"
             android:visibility="gone" />
     </LinearLayout>
+    </LinearLayout>
 
     <!-- MEETUBE: the logo PNG is already a glass pill (heart + MeeTube, its own rim): no extra pill or padding,
          just its 470x150 art at the bar height. The text fallback gets the title pill. -->
-    <FrameLayout android:layout_width="wrap_content"
+    <FrameLayout android:id="@+id/title_brand"
+                 android:layout_width="wrap_content"
                  android:layout_height="@dimen/lb_search_orb_size"
                  android:layout_marginStart="12dp"
                  android:layout_gravity="center_vertical">

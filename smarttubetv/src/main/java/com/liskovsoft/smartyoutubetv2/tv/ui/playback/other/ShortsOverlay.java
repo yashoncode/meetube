@@ -20,7 +20,6 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerEngine;
-import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.tv.util.ViewUtil;
 
@@ -118,7 +117,6 @@ public final class ShortsOverlay {
             Glide.with(mContext).clear(mAvatar);
             mAvatar.setImageDrawable(null);
             mAvatar.setVisibility(View.GONE); // until this short's channel icon arrives
-            mFrame.setRimEnabled(PlayerTweaksData.instance(mContext).isPlayerGlassOutlineEnabled());
             mFrame.setProgress(0);
             // a few pixels of the thumbnail, stretched over the screen by ShortsFrameView: a soft glow of its colours
             Glide.with(mContext).asBitmap().load(video.getCardImageUrl())

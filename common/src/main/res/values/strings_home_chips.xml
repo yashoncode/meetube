@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE: Home's feed chips as separate pills instead of one segmented track. -->
+    <string name="home_chips_pills">Home chips as separate pills</string>
+</resources>

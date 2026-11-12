@@ -1469,8 +1469,13 @@ public class BrowseSupportFragment extends BaseSupportFragment {
         View containerList;
         containerList = mHeadersSupportFragment.getView();
         lp = (MarginLayoutParams) containerList.getLayoutParams();
-        lp.setMarginStart(onScreen ? 0 : -mContainerListMarginStart);
+        lp.setMarginStart(onScreen ? 0 : -headersHiddenOffset());
         containerList.setLayoutParams(lp);
+    }
+
+    // MEETUBE: the rows may start before the sidebar's right edge; a closed sidebar still hides its full width.
+    private int headersHiddenOffset() {
+        return Math.max(mContainerListMarginStart, getResources().getDimensionPixelSize(R.dimen.lb_browse_headers_width));
     }
 
     void showHeaders(boolean show) {
@@ -1849,7 +1854,7 @@ public class BrowseSupportFragment extends BaseSupportFragment {
         View searchOrbView = getTitleViewAdapter().getSearchAffordanceView();
         if (searchOrbView != null) {
             MarginLayoutParams lp = (MarginLayoutParams) searchOrbView.getLayoutParams();
-            lp.setMarginStart(onScreen ? 0 : -mContainerListMarginStart);
+            lp.setMarginStart(onScreen ? 0 : -headersHiddenOffset());
             searchOrbView.setLayoutParams(lp);
         }
     }

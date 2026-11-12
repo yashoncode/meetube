@@ -2,7 +2,7 @@
 
 <!-- MOD: intention to replace class name with custom one -->
 <!-- MEETUBE: minimal glass player. The row fills the screen (MeeTubePlayerGlass sets its height): the title sits
-     at the top over a soft scrim, the controls in one frosted glass panel at the bottom - time, seek bar and length
+     at the top over a soft scrim, the controls straight on the video at the bottom (no panel): time, seek bar and length
      on one line, then one row of buttons from the left: play / pause, previous, channel, next, comments, like,
      dislike, repeat mode, high quality, then the rest.
      Every id the presenter looks up is kept. -->
@@ -51,7 +51,7 @@
                 android:clipToPadding="false"
                 android:gravity="bottom" />
         </LinearLayout>
-        <!-- quality and clock: top right, level with the title (no remaining / ending time) -->
+        <!-- clock on top, the quality (4K/25/VP9) below it in a glass pill: top right, level with the title -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -65,18 +65,24 @@
                             android:layout_height="wrap_content"
                             android:layoutDirection="ltr"
                             android:focusable="false" >
-                <TextView
-                    android:id="@+id/quality_info"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    style="?attr/playbackControlsTimeStyle" />
                 <com.liskovsoft.smartyoutubetv2.tv.ui.widgets.time.DateTimeView
                     android:id="@+id/date_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_below="@+id/quality_info"
+                    style="?attr/playbackControlsTimeStyle" />
+                <TextView
+                    android:id="@+id/quality_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_below="@+id/date_time"
+                    android:layout_marginTop="6dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:background="@drawable/browse_glass_title_pill"
                     style="?attr/playbackControlsTimeStyle" />
             </RelativeLayout>
         </LinearLayout>
@@ -114,7 +120,7 @@
         android:paddingEnd="@dimen/player_glass_padding"
         android:paddingTop="@dimen/player_glass_padding_vertical"
         android:paddingBottom="@dimen/player_glass_padding_vertical"
-        android:background="@drawable/player_glass_panel"
+        android:background="@null"
         android:clipChildren="false"
         android:clipToPadding="false" >
         <!-- MOD: hide player controls on UP button -->

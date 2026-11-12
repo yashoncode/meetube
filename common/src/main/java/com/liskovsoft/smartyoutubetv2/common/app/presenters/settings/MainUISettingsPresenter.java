@@ -222,6 +222,13 @@ public class MainUISettingsPresenter extends BasePresenter<Void> {
         options.add(UiOptionItem.from(getContext().getString(R.string.title_greeting),
                 option -> mMainUIData.setTitleGreetingEnabled(option.isSelected()),
                 mMainUIData.isTitleGreetingEnabled()));
+
+        options.add(UiOptionItem.from(getContext().getString(R.string.home_chips_pills),
+                option -> {
+                    mMainUIData.setHomeChipPillsEnabled(option.isSelected());
+                    mRestartApp = true;
+                },
+                mMainUIData.isHomeChipPillsEnabled()));
         
         options.add(UiOptionItem.from(getContext().getString(R.string.time_format_24) + " " + getContext().getString(R.string.time_format),
                 option -> {

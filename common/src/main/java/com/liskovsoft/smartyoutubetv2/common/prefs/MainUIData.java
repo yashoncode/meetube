@@ -145,6 +145,16 @@ public class MainUIData extends DataChangeBase implements ProfileChangeListener 
         onDataChange();
     }
 
+    // MEETUBE: Home's chips share one segmented glass track unless this is on.
+    public boolean isHomeChipPillsEnabled() {
+        return mPrefs.getBoolean("meetube_home_chip_pills", false);
+    }
+
+    public void setHomeChipPillsEnabled(boolean enabled) {
+        mPrefs.putBoolean("meetube_home_chip_pills", enabled);
+        onDataChange();
+    }
+
     public boolean isCardMultilineTitleEnabled() {
         return mIsCardMultilineTitleEnabled;
     }

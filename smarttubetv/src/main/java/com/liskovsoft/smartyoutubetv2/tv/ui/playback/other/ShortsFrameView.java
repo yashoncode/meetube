@@ -33,7 +33,6 @@ public final class ShortsFrameView extends View {
     private final float mProgressHeight;
     private Bitmap mBackdrop;
     private float mProgress = -1;
-    private boolean mRimEnabled = true;
 
     public ShortsFrameView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -58,11 +57,6 @@ public final class ShortsFrameView extends View {
 
     public void setBackdrop(@Nullable Bitmap backdrop) {
         mBackdrop = backdrop;
-        invalidate();
-    }
-
-    public void setRimEnabled(boolean enabled) {
-        mRimEnabled = enabled;
         invalidate();
     }
 
@@ -104,8 +98,6 @@ public final class ShortsFrameView extends View {
             canvas.restore();
         }
 
-        if (mRimEnabled) {
-            canvas.drawRoundRect(mCard, mRadius, mRadius, mRimPaint);
-        }
+        canvas.drawRoundRect(mCard, mRadius, mRadius, mRimPaint);
     }
 }

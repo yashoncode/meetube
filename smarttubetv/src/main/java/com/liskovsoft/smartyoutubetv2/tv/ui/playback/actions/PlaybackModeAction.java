@@ -27,7 +27,7 @@ public class PlaybackModeAction extends MultiAction {
      * @param context Context used for loading resources.
      */
     public PlaybackModeAction(Context context) {
-        this(context, ActionHelpers.getIconHighlightColor(context));
+        this(context, 0xFFFFFFFF); // MEETUBE: white like the other player buttons, not the red highlight
     }
 
     /**

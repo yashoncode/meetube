@@ -50,7 +50,7 @@ final class BrowseGlassDecoration {
         }
         mTime = root.findViewById(R.id.global_time);
         mDate = root.findViewById(R.id.global_date);
-        mClock = mTime != null ? (View) mTime.getParent() : null;
+        mClock = mTime != null ? (View) mTime.getParent().getParent() : null; // the pill: the heart + the clock
         mHeaderBackground = mHeaders != null ? mHeaders.getBackground() : null;
         mClockBackground = mClock != null ? mClock.getBackground() : null;
         mFadeVisibility = mFade != null ? mFade.getVisibility() : View.VISIBLE;
@@ -206,7 +206,8 @@ final class BrowseGlassDecoration {
         }
         boolean visible = mTime.getVisibility() == View.VISIBLE ||
                 (mDate != null && mDate.getVisibility() == View.VISIBLE);
-        // MEETUBE: remove an unused clock pill and match the orbs' fixed 52dp title height.
+        // MEETUBE: the pill (heart + clock) goes with the clock: the title hides the time while scrolled, and a
+        // heart left behind floated alone over the rows.
         int visibility = visible ? View.VISIBLE : View.GONE;
         boolean changed = mClock.getVisibility() != visibility;
         if (changed) {

@@ -59,10 +59,6 @@ public class PlayerSettingsPresenter extends BasePresenter<Void> {
         appendPlaybackModeCategory(settingsPresenter);
         appendVideoPresetsCategory(settingsPresenter);
         appendPlayerButtonsCategory(settingsPresenter);
-        // MEETUBE: Toggle the glass outline independently of the button selection.
-        settingsPresenter.appendSingleSwitch(UiOptionItem.from(getContext().getString(R.string.player_glass_outline),
-                option -> mPlayerTweaksData.setPlayerGlassOutlineEnabled(option.isSelected()),
-                mPlayerTweaksData.isPlayerGlassOutlineEnabled()));
         appendNetworkEngineCategory(settingsPresenter);
         appendVideoBufferCategory(settingsPresenter);
         appendVideoZoomCategory(settingsPresenter);

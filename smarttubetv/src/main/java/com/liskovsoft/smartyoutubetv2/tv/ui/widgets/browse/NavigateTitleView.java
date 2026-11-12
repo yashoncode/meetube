@@ -133,6 +133,13 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
         return getSearchAffordanceView().requestFocus() || super.onRequestFocusInDescendants(direction, previouslyFocusedRect);
     }
 
+    /** MEETUBE: the badge is the app logo, now the heart in the clock pill: no wordmark beside it. */
+    @Override
+    public void setBadgeDrawable(Drawable drawable) {
+        super.setBadgeDrawable(drawable);
+        findViewById(R.id.title_brand).setVisibility(drawable != null ? View.GONE : View.VISIBLE);
+    }
+
     public void setBrowseTitleEnabled(boolean enabled) {
         mBrowseTitleEnabled = enabled;
         if (enabled) {
