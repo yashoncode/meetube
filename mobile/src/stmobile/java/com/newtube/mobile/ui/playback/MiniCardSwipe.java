@@ -1,6 +1,7 @@
 package com.newtube.mobile.ui.playback;
 
 import android.annotation.SuppressLint;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
@@ -8,11 +9,13 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 
 import androidx.annotation.Nullable;
 import androidx.dynamicanimation.animation.DynamicAnimation;
 import androidx.dynamicanimation.animation.SpringAnimation;
 
+import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.Haptics;
 
 /**
@@ -73,8 +76,11 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     private float mHomeY;
     /** The touch stopped being a drag (a second finger): consume it to the end. */
     private boolean mIgnoring;
-    /** MEETUBE(issue #188): two fingers on the default card resize it (MiniSize.pinch). */
+    /** MEETUBE(issue #233): transform while pinching, then commit a single layout. */
     private final ScaleGestureDetector mPinch;
+    private boolean mResizing;
+    private ViewTreeObserver.OnPreDrawListener mResizeCommit;
+    private final View[] mButtons;
     /** Resting at the top: it follows Home's top bar in and out (followTop). */
     private boolean mAtTop;
     private float mTopY = Float.NaN;
@@ -99,6 +105,15 @@ public final class MiniCardSwipe implements View.OnTouchListener {
      * which a card.animate().cancel() does not reach, and ignore the rest of a touch still on it.
      */
     public void stop() {
+        if (mResizing || mResizeCommit != null) {
+            mResizing = false;
+            mIgnoring = true;
+            if (mResizeCommit != null) {
+                mCard.getViewTreeObserver().removeOnPreDrawListener(mResizeCommit);
+                mResizeCommit = null;
+            }
+            scaleCard(1f);
+        }
         if (mDragging) {
             mDragging = false;
             mIgnoring = true;
@@ -121,7 +136,8 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     public void setHomeY(float homeY) {
         mHomeY = homeY;
         View parent = (View) mCard.getParent();
-        if (mDragging || !Float.isNaN(mRestY) || parent == null || mCard.getVisibility() != View.VISIBLE || !mCallback.canSwipe()
+        if (mDragging || mResizing || mResizeCommit != null || !Float.isNaN(mRestY)
+                || parent == null || mCard.getVisibility() != View.VISIBLE || !mCallback.canSwipe()
                 || mCard.getTop() + mCard.getHeight() / 2f + mCard.getTranslationY() <= parent.getHeight() / 2f) {
             return;
         }
@@ -136,17 +152,116 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         mDensity = card.getResources().getDisplayMetrics().density;
         mSnapX = spring(DynamicAnimation.TRANSLATION_X);
         mSnapY = spring(DynamicAnimation.TRANSLATION_Y);
+        mButtons = new View[] {card.findViewById(R.id.mobile_mini_play_pause),
+                card.findViewById(R.id.mobile_mini_close), card.findViewById(R.id.mobile_mini_audio)};
         mPinch = new ScaleGestureDetector(card.getContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
-            public boolean onScale(ScaleGestureDetector detector) {
-                MiniSize.pinch(mCard, detector.getScaleFactor());
+            public boolean onScaleBegin(ScaleGestureDetector detector) {
+                View parent = (View) mCard.getParent();
+                if (!mCallback.canSwipe() || parent == null || mCard.getWidth() <= 0 || mResizeCommit != null
+                        || Math.abs(mCard.getScaleX() - 1f) > 0.001f) {
+                    return false;
+                }
+                mCard.animate().cancel();
+                mSnapX.cancel();
+                mSnapY.cancel();
+                mResizing = true;
+                mDragging = false;
+                mIgnoring = true;
+                recycleVelocity();
+                ((ViewParent) parent).requestDisallowInterceptTouchEvent(true);
+                // The far corner stays docked; the picture grows towards the screen's centre.
+                float x = mCard.getLeft() + mCard.getTranslationX();
+                float y = mCard.getTop() + mCard.getTranslationY();
+                mCard.setPivotX(x + mCard.getWidth() / 2f < parent.getWidth() / 2f ? 0f : mCard.getWidth());
+                mCard.setPivotY(y + mCard.getHeight() / 2f < parent.getHeight() / 2f ? 0f : mCard.getHeight());
+                mCard.setAlpha(1f);
                 return true;
             }
+
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                if (mResizing) {
+                    float width = mCard.getWidth() * mCard.getScaleX() * detector.getScaleFactor();
+                    width = Math.max(MiniSize.minWidth(mCard), Math.min(MiniSize.maxWidth(mCard), width));
+                    scaleCard(width / mCard.getWidth());
+                }
+                return true;
+            }
+
+            @Override
+            public void onScaleEnd(ScaleGestureDetector detector) {
+                if (mResizing) {
+                    commitResize();
+                }
+            }
         });
+        mPinch.setQuickScaleEnabled(false);
+        mPinch.setStylusScaleEnabled(false);
         card.getViewTreeObserver().addOnPreDrawListener(() -> {
             followTop();
             return true;
         });
+    }
+
+    /** MEETUBE(issue #233): the picture scales smoothly; the controls keep their 36dp boxes. */
+    private void scaleCard(float scale) {
+        mCard.setScaleX(scale);
+        mCard.setScaleY(scale);
+        for (View button : mButtons) {
+            if (button != null) {
+                button.setScaleX(1f / scale);
+                button.setScaleY(1f / scale);
+                if (scale == 1f) {
+                    button.setTranslationX(0f);
+                    button.setTranslationY(0f);
+                } else {
+                    android.widget.FrameLayout.LayoutParams params =
+                            (android.widget.FrameLayout.LayoutParams) button.getLayoutParams();
+                    boolean right = (Gravity.getAbsoluteGravity(params.gravity, mCard.getLayoutDirection())
+                            & Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.RIGHT;
+                    int margin = right ? params.rightMargin : params.leftMargin; // resolved, absolute
+                    float x = right ? mCard.getWidth() * scale - margin - button.getWidth() : margin;
+                    button.setPivotX(0f);
+                    button.setPivotY(0f);
+                    button.setTranslationX(x / scale - button.getLeft());
+                    boolean bottom = (params.gravity & Gravity.VERTICAL_GRAVITY_MASK) == Gravity.BOTTOM;
+                    float y = bottom ? mCard.getHeight() * scale - params.bottomMargin - button.getHeight() : params.topMargin;
+                    button.setTranslationY(y / scale - button.getTop());
+                }
+            }
+        }
+    }
+
+    private void commitResize() {
+        mResizing = false;
+        float scale = mCard.getScaleX();
+        float left = mCard.getLeft() + mCard.getTranslationX() + mCard.getPivotX() * (1f - scale);
+        float top = mCard.getTop() + mCard.getTranslationY() + mCard.getPivotY() * (1f - scale);
+        MiniSize.commitWidth(mCard, mCard.getWidth() * scale);
+        mResizeCommit = new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                mCard.getViewTreeObserver().removeOnPreDrawListener(this);
+                mResizeCommit = null;
+                scaleCard(1f);
+                mCard.setPivotX(mCard.getWidth() / 2f);
+                mCard.setPivotY(mCard.getHeight() / 2f);
+                mCard.setTranslationX(left - mCard.getLeft());
+                mCard.setTranslationY(top - mCard.getTop());
+                mRestY = !mAtTop && Math.abs(mCard.getTranslationY() - mHomeY) < 1f
+                        ? Float.NaN : mCard.getTranslationY();
+                mTopY = mCard.getTranslationY();
+                View parent = (View) mCard.getParent();
+                if (parent != null && (left < 0f || top < 0f
+                        || left + mCard.getWidth() > parent.getWidth()
+                        || top + mCard.getHeight() > parent.getHeight())) {
+                    snapToCorner(0f, 0f, true);
+                }
+                return true;
+            }
+        };
+        mCard.getViewTreeObserver().addOnPreDrawListener(mResizeCommit);
     }
 
     private SpringAnimation spring(DynamicAnimation.ViewProperty property) {
@@ -160,7 +275,15 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     public boolean onTouch(View view, MotionEvent event) {
         boolean pinchable = MiniSize.type(mCard.getContext()) == MiniSize.DEFAULT;
         if (pinchable) {
-            mPinch.onTouchEvent(event);
+            // MEETUBE(issue #233): spans in screen pixels; scaling under the fingers must not feed
+            // the inverse, view-local span back into the detector on the next frame.
+            MotionEvent screen = MotionEvent.obtain(event);
+            screen.transform(mCard.getMatrix());
+            mPinch.onTouchEvent(screen);
+            screen.recycle();
+        }
+        if (mResizing || mResizeCommit != null) {
+            return true;
         }
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -230,12 +353,14 @@ public final class MiniCardSwipe implements View.OnTouchListener {
                 return true;
             }
             case MotionEvent.ACTION_POINTER_DOWN:
-                // A second finger: not a drag any more. The card settles; the rest is ignored.
+                // MEETUBE(issue #233): a second finger holds the dragged card in place for a pinch.
                 if (mDragging) {
                     mDragging = false;
                     mIgnoring = true;
                     recycleVelocity();
-                    snapToCorner(0f, 0f);
+                    if (!pinchable) {
+                        snapToCorner(0f, 0f);
+                    }
                 } else if (pinchable && !mIgnoring) {
                     mIgnoring = true; // a pinch, not a tap: drop the press so letting go does not expand
                     recycleVelocity();
@@ -282,6 +407,10 @@ public final class MiniCardSwipe implements View.OnTouchListener {
      * other side and the top are translations, measured in its parent.
      */
     private void snapToCorner(float velocityX, float velocityY) {
+        snapToCorner(velocityX, velocityY, false);
+    }
+
+    private void snapToCorner(float velocityX, float velocityY, boolean corner) {
         View parent = (View) mCard.getParent();
         if (parent == null) {
             return;
@@ -301,7 +430,9 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         // the top spot down to home; near either end it snaps there.
         float y = Math.max(top, Math.min(mHomeY, mCard.getTranslationY() + velocityY * THROW_S));
         float snap = 48 * mDensity;
-        if (top >= 0f || mHomeY - y < snap) {
+        if (corner) {
+            y = Math.abs(y - top) < Math.abs(y - mHomeY) ? top : mHomeY;
+        } else if (top >= 0f || mHomeY - y < snap) {
             y = mHomeY;
         } else if (y - top < snap) {
             y = top;
@@ -325,7 +456,8 @@ public final class MiniCardSwipe implements View.OnTouchListener {
      */
     private void followTop() {
         View parent = (View) mCard.getParent();
-        if (mDragging || parent == null || mCard.getVisibility() != View.VISIBLE || Float.isNaN(mRestY)) {
+        if (mDragging || mResizing || mResizeCommit != null || parent == null
+                || mCard.getVisibility() != View.VISIBLE || Float.isNaN(mRestY)) {
             return;
         }
         float top = topClearance(parent) - mCard.getTop();

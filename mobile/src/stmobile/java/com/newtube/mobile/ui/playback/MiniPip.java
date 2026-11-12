@@ -28,6 +28,8 @@ import com.liskovsoft.smartyoutubetv2.common.misc.NetPath;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * MEETUBE(mini-pip): leaving the app (Home, Recents) while a screen's mini card plays floats that
@@ -56,6 +58,7 @@ public final class MiniPip {
     private float mSavedZ;
     private float mSavedRadius;
     private int mSavedStroke;
+    private final Map<View, Integer> mSiblingVisibility = new LinkedHashMap<>();
 
     /** {@code onClosed}: the PiP window was closed - stop the video with it. */
     public MiniPip(Activity host, View card, Runnable onClosed, View... chrome) {
@@ -89,7 +92,7 @@ public final class MiniPip {
     private boolean canFloat() {
         ExoPlayer player = MiniPlayerBridge.getPlayer();
         return player != null && player.getPlayWhenReady() && mCard.getVisibility() == View.VISIBLE
-                && isAutoEnabled(mHost);
+                && !MiniPlayerBridge.isClosing() && isAutoEnabled(mHost);
     }
 
     /** Re-arm (or disarm) the window's auto-enter and refresh the PiP window's action. */
@@ -202,13 +205,27 @@ public final class MiniPip {
         lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
         lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
         lp.setMargins(0, 0, 0, 0);
+        lp.setMarginStart(0);
+        lp.setMarginEnd(0);
         mCard.setLayoutParams(lp);
         mCard.setTranslationX(0f);
         mCard.setTranslationY(0f);
         mCard.setTranslationZ(1000f); // over the screen's other floating layers
         mCard.animate().cancel();
+        // MEETUBE(issue #233): OEM PiP composition can put Home's glass above even a raised card.
+        ViewGroup parent = (ViewGroup) mCard.getParent();
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View sibling = parent.getChildAt(i);
+            if (sibling != mCard) {
+                mSiblingVisibility.put(sibling, sibling.getVisibility());
+                sibling.setVisibility(View.INVISIBLE);
+            }
+        }
+        mCard.setAlpha(1f);
         mCard.setScaleX(1f);
         mCard.setScaleY(1f);
+        mCard.setVisibility(View.VISIBLE);
+        NetPath.log("mini-pip fill alpha=" + mCard.getAlpha() + " z=" + mCard.getZ());
         if (mCard instanceof MaterialCardView) { // square, borderless: the PiP window rounds itself
             MaterialCardView card = (MaterialCardView) mCard;
             mSavedRadius = card.getRadius();
@@ -228,6 +245,10 @@ public final class MiniPip {
     }
 
     private void restoreCard() {
+        for (Map.Entry<View, Integer> sibling : mSiblingVisibility.entrySet()) {
+            sibling.getKey().setVisibility(sibling.getValue());
+        }
+        mSiblingVisibility.clear();
         if (mSavedLp != null) {
             int fullW = mCard.getWidth();
             int fullH = mCard.getHeight();
@@ -239,6 +260,8 @@ public final class MiniPip {
             lp.width = mSavedLp.width;
             lp.height = mSavedLp.height;
             lp.setMargins(mSavedLp.leftMargin, mSavedLp.topMargin, mSavedLp.rightMargin, mSavedLp.bottomMargin);
+            lp.setMarginStart(mSavedLp.getMarginStart());
+            lp.setMarginEnd(mSavedLp.getMarginEnd());
             mCard.setLayoutParams(lp);
             mCard.setTranslationZ(mSavedZ);
             mSavedLp = null;

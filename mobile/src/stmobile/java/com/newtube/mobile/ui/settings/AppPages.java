@@ -35,7 +35,6 @@ import com.newtube.mobile.ui.common.WatchedBar;
 import com.newtube.mobile.ui.playback.WatchLook;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -443,6 +442,7 @@ final class AppPages {
             int sectionId = section.getValue();
             if (sectionId == MediaGroup.TYPE_SHORTS || sectionId == MediaGroup.TYPE_SETTINGS
                     || (sectionId == MediaGroup.TYPE_HOME && !home)
+                    || (sectionId == MediaGroup.TYPE_CHANNEL_UPLOADS && sectionId != shown) // Subscriptions again
                     || (sectionId != shown && !sidebar.isSectionPinned(sectionId))) {
                 continue;
             }
@@ -540,13 +540,6 @@ final class AppPages {
     static SettingsPages.Page tabs(Context context) {
         List<SettingsRow> rows = new ArrayList<>();
         SidebarService sidebar = SidebarService.instance(context);
-        Map<Integer, Integer> sections = sidebar.getDefaultSections();
-
-        // Home is fixed on the bar; the rest show in You when they aren't on it.
-        int[] bottomBar = {MediaGroup.TYPE_HOME};
-        int[] you = {MediaGroup.TYPE_SUBSCRIPTIONS, MediaGroup.TYPE_HISTORY, VideoDownloads.SECTION_ID,
-                MediaGroup.TYPE_USER_PLAYLISTS, MediaGroup.TYPE_MY_VIDEOS, MediaGroup.TYPE_CHANNEL_UPLOADS,
-                MediaGroup.TYPE_PLAYBACK_QUEUE, MediaGroup.TYPE_BLOCKED_CHANNELS};
 
         rows.add(BarEditor.row(context)); // MEETUBE(bar editor): the bars as a stack to drag
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_tabs_bar_note)));
@@ -558,52 +551,16 @@ final class AppPages {
                 }));
         rows.add(startScreen(context)); // MEETUBE(start screen): next to the bar it opens on
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_tabs_you)));
-        addSectionToggles(context, rows, sections, you, true);
+        rows.add(SettingsRow.toggle(context.getString(R.string.header_history), null,
+                () -> sidebar.isSectionPinned(MediaGroup.TYPE_HISTORY),
+                on -> BrowsePresenter.instance(context).enableSection(MediaGroup.TYPE_HISTORY, on)));
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_you_library)));
+        rows.add(YouSectionEditor.row(context, true)); // MEETUBE(you order): save each group's order on drop
         rows.add(SettingsRow.header(context.getString(R.string.mobile_you_explore)));
-        // Everything else the section list offers (Trending, Music, Live, ...).
-        List<Integer> listed = new ArrayList<>();
-        for (int id : bottomBar) {
-            listed.add(id);
-        }
-        for (int id : you) {
-            listed.add(id);
-        }
-        int[] rest = new int[sections.size()];
-        int count = 0;
-        for (int sectionId : sections.values()) {
-            if (!listed.contains(sectionId)) {
-                rest[count++] = sectionId;
-            }
-        }
-        addSectionToggles(context, rows, sections, Arrays.copyOf(rest, count), false);
+        rows.add(YouSectionEditor.row(context, false));
         rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_tabs_note)));
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_tabs), rows);
-    }
-
-    private static void addSectionToggles(Context context, List<SettingsRow> rows, Map<Integer, Integer> sections,
-                                          int[] order, boolean keepOrder) {
-        SidebarService sidebar = SidebarService.instance(context);
-        for (int sectionId : order) {
-            // MEETUBE: Trending is gone from YouTube (its feed comes back empty), so it isn't offered.
-            if (sectionId == MediaGroup.TYPE_SETTINGS || sectionId == MediaGroup.TYPE_SHORTS
-                    || sectionId == MediaGroup.TYPE_TRENDING) {
-                continue;
-            }
-            Integer titleRes = null;
-            for (Map.Entry<Integer, Integer> entry : sections.entrySet()) {
-                if (entry.getValue() == sectionId) {
-                    titleRes = entry.getKey();
-                    break;
-                }
-            }
-            if (titleRes == null) {
-                continue;
-            }
-            rows.add(SettingsRow.toggle(context.getString(sectionTitle(titleRes)), null,
-                    () -> sidebar.isSectionPinned(sectionId),
-                    on -> BrowsePresenter.instance(context).enableSection(sectionId, on)));
-        }
     }
 
     /** "Upcoming on Home" / "3 kinds of videos" / "Nothing hidden". */

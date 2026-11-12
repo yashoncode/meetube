@@ -91,6 +91,27 @@ public class MobileSearchActivity extends MobileActivity
     private MobileMiniPlayerController mMiniPlayer;
 
     private EditText mSearchInput;
+    /**
+     * MEETUBE(playlist page): the playlist page's + opens search to add videos (YouTube's Watch later
+     * +). While set, a tapped video goes into that playlist instead of playing. Ends with the screen.
+     */
+    @Nullable private static String sAddPlaylistId;
+    @Nullable private static String sAddPlaylistTitle;
+    @Nullable private static String sAddedTo;
+
+    public static void startAddingTo(String playlistId, String title) {
+        sAddPlaylistId = playlistId;
+        sAddPlaylistTitle = title;
+    }
+
+    /** True once after videos were added to {@code playlistId}, so its page reloads. */
+    public static boolean consumeAdded(String playlistId) {
+        boolean added = playlistId.equals(sAddedTo);
+        if (added) {
+            sAddedTo = null;
+        }
+        return added;
+    }
     private ImageButton mBackButton;
     private ImageButton mClearButton;
     private ImageButton mMicButton;
@@ -627,6 +648,10 @@ public class MobileSearchActivity extends MobileActivity
         if (mPresenter == null) {
             return;
         }
+        if (sAddPlaylistId != null && video.hasVideo()) {
+            addToPlaylist(video);
+            return;
+        }
         mPresenter.onVideoItemSelected(video);
         if (video.belongsToShorts()) {
             queueShorts(video);
@@ -810,6 +835,10 @@ public class MobileSearchActivity extends MobileActivity
         if (mPresenter != null) {
             mPresenter.onViewResumed();
         }
+        if (mSearchInput != null) { // MEETUBE(playlist page): say which playlist a tap adds to
+            mSearchInput.setHint(sAddPlaylistId != null
+                    ? getString(R.string.mobile_playlist_add_hint, sAddPlaylistTitle) : getString(R.string.mobile_search_hint));
+        }
         // Last-resumed host wins: a video opened from these results minimizes back onto them.
         MiniPlayerBridge.registerMiniHost(this);
         if (mMiniPlayer != null) {
@@ -817,8 +846,24 @@ public class MobileSearchActivity extends MobileActivity
         }
     }
 
+    private void addToPlaylist(Video video) {
+        String playlistId = sAddPlaylistId;
+        String title = sAddPlaylistTitle;
+        com.liskovsoft.sharedutils.rx.RxHelper.execute(
+                com.liskovsoft.youtubeapi.service.YouTubeMediaItemService.instance().addToPlaylistObserve(playlistId, video.videoId),
+                error -> com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.feedback_failed),
+                () -> {
+                    sAddedTo = playlistId;
+                    com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.added_to, title));
+                });
+    }
+
     @Override
     protected void onPause() {
+        if (isFinishing()) {
+            sAddPlaylistId = null; // add mode lasts as long as this search screen
+            sAddPlaylistTitle = null;
+        }
         // Free the mini bar's video surface whenever this screen leaves the foreground - the
         // playback activity may be about to re-claim it (expand / new video).
         // NEWTUBE(motion): a docked card stays up frozen until the player covers it.

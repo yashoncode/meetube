@@ -2,9 +2,14 @@ package com.newtube.mobile.ui.browse;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
 import com.liskovsoft.smartyoutubetv2.common.misc.VideoDownloads;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * MEETUBE(nav tabs, issue #7): the bottom bar is Home | tab | tab | You with Search before, between
@@ -29,6 +34,13 @@ public final class NavTabs {
     private static final String KEY_SEARCH_POSITION = "search_position";
     private static final String KEY_SEARCH_FAB_LEFT = "search_fab_left";
     private static final String KEY_TOP_BAR_PINNED = "top_bar_pinned";
+    private static final String KEY_LIBRARY_ORDER = "library_order";
+    // MEETUBE(you order): section ids and account playlists share one Library order.
+    private static final List<String> DEFAULT_LIBRARY_ORDER = Arrays.asList(
+            String.valueOf(MediaGroup.TYPE_SUBSCRIPTIONS), String.valueOf(VideoDownloads.SECTION_ID), "WL", "LL",
+            String.valueOf(MediaGroup.TYPE_USER_PLAYLISTS), String.valueOf(MediaGroup.TYPE_MY_VIDEOS),
+            String.valueOf(MediaGroup.TYPE_PLAYBACK_QUEUE), String.valueOf(MediaGroup.TYPE_NOTIFICATIONS),
+            String.valueOf(MediaGroup.TYPE_BLOCKED_CHANNELS));
     /** The bar as it was before the tabs could be picked. */
     private static final int[] DEFAULTS = {MediaGroup.TYPE_SHORTS, VideoDownloads.SECTION_ID};
 
@@ -47,6 +59,39 @@ public final class NavTabs {
             editor.putInt(KEYS[other], get(context, slot));
         }
         editor.apply();
+    }
+
+    /** MEETUBE(you order): discard stale keys and append new defaults after the saved order. */
+    public static List<String> libraryOrder(Context context) {
+        return normalizeLibraryOrder(Arrays.asList(prefs(context).getString(KEY_LIBRARY_ORDER, "").split(",")));
+    }
+
+    public static void setLibraryOrder(Context context, List<String> order) {
+        prefs(context).edit().putString(KEY_LIBRARY_ORDER, TextUtils.join(",", normalizeLibraryOrder(order))).apply();
+    }
+
+    private static List<String> normalizeLibraryOrder(List<String> keys) {
+        List<String> order = new ArrayList<>();
+        for (String key : keys) {
+            if (DEFAULT_LIBRARY_ORDER.contains(key) && !order.contains(key)) {
+                order.add(key);
+            }
+        }
+        for (String key : DEFAULT_LIBRARY_ORDER) {
+            if (!order.contains(key)) {
+                order.add(key);
+            }
+        }
+        return order;
+    }
+
+    /** MEETUBE(you page): the You page's Liked videos ("LL") and Watch later ("WL") rows, on by default. */
+    public static boolean showLibraryPlaylist(Context context, String playlistId) {
+        return prefs(context).getBoolean("you_" + playlistId, true);
+    }
+
+    public static void setShowLibraryPlaylist(Context context, String playlistId, boolean show) {
+        prefs(context).edit().putBoolean("you_" + playlistId, show).apply();
     }
 
     /**

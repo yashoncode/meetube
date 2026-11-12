@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Fades the playlist backdrop into the window background, the way the YouTube playlist page
-  washes the cover's colour down into the list. We have no Palette dependency to extract the
-  accent colour from, so the backdrop IS the cover art, dimmed and blurred-by-scale behind
-  the header; this gradient is what keeps its bottom edge from being a visible seam.
+  MEETUBE(playlist page): the blurred cover fades into the page below the header without a seam.
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">

@@ -88,7 +88,9 @@ import com.liskovsoft.mediaserviceinterfaces.data.ChatItem;
 import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.VideoGroup;
+import com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.QueuePlaybackMode;
+import com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoStateController;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.State;
@@ -306,6 +308,12 @@ public class MobilePlaybackActivity extends MobileActivity
     private AmbientGlow mAmbient;
     /** MEETUBE(shorts): the vertical player mode for videos from the Shorts tab. */
     private ShortsOverlay mShorts;
+    /** MEETUBE(issue #233): Shorts borrows the player; keep the docked video's full context. */
+    private Video mMiniBeforeShorts;
+    private MiniPlayerBridge.MiniHost mMiniHostBeforeShorts;
+    private long mMiniBeforeShortsPosition;
+    private List<Video> mMiniQueue;
+    private boolean mMiniQueueShuffled;
     private TextView mWatchDescription;
     private View mWatchLike;
     private ImageView mWatchLikeIcon;
@@ -2808,6 +2816,9 @@ public class MobilePlaybackActivity extends MobileActivity
             // MEETUBE(issue #107): a short slides down off the screen as a window animation - the
             // system composes it, so the tab opening beneath (sShortsClosed) can't drop its frames.
             com.newtube.mobile.ui.browse.MobileBrowseActivity.sShortsClosed = true;
+            if (restoreMiniAfterShorts()) {
+                return;
+            }
             if (mPresenter != null) {
                 mPresenter.onFinish();
             }
@@ -2828,6 +2839,45 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         finish();
+    }
+
+    /** MEETUBE(issue #233): return to the same host with the borrowed mini session paused. */
+    private boolean restoreMiniAfterShorts() {
+        Video video = mMiniBeforeShorts;
+        if (video == null || mPresenter == null || mPlayer == null) {
+            return false;
+        }
+        long position = mMiniBeforeShortsPosition;
+        MiniPlayerBridge.MiniHost host = mMiniHostBeforeShorts;
+        mMiniBeforeShorts = null; // consume before setVideo; a regular selection also forgets it
+        mMiniHostBeforeShorts = null;
+        mShorts.bind(null); // cancel any pending page-open before putting the regular queue back
+        mShortPausedByLeave = false;
+        setPlayWhenReady(false);
+        Playlist playlist = Playlist.instance();
+        playlist.clear();
+        if (mMiniQueue != null) {
+            playlist.addAll(mMiniQueue);
+        }
+        playlist.setCurrent(video);
+        if (mMiniQueueShuffled) {
+            QueuePlaybackMode.shuffle(video.getPlaylistId());
+        }
+        video.fromQueue = true;
+        video.pendingPosMs = Math.max(1, position); // skip history's seek, including a saved zero
+        mPresenter.onNewVideo(video); // load without bringing the full player to the front again
+        mPresenter.getController(VideoStateController.class).setPlayEnabled(false);
+        setPlayWhenReady(false); // the asynchronous source restore must also stay paused
+        mExoPlayerController.setOnVideoLoaded(() -> {
+            mExoPlayerController.setOnVideoLoaded(null);
+            setPositionMs(position); // exact, including zero (pendingPosMs treats zero as absent)
+        });
+        NetPath.log("mini shorts-restore video=" + video.videoId + " pos-ms=" + position);
+        if (host != null) {
+            MiniPlayerBridge.registerMiniHost(host);
+        }
+        minimizeByDrag(); // the host's normal show/texture handoff; keep this Activity alive
+        return true;
     }
 
     // ---------------------------------------------------------------------------------
@@ -8609,6 +8659,9 @@ public class MobilePlaybackActivity extends MobileActivity
                     "mini handoff detach t=" + android.os.SystemClock.uptimeMillis());
         }
         MiniPlayerBridge.activate(this);
+        // MEETUBE(issue #233): Shorts entry points replace Playlist before setVideo reaches us.
+        mMiniQueue = new ArrayList<>(Playlist.instance().getAll());
+        mMiniQueueShuffled = QueuePlaybackMode.coversQueueOf(getVideo());
         updateHdrOutput(); // the card shows the session texture (#35)
         // The card shows this player's live frames at card size: cap NEW chunks to that window.
         // Card px use the app density on purpose - it is the density the card is laid out with.
@@ -8636,6 +8689,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** X tapped on the Browse mini bar: stop playback and quietly retire this hidden activity. */
     void closeFromMiniPlayer() {
+        mMiniBeforeShorts = null;
+        mMiniHostBeforeShorts = null;
+        mMiniQueue = null;
+        mExoPlayerController.setOnVideoLoaded(null);
         if (mPresenter != null) {
             mPresenter.onFinish();
         }
@@ -12520,6 +12577,25 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void setVideo(Video item) {
+        if (item != null && item != getVideo() && mExoPlayerController != null) {
+            mExoPlayerController.setOnVideoLoaded(null);
+        }
+        // MEETUBE(issue #233): every Shorts entry reaches here before replacing the old Video or
+        // resetting its position. Keep the original object: copy() drops playlistParams/localUri.
+        if (item != null && item.belongsToShorts()) {
+            Video previous = getVideo();
+            if (MiniPlayerBridge.isActive() && !MiniPlayerBridge.isClosing()
+                    && previous != null && !previous.belongsToShorts() && mMiniBeforeShorts == null) {
+                mMiniBeforeShorts = previous;
+                mMiniHostBeforeShorts = MiniPlayerBridge.getMiniHost();
+                mMiniBeforeShortsPosition = Math.max(0, getPositionMs());
+            }
+        } else if (item != null) {
+            mMiniBeforeShorts = null;
+            mMiniHostBeforeShorts = null;
+            mMiniQueue = MiniPlayerBridge.isActive() ? new ArrayList<>(Playlist.instance().getAll()) : null;
+            mMiniQueueShuffled = MiniPlayerBridge.isActive() && QueuePlaybackMode.coversQueueOf(item);
+        }
         if (item != null && item.videoId != null) {
             SessionWarmup.onPlaybackRequested();
             if (!Helpers.equals(item.videoId, mWatchVideoId)) {

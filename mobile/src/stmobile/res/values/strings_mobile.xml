@@ -270,6 +270,8 @@
     <!-- You-tab group label over the discovery feeds (Music, Gaming, News, ...). -->
     <string name="mobile_you_explore">Explore</string>
     <string name="mobile_you_library">Library</string>
+    <string name="mobile_you_watch_later">Watch later</string>
+    <string name="mobile_you_liked_videos">Liked videos</string>
 
     <!-- External-link handoff (MobileWebBrowserActivity) -->
     <string name="mobile_no_browser">No app found to open this link</string>

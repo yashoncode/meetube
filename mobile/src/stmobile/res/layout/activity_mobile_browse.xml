@@ -589,7 +589,7 @@
         android:contentDescription="@string/mobile_mini_expand"
         android:layout_width="@dimen/meetube_mini_width"
         android:layout_height="@dimen/meetube_mini_height"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="10dp"
         android:clickable="true"
         android:focusable="true"
@@ -625,34 +625,37 @@
 
             </androidx.media3.ui.AspectRatioFrameLayout>
 
+            <!-- MEETUBE(issue #233): compact corner controls on the Default card. -->
             <ImageButton
                 android:id="@+id/mobile_mini_play_pause"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="top|start"
+                android:layout_margin="6dp"
                 android:contentDescription="@string/mobile_mini_play_pause"
                 android:padding="9dp"
                 android:src="@drawable/ic_player_pause" />
 
-            <!-- 48dp touch target, wholly inside the card (a child outside its parent gets no touches), around the same 40dp circle (was 28dp, then 40dp - NEWTUBE(touch)). -->
             <ImageButton
                 android:id="@+id/mobile_mini_close"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_gravity="top|end"
-                android:layout_margin="0dp"
+                android:layout_margin="6dp"
                 android:contentDescription="@string/mobile_mini_close"
-                android:padding="15dp"
+                android:padding="9dp"
                 android:src="@drawable/ic_sheet_close"
                 android:tint="@color/mobile_player_on_video" />
 
             <ImageButton
                 android:id="@+id/mobile_mini_audio"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="top|start"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="bottom|left"
+                android:layout_marginLeft="6dp"
+                android:layout_marginBottom="6dp"
                 android:contentDescription="@string/mobile_player_audio_only"
-                android:padding="14dp"
+                android:padding="9dp"
                 android:src="@drawable/ic_player_headphones"
                 android:tint="@color/mobile_player_on_video" />
 
