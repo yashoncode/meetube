@@ -23,6 +23,9 @@ import androidx.annotation.Nullable;
  * saturated colour at about a third of its strength at most, faded out on a long eased curve, so
  * the black stays true black past it. Two lights a third of the wheel apart make it multi colour.
  *
+ * <p>By default the two lights are the accent's two colours and hold still; Settings > Customization
+ * > You page glow brings back the walk round the hue wheel.</p>
+ *
  * <p>The page is padded clear of the status bar, so while the glow shows the same light is also
  * painted behind the bar (the content's top padding), lined up so the two read as one.</p>
  */
@@ -83,6 +86,24 @@ public final class RgbGlow extends View {
         }
     };
 
+    @Nullable private static Boolean sRgb;
+
+    public static boolean isRgb(Context context) {
+        if (sRgb == null) {
+            sRgb = prefs(context).getBoolean("you_glow_rgb", false);
+        }
+        return sRgb;
+    }
+
+    public static void setRgb(Context context, boolean rgb) {
+        sRgb = rgb;
+        prefs(context).edit().putBoolean("you_glow_rgb", rgb).apply();
+    }
+
+    private static android.content.SharedPreferences prefs(Context context) {
+        return context.getApplicationContext().getSharedPreferences("meetube_app", Context.MODE_PRIVATE);
+    }
+
     public RgbGlow(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
@@ -115,7 +136,7 @@ public final class RgbGlow extends View {
         if (mCycle == null) {
             return;
         }
-        if (mShown && hasWindowFocus()) {
+        if (mShown && hasWindowFocus() && isRgb(getContext())) {
             mCycle.resume();
         } else {
             mCycle.pause();
@@ -126,6 +147,8 @@ public final class RgbGlow extends View {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         syncCycle();
+        invalidate(); // back from Settings: the glow may have switched between accent and RGB
+        mBand.invalidateSelf();
     }
 
     /** 0..1: the page colour over the status bar strip, to match a bar below it turning solid. */
@@ -172,13 +195,20 @@ public final class RgbGlow extends View {
         float w = getWidth();
         float h = getHeight();
         float r = Math.max(w, h);
-        light(canvas, w * 0.1f, h * 0.05f, r * 0.85f, mHue);
-        light(canvas, w * 0.55f, -h * 0.1f, r * 0.6f, mHue + 120f);
+        if (isRgb(getContext())) {
+            mHsv[0] = mHue % 360f;
+            light(canvas, w * 0.1f, h * 0.05f, r * 0.85f, Color.HSVToColor(mHsv));
+            mHsv[0] = (mHue + 120f) % 360f;
+            light(canvas, w * 0.55f, -h * 0.1f, r * 0.6f, Color.HSVToColor(mHsv));
+        } else {
+            int i = Accent.index(getContext());
+            light(canvas, w * 0.1f, h * 0.05f, r * 0.85f, Accent.START[i]);
+            light(canvas, w * 0.55f, -h * 0.1f, r * 0.6f, Accent.END[i]);
+        }
     }
 
-    private void light(Canvas canvas, float cx, float cy, float radius, float hue) {
-        mHsv[0] = hue % 360f;
-        int rgb = Color.HSVToColor(mHsv) & 0xFFFFFF;
+    private void light(Canvas canvas, float cx, float cy, float radius, int color) {
+        int rgb = color & 0xFFFFFF;
         for (int i = 0; i < STOPS.length; i++) {
             mColors[i] = Math.round(255 * PEAK * FALLOFF[i]) << 24 | rgb;
         }

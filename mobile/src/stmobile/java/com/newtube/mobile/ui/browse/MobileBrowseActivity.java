@@ -2278,6 +2278,21 @@ public class MobileBrowseActivity extends MobileActivity
 
     private void addYouLines(List<View> rows, int perLine) {
         float density = getResources().getDisplayMetrics().density;
+        // MEETUBE(you page): tiles sit together on one glass card lit by the accent
+        boolean card = perLine > 1;
+        LinearLayout target = mYouRows;
+        if (card) {
+            target = new LinearLayout(this);
+            target.setOrientation(LinearLayout.VERTICAL);
+            target.setBackground(new com.newtube.mobile.ui.common.AccentCard(
+                    com.newtube.mobile.ui.common.Accent.START[com.newtube.mobile.ui.common.Accent.index(this)], density));
+            int pad = Math.round(7 * density);
+            target.setPadding(pad, pad, pad, pad);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(Math.round(14 * density), 0, Math.round(14 * density), 0);
+            mYouRows.addView(target, lp);
+        }
         for (int i = 0; i < rows.size(); i += perLine) {
             LinearLayout line = new LinearLayout(this);
             line.setOrientation(LinearLayout.HORIZONTAL);
@@ -2285,11 +2300,16 @@ public class MobileBrowseActivity extends MobileActivity
                 if (j < rows.size()) {
                     line.addView(rows.get(j));
                 } else {
-                    line.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1f)); // keeps the tiles' width
+                    LinearLayout.LayoutParams gap = new LinearLayout.LayoutParams(0, 1, 1f); // keeps the tiles' width
+                    int margin = Math.round(5 * density); // the tiles' own margins, so a short line's tiles match the full ones
+                    gap.setMargins(margin, 0, margin, 0);
+                    line.addView(new View(this), gap);
                 }
             }
-            line.setPadding(Math.round(11 * density), 0, Math.round(11 * density), 0);
-            mYouRows.addView(line);
+            if (!card) {
+                line.setPadding(Math.round(11 * density), 0, Math.round(11 * density), 0);
+            }
+            target.addView(line);
         }
     }
 

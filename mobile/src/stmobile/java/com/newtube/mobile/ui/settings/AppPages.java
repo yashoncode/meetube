@@ -364,6 +364,16 @@ final class AppPages {
                 .bind(() -> com.newtube.mobile.ui.browse.NavBloom.mode(context), mode -> com.newtube.mobile.ui.browse.NavBloom.setMode(context, mode)),
                 56, Tiles.GLOW_WHITE, Tiles.GLOW_TABS, Tiles.GLOW_ACCENT, Tiles.GLOW_OFF));
 
+        // MEETUBE(rgb glow): the light in the You page's top left, the accent's by default.
+        rows.add(Tiles.of(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_you_glow))
+                .option(context.getString(R.string.mobile_settings_tab_glow_accent),
+                        context.getString(R.string.mobile_settings_you_glow_accent_desc), false)
+                .option(context.getString(R.string.mobile_settings_you_glow_rgb),
+                        context.getString(R.string.mobile_settings_you_glow_rgb_desc), true)
+                .bind(() -> com.newtube.mobile.ui.common.RgbGlow.isRgb(context),
+                        rgb -> com.newtube.mobile.ui.common.RgbGlow.setRgb(context, rgb)),
+                88, Tiles.YOU_GLOW_ACCENT, Tiles.YOU_GLOW_RGB));
+
         // MEETUBE(progress glow): the light at the head of the seek bar and the cards' watched line.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_progress_glow),
                 context.getString(R.string.mobile_settings_progress_glow_summary),
