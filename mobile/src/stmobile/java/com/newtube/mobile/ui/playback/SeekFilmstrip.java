@@ -47,6 +47,8 @@ public final class SeekFilmstrip extends View {
     @Nullable private Disposable mFetch;
     @Nullable private String mVideoId;
     private long mPosition;
+    private boolean mLive;
+    private static final int DIM = 0x38000000; // the preview sits a little dimmed, like YouTube's
 
     public SeekFilmstrip(Context context) {
         this(context, null);
@@ -81,6 +83,14 @@ public final class SeekFilmstrip extends View {
                 }, error -> { /* no filmstrip, the time still shows */ });
     }
 
+    /** The player shows the frame itself now (true): only the dim is drawn over it. */
+    public void setLive(boolean live) {
+        if (mLive != live) {
+            mLive = live;
+            invalidate();
+        }
+    }
+
     public void update(long positionMs) {
         mPosition = positionMs;
         invalidate();
@@ -90,6 +100,12 @@ public final class SeekFilmstrip extends View {
     protected void onDraw(@NonNull Canvas canvas) {
         float w = getWidth();
         float h = getHeight();
+        if (mLive) {
+            mFill.setColor(DIM);
+            canvas.drawRect(0, 0, w, h, mFill);
+            mFill.setColor(0xFF1A1A1A);
+            return;
+        }
         MediaItemStoryboard.Size size = mSize;
         if (size == null || size.getDurationEachMS() <= 0 || size.getHeight() <= 0) {
             return;
@@ -105,6 +121,9 @@ public final class SeekFilmstrip extends View {
             canvas.drawRect(0, 0, w, h, mFill); // not drawColor: the parents do not clip, it would black the page
             mFill.setColor(0xFF1A1A1A);
             draw(canvas, size, index, (w - fw) / 2, (h - fh) / 2, fw, fh);
+            mFill.setColor(DIM);
+            canvas.drawRect(0, 0, w, h, mFill);
+            mFill.setColor(0xFF1A1A1A);
         }
     }
 

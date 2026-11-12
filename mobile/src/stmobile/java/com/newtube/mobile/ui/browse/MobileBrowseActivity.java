@@ -1409,13 +1409,13 @@ public class MobileBrowseActivity extends MobileActivity
         mBottomNav.setOnItemSelectedListener(item -> {
             if (item.getItemId() == SEARCH_ITEM_ID) {
                 if (!mSuppressNavCallback) {
-                    com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 22, 255);
+                    com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 40, 255);
                     SearchPresenter.instance(this).startSearch(null);
                 }
                 return false; // a button, not a place: the tab you were on stays lit
             }
             if (!mSuppressNavCallback) {
-                com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, Float.isNaN(mNavDragFromX) ? 22 : 20, Float.isNaN(mNavDragFromX) ? 255 : 190); // MEETUBE(nav haptics): tap, or let go
+                com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, Float.isNaN(mNavDragFromX) ? 40 : 30, 255); // MEETUBE(nav haptics): tap, or let go
                 int itemId = item.getItemId();
                 if (itemId == toMenuItemId(MediaGroup.TYPE_SHORTS) && Float.isNaN(mNavDragFromX)) {
                     // MEETUBE(shorts, issue #107): like Search, Shorts opens from the tap - no lens or
@@ -1441,7 +1441,7 @@ public class MobileBrowseActivity extends MobileActivity
             if (mSuppressNavCallback) {
                 return;
             }
-            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 22, 255);
+            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 40, 255);
             // MEETUBE(issue #179): a tab lit over another page (a rebuilt bar lights its first tab,
             // Home, over History opened from You) is a switch: as a re-tap it refreshed History.
             boolean onItsPage = item.getItemId() == YOU_ITEM_ID ? mYouShowing
@@ -1547,7 +1547,7 @@ public class MobileBrowseActivity extends MobileActivity
             }
             // A drag now, not a tap: the tab under the finger lets go of the press.
             mNavDragging = true;
-            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 18, 170);
+            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 26, 220);
             mNavDragOver = View.NO_ID; // the tab under the finger pops out (and ticks) below
             android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
             cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
@@ -1592,7 +1592,7 @@ public class MobileBrowseActivity extends MobileActivity
             popNavTab(mNavDragOver, false);
             popNavTab(over, true);
             mNavDragOver = over;
-            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 16, 170);
+            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 24, 220);
         }
         if (mBottomNav.getBackground() instanceof NavBloom) { // the glow rides under the finger too
             int[] nav = new int[2];
