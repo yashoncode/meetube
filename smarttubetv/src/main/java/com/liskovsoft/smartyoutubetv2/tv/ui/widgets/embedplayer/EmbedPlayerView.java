@@ -526,6 +526,7 @@ public class EmbedPlayerView extends PlayerView implements PlaybackView {
         }
 
         mPlayerInitializer = new ExoPlayerInitializer(getContext());
+        mPlayerInitializer.setPreviewBuffer(true); // MEETUBE
         mPlaybackPresenter.setView(this);
         mExoPlayerController = new ExoPlayerController(getContext(), mPlaybackPresenter);
         mExoPlayerController.setOnVideoLoaded(this::onVideoLoaded);

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The focused card's caption is lit, so the whole card reads as one glowing piece. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#47FFFFFF" />
+    <corners android:bottomLeftRadius="12dp" android:bottomRightRadius="12dp" />
+</shape>

@@ -30,6 +30,12 @@ import java.util.UUID;
 public class ExoPlayerInitializer {
     private final int mMaxBufferBytes;
     private final PlayerData mPlayerData;
+    private boolean mPreviewBuffer; // MEETUBE
+
+    /** MEETUBE: card previews play a few seconds muted, so they buffer 5 s and keep nothing behind. */
+    public void setPreviewBuffer(boolean preview) {
+        mPreviewBuffer = preview;
+    }
     private final PlayerTweaksData mPlayerTweaksData;
     private VolumeBooster mVolumeBooster;
     private float mVolumeBoost;
@@ -114,7 +120,7 @@ public class ExoPlayerInitializer {
         int bufferForPlaybackMs = 500;
         int bufferForPlaybackAfterRebufferMs = 1_500;
 
-        switch (mPlayerData.getVideoBufferType()) {
+        switch (mPreviewBuffer ? PlayerData.BUFFER_LOW : mPlayerData.getVideoBufferType()) {
             case PlayerData.BUFFER_HIGHEST:
                 minBufferMs = 50_000;
                 maxBufferMs = 100_000;

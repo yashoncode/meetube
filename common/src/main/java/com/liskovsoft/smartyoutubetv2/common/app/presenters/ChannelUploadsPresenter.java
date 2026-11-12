@@ -86,6 +86,7 @@ public class ChannelUploadsPresenter extends BasePresenter<ChannelUploadsView> i
 
     @Override
     public void onVideoItemSelected(Video item) {
+        com.liskovsoft.smartyoutubetv2.common.misc.FormatPrefetch.onFocus(item); // MEETUBE
         // NOP
     }
 

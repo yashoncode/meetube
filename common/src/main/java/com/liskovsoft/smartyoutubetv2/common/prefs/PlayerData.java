@@ -725,6 +725,12 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
                 formatItem = FormatItem.VIDEO_SD_AVC_30;
             } else if (VERSION.SDK_INT <= 23 && DeviceHelpers.isVP9ResolutionSupported(1080)) {
                 formatItem = FormatItem.VIDEO_FHD_VP9_60;
+            } else if (DeviceHelpers.isAV1ResolutionSupported(2160) && DeviceHelpers.isVP9ResolutionSupported(2160)) { // AV1 height is guessed on some chips
+                // MEETUBE: a hardware AV1 decoder gets AV1: about 30% smaller than VP9 at the same picture,
+                // so the first segments arrive sooner and buffering is rarer
+                formatItem = FormatItem.VIDEO_4K_AV1_60;
+            } else if (DeviceHelpers.isAV1ResolutionSupported(1080)) {
+                formatItem = FormatItem.VIDEO_FHD_AV1_60;
             } else if (DeviceHelpers.isVP9ResolutionSupported(2160)) {
                 formatItem = FormatItem.VIDEO_4K_VP9_60;
             } else if (DeviceHelpers.isVP9ResolutionSupported(1080)) {
@@ -871,9 +877,21 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
                 persistStateInt();
             }
         }
+
+        // MEETUBE: installs that saved the old VP9 default move to the AV1 default once; a quality picked later sticks.
+        if (!mPrefs.getBoolean(AV1_DEFAULT_MIGRATED, false)) {
+            mPrefs.putBoolean(AV1_DEFAULT_MIGRATED, true);
+            FormatItem newDefault = getDefaultVideoFormat();
+            if ((FormatItem.VIDEO_FHD_VP9_60.equals(mVideoFormat) || FormatItem.VIDEO_4K_VP9_60.equals(mVideoFormat))
+                    && (newDefault == FormatItem.VIDEO_FHD_AV1_60 || newDefault == FormatItem.VIDEO_4K_AV1_60)) {
+                mVideoFormat = newDefault;
+                persistStateInt();
+            }
+        }
     }
 
     private static final String BUFFER_HIGH_MIGRATED = "meetube_buffer_high_default";
+    private static final String AV1_DEFAULT_MIGRATED = "meetube_av1_default";
 
     public void persistNow() {
         Utils.post(mPersistStateInt);

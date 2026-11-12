@@ -84,6 +84,9 @@ public class VideoCardPresenter extends LongClickPresenter {
             public void setSelected(boolean selected) {
                 updateCardBackgroundColor(this, selected);
                 super.setSelected(selected);
+                if (mBrowseGlass) {
+                    BrowseGlassStyle.setCardSelected(this, selected);
+                }
             }
         };
 

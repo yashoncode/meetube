@@ -36,8 +36,6 @@ public final class BrowseGlassStyle {
         card.setBackground(null);
         View info = card.findViewById(R.id.info_field);
         if (info != null) {
-            // Propagate actual focus without replacing Leanback's focus listener or zoom animation.
-            info.setDuplicateParentStateEnabled(true);
             info.setBackgroundResource(R.drawable.browse_glass_caption);
         }
         if (Build.VERSION.SDK_INT >= 21) {
@@ -63,9 +61,6 @@ public final class BrowseGlassStyle {
                 image.setClipToOutline(true);
             }
         }
-        if (Build.VERSION.SDK_INT >= 23) {
-            card.setForeground(card.getContext().getDrawable(R.drawable.browse_glass_card_ring));
-        }
         View badge = card.findViewById(R.id.extra_text_badge);
         if (badge != null) {
             // MEETUBE: the time badge becomes a rounded glass pill, lifted off the progress line
@@ -77,6 +72,20 @@ public final class BrowseGlassStyle {
             params.bottomMargin = Math.round(5 * density);
             params.setMarginEnd(Math.round(6 * density));
             badge.setLayoutParams(params);
+        }
+    }
+
+    /**
+     * MEETUBE: the focused card glows: a white ring around it and a lit caption, so the whole card reads as selected.
+     * Driven from setSelected because Leanback's BaseCardView strips focused/selected from its drawable state.
+     */
+    public static void setCardSelected(ComplexImageCardView card, boolean selected) {
+        View info = card.findViewById(R.id.info_field);
+        if (info != null) {
+            info.setBackgroundResource(selected ? R.drawable.browse_glass_caption_selected : R.drawable.browse_glass_caption);
+        }
+        if (Build.VERSION.SDK_INT >= 23) {
+            card.setForeground(selected ? card.getContext().getDrawable(R.drawable.browse_glass_card_ring) : null);
         }
     }
 

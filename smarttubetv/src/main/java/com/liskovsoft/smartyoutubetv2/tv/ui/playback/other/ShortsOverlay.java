@@ -65,7 +65,8 @@ public final class ShortsOverlay {
     };
 
     public ShortsOverlay(View root, PlayerEngine player) {
-        mContext = root.getContext();
+        // App context: a link opened while the old player is torn down must not load into its destroyed activity (crash)
+        mContext = root.getContext().getApplicationContext();
         mPlayer = player;
         mRoot = root;
         mSurfaceRoot = root.findViewById(R.id.surface_root);

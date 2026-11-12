@@ -95,6 +95,7 @@ public class SearchPresenter extends BasePresenter<SearchView> implements VideoG
 
     @Override
     public void onVideoItemSelected(Video item) {
+        com.liskovsoft.smartyoutubetv2.common.misc.FormatPrefetch.onFocus(item); // MEETUBE
         mCurrentVideo = item;
     }
 

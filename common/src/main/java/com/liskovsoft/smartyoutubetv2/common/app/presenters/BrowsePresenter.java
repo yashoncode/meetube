@@ -425,6 +425,7 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
 
     @Override
     public void onVideoItemSelected(Video item) {
+        com.liskovsoft.smartyoutubetv2.common.misc.FormatPrefetch.onFocus(item); // MEETUBE
         if (getView() == null || isHomeChipItem(item)) { // MEETUBE: chips are navigation, not playable items.
             return;
         }
