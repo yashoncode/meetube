@@ -2274,6 +2274,20 @@ public class MobileBrowseActivity extends MobileActivity
             addYouGroupLabel(getString(R.string.mobile_you_explore));
             addYouSectionRows(explore, 4);
         }
+
+        // MEETUBE(you page): a tiny faint link at the very bottom to About
+        TextView about = new TextView(this);
+        about.setText(R.string.mobile_you_about);
+        about.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
+        about.setTextColor(0x59FFFFFF);
+        about.setLetterSpacing(0.08f);
+        about.setGravity(android.view.Gravity.CENTER);
+        int pad = Math.round(14 * getResources().getDisplayMetrics().density);
+        about.setPadding(pad, pad * 2, pad, pad);
+        about.setOnClickListener(v -> startActivity(com.newtube.mobile.ui.settings.MobileSettingsActivity.intent(this,
+                com.newtube.mobile.ui.settings.SettingsPages.ABOUT)));
+        mYouRows.addView(about, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     /**
@@ -2296,8 +2310,8 @@ public class MobileBrowseActivity extends MobileActivity
         if (card) {
             target = new LinearLayout(this);
             target.setOrientation(LinearLayout.VERTICAL);
-            target.setBackground(new com.newtube.mobile.ui.common.AccentCard(
-                    com.newtube.mobile.ui.common.Accent.START[com.newtube.mobile.ui.common.Accent.index(this)], density));
+            target.setBackground(new com.newtube.mobile.ui.common.AccentCard(this,
+                    com.newtube.mobile.ui.common.AccentCard.YOU_GLASS));
             int pad = Math.round(7 * density);
             target.setPadding(pad, pad, pad, pad);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,

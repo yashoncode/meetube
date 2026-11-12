@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Between two groups: a gap. Each group is its own card (SettingsCards), so no hairline. -->
+<Space xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="17dp"
-    android:importantForAccessibility="no">
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_gravity="center_vertical"
-        android:background="@color/mobile_color_divider" />
-
-</FrameLayout>
+    android:layout_height="12dp"
+    android:importantForAccessibility="no" />

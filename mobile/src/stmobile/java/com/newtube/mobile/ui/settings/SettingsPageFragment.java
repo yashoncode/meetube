@@ -96,6 +96,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
 
         mAdapter = new SettingsAdapter(this);
         mList.setLayoutManager(new LinearLayoutManager(requireContext()));
+        mList.addItemDecoration(new SettingsCards(requireContext())); // MEETUBE(settings cards)
         mList.setAdapter(mAdapter);
         // Rows are rebound in place when a value changes: no cross-fade on every tap.
         mList.setItemAnimator(null);

@@ -374,6 +374,18 @@ final class AppPages {
                         rgb -> com.newtube.mobile.ui.common.RgbGlow.setRgb(context, rgb)),
                 88, Tiles.YOU_GLOW_ACCENT, Tiles.YOU_GLOW_RGB));
 
+        // MEETUBE(card style): the glass cards Settings' groups and the You page's tiles sit on.
+        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_card_style))
+                .option(context.getString(R.string.mobile_card_style_plain), context.getString(R.string.mobile_card_style_plain_desc), com.newtube.mobile.ui.common.AccentCard.PLAIN)
+                .option(context.getString(R.string.mobile_card_style_minimal),context.getString(R.string.mobile_card_style_minimal_desc), com.newtube.mobile.ui.common.AccentCard.MINIMAL)
+                .option(context.getString(R.string.mobile_card_style_ember), context.getString(R.string.mobile_card_style_ember_desc), com.newtube.mobile.ui.common.AccentCard.CORNER_EMBER)
+                .option(context.getString(R.string.mobile_card_style_frosted), context.getString(R.string.mobile_card_style_frosted_desc), com.newtube.mobile.ui.common.AccentCard.FROSTED_GLASS)
+                .option(context.getString(R.string.mobile_card_style_mist), context.getString(R.string.mobile_card_style_mist_desc), com.newtube.mobile.ui.common.AccentCard.ACCENT_MIST)
+                .option(context.getString(R.string.mobile_card_style_rim), context.getString(R.string.mobile_card_style_rim_desc), com.newtube.mobile.ui.common.AccentCard.LIT_RIM)
+                .option(context.getString(R.string.mobile_card_style_dual), context.getString(R.string.mobile_card_style_dual_desc), com.newtube.mobile.ui.common.AccentCard.DUAL_LIGHT)
+                .bind(() -> com.newtube.mobile.ui.common.AccentCard.style(context),
+                        style -> com.newtube.mobile.ui.common.AccentCard.setStyle(context, style)));
+
         // MEETUBE(progress glow): the light at the head of the seek bar and the cards' watched line.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_progress_glow),
                 context.getString(R.string.mobile_settings_progress_glow_summary),

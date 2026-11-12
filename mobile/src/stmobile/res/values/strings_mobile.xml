@@ -142,6 +142,22 @@
 
     <!-- Comments panel (under the video: CommentsPanel) -->
     <string name="mobile_comments_entry">Comments</string>
+    <string name="mobile_settings_card_style">Card style</string>
+    <string name="mobile_you_about">About MeeTube  ›</string>
+    <string name="mobile_card_style_plain">Minimal</string>
+    <string name="mobile_card_style_plain_desc">Faint glass on black with a glass edge, no accent</string>
+    <string name="mobile_card_style_minimal">MeeTube minimal</string>
+    <string name="mobile_card_style_minimal_desc">A soft accent glow in the top right, the edge warming at the bottom right</string>
+    <string name="mobile_card_style_ember">Corner ember</string>
+    <string name="mobile_card_style_ember_desc">Almost black, with one accent light pooled in the bottom right</string>
+    <string name="mobile_card_style_frosted">Frosted glass</string>
+    <string name="mobile_card_style_frosted_desc">Milky glass over a blurred accent light</string>
+    <string name="mobile_card_style_mist">Accent mist</string>
+    <string name="mobile_card_style_mist_desc">A faint accent wash fading in from the left</string>
+    <string name="mobile_card_style_rim">Lit rim</string>
+    <string name="mobile_card_style_rim_desc">The accent along the top edge only</string>
+    <string name="mobile_card_style_dual">Dual light</string>
+    <string name="mobile_card_style_dual_desc">An accent glow below and a white highlight above</string>
     <string name="mobile_hype_title">Hype this video</string>
     <string name="mobile_hype_points">Hype points</string>
     <string name="mobile_comments_title">Comments</string>

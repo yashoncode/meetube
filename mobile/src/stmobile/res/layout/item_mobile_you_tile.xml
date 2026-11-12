@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(you page): an Explore tile on the You tab, four to a line: a plain dark square on the accent card, the icon
+<!-- MEETUBE(you page): an Explore tile on the You tab, four to a line: a frosted glass square on the card, the icon
      over its name. Wired in MobileBrowseActivity.youSectionRow(). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/mobile_you_row_glass"
