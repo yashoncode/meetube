@@ -595,6 +595,8 @@
     <string name="mobile_settings_tv_permission">Allow local network access to find and connect to your TV.</string>
     <string name="mobile_settings_tv_footer">You can turn debugging off on the TV afterwards.</string>
     <string name="mobile_settings_seek_line">Progress line under the video</string>
+    <string name="mobile_settings_most_replayed">Most replayed graph</string>
+    <string name="mobile_settings_most_replayed_summary">While you drag the seek bar, a wave above it shows the parts people watch the most</string>
     <string name="mobile_settings_seek_line_summary">The thin played line on the video edge while the controls are hidden, in portrait</string>
     <string name="mobile_settings_progress_color">Accent colour palette</string>
     <string name="mobile_settings_progress_color_player">Player progress line</string>

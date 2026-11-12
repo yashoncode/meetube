@@ -79,6 +79,9 @@ public class PlayerTimeBar extends View implements TimeBar {
     private static final float GAP_DRAGGING_DP = 3f;
     private static final float SCRUBBER_DP = 12f;
     private static final float SCRUBBER_DRAGGING_DP = 28f;
+    /** MEETUBE(most replayed): the graph's full height, and its gap above the dragged bar. */
+    private static final float HEAT_DP = 24f;
+    private static final float HEAT_GAP_DP = 4f;
     /** The pink tail of the played track, ending at the dot. */
     private static final float TAIL_DP = 40f;
     /*
@@ -145,6 +148,12 @@ public class PlayerTimeBar extends View implements TimeBar {
     private long mBufferedPosition;
     /** Chapter starts after 0, ascending. */
     private long[] mChapterStarts = new long[0];
+    /** MEETUBE(most replayed): the graph's scores (0-1), evenly over the video; null = none. */
+    @Nullable private float[] mHeatmap;
+    private final android.graphics.Path mHeatPath = new android.graphics.Path();
+    /** ...its top edge alone, for the glass rim. */
+    private final android.graphics.Path mHeatEdge = new android.graphics.Path();
+    private final Paint mHeatPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private long mKeyTimeIncrement = C.TIME_UNSET;
     private int mKeyCountIncrement = DEFAULT_KEY_COUNT;
@@ -220,6 +229,8 @@ public class PlayerTimeBar extends View implements TimeBar {
         mDensity = getResources().getDisplayMetrics().density;
         mTouchDensity = context.getApplicationContext().getResources().getConfiguration().densityDpi / 160f;
         mTailPx = dp(TAIL_DP);
+        mHeatPaint.setStrokeWidth(dp(1.5f));
+        mHeatPaint.setStrokeJoin(Paint.Join.ROUND);
         applyColor(com.newtube.mobile.ui.common.ProgressColor.videoKey(context));
         setFocusable(true);
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
@@ -350,6 +361,22 @@ public class PlayerTimeBar extends View implements TimeBar {
         }
         mChapterStarts = Arrays.copyOf(starts, count);
         invalidate();
+    }
+
+    /** MEETUBE(most replayed): the scores over the video (null clears); drawn while the bar is dragged. */
+    public void setHeatmap(@Nullable float[] scores) {
+        mHeatmap = scores != null && scores.length > 1 ? scores : null;
+        invalidate();
+    }
+
+    /** At {@code positionMs}, the graph is at (or within a hair of) its top: YouTube's "Most replayed". */
+    public boolean isMostReplayedAt(long positionMs) {
+        float[] scores = mHeatmap;
+        if (scores == null || mDuration <= 0 || mDuration == C.TIME_UNSET) {
+            return false;
+        }
+        int i = (int) Math.min(scores.length - 1, Math.max(0, positionMs * scores.length / mDuration));
+        return scores[i] >= 0.95f;
     }
 
     /** SponsorBlock ranges (progress fractions + a resolved color); null clears them. */
@@ -487,6 +514,10 @@ public class PlayerTimeBar extends View implements TimeBar {
         mTailMatrix.setTranslate(playedX - mTailPx, 0f);
         mPlayedPaint.getShader().setLocalMatrix(mTailMatrix);
 
+        if (mHeatmap != null && mDrag > 0f && hasDuration) {
+            drawHeatmap(canvas, left, right, top - dp(HEAT_GAP_DP), playedX);
+        }
+
         // The track, one piece per chapter: played, buffered, then the rest.
         int chapters = hasDuration ? mChapterStarts.length : 0;
         for (int i = 0; i <= chapters; i++) {
@@ -555,6 +586,55 @@ public class PlayerTimeBar extends View implements TimeBar {
                 mPaint.setColor(mHeadColor);
                 canvas.drawCircle(cx, (top + bottom) / 2f, radius, mPaint);
             }
+        }
+    }
+
+    /**
+     * MEETUBE(most replayed): a soft wave rising from {@code base}, grown in with the drag (this view
+     * draws unclipped, so it sits over the video above the bar). Brighter up to the dot, like YouTube's.
+     */
+    private void drawHeatmap(Canvas canvas, float left, float right, float base, float playedX) {
+        float[] scores = mHeatmap;
+        float height = dp(HEAT_DP) * mDrag;
+        float step = (right - left) / scores.length;
+        mHeatPath.reset();
+        mHeatEdge.reset();
+        mHeatPath.moveTo(left, base);
+        float prevX = left;
+        float prevY = base - Math.max(0.04f, scores[0]) * height;
+        mHeatPath.lineTo(prevX, prevY);
+        mHeatEdge.moveTo(prevX, prevY);
+        for (int i = 0; i < scores.length; i++) {
+            float x = left + step * (i + 0.5f);
+            float y = base - Math.max(0.04f, scores[i]) * height; // a hairline even where nobody rewatched
+            mHeatPath.quadTo(prevX, prevY, (prevX + x) / 2f, (prevY + y) / 2f); // smooth: through the midpoints
+            mHeatEdge.quadTo(prevX, prevY, (prevX + x) / 2f, (prevY + y) / 2f);
+            prevX = x;
+            prevY = y;
+        }
+        mHeatPath.quadTo(prevX, prevY, right, prevY);
+        mHeatEdge.quadTo(prevX, prevY, right, prevY);
+        mHeatPath.lineTo(right, base);
+        mHeatPath.close();
+        // Glass: frosted white thickest at the crest and fading to the bar, a bright rim on top;
+        // up to the dot it is lit more, as on YouTube.
+        float crest = base - height;
+        mHeatPaint.setAlpha(Math.round(255 * mDrag));
+        for (int part = 0; part < 2; part++) {
+            boolean played = part == 0;
+            canvas.save();
+            canvas.clipRect(played ? left : playedX, crest - dp(3), played ? playedX : right, base);
+            mHeatPaint.setStyle(Paint.Style.FILL);
+            mHeatPaint.setShader(new LinearGradient(0, crest, 0, base,
+                    played ? 0x8CFFFFFF : 0x4DFFFFFF, played ? 0x26FFFFFF : 0x0DFFFFFF, Shader.TileMode.CLAMP));
+            canvas.drawPath(mHeatPath, mHeatPaint);
+            mHeatPaint.setShader(null);
+            mHeatPaint.setStyle(Paint.Style.STROKE);
+            mHeatPaint.setColor(played ? 0xF2FFFFFF : 0x99FFFFFF);
+            mHeatPaint.setAlpha(Math.round(Color.alpha(mHeatPaint.getColor()) * mDrag));
+            canvas.drawPath(mHeatEdge, mHeatPaint);
+            mHeatPaint.setAlpha(Math.round(255 * mDrag));
+            canvas.restore();
         }
     }
 
