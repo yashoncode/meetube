@@ -107,6 +107,8 @@ final class Tiles {
     // The You page's top: its corner light in the accent, or in shifting colours.
     static final int YOU_GLOW_ACCENT = 47;
     static final int YOU_GLOW_RGB = 48;
+    // MEETUBE(youtube mode): a screen with a square-cornered video and the bar docked flat at its foot.
+    static final int YOUTUBE_MODE = 49;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -818,6 +820,44 @@ final class Tiles {
                         canvas.drawCircle(x, cy - bar.height() * 0.12f, dot, mPaint);
                         block(canvas, x - dot * 1.8f, cy + bar.height() * 0.12f, x + dot * 1.8f, cy + bar.height() * 0.22f, color);
                     }
+                    break;
+                }
+                case YOUTUBE_MODE: {
+                    RectF screen = new RectF(b.left + h * 0.08f, b.top + h * 0.08f, b.right - h * 0.08f, b.bottom - h * 0.08f);
+                    float round = h * 0.16f;
+                    canvas.save();
+                    mPath.reset();
+                    mPath.addRoundRect(screen, round, round, Path.Direction.CW);
+                    canvas.clipPath(mPath);
+                    mPaint.setStyle(Paint.Style.FILL);
+                    mPaint.setColor(mScreen);
+                    canvas.drawRect(screen, mPaint);
+                    // A video edge to edge, square corners, a play mark on it, its title under it.
+                    float videoBottom = screen.top + screen.width() * 0.5625f * 0.62f;
+                    mPaint.setColor(mBlock);
+                    canvas.drawRect(screen.left, screen.top + h * 0.1f, screen.right, videoBottom, mPaint);
+                    float pcx = screen.centerX();
+                    float pcy = (screen.top + h * 0.1f + videoBottom) / 2;
+                    float tri = h * 0.07f;
+                    mPath.reset();
+                    mPath.moveTo(pcx - tri * 0.7f, pcy - tri);
+                    mPath.lineTo(pcx + tri, pcy);
+                    mPath.lineTo(pcx - tri * 0.7f, pcy + tri);
+                    mPath.close();
+                    mPaint.setColor(ACCENT);
+                    canvas.drawPath(mPath, mPaint);
+                    float in = h * 0.1f;
+                    block(canvas, screen.left + in, videoBottom + h * 0.07f, screen.right - in * 3, videoBottom + h * 0.15f, mLine);
+                    // The bar: flat, full width, on the screen's bottom edge, one tab lit.
+                    float barTop = screen.bottom - h * 0.2f;
+                    mPaint.setColor(mBlock);
+                    canvas.drawRect(screen.left, barTop, screen.right, screen.bottom, mPaint);
+                    for (int i = 0; i < 4; i++) {
+                        mPaint.setColor(i == 0 ? ACCENT : mLine);
+                        canvas.drawCircle(screen.left + screen.width() * (i + 0.5f) / 4,
+                                (barTop + screen.bottom) / 2, h * 0.035f, mPaint);
+                    }
+                    canvas.restore();
                     break;
                 }
                 case FX_TOP_BAR: {

@@ -143,7 +143,8 @@ public final class NavTabs {
 
     /** MEETUBE(search place): Settings > Customization > Tabs - Search in the top bar instead of the bottom one. */
     public static boolean searchOnTop(Context context) {
-        return prefs(context).getBoolean(KEY_SEARCH_ON_TOP, false);
+        // MEETUBE(youtube mode): Search sits in the top bar, as on YouTube.
+        return com.newtube.mobile.ui.common.YouTubeMode.isOn(context) || prefs(context).getBoolean(KEY_SEARCH_ON_TOP, false);
     }
 
     /** MEETUBE(search fab): the floating Search, out while the bar is slid away, at the left corner (else the right). */

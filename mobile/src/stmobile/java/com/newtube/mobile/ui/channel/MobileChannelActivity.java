@@ -729,6 +729,18 @@ public class MobileChannelActivity extends MobileActivity
         }
         ((android.view.ViewGroup.MarginLayoutParams) findViewById(R.id.mobile_mini_player).getLayoutParams())
                 .bottomMargin = clearance;
+        pill.setVisibility(View.VISIBLE);
+        if (com.newtube.mobile.ui.common.YouTubeMode.isOn(this)) {
+            // MEETUBE(youtube mode): docked to the bottom edge; the page ends above it.
+            mNavDocked = true;
+            refreshContentInsets();
+            int gap = Math.round(10 * getResources().getDisplayMetrics().density);
+            com.newtube.mobile.ui.common.YouTubeMode.dockBar(pill, height -> {
+                com.newtube.mobile.ui.common.YouTubeMode.padBottom(mGrid, height);
+                com.newtube.mobile.ui.common.YouTubeMode.padBottom(findViewById(R.id.mobile_channel_peek), height);
+                com.newtube.mobile.ui.common.YouTubeMode.marginBottom(findViewById(R.id.mobile_mini_player), height + gap);
+            });
+        }
         com.newtube.mobile.ui.common.NavHider navHider = new com.newtube.mobile.ui.common.NavHider(pill);
         navHider.setOnSlide(navY -> { // MEETUBE(issue #125): the mini card rides the nav bar, as on Home
             if (mMiniPlayer != null) { // null-safe, as Search's (whose pill comes first)
@@ -736,7 +748,14 @@ public class MobileChannelActivity extends MobileActivity
             }
         });
         mGrid.addOnScrollListener(navHider);
-        pill.setVisibility(View.VISIBLE);
+    }
+
+    /** MEETUBE(youtube mode): the docked tab bar, there only when the channel came from Browse. */
+    private boolean mNavDocked;
+
+    @Override
+    protected boolean shouldInsetContentForNavigationBar() {
+        return !mNavDocked;
     }
 
     /**

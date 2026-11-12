@@ -39,6 +39,7 @@
 
     <!-- MEETUBE(glass): BitChord's glass tint (#121212 at 40%), 14% white hairline, 14% white lit tab. -->
     <color name="meetube_glass_tint">#66000000</color>
+    <color name="meetube_youtube_nav_tint">#C70A0A0A</color>
     <color name="meetube_glass_button">#66000000</color>
     <color name="meetube_watch_card">#17FFFFFF</color>
     <color name="meetube_search_glass_tint">#26FFFFFF</color>

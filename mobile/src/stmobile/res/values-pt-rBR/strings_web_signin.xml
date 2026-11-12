@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_web_signin_title">Entrar no YouTube</string>
+    <string name="mobile_web_signin_privacy">Esta é a página do próprio Google. O MeeTube nunca vê sua senha.</string>
+    <string name="mobile_web_signin_loading">Abrindo o Google</string>
+    <string name="mobile_web_signin_finishing">Concluindo o login</string>
+    <string name="mobile_web_signin_failed">Não foi possível concluir o login no YouTube. Verifique sua conexão e tente de novo.</string>
+    <string name="mobile_web_signin_retry">Tentar de novo</string>
+    <string name="mobile_web_signin_explain_title">Mais um login</string>
+    <string name="mobile_web_signin_explain_need">Enviar mensagens no chat ao vivo e curtir publicações exige que você entre na página web do próprio YouTube. Leva um minuto e você só precisa fazer isso uma vez.</string>
+    <string name="mobile_web_signin_explain_current">Seu login atual continua como está e segue cuidando de vídeos, histórico e inscrições.</string>
+    <string name="mobile_web_signin_explain_risk">Use a mesma conta do Google. O Google não aprova apps não oficiais, então há um pequeno risco para a conta que você usa.</string>
+    <string name="mobile_web_signin_google">Entrar com o Google</string>
+    <string name="mobile_web_signin_not_now">Agora não</string>
+    <string name="mobile_web_signin_sign_out">Sair do login web do YouTube?</string>
+    <string name="mobile_web_signin_sign_out_confirm">Você vai precisar entrar de novo para enviar mensagens no chat ao vivo. Seu login atual no MeeTube continua como está.</string>
+    <string name="mobile_web_signin_sign_out_failed">Não foi possível sair. Tente de novo.</string>
+    <string name="mobile_web_signin_signed_out">Saiu do login web do YouTube</string>
+    <string name="mobile_web_signin_add">Adicionar conta web</string>
+    <string name="mobile_web_signin_choose">Conversar como</string>
+    <string name="mobile_web_signin_switch">Trocar conta web</string>
+    <string name="mobile_web_signin_expired">Seu login web no YouTube expirou. Entre de novo.</string>
+    <string name="mobile_chat_as">Conversar como %1$s</string>
+    <string name="mobile_chat_hint">Diga algo</string>
+    <string name="mobile_chat_send">Enviar mensagem</string>
+    <string name="mobile_chat_send_failed">Não foi possível enviar sua mensagem. Tente de novo.</string>
+    <string name="mobile_chat_not_ready">O chat ainda não está pronto. Tente de novo em instantes.</string>
+</resources>

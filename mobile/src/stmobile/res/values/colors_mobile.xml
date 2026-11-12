@@ -79,6 +79,8 @@
 
     <!-- MEETUBE(glass): the floating-glass surfaces (light side; dark in values-night). -->
     <color name="meetube_glass_tint">#66FAFAFA</color>
+    <!-- MEETUBE(youtube mode): the docked bar's frost, denser (dark in values-night). -->
+    <color name="meetube_youtube_nav_tint">#D9F7F7F8</color>
     <!-- MEETUBE(glass): You's Accounts / Settings and avatar disc: a faint grey glass on a light page (flat white washed out on the glow). -->
     <color name="meetube_glass_button">#12000000</color>
     <!-- MEETUBE(glass): the watch page's Comments card, milky glass the page shows through. -->

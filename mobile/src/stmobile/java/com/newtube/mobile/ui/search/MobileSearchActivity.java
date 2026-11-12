@@ -246,6 +246,16 @@ public class MobileSearchActivity extends MobileActivity
         mGrid.setPadding(mGrid.getPaddingLeft(), mGrid.getPaddingTop(), mGrid.getPaddingRight(), clearance);
         ((android.view.ViewGroup.MarginLayoutParams) findViewById(R.id.mobile_mini_player).getLayoutParams())
                 .bottomMargin = clearance;
+        if (com.newtube.mobile.ui.common.YouTubeMode.isOn(this)) {
+            // MEETUBE(youtube mode): docked to the bottom edge; the results end above it.
+            mNavDocked = true;
+            refreshContentInsets();
+            int gap = Math.round(10 * getResources().getDisplayMetrics().density);
+            com.newtube.mobile.ui.common.YouTubeMode.dockBar(pill, height -> {
+                com.newtube.mobile.ui.common.YouTubeMode.padBottom(mGrid, height);
+                com.newtube.mobile.ui.common.YouTubeMode.marginBottom(findViewById(R.id.mobile_mini_player), height + gap);
+            });
+        }
         com.newtube.mobile.ui.common.NavHider navHider = new com.newtube.mobile.ui.common.NavHider(pill);
         navHider.setOnSlide(navY -> { // MEETUBE(issue #125): the mini card rides the nav bar, as on Home
             if (mMiniPlayer != null) { // made after this pill on Search
@@ -264,6 +274,13 @@ public class MobileSearchActivity extends MobileActivity
     }
 
     private View mNavPill;
+    /** MEETUBE(youtube mode): the docked tab bar, there only when Search came from Browse. */
+    private boolean mNavDocked;
+
+    @Override
+    protected boolean shouldInsetContentForNavigationBar() {
+        return !mNavDocked;
+    }
 
     /**
      * NEWTUBE(motion): the results area ends at the keyboard's top edge and follows it frame by
@@ -315,7 +332,8 @@ public class MobileSearchActivity extends MobileActivity
     private void applyImePadding(View area, WindowInsetsCompat insets) {
         int ime = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
         int bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
-        int bottom = Math.max(0, ime - bars);
+        // MEETUBE(youtube mode): with the bar docked the content reaches the bottom edge, bars and all.
+        int bottom = Math.max(0, ime - (mNavDocked ? 0 : bars));
         if (area.getPaddingBottom() != bottom) {
             area.setPadding(area.getPaddingLeft(), area.getPaddingTop(), area.getPaddingRight(), bottom);
         }

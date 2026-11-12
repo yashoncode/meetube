@@ -111,6 +111,11 @@ final class AppPages {
         // MEETUBE(customize): the pickers are tiles on the page, a picture per option, and every
         // switch has a picture of what it turns on (Tiles).
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_customize_look)));
+        // MEETUBE(youtube mode): square video cards and the bottom bar docked flat, frosted.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_youtube_mode),
+                context.getString(R.string.mobile_settings_youtube_mode_summary),
+                () -> com.newtube.mobile.ui.common.YouTubeMode.isOn(context),
+                on -> com.newtube.mobile.ui.common.YouTubeMode.setOn(context, on)).needsRestart(), Tiles.YOUTUBE_MODE));
         rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_theme))
                 .option(context.getString(R.string.mobile_theme_system), ThemeMode.SYSTEM)
                 .option(context.getString(R.string.mobile_theme_light), ThemeMode.LIGHT)

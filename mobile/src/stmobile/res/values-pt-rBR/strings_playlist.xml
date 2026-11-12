@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_playlist_by_owner">por %1$s</string>
+    <string name="mobile_playlist_type">Playlist</string>
+    <string name="mobile_playlist_download_all">Baixar tudo</string>
+    <string name="mobile_playlist_download_confirm">Baixar %1$d vídeos?</string>
+    <string name="mobile_playlist_download_quality">Qualidade de download para todos os vídeos</string>
+    <string name="mobile_playlist_download_best">Melhor disponível</string>
+    <string name="mobile_playlist_download_queued">%1$d vídeos na fila</string>
+    <string name="mobile_playlist_download_skipped">%1$d vídeos na fila. %2$d indisponíveis.</string>
+    <string name="mobile_playlist_load_failed">Não foi possível carregar a playlist completa. Tente de novo.</string>
+    <string name="mobile_playlist_sort">Ordenar por</string>
+    <string name="mobile_playlist_sort_manual">Manual</string>
+    <string name="mobile_playlist_sort_newest">Data de publicação (mais recentes)</string>
+    <string name="mobile_playlist_sort_oldest">Data de publicação (mais antigos)</string>
+    <string name="mobile_playlist_sort_popular">Mais populares</string>
+    <string name="mobile_playlist_filter_all">Todos</string>
+    <string name="mobile_playlist_filter_videos">Vídeos</string>
+    <string name="mobile_playlist_filter_shorts">Shorts</string>
+    <string name="mobile_playlist_download_select">Selecionar vídeos</string>
+    <string name="mobile_playlist_select_all">Selecionar tudo</string>
+    <string name="mobile_playlist_selected">%1$d selecionados</string>
+    <string name="mobile_playlist_download_selected">Baixar</string>
+    <string name="mobile_playlist_add_videos">Adicionar vídeos</string>
+    <string name="mobile_playlist_add_hint">Pesquise para adicionar a %1$s</string>
+    <string name="mobile_playlist_loading">Carregando playlist</string>
+    <plurals name="mobile_playlist_video_count">
+        <item quantity="one">%d vídeo</item>
+        <item quantity="many">%d de vídeos</item>
+        <item quantity="other">%d vídeos</item>
+    </plurals>
+</resources>

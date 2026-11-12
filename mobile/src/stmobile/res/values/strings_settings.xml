@@ -623,4 +623,6 @@
     <string name="mobile_web_signin_setting">YouTube web sign-in</string>
     <string name="mobile_web_signin_optional">Optional. Needed to send live chat messages</string>
     <string name="mobile_web_signin_signed_as">Signed in as %1$s</string>
+    <string name="mobile_settings_youtube_mode">YouTube mode</string>
+    <string name="mobile_settings_youtube_mode_summary">Square video cards everywhere and the bottom bar docked to the bottom edge, frosted glass, like YouTube</string>
 </resources>

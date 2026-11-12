@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_channel_posts">Posty</string>
+    <string name="mobile_posts_title">Posty: %1$s</string>
+    <string name="mobile_posts_empty">Brak postów</string>
+    <string name="mobile_posts_image">Obraz posta</string>
+    <string name="mobile_posts_likes">Polubienia: %1$s</string>
+    <string name="mobile_posts_replies">Odpowiedzi: %1$s</string>
+    <string name="mobile_posts_like">Polub ten post</string>
+    <string name="mobile_posts_like_failed">Nie udało się polubić posta. Spróbuj ponownie.</string>
+    <string name="mobile_posts_comments_read_only">Polubienia i odpowiedzi na komentarze pod postami nie są jeszcze dostępne</string>
+    <string name="mobile_comments_just_now">Przed chwilą</string>
+    <plurals name="mobile_posts_images">
+        <item quantity="one">%1$d obraz</item>
+        <item quantity="few">%1$d obrazy</item>
+        <item quantity="many">%1$d obrazów</item>
+        <item quantity="other">%1$d obrazu</item>
+    </plurals>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_channel_posts">Publicações</string>
+    <string name="mobile_posts_title">Publicações de %1$s</string>
+    <string name="mobile_posts_empty">Nenhuma publicação ainda</string>
+    <string name="mobile_posts_image">Imagem da publicação</string>
+    <string name="mobile_posts_likes">%1$s curtidas</string>
+    <string name="mobile_posts_replies">%1$s respostas</string>
+    <string name="mobile_posts_like">Curtir esta publicação</string>
+    <string name="mobile_posts_like_failed">Não foi possível curtir esta publicação. Tente de novo.</string>
+    <string name="mobile_posts_comments_read_only">Curtir e responder aos comentários das publicações ainda não está disponível</string>
+    <string name="mobile_comments_just_now">Agora mesmo</string>
+    <plurals name="mobile_posts_images">
+        <item quantity="one">%1$d imagem</item>
+        <item quantity="many">%1$d de imagens</item>
+        <item quantity="other">%1$d imagens</item>
+    </plurals>
+</resources>
