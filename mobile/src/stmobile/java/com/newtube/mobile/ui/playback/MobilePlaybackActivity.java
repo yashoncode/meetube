@@ -5472,6 +5472,10 @@ public class MobilePlaybackActivity extends MobileActivity
         // Speed: the native preset sheet; the exhaustive TV dialog nests behind its "More speeds".
         addMenuRow(content, sheet, R.drawable.ic_player_speed, R.string.mobile_player_speed,
                 currentSpeedLabel(), true, this::showSpeedSheet);
+        // MEETUBE(issue #236): Settings > Player's equalizer, here so a preset fits the video playing.
+        addMenuRow(content, sheet, R.drawable.ic_player_equalizer, R.string.mobile_settings_equalizer,
+                com.newtube.mobile.ui.settings.EqualizerSheet.summary(this).toString(), true,
+                () -> showPlayerSheet(com.newtube.mobile.ui.settings.EqualizerSheet.create(this)));
         addMenuRow(content, sheet, R.drawable.ic_player_autoplay, R.string.mobile_player_autoplay,
                 stateLabel(isAutoplayOn()), false, this::toggleAutoplay);
         addMenuRow(content, sheet, R.drawable.ic_player_sleep_timer, R.string.mobile_player_sleep_timer,

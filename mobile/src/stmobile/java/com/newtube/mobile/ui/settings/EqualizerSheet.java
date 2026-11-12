@@ -25,7 +25,7 @@ import java.text.DecimalFormat;
 import java.util.Locale;
 
 /** MEETUBE(issue #177): the phone's device equalizer, applied live to the playing session. */
-final class EqualizerSheet {
+public final class EqualizerSheet {
     private final Context mContext;
     private final LayoutInflater mInflater;
     private final ChipGroup mPresets;
@@ -84,7 +84,15 @@ final class EqualizerSheet {
     }
 
     static void show(SettingsPageFragment page) {
-        BottomSheetDialog sheet = new BottomSheetDialog(page.requireContext());
+        BottomSheetDialog sheet = create(page.requireContext());
+        sheet.setOnDismissListener(dialog -> page.rebuild());
+        page.showDialog(sheet);
+        sheet.show();
+    }
+
+    /** MEETUBE(issue #236): the same sheet from the player's gear menu; the caller shows it. */
+    public static BottomSheetDialog create(Context context) {
+        BottomSheetDialog sheet = new BottomSheetDialog(context);
         View content = LayoutInflater.from(sheet.getContext()).inflate(R.layout.sheet_mobile_equalizer, null);
         new EqualizerSheet(sheet.getContext(), content);
         sheet.setContentView(content);
@@ -92,14 +100,12 @@ final class EqualizerSheet {
         sheet.setOnShowListener(dialog -> MobileSheets.expandTo(sheet, 0.85f));
         sheet.getBehavior().setSkipCollapsed(true);
         sheet.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);
-        sheet.setOnDismissListener(dialog -> page.rebuild());
         FocusRing.install(sheet.getWindow());
         FocusRing.focusFirstRow(sheet.getWindow());
-        page.showDialog(sheet);
-        sheet.show();
+        return sheet;
     }
 
-    static CharSequence summary(Context context) {
+    public static CharSequence summary(Context context) {
         if (!AudioPreferences.isEqualizerEnabled(context)) {
             return context.getString(R.string.mobile_settings_off);
         }
