@@ -636,6 +636,13 @@
                     style="@style/Widget.MeeTube.GlassSpinner"
                     android:id="@+id/mobile_player_progress" />
 
+                <!-- MEETUBE(seek pill): during a double-tap burst the spinner's place shows where
+                     the video lands (MobilePlaybackActivity.showSeekTime). -->
+                <TextView
+                    android:id="@+id/mobile_player_seek_time"
+                    style="@style/MobilePlayerPill"
+                    android:visibility="gone" />
+
                 <TextView
                     android:id="@+id/mobile_player_setup_hint"
                     android:layout_width="wrap_content"
