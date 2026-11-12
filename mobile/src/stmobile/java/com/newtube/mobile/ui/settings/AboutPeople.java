@@ -61,6 +61,7 @@ final class AboutPeople {
         rows.add(SettingsRow.header(context.getString(R.string.mobile_about_contributors_code)));
         rows.add(person("Capricornus007", context.getString(R.string.mobile_about_credit_zh_tw)));
         rows.add(person("MAKAKAIglitch", context.getString(R.string.mobile_about_credit_ru)));
+        rows.add(person("m0in01", context.getString(R.string.mobile_about_credit_icons)));
         rows.add(SettingsRow.header(context.getString(R.string.mobile_about_contributors_built_on)));
         rows.add(person("yuliskov", context.getString(R.string.mobile_about_credit_smarttube)));
         rows.add(person("aleixrodriala", context.getString(R.string.mobile_about_credit_newtube)));

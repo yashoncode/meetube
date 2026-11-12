@@ -32,7 +32,7 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 public final class AppIcon {
     /**
      * Alias names; the first is the default. The aliases keep their first names so a pick survives
-     * updates; Settings shows the icons' own names (tools/icons_from_pngs.py has the mapping).
+     * updates; Settings shows the icons' own names.
      */
     public static final String DEFAULT = "Default";
     public static final String CLASSIC = "Classic";
@@ -42,14 +42,24 @@ public final class AppIcon {
     public static final String PLAY = "Play";
     public static final String PLAY_DARK = "PlayDark";
     public static final String BLAZE = "Blaze";
-    private static final String[] ICONS = {DEFAULT, CLASSIC, FANTASY, GLASS_HEART, RUBY, PLAY, PLAY_DARK, BLAZE};
+    public static final String CHROME = "Chrome";
+    public static final String RED_CRT = "RedCrt";
+    public static final String PIXEL_PLAY = "PixelPlay";
+    public static final String STARRY_NIGHT = "StarryNight";
+    public static final String VICE_CITY = "ViceCity";
+    private static final String[] ICONS = {DEFAULT, CLASSIC, FANTASY, GLASS_HEART, RUBY, PLAY, PLAY_DARK, BLAZE,
+            RED_CRT, CHROME, PIXEL_PLAY, STARRY_NIGHT, VICE_CITY};
     // Per icon, in ICONS' order: launcher icon, brand-pill mark.
     private static final int[] LAUNCHERS = {R.mipmap.app_icon, R.mipmap.app_icon_classic, R.mipmap.app_icon_fantasy,
             R.mipmap.app_icon_glass_heart, R.mipmap.app_icon_ruby, R.mipmap.app_icon_play,
-            R.mipmap.app_icon_play_dark, R.mipmap.app_icon_blaze};
+            R.mipmap.app_icon_play_dark, R.mipmap.app_icon_blaze, R.mipmap.app_icon_red_crt,
+            R.mipmap.app_icon_chrome, R.mipmap.app_icon_pixel_play, R.mipmap.app_icon_starry_night,
+            R.mipmap.app_icon_gta_vi};
     private static final int[] MARKS = {R.drawable.ic_meetube_mark_default, R.drawable.ic_meetube_mark_classic,
             R.drawable.ic_meetube_mark_art, R.drawable.ic_meetube_mark_glass_heart, R.drawable.ic_meetube_mark_ruby,
-            R.drawable.ic_meetube_mark_play, R.drawable.ic_meetube_mark_play_dark, R.drawable.ic_meetube_mark_blaze};
+            R.drawable.ic_meetube_mark_play, R.drawable.ic_meetube_mark_play_dark, R.drawable.ic_meetube_mark_blaze,
+            R.mipmap.app_icon_red_crt, R.mipmap.app_icon_chrome, R.mipmap.app_icon_pixel_play,
+            R.mipmap.app_icon_starry_night, R.mipmap.app_icon_gta_vi};
     private static final String PREFIX = "com.newtube.mobile.icon.";
     private static final String PREFS = "meetube_app_icon";
     private static final String KEY_PENDING = "pending";
