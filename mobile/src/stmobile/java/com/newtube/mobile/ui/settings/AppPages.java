@@ -161,16 +161,16 @@ final class AppPages {
                 () -> WatchedBar.isShown(context), on -> WatchedBar.setShown(context, on)).needsRestart(), Tiles.FX_WATCHED));
 
         // MEETUBE(badge icons): the waves before "Mix" and the note before a music video's time.
-        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_badge_icons),
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_badge_icons),
                 context.getString(R.string.mobile_settings_badge_icons_summary),
                 () -> com.newtube.mobile.ui.common.BadgeIcons.isShown(context),
-                on -> com.newtube.mobile.ui.common.BadgeIcons.setShown(context, on)).needsRestart());
+                on -> com.newtube.mobile.ui.common.BadgeIcons.setShown(context, on)).needsRestart(), Tiles.FX_BADGES));
 
         // MEETUBE(seek pill): off brings back the original double-tap ripple.
-        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_seek_pill),
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_seek_pill),
                 context.getString(R.string.mobile_settings_seek_pill_summary),
                 () -> com.newtube.mobile.ui.common.SeekStyle.isPill(context),
-                on -> com.newtube.mobile.ui.common.SeekStyle.setPill(context, on)));
+                on -> com.newtube.mobile.ui.common.SeekStyle.setPill(context, on)), Tiles.FX_SEEK_PILL));
 
         // MEETUBE(issue #120): the pop when a pull-to-refresh lets go; off by default.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_refresh_sound),
@@ -292,20 +292,21 @@ final class AppPages {
                 56, Tiles.CHIPS_SEGMENT, Tiles.CHIPS_PILLS));
 
         // MEETUBE(seek thumb): the player seek bar's dot, or a picture the user picks.
-        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_seek_thumb))
+        rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_seek_thumb))
                 .option(context.getString(R.string.mobile_settings_seek_thumb_dot), null,
                         com.newtube.mobile.ui.playback.SeekThumb.DOT)
                 .option(context.getString(R.string.mobile_settings_seek_thumb_picture),
                         context.getString(R.string.mobile_settings_seek_thumb_picture_desc),
                         com.newtube.mobile.ui.playback.SeekThumb.PICTURE)
                 .bind(() -> com.newtube.mobile.ui.playback.SeekThumb.type(context),
-                        v -> com.newtube.mobile.ui.playback.SeekThumb.setType(context, v)));
+                        v -> com.newtube.mobile.ui.playback.SeekThumb.setType(context, v)),
+                72, Tiles.SEEK_DOT, Tiles.SEEK_PICTURE));
 
         // MEETUBE(issue #200): the seek bar's line on the video's bottom edge while the controls hide.
-        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_seek_line),
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_seek_line),
                 context.getString(R.string.mobile_settings_seek_line_summary),
                 () -> com.newtube.mobile.ui.playback.PlayerTimeBar.isLineOn(context),
-                on -> com.newtube.mobile.ui.playback.PlayerTimeBar.setLineOn(context, on)));
+                on -> com.newtube.mobile.ui.playback.PlayerTimeBar.setLineOn(context, on)), Tiles.FX_SEEK_LINE));
 
         // MEETUBE(issue #188): the floating mini player's type (a pinch on the Default card sizes it).
         rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_mini_type))

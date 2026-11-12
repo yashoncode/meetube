@@ -3,6 +3,7 @@
      over it as frosted glass (Glass.blur), so the rows scroll under them. A GlassSource may not
      hold the glass that samples it, hence the FrameLayout around both. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:transitionGroup="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"

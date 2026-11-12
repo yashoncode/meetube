@@ -33,7 +33,7 @@ public final class Motion {
     /** A page arriving out of frosted glass (a bottom-bar tab switch, {@link #frostIn}). */
     public static final long FROST_MS = 320;
     /** How frosted that page starts, in dp of blur radius. */
-    private static final float FROST_BLUR_DP = 14f;
+    static final float FROST_BLUR_DP = 14f;
 
     /** The like "pop": a quick press-in, overshoot and settle (the comments' thumb uses the same). */
     public static final long POP_MS = 260;
