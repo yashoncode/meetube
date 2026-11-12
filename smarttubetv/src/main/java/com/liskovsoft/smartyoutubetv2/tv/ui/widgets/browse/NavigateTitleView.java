@@ -137,7 +137,19 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
     @Override
     public void setBadgeDrawable(Drawable drawable) {
         super.setBadgeDrawable(drawable);
-        findViewById(R.id.title_brand).setVisibility(drawable != null ? View.GONE : View.VISIBLE);
+        updateBrand();
+    }
+
+    @Override
+    public void setTitle(CharSequence titleText) {
+        super.setTitle(titleText);
+        updateBrand();
+    }
+
+    /** MEETUBE: the text fallback shows only with a title: empty, its pill was a grey dot over the clock. */
+    private void updateBrand() {
+        boolean text = getBadgeDrawable() == null && getTitle() != null && getTitle().length() > 0;
+        findViewById(R.id.title_brand).setVisibility(text ? View.VISIBLE : View.GONE);
     }
 
     public void setBrowseTitleEnabled(boolean enabled) {
@@ -167,6 +179,16 @@ public class NavigateTitleView extends TitleView implements OnDataChange, Accoun
                     MeasureSpec.makeMeasureSpec(getResources().getDimensionPixelSize(R.dimen.lb_search_orb_size),
                             MeasureSpec.EXACTLY));
         }
+    }
+
+    // MEETUBE: a page's own title bar (the signed-out page of Playlists, My videos) hides or squeezes its clock,
+    // leaving a pill with only the heart over the main bar's clock: no clock, no pill.
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        View clock = findViewById(R.id.global_time);
+        boolean shown = clock.getVisibility() == View.VISIBLE && clock.getWidth() > 0;
+        findViewById(R.id.title_clock_pill).setAlpha(shown ? 1f : 0f);
     }
 
     // MEETUBE: the selected account supplies a first name independently of account-orb visibility.

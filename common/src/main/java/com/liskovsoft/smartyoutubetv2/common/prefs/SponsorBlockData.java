@@ -34,6 +34,7 @@ public class SponsorBlockData {
     private boolean mIsDontSkipSegmentAgainEnabled;
     private boolean mIsPaidContentNotificationEnabled;
     private long mIgnoredDurationMs;
+    private boolean mIsAskByDefaultApplied; // MEETUBE
     private Map<String, Integer> mSegmentLocalizedMapping;
     private Map<String, Integer> mSegmentColorMapping;
     private Set<String> mAllCategories;
@@ -257,6 +258,7 @@ public class SponsorBlockData {
         String excludedChannels = Helpers.parseStr(split, 9);
         mIsPaidContentNotificationEnabled = Helpers.parseBoolean(split, 10, false);
         mIgnoredDurationMs = Helpers.parseLong(split, 11, 5_000);
+        mIsAskByDefaultApplied = Helpers.parseBoolean(split, 12, false);
 
         if (colorCategories != null) {
             String[] categoriesArr = Helpers.splitArray(colorCategories);
@@ -298,9 +300,21 @@ public class SponsorBlockData {
                 if (SponsorSegment.CATEGORY_FILLER.equals(segmentCategory)) {
                     mActions.add(SegmentAction.from(segmentCategory, ACTION_DO_NOTHING));
                 } else {
-                    mActions.add(SegmentAction.from(segmentCategory, ACTION_SKIP_WITH_TOAST));
+                    // MEETUBE: ask before skipping, never skip without the viewer's say.
+                    mActions.add(SegmentAction.from(segmentCategory, ACTION_SHOW_DIALOG));
                 }
             }
+        }
+
+        // MEETUBE: once, turn the old skip defaults already saved into asking; a skip chosen after this stays.
+        if (!mIsAskByDefaultApplied) {
+            for (SegmentAction action : mActions) {
+                if (action.actionType == ACTION_SKIP_ONLY || action.actionType == ACTION_SKIP_WITH_TOAST) {
+                    action.actionType = ACTION_SHOW_DIALOG;
+                }
+            }
+            mIsAskByDefaultApplied = true;
+            persistState();
         }
     }
 
@@ -312,7 +326,7 @@ public class SponsorBlockData {
         mAppPrefs.setData(SPONSOR_BLOCK_DATA, Helpers.mergeData(
                 mIsSponsorBlockEnabled, null, null, null,
                 null, null, actions, colorCategories, mIsDontSkipSegmentAgainEnabled,
-                excludedChannels, mIsPaidContentNotificationEnabled, mIgnoredDurationMs
+                excludedChannels, mIsPaidContentNotificationEnabled, mIgnoredDurationMs, mIsAskByDefaultApplied
         ));
     }
 }
