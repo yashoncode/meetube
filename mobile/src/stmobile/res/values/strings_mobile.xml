@@ -591,6 +591,8 @@
     <string name="mobile_update_row_ready">Update ready to install</string>
     <string name="mobile_update_channel_name">App updates</string>
     <string name="mobile_update_channel_desc">Downloading a MeeTube update</string>
+    <string name="mobile_new_uploads_channel">New uploads</string>
+    <string name="mobile_new_uploads_channel_desc">New videos from the channels you subscribe to</string>
     <string name="mobile_update_notify_channel">New versions</string>
     <string name="mobile_update_notify_channel_desc">When a new MeeTube version is out</string>
     <string name="mobile_update_notify_title">New update available ✨</string>

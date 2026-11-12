@@ -742,6 +742,8 @@ public class MobileMainApplication extends MainApplication {
                 });
         // MEETUBE(update notify): a new version shows up in the notification shade, app closed or not
         com.newtube.mobile.update.UpdateNotifyWorker.schedule(this);
+        // MEETUBE(issue #220): new uploads from subscriptions in the notification shade
+        com.newtube.mobile.notify.NewUploadsWorker.schedule(this);
 
         // FEED FIRST-PAINT (mobile-only, round 2): Home's eager row-pad continuations exist to
         // fill short TV shelf rows to MIN_ROW_GROUP_SIZE=5; the phone flattens every row into one
