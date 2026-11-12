@@ -213,6 +213,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         } else {
             ((VideoViewHolder) holder).bind(getItem(position), mLongClickListener);
             ((VideoViewHolder) holder).bindShortsColumn(shortsColumn(position));
+            ((VideoViewHolder) holder).bindRank(mRanked ? position + 1 : 0);
         }
     }
 
@@ -385,12 +386,33 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
 
     /** Marker payload for in-place item mutations (watch progress, DeArrow overrides). */
     private static final Object PAYLOAD_SYNC = new Object();
+    /** MEETUBE(hyped): only the rank moved (a list change shifted the cards). */
+    private static final Object PAYLOAD_RANK = new Object();
+    private boolean mRanked;
+
+    /** MEETUBE(hyped): a chart: each card wears its place (1, 2, 3...) on the thumbnail. */
+    public void setRanked(boolean ranked) {
+        if (ranked != mRanked) {
+            mRanked = ranked;
+            notifyItemRangeChanged(0, getItemCount(), PAYLOAD_RANK);
+        }
+    }
+
+    @Override
+    public void onCurrentListChanged(@NonNull java.util.List<Video> previous, @NonNull java.util.List<Video> current) {
+        if (mRanked) { // a moved card is not rebound: its number would be the old one
+            notifyItemRangeChanged(0, current.size(), PAYLOAD_RANK);
+        }
+    }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position,
             @NonNull java.util.List<Object> payloads) {
         if (!payloads.isEmpty() && holder instanceof VideoViewHolder) {
-            ((VideoViewHolder) holder).bindPartial(getItem(position));
+            ((VideoViewHolder) holder).bindRank(mRanked ? position + 1 : 0);
+            if (payloads.size() > 1 || payloads.get(0) != PAYLOAD_RANK) {
+                ((VideoViewHolder) holder).bindPartial(getItem(position));
+            }
         } else {
             super.onBindViewHolder(holder, position, payloads);
         }
@@ -404,6 +426,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         private final ImageView mThumbnail;
         private final View mThumbnailFrame;
         private final TextView mBadge;
+        @Nullable private final TextView mRank;
         private final android.graphics.drawable.Drawable mBadgeGlass;
         private final ProgressBar mWatchProgress;
         private final TextView mTitle;
@@ -428,6 +451,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mThumbnail = itemView.findViewById(R.id.video_thumbnail);
             mThumbnailFrame = itemView.findViewById(R.id.video_thumbnail_frame);
             mBadge = itemView.findViewById(R.id.video_badge);
+            mRank = itemView.findViewById(R.id.video_rank);
             // MEETUBE(glass): the duration pill frosts the thumbnail, as the Home chips frost the feed.
             com.newtube.mobile.ui.common.GlassDrawable.apply(mBadge, itemView.findViewById(R.id.video_thumbnail_glass), 0);
             mBadgeGlass = mBadge.getBackground();
@@ -594,6 +618,14 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 return null;
             }
             return new String[] {author.substring(0, at), author.substring(at + 5)};
+        }
+
+        /** MEETUBE(hyped): the card's place in a chart; 0 = none. */
+        void bindRank(int rank) {
+            if (mRank != null) {
+                mRank.setVisibility(rank > 0 ? View.VISIBLE : View.GONE);
+                mRank.setText(rank > 0 ? String.valueOf(rank) : null);
+            }
         }
 
         public void bind(Video video, OnVideoLongClickListener longClickListener) {

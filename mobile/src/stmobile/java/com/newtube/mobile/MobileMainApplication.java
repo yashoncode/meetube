@@ -277,6 +277,14 @@ public class MobileMainApplication extends MainApplication {
             migrations.edit().putBoolean("downloads_section", true).apply();
         }
 
+        // HYPED SECTION (mobile-only, one-shot): Trending was hidden by default (its feed
+        // died with YouTube's Trending page); it now carries the Charts, so show it once in Explore.
+        if (!migrations.getBoolean("hyped_section", false)) {
+            com.liskovsoft.smartyoutubetv2.common.app.presenters.service.SidebarService.instance(this)
+                    .enableSection(com.liskovsoft.mediaserviceinterfaces.data.MediaGroup.TYPE_TRENDING, true);
+            migrations.edit().putBoolean("hyped_section", true).apply();
+        }
+
         // TV RECEIVER ROLES OFF (mobile-only, one-shot): Auto Frame Rate reprograms the display's
         // refresh mode per video, and "Remote control" keeps a foreground service listening so
         // other devices can drive this one - both TV roles. Their Settings rows are gone on the

@@ -111,6 +111,28 @@ public final class Haptics {
         }
     }
 
+    /**
+     * MEETUBE(nav haptics): the bottom bar's buzz, YTXTube's feel: one short one-shot at a set
+     * strength (tap 22 ms / 255, drag start 18 / 170, a tab crossed 16 / 170, let go 20 / 190),
+     * firmer and crunchier than the platform's click. No vibrator: CLOCK_TICK.
+     */
+    public static void nav(@Nullable View view, long ms, int amplitude) {
+        if (view == null || !isOn(view.getContext())) {
+            return;
+        }
+        sLastTapAt = SystemClock.uptimeMillis(); // the tap's own VIRTUAL_KEY would only blur it
+        Vibrator vibrator = (Vibrator) view.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+        try {
+            if (vibrator != null && vibrator.hasVibrator()) {
+                vibrator.vibrate(VibrationEffect.createOneShot(ms, amplitude));
+                return;
+            }
+        } catch (RuntimeException ignored) {
+            // fall through to the platform tick
+        }
+        view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
+    }
+
     /** Press-and-hold switching a mode on. */
     public static void longPress(@Nullable View view) {
         if (view != null && isOn(view.getContext())) {
@@ -190,7 +212,8 @@ public final class Haptics {
                 sTapTarget = null;
                 boolean held = event.getEventTime() - event.getDownTime() >= ViewConfiguration.getLongPressTimeout();
                 if (target != null && isOn(target.getContext()) && target.isEnabled() && target.isClickable() && target.isHapticFeedbackEnabled()
-                        && !(target instanceof EditText) && !(held && target.isLongClickable())) {
+                        && !(target instanceof EditText) && !(held && target.isLongClickable())
+                        && !(target instanceof com.google.android.material.navigation.NavigationBarItemView)) { // its own crunch
                     sLastTapAt = SystemClock.uptimeMillis();
                     target.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                 }

@@ -84,7 +84,7 @@ final class YouSectionEditor extends RecyclerView.Adapter<RecyclerView.ViewHolde
             for (Map.Entry<Integer, Integer> section : sections.entrySet()) {
                 int sectionId = section.getValue();
                 if (libraryOrder.contains(String.valueOf(sectionId)) || sectionId == MediaGroup.TYPE_SETTINGS
-                        || sectionId == MediaGroup.TYPE_SHORTS || sectionId == MediaGroup.TYPE_TRENDING
+                        || sectionId == MediaGroup.TYPE_SHORTS
                         || sectionId == MediaGroup.TYPE_CHANNEL_UPLOADS || sectionId == MediaGroup.TYPE_HOME
                         || sectionId == MediaGroup.TYPE_HISTORY) {
                     continue;

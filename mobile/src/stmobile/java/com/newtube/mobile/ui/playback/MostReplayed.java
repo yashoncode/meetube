@@ -46,6 +46,7 @@ public final class MostReplayed {
             return;
         }
         Lyrics.POOL.execute(() -> {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND); // never before playback
             float[] scores = new float[0];
             try {
                 scores = parse(Lyrics.body(new Request.Builder()
