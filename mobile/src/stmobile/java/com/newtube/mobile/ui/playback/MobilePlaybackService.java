@@ -89,6 +89,9 @@ public class MobilePlaybackService extends Service {
     private Player mNotificationPlayer;
     private Player.Listener mSessionSyncListener;
     private boolean mIsForeground;
+    /** MEETUBE(issue #235): the last pause came from a media key and nothing has played since. */
+    private boolean mKeyPaused;
+    private long mPauseKeyAtMs = -10_000;
     /**
      * A new player is being attached over an old one: the old notification's cancel callback must
      * not stopForeground/stopSelf, or the new player's first ongoing notification would call
@@ -285,6 +288,38 @@ public class MobilePlaybackService extends Service {
 
         mMediaSession = new MediaSessionCompat(getApplicationContext(), getPackageName());
         mMediaSession.setCallback(new MediaSessionCompat.Callback() {
+            /**
+             * MEETUBE(issue #235): some Bluetooth headsets keep their own idea of the play state
+             * and send PAUSE, not a toggle, when their one button is pressed. Believing the video
+             * still plays, they paused it, then sent PAUSE again to resume - a no-op. A PAUSE on a
+             * video a media key paused now plays it. Only then: a car sending PAUSE as it
+             * disconnects (the video already paused by the lost route) must not start the speaker.
+             */
+            @Override
+            public boolean onMediaButtonEvent(Intent intent) {
+                android.view.KeyEvent key = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                if (key != null && key.getAction() == android.view.KeyEvent.ACTION_DOWN
+                        && key.getRepeatCount() == 0 && mPlayer != null) {
+                    int code = key.getKeyCode();
+                    boolean playing = mPlayer.getPlayWhenReady();
+                    Log.d(TAG, "media-key %s playing=%s state=%s keyPaused=%s",
+                            android.view.KeyEvent.keyCodeToString(code), playing,
+                            mPlayer.getPlaybackState(), mKeyPaused);
+                    if (code == android.view.KeyEvent.KEYCODE_MEDIA_PAUSE && !playing && mKeyPaused) {
+                        onPlay();
+                        return true;
+                    }
+                    if (playing && (code == android.view.KeyEvent.KEYCODE_MEDIA_PAUSE
+                            || code == android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
+                            || code == android.view.KeyEvent.KEYCODE_HEADSETHOOK)) {
+                        // The pause it leads to marks mKeyPaused (mSessionSyncListener). Not set
+                        // here: a double press skips to the next video instead of pausing.
+                        mPauseKeyAtMs = android.os.SystemClock.elapsedRealtime();
+                    }
+                }
+                return super.onMediaButtonEvent(intent);
+            }
+
             @Override
             public void onPlay() {
                 if (mPlayer != null) {
@@ -334,6 +369,11 @@ public class MobilePlaybackService extends Service {
         mSessionSyncListener = new Player.Listener() {
             @Override
             public void onEvents(Player player, Player.Events events) {
+                if (events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED)) {
+                    // A headset's single press lands after the double-press window (~300 ms).
+                    mKeyPaused = !player.getPlayWhenReady()
+                            && android.os.SystemClock.elapsedRealtime() - mPauseKeyAtMs < 1000;
+                }
                 if (events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED,
                         Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_POSITION_DISCONTINUITY,
                         Player.EVENT_PLAYBACK_PARAMETERS_CHANGED, Player.EVENT_TIMELINE_CHANGED)) {
