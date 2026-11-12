@@ -36,7 +36,7 @@ public final class AccentCard extends Drawable {
     public static final int DUAL_LIGHT = 5;
     /** "Minimal" (the default): faint glass on the black under a glass hairline lit at the corners, no accent. */
     public static final int PLAIN = 6;
-    /** The You page's own card, whatever Card style says: dark frosted glass, barely there. */
+    /** The You page's own card, whatever Card style says: dark frosted glass faintly toned by the accent. */
     public static final int YOU_GLASS = 7;
 
     private static final String KEY = "card_style";
@@ -121,9 +121,9 @@ public final class AccentCard extends Drawable {
                         new int[]{0x2EFFFFFF, 0x0AFFFFFF, 0x0AFFFFFF, 0x1FFFFFFF},
                         new float[]{0f, 0.3f, 0.7f, 1f}, Shader.TileMode.CLAMP));
                 break;
-            case YOU_GLASS: // black glass: a frost fading down, a dim hairline lit at the top
-                mFill.setShader(new LinearGradient(0, b.top, 0, b.bottom, 0x0AFFFFFF, 0x03FFFFFF, Shader.TileMode.CLAMP));
-                mEdge.setShader(new LinearGradient(0, b.top, 0, b.bottom, 0x1AFFFFFF, 0x08FFFFFF, Shader.TileMode.CLAMP));
+            case YOU_GLASS: // black glass toned by the accent: a frost fading down, a hairline lit at the top
+                mFill.setShader(new LinearGradient(0, b.top, 0, b.bottom, accent(0x0C, false), accent(0x03, true), Shader.TileMode.CLAMP));
+                mEdge.setShader(new LinearGradient(0, b.top, 0, b.bottom, accent(0x30, false), accent(0x0D, true), Shader.TileMode.CLAMP));
                 break;
             case MINIMAL:
                 mLight.setShader(light(b.right, b.top, w * 0.75f, w * 0.75f, accent(0x22, false), accent(0x0A, false), 0.5f));
