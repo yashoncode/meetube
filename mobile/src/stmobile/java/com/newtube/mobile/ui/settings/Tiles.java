@@ -181,12 +181,18 @@ final class Tiles {
 
     /** {@code choice} (a bound choice row) as tiles {@code heightDp} tall, a picture per option. */
     static SettingsRow of(@NonNull SettingsRow choice, int heightDp, int... pictures) {
+        return ofFirst(choice, heightDp, 0, pictures);
+    }
+
+    /** Only the first {@code shown} tiles until More is tapped (all of them when the pick is further on). */
+    static SettingsRow ofFirst(@NonNull SettingsRow choice, int heightDp, int shown, int... pictures) {
         SettingsRow row = choice.asCustom();
-        row.custom = (parent, page) -> strip(parent, page, row, heightDp, pictures);
+        row.custom = (parent, page) -> strip(parent, page, row, heightDp, shown, pictures);
         return row;
     }
 
-    private static View strip(ViewGroup parent, SettingsAdapter.Listener page, SettingsRow row, int heightDp, int[] pictures) {
+    private static View strip(ViewGroup parent, SettingsAdapter.Listener page, SettingsRow row, int heightDp, int shown,
+                              int[] pictures) {
         Context context = parent.getContext();
         LinearLayout root = column(context);
         TextView summary = heading(root, row.title);
@@ -280,6 +286,32 @@ final class Tiles {
                         ((SettingsPageFragment) page).offerRestart();
                     }
                 }, 160);
+            });
+        }
+        if (shown > 0 && shown < count && row.currentIndex() < shown) {
+            for (int i = shown; i < count; i++) {
+                strip.getChildAt(i).setVisibility(View.GONE);
+            }
+            TextView more = new TextView(context);
+            more.setText(R.string.mobile_settings_more);
+            more.setTextColor(ContextCompat.getColor(context, R.color.mobile_color_primary));
+            more.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+            more.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            more.setGravity(Gravity.CENTER);
+            more.setMinHeight(dp(context, 44));
+            more.setPadding(dp(context, 16), 0, dp(context, 16), 0);
+            LinearLayout.LayoutParams moreParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            moreParams.gravity = Gravity.CENTER_HORIZONTAL;
+            moreParams.topMargin = dp(context, 4);
+            root.addView(more, moreParams);
+            pressScale(more, more);
+            more.setOnClickListener(v -> {
+                Haptics.click(v);
+                for (int i = shown; i < count; i++) {
+                    strip.getChildAt(i).setVisibility(View.VISIBLE);
+                }
+                root.removeView(more);
             });
         }
         select(strip, row.currentIndex(), row, summary, false);
