@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_settings_search_hint">Pesquisar configurações</string>
+    <string name="mobile_settings_search_none">Nenhuma configuração corresponde a “%1$s”</string>
+
+    <string name="mobile_settings_search_kw_account">entrar login sair conta google perfil trocar sign in</string>
+    <string name="mobile_settings_search_kw_theme">modo escuro modo claro dark light noite aparência cores tema</string>
+    <string name="mobile_settings_search_kw_customize">personalizar customizar aparência visual estilo layout</string>
+    <string name="mobile_settings_search_kw_country">país região localização</string>
+    <string name="mobile_settings_search_kw_start_screen">iniciar inicialização abre tela inicial aba padrão página</string>
+    <string name="mobile_settings_search_kw_interface_size">escala da interface zoom fonte texto tamanho densidade maior menor ui</string>
+    <string name="mobile_settings_search_kw_tabs">barra inferior seções navegação explorar abas</string>
+    <string name="mobile_settings_search_kw_hidden">ocultar assistidos filtro próximas estreias ao vivo live</string>
+    <string name="mobile_settings_search_kw_video_menu">menu de contexto três pontinhos pressionar longo opções</string>
+    <string name="mobile_settings_search_kw_channels_order">inscrições ordenar canais</string>
+    <string name="mobile_settings_search_kw_watch_history">pausar histórico anônimo incognito</string>
+    <string name="mobile_settings_search_kw_video_ends">reprodução automática repetir loop embaralhar próximo vídeo autoplay</string>
+    <string name="mobile_settings_search_kw_background">segundo plano picture in picture pip somente áudio minimizar</string>
+    <string name="mobile_settings_search_kw_natural_voice">tom tempo esticar voz esquilo chipmunk pitch</string>
+    <string name="mobile_settings_search_kw_audio_focus">chamadas notificações outros apps interrupções</string>
+    <string name="mobile_settings_search_kw_hide_related">sugestões relacionados recomendações</string>
+    <string name="mobile_settings_search_kw_dislikes">não gostei return youtube dislike ryd</string>
+    <string name="mobile_settings_search_kw_home_layout">linhas prateleiras carrossel feed grade smarttube</string>
+    <string name="mobile_settings_search_kw_app_icon">ícone ícone do app launcher logo tela inicial clássico fantasia vidro coração rubi play escuro chama fogo</string>
+    <string name="mobile_settings_search_kw_quality">resolução qualidade 4k 1080p 720p hd economia de dados dados móveis</string>
+    <string name="mobile_settings_search_kw_loudness">volume normalização volume automático baixo alto</string>
+    <string name="mobile_settings_search_kw_player_volume">baixo alto som amplificar ganho volume do player 125 150 175 200</string>
+    <string name="mobile_settings_search_kw_captions">legendas cc closed captions</string>
+    <string name="mobile_settings_search_kw_sponsorblock">sponsorblock pular patrocínios anúncios segmentos aberturas</string>
+    <string name="mobile_settings_search_kw_dearrow">dearrow isca de clique títulos miniaturas</string>
+    <string name="mobile_settings_search_kw_backup">exportar importar salvar configurações backup</string>
+    <string name="mobile_settings_search_kw_buffer">buffer buffering cache memória</string>
+    <string name="mobile_settings_search_kw_dns">dns ipv4 ipv6 servidores</string>
+    <string name="mobile_settings_search_kw_conscrypt">conscrypt ssl tls certificados segurança censura bloqueado byebyedpi</string>
+    <string name="mobile_settings_search_kw_multi_profiles">perfis por conta próprio diferente</string>
+    <string name="mobile_settings_search_kw_updates">atualização atualizações versão nova lançamento notificar notificação</string>
+    <string name="mobile_settings_search_kw_diagnostic_log">relatório de bug logs log depuração debug</string>
+    <string name="mobile_settings_search_kw_gesture_levels">gestos brilho volume</string>
+    <string name="mobile_settings_search_kw_gesture_seek">gestos avançar voltar arrastar pular</string>
+    <string name="mobile_settings_search_kw_double_tap_seek">toque duplo avançar voltar pular segundos intervalo</string>
+    <string name="mobile_settings_search_kw_loader">carregamento girando progresso neon vidro fosco cookie líquido anel orbe blob órbita</string>
+    <string name="mobile_settings_search_kw_badge_icons">mix nota musical ícone símbolo pílula selo duração tempo</string>
+    <string name="mobile_settings_search_kw_seek_pill">toque duplo pular avançar voltar 10 segundos animação ondulação pílula</string>
+    <string name="mobile_settings_search_kw_watched_bar">assistido progresso linha vermelha barra histórico visto miniatura</string>
+    <string name="mobile_settings_search_kw_home_cast">transmitir botão barra superior ocultar mostrar tv chromecast cast</string>
+    <string name="mobile_settings_search_kw_home_chips">chips tópicos categorias filtros início ocultar mostrar</string>
+    <string name="mobile_settings_search_kw_haptics">vibração vibrar háptico tátil toque feedback vibrate desligar</string>
+    <string name="mobile_settings_search_kw_refresh_sound">atualizar som estalo áudio puxar deslizar ruído silenciar</string>
+    <string name="mobile_settings_search_kw_short_ends">shorts loop repetir rolagem automática próximo deslizar</string>
+    <string name="mobile_settings_search_kw_stable_volume">volume estável drc compressão faixa dinâmica áudio baixo alto</string>
+    <string name="mobile_settings_search_kw_equalizer">equalizador eq áudio graves agudos frequências bandas predefinições personalizado som</string>
+    <string name="mobile_settings_search_web_signin">chat google login cookies conta sessão enviar mensagem</string>
+</resources>

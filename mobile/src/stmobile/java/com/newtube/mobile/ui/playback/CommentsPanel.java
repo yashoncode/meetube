@@ -599,6 +599,59 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
     // Open / close
     // ---------------------------------------------------------------------------------
 
+    /**
+     * MEETUBE: opened from the watch page's comments card, the comment it showed is scrolled to
+     * near the top and lit for a moment. A comment the open order doesn't list (Newest picked)
+     * just opens the panel as it stands.
+     */
+    public void open(@Nullable CommentItem focus) {
+        boolean wasOpen = mLayout.isOpen();
+        open();
+        if (focus == null || wasOpen || !mLayout.isOpen() || mThreadParent != null || mSortPending || mListSwapping) {
+            return;
+        }
+        int position = mListAdapter.positionOf(focus);
+        LinearLayoutManager manager = (LinearLayoutManager) mList.getLayoutManager();
+        if (position < 0 || manager == null) {
+            return;
+        }
+        manager.scrollToPositionWithOffset(position, dp(8));
+        // After the next layout: the panel was hidden, so the rows only exist once it has laid out.
+        androidx.core.view.OneShotPreDrawListener.add(mList, () -> {
+            RecyclerView.ViewHolder holder = mList.findViewHolderForAdapterPosition(position);
+            if (holder != null) {
+                flash(holder.itemView);
+            }
+        });
+    }
+
+    private int dp(int value) {
+        return Math.round(value * mActivity.getResources().getDisplayMetrics().density);
+    }
+
+    /** A soft wash over the row that fades out, in the text colour so it reads in either theme. */
+    private void flash(View row) {
+        android.graphics.drawable.GradientDrawable wash = new android.graphics.drawable.GradientDrawable();
+        wash.setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(
+                androidx.core.content.ContextCompat.getColor(mActivity, R.color.mobile_color_on_surface), 0x24));
+        wash.setCornerRadius(dp(12));
+        wash.setAlpha(0);
+        row.setForeground(wash);
+        android.animation.ValueAnimator fade = android.animation.ValueAnimator.ofInt(0, 255, 255, 255, 0);
+        fade.setStartDelay(250); // once the panel has mostly slid up
+        fade.setDuration(2000);
+        fade.addUpdateListener(a -> wash.setAlpha((int) a.getAnimatedValue()));
+        fade.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                if (row.getForeground() == wash) {
+                    row.setForeground(null);
+                }
+            }
+        });
+        fade.start();
+    }
+
     public void open() {
         Feed feed = currentFeed();
         if (feed == null || mLayout.isOpen() || mReleased) {

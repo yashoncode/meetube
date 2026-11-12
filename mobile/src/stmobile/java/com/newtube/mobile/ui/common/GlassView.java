@@ -162,9 +162,9 @@ public class GlassView extends FrameLayout {
     private static Bitmap sNoise;
 
     private final float mCorner;
-    private final int mTint;
+    private int mTint;
     /** Liquid: lens and specular rim (floating pills). Off: a flat frosted bar (top bar). */
-    private final boolean mLiquid;
+    private boolean mLiquid;
     private final float mDensity;
     private final Paint mTintPaint = new Paint();
     private final Paint mNoisePaint = new Paint();
@@ -181,7 +181,7 @@ public class GlassView extends FrameLayout {
 
     @Nullable private GlassSource mSource;
     /** Sits on glass already (glassOnGlass): its tint is drawn as given, see-through. */
-    private final boolean mOnGlass;
+    private boolean mOnGlass;
     /** The widest it grows (glassMaxWidth), 0: no limit. */
     private final int mMaxWidth;
     /** The frost fades out over this much of the bottom (glassFadeBottom), 0: a hard edge. */
@@ -293,6 +293,19 @@ public class GlassView extends FrameLayout {
      * past the top / bottom edge. A blur clamps at its edge, so two bars that touch (the channel
      * page's top bar and pinned tabs) met in a line; reaching into each other they blur alike.
      */
+    /**
+     * MEETUBE(youtube mode): no glass of its own - its content alone, on whatever is under it (the
+     * top bar's brand and buttons sit straight on the bar's frost). Call before {@link #setSource}.
+     */
+    public void setPlain() {
+        mTint = 0;
+        mLiquid = false;
+        mOnGlass = true; // the tint as given, transparent, never the opaque no-backdrop fill
+        setElevation(0f);
+        setClipToOutline(false);
+        invalidate();
+    }
+
     public void setBlurReach(int topPx, int bottomPx) {
         if (topPx != mReachTop || bottomPx != mReachBottom) {
             mReachTop = topPx;

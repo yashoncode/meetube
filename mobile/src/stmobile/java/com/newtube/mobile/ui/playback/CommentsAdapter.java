@@ -349,6 +349,16 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    /** Adapter position of this comment's row (the same object, as the watch page's card holds), or -1. */
+    int positionOf(CommentItem item) {
+        for (int i = 0; i < mItems.size(); i++) {
+            if (mItems.get(i).item == item) {
+                return headerCount() + mSkeletons + i;
+            }
+        }
+        return -1;
+    }
+
     /** Adapter position of the last comment (not a skeleton or footer), or -1. */
     int lastCommentPosition() {
         return mItems.isEmpty() ? -1 : headerCount() + mSkeletons + mItems.size() - 1;

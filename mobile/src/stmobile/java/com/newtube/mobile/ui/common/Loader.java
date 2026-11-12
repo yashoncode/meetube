@@ -64,6 +64,7 @@ public final class Loader {
             theme.applyStyle(overlay, true);
         }
         Accent.applyTo(context, theme); // MEETUBE(accent): the same two call sites
+        YouTubeMode.applyTo(context, theme); // MEETUBE(youtube mode): and here
     }
 
     private static SharedPreferences prefs(Context context) {

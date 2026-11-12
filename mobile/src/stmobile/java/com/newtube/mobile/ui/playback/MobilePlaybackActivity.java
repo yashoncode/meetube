@@ -412,6 +412,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private TextView mHypePoints;
     private final List<CommentItem> mTopComments = new ArrayList<>();
     private int mTopCommentIndex;
+    /** The comment on the card now (set as it fades in), for the panel to land on when tapped. */
+    @Nullable private CommentItem mTeaserComment;
     private static final long TOP_COMMENT_MS = 10_000;
     private final Runnable mNextTopComment = this::showNextTopComment;
     /** Chapters of the current video (Video.isChapter items from the suggestions pipeline). */
@@ -1681,7 +1683,9 @@ public class MobilePlaybackActivity extends MobileActivity
         mCommentsPanel = new CommentsPanel(this, findViewById(R.id.mobile_comments_panel), mCommentsHost);
         setupSidePanels();
         if (mWatchCommentsEntry != null) {
-            mWatchCommentsEntry.setOnClickListener(v -> onCommentsEntryClicked());
+            // The card's comment shown at the tap is found and lit in the panel.
+            mWatchCommentsEntry.setOnClickListener(v -> onCommentsEntryClicked(
+                    mCommentTeaser != null && mCommentTeaser.getVisibility() == View.VISIBLE ? mTeaserComment : null));
         }
         if (mWatchChatEntry != null) {
             mWatchChatEntry.setOnClickListener(v -> onChatEntryClicked());
@@ -10557,6 +10561,11 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     private void onCommentsEntryClicked() {
+        onCommentsEntryClicked(null);
+    }
+
+    /** {@code focus}: the comments card's comment, scrolled to and lit once the panel is open. */
+    private void onCommentsEntryClicked(@Nullable CommentItem focus) {
         if (mCommentsKey == null || mCommentsPanel == null) {
             return;
         }
@@ -10571,7 +10580,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED));
         }
         collapseTallBox(mWatchScroll, Integer.MAX_VALUE / 2);
-        mCommentsPanel.open();
+        mCommentsPanel.open(focus);
     }
 
     /** Best effort: the first comments page, fetched while the video plays, so the panel opens full. */
@@ -10586,6 +10595,7 @@ public class MobilePlaybackActivity extends MobileActivity
         Utils.removeCallbacks(mNextTopComment);
         mTopComments.clear();
         mTopCommentIndex = 0;
+        mTeaserComment = null;
         if (mCommentTeaser != null) {
             mCommentTeaser.animate().cancel();
             mCommentTeaser.setVisibility(View.GONE);
@@ -10603,6 +10613,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         CommentItem comment = mTopComments.get(mTopCommentIndex++ % mTopComments.size());
         Runnable bind = () -> {
+            mTeaserComment = comment;
             CommentsAdapter.loadAvatar(mCommentTeaserAvatar, comment.getAuthorPhoto(),
                     mCommentTeaserAvatar.getLayoutParams().width);
             mCommentTeaserText.setText(comment.getMessage());

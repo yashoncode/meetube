@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_playlist_by_owner">autor: %1$s</string>
+    <string name="mobile_playlist_type">Playlista</string>
+    <string name="mobile_playlist_download_all">Pobierz wszystko</string>
+    <string name="mobile_playlist_download_confirm">Pobrać filmy (%1$d)?</string>
+    <string name="mobile_playlist_download_quality">Jakość pobierania wszystkich filmów</string>
+    <string name="mobile_playlist_download_best">Najlepsza dostępna</string>
+    <string name="mobile_playlist_download_queued">Dodano do kolejki: %1$d</string>
+    <string name="mobile_playlist_download_skipped">Dodano do kolejki: %1$d. Niedostępne: %2$d.</string>
+    <string name="mobile_playlist_load_failed">Nie udało się wczytać całej playlisty. Spróbuj ponownie.</string>
+    <string name="mobile_playlist_sort">Sortuj według</string>
+    <string name="mobile_playlist_sort_manual">Ręcznie</string>
+    <string name="mobile_playlist_sort_newest">Data publikacji (najnowsze)</string>
+    <string name="mobile_playlist_sort_oldest">Data publikacji (najstarsze)</string>
+    <string name="mobile_playlist_sort_popular">Najpopularniejsze</string>
+    <string name="mobile_playlist_filter_all">Wszystko</string>
+    <string name="mobile_playlist_filter_videos">Filmy</string>
+    <string name="mobile_playlist_filter_shorts">Shorts</string>
+    <string name="mobile_playlist_download_select">Wybierz filmy</string>
+    <string name="mobile_playlist_select_all">Zaznacz wszystko</string>
+    <string name="mobile_playlist_selected">Wybrano: %1$d</string>
+    <string name="mobile_playlist_download_selected">Pobierz</string>
+    <string name="mobile_playlist_add_videos">Dodaj filmy</string>
+    <string name="mobile_playlist_add_hint">Szukaj, aby dodać do: %1$s</string>
+    <string name="mobile_playlist_loading">Wczytywanie playlisty</string>
+    <plurals name="mobile_playlist_video_count">
+        <item quantity="one">%d film</item>
+        <item quantity="few">%d filmy</item>
+        <item quantity="many">%d filmów</item>
+        <item quantity="other">%d filmu</item>
+    </plurals>
+</resources>

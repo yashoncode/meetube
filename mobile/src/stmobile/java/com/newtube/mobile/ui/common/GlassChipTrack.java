@@ -48,6 +48,9 @@ public class GlassChipTrack extends HorizontalScrollView {
     /** MEETUBE(light mode): a light grey track with dark chips, the white pill standing off it. */
     private final boolean mLightTheme;
     private final boolean mSimple;
+    /** MEETUBE(youtube mode): YouTube's text tabs - no track, no pill, an accent line under the pick. */
+    private final boolean mTabs;
+    private final int mUnderline;
     private final int mSlop;
     private final Row mRow;
     private final List<CharSequence> mLabels = new ArrayList<>();
@@ -89,21 +92,24 @@ public class GlassChipTrack extends HorizontalScrollView {
         super(context, attrs);
         mDp = getResources().getDisplayMetrics().density;
         mLightTheme = ThemeMode.isLight(context);
-        mSimple = NavLens.lowEnd(context);
+        mTabs = YouTubeMode.isOn(context);
+        mSimple = NavLens.lowEnd(context) || mTabs; // no lens, swell or jelly on the tabs
+        TypedValue accent = new TypedValue();
+        mUnderline = context.getTheme().resolveAttribute(com.liskovsoft.smartyoutubetv2.tv.R.attr.meetubeAccent, accent, true) ? accent.data : 0xFFFF0033;
         mSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         setHorizontalScrollBarEnabled(false);
-        setFillViewport(true); // a few chips share the bar's width (weights below); many still scroll
+        setFillViewport(!mTabs); // a few chips share the bar's width (weights below); many still scroll; tabs sit left
         setOverScrollMode(OVER_SCROLL_NEVER);
         setHorizontalFadingEdgeEnabled(true); // the chips melt away at a side that has more to scroll to
         setFadingEdgeLength(Math.round(28 * mDp));
-        setElevation(4 * mDp);
+        setElevation(mTabs ? 0f : 4 * mDp);
         setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
                 outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), view.getHeight() / 2f);
             }
         });
-        setClipToOutline(true);
+        setClipToOutline(!mTabs);
         mRow = new Row(context);
         mRow.setOrientation(LinearLayout.HORIZONTAL);
         mRow.setGravity(Gravity.CENTER_VERTICAL);
@@ -133,7 +139,7 @@ public class GlassChipTrack extends HorizontalScrollView {
 
     /** The glass under the track: what it frosts (the feed, the results). Once. */
     public void setGlassSource(@Nullable GlassSource source) {
-        if (!mGlassed) {
+        if (!mGlassed && !mTabs) { // the tabs sit on the top bar's frost
             mGlassed = true;
             GlassDrawable.applyPage(this, source, 0);
         }
@@ -163,7 +169,10 @@ public class GlassChipTrack extends HorizontalScrollView {
             chip.setPadding(pad, 0, pad, 0);
             int index = i;
             chip.setOnClickListener(v -> pick(index));
-            mRow.addView(chip, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, Math.round(CHIP_H * mDp), 1f));
+            if (mTabs) {
+                chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+            }
+            mRow.addView(chip, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, Math.round(CHIP_H * mDp), mTabs ? 0f : 1f));
         }
         recolor();
     }
@@ -236,7 +245,14 @@ public class GlassChipTrack extends HorizontalScrollView {
         int color = mLightTheme ? Color.BLACK : blend(Color.WHITE, Color.BLACK, pillAlpha());
         int rest = mLightTheme ? 0xFF3A3A3C : Color.WHITE;
         for (int i = 0; i < mRow.getChildCount(); i++) {
-            ((TextView) mRow.getChildAt(i)).setTextColor(i == on ? color : rest);
+            TextView chip = (TextView) mRow.getChildAt(i);
+            if (mTabs) { // all in the page's ink, the pick bold over its line
+                chip.setTextColor(mLightTheme ? Color.BLACK : Color.WHITE);
+                chip.setTypeface(android.graphics.Typeface.create("sans-serif-medium",
+                        i == on ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL));
+                continue;
+            }
+            chip.setTextColor(i == on ? color : rest);
         }
     }
 
@@ -384,7 +400,17 @@ public class GlassChipTrack extends HorizontalScrollView {
             float pad = PAD * mDp;
             float top = pad;
             float bottom = getHeight() - pad;
-            if (alpha > 0f) {
+            if (mTabs) {
+                if (mSelected >= 0) { // the line under the pick, its text's width
+                    float inset = CHIP_PAD * mDp;
+                    float line = 3 * mDp;
+                    float y = (getHeight() + CHIP_H * mDp) / 2f - line;
+                    mPaint.setStyle(Paint.Style.FILL);
+                    mPaint.setColor(mUnderline);
+                    mRect.set(mLeft.getValue() + inset, y, mRight.getValue() - inset, y + line);
+                    canvas.drawRoundRect(mRect, line / 2f, line / 2f, mPaint);
+                }
+            } else if (alpha > 0f) {
                 mPaint.setStyle(Paint.Style.FILL);
                 mPaint.setColor(Color.argb(Math.round(Color.alpha(PILL) * alpha), 255, 255, 255));
                 mRect.set(mLeft.getValue(), top, mRight.getValue(), bottom);

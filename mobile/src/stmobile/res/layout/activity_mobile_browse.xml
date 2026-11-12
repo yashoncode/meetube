@@ -365,6 +365,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- MEETUBE(youtube mode): YouTube's top bar - one flat frost behind the brand, the buttons and
+         the tabs, full width, down to the tabs' foot (the top row alone when there are none). Gone
+         unless YouTube mode is on; MobileBrowseActivity slides it with them. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/mobile_top_frost"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:glassCornerRadius="0dp"
+        app:glassLiquid="false"
+        app:glassTint="?attr/meetubeNavTint"
+        app:layout_constraintBottom_toBottomOf="@id/mobile_chip_track"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <!-- MEETUBE(glass): no top bar - two floating liquid-glass pills, the same glass as the nav
          capsule (Glass.blur): the brand on the left (a You sub-screen swaps it for a back arrow and
          the section's name - BrowseTopBar), cast and search on the right. The page scrolls under
@@ -709,16 +725,17 @@
         android:id="@+id/mobile_nav_glass"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginHorizontal="?attr/meetubeNavSideMargin"
+        android:layout_marginBottom="?attr/meetubeNavBottomMargin"
         android:elevation="6dp"
         android:padding="6dp"
-        app:glassCornerRadius="34dp"
-        app:glassTint="@color/meetube_glass_tint"
+        app:glassCornerRadius="?attr/meetubeNavCorner"
+        app:glassLiquid="?attr/meetubeNavLiquid"
+        app:glassTint="?attr/meetubeNavTint"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintWidth_max="@dimen/meetube_nav_max_width">
+        app:layout_constraintWidth_max="?attr/meetubeNavMaxWidth">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/mobile_bottom_nav"
@@ -726,7 +743,7 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             app:elevation="0dp"
-            app:itemBackground="@drawable/bg_nav_item"
+            app:itemBackground="?attr/meetubeNavItemBackground"
             app:itemIconSize="24dp"
             app:itemIconTint="@color/mobile_bottom_nav_item"
             app:itemRippleColor="@android:color/transparent"

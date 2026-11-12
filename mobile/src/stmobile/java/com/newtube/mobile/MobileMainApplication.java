@@ -126,8 +126,36 @@ public class MobileMainApplication extends MainApplication {
         return SystemPipBridge.restoreFromLauncher(launcher);
     }
 
+    /** ProcessPhoenix's restart helper process ({@code <package>:phoenix}). */
+    private boolean isPhoenixProcess() {
+        String name = null;
+        if (android.os.Build.VERSION.SDK_INT >= 28) {
+            name = android.app.Application.getProcessName();
+        } else {
+            try (java.io.FileInputStream in = new java.io.FileInputStream("/proc/self/cmdline")) {
+                byte[] buffer = new byte[256];
+                int read = in.read(buffer);
+                int end = 0;
+                while (end < read && buffer[end] != 0) {
+                    end++;
+                }
+                name = new String(buffer, 0, end);
+            } catch (java.io.IOException ignored) {
+                // Unknown: treat it as the main process.
+            }
+        }
+        return name != null && name.endsWith(":phoenix");
+    }
+
     @Override
     public void onCreate() {
+        // Settings' Restart runs ProcessPhoenix's activity in its own ":phoenix" process, which
+        // creates this Application too. None of the app's start-up belongs there: WorkManager is
+        // only initialised in the main process, so scheduling the update check crashed it, and
+        // the app was never restarted. Application.onCreate itself does nothing.
+        if (isPhoenixProcess()) {
+            return;
+        }
         // Optional WEB auth: installing the bridge does not load WebView or construct OkHttp.
         com.liskovsoft.youtubeapi.web.WebSession.setCookieStore(new com.liskovsoft.youtubeapi.web.CookieStore() {
             @Override public String get(String url) {

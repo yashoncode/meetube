@@ -43,6 +43,17 @@
         <!-- MEETUBE(accent): Ember, the red; Accent applies another palette's overlay. -->
         <item name="meetubeAccent">#FFFF453A</item>
         <item name="meetubeAccentDeep">#FFD7372D</item>
+        <!-- MEETUBE(youtube mode): rounded cards and the floating bar unless YouTube mode is on. -->
+        <item name="meetubeCardCorner">@dimen/mobile_card_corner_radius</item>
+        <item name="meetubeRowCorner">12dp</item>
+        <item name="meetubeRelatedCorner">14dp</item>
+        <item name="meetubeNavCorner">34dp</item>
+        <item name="meetubeNavSideMargin">16dp</item>
+        <item name="meetubeNavBottomMargin">12dp</item>
+        <item name="meetubeNavMaxWidth">@dimen/meetube_nav_max_width</item>
+        <item name="meetubeNavTint">@color/meetube_glass_tint</item>
+        <item name="meetubeNavItemBackground">@drawable/bg_nav_item</item>
+        <item name="meetubeNavLiquid">true</item>
         <item name="colorPrimary">?attr/meetubeAccent</item>
         <item name="colorPrimaryDark">@color/mobile_color_primary_dark</item>
         <!-- Selection controls (checkbox, radio, switch, text caret) and any untinted
@@ -708,6 +719,21 @@
         <item name="android:paddingHorizontal">12dp</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">13sp</item>
+    </style>
+
+    <!-- MEETUBE(youtube mode): sharp video cards and the bottom bar docked full width, flat. -->
+    <style name="ThemeOverlay.MeeTube.YouTubeMode" parent="">
+        <item name="meetubeCardCorner">0dp</item>
+        <item name="meetubeRowCorner">0dp</item>
+        <item name="meetubeRelatedCorner">0dp</item>
+        <item name="meetubeNavCorner">0dp</item>
+        <item name="meetubeNavSideMargin">0dp</item>
+        <item name="meetubeNavBottomMargin">0dp</item>
+        <item name="meetubeNavMaxWidth">4000dp</item>
+        <item name="meetubeNavTint">@color/meetube_youtube_nav_tint</item>
+        <item name="meetubeNavItemBackground">@android:color/transparent</item>
+        <!-- A flat frost, as the top bar: no rim down its sides, no grain, no lens edge. -->
+        <item name="meetubeNavLiquid">false</item>
     </style>
 
 </resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_web_signin_title">Zaloguj się do YouTube</string>
+    <string name="mobile_web_signin_privacy">To strona samego Google. MeeTube nigdy nie widzi Twojego hasła.</string>
+    <string name="mobile_web_signin_loading">Otwieranie Google</string>
+    <string name="mobile_web_signin_finishing">Kończenie logowania</string>
+    <string name="mobile_web_signin_failed">Nie udało się dokończyć logowania do YouTube. Sprawdź połączenie i spróbuj ponownie.</string>
+    <string name="mobile_web_signin_retry">Ponów</string>
+    <string name="mobile_web_signin_explain_title">Jeszcze jedno logowanie</string>
+    <string name="mobile_web_signin_explain_need">Aby wysyłać wiadomości na czacie na żywo i polubić posty, zaloguj się na stronie internetowej YouTube. Zajmie to chwilę i robisz to tylko raz.</string>
+    <string name="mobile_web_signin_explain_current">Obecne logowanie pozostaje bez zmian i nadal obsługuje filmy, historię i subskrypcje.</string>
+    <string name="mobile_web_signin_explain_risk">Użyj tego samego konta Google. Google nie akceptuje nieoficjalnych aplikacji, więc istnieje niewielkie ryzyko dla używanego konta.</string>
+    <string name="mobile_web_signin_google">Zaloguj się przez Google</string>
+    <string name="mobile_web_signin_not_now">Nie teraz</string>
+    <string name="mobile_web_signin_sign_out">Wylogować z internetowego logowania YouTube?</string>
+    <string name="mobile_web_signin_sign_out_confirm">Aby wysyłać wiadomości na czacie na żywo, trzeba będzie zalogować się ponownie. Obecne logowanie w MeeTube pozostaje bez zmian.</string>
+    <string name="mobile_web_signin_sign_out_failed">Nie udało się wylogować. Spróbuj ponownie.</string>
+    <string name="mobile_web_signin_signed_out">Wylogowano z internetowego logowania YouTube</string>
+    <string name="mobile_web_signin_add">Dodaj konto internetowe</string>
+    <string name="mobile_web_signin_choose">Czatuj jako</string>
+    <string name="mobile_web_signin_switch">Przełącz konto internetowe</string>
+    <string name="mobile_web_signin_expired">Internetowe logowanie YouTube wygasło. Zaloguj się ponownie.</string>
+    <string name="mobile_chat_as">Czatujesz jako %1$s</string>
+    <string name="mobile_chat_hint">Napisz coś</string>
+    <string name="mobile_chat_send">Wyślij wiadomość</string>
+    <string name="mobile_chat_send_failed">Nie udało się wysłać wiadomości. Spróbuj ponownie.</string>
+    <string name="mobile_chat_not_ready">Czat nie jest jeszcze gotowy. Spróbuj za chwilę.</string>
+</resources>

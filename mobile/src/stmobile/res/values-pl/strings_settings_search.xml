@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Search in the phone Settings (SettingsSearch, SettingsSearchController). Polish keywords,
+     with the common English terms kept for people who type them. -->
+<resources>
+    <string name="mobile_settings_search_hint">Szukaj w ustawieniach</string>
+    <string name="mobile_settings_search_none">Brak ustawień pasujących do „%1$s”</string>
+
+    <string name="mobile_settings_search_kw_account">zaloguj logowanie wyloguj google profil przełącz konto login</string>
+    <string name="mobile_settings_search_kw_theme">tryb ciemny jasny nocny wygląd kolory motyw dark light</string>
+    <string name="mobile_settings_search_kw_customize">personalizacja dostosuj wygląd styl układ</string>
+    <string name="mobile_settings_search_kw_country">kraj region</string>
+    <string name="mobile_settings_search_kw_start_screen">uruchamianie start otwiera domyślna karta strona główna</string>
+    <string name="mobile_settings_search_kw_interface_size">skala interfejsu powiększenie czcionka rozmiar tekstu gęstość większy mniejszy</string>
+    <string name="mobile_settings_search_kw_tabs">dolny pasek sekcje nawigacja odkrywaj karty</string>
+    <string name="mobile_settings_search_kw_hidden">ukryj obejrzane filtr nadchodzące premiery na żywo</string>
+    <string name="mobile_settings_search_kw_video_menu">menu kontekstowe trzy kropki długie naciśnięcie opcje</string>
+    <string name="mobile_settings_search_kw_channels_order">subskrypcje sortuj kanały kolejność</string>
+    <string name="mobile_settings_search_kw_watch_history">wstrzymaj historia incognito</string>
+    <string name="mobile_settings_search_kw_video_ends">autoodtwarzanie powtarzaj pętla losowo następny film autoplay</string>
+    <string name="mobile_settings_search_kw_background">odtwarzanie w tle obraz w obrazie pip tylko dźwięk minimalizuj</string>
+    <string name="mobile_settings_search_kw_natural_voice">wysokość tonu rozciąganie czasu wiewiórka</string>
+    <string name="mobile_settings_search_kw_audio_focus">połączenia powiadomienia inne aplikacje przerwania</string>
+    <string name="mobile_settings_search_kw_hide_related">sugestie podobne rekomendacje polecane</string>
+    <string name="mobile_settings_search_kw_dislikes">return youtube dislike ryd łapki w dół nie lubię</string>
+    <string name="mobile_settings_search_kw_home_layout">wiersze półki karuzela kanał siatka smarttube</string>
+    <string name="mobile_settings_search_kw_app_icon">ikona launcher logo ekran główny stara klasyczna fantasy biała szkło serce rubin play ciemna płomień ogień</string>
+    <string name="mobile_settings_search_kw_quality">rozdzielczość jakość 4k 1080p 720p hd oszczędzanie danych dane komórkowe</string>
+    <string name="mobile_settings_search_kw_loudness">głośność normalizacja automatyczna cicho głośno</string>
+    <string name="mobile_settings_search_kw_player_volume">cicho głośno dźwięk wzmocnienie podbicie 125 150 175 200</string>
+    <string name="mobile_settings_search_kw_captions">napisy cc transkrypcja</string>
+    <string name="mobile_settings_search_kw_sponsorblock">pomiń sponsorzy reklamy segmenty intro</string>
+    <string name="mobile_settings_search_kw_dearrow">clickbait tytuły miniatury</string>
+    <string name="mobile_settings_search_kw_backup">kopia zapasowa eksport import zapisz ustawienia</string>
+    <string name="mobile_settings_search_kw_buffer">buforowanie bufor pamięć podręczna cache</string>
+    <string name="mobile_settings_search_kw_dns">dns ipv4 ipv6 serwery</string>
+    <string name="mobile_settings_search_kw_conscrypt">ssl tls certyfikaty bezpieczeństwo cenzura blokada byebyedpi</string>
+    <string name="mobile_settings_search_kw_multi_profiles">profile na konto osobne różne</string>
+    <string name="mobile_settings_search_kw_updates">aktualizacja wersja nowe wydanie powiadom powiadomienie</string>
+    <string name="mobile_settings_search_kw_diagnostic_log">zgłoś błąd dziennik logi debugowanie</string>
+    <string name="mobile_settings_search_kw_gesture_levels">gesty jasność głośność</string>
+    <string name="mobile_settings_search_kw_gesture_seek">gesty przewijanie pomiń do przodu do tyłu</string>
+    <string name="mobile_settings_search_kw_double_tap_seek">podwójne dotknięcie przewiń pomiń do przodu do tyłu sekundy skok odstęp</string>
+    <string name="mobile_settings_search_kw_loader">ładowanie wskaźnik postęp neon matowe szkło ciastko płyn pierścień kula kropla orbita</string>
+    <string name="mobile_settings_search_kw_badge_icons">mix muzyka nuta ikona symbol plakietka czas trwania</string>
+    <string name="mobile_settings_search_kw_seek_pill">podwójne dotknięcie pomiń przewiń do przodu do tyłu 10 sekund animacja fala</string>
+    <string name="mobile_settings_search_kw_watched_bar">obejrzane postęp czerwona linia pasek historia miniatura</string>
+    <string name="mobile_settings_search_kw_home_cast">przesyłanie cast przycisk górny pasek ukryj pokaż telewizor tv chromecast</string>
+    <string name="mobile_settings_search_kw_home_chips">tematy kategorie filtry strona główna ukryj pokaż</string>
+    <string name="mobile_settings_search_kw_haptics">haptyka wibracje wibruj dotyk informacja zwrotna wyłącz</string>
+    <string name="mobile_settings_search_kw_refresh_sound">odświeżanie dźwięk pyknięcie przeciągnij szum wycisz</string>
+    <string name="mobile_settings_search_kw_short_ends">shorts pętla powtarzaj autoprzewijanie następny przesuń</string>
+    <string name="mobile_settings_search_kw_stable_volume">stabilna głośność drc kompresja zakres dynamiczny dźwięk głośno cicho</string>
+    <string name="mobile_settings_search_kw_equalizer">korektor equalizer eq dźwięk bas soprany częstotliwości pasma ustawienia własne</string>
+    <string name="mobile_settings_search_web_signin">czat google logowanie ciasteczka konto sesja wyślij wiadomość</string>
+</resources>

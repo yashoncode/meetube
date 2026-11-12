@@ -5,6 +5,18 @@
     <!-- MEETUBE(accent): the picked accent (ui.common.Accent), bright and a deeper one for a light page. -->
     <attr name="meetubeAccent" format="color" />
     <attr name="meetubeAccentDeep" format="color" />
+    <!-- MEETUBE(youtube mode): video card corners and the bottom bar's shape; all 0 in
+         ThemeOverlay.MeeTube.YouTubeMode (ui.common.YouTubeMode). -->
+    <attr name="meetubeCardCorner" format="dimension" />
+    <attr name="meetubeRowCorner" format="dimension" />
+    <attr name="meetubeRelatedCorner" format="dimension" />
+    <attr name="meetubeNavCorner" format="dimension" />
+    <attr name="meetubeNavSideMargin" format="dimension" />
+    <attr name="meetubeNavBottomMargin" format="dimension" />
+    <attr name="meetubeNavMaxWidth" format="dimension" />
+    <attr name="meetubeNavTint" format="color" />
+    <attr name="meetubeNavItemBackground" format="reference" />
+    <attr name="meetubeNavLiquid" format="boolean" />
     <!-- MEETUBE(glass): GlassView's shape and tint. -->
     <declare-styleable name="GlassView">
         <attr name="glassCornerRadius" format="dimension" />

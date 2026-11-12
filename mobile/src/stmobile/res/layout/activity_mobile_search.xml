@@ -253,14 +253,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginHorizontal="?attr/meetubeNavSideMargin"
+        android:layout_marginBottom="?attr/meetubeNavBottomMargin"
         android:elevation="6dp"
         android:padding="6dp"
         android:visibility="gone"
-        app:glassCornerRadius="34dp"
-        app:glassMaxWidth="@dimen/meetube_nav_max_width"
-        app:glassTint="@color/meetube_glass_tint">
+        app:glassCornerRadius="?attr/meetubeNavCorner"
+        app:glassMaxWidth="?attr/meetubeNavMaxWidth"
+        app:glassLiquid="?attr/meetubeNavLiquid"
+        app:glassTint="?attr/meetubeNavTint">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/mobile_bottom_nav"
@@ -268,7 +269,7 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             app:elevation="0dp"
-            app:itemBackground="@drawable/bg_nav_item"
+            app:itemBackground="?attr/meetubeNavItemBackground"
             app:itemIconSize="24dp"
             app:itemIconTint="@color/mobile_bottom_nav_item"
             app:itemRippleColor="@android:color/transparent"

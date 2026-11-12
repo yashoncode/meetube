@@ -437,11 +437,30 @@ public class MobileBrowseActivity extends MobileActivity
         // The pill floats above the system bar (content is already inset), so the bar must not
         // pad itself by that inset too - Material does, whatever paddingBottomSystemWindowInsets says.
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(mBottomNav, (v, insets) -> insets);
+        if (com.newtube.mobile.ui.common.YouTubeMode.isOn(this)) {
+            // MEETUBE(youtube mode): docked to the bottom edge; the pages end above its full height.
+            com.newtube.mobile.ui.common.YouTubeMode.dockBar(findViewById(R.id.mobile_nav_glass), height -> {
+                for (int id : new int[] {R.id.mobile_content_grid, R.id.mobile_error_container, R.id.mobile_you_content}) {
+                    com.newtube.mobile.ui.common.YouTubeMode.padBottom(findViewById(id), height);
+                }
+            });
+            // The Search bubble the hidden bar leaves behind sits above the gesture area too.
+            int fabMargin = ((android.view.ViewGroup.MarginLayoutParams) mSearchFab.getLayoutParams()).bottomMargin;
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(mSearchFab, (v, insets) -> {
+                com.newtube.mobile.ui.common.YouTubeMode.marginBottom(v, fabMargin + insets.getInsets(
+                        androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom);
+                return insets;
+            });
+        }
         // The top pills are glass over the page: the page's lists start under their row, padded by
         // its height.
         View topGlass = findViewById(R.id.mobile_top_glass);
-        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_brand_glass), findViewById(R.id.mobile_blur_target));
-        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_actions_glass), findViewById(R.id.mobile_blur_target));
+        if (com.newtube.mobile.ui.common.YouTubeMode.isOn(this)) {
+            setUpYouTubeTopBar();
+        } else {
+            com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_brand_glass), findViewById(R.id.mobile_blur_target));
+            com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_actions_glass), findViewById(R.id.mobile_blur_target));
+        }
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_quote_card), findViewById(R.id.mobile_blur_target));
         topGlass.addOnLayoutChangeListener((v, l, t, r, bottom, ol, ot, or, oldBottom) -> {
             if (bottom - t != oldBottom - ot) {
@@ -839,7 +858,61 @@ public class MobileBrowseActivity extends MobileActivity
         int pillPx = pill != null && pill.getHeight() > 0 ? pill.getHeight() : Math.round(68 * density);
         // MEETUBE(issue #125): lower by the card's home offset while a scroll has the nav away.
         float homeY = mMiniSwipe != null ? mMiniSwipe.homeY() : 0f;
-        return Math.max(0, pillPx + Math.round(10 * density - homeY));
+        // MEETUBE(youtube mode): a docked bar has no 12dp under it to take back.
+        int docked = com.newtube.mobile.ui.common.YouTubeMode.isOn(this) ? Math.round(12 * density) : 0;
+        return Math.max(0, pillPx - docked + Math.round(10 * density - homeY));
+    }
+
+    /**
+     * MEETUBE(youtube mode): YouTube's top bar. The brand and the buttons lose their pills and sit
+     * on one flat frost the width of the screen, which reaches down past the tabs and slides up
+     * with the row and the tabs as they go (each keeps its own hider).
+     */
+    private void setUpYouTubeTopBar() {
+        com.newtube.mobile.ui.common.GlassView brand = findViewById(R.id.mobile_brand_glass);
+        com.newtube.mobile.ui.common.GlassView actions = findViewById(R.id.mobile_actions_glass);
+        brand.setPlain();
+        actions.setPlain();
+        View brandRow = brand.getChildAt(0); // the logo flush with the page's 16dp edge, as YouTube's
+        brandRow.setPaddingRelative(0, brandRow.getPaddingTop(), brandRow.getPaddingEnd(), brandRow.getPaddingBottom());
+        float density = getResources().getDisplayMetrics().density;
+        View mark = findViewById(R.id.mobile_brand_mark);
+        mark.getLayoutParams().width = Math.round(28 * density);
+        mark.getLayoutParams().height = Math.round(28 * density);
+        TextView name = findViewById(R.id.mobile_title_bar);
+        name.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 21);
+        name.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD));
+        name.setLetterSpacing(-0.02f);
+
+        com.newtube.mobile.ui.common.GlassView frost = findViewById(R.id.mobile_top_frost);
+        frost.setVisibility(View.VISIBLE);
+        com.newtube.mobile.ui.common.Glass.blur(frost, findViewById(R.id.mobile_blur_target));
+        View top = findViewById(R.id.mobile_top_glass);
+        View tabs = findViewById(R.id.mobile_chip_track);
+        frost.getViewTreeObserver().addOnPreDrawListener(() -> {
+            float bottom = top.getBottom() + top.getTranslationY();
+            if (tabs.getVisibility() == View.VISIBLE) {
+                bottom = Math.max(bottom, tabs.getTop() + tabs.getTranslationY() + tabs.getHeight() * tabs.getAlpha());
+            }
+            float slide = Math.min(0f, bottom - frost.getBottom());
+            if (frost.getTranslationY() != slide) {
+                frost.setTranslationY(slide);
+            }
+            // On You the page's own corner glow runs up under the bar: no frost at the top, which
+            // comes in over the first 64dp of scroll (as You's own fade does) for what goes under it.
+            float alpha = mYouPanel != null && mYouPanel.getVisibility() == View.VISIBLE
+                    ? Math.min(1f, mYouPanel.getScrollY() / (64 * density)) : 1f;
+            if (frost.getAlpha() != alpha) {
+                frost.setAlpha(alpha);
+            }
+            return true;
+        });
+    }
+
+    /** MEETUBE(youtube mode): the docked bar runs under the gesture area and pads itself. */
+    @Override
+    protected boolean shouldInsetContentForNavigationBar() {
+        return !com.newtube.mobile.ui.common.YouTubeMode.isOn(this);
     }
 
     /**
@@ -1426,7 +1499,8 @@ public class MobileBrowseActivity extends MobileActivity
                     mBottomNav.postOnAnimation(() -> onNavItemChosen(itemId));
                 } else {
                     View glass = findViewById(R.id.mobile_nav_glass);
-                    if (glass != null && glass.getScaleX() == 1f) { // not while a drag's pop settles (#90)
+                    if (glass != null && glass.getScaleX() == 1f // not while a drag's pop settles (#90)
+                            && !com.newtube.mobile.ui.common.YouTubeMode.isOn(this)) { // a docked bar holds still
                         Motion.nudge(glass); // MEETUBE(motion): the bar acknowledges the switch
                     }
                     onNavItemChosen(itemId);
@@ -1483,7 +1557,9 @@ public class MobileBrowseActivity extends MobileActivity
         View from = mBottomNav.findViewById(mBottomNav.getSelectedItemId());
         View to = mBottomNav.findViewById(toItemId);
         View bar = findViewById(R.id.mobile_nav_glass);
-        if (!com.newtube.mobile.ui.common.NavLens.enabled(this) || from == null || to == null || from == to
+        // MEETUBE(youtube mode): no lens and no wiggle on the docked bar.
+        if (!com.newtube.mobile.ui.common.NavLens.enabled(this) || com.newtube.mobile.ui.common.YouTubeMode.isOn(this)
+                || from == null || to == null || from == to
                 || to.getWidth() == 0 || !(bar instanceof com.newtube.mobile.ui.common.GlassView)) {
             return false;
         }
@@ -1529,7 +1605,9 @@ public class MobileBrowseActivity extends MobileActivity
                 hideNavHint(); // a touch anywhere else lets it go
             }
             mNavDragging = false;
-            mNavDownX = mBottomNav != null && mBottomNav.isShown() && isOn(mBottomNav, event) ? event.getRawX() : Float.NaN;
+            // MEETUBE(youtube mode): the docked bar is tapped, never dragged across, as on YouTube.
+            mNavDownX = mBottomNav != null && mBottomNav.isShown() && isOn(mBottomNav, event)
+                    && !com.newtube.mobile.ui.common.YouTubeMode.isOn(this) ? event.getRawX() : Float.NaN;
             return false;
         }
         if (Float.isNaN(mNavDownX)) {
