@@ -4,7 +4,7 @@
 
 This is the **tv** branch of [MeeTube](https://github.com/yashoncode/meetube): the MeeTube TV app. The phone app, the README with downloads and the issue tracker are on the [main branch](https://github.com/yashoncode/meetube).
 
-- **Download:** [MeeTube TV 1.0.0](https://github.com/yashoncode/meetube/releases/tag/tv-v1.0.0) (armeabi-v7a for most TVs, arm64-v8a for newer 64-bit boxes, universal if not sure).
+- **Download:** [MeeTube TV 1.1.0](https://github.com/yashoncode/meetube/releases/tag/tv-v1.1.0) (armeabi-v7a for most TVs, arm64-v8a for newer 64-bit boxes, universal if not sure).
 - **What's new:** [CHANGELOG.md](CHANGELOG.md).
 - **Bugs and ideas:** [open an issue](https://github.com/yashoncode/meetube/issues/new/choose) and pick MeeTube TV.
 

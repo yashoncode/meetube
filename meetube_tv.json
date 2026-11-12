@@ -1,8 +1,20 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_universal.apk",
-    "downloadUrlList_armeabi-v7a": ["https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_armeabi-v7a.apk"],
-    "downloadUrlList_arm64-v8a": ["https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_arm64-v8a.apk"]
+    "downloadUrl": "https://github.com/yashoncode/meetube/releases/download/tv-v1.1.0/MeeTubeTV_1.1.0_universal.apk",
+    "downloadUrlList_armeabi-v7a": ["https://github.com/yashoncode/meetube/releases/download/tv-v1.1.0/MeeTubeTV_1.1.0_armeabi-v7a.apk"],
+    "downloadUrlList_arm64-v8a": ["https://github.com/yashoncode/meetube/releases/download/tv-v1.1.0/MeeTubeTV_1.1.0_arm64-v8a.apk"]
+  },
+  "1.1.0": {
+    "versionCode": 10100,
+    "changelog": [
+      "Videos open almost at once: the video under focus loads while you look at its card.",
+      "The focused card glows with a white ring and a lit title.",
+      "AV1 video on TVs that decode it in hardware: smaller downloads, fewer stalls.",
+      "No more stops with \"PoToken attestation failed\".",
+      "About 50 MB less memory while a preview or video plays.",
+      "SponsorBlock asks before skipping a segment.",
+      "Home chips as one segmented track, and a simpler player."
+    ]
   },
   "1.0.0": {
     "versionCode": 10000,

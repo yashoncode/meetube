@@ -9,9 +9,39 @@ Every MeeTube TV release, newest first. The phone app's changelog is on the [mai
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**1.1.0**](#110) | 2026-11-13 | Videos open almost at once, glowing focus, AV1, lighter on memory |
 | [**1.0.0**](#100) | 2026-11-05 | First stable: in-app updates, Shorts player, faster starts |
 | [**0.0.1** Beta](#001-beta) | 2026-11-03 | First beta |
 
+
+## 1.1.0
+
+> **Faster and lighter**<br>
+> 📅 2026-11-13
+
+### New
+
+- Videos open almost at once: half a second after you rest on a video card (Home, Search, Channel), MeeTube TV loads that video in the background, so OK only has to start the player. On a 1 GB TV a video now starts in about a second instead of three and a half.
+- The focused card glows: a white ring around it and a lit title area, so you always see where you are.
+- AV1 video on TVs that decode it in hardware: about 30% smaller than VP9 for the same picture, so videos start sooner and stall less. TVs on the old VP9 default move to AV1 once; a quality you pick later stays.
+- SponsorBlock asks before skipping a segment instead of skipping on its own. Saved skips switch to asking once; a skip you pick after that stays.
+- Home chips are one segmented track (pills in Settings), the heart sits beside the clock in the top bar, and videos start right after the sidebar.
+- A simpler player: no panel behind the controls, and the quality is a pill under the clock.
+- The mouse wheel scrolls like the D-pad.
+- A new UPI QR code on the donation page.
+
+### Faster and lighter
+
+- About 50 MB less memory while a card preview or a video plays: the hidden browser that makes YouTube's security token closes as soon as the token is made.
+- Card previews keep a small buffer of their own instead of the player's.
+- Opens faster after an install or update: startup code is compiled ahead of time.
+
+### Fixed
+
+- No more stops with "PoToken attestation failed": while YouTube is still checking the token, the video keeps playing.
+- Opening a link while the player closes no longer crashes the app.
+- The clock pill on the signed-out Playlists and My videos pages no longer gets a second heart and an empty grey dot.
+- The latest playback fixes from SmartTube, up to its 32.74 (2026-11-12): fewer retries on stream errors, live streams resume at the right position, empty rows are hidden, a crash fix on some Android 8 TVs (XGIMI), and new translations including Malay.
 
 ## 1.0.0
 

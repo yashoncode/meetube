@@ -57,8 +57,8 @@ android {
         applicationId "app.smarttube"
         minSdkVersion project.properties.minSdkVersion
         targetSdkVersion project.properties.targetSdkVersion
-        versionCode 10000 // MEETUBE: major*10000 + minor*100 + patch (SmartTube base was 2459); the in-app updater compares it
-        versionName "1.0.0"
+        versionCode 10100 // MEETUBE: major*10000 + minor*100 + patch (SmartTube base was 2459); the in-app updater compares it
+        versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
 
