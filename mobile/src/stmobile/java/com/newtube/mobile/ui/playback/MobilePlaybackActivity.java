@@ -1515,18 +1515,37 @@ public class MobilePlaybackActivity extends MobileActivity
                 if (mPlayAfterScrub) {
                     mPlayer.setPlayWhenReady(false);
                 }
+                if (mPlayer != null) {
+                    mScrubFrom = mPlayer.getCurrentPosition();
+                    mScrubTarget = position;
+                    mScrubSeekAt = -1;
+                    if (mSeekFilmstrip != null) {
+                        mSeekFilmstrip.setLive(false); // the storyboard until the first frame lands
+                    }
+                    mPlayer.setSeekParameters(SeekParameters.CLOSEST_SYNC); // keyframes: decoded at once
+                    mTimeBar.removeCallbacks(mScrubSeeker);
+                    mTimeBar.post(mScrubSeeker);
+                }
                 updateScrubLabel(position);
                 setScrubChrome(true);
             }
 
             @Override
             public void onScrubMove(TimeBar timeBar, long position) {
+                mScrubTarget = position;
                 updateScrubLabel(position);
             }
 
             @Override
             public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
                 mScrubbing = false;
+                mTimeBar.removeCallbacks(mScrubSeeker);
+                if (mPlayer != null) {
+                    mPlayer.setSeekParameters(MOBILE_SEEK_PARAMETERS);
+                    if (canceled && mScrubSeekAt >= 0) {
+                        mPlayer.seekTo(mScrubFrom); // the preview moved the playhead: put it back
+                    }
+                }
                 showSeekTime(false); // back into the corner
                 setScrubChrome(false);
                 if (!canceled) {
@@ -9423,6 +9442,32 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable private String mHeatmapVideoId;
     /** MEETUBE(seek preview): the drag paused a playing video; letting go plays it again. */
     private boolean mPlayAfterScrub;
+    /**
+     * MEETUBE(seek preview): while dragging, the paused player itself jumps to the keyframe nearest
+     * the finger, so the preview is the video's own picture, not the storyboard's tiny one. One seek
+     * at a time: the next goes out once the last has landed (READY), to the finger's latest spot.
+     */
+    private long mScrubFrom;
+    private long mScrubTarget;
+    private long mScrubSeekAt = -1;
+    private final Runnable mScrubSeeker = new Runnable() {
+        @Override
+        public void run() {
+            if (!mScrubbing || mPlayer == null || mTimeBar == null) {
+                return;
+            }
+            if (mPlayer.getPlaybackState() == Player.STATE_READY) {
+                if (mScrubSeekAt >= 0 && mSeekFilmstrip != null) {
+                    mSeekFilmstrip.setLive(true); // a real frame is up: the storyboard steps aside
+                }
+                if (mScrubTarget != mScrubSeekAt) {
+                    mScrubSeekAt = mScrubTarget;
+                    mPlayer.seekTo(mScrubTarget);
+                }
+            }
+            mTimeBar.postDelayed(this, 60);
+        }
+    };
 
     /**
      * MEETUBE(most replayed, hype): the new video's graph over the seek bar and its hype points card.
