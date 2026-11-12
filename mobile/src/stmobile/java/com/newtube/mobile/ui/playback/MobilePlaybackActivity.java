@@ -1108,7 +1108,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mPickedChip = mAllChip;
         for (TextView chip : mRelatedChipViews) {
             // MEETUBE(issue #105): glass, as Search's chips; the page's own colours behind it.
-            com.newtube.mobile.ui.common.GlassDrawable.apply(chip, null, 0);
+            com.newtube.mobile.ui.common.GlassDrawable.applyPage(chip, null, 0);
             chip.setTag(R.id.mobile_watch_related_chips, chip.getBackground());
             chip.setOnClickListener(v -> onRelatedChip((TextView) v));
         }

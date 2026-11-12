@@ -115,6 +115,31 @@ public final class GlassDrawable extends Drawable {
         }
     }
 
+    /** MEETUBE(light mode): a page's milky light glass, its hairline dark; the video's glass stays dark. */
+    public static final int LIGHT_TINT = 0xD9F2F2F4;
+
+    /**
+     * A pill on a page (chips, the page's buttons), not over the video: {@link #apply} on the dark
+     * theme, light glass ({@link #LIGHT_TINT}) on the light one. Its text: {@link #pageInk}.
+     */
+    public static void applyPage(@NonNull View host, @Nullable GlassSource source, int insetPx) {
+        apply(host, source, insetPx, ThemeMode.isLight(host.getContext()) ? LIGHT_TINT : 0);
+    }
+
+    /** Text on a page pill: dark on the light glass, white on the dark. */
+    public static int pageInk(@NonNull android.content.Context context) {
+        return ThemeMode.isLight(context) ? 0xFF1C1C1E : 0xFFFFFFFF;
+    }
+
+    /** The picked chip's solid pill and its text: black with white text on the light theme, the reverse on the dark. */
+    public static int pickedPill(@NonNull android.content.Context context) {
+        return ThemeMode.isLight(context) ? 0xF21C1C1E : 0xF2FFFFFF;
+    }
+
+    public static int pickedInk(@NonNull android.content.Context context) {
+        return ThemeMode.isLight(context) ? 0xFFFFFFFF : 0xFF000000;
+    }
+
     /** As above, under {@code tint} (0: the buttons' own) - the player's message pills, milkier. */
     public static void apply(@NonNull View host, @Nullable GlassSource source, int insetPx, int tint) {
         GradientDrawable mask = new GradientDrawable();
@@ -166,7 +191,8 @@ public final class GlassDrawable extends Drawable {
         mShape.set(bounds.left + mInset, bounds.top + mInset, bounds.right - mInset, bounds.bottom - mInset);
         if (mTintColor != 0) {
             // a message pill: the app message pill's flat hairline (SheetGlass), not the buttons' light
-            mRim.setColor(androidx.core.content.ContextCompat.getColor(mHost.getContext(), com.liskovsoft.smartyoutubetv2.tv.R.color.meetube_toast_rim));
+            mRim.setColor(mTintColor == LIGHT_TINT ? 0x1A000000 // a light page pill: a dark hairline
+                    : androidx.core.content.ContextCompat.getColor(mHost.getContext(), com.liskovsoft.smartyoutubetv2.tv.R.color.meetube_toast_rim));
             mRecordedX = Integer.MIN_VALUE;
             return;
         }

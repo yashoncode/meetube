@@ -270,7 +270,7 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                 chip.setElevation(dp(context, 4));
                 // MEETUBE(glass): frosted, saturated feed under each pill (liquid: grain + rim too);
                 // made once per cell - apply() hooks a pre-draw listener.
-                GlassDrawable.apply(chip, mGlass, 0);
+                GlassDrawable.applyPage(chip, mGlass, 0);
                 chip.setTag(R.id.mobile_feed_strip, chip.getBackground());
                 view = chip;
             }
@@ -323,12 +323,12 @@ final class FeedStrip extends RecyclerView.Adapter<FeedStrip.Holder> {
                 if (selected) {
                     GradientDrawable bg = new GradientDrawable();
                     bg.setCornerRadius(dp(context, 18));
-                    bg.setColor(0xF2FFFFFF);
+                    bg.setColor(GlassDrawable.pickedPill(context));
                     label.setBackground(bg);
                 } else {
                     label.setBackground((android.graphics.drawable.Drawable) label.getTag(R.id.mobile_feed_strip));
                 }
-                label.setTextColor(selected ? 0xFF000000 : 0xFFFFFFFF);
+                label.setTextColor(selected ? GlassDrawable.pickedInk(context) : GlassDrawable.pageInk(context));
             }
             holder.itemView.setOnClickListener(v -> {
                 // MEETUBE(issue #87): a picked avatar can widen the feed to All.

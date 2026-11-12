@@ -45,6 +45,8 @@ public class GlassChipTrack extends HorizontalScrollView {
     private static final int PILL = 0xF2FFFFFF;
 
     private final float mDp;
+    /** MEETUBE(light mode): a light grey track with dark chips, the white pill standing off it. */
+    private final boolean mLightTheme;
     private final boolean mSimple;
     private final int mSlop;
     private final Row mRow;
@@ -86,6 +88,7 @@ public class GlassChipTrack extends HorizontalScrollView {
     public GlassChipTrack(Context context, @Nullable android.util.AttributeSet attrs) {
         super(context, attrs);
         mDp = getResources().getDisplayMetrics().density;
+        mLightTheme = ThemeMode.isLight(context);
         mSimple = NavLens.lowEnd(context);
         mSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         setHorizontalScrollBarEnabled(false);
@@ -132,7 +135,7 @@ public class GlassChipTrack extends HorizontalScrollView {
     public void setGlassSource(@Nullable GlassSource source) {
         if (!mGlassed) {
             mGlassed = true;
-            GlassDrawable.apply(this, source, 0);
+            GlassDrawable.applyPage(this, source, 0);
         }
     }
 
@@ -230,9 +233,10 @@ public class GlassChipTrack extends HorizontalScrollView {
     /** Black on the light pill, white on the glass or the lens. */
     private void recolor() {
         int on = mDragging ? mHover : mSelected;
-        int color = blend(Color.WHITE, Color.BLACK, pillAlpha());
+        int color = mLightTheme ? Color.BLACK : blend(Color.WHITE, Color.BLACK, pillAlpha());
+        int rest = mLightTheme ? 0xFF3A3A3C : Color.WHITE;
         for (int i = 0; i < mRow.getChildCount(); i++) {
-            ((TextView) mRow.getChildAt(i)).setTextColor(i == on ? color : Color.WHITE);
+            ((TextView) mRow.getChildAt(i)).setTextColor(i == on ? color : rest);
         }
     }
 

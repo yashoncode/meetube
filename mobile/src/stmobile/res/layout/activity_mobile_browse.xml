@@ -447,6 +447,7 @@
             android:elevation="6dp"
             android:scaleType="center"
             android:src="@drawable/ic_chips_expand"
+            app:tint="@color/mobile_color_on_surface"
             android:visibility="gone" />
 
         <Space

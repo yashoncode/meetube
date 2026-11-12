@@ -79,12 +79,13 @@
 
     <!-- MEETUBE(glass): the floating-glass surfaces (light side; dark in values-night). -->
     <color name="meetube_glass_tint">#66FAFAFA</color>
-    <!-- MEETUBE(glass): You's Accounts / Settings, whiter so they stand off a light page. -->
-    <color name="meetube_glass_button">#D9FFFFFF</color>
+    <!-- MEETUBE(glass): You's Accounts / Settings and avatar disc: a faint grey glass on a light page (flat white washed out on the glow). -->
+    <color name="meetube_glass_button">#12000000</color>
     <!-- MEETUBE(glass): the watch page's Comments card, milky glass the page shows through. -->
     <color name="meetube_watch_card">#8CFFFFFF</color>
-    <!-- MEETUBE(search): the search pill stays visible over a plain page, frosted over results. -->
-    <color name="meetube_search_glass_tint">#14000000</color>
+    <!-- MEETUBE(search): milky like the Home pills: a see-through grey let the 6dp shadow show through it
+         (issue #162's look), and the pill and its discs turned a dull grey on a white page. -->
+    <color name="meetube_search_glass_tint">#D9F7F7F8</color>
     <!-- MEETUBE(glass): a pill on a frosted sheet ("Add a comment"): a see-through lift. -->
     <color name="meetube_glass_pill_tint">#14000000</color>
     <!-- MEETUBE(glass): sheet surfaces - the surface, a little see-through over the blurred page. -->
