@@ -59,11 +59,11 @@ public final class ProgressColor {
 
     /** Changes whenever the video line's colours do (its pick, or the accent it follows). */
     public static int videoKey(Context context) {
-        return video(context) * 64 + Accent.index(context);
+        return video(context) * 31 + Accent.key(context);
     }
 
     private static int valid(int i) {
-        return i >= 0 && i < Accent.START.length ? i : DEFAULT;
+        return i >= 0 && i < Accent.CUSTOM ? i : DEFAULT; // the custom colour is the accent's only
     }
 
     private static SharedPreferences prefs(Context context) {

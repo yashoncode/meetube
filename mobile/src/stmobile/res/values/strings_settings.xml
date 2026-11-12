@@ -610,6 +610,10 @@
     <string name="mobile_accent_ocean">Ocean</string>
     <string name="mobile_accent_amethyst">Amethyst</string>
     <string name="mobile_accent_pearl">Pearl</string>
+    <string name="mobile_accent_custom">Custom</string>
+    <string name="mobile_accent_custom_title">Custom colour</string>
+    <string name="mobile_accent_custom_use">Use colour</string>
+    <string name="mobile_accent_custom_hint">Drag, tap a swatch or type a hex code</string>
     <string name="mobile_web_signin_setting">YouTube web sign-in</string>
     <string name="mobile_web_signin_optional">Optional. Needed to send live chat messages</string>
     <string name="mobile_web_signin_signed_as">Signed in as %1$s</string>
