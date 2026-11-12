@@ -665,4 +665,5 @@
     <string name="mobile_shorts_clean_on">Buttons hidden. Long press to bring them back</string>
     <string name="mobile_shorts_clean_off">Buttons are back. Long press to hide them</string>
     <string name="mobile_shorts_clean_tip">Tip: long press a Short to hide its buttons</string>
+    <string name="mobile_player_most_replayed">Most replayed</string>
 </resources>

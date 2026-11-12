@@ -103,6 +103,7 @@ final class Tiles {
     static final int FX_SEEK_LINE = 43;
     static final int SEEK_DOT = 44;
     static final int SEEK_PICTURE = 45;
+    static final int FX_HEATMAP = 46;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -534,7 +535,7 @@ final class Tiles {
 
         Picture(Context context, int kind) {
             mKind = kind;
-            boolean dark = kind == THEME_DARK || kind == FX_SEEK_PILL || kind == FX_SEEK_LINE
+            boolean dark = kind == THEME_DARK || kind == FX_SEEK_PILL || kind == FX_SEEK_LINE || kind == FX_HEATMAP
                     || kind != THEME_LIGHT && kind != THEME_SYSTEM
                     && (context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
                     == Configuration.UI_MODE_NIGHT_YES;
@@ -968,6 +969,48 @@ final class Tiles {
                     mPaint.setTextSize(h * 0.16f);
                     canvas.drawText("3:21", left + w * 0.15f, bottom - h * 0.065f, mPaint);
                     block(canvas, b.left + w * 0.04f, b.top + h * 0.84f, b.right - w * 0.2f, b.top + h * 0.91f, mLine);
+                    break;
+                }
+                case FX_HEATMAP: {
+                    // The video, the dragged bar near its bottom, and the wave rising over it
+                    float corner = h * 0.14f;
+                    video(canvas, b, corner);
+                    float barY = b.bottom - h * 0.14f;
+                    float l = b.left + w * 0.06f;
+                    float r = b.right - w * 0.06f;
+                    float played = l + (r - l) * 0.45f;
+                    float[] wave = {0.5f, 0.3f, 0.2f, 0.35f, 0.9f, 1f, 0.6f, 0.3f, 0.25f, 0.4f, 0.3f, 0.15f};
+                    mPath.reset();
+                    mPath.moveTo(l, barY - h * 0.04f);
+                    float step = (r - l) / (wave.length - 1);
+                    for (int i = 0; i < wave.length; i++) {
+                        float x = l + step * i;
+                        float y = barY - h * 0.04f - wave[i] * h * 0.42f;
+                        if (i == 0) {
+                            mPath.lineTo(x, y);
+                        } else {
+                            float px = x - step;
+                            float py = barY - h * 0.04f - wave[i - 1] * h * 0.42f;
+                            mPath.cubicTo(px + step / 2, py, x - step / 2, y, x, y);
+                        }
+                    }
+                    mPath.lineTo(r, barY - h * 0.04f);
+                    mPath.close();
+                    canvas.save();
+                    canvas.clipRect(l, b.top, played, b.bottom);
+                    mPaint.setColor(0x99FFFFFF);
+                    canvas.drawPath(mPath, mPaint);
+                    canvas.restore();
+                    canvas.save();
+                    canvas.clipRect(played, b.top, r, b.bottom);
+                    mPaint.setColor(0x44FFFFFF);
+                    canvas.drawPath(mPath, mPaint);
+                    canvas.restore();
+                    float t = h * 0.035f;
+                    block(canvas, l, barY - t, r, barY + t, mLine);
+                    block(canvas, l, barY - t, played, barY + t, ACCENT);
+                    mPaint.setColor(ACCENT);
+                    canvas.drawCircle(played, barY, h * 0.075f, mPaint);
                     break;
                 }
                 case FX_SEEK_PILL:

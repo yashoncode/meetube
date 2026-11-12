@@ -26,19 +26,17 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
- * MEETUBE(seek preview): YouTube's seek-bar drag. Over the paused picture the frames around the
- * finger roll by as a filmstrip, the one under the finger enlarged with a white edge, and the time
- * flies in big at the middle. Frames come from the video's storyboard sprite sheets; without one
- * (live, or none sent) only the time shows.
+ * MEETUBE(seek preview): YouTube's seek-bar drag. The frame under the finger fills the video (soft:
+ * it is the storyboard's small picture scaled up); the time shows in the double-tap seek's glass
+ * pill (MobilePlaybackActivity.showSeekTime). Frames come from the video's storyboard sprite
+ * sheets; until a sheet is in, or without one (live, or none sent), the paused picture stays.
  *
  * <p>ponytail: sheets stay cached per video and are never evicted (a few 100 KB each, dropped with
  * the view's next video).
  */
 public final class SeekFilmstrip extends View {
     private final float mDp = getResources().getDisplayMetrics().density;
-    private final Paint mText = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mFill = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint mEdge = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mBitmap = new Paint(Paint.FILTER_BITMAP_FLAG);
     private final SparseArray<Bitmap> mSheets = new SparseArray<>();
     private final SparseArray<Object> mLoading = new SparseArray<>();
@@ -49,9 +47,6 @@ public final class SeekFilmstrip extends View {
     @Nullable private Disposable mFetch;
     @Nullable private String mVideoId;
     private long mPosition;
-    private final Paint mSub = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private String mTime = "";
-    private CharSequence mTitle = "";
 
     public SeekFilmstrip(Context context) {
         this(context, null);
@@ -59,20 +54,7 @@ public final class SeekFilmstrip extends View {
 
     public SeekFilmstrip(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        mText.setColor(0xFFFFFFFF);
-        mText.setTextAlign(Paint.Align.CENTER);
-        mText.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        mText.setTextSize(40 * mDp);
-        mText.setShadowLayer(8 * mDp, 0, 0, 0xCC000000);
-        mSub.setColor(0xFFFFFFFF);
-        mSub.setTextAlign(Paint.Align.CENTER);
-        mSub.setTextSize(15 * mDp);
-        mSub.setShadowLayer(6 * mDp, 0, 0, 0xCC000000);
         mFill.setColor(0xFF1A1A1A);
-        mEdge.setColor(0xFFFFFFFF);
-        mEdge.setStyle(Paint.Style.STROKE);
-        mEdge.setStrokeWidth(2 * mDp);
-        setLayerType(LAYER_TYPE_SOFTWARE, null); // the text shadow
         setClickable(false);
     }
 
@@ -99,50 +81,37 @@ public final class SeekFilmstrip extends View {
                 }, error -> { /* no filmstrip, the time still shows */ });
     }
 
-    public void update(long positionMs, @NonNull String time, @Nullable CharSequence title) {
+    public void update(long positionMs) {
         mPosition = positionMs;
-        mTime = time;
-        mTitle = title == null ? "" : title;
         invalidate();
     }
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
-        float cx = getWidth() / 2f;
-        float cy = getHeight() / 2f;
+        float w = getWidth();
+        float h = getHeight();
         MediaItemStoryboard.Size size = mSize;
-        if (size != null && size.getDurationEachMS() > 0 && size.getHeight() > 0) {
-            drawStrip(canvas, size, cx, cy + 56 * mDp);
+        if (size == null || size.getDurationEachMS() <= 0 || size.getHeight() <= 0) {
+            return;
         }
-        canvas.drawText(mTime, cx, cy - 30 * mDp, mText);
-        if (mTitle.length() > 0) {
-            canvas.drawText(android.text.TextUtils.ellipsize(mTitle, new android.text.TextPaint(mSub),
-                    getWidth() - 48 * mDp, android.text.TextUtils.TruncateAt.END).toString(), cx, cy - 4 * mDp, mSub);
+        // The frame under the finger fills the video, fit inside it; scaled up from the small
+        // storyboard picture it is soft, like YouTube's. Black behind it hides the paused picture.
+        float scale = Math.min(w / size.getWidth(), h / size.getHeight());
+        float fw = size.getWidth() * scale;
+        float fh = size.getHeight() * scale;
+        int index = (int) (mPosition / size.getDurationEachMS());
+        if (hasFrame(size, index)) {
+            mFill.setColor(0xFF000000);
+            canvas.drawRect(0, 0, w, h, mFill); // not drawColor: the parents do not clip, it would black the page
+            mFill.setColor(0xFF1A1A1A);
+            draw(canvas, size, index, (w - fw) / 2, (h - fh) / 2, fw, fh);
         }
     }
 
-    private void drawStrip(Canvas canvas, MediaItemStoryboard.Size size, float cx, float cy) {
-        float h = 64 * mDp;
-        float w = h * size.getWidth() / size.getHeight();
-        long each = size.getDurationEachMS();
-        int centre = (int) (mPosition / each);
-        int reach = (int) (cx / w) + 2;
-        for (int k = -reach; k <= reach; k++) {
-            int index = centre + k;
-            if (index < 0) {
-                continue;
-            }
-            // frame i covers [i*each, (i+1)*each): its middle sits at that offset from the finger
-            float x = cx + ((index + 0.5f) * each - mPosition) / each * w;
-            if (k == 0) {
-                continue; // drawn last, enlarged
-            }
-            draw(canvas, size, index, x - w / 2, cy - h / 2, w - 2 * mDp, h);
-        }
-        float big = 1.3f;
-        float bx = cx + ((centre + 0.5f) * each - mPosition) / each * w;
-        draw(canvas, size, centre, bx - w * big / 2, cy - h * big / 2, w * big, h * big);
-        canvas.drawRect(mDst, mEdge);
+    /** The frame's sheet is in (it is asked for when not); else the paused picture stays. */
+    private boolean hasFrame(MediaItemStoryboard.Size size, int index) {
+        int perSheet = Math.max(1, size.getColCount() * size.getRowCount());
+        return sheet(index / perSheet) != null;
     }
 
     private void draw(Canvas canvas, MediaItemStoryboard.Size size, int index, float left, float top,

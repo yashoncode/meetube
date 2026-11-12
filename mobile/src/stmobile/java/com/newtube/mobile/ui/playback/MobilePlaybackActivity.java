@@ -1503,6 +1503,11 @@ public class MobilePlaybackActivity extends MobileActivity
                 // NEXT/PREVIOUS_SYNC (see the seek-burst watchdog doc).
                 endUserSeekBurst();
                 cancelAutoHide();
+                // MEETUBE(seek preview): YouTube pauses while the preview shows; no sound runs under it
+                mPlayAfterScrub = mPlayer != null && mPlayer.getPlayWhenReady();
+                if (mPlayAfterScrub) {
+                    mPlayer.setPlayWhenReady(false);
+                }
                 updateScrubLabel(position);
                 setScrubChrome(true);
             }
@@ -1515,6 +1520,7 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override
             public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
                 mScrubbing = false;
+                showSeekTime(false); // back into the corner
                 setScrubChrome(false);
                 if (!canceled) {
                     setTextIfChanged(mPositionView, positionText(position, getDurationMs()));
@@ -1526,6 +1532,10 @@ public class MobilePlaybackActivity extends MobileActivity
                     // measurements this replaces).
                     mExoPlayerController.setPositionMs(position);
                 }
+                if (mPlayAfterScrub && mPlayer != null) {
+                    mPlayer.setPlayWhenReady(true);
+                }
+                mPlayAfterScrub = false;
                 armAutoHide();
             }
         });
@@ -8884,12 +8894,40 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mSeekTimeShown;
 
     private void showSeekTime(boolean show) {
+        showSeekTime(show, null);
+    }
+
+    /** "1:24 / 10:05" (the length dimmed), then "Most replayed" at the graph's peak, then the chapter. */
+    private CharSequence seekLabel(long positionMs, boolean mostReplayed, @Nullable CharSequence chapter) {
+        String at = formatTime(positionMs);
+        long length = getDurationMs();
+        StringBuilder text = new StringBuilder(at);
+        if (length > 0) {
+            text.append(" / ").append(formatTime(length));
+        }
+        int dimEnd = text.length();
+        if (mostReplayed) {
+            text.append("  ·  ").append(getString(R.string.mobile_player_most_replayed));
+        }
+        if (!TextUtils.isEmpty(chapter)) {
+            text.append("  ·  ").append(chapter);
+        }
+        android.text.SpannableString span = new android.text.SpannableString(text);
+        span.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, at.length(), 0);
+        span.setSpan(new android.text.style.ForegroundColorSpan(0xB3FFFFFF), at.length(), dimEnd, 0);
+        return span;
+    }
+
+    /** ...with {@code label} in place of the player's own position (the seek bar's drag). */
+    private void showSeekTime(boolean show, @Nullable CharSequence label) {
         if (mSeekTime == null || mProgressBar == null || (!show && !mSeekTimeShown)) {
             return;
         }
         mSeekTimeShown = show;
         if (show) {
-            if (mPlayer != null) { // "1:24 / 10:05", the length dimmed
+            if (label != null) {
+                mSeekTime.setText(label);
+            } else if (mPlayer != null) { // "1:24 / 10:05", the length dimmed
                 String at = formatTime(mPlayer.getCurrentPosition());
                 long length = mPlayer.getDuration();
                 android.text.SpannableString text = new android.text.SpannableString(
@@ -9374,6 +9412,33 @@ public class MobilePlaybackActivity extends MobileActivity
         // TODO Wave N: storyboard thumbnail preview on the seek bar.
     }
 
+    @Nullable private String mHeatmapVideoId;
+    /** MEETUBE(seek preview): the drag paused a playing video; letting go plays it again. */
+    private boolean mPlayAfterScrub;
+
+    /** MEETUBE(most replayed): the new video's graph over the seek bar, when YouTube has one. */
+    private void loadMostReplayed(@Nullable Video item) {
+        // Its own "which video" (not sameVideo: the watch page binds the id before this runs)
+        String id = item != null ? item.videoId : null;
+        if (mTimeBar == null || Helpers.equals(id, mHeatmapVideoId)) {
+            return;
+        }
+        mHeatmapVideoId = id;
+        mTimeBar.setHeatmap(null);
+        if (item == null || item.videoId == null || item.isLive || item.belongsToShorts()
+                || !MostReplayed.isOn(this)) {
+            return;
+        }
+        String videoId = item.videoId;
+        MostReplayed.fetch(videoId, scores -> runOnUiThread(() -> {
+            android.util.Log.d("MostReplayed", videoId + ": " + (scores != null ? scores.length + " points" : "none"));
+            Video current = getVideo();
+            if (mTimeBar != null && current != null && videoId.equals(current.videoId)) {
+                mTimeBar.setHeatmap(scores);
+            }
+        }));
+    }
+
     @Override
     public void setSeekBarSegments(List<SeekBarSegment> segments) {
         // SponsorBlock colored ranges on the seek bar. SponsorBlockController resolves each range to
@@ -9612,8 +9677,16 @@ public class MobilePlaybackActivity extends MobileActivity
         CharSequence title = index >= 0 ? mChapterVideos.get(index).title : null;
         String time = formatTime(positionMs);
         setTextIfChanged(mScrubChapterView, TextUtils.isEmpty(title) ? time : time + "   " + title);
-        if (mSeekFilmstrip != null) {
-            mSeekFilmstrip.update(positionMs, time, title);
+        if (mSeekFilmstrip != null && mScrubbing) {
+            mSeekFilmstrip.update(positionMs);
+            // MEETUBE(seek preview): the double-tap seek's glass pill, flown in from the corner on the
+            // drag's first move, then only its text changes
+            CharSequence label = seekLabel(positionMs, mTimeBar != null && mTimeBar.isMostReplayedAt(positionMs), title);
+            if (mSeekTimeShown && mSeekTime != null) {
+                mSeekTime.setText(label);
+            } else {
+                showSeekTime(true, label);
+            }
         }
     }
 
@@ -12629,6 +12702,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 mTimeBar.cancelScrub();
             }
         }
+        loadMostReplayed(item);
         if (!sameVideo || (item != null && !TextUtils.isEmpty(item.getTitleFull()))) {
             setTitle(item != null ? item.getTitleFull() : null);
         }
