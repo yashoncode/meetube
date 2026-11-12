@@ -161,7 +161,7 @@ final class StoragePage {
         clear.setCompoundDrawablePadding(dp(context, 8));
         clear.setPadding(dp(context, 16), dp(context, 14), dp(context, 16), dp(context, 14));
         // MEETUBE(glass): a plain frosted pill, the buttons' own tint; no source - the list it sits in is the glass source
-        GlassDrawable.apply(clear, null, 0);
+        GlassDrawable.applyPage(clear, null, 0);
         LinearLayout.LayoutParams clearParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         clearParams.topMargin = dp(context, 20);

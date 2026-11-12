@@ -378,7 +378,7 @@ public class MobileSearchActivity extends MobileActivity
             TextView chip = (TextView) getLayoutInflater().inflate(R.layout.mobile_search_chip, mChips, false);
             chip.setText(entry[0]);
             // MEETUBE(glass): frosted results under each chip, as the Home feed strip's pills.
-            com.newtube.mobile.ui.common.GlassDrawable.apply(chip, results, 0);
+            com.newtube.mobile.ui.common.GlassDrawable.applyPage(chip, results, 0);
             chip.setTag(R.id.mobile_search_chips, chip.getBackground());
             int flag = entry[1];
             chip.setOnClickListener(v -> pickChip(flag));
@@ -408,12 +408,13 @@ public class MobileSearchActivity extends MobileActivity
             if (selected) {
                 android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
                 bg.setCornerRadius(18 * getResources().getDisplayMetrics().density);
-                bg.setColor(0xF2FFFFFF);
+                bg.setColor(com.newtube.mobile.ui.common.GlassDrawable.pickedPill(this));
                 chip.setBackground(bg);
             } else {
                 chip.setBackground((android.graphics.drawable.Drawable) chip.getTag(R.id.mobile_search_chips));
             }
-            chip.setTextColor(selected ? 0xFF000000 : 0xFFFFFFFF);
+            chip.setTextColor(selected ? com.newtube.mobile.ui.common.GlassDrawable.pickedInk(this)
+                    : com.newtube.mobile.ui.common.GlassDrawable.pageInk(this));
         }
     }
 

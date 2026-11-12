@@ -1157,7 +1157,7 @@ public class MobileBrowseActivity extends MobileActivity
         mChipRow.setItemAnimator(null);
         mChipRow.setAdapter(mStrip.items());
         View chipExpand = findViewById(R.id.mobile_chip_expand);
-        com.newtube.mobile.ui.common.GlassDrawable.apply(chipExpand, findViewById(R.id.mobile_blur_target), 0);
+        com.newtube.mobile.ui.common.GlassDrawable.applyPage(chipExpand, findViewById(R.id.mobile_blur_target), 0);
         mChipTrack = findViewById(R.id.mobile_chip_track);
         mChipTrack.setGlassSource(findViewById(R.id.mobile_blur_target));
         mStrip.setTrack(mChipTrack);
@@ -2279,7 +2279,8 @@ public class MobileBrowseActivity extends MobileActivity
         TextView about = new TextView(this);
         about.setText(R.string.mobile_you_about);
         about.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9);
-        about.setTextColor(0x59FFFFFF);
+        about.setTextColor(getColor(R.color.mobile_color_on_surface)); // the theme's text, faint: both themes
+        about.setAlpha(0.4f);
         about.setLetterSpacing(0.08f);
         about.setGravity(android.view.Gravity.CENTER);
         int pad = Math.round(14 * getResources().getDisplayMetrics().density);
