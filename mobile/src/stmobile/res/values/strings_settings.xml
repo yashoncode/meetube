@@ -98,6 +98,8 @@
     <string name="mobile_settings_interface_size">Interface size</string>
     <string name="mobile_settings_voice_search">Search by voice right away</string>
     <string name="mobile_settings_voice_search_summary">Opening Search starts listening</string>
+    <string name="mobile_settings_new_uploads">Notify about new uploads</string>
+    <string name="mobile_settings_new_uploads_summary">New videos from your subscriptions show up in the notification shade, checked every few hours</string>
     <string name="mobile_settings_24_hour">Use 24-hour time</string>
     <string name="mobile_settings_24_hour_summary">For the start times of premieres and live streams</string>
     <string name="mobile_settings_liquid_glass">Liquid glass</string>

@@ -74,6 +74,12 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_24_hour_summary),
                 generalData::is24HourLocaleEnabled, generalData::set24HourLocaleEnabled).needsRestart());
 
+        // MEETUBE(issue #220): new uploads from subscriptions, checked every 3 hours in the background
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_new_uploads),
+                context.getString(R.string.mobile_settings_new_uploads_summary),
+                () -> com.newtube.mobile.notify.NewUploadsWorker.isEnabled(context),
+                on -> com.newtube.mobile.notify.NewUploadsWorker.setEnabled(context, on)));
+
         // MEETUBE(counts): K and M by default; lakh and crore, as YouTube writes them for India, here.
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_indian_counts),
                 context.getString(R.string.mobile_settings_indian_counts_summary),
