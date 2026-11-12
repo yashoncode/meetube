@@ -8,11 +8,11 @@
     android:layout_height="wrap_content"
     android:accessibilityHeading="true"
     android:fontFamily="sans-serif-medium"
-    android:paddingStart="@dimen/mobile_settings_row_inset"
+    android:paddingStart="26dp"
     android:letterSpacing="0.02"
     android:paddingTop="24dp"
     android:paddingEnd="@dimen/mobile_settings_row_inset"
     android:paddingBottom="8dp"
-    android:textColor="@color/mobile_color_section_title"
+    android:textColor="@color/mobile_color_on_surface_secondary"
     android:textSize="@dimen/mobile_settings_header_size"
     tools:text="Network" />

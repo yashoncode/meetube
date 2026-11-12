@@ -135,6 +135,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private final TextView title;
         private final TextView summary;
         private final SwitchMaterial toggle;
+        private final View chevron;
 
         RowHolder(@NonNull View itemView) {
             super(itemView);
@@ -142,6 +143,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             title = itemView.findViewById(R.id.settings_row_title);
             summary = itemView.findViewById(R.id.settings_row_summary);
             toggle = itemView.findViewById(R.id.settings_row_switch);
+            chevron = itemView.findViewById(R.id.settings_row_chevron);
         }
 
         void bind(SettingsRow row, Listener listener) {
@@ -171,6 +173,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             boolean isSwitch = row.kind == SettingsRow.KIND_SWITCH;
             toggle.setVisibility(isSwitch ? View.VISIBLE : View.GONE);
+            chevron.setVisibility(row.kind == SettingsRow.KIND_LINK && row.page != null ? View.VISIBLE : View.GONE);
             if (isSwitch && row.checked != null) {
                 boolean on = row.checked.getAsBoolean();
                 if (toggle.isChecked() != on) {

@@ -141,6 +141,36 @@ public final class SheetGlass {
         }
     }
 
+    /**
+     * MEETUBE(glass): an alert dialog on the sheets' glass instead of its flat surface: the window
+     * keeps the Material background's insets (where the card sits) but paints nothing, and the
+     * card itself (parentPanel) takes the blurred page, rounded like the Material shape (28dp).
+     */
+    static void frostAlert(@NonNull Dialog dialog) {
+        Window window = dialog.getWindow();
+        View panel = dialog.findViewById(androidx.appcompat.R.id.parentPanel);
+        Activity activity = activityOf(dialog.getContext());
+        if (window == null || panel == null || activity == null) {
+            return;
+        }
+        Drawable surface = window.getDecorView().getBackground();
+        android.graphics.Rect inset = new android.graphics.Rect();
+        if (surface != null) {
+            surface.getPadding(inset);
+        }
+        window.setBackgroundDrawable(new android.graphics.drawable.InsetDrawable(
+                new android.graphics.drawable.ColorDrawable(0), inset.left, inset.top, inset.right, inset.bottom));
+        float corner = 28 * panel.getResources().getDisplayMetrics().density;
+        panel.setClipToOutline(true);
+        panel.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, android.graphics.Outline outline) {
+                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), corner);
+            }
+        });
+        panel.post(() -> frost(panel, activity.getWindow(), panel, corner, false, 0));
+    }
+
     /** Paints {@code target}'s background with {@code page}, blurred, behind the sheet's tint. */
     public static void frost(@NonNull View target, @Nullable Window page) {
         frost(target, page, CORNER_DP * target.getResources().getDisplayMetrics().density);

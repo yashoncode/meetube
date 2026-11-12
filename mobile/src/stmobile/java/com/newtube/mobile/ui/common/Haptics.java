@@ -242,6 +242,8 @@ public final class Haptics {
                     } else if ("onAttachedToWindow".equals(method.getName())) {
                         if (dialog instanceof com.google.android.material.bottomsheet.BottomSheetDialog) {
                             SheetGlass.frost(dialog); // MEETUBE(glass): every sheet passes through here
+                        } else if (dialog instanceof androidx.appcompat.app.AlertDialog) {
+                            SheetGlass.frostAlert(dialog); // and every alert
                         }
                         FocusRing.install(window); // MEETUBE(tv): and every dialog
                         FocusRing.focusFirstRow(window);
