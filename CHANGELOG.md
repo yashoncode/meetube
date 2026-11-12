@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.4.0** Bleach](#340-bleach) | 2026-11-12 | YouTube mode |
 | [**3.3.7** Melmo](#337-melmo) | 2026-11-12 | Connected |
 | [**3.3.5** Sentinel](#335-sentinel) | 2026-11-08 | Immersive |
 | [**3.3.1** Pluto](#331-pluto) | 2026-11-04 | Tuned |
@@ -45,12 +46,46 @@ Every MeeTube release, newest first.<br>
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
 
-## Next release
+## 3.4.0 Bleach
+
+> **YouTube mode**<br>
+> 📅 2026-11-12 · closes #193, #220, #233, #235 and #236
+
+### ✨ Highlights
+
+- **YouTube mode:** one switch in Settings > Customization > Look makes MeeTube feel like YouTube. The bottom bar sits flat on the bottom edge on frosted glass, Search moves up to the top bar, Home's chips become text tabs and every video card gets sharp corners.
+- **Any accent colour:** pick a Custom colour with a full colour picker (hue, saturation, brightness, 16 quick picks or a hex code), and the whole app follows it.
+- **Settings revamp:** Settings sit on grouped glass cards with seven card styles to choose from, pages frost in and out, and Customization shows a picture for more of its options.
+- **Hyped:** YouTube's Charts in Explore (or as a bottom bar tab), every video ranked on its thumbnail, and a Hype this video card beside the comments on the watch page.
+- **New uploads in your notifications:** new videos from your subscriptions show up in the notification shade, with or without an account. Settings > General > Notify about new uploads turns it off (#220).
+- **Polish and Brazilian Portuguese:** MeeTube now speaks both in full, every screen and setting translated.
+- **Magic under the hood:** seeking shows the real frame in the video's own quality, a Most replayed graph rises over the seek bar, and taps on the bottom bar buzz so you feel them.
+
+### New
+
+- Playlist pages like YouTube's: a backdrop from the cover, sort, All / Videos / Shorts pills, Download all or Select videos, and a + on Watch later to add videos.
+- Equalizer in the player's gear menu, applied live (#236).
+- Tapping a comment in the watch page's comment preview opens the comments right at it, briefly highlighted.
+- Double tap to skip shows where the video lands in a frosted time pill.
+- Five new app icons by @m0in01: Red CRT, Chrome Play, Pixel Play, Starry Night and GTA VI (#193).
+
+### Changed
+
+- The You page's Library and Explore sit on a minimal glass card, and the corner light takes your accent colour. Customization > You page glow brings back the RGB light.
+- Light mode gets its own light glass on pages, while the glass over the video stays dark.
+- Alert dialogs are frosted glass like the sheets.
+- Every menu row has an icon.
 
 ### Fixed
 
-- Sorry if you thought of donating and my UPI wasn't working earlier. It's fixed now: Sudo brew coffee in About and the README have a new QR and UPI ID (`yashwynth@slc`).
+- A headset's button resumes a video it paused (#235).
+- The mini player keeps showing after Shorts (#233).
+- Restart in Settings works again.
+- Sudo brew coffee in About and the README have a new QR and UPI ID (`yashwynth@slc`). Sorry if you tried to donate while the old one wasn't working.
 
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @m0in01, @sirpaarth-beep, @dhanunjay333i-cyber, @mhommad222 and @orbit21.
 
 ## 3.3.7 Melmo
 
