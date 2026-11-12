@@ -24,7 +24,7 @@ public final class NavTabs {
     public static final int SECOND = 1;
     /** What a slot can hold, in the order Settings lists them. */
     public static final int[] CHOICES = {MediaGroup.TYPE_SHORTS, MediaGroup.TYPE_SUBSCRIPTIONS,
-            VideoDownloads.SECTION_ID, MediaGroup.TYPE_HISTORY};
+            VideoDownloads.SECTION_ID, MediaGroup.TYPE_HISTORY, MediaGroup.TYPE_TRENDING};
     private static final String PREFS = "meetube_nav_tabs";
     private static final String[] KEYS = {"before_search", "after_search"}; // the names from when Search sat between
     private static final String KEY_LABELS = "labels";

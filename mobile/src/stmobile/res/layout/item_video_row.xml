@@ -56,6 +56,25 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone" />
 
+            <!-- MEETUBE(hyped): the card's place in a chart. -->
+            <TextView
+                android:id="@+id/video_rank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="4dp"
+                android:background="@drawable/bg_video_rank"
+                android:fontFamily="sans-serif-black"
+                android:fontFeatureSettings="tnum"
+                android:gravity="center"
+                android:minWidth="22dp"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="1dp"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="1" />
+
             <TextView
                 android:id="@+id/video_badge"
                 android:layout_width="wrap_content"

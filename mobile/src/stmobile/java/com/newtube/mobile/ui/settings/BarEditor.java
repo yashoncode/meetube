@@ -423,6 +423,8 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 return R.drawable.ic_nav_downloads;
             case MediaGroup.TYPE_HISTORY:
                 return R.drawable.ic_nav_history;
+            case MediaGroup.TYPE_TRENDING:
+                return R.drawable.ic_nav_hyped;
             default:
                 return R.drawable.ic_mobile_add;
         }
@@ -468,6 +470,8 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 return R.string.header_subscriptions;
             case VideoDownloads.SECTION_ID:
                 return R.string.header_downloads;
+            case MediaGroup.TYPE_TRENDING:
+                return R.string.header_trending;
             default:
                 return R.string.header_history;
         }

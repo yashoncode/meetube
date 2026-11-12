@@ -34,10 +34,10 @@ public final class NavLens extends View {
     private static final String PREFS = "meetube_app";
     private static final String KEY_MOTION = "tab_switch_motion";
     /** The lens swells in place this long before it glides (a switch's page swap lands then, not mid-glide). */
-    private static final long GLIDE_DELAY_MS = 50;
-    private static final float GROW_MS = 130f;
-    private static final float SETTLE_MS = 200f;
-    private static final float GLIDE_STIFFNESS = 480f;
+    private static final long GLIDE_DELAY_MS = 16;
+    private static final float GROW_MS = 90f;
+    private static final float SETTLE_MS = 140f;
+    private static final float GLIDE_STIFFNESS = 1000f;
     private static final float GLIDE_DAMPING = 0.82f;
     public static final long JIGGLE_MS = 700;
     private static final float JIGGLE_LEAN_DP = 6f;

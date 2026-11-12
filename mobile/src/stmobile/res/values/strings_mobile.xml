@@ -142,6 +142,8 @@
 
     <!-- Comments panel (under the video: CommentsPanel) -->
     <string name="mobile_comments_entry">Comments</string>
+    <string name="mobile_hype_title">Hype this video</string>
+    <string name="mobile_hype_points">Hype points</string>
     <string name="mobile_comments_title">Comments</string>
     <string name="mobile_comments_replies_title">Replies</string>
     <string name="mobile_comments_none">No comments yet</string>

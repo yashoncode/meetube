@@ -345,12 +345,18 @@
 
     </LinearLayout>
 
+    <!-- MEETUBE(hype): comments and "Hype this video" share one spot; a sideways swipe pages between. -->
+    <com.newtube.mobile.ui.common.SwipeCards
+        android:id="@+id/mobile_watch_swipe_cards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/mobile_watch_content_padding">
+
     <!-- Comments: the count, then one top comment at a time (it changes every few seconds). -->
     <LinearLayout
         android:id="@+id/mobile_watch_comments_entry"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/mobile_watch_content_padding"
+        android:layout_height="match_parent"
         android:layout_marginTop="4dp"
         android:background="@drawable/bg_watch_card"
         android:clickable="true"
@@ -428,5 +434,71 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <!-- MEETUBE(hype): the video's hype points, for videos in their first week. -->
+    <LinearLayout
+        android:id="@+id/mobile_watch_hype_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_watch_card"
+        android:orientation="vertical"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="11dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/mobile_hype_title"
+            android:textColor="@color/mobile_color_on_surface"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_hype_star" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/mobile_watch_hype_points"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:fontFeatureSettings="tnum"
+                    android:textColor="@color/mobile_color_on_surface"
+                    android:textSize="17sp"
+                    tools:text="646,030" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/mobile_hype_points"
+                    android:textColor="@color/mobile_color_on_surface_secondary"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    </com.newtube.mobile.ui.common.SwipeCards>
 
 </LinearLayout>

@@ -406,6 +406,10 @@ public class MobilePlaybackActivity extends MobileActivity
     private View mCommentTeaser;
     private ImageView mCommentTeaserAvatar;
     private TextView mCommentTeaserText;
+    /** MEETUBE(hype): beside the comments card (a swipe away), on the compact page only. */
+    private com.newtube.mobile.ui.common.SwipeCards mSwipeCards;
+    private View mHypeCard;
+    private TextView mHypePoints;
     private final List<CommentItem> mTopComments = new ArrayList<>();
     private int mTopCommentIndex;
     private static final long TOP_COMMENT_MS = 10_000;
@@ -1234,6 +1238,9 @@ public class MobilePlaybackActivity extends MobileActivity
         mCommentTeaser = findViewById(R.id.mobile_watch_comment_teaser);
         mCommentTeaserAvatar = findViewById(R.id.mobile_watch_comment_avatar);
         mCommentTeaserText = findViewById(R.id.mobile_watch_comment_text);
+        mSwipeCards = findViewById(R.id.mobile_watch_swipe_cards);
+        mHypeCard = findViewById(R.id.mobile_watch_hype_card);
+        mHypePoints = findViewById(R.id.mobile_watch_hype_points);
         mWatchChatEntry = findViewById(R.id.mobile_watch_chat_entry);
         mScrubChapterView = findViewById(R.id.mobile_player_scrub_chapter);
         mChapterPill = findViewById(R.id.mobile_player_chapter_pill);
@@ -2554,6 +2561,7 @@ public class MobilePlaybackActivity extends MobileActivity
         Utils.removeCallbacks(mReleaseImageRequests);
         Utils.removeCallbacks(mReleaseWatchMetadata);
         Utils.removeCallbacks(mPrefetchComments);
+        Utils.removeCallbacks(mLoadWatchExtras);
         Utils.removeCallbacks(mNextTopComment);
         if (mCommentsPanel != null) {
             mCommentsPanel.release();
@@ -9416,27 +9424,65 @@ public class MobilePlaybackActivity extends MobileActivity
     /** MEETUBE(seek preview): the drag paused a playing video; letting go plays it again. */
     private boolean mPlayAfterScrub;
 
-    /** MEETUBE(most replayed): the new video's graph over the seek bar, when YouTube has one. */
+    /**
+     * MEETUBE(most replayed, hype): the new video's graph over the seek bar and its hype points card.
+     * Playback comes first: neither asks anything until the video has been PLAYING a while
+     * (WATCH_EXTRAS_DELAY_MS, checked again until it plays), so startup never shares the network
+     * or a core with them, and their threads run at background priority.
+     */
     private void loadMostReplayed(@Nullable Video item) {
         // Its own "which video" (not sameVideo: the watch page binds the id before this runs)
         String id = item != null ? item.videoId : null;
-        if (mTimeBar == null || Helpers.equals(id, mHeatmapVideoId)) {
+        if (Helpers.equals(id, mHeatmapVideoId)) {
             return;
         }
         mHeatmapVideoId = id;
-        mTimeBar.setHeatmap(null);
-        if (item == null || item.videoId == null || item.isLive || item.belongsToShorts()
-                || !MostReplayed.isOn(this)) {
+        Utils.removeCallbacks(mLoadWatchExtras);
+        if (mTimeBar != null) {
+            mTimeBar.setHeatmap(null);
+        }
+        if (mHypeCard != null) {
+            mHypeCard.setVisibility(View.GONE);
+            mSwipeCards.reset();
+        }
+        if (item == null || item.videoId == null || item.isLive || item.belongsToShorts()) {
+            return;
+        }
+        Utils.postDelayed(mLoadWatchExtras, WATCH_EXTRAS_DELAY_MS);
+    }
+
+    private static final long WATCH_EXTRAS_DELAY_MS = 3_000;
+    private final Runnable mLoadWatchExtras = this::loadWatchExtras;
+
+    private void loadWatchExtras() {
+        Video item = getVideo();
+        if (item == null || item.videoId == null || !item.videoId.equals(mHeatmapVideoId) || isFinishing()) {
+            return;
+        }
+        if (!isPlaying()) { // still buffering, or paused: wait for the video, not the other way round
+            Utils.postDelayed(mLoadWatchExtras, WATCH_EXTRAS_DELAY_MS);
             return;
         }
         String videoId = item.videoId;
-        MostReplayed.fetch(videoId, scores -> runOnUiThread(() -> {
-            android.util.Log.d("MostReplayed", videoId + ": " + (scores != null ? scores.length + " points" : "none"));
-            Video current = getVideo();
-            if (mTimeBar != null && current != null && videoId.equals(current.videoId)) {
-                mTimeBar.setHeatmap(scores);
-            }
-        }));
+        if (mTimeBar != null && MostReplayed.isOn(this)) {
+            MostReplayed.fetch(videoId, scores -> runOnUiThread(() -> {
+                android.util.Log.d("MostReplayed", videoId + ": " + (scores != null ? scores.length + " points" : "none"));
+                Video current = getVideo();
+                if (mTimeBar != null && current != null && videoId.equals(current.videoId)) {
+                    mTimeBar.setHeatmap(scores);
+                }
+            }));
+        }
+        if (mHypeCard != null) {
+            HypePoints.fetch(videoId, points -> runOnUiThread(() -> {
+                android.util.Log.d("HypePoints", videoId + ": " + points);
+                Video current = getVideo();
+                if (mHypeCard != null && points != null && current != null && videoId.equals(current.videoId)) {
+                    mHypePoints.setText(points);
+                    mHypeCard.setVisibility(View.VISIBLE);
+                }
+            }));
+        }
     }
 
     @Override

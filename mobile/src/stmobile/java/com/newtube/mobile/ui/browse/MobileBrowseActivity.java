@@ -215,6 +215,14 @@ public class MobileBrowseActivity extends MobileActivity
     /** Personal chips' strip ids, clear of the section ids the topic chips use. */
     private static final long HOME_CHIP_ID = 1_000_000;
     private static final int HOME_CHIPS_MAX = 10;
+    /**
+     * MEETUBE(hyped): Hyped's chart, one list per category (in order, Top 100 first), and the
+     * category on screen (null: the first). Every category comes in the one fetch; a chip only
+     * changes which list the grid shows.
+     */
+    private final Map<String, List<Video>> mHypedGroups = new java.util.LinkedHashMap<>();
+    @Nullable private String mHypedChip;
+    private static final long HYPED_CHIP_ID = 2_000_000;
     /** That channel's last page, for the next one. */
     @Nullable private MediaGroup mSubsChannelPage;
     @Nullable private io.reactivex.rxjava3.disposables.Disposable mSubsAction;
@@ -1130,6 +1138,7 @@ public class MobileBrowseActivity extends MobileActivity
         mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked) {
             @Override
             public void onCurrentListChanged(@NonNull List<Video> previous, @NonNull List<Video> current) {
+                super.onCurrentListChanged(previous, current);
                 if (mRowsShown) {
                     mRows.submit(current);
                 }
@@ -1400,11 +1409,13 @@ public class MobileBrowseActivity extends MobileActivity
         mBottomNav.setOnItemSelectedListener(item -> {
             if (item.getItemId() == SEARCH_ITEM_ID) {
                 if (!mSuppressNavCallback) {
+                    com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 22, 255);
                     SearchPresenter.instance(this).startSearch(null);
                 }
                 return false; // a button, not a place: the tab you were on stays lit
             }
             if (!mSuppressNavCallback) {
+                com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, Float.isNaN(mNavDragFromX) ? 22 : 20, Float.isNaN(mNavDragFromX) ? 255 : 190); // MEETUBE(nav haptics): tap, or let go
                 int itemId = item.getItemId();
                 if (itemId == toMenuItemId(MediaGroup.TYPE_SHORTS) && Float.isNaN(mNavDragFromX)) {
                     // MEETUBE(shorts, issue #107): like Search, Shorts opens from the tap - no lens or
@@ -1430,6 +1441,7 @@ public class MobileBrowseActivity extends MobileActivity
             if (mSuppressNavCallback) {
                 return;
             }
+            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 22, 255);
             // MEETUBE(issue #179): a tab lit over another page (a rebuilt bar lights its first tab,
             // Home, over History opened from You) is a switch: as a re-tap it refreshed History.
             boolean onItsPage = item.getItemId() == YOU_ITEM_ID ? mYouShowing
@@ -1535,6 +1547,7 @@ public class MobileBrowseActivity extends MobileActivity
             }
             // A drag now, not a tap: the tab under the finger lets go of the press.
             mNavDragging = true;
+            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 18, 170);
             mNavDragOver = View.NO_ID; // the tab under the finger pops out (and ticks) below
             android.view.MotionEvent cancel = android.view.MotionEvent.obtain(event);
             cancel.setAction(android.view.MotionEvent.ACTION_CANCEL);
@@ -1579,7 +1592,7 @@ public class MobileBrowseActivity extends MobileActivity
             popNavTab(mNavDragOver, false);
             popNavTab(over, true);
             mNavDragOver = over;
-            com.newtube.mobile.ui.common.Haptics.tick(mBottomNav);
+            com.newtube.mobile.ui.common.Haptics.nav(mBottomNav, 16, 170);
         }
         if (mBottomNav.getBackground() instanceof NavBloom) { // the glow rides under the finger too
             int[] nav = new int[2];
@@ -2219,8 +2232,7 @@ public class MobileBrowseActivity extends MobileActivity
                     || section.getId() == MediaGroup.TYPE_SHORTS
                     || section.getId() == MediaGroup.TYPE_HOME
                     || section.getId() == MediaGroup.TYPE_HISTORY // MEETUBE(you page): its own row up top
-                    || section.getId() == MediaGroup.TYPE_CHANNEL_UPLOADS // MEETUBE: Subscriptions' channels again
-                    || section.getId() == MediaGroup.TYPE_TRENDING) { // MEETUBE: an empty feed now
+                    || section.getId() == MediaGroup.TYPE_CHANNEL_UPLOADS) { // MEETUBE: Subscriptions' channels again
                 continue;
             }
             // NEWTUBE(menu): channels/playlists pinned from a card menu ("Pin to You") carry the
@@ -2859,6 +2871,20 @@ public class MobileBrowseActivity extends MobileActivity
             }
             mStrip.show(chips.size() > 1 && com.newtube.mobile.ui.common.HomeBar.chipsShown(this) ? FeedStrip.MODE_CHIPS : FeedStrip.MODE_NONE, chips, selected);
             updateChipRow();
+        } else if (mCurrentSectionId == MediaGroup.TYPE_TRENDING && mHypedGroups.size() > 1) {
+            // MEETUBE(hyped): the chart's categories, as on YouTube's Charts: All (Top 100), Gaming...
+            List<FeedStrip.Item> chips = new ArrayList<>();
+            long selected = HYPED_CHIP_ID;
+            int i = 0;
+            for (String title : mHypedGroups.keySet()) {
+                chips.add(new FeedStrip.Item(HYPED_CHIP_ID + i, i == 0 ? getString(R.string.mobile_feed_all) : title, null, null));
+                if (title.equals(hypedShown())) {
+                    selected = HYPED_CHIP_ID + i;
+                }
+                i++;
+            }
+            mStrip.show(FeedStrip.MODE_CHIPS, chips, selected);
+            updateChipRow();
         } else if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
             if (mSubsChannels == null) {
                 loadSubsChannels();
@@ -2891,8 +2917,50 @@ public class MobileBrowseActivity extends MobileActivity
         return null;
     }
 
+    /** The category the Hyped grid shows. */
+    @Nullable
+    private String hypedShown() {
+        return mHypedChip != null && mHypedGroups.containsKey(mHypedChip) ? mHypedChip
+                : mHypedGroups.isEmpty() ? null : mHypedGroups.keySet().iterator().next();
+    }
+
+    /** MEETUBE(hyped): files a chart group under its category; true when it is the one on screen. */
+    private boolean keepHyped(VideoGroup group) {
+        int action = group.getAction();
+        if (action == VideoGroup.ACTION_REPLACE) {
+            mHypedGroups.clear();
+        }
+        List<Video> videos = group.getVideos();
+        if ((action != VideoGroup.ACTION_APPEND && action != VideoGroup.ACTION_REPLACE) || videos == null || videos.isEmpty()) {
+            return true;
+        }
+        String title = group.getTitle() != null ? group.getTitle() : "";
+        List<Video> list = mHypedGroups.get(title);
+        if (list == null) {
+            mHypedGroups.put(title, list = new ArrayList<>());
+            updateStrip();
+        }
+        list.addAll(videos);
+        return title.equals(hypedShown());
+    }
+
     private void onStripPicked(FeedStrip.Item item) {
-        if (item.id >= HOME_CHIP_ID) { // MEETUBE(issue #79): a personal chip
+        if (item.id >= HYPED_CHIP_ID) { // MEETUBE(hyped): a chart category, from what is already here
+            List<String> titles = new ArrayList<>(mHypedGroups.keySet());
+            int index = (int) (item.id - HYPED_CHIP_ID);
+            if (index >= titles.size()) {
+                return;
+            }
+            mHypedChip = titles.get(index);
+            mStrip.select(item.id);
+            mCurrentVideos.clear();
+            mCurrentVideos.addAll(visibleFeedItems(mHypedGroups.get(mHypedChip)));
+            // Emptied first: a diff against the old list stays anchored on a card both share (a
+            // Top 100 podcast sat at #11, so Podcast opened there). From empty both are synchronous.
+            mAdapter.submitList(null);
+            submitGrid();
+            mContentGrid.scrollToPosition(0);
+        } else if (item.id >= HOME_CHIP_ID) { // MEETUBE(issue #79): a personal chip
             mStrip.select(item.id);
             loadHomeChip((Video) item.data);
         } else if (mHomeChip != null && item.id == mCurrentSectionId) {
@@ -3485,6 +3553,8 @@ public class MobileBrowseActivity extends MobileActivity
                 return R.drawable.ic_nav_shorts;
             case VideoDownloads.SECTION_ID:
                 return R.drawable.ic_nav_downloads;
+            case MediaGroup.TYPE_TRENDING:
+                return R.drawable.ic_nav_hyped;
             default:
                 return 0;
         }
@@ -4154,6 +4224,9 @@ public class MobileBrowseActivity extends MobileActivity
                 mAdapter.refreshItems(group.getVideos());
                 return;
             }
+            if (mCurrentSectionId == MediaGroup.TYPE_TRENDING && !keepHyped(group)) {
+                return; // another category's videos: kept for its chip
+            }
 
             // NEWTUBE(feed-swap): this update replaces a FeedCache snapshot with fresh content.
             boolean staleSwap = false;
@@ -4399,6 +4472,7 @@ public class MobileBrowseActivity extends MobileActivity
 
     private void submitGrid() {
         markLiveChannels();
+        mAdapter.setRanked(mCurrentSectionId == MediaGroup.TYPE_TRENDING);
         List<Video> list = new ArrayList<>(mCurrentVideos);
         if (mParkedItemAnimator == null && !mSectionSwapPending) {
             mAdapter.submitList(list);
