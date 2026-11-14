@@ -253,12 +253,20 @@ public final class HomePreviewPlayer {
 
                 @Override
                 public void onCues(@NonNull CueGroup cueGroup) {
-                    StringBuilder text = new StringBuilder();
+                    // Auto-generated captions roll up: a new cue repeats the line before it, and two cues can
+                    // be on screen at once, so a plain join showed each line twice. Each line once, the last two.
+                    java.util.LinkedHashSet<String> lines = new java.util.LinkedHashSet<>();
                     for (Cue cue : cueGroup.cues) {
                         if (cue.text != null) {
-                            text.append(text.length() > 0 ? "\n" : "").append(cue.text);
+                            for (String line : cue.text.toString().split("\n")) {
+                                if (!line.trim().isEmpty()) {
+                                    lines.add(line.trim());
+                                }
+                            }
                         }
                     }
+                    java.util.List<String> shown = new java.util.ArrayList<>(lines);
+                    String text = android.text.TextUtils.join("\n", shown.subList(Math.max(0, shown.size() - 2), shown.size()));
                     mCallback.onCues(mCaptions ? text : "");
                 }
 

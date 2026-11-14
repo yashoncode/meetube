@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(greeting): one shortcut on the greeting overlay, a glass pill on its frosted screen. -->
+<!-- MEETUBE(greeting): one shortcut on the greeting overlay, a frosted glass pill (its own heavier blur, GreetingOverlay) on the frosted screen. -->
 <com.newtube.mobile.ui.common.GlassView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -12,7 +12,7 @@
     android:foreground="?attr/selectableItemBackground"
     app:glassCornerRadius="26dp"
     app:glassOnGlass="true"
-    app:glassTint="@color/meetube_glass_tint">
+    app:glassTint="@color/meetube_frost_tint">
 
     <TextView
         android:id="@+id/mobile_greet_option_label"
