@@ -12,7 +12,8 @@
       "Home: bigger cards set closer together, bigger clock and category chips.",
       "Card previews on Home are off by default.",
       "Smaller player controls, with arrows when more buttons are hidden.",
-      "The sidebar glass reaches the bottom and the chips no longer flicker."
+      "The sidebar glass reaches the bottom and the chips no longer flicker.",
+      "A focused Shorts card no longer runs into the row below it."
     ]
   },
   "1.1.0": {
