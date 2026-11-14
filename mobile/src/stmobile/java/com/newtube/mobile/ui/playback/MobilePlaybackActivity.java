@@ -9949,6 +9949,11 @@ public class MobilePlaybackActivity extends MobileActivity
         // description and comments.
         if (dialog.getWindow() != null) {
             dialog.getWindow().setDimAmount(0f);
+            // MEETUBE(issue #238): upright the list ends at the video, which takes taps as usual: a tap
+            // on it hid nothing but closed the list, and the controls stay up while a sheet is open.
+            if (!isLandscape() && mVideoArea != null) {
+                LyricsSheet.leaveVideoFree(dialog.getWindow(), mVideoArea);
+            }
         }
         showPlayerSheet(dialog, true);
         if (isLandscape()) {
