@@ -13,6 +13,7 @@ import androidx.annotation.StringRes;
 
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AppUpdatePresenter;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.FocusTimer;
 import com.newtube.mobile.ui.common.Motion;
 import com.newtube.mobile.ui.common.UsageStats;
 import com.newtube.mobile.ui.settings.MobileSettingsActivity;
@@ -39,6 +40,8 @@ final class GreetingOverlay {
     private final TextView mTitle;
     private final TextView mLine;
     private final View mStats;
+    private final View mFocus;
+    private final Runnable mFocusTick = this::bindFocus;
     private final OnBackPressedCallback mBack = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
@@ -58,6 +61,35 @@ final class GreetingOverlay {
         mStats = LayoutInflater.from(activity).inflate(R.layout.item_mobile_greet_stats, content, false);
         content.addView(mStats);
         frost(mStats);
+        mFocus = LayoutInflater.from(activity).inflate(R.layout.item_mobile_greet_focus, content, false);
+        content.addView(mFocus);
+        frost(mFocus);
+        mFocus.findViewById(R.id.focus_label).setOnClickListener(v -> {
+            if (FocusTimer.remainingMs() < 0) { // running: the countdown is not a picker
+                com.newtube.mobile.ui.common.Haptics.tick(v);
+                FocusTimer.nextMinutes();
+                bindFocus();
+            }
+        });
+        mFocus.findViewById(R.id.focus_label).setOnLongClickListener(v -> {
+            if (FocusTimer.remainingMs() >= 0) {
+                return false;
+            }
+            askMinutes();
+            return true;
+        });
+        mFocus.findViewById(R.id.focus_toggle).setOnClickListener(v -> {
+            Motion.nudge(v);
+            if (FocusTimer.remainingMs() < 0) {
+                FocusTimer.start();
+                hide();
+                com.newtube.mobile.ui.common.MobileSnackbar.show(mActivity,
+                        mActivity.getString(R.string.mobile_focus_started, FocusTimer.minutes()));
+            } else {
+                FocusTimer.stop();
+                bindFocus();
+            }
+        });
         addOption(content, R.drawable.ic_mobile_settings, R.string.header_settings,
                 () -> open(null));
         addOption(content, R.drawable.ic_settings_customize, R.string.mobile_settings_customize,
@@ -99,6 +131,7 @@ final class GreetingOverlay {
         mTitle.setText(period[0]);
         mLine.setText(period[1]);
         bindStats();
+        bindFocus();
 
         mBack.remove(); // re-added last, so it is the callback Back reaches first
         mActivity.getOnBackPressedDispatcher().addCallback(mBack);
@@ -117,6 +150,7 @@ final class GreetingOverlay {
 
     private void hide() {
         mBack.remove();
+        mFocus.removeCallbacks(mFocusTick);
         if (mOverlay.getVisibility() != View.VISIBLE) {
             return;
         }
@@ -124,6 +158,56 @@ final class GreetingOverlay {
         mOverlay.animate().alpha(0f).setDuration(Motion.EXIT_MS)
                 .setInterpolator(Motion.EMPHASIZED_ACCELERATE)
                 .withEndAction(() -> mOverlay.setVisibility(View.GONE)).start();
+    }
+
+    /** MEETUBE(focus): a held Timer pill asks for any length in minutes. */
+    private void askMinutes() {
+        float dp = mActivity.getResources().getDisplayMetrics().density;
+        android.widget.EditText input = new android.widget.EditText(mActivity);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setFilters(new android.text.InputFilter[] {new android.text.InputFilter.LengthFilter(3)});
+        input.setHint(R.string.mobile_focus_custom_hint);
+        input.setText(String.valueOf(FocusTimer.minutes()));
+        input.setSelectAllOnFocus(true);
+        android.widget.FrameLayout box = new android.widget.FrameLayout(mActivity);
+        box.setPadding(Math.round(24 * dp), Math.round(8 * dp), Math.round(24 * dp), 0);
+        box.addView(input);
+        androidx.appcompat.app.AlertDialog dialog = FocusTimer.frosted(new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+                mActivity, R.style.MobileAlertDialog)
+                .setTitle(R.string.mobile_focus_custom_title)
+                .setView(box)
+                .setPositiveButton(android.R.string.ok, (d, w) -> {
+                    try {
+                        FocusTimer.setMinutes(Integer.parseInt(input.getText().toString().trim()));
+                    } catch (NumberFormatException ignored) {
+                        return; // empty: keep the old length
+                    }
+                    bindFocus();
+                })
+                .setNegativeButton(android.R.string.cancel, null));
+        dialog.setOnShowListener(d -> {
+            input.requestFocus();
+            dialog.getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        });
+        dialog.show();
+    }
+
+    /** MEETUBE(focus): the picked minutes, or the countdown (ticking each second while shown). */
+    private void bindFocus() {
+        mFocus.removeCallbacks(mFocusTick);
+        long left = FocusTimer.remainingMs();
+        TextView label = mFocus.findViewById(R.id.focus_label);
+        android.widget.ImageButton toggle = mFocus.findViewById(R.id.focus_toggle);
+        boolean running = left >= 0;
+        label.setText(running
+                ? mActivity.getString(R.string.mobile_focus_running,
+                        String.format(java.util.Locale.getDefault(), "%d:%02d", left / 60_000, left / 1000 % 60))
+                : mActivity.getString(R.string.mobile_focus_idle, FocusTimer.minutes()));
+        toggle.setImageResource(running ? R.drawable.ic_mobile_focus_stop : R.drawable.ic_player_play);
+        toggle.setContentDescription(mActivity.getString(running ? R.string.mobile_focus_stop : R.string.mobile_focus_start));
+        if (running) {
+            mFocus.postDelayed(mFocusTick, left == 0 ? 500 : left % 1000 + 1);
+        }
     }
 
     /**

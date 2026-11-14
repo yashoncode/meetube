@@ -218,6 +218,7 @@ public class MobileMainApplication extends MainApplication {
         LaunchMilestones.install(this);
         com.newtube.mobile.ui.common.UsageStats.install(this); // MEETUBE(stats): time spent, for the greeting
         com.newtube.mobile.ui.common.BatterySaver.install(this); // MEETUBE(issue #93)
+        com.newtube.mobile.ui.common.FocusTimer.install(this); // MEETUBE(focus): the greeting's Focus pill
 
         // Counts our started screens from the first one on, so a PiP the user opened from the
         // player menu is not "restored" by Home gaining focus under it (SystemPipBridge).

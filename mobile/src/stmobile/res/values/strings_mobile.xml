@@ -720,6 +720,23 @@
     <string name="mobile_greet_afternoon_line">Time for a little break?</string>
     <string name="mobile_greet_evening_line">Wind down with a video or two</string>
     <string name="mobile_greet_night_line">One more video, then sleep</string>
+    <string name="mobile_focus_idle">Timer · %d min</string>
+    <string name="mobile_focus_running">Timer · %s</string>
+    <string name="mobile_focus_start">Start timer</string>
+    <string name="mobile_focus_stop">Stop timer</string>
+    <string name="mobile_focus_started">Timer on: %d min. I’ll come find you.</string>
+    <string name="mobile_focus_title">Are ya winning, son?</string>
+    <plurals name="mobile_focus_message">
+        <item quantity="one">Your %d minute is up. Time to focus. The videos will still be here, pinky promise.</item>
+        <item quantity="other">Your %d minutes are up. Time to focus. The videos will still be here, pinky promise.</item>
+    </plurals>
+    <string name="mobile_focus_win">Yes, focusing</string>
+    <string name="mobile_focus_snooze">5 more min</string>
+    <string name="mobile_focus_won">That’s my kid. Go get ’em.</string>
+    <string name="mobile_focus_snoozed">5 minutes. I’m counting.</string>
+    <string name="mobile_focus_snoozed_again">Again? Okay, last 5. Probably.</string>
+    <string name="mobile_focus_custom_title">Custom timer</string>
+    <string name="mobile_focus_custom_hint">Minutes (1 to 600)</string>
     <string name="mobile_shorts_clean_on">Buttons hidden. Long press to bring them back</string>
     <string name="mobile_shorts_clean_off">Buttons are back. Long press to hide them</string>
     <string name="mobile_shorts_clean_tip">Tip: long press a Short to hide its buttons</string>
