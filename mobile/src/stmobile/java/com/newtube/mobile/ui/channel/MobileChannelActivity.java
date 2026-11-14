@@ -1273,11 +1273,23 @@ public class MobileChannelActivity extends MobileActivity
         });
     }
 
+    /**
+     * Issue #237: a playlist's continuation (Watch later) sometimes hands back videos from its top.
+     * They are new objects with their own playlist index, so equals() lets them in; compare by
+     * video id too. ponytail: a playlist that holds one video twice shows it once.
+     */
     private void appendNew(Section section, List<Video> videos) {
-        for (Video video : videos) {
-            if (!section.videos.contains(video)) {
-                section.videos.add(video);
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        for (Video shown : section.videos) {
+            if (shown.videoId != null) {
+                ids.add(shown.videoId);
             }
+        }
+        for (Video video : videos) {
+            if (section.videos.contains(video) || (video.videoId != null && !ids.add(video.videoId))) {
+                continue;
+            }
+            section.videos.add(video);
         }
     }
 
