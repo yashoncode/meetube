@@ -390,6 +390,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private CommentsPanelLayout mDescriptionPanel;
     private CommentsPanelLayout mLyricsPanel;
     private CommentsPanelLayout mTranscriptPanel;
+    private CommentsPanelLayout mChaptersPanel; // MEETUBE(issue #238)
     private CommentsPanelLayout[] mSidePanels = new CommentsPanelLayout[0];
     private final Map<CommentsPanelLayout, Runnable> mSidePanelBindings = new LinkedHashMap<>();
     private androidx.activity.OnBackPressedCallback mSidePanelBackCallback;
@@ -1878,7 +1879,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // The panels open over the whole column, not in the strip under the video.
             ViewGroup area = findViewById(R.id.mobile_watch_area);
             for (int id : new int[] {R.id.mobile_comments_panel, R.id.mobile_description_panel,
-                    R.id.mobile_lyrics_panel, R.id.mobile_transcript_panel}) {
+                    R.id.mobile_lyrics_panel, R.id.mobile_transcript_panel, R.id.mobile_chapters_panel}) {
                 View panel = findViewById(id);
                 if (panel != null && area != null) {
                     ((ViewGroup) panel.getParent()).removeView(panel);
@@ -9610,10 +9611,13 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** Store the current video's chapters (null/empty clears them). */
     private void setChapters(List<Video> chapters) {
-        if (mChaptersSheet != null && !sameChapters(mChapterVideos, chapters)) {
-            mFullAfterChapters = false; // another video's chapters: no fullscreen to return to
-            mChaptersSheet.dismiss();
-            mChaptersSheet = null;
+        if (!sameChapters(mChapterVideos, chapters)) {
+            if (mChaptersSheet != null) {
+                mFullAfterChapters = false; // another video's chapters: no fullscreen to return to
+                mChaptersSheet.dismiss();
+                mChaptersSheet = null;
+            }
+            closeSidePanelImmediately(mChaptersPanel);
         }
 
         mChapterVideos.clear();
@@ -9926,10 +9930,22 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         boolean fromFull = mChaptersAfterFullscreen;
         mChaptersAfterFullscreen = false;
+        long positionMs = mExoPlayerController != null ? mExoPlayerController.getPositionMs() : 0;
+        // MEETUBE(issue #238): upright in the panel under the video, as the transcript: the video
+        // keeps its taps (the controls hide as usual) and the seek dot draws over the panel's edge.
+        if (canShowSidePanel()) {
+            if (!prepareSidePanel(mChaptersPanel)) {
+                return;
+            }
+            mSidePanelBindings.put(mChaptersPanel, ChaptersSheet.bindPanel(mChaptersPanel, mChapterVideos,
+                    chapterIndexAt(positionMs), chapter -> seekFromList(chapter.startTimeMs, CHAPTER_SEEK_PARAMETERS)));
+            mChaptersPanel.open();
+            mFullAfterChapters = fromFull;
+            return;
+        }
         cancelAutoHide();
 
         releaseImageRequests("chapters-sheet"); // like the chat sheet: its frames are what's on screen now
-        long positionMs = mExoPlayerController != null ? mExoPlayerController.getPositionMs() : 0;
         BottomSheetDialog dialog = ChaptersSheet.create(this, mChapterVideos, chapterIndexAt(positionMs),
                 sheetHeightBelowVideo(), chapter -> seekFromList(chapter.startTimeMs, CHAPTER_SEEK_PARAMETERS));
         dialog.setOnDismissListener(d -> {
@@ -9949,11 +9965,6 @@ public class MobilePlaybackActivity extends MobileActivity
         // description and comments.
         if (dialog.getWindow() != null) {
             dialog.getWindow().setDimAmount(0f);
-            // MEETUBE(issue #238): upright the list ends at the video, which takes taps as usual: a tap
-            // on it hid nothing but closed the list, and the controls stay up while a sheet is open.
-            if (!isLandscape() && mVideoArea != null) {
-                LyricsSheet.leaveVideoFree(dialog.getWindow(), mVideoArea);
-            }
         }
         showPlayerSheet(dialog, true);
         if (isLandscape()) {
@@ -11271,7 +11282,8 @@ public class MobilePlaybackActivity extends MobileActivity
         mDescriptionPanel = findViewById(R.id.mobile_description_panel);
         mLyricsPanel = findViewById(R.id.mobile_lyrics_panel);
         mTranscriptPanel = findViewById(R.id.mobile_transcript_panel);
-        mSidePanels = new CommentsPanelLayout[]{mDescriptionPanel, mLyricsPanel, mTranscriptPanel};
+        mChaptersPanel = findViewById(R.id.mobile_chapters_panel);
+        mSidePanels = new CommentsPanelLayout[]{mDescriptionPanel, mLyricsPanel, mTranscriptPanel, mChaptersPanel};
         mSidePanelBackCallback = new androidx.activity.OnBackPressedCallback(false) {
             @Nullable private androidx.activity.BackEventCompat mLastBackEvent;
             @Nullable private CommentsPanelLayout mBackPanel;
@@ -11316,7 +11328,8 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         };
         getOnBackPressedDispatcher().addCallback(this, mSidePanelBackCallback);
-        int[] titles = {R.string.mobile_watch_description, R.string.mobile_lyrics, R.string.mobile_transcript};
+        int[] titles = {R.string.mobile_watch_description, R.string.mobile_lyrics, R.string.mobile_transcript,
+                R.string.chapters};
         for (int i = 0; i < mSidePanels.length; i++) {
             CommentsPanelLayout panel = mSidePanels[i];
             panel.setCallback(new CommentsPanelLayout.Callback() {
@@ -11338,6 +11351,12 @@ public class MobilePlaybackActivity extends MobileActivity
                     if (panel == mDescriptionPanel && mFullAfterDescription) { // MEETUBE(issue #217)
                         mFullAfterDescription = false;
                         setPortraitFull(true);
+                    }
+                    if (panel == mChaptersPanel && mFullAfterChapters) { // MEETUBE(issue #219)
+                        mFullAfterChapters = false;
+                        if (!isFinishing() && mMorphFraction == 0f) {
+                            setPortraitFull(true);
+                        }
                     }
                 }
             });
@@ -11400,6 +11419,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private void closeSidePanelImmediately(@Nullable CommentsPanelLayout panel) {
         if (panel != null) {
             mFullAfterDescription = false; // closed for another panel, video or minimize: no fullscreen back
+            mFullAfterChapters &= panel != mChaptersPanel;
             releaseSidePanelBinding(panel);
             panel.closeImmediately();
             updateSidePanelsShown();

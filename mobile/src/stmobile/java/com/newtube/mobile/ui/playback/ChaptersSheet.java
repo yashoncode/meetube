@@ -59,19 +59,36 @@ final class ChaptersSheet {
             dialog.getBehavior().setMaxHeight(maxHeightPx);
         }
 
+        bindList(content, chapters, currentIndex, listener, dialog::dismiss);
+        return dialog;
+    }
+
+    /**
+     * MEETUBE(issue #238): upright, the list in the panel under the video (as the transcript), so
+     * the video above takes taps and its seek dot draws over the edge. Returns what clears the rows.
+     */
+    static Runnable bindPanel(@NonNull CommentsPanelLayout panel, @NonNull List<Video> chapters, int currentIndex,
+                              @NonNull Listener listener) {
+        View sheet = panel.getSheet();
+        sheet.findViewById(R.id.chapters_panel_close).setOnClickListener(v -> panel.close());
+        RecyclerView list = bindList(sheet, chapters, currentIndex, listener, panel::close);
+        return () -> list.setAdapter(null); // its rows' frames go with it
+    }
+
+    private static RecyclerView bindList(View content, List<Video> chapters, int currentIndex,
+                                         Listener listener, Runnable close) {
         RecyclerView list = content.findViewById(R.id.chapters_sheet_list);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(activity);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(content.getContext());
         list.setLayoutManager(layoutManager);
         list.setAdapter(new ChapterAdapter(new ArrayList<>(chapters), currentIndex, chapter -> {
             listener.onChapterClicked(chapter);
-            dialog.dismiss();
+            close.run();
         }));
         if (currentIndex > 0) {
             // The playing chapter second from the top: the one before it stays in view for context.
             layoutManager.scrollToPositionWithOffset(currentIndex - 1, 0);
         }
-
-        return dialog;
+        return list;
     }
 
     private static class ChapterAdapter extends RecyclerView.Adapter<ChapterHolder> {
