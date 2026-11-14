@@ -90,7 +90,7 @@ Save videos up to **4K** in any folder you pick. **Smart downloads** remember yo
 </tr>
 </table>
 
-### And more
+### And some more features I didn't forget (forgot many features to list :))
 
 | | |
 |---|---|
