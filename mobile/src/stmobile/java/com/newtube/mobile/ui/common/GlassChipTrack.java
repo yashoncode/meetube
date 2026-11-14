@@ -323,7 +323,15 @@ public class GlassChipTrack extends HorizontalScrollView {
                         i == on ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL));
                 continue;
             }
-            chip.setTextColor(i == on ? color : rest);
+            if (mDragging) {
+                chip.setTextColor(i == on ? color : rest);
+                continue;
+            }
+            // Ink follows the pill as it slides: a pick used to flip both labels at once, so the old
+            // one went white on the still-white pill and the new one dark on the glass.
+            float cover = chip.getWidth() == 0 ? (i == on ? 1f : 0f) : Math.max(0f,
+                    Math.min(mRight.getValue(), chip.getRight()) - Math.max(mLeft.getValue(), chip.getLeft())) / chip.getWidth();
+            chip.setTextColor(blend(rest, color, Math.min(1f, cover)));
         }
     }
 
