@@ -194,7 +194,7 @@ public class GlassChipTrack extends HorizontalScrollView {
         spring.setSpring(new SpringForce(holder.getValue()));
         spring.setMinimumVisibleChange(0.001f);
         spring.addUpdateListener((a, value, velocity) -> {
-            if (feedsJelly && !mSimple) {
+            if (feedsJelly && !mSimple && !mDragging) { // dragged, the track holds still under the finger
                 double speed = Math.tanh(velocity / (GlassSwitch.JELLY_SPEED * 220 * mDp));
                 GlassSwitch.spring(mJellySpring, (float) (GlassSwitch.JELLY_MAX * Math.abs(speed)), GlassSwitch.JELLY);
                 GlassSwitch.spring(mLeanSpring, (float) speed, GlassSwitch.JELLY);
@@ -391,18 +391,52 @@ public class GlassChipTrack extends HorizontalScrollView {
         return true;
     }
 
+    private float mDragX;
+    private float mScrollCarry;
+    private boolean mEdgeScrolling;
+
+    /**
+     * Held near either end, the row glides on under the lens every frame - faster the deeper the
+     * finger sits in the edge zone, eased in - and the lens rides along to the chips coming in.
+     */
+    private final Runnable mEdgeScroll = new Runnable() {
+        @Override
+        public void run() {
+            float edge = 64 * mDp;
+            float depth = mDragX < edge ? -(edge - mDragX) / edge
+                    : mDragX > getWidth() - edge ? (mDragX - (getWidth() - edge)) / edge : 0f;
+            depth = Math.max(-1f, Math.min(1f, depth));
+            if (!mDragging || depth == 0f || !canScrollHorizontally(depth < 0 ? -1 : 1)) {
+                mEdgeScrolling = false;
+                mScrollCarry = 0f;
+                return;
+            }
+            mScrollCarry += Math.signum(depth) * depth * depth * 12 * mDp; // px per frame, eased
+            int step = (int) mScrollCarry;
+            mScrollCarry -= step;
+            if (step != 0) {
+                scrollBy(step, 0);
+                followFinger();
+            }
+            postOnAnimation(this);
+        }
+    };
+
     private void drag(float viewX) {
+        mDragX = viewX;
+        followFinger();
+        if (!mEdgeScrolling) {
+            mEdgeScrolling = true;
+            postOnAnimation(mEdgeScroll);
+        }
+    }
+
+    private void followFinger() {
         int count = mRow.getChildCount();
         if (count == 0) {
             return;
         }
-        float edge = 36 * mDp;
-        if (viewX < edge) {
-            scrollBy(Math.round(-10 * mDp), 0);
-        } else if (viewX > getWidth() - edge) {
-            scrollBy(Math.round(10 * mDp), 0);
-        }
-        float x = viewX + getScrollX();
+        float x = mDragX + getScrollX();
         int hover = 0;
         int before = 0; // the last chip whose centre is left of the finger
         for (int i = 0; i < count; i++) {
@@ -425,7 +459,10 @@ public class GlassChipTrack extends HorizontalScrollView {
         float min = mRow.getChildAt(0).getLeft();
         float max = mRow.getChildAt(count - 1).getRight() - width;
         float left = Math.max(min, Math.min(max, x - width / 2f));
-        glide(left, left + width);
+        // Under the finger both edges follow on one well-damped spring: the lead/trail glide is for
+        // a pick, and re-aimed on every move (its lead flipping with each jitter) it wobbled.
+        GlassSwitch.spring(mLeftSpring, left, GlassSwitch.DRAG);
+        GlassSwitch.spring(mRightSpring, left + width, GlassSwitch.DRAG);
         if (hover != mHover) {
             mHover = hover;
             Haptics.tick(this);
@@ -450,6 +487,8 @@ public class GlassChipTrack extends HorizontalScrollView {
     @Override
     protected void onDetachedFromWindow() {
         removeCallbacks(mDrop);
+        removeCallbacks(mEdgeScroll);
+        mEdgeScrolling = false;
         mLeftSpring.cancel();
         mRightSpring.cancel();
         mLiftSpring.cancel();
@@ -517,6 +556,13 @@ public class GlassChipTrack extends HorizontalScrollView {
             float kw = (mRight.getValue() - mLeft.getValue() + SWELL_W * mDp * lift) * (1f + stretch);
             float kh = (bottom - top) * (1f + SWELL_H * lift) * (1f - stretch * 0.5f);
             kw = Math.max(kw, kh * 1.5f); // a capsule even over a short chip, never a stubby ball
+            // Inside the track's own capsule at its ends: swollen over the first or last chip it
+            // poked past the rounded end, and the track's outline cut its rim off.
+            float inset = (getHeight() - kh) / 2f + mDp;
+            float minX = GlassChipTrack.this.getScrollX() + inset;
+            float maxX = GlassChipTrack.this.getScrollX() + GlassChipTrack.this.getWidth() - inset;
+            kw = Math.min(kw, maxX - minX);
+            cx = Math.max(minX + kw / 2f, Math.min(maxX - kw / 2f, cx));
             mRect.set(cx - kw / 2f, cy - kh / 2f, cx + kw / 2f, cy + kh / 2f);
             float r = kh / 2f;
             mShadow.setStyle(Paint.Style.FILL);
