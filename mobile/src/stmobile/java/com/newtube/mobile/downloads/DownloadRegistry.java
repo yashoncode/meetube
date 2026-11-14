@@ -111,11 +111,14 @@ public final class DownloadRegistry {
         return null;
     }
 
-    /** A finished download of this video, if any - so the picker can say "already downloaded". */
+    /**
+     * A finished download of the whole video, if any - so the picker can say "already downloaded"
+     * and the player can play it offline. A downloaded part never stands in for the whole video.
+     */
     @Nullable
     public synchronized DownloadItem findDone(String videoId, int kind) {
         for (DownloadItem item : mItems) {
-            if (item.isDone() && item.videoId.equals(videoId) && item.kind == kind) {
+            if (item.isDone() && !item.isClip() && item.videoId.equals(videoId) && item.kind == kind) {
                 return item;
             }
         }

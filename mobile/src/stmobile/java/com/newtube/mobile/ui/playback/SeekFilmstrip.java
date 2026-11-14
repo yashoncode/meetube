@@ -48,6 +48,7 @@ public final class SeekFilmstrip extends View {
     @Nullable private String mVideoId;
     private long mPosition;
     private boolean mLive;
+    private boolean mDimmed = true;
     private static final int DIM = 0x38000000; // the preview sits a little dimmed, like YouTube's
 
     public SeekFilmstrip(Context context) {
@@ -81,6 +82,12 @@ public final class SeekFilmstrip extends View {
                     mSize = board.getGroupSize();
                     invalidate();
                 }, error -> { /* no filmstrip, the time still shows */ });
+    }
+
+    /** Off for a plain preview (Download a part, issue #241): the frame is drawn as it is. */
+    public void setDimmed(boolean dimmed) {
+        mDimmed = dimmed;
+        invalidate();
     }
 
     /** The player shows the frame itself now (true): only the dim is drawn over it. */
@@ -121,7 +128,7 @@ public final class SeekFilmstrip extends View {
             canvas.drawRect(0, 0, w, h, mFill); // not drawColor: the parents do not clip, it would black the page
             mFill.setColor(0xFF1A1A1A);
             draw(canvas, size, index, (w - fw) / 2, (h - fh) / 2, fw, fh);
-            mFill.setColor(DIM);
+            mFill.setColor(mDimmed ? DIM : 0);
             canvas.drawRect(0, 0, w, h, mFill);
             mFill.setColor(0xFF1A1A1A);
         }
