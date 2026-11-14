@@ -52,7 +52,9 @@ public final class UsageStats {
 
             @Override public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle state) { }
             @Override public void onActivityResumed(@NonNull Activity activity) { }
-            @Override public void onActivityPaused(@NonNull Activity activity) { }
+            @Override public void onActivityPaused(@NonNull Activity activity) {
+                checkpoint();
+            }
             @Override public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle state) { }
             @Override public void onActivityDestroyed(@NonNull Activity activity) { }
         });
@@ -71,6 +73,23 @@ public final class UsageStats {
 
     public static void videoOpened() {
         add(VIDEOS, 1);
+        checkpoint();
+    }
+
+    /**
+     * Books the running app and watch sessions so far and keeps them running. Without it a process
+     * killed in the foreground (an update, a crash, the system) lost the whole session: 4 videos, 0m.
+     */
+    private static void checkpoint() {
+        long now = SystemClock.elapsedRealtime();
+        if (sAppSince != 0) {
+            add(APP, now - sAppSince);
+            sAppSince = now;
+        }
+        if (sWatchSince != 0) {
+            add(WATCH, now - sWatchSince);
+            sWatchSince = now;
+        }
     }
 
     // ponytail: a session is booked to the day it ends on; split at midnight if that ever matters.
@@ -97,8 +116,9 @@ public final class UsageStats {
         return sPrefs != null ? sPrefs.getLong(kind + day(daysAgo), 0) : 0;
     }
 
-    /** "1h 12m", "12m". */
+    /** "1h 12m", "12m", "40s": under a minute in seconds, so a fresh day never reads 0m next to its videos. */
     public static String duration(long ms) {
+        if (ms < 60000) return (ms / 1000) + "s";
         long minutes = ms / 60000;
         return minutes >= 60 ? (minutes / 60) + "h " + (minutes % 60) + "m" : minutes + "m";
     }

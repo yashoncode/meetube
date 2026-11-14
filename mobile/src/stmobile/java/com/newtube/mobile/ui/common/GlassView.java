@@ -182,6 +182,7 @@ public class GlassView extends FrameLayout {
     @Nullable private GlassSource mSource;
     /** Sits on glass already (glassOnGlass): its tint is drawn as given, see-through. */
     private boolean mOnGlass;
+    private float mBlurDp = BLUR_DP;
     /** The widest it grows (glassMaxWidth), 0: no limit. */
     private final int mMaxWidth;
     /** The frost fades out over this much of the bottom (glassFadeBottom), 0: a hard edge. */
@@ -306,6 +307,13 @@ public class GlassView extends FrameLayout {
         invalidate();
     }
 
+    /** MEETUBE(stats): a heavier frost than the default, for a card that sits on glass already. */
+    public void setBlur(float dp) {
+        mBlurDp = dp;
+        mEffectW = -1; // rebuild the effect on the next draw
+        invalidate();
+    }
+
     public void setBlurReach(int topPx, int bottomPx) {
         if (topPx != mReachTop || bottomPx != mReachBottom) {
             mReachTop = topPx;
@@ -413,7 +421,7 @@ public class GlassView extends FrameLayout {
     /** Saturate, blur, then (API 33+) refract the blurred backdrop - BitChord's order. */
     @RequiresApi(api = Build.VERSION_CODES.S)
     private RenderEffect effect(int w, int h) {
-        float blur = BLUR_DP * mDensity;
+        float blur = mBlurDp * mDensity;
         ColorMatrix saturate = new ColorMatrix();
         saturate.setSaturation(SATURATION);
         RenderEffect frost = RenderEffect.createBlurEffect(blur, blur,

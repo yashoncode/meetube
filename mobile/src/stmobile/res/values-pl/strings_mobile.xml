@@ -518,9 +518,13 @@
     <string name="mobile_about_log_short">Wyślij log</string>
     <string name="mobile_about_creator">Twórca</string>
     <string name="mobile_stats_today">Dziś</string>
-    <string name="mobile_stats_week">Ostatnie 7 dni</string>
-    <string name="mobile_stats_videos">Filmy dziś</string>
-    <string name="mobile_stats_footer">Oglądano %1$s dziś · średnio %2$s dziennie</string>
+    <string name="mobile_stats_hero_label">w MeeTube dziś</string>
+    <string name="mobile_stats_videos">Filmy</string>
+    <string name="mobile_stats_week_title">Ostatnie 7 dni · %1$s</string>
+    <string name="mobile_stats_tap">Dotknij słupka, aby zobaczyć ten dzień</string>
+    <string name="mobile_stats_avg">Średnio dziennie</string>
+    <string name="mobile_stats_watched">Obejrzane</string>
+    <string name="mobile_stats_day">%1$s: %2$s w MeeTube, obejrzane %3$s, filmy: %4$s</string>
     <string name="mobile_stats_storage_header">Twoje statystyki</string>
     <string name="mobile_stats_delete">Usuń moje statystyki</string>
     <string name="mobile_stats_delete_confirm">Usunąć statystyki?</string>
