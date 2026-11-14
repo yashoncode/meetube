@@ -40,9 +40,14 @@ public class GlassChipTrack extends HorizontalScrollView {
     private static final float PAD = 4f;
     private static final float CHIP_H = 36f;
     private static final float CHIP_PAD = 14f;
-    private static final float SWELL_W = 14f;
-    private static final float SWELL_H = 0.18f;
+    private static final float SWELL_W = 6f;
+    private static final float SWELL_H = 0.07f;
+    /** {period s, damping}: the track's press and pull letting go, a soft wobble. */
+    private static final float[] BOUNCE = {0.42f, 0.42f};
     private static final int PILL = 0xF2FFFFFF;
+    /** {period s, damping}: the leading edge overshoots and wobbles; the trailing one lags behind. */
+    private static final float[] LEAD = {0.11f, 0.55f};
+    private static final float[] TRAIL = {0.22f, 0.68f};
 
     private final float mDp;
     /** MEETUBE(light mode): a light grey track with dark chips, the white pill standing off it. */
@@ -62,6 +67,15 @@ public class GlassChipTrack extends HorizontalScrollView {
     private final FloatValueHolder mRight = new FloatValueHolder(0f);
     private final FloatValueHolder mLift = new FloatValueHolder(0f);
     private final FloatValueHolder mStretch = new FloatValueHolder(0f);
+    /** Signed jelly, -1..1: the whole track leans out the way the pill runs. */
+    private final FloatValueHolder mLean = new FloatValueHolder(0f);
+    private final SpringAnimation mLeanSpring;
+    /** 0..1: a finger anywhere on the track swells it. */
+    private final FloatValueHolder mPress = new FloatValueHolder(0f);
+    private final SpringAnimation mPressSpring;
+    /** How far a finger has pulled the track (px) where the row has nothing more to scroll. */
+    private float mPull;
+    private float mLastX;
     private final SpringAnimation mLeftSpring;
     private final SpringAnimation mRightSpring;
     private final SpringAnimation mLiftSpring;
@@ -120,6 +134,59 @@ public class GlassChipTrack extends HorizontalScrollView {
         mRightSpring = newSpring(mRight, false);
         mLiftSpring = newSpring(mLift, false);
         mJellySpring = newSpring(mStretch, false);
+        mLeanSpring = newSpring(mLean, false);
+        mPressSpring = newSpring(mPress, false);
+    }
+
+    /** Any finger on the track, pill or not: it swells under the press, stretches the way it is pulled, and wobbles back. */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (!mSimple) {
+            switch (ev.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    mLastX = ev.getX();
+                    mPull = 0f;
+                    GlassSwitch.spring(mPressSpring, 1f, GlassSwitch.PRESS);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float delta = ev.getX() - mLastX;
+                    mLastX = ev.getX();
+                    // Only where the row cannot scroll that way (a short row, or at its end): there it stretches.
+                    if (!mDragging && delta != 0f && !canScrollHorizontally(delta > 0 ? -1 : 1)) {
+                        mPull += delta;
+                        GlassSwitch.spring(mLeanSpring, (float) Math.tanh(mPull / (90 * mDp)), GlassSwitch.DRAG);
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    mPull = 0f;
+                    GlassSwitch.spring(mPressSpring, 0f, BOUNCE);
+                    GlassSwitch.spring(mLeanSpring, 0f, BOUNCE);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    /**
+     * The whole track as jelly: it swells a little under a press and stretches out the way the pill
+     * runs, anchored on the side it leaves, then wobbles back to size. The anchor slides with the lean,
+     * so it never jumps when the direction flips.
+     */
+    private void shapeTrack() {
+        int w = getWidth();
+        if (mSimple || w == 0) {
+            return;
+        }
+        float lean = mLean.getValue();
+        float press = mPress.getValue(); // may overshoot below 0 on the way back: that is the wobble
+        float side = Math.max(-1f, Math.min(1f, lean * 4f));
+        setPivotX(w / 2f * (1f - side));
+        setPivotY(getHeight() / 2f);
+        setScaleX((1f + Math.abs(lean) * 18 * mDp / w) * (1f + 6 * mDp * press / w));
+        setScaleY(1f + 0.07f * press - 0.08f * Math.abs(lean));
     }
 
     private SpringAnimation newSpring(FloatValueHolder holder, boolean feedsJelly) {
@@ -128,9 +195,11 @@ public class GlassChipTrack extends HorizontalScrollView {
         spring.setMinimumVisibleChange(0.001f);
         spring.addUpdateListener((a, value, velocity) -> {
             if (feedsJelly && !mSimple) {
-                GlassSwitch.spring(mJellySpring, (float) (GlassSwitch.JELLY_MAX
-                        * Math.tanh(Math.abs(velocity) / (GlassSwitch.JELLY_SPEED * 220 * mDp))), GlassSwitch.JELLY);
+                double speed = Math.tanh(velocity / (GlassSwitch.JELLY_SPEED * 220 * mDp));
+                GlassSwitch.spring(mJellySpring, (float) (GlassSwitch.JELLY_MAX * Math.abs(speed)), GlassSwitch.JELLY);
+                GlassSwitch.spring(mLeanSpring, (float) speed, GlassSwitch.JELLY);
             }
+            shapeTrack();
             recolor();
             mRow.invalidate();
         });
@@ -191,11 +260,7 @@ public class GlassChipTrack extends HorizontalScrollView {
         if (index == mSelected) {
             return;
         }
-        setSelected(index);
-        // A swell and settle as it lands, as the lens does when let go.
-        GlassSwitch.spring(mLiftSpring, 1f, GlassSwitch.PRESS);
-        removeCallbacks(mDrop);
-        postDelayed(mDrop, 140);
+        setSelected(index); // the track's own press bounce marks the tap; no lens flash
         if (mPicked != null) {
             mPicked.onPicked(index);
         }
@@ -217,10 +282,16 @@ public class GlassChipTrack extends HorizontalScrollView {
         }
     }
 
+    /** The edge it heads for leads, quick and bouncy; the other trails, so the pill stretches, then snaps back. */
+    private void glide(float left, float right) {
+        boolean rightward = left > mLeftSpring.getSpring().getFinalPosition();
+        GlassSwitch.spring(mLeftSpring, left, rightward ? TRAIL : LEAD);
+        GlassSwitch.spring(mRightSpring, right, rightward ? LEAD : TRAIL);
+    }
+
     private void moveTo(float left, float right, boolean animate) {
         if (animate) {
-            GlassSwitch.spring(mLeftSpring, left, GlassSwitch.DRAG);
-            GlassSwitch.spring(mRightSpring, right, GlassSwitch.DRAG);
+            glide(left, right);
         } else {
             mLeftSpring.cancel();
             mRightSpring.cancel();
@@ -236,7 +307,7 @@ public class GlassChipTrack extends HorizontalScrollView {
         if (mSelected < 0 && !mDragging) {
             return 0f;
         }
-        return mSimple ? 1f : Math.max(0f, Math.min(1f, 1f - 2.2f * mLift.getValue()));
+        return mSimple ? 1f : Math.max(0f, Math.min(1f, 1f - 1.4f * mLift.getValue())); // the pill melts into the lens, no snap
     }
 
     /** Black on the light pill, white on the glass or the lens. */
@@ -333,19 +404,28 @@ public class GlassChipTrack extends HorizontalScrollView {
         }
         float x = viewX + getScrollX();
         int hover = 0;
+        int before = 0; // the last chip whose centre is left of the finger
         for (int i = 0; i < count; i++) {
             View chip = mRow.getChildAt(i);
             if (x >= chip.getLeft()) {
                 hover = i;
             }
+            if (x >= (chip.getLeft() + chip.getRight()) / 2f) {
+                before = i;
+            }
         }
-        View chip = mRow.getChildAt(hover);
-        float width = chip.getWidth();
+        // The lens grows or shrinks smoothly between two chips' widths as it crosses from one to the next.
+        View a = mRow.getChildAt(before);
+        View b = mRow.getChildAt(Math.min(before + 1, count - 1));
+        float ca = (a.getLeft() + a.getRight()) / 2f;
+        float cb = (b.getLeft() + b.getRight()) / 2f;
+        float t = cb > ca ? Math.max(0f, Math.min(1f, (x - ca) / (cb - ca))) : 0f;
+        t = t * t * (3f - 2f * t);
+        float width = a.getWidth() + (b.getWidth() - a.getWidth()) * t;
         float min = mRow.getChildAt(0).getLeft();
         float max = mRow.getChildAt(count - 1).getRight() - width;
         float left = Math.max(min, Math.min(max, x - width / 2f));
-        GlassSwitch.spring(mLeftSpring, left, GlassSwitch.DRAG);
-        GlassSwitch.spring(mRightSpring, left + width, GlassSwitch.DRAG);
+        glide(left, left + width);
         if (hover != mHover) {
             mHover = hover;
             Haptics.tick(this);
@@ -374,6 +454,12 @@ public class GlassChipTrack extends HorizontalScrollView {
         mRightSpring.cancel();
         mLiftSpring.cancel();
         mJellySpring.cancel();
+        mLeanSpring.cancel();
+        mPressSpring.cancel();
+        mLean.setValue(0f);
+        mPress.setValue(0f);
+        setScaleX(1f);
+        setScaleY(1f);
         super.onDetachedFromWindow();
     }
 
@@ -413,8 +499,9 @@ public class GlassChipTrack extends HorizontalScrollView {
             } else if (alpha > 0f) {
                 mPaint.setStyle(Paint.Style.FILL);
                 mPaint.setColor(Color.argb(Math.round(Color.alpha(PILL) * alpha), 255, 255, 255));
-                mRect.set(mLeft.getValue(), top, mRight.getValue(), bottom);
-                canvas.drawRoundRect(mRect, (bottom - top) / 2f, (bottom - top) / 2f, mPaint);
+                float squash = (bottom - top) * mStretch.getValue() * 0.35f; // thinner as it stretches
+                mRect.set(mLeft.getValue(), top + squash, mRight.getValue(), bottom - squash);
+                canvas.drawRoundRect(mRect, mRect.height() / 2f, mRect.height() / 2f, mPaint);
             }
             super.dispatchDraw(canvas);
             float lift = mSimple ? 0f : Math.max(0f, Math.min(1f, mLift.getValue()));
@@ -429,6 +516,7 @@ public class GlassChipTrack extends HorizontalScrollView {
             float cy = (top + bottom) / 2f;
             float kw = (mRight.getValue() - mLeft.getValue() + SWELL_W * mDp * lift) * (1f + stretch);
             float kh = (bottom - top) * (1f + SWELL_H * lift) * (1f - stretch * 0.5f);
+            kw = Math.max(kw, kh * 1.5f); // a capsule even over a short chip, never a stubby ball
             mRect.set(cx - kw / 2f, cy - kh / 2f, cx + kw / 2f, cy + kh / 2f);
             float r = kh / 2f;
             mShadow.setStyle(Paint.Style.FILL);
