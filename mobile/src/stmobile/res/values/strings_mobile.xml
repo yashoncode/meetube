@@ -656,6 +656,13 @@
     <string name="mobile_about_creator">Creator</string>
     <string name="mobile_about_coffee_note"><![CDATA[<font color="#FF5F56">●</font> <font color="#FFBD2E">●</font> <font color="#27C93F">●</font><br><br><font color="#4ADE80">$</font> meetube --thank-you<br><font color="#E6EDF3">&#160;&#160;ads: 0 | sponsors: skipped</font><br><font color="#8B949E">// built at 3am on pure caffeine<br>// refill? totally optional :)</font>]]></string>
     <string name="mobile_about_coffee_cta" translatable="false">sudo brew coffee</string>
+    <string name="mobile_about_tv_badge">NEW</string>
+    <string name="mobile_about_tv_title">MeeTube TV is here 📺</string>
+    <string name="mobile_about_tv_text">Everything you love here, now on the big screen. A glass sidebar, Shorts that glow in their own cards, and sign in with a code. Your couch is calling.</string>
+    <string name="mobile_about_tv_button">Install on my TV</string>
+    <string name="mobile_about_tv_repo">⭐ Star it on GitHub, or download the APK yourself</string>
+    <string name="mobile_about_tv_repo_url" translatable="false">github.com/yashoncode/meetube-tv</string>
+    <string name="mobile_about_tv_shot">MeeTube TV’s Home on a TV</string>
     <string name="mobile_about_reporters">Issue reporters</string>
     <string name="mobile_about_reporters_summary">Thanks to all issue reporters</string>
     <string name="mobile_about_reporters_note">Thank you to everyone who opened an issue. Every report and idea made MeeTube better.</string>

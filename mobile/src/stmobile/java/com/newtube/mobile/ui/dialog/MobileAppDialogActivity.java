@@ -8,6 +8,9 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.VelocityTracker;
+import android.view.ViewConfiguration;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.ViewGroup;
@@ -251,6 +254,7 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
 
         // Sheet mode: tapping the dim scrim dismisses the whole dialog (like a Material sheet).
         mScrim.setOnClickListener(v -> dismissSheet());
+        installSheetDrag();
         mContent.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
                 fitOverFullscreenPlayer());
 
@@ -593,6 +597,122 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
             goBack();
         } else {
             dismissSheet();
+        }
+    }
+
+    private float mDragStartY;
+    private boolean mDragging;
+    private VelocityTracker mDragVelocity;
+
+    /**
+     * MEETUBE(sheet drag): the sheet follows a finger dragged down, from its handle and title or from
+     * the list once it is at its top, and on release closes or springs back. Without this the
+     * header's touches fell through to the scrim, whose click closed the sheet at once on any drag.
+     */
+    private void installSheetDrag() {
+        mContent.setOnTouchListener((v, event) -> {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    dragStart(event);
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    dragMove(event);
+                    return true;
+                default:
+                    dragEnd(event);
+                    return true;
+            }
+        });
+        mRecyclerView.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView list, @NonNull MotionEvent event) {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        dragStart(event);
+                        return false;
+                    case MotionEvent.ACTION_MOVE:
+                        return !list.canScrollVertically(-1) && dragMove(event);
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView list, @NonNull MotionEvent event) {
+                if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+                    dragMove(event);
+                } else if (event.getActionMasked() != MotionEvent.ACTION_DOWN) {
+                    dragEnd(event);
+                }
+            }
+        });
+    }
+
+    private void dragTrack(MotionEvent event) {
+        if (mDragVelocity == null) {
+            return;
+        }
+        // Raw coordinates: the sheet moves under the finger, so view-relative ones would lag behind.
+        MotionEvent raw = MotionEvent.obtain(event);
+        raw.setLocation(event.getRawX(), event.getRawY());
+        mDragVelocity.addMovement(raw);
+        raw.recycle();
+    }
+
+    private void dragStart(MotionEvent event) {
+        mDragStartY = event.getRawY();
+        mDragging = false;
+        if (mDragVelocity != null) {
+            mDragVelocity.recycle();
+        }
+        mDragVelocity = VelocityTracker.obtain();
+        dragTrack(event);
+    }
+
+    /** True once the move is a drag of the sheet. */
+    private boolean dragMove(MotionEvent event) {
+        if (mExiting) {
+            return false;
+        }
+        dragTrack(event);
+        float dy = event.getRawY() - mDragStartY;
+        if (!mDragging) {
+            if (dy <= ViewConfiguration.get(this).getScaledTouchSlop()) {
+                return false;
+            }
+            mDragging = true;
+            mDragStartY = event.getRawY();
+            dy = 0;
+            mContent.animate().cancel();
+            mScrim.animate().cancel();
+        }
+        float y = Math.max(0f, dy);
+        mContent.setTranslationY(y);
+        mScrim.setAlpha(1f - Math.min(1f, y / Math.max(1, mContent.getHeight())));
+        return true;
+    }
+
+    private void dragEnd(MotionEvent event) {
+        boolean dragging = mDragging;
+        mDragging = false;
+        float velocity = 0;
+        if (mDragVelocity != null) {
+            dragTrack(event);
+            mDragVelocity.computeCurrentVelocity(1000);
+            velocity = mDragVelocity.getYVelocity();
+            mDragVelocity.recycle();
+            mDragVelocity = null;
+        }
+        if (!dragging || mExiting) {
+            return;
+        }
+        float fling = 1000 * getResources().getDisplayMetrics().density;
+        if (event.getActionMasked() == MotionEvent.ACTION_UP
+                && (mContent.getTranslationY() > mContent.getHeight() * 0.3f || velocity > fling)) {
+            dismissSheet();
+        } else {
+            mContent.animate().translationY(0f).setDuration(Motion.ENTER_MS).setInterpolator(Motion.STANDARD).start();
+            mScrim.animate().alpha(1f).setDuration(Motion.ENTER_MS).start();
         }
     }
 
