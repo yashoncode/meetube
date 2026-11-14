@@ -177,7 +177,7 @@ final class CommunityPostAdapter extends ListAdapter<CommunityPost, CommunityPos
             text.setMovementMethod(LinkMovementMethod.getInstance());
             Context context = root.getContext();
             videoAdapter = new VideoCardAdapter(video -> PlaybackPresenter.instance(context).openVideo(video))
-                    .setListRows(HomeLayout.isVideoList(context));
+                    .setListRows(HomeLayout.isVideoList(context, HomeLayout.PAGE_CHANNELS));
             videoList = new RecyclerView(context);
             videoList.setLayoutManager(new LinearLayoutManager(context));
             videoList.setNestedScrollingEnabled(false);

@@ -1592,8 +1592,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // start drawn in the same pass that hid the skeleton, and on a busy main thread (binding a
         // dozen rows while the video starts) that empty frame stayed up ~1 s.
         mWatchRelated.setItemAnimator(null);
-        // MEETUBE(list layout): Up next follows Customization > Video layout, like every feed.
-        mRelatedAdapter.setCards(!com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this));
+        // MEETUBE(list layout, issue #92): Up next has its own Video layout setting (Customize).
+        mRelatedAdapter.setCards(!com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this, com.newtube.mobile.ui.browse.HomeLayout.PAGE_UP_NEXT));
         mWatchRelated.setAdapter(mRelatedAdapter);
 
         // Queue list: same row layout and same click routing as Up next, but it scrolls INSIDE the

@@ -34,6 +34,11 @@ public final class SettingsPages {
     public static final String ROOT = "root";
     public static final String GENERAL = "general";
     public static final String CUSTOMIZE = "customize";
+    public static final String CUSTOMIZE_THEME = "customize_theme";
+    public static final String CUSTOMIZE_LISTS = "customize_lists";
+    public static final String CUSTOMIZE_PLAYER = "customize_player";
+    public static final String CUSTOMIZE_BARS = "customize_bars";
+    public static final String CUSTOMIZE_EFFECTS = "customize_effects";
     public static final String FEEDS = "feeds";
     public static final String FEEDS_TABS = "feeds_tabs";
     public static final String FEEDS_HIDDEN = "feeds_hidden";
@@ -76,6 +81,16 @@ public final class SettingsPages {
                 return AppPages.general(context);
             case CUSTOMIZE:
                 return AppPages.customize(context);
+            case CUSTOMIZE_THEME:
+                return AppPages.customizeTheme(context);
+            case CUSTOMIZE_LISTS:
+                return AppPages.customizeLists(context);
+            case CUSTOMIZE_PLAYER:
+                return AppPages.customizePlayer(context);
+            case CUSTOMIZE_BARS:
+                return AppPages.customizeBars(context);
+            case CUSTOMIZE_EFFECTS:
+                return AppPages.customizeEffects(context);
             case FEEDS:
                 return AppPages.feeds(context);
             case FEEDS_TABS:

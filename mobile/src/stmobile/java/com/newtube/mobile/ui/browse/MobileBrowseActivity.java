@@ -142,6 +142,26 @@ public class MobileBrowseActivity extends MobileActivity
     private boolean mSkeletonRows;
 
     /** MEETUBE(issue #91): a load or refresh's ghosts take the feed's shape - cards, or rows. */
+    /** Issue #92: the tab on screen as cards or as list rows, by its own Customize setting. */
+    private void applyVideoLayout() {
+        String page = HomeLayout.PAGE_LIBRARY;
+        for (int chip : HOME_CHIPS) {
+            if (chip == mCurrentSectionId) {
+                page = HomeLayout.PAGE_HOME;
+            }
+        }
+        if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
+            page = HomeLayout.PAGE_SUBSCRIPTIONS;
+        }
+        boolean list = HomeLayout.isVideoList(this, page);
+        if (mAdapter != null) {
+            mAdapter.setListRows(list);
+        }
+        if (mFeedSkeleton != null) {
+            applyFeedSkeletonShape(list);
+        }
+    }
+
     private void applyFeedSkeletonShape(boolean rows) {
         ViewGroup skeleton = (ViewGroup) mFeedSkeleton;
         if (mSkeletonCards == null) {
@@ -2634,6 +2654,7 @@ public class MobileBrowseActivity extends MobileActivity
         mCurrentSectionId = sectionId;
         showNav();
         updateStrip();
+        applyVideoLayout();
         paintCachedSnapshot(sectionId, switched);
         syncNavHighlight(sectionId);
         onYouPanelToggled(); // MEETUBE: the large title names the tab on screen
@@ -3785,10 +3806,7 @@ public class MobileBrowseActivity extends MobileActivity
 
         updateAccountRow();
         applyHomeLayout(); // MEETUBE(home-rows): back from Settings with another Home layout
-        if (mAdapter != null) {
-            mAdapter.setListRows(HomeLayout.isVideoList(this)); // MEETUBE(list layout, issue #82)
-        }
-        applyFeedSkeletonShape(HomeLayout.isVideoList(this));
+        applyVideoLayout(); // MEETUBE(list layout, issues #82, #92)
         getWindow().getDecorView().postDelayed(mUpdateCheckIfDue, UPDATE_CHECK_DELAY_MS);
         // MEETUBE(background): not over a live mini player - the dialog would push it into PiP.
         if (!MiniPlayerBridge.isActive()) {
@@ -4263,6 +4281,7 @@ public class MobileBrowseActivity extends MobileActivity
             }
             mCurrentSectionId = section.getId();
             updateStrip();
+            applyVideoLayout();
             paintCachedSnapshot(section.getId(), switched);
 
             // The section may not be one of the sections shown in the bottom nav - e.g. the
