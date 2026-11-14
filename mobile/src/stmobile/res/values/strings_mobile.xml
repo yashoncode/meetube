@@ -385,16 +385,23 @@
     <string name="mobile_mini_expand">Expand player</string>
     <!-- NEWTUBE(menu): card-menu wording for the phone (overrides common's TV sidebar/channel
          phrasing). Pinned items live in the You tab, not a sidebar. -->
-    <string name="pin_playlist">Pin playlist to You</string>
+    <string name="pin_playlist">Save playlist to You</string>
     <string name="pin_channel">Pin channel to You</string>
     <string name="pinned_to_sidebar">Pinned to You</string>
     <string name="unpin_from_sidebar">Unpin from You</string>
+    <string name="unpin_playlist">Remove from saved playlists</string>
     <string name="unpinned_from_sidebar">Unpinned from You</string>
     <string name="subscribe_to_channel">Subscribe</string>
     <string name="unsubscribe_from_channel">Unsubscribe</string>
     <string name="subscribe_unsubscribe_from_channel">Subscribe or unsubscribe</string>
     <string name="share_link">Share</string>
     <string name="mobile_you_pinned">Pinned</string>
+    <string name="mobile_you_pinned_channels">Pinned channels</string>
+    <string name="mobile_you_saved_playlists">Saved playlists</string>
+    <string name="mobile_playlist_save">Save playlist</string>
+    <string name="mobile_playlist_unsave">Remove from saved playlists</string>
+    <string name="mobile_playlist_saved">Saved to You</string>
+    <string name="mobile_playlist_unsaved">Removed from saved playlists</string>
     <string name="pin_unpin_from_sidebar">Pin to You</string>
     <string name="mobile_settings_experimental">Experimental</string>
     <!-- NEWTUBE(gestures): Settings > Player, the switches for the optional player swipes (#12). -->

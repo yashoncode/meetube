@@ -213,6 +213,9 @@ public class MobileBrowseActivity extends MobileActivity
     // MEETUBE(home-rows): Home drawn as SmartTube's shelves (HomeLayout), mirroring mAdapter's list.
     private HomeRowsAdapter mRows;
     private androidx.recyclerview.widget.ConcatAdapter mFeedAdapter;
+    /** MEETUBE(feed segment): All | Videos | Shorts on Subscriptions and pinned channels. */
+    private ShortsSegment mSegment;
+    private int mSegmentSectionId = Integer.MIN_VALUE;
     private androidx.recyclerview.widget.ConcatAdapter mRowsFeedAdapter;
     private boolean mRowsShown;
     /** Home's chips (issue #4): the topic feeds SmartTube already has, shown as Home filters. */
@@ -1281,7 +1284,11 @@ public class MobileBrowseActivity extends MobileActivity
         });
 
         mContentGrid.setLayoutManager(mLayoutManager);
-        mFeedAdapter = new androidx.recyclerview.widget.ConcatAdapter(mStrip, mAdapter);
+        mSegment = new ShortsSegment(filter -> {
+            submitGrid();
+            mContentGrid.scrollToPosition(0);
+        });
+        mFeedAdapter = new androidx.recyclerview.widget.ConcatAdapter(mStrip, mSegment, mAdapter);
         mRowsFeedAdapter = new androidx.recyclerview.widget.ConcatAdapter(mStrip, mRows);
         mContentGrid.setAdapter(mFeedAdapter);
         // SCROLL-JANK FIX: the grid's own bounds never depend on item content (cards size themselves
@@ -2145,12 +2152,18 @@ public class MobileBrowseActivity extends MobileActivity
         // Subscriptions/Playlists "Sign in" button). AccountsSheet routes: no stored accounts
         // -> device-code sign-in; otherwise the native switch/add/sign-out sheet (also when
         // browsing signed-out with stored accounts, so they stay re-selectable).
+        // MEETUBE(you page): only the avatar (and Accounts) opens the accounts sheet; the name and
+        // email just pop when touched.
         View accountRow = findViewById(R.id.mobile_you_account_row);
-        accountRow.setOnClickListener(v -> AccountsSheet.show(this, this::updateAccountRow));
+        accountRow.setClickable(false);
+        accountRow.setBackground(null);
+        findViewById(R.id.mobile_you_avatar_glass).setOnClickListener(v -> AccountsSheet.show(this, this::updateAccountRow));
+        findViewById(R.id.mobile_you_account_text).setOnClickListener(this::popText);
+        findViewById(R.id.mobile_you_account_sub).setOnClickListener(this::popText);
         findViewById(R.id.mobile_you_accounts).setOnClickListener(v -> AccountsSheet.show(this, this::updateAccountRow));
         findViewById(R.id.mobile_you_settings).setOnClickListener(v -> openSettings());
-        com.newtube.mobile.ui.common.Glass.blur((View) findViewById(R.id.mobile_you_accounts).getParent(), findViewById(R.id.mobile_you_glow_source));
-        com.newtube.mobile.ui.common.Glass.blur((View) findViewById(R.id.mobile_you_settings).getParent(), findViewById(R.id.mobile_you_glow_source));
+        findViewById(R.id.mobile_you_actions).setBackground(new com.newtube.mobile.ui.common.AccentCard(this,
+                com.newtube.mobile.ui.common.AccentCard.YOU_GLASS));
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_you_avatar_glass), findViewById(R.id.mobile_you_glow_source));
         findViewById(R.id.mobile_you_history_title).setOnClickListener(v -> openFromYou(MediaGroup.TYPE_HISTORY));
         // MEETUBE(you page): the avatar leans with the phone, as the About photo does.
@@ -2201,6 +2214,19 @@ public class MobileBrowseActivity extends MobileActivity
                 }
             }
         });
+    }
+
+    /** MEETUBE(you page): a quick springy pop of the touched text, nothing else. */
+    private void popText(View text) {
+        text.setPivotX(0f); // grows from its start, so it stays lined up with the avatar
+        text.setPivotY(text.getHeight() / 2f);
+        text.animate().cancel();
+        text.animate().scaleX(1.12f).scaleY(1.12f).setDuration(110)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .withEndAction(() -> text.animate().scaleX(1f).scaleY(1f).setDuration(320)
+                        .setInterpolator(new android.view.animation.OvershootInterpolator(3f)).start())
+                .start();
+        com.newtube.mobile.ui.common.Haptics.tick(text);
     }
 
     /** MEETUBE(you page): History's videos for its row - the last ones seen at once, then fresh ones. */
@@ -2321,6 +2347,7 @@ public class MobileBrowseActivity extends MobileActivity
         List<String> libraryOrder = NavTabs.libraryOrder(this);
         Map<String, BrowseSection> personal = new HashMap<>();
         List<BrowseSection> pinned = new ArrayList<>();
+        List<BrowseSection> savedPlaylists = new ArrayList<>();
         List<BrowseSection> explore = new ArrayList<>();
 
         for (BrowseSection section : mSections) {
@@ -2336,7 +2363,8 @@ public class MobileBrowseActivity extends MobileActivity
             // NEWTUBE(menu): channels/playlists pinned from a card menu ("Pin to You") carry the
             // pinned Video as their data; they get their own group instead of mixing into Explore.
             if (section.getData() instanceof Video) {
-                pinned.add(section);
+                // MEETUBE(issue #242): playlists saved from a playlist page or a card menu get their own group.
+                (((Video) section.getData()).playlistId != null ? savedPlaylists : pinned).add(section);
                 continue;
             }
             String key = String.valueOf(section.getId());
@@ -2358,14 +2386,25 @@ public class MobileBrowseActivity extends MobileActivity
                 library.add(youSectionRow(personal.get(key), true));
             }
         }
-        if (!library.isEmpty()) {
-            addYouGroupLabel(getString(R.string.mobile_you_library));
-            addYouLines(library, 4); // MEETUBE(you page): small tiles, like Explore
+        // MEETUBE(issue #242): saved playlists and pinned channels right under History, on a glass
+        // card like Library's; two tiles a line so a playlist's name has room.
+        if (!savedPlaylists.isEmpty()) {
+            addYouGroupLabel(getString(R.string.mobile_you_saved_playlists));
+            addYouSectionRows(savedPlaylists, 2);
         }
 
         if (!pinned.isEmpty()) {
-            addYouGroupLabel(getString(R.string.mobile_you_pinned));
-            addYouSectionRows(pinned, 1);
+            boolean channels = true;
+            for (BrowseSection section : pinned) {
+                channels &= pinnedChannel(section) != null;
+            }
+            addYouGroupLabel(getString(channels ? R.string.mobile_you_pinned_channels : R.string.mobile_you_pinned));
+            addYouSectionRows(pinned, 2);
+        }
+
+        if (!library.isEmpty()) {
+            addYouGroupLabel(getString(R.string.mobile_you_library));
+            addYouLines(library, 4); // MEETUBE(you page): small tiles, like Explore
         }
 
         if (!explore.isEmpty()) {
@@ -2396,7 +2435,25 @@ public class MobileBrowseActivity extends MobileActivity
     private void addYouSectionRows(List<BrowseSection> sections, int perLine) {
         List<View> rows = new ArrayList<>();
         for (BrowseSection section : sections) {
-            rows.add(youSectionRow(section, perLine > 1));
+            View row = youSectionRow(section, perLine > 1);
+            if (perLine == 2) {
+                ((TextView) row.findViewById(R.id.mobile_you_row_label)).setMaxLines(2);
+                Video channel = pinnedChannel(section);
+                String avatar = channel == null ? null : com.newtube.mobile.ui.common.ChannelAvatars.get(this, channel.channelId, channel.getAuthor());
+                if (channel != null && avatar == null) {
+                    avatar = section.getIconUrl();
+                }
+                if (avatar != null) { // MEETUBE(you page): a pinned channel shows its avatar, not the pin
+                    ImageView icon = row.findViewById(R.id.mobile_you_row_icon);
+                    icon.setImageTintList(null);
+                    int size = Math.round(32 * getResources().getDisplayMetrics().density);
+                    icon.getLayoutParams().width = size;
+                    icon.getLayoutParams().height = size;
+                    com.bumptech.glide.Glide.with(icon).load(avatar).circleCrop()
+                            .placeholder(section.getResId()).into(icon);
+                }
+            }
+            rows.add(row);
         }
         addYouLines(rows, perLine);
     }
@@ -2436,6 +2493,14 @@ public class MobileBrowseActivity extends MobileActivity
             }
             target.addView(line);
         }
+    }
+
+    /** The channel a pinned section opens, or null when it is a playlist or something else. */
+    @Nullable
+    private static Video pinnedChannel(BrowseSection section) {
+        Object data = section.getData();
+        return data instanceof Video && ((Video) data).channelId != null && ((Video) data).playlistId == null
+                ? (Video) data : null;
     }
 
     private View youSectionRow(BrowseSection section, boolean tile) {
@@ -2710,12 +2775,12 @@ public class MobileBrowseActivity extends MobileActivity
             // one frame with the animator parked, pinned to the top, and fades in.
             parkItemAnimator();
             mSectionSwapPending = true;
-            mAdapter.submitList(new ArrayList<>(mCurrentVideos), this::onSectionSwapCommitted);
+            mAdapter.submitList(segmented(mCurrentVideos), this::onSectionSwapCommitted);
         } else if (mSectionSwapPending) {
             // A re-paint landing before the switch's own commit supersedes it: it finishes the switch.
-            mAdapter.submitList(new ArrayList<>(mCurrentVideos), this::onSectionSwapCommitted);
+            mAdapter.submitList(segmented(mCurrentVideos), this::onSectionSwapCommitted);
         } else {
-            mAdapter.submitList(new ArrayList<>(mCurrentVideos));
+            mAdapter.submitList(segmented(mCurrentVideos));
         }
         if (!mCurrentVideos.isEmpty()) {
             setSkeletonVisible(false);
@@ -2780,6 +2845,12 @@ public class MobileBrowseActivity extends MobileActivity
             queueShorts(video);
         } else if ((video.belongsToHistory() || mYouHistoryTap) && video.hasVideo() && ShortsFilter.isShort(video)) {
             video = queueHistoryShorts(video);
+        } else if (isSegmentSection() && video.hasVideo() && ShortsFilter.isShort(video)) {
+            // MEETUBE(feed segment): a Short here plays in the Shorts player, the page's Shorts its queue
+            Video queued = queueHistoryShorts(video, mCurrentVideos);
+            if (queued != null) {
+                video = queued;
+            }
         }
 
         // Cards without a videoId (playlists, mixes, channels) don't open the player - they kick
@@ -2925,7 +2996,39 @@ public class MobileBrowseActivity extends MobileActivity
     // ---------------------------------------------------------------------------------
 
     private int stripRows() {
-        return mStrip != null ? mStrip.getItemCount() : 0;
+        return (mStrip != null ? mStrip.getItemCount() : 0) + (mSegment != null ? mSegment.getItemCount() : 0);
+    }
+
+    /** MEETUBE(feed segment): Subscriptions, or a channel pinned to You: they keep their Shorts, behind the pill. */
+    private boolean isSegmentSection() {
+        if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
+            return true;
+        }
+        BrowseSection section = findKnownSection(mCurrentSectionId);
+        Object data = section != null ? section.getData() : null;
+        return data instanceof Video && ((Video) data).channelId != null && ((Video) data).playlistId == null;
+    }
+
+    private void updateSegment() {
+        if (mSegment == null) {
+            return;
+        }
+        boolean switched = mSegmentSectionId != mCurrentSectionId;
+        mSegmentSectionId = mCurrentSectionId;
+        mSegment.show(isSegmentSection(), switched);
+    }
+
+    /** The cards the pill lets through. */
+    private List<Video> segmented(List<Video> videos) {
+        List<Video> shown = new ArrayList<>(videos.size());
+        int filter = mSegment != null && isSegmentSection() ? mSegment.filter() : ShortsSegment.ALL;
+        for (Video video : videos) {
+            boolean isShort = video != null && video.hasVideo() && ShortsFilter.isShort(video);
+            if (filter == ShortsSegment.ALL || (filter == ShortsSegment.SHORTS) == isShort) {
+                shown.add(video);
+            }
+        }
+        return shown;
     }
 
     private static boolean isHomeChip(int sectionId) {
@@ -2962,6 +3065,7 @@ public class MobileBrowseActivity extends MobileActivity
             return;
         }
         applyHomeLayout();
+        updateSegment();
         if (isHomeChip(mCurrentSectionId)) {
             List<FeedStrip.Item> chips = new ArrayList<>();
             if (mHomeChips == null) {
@@ -4585,7 +4689,7 @@ public class MobileBrowseActivity extends MobileActivity
     private void submitGrid() {
         markLiveChannels();
         mAdapter.setRanked(mCurrentSectionId == MediaGroup.TYPE_TRENDING);
-        List<Video> list = new ArrayList<>(mCurrentVideos);
+        List<Video> list = segmented(mCurrentVideos);
         if (mParkedItemAnimator == null && !mSectionSwapPending) {
             mAdapter.submitList(list);
         } else {
@@ -4664,7 +4768,7 @@ public class MobileBrowseActivity extends MobileActivity
      * has no Shorts, so none are shown in any section ({@link ShortsFilter}). Keep true playlists
      * (which use a similar service shape), and leave channel discovery to Search.
      */
-    private static List<Video> visibleFeedItems(List<Video> videos) {
+    private List<Video> visibleFeedItems(List<Video> videos) {
         List<Video> visible = new ArrayList<>();
         if (videos == null) {
             return visible;
@@ -4723,12 +4827,13 @@ public class MobileBrowseActivity extends MobileActivity
         return null;
     }
 
-    private static boolean isVisibleFeedItem(Video video) {
+    private boolean isVisibleFeedItem(Video video) {
         return video != null
                 // MEETUBE(shorts): Shorts still stay out of every feed but their own tab, and
                 // History: it lists what you watched, Shorts included. And a Home shelf (issue #43).
+                // And Subscriptions and pinned channels, behind their All | Videos | Shorts pill.
                 && (!ShortsFilter.isShort(video) || video.belongsToShorts() || video.belongsToHistory()
-                    || video.shortsShelf != null)
+                    || video.shortsShelf != null || isSegmentSection())
                 && (!video.isChannel() || video.isPlaylistAsChannel())
                 && !isSearchQueryTile(video);
     }
@@ -4863,7 +4968,7 @@ public class MobileBrowseActivity extends MobileActivity
                 mCurrentVideos.addAll(visibleFeedItems(mLastSessionFallback));
                 mLastSessionFallback = null;
                 mAwaitingFreshContent = true;
-                mAdapter.submitList(new ArrayList<>(mCurrentVideos));
+                mAdapter.submitList(segmented(mCurrentVideos));
             }
 
             setSkeletonVisible(false);
@@ -5011,7 +5116,7 @@ public class MobileBrowseActivity extends MobileActivity
             if (mCurrentVideos.isEmpty() && mLastSessionFallback != null) {
                 // No fetch is coming for a section held back behind the skeleton: its cards it is.
                 mCurrentVideos.addAll(visibleFeedItems(mLastSessionFallback));
-                mAdapter.submitList(new ArrayList<>(mCurrentVideos));
+                mAdapter.submitList(segmented(mCurrentVideos));
             }
             mLastSessionFallback = null;
             setSkeletonVisible(false);

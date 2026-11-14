@@ -307,6 +307,11 @@ public class MobileChannelUploadsActivity extends MobileActivity
             }
 
             @Override
+            public void onSave() {
+                toggleSaved();
+            }
+
+            @Override
             public void onFilter(int filter) {
                 mFilter = filter;
                 submitVideos();
@@ -381,6 +386,62 @@ public class MobileChannelUploadsActivity extends MobileActivity
     private void updateCanAdd() {
         String id = openerPlaylistId();
         mHeaderAdapter.setCanAdd(id != null && !"LL".equals(id) && ("WL".equals(id) || isOwnPlaylistShown()));
+        // MEETUBE(issue #242): Save on every playlist but the account's own ones and its Watch later
+        // and Liked videos; radio mixes are endless, so they aren't kept either.
+        mHeaderAdapter.setSaveState(id != null && id.length() > 4 && !id.startsWith("RD") && !isOwnPlaylistShown(),
+                savedPin(id) != null);
+    }
+
+    /** MEETUBE(issue #242): this playlist's entry among the items saved (pinned) to You, if any. */
+    @Nullable
+    private Video savedPin(@Nullable String playlistId) {
+        if (playlistId == null) {
+            return null;
+        }
+        for (Video pinned : com.liskovsoft.smartyoutubetv2.common.app.presenters.service.SidebarService.instance(this)
+                .getPinnedItems()) {
+            if (pinned != null && playlistId.equals(pinned.playlistId)) {
+                return pinned;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * MEETUBE(issue #242): Save keeps the playlist on this phone, in You's Saved playlists, signed in
+     * or not. Signed in, it is also saved to the account's library, as YouTube's own Save does.
+     * Removing only takes it out of You: removing from the account goes through YouTube's delete
+     * call, which deletes the playlist outright when it is the user's own.
+     */
+    private void toggleSaved() {
+        Video opener = mPresenter != null ? mPresenter.getChannel() : null;
+        String id = openerPlaylistId();
+        if (opener == null || id == null) {
+            return;
+        }
+        com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter browse =
+                com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter.instance(this);
+        Video saved = savedPin(id);
+        if (saved != null) {
+            browse.unpinItem(saved);
+            MobileSnackbar.show(this, getString(R.string.mobile_playlist_unsaved));
+        } else {
+            Video pin = com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.BaseMenuPresenter
+                    .createPinnedPlaylist(opener);
+            pin.setGroup(null);
+            browse.pinItem(pin);
+            if (savedPin(id) == null) { // Home's screen is gone (opened from a link): store it for the next start
+                com.liskovsoft.smartyoutubetv2.common.app.presenters.service.SidebarService.instance(this).addPinnedItem(pin);
+            }
+            MobileSnackbar.show(this, getString(R.string.mobile_playlist_saved));
+            if (com.liskovsoft.youtubeapi.service.YouTubeSignInService.instance().isSigned()) {
+                com.liskovsoft.sharedutils.rx.RxHelper.execute(
+                        com.liskovsoft.youtubeapi.service.YouTubeMediaItemService.instance().savePlaylistObserve(id),
+                        error -> android.util.Log.w("PlaylistSave", "account save: " + error),
+                        () -> { });
+            }
+        }
+        updateCanAdd();
     }
 
     private boolean isOwnPlaylistShown() {

@@ -220,21 +220,22 @@
 
                 </LinearLayout>
 
-                <!-- MEETUBE(glass): Accounts / Settings in brighter glass than the top pills, so they
-                     stand off a light page without a shadow. -->
+                <!-- MEETUBE(you page): Accounts / Settings as two tiles on an accent glass card, like Library's
+                     (the card is set in MobileBrowseActivity.setupYouPanel). -->
                 <LinearLayout
+                    android:id="@+id/mobile_you_actions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="14dp"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="16dp">
+                    android:padding="7dp">
 
-                    <com.newtube.mobile.ui.common.GlassView
+                    <FrameLayout
                         android:layout_width="0dp"
                         android:layout_height="44dp"
-                        android:layout_marginEnd="6dp"
+                        android:layout_marginEnd="5dp"
                         android:layout_weight="1"
-                        app:glassCornerRadius="22dp"
-                        app:glassTint="@color/meetube_glass_button">
+                        android:background="@drawable/mobile_you_tile_bg">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/mobile_you_accounts"
@@ -249,18 +250,17 @@
                             android:textAllCaps="false"
                             android:textColor="@color/mobile_color_on_surface"
                             android:textSize="14sp"
-                            app:cornerRadius="22dp"
+                            app:cornerRadius="20dp"
                             app:rippleColor="@color/mobile_color_divider" />
 
-                    </com.newtube.mobile.ui.common.GlassView>
+                    </FrameLayout>
 
-                    <com.newtube.mobile.ui.common.GlassView
+                    <FrameLayout
                         android:layout_width="0dp"
                         android:layout_height="44dp"
-                        android:layout_marginStart="6dp"
+                        android:layout_marginStart="5dp"
                         android:layout_weight="1"
-                        app:glassCornerRadius="22dp"
-                        app:glassTint="@color/meetube_glass_button">
+                        android:background="@drawable/mobile_you_tile_bg">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/mobile_you_settings"
@@ -275,10 +275,10 @@
                             android:textAllCaps="false"
                             android:textColor="@color/mobile_color_on_surface"
                             android:textSize="14sp"
-                            app:cornerRadius="22dp"
+                            app:cornerRadius="20dp"
                             app:rippleColor="@color/mobile_color_divider" />
 
-                    </com.newtube.mobile.ui.common.GlassView>
+                    </FrameLayout>
 
                 </LinearLayout>
 

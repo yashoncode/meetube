@@ -35,6 +35,7 @@ class PlaylistHeaderAdapter extends RecyclerView.Adapter<PlaylistHeaderAdapter.H
         void onCoverChanged(String url);
         void onFilter(int filter);
         void onAddVideos();
+        void onSave();
     }
 
     /** MEETUBE(playlist page): the All | Videos | Shorts pills. */
@@ -52,6 +53,8 @@ class PlaylistHeaderAdapter extends RecyclerView.Adapter<PlaylistHeaderAdapter.H
     private int mFilter = FILTER_ALL;
     private boolean mHasShorts;
     private boolean mCanAdd;
+    private boolean mCanSave;
+    private boolean mSaved;
 
     PlaylistHeaderAdapter(Callbacks callbacks) {
         mCallbacks = callbacks;
@@ -131,6 +134,17 @@ class PlaylistHeaderAdapter extends RecyclerView.Adapter<PlaylistHeaderAdapter.H
         }
     }
 
+    /** MEETUBE(issue #242): the bookmark, on playlists that are not the user's own. */
+    void setSaveState(boolean canSave, boolean saved) {
+        if (mCanSave != canSave || mSaved != saved) {
+            mCanSave = canSave;
+            mSaved = saved;
+            if (hasHeader()) {
+                notifyItemChanged(0);
+            }
+        }
+    }
+
     static boolean canDownload(Video playlist) {
         // MEETUBE(playlist page): radio mixes are unbounded; isMix also matches some finite playlist cards.
         String id = playlist != null ? playlist.getPlaylistId() : null;
@@ -157,6 +171,10 @@ class PlaylistHeaderAdapter extends RecyclerView.Adapter<PlaylistHeaderAdapter.H
         holder.bind(mPlaylist, mActionsEnabled, mBusy, mSort, mFirstCover, mVideoCount);
         holder.bindFilter(mFilter, mHasShorts);
         holder.mAdd.setVisibility(mCanAdd ? View.VISIBLE : View.GONE);
+        holder.mSave.setVisibility(mCanSave ? View.VISIBLE : View.GONE);
+        holder.mSave.setImageResource(mSaved ? R.drawable.ic_mobile_bookmark_filled : R.drawable.ic_mobile_bookmark);
+        holder.mSave.setContentDescription(holder.itemView.getContext()
+                .getString(mSaved ? R.string.mobile_playlist_unsave : R.string.mobile_playlist_save));
     }
 
     static class HeaderHolder extends RecyclerView.ViewHolder {
@@ -168,6 +186,7 @@ class PlaylistHeaderAdapter extends RecyclerView.Adapter<PlaylistHeaderAdapter.H
         private final MaterialButton mPlayAll;
         private final ImageButton mShuffle;
         private final ImageButton mAdd;
+        private final ImageButton mSave;
         private final ImageButton mDownload;
         private final View mSort;
         private final TextView mSortLabel;
@@ -188,6 +207,8 @@ class PlaylistHeaderAdapter extends RecyclerView.Adapter<PlaylistHeaderAdapter.H
             mShuffle = itemView.findViewById(R.id.mobile_channel_uploads_shuffle);
             mAdd = itemView.findViewById(R.id.mobile_channel_uploads_add);
             mAdd.setOnClickListener(v -> callbacks.onAddVideos());
+            mSave = itemView.findViewById(R.id.mobile_channel_uploads_save);
+            mSave.setOnClickListener(v -> callbacks.onSave());
             mDownload = itemView.findViewById(R.id.mobile_channel_uploads_download_all);
             mSort = itemView.findViewById(R.id.mobile_channel_uploads_sort);
             mSortLabel = itemView.findViewById(R.id.mobile_channel_uploads_sort_label);

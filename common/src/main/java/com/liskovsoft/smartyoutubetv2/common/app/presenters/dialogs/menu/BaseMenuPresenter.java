@@ -73,11 +73,21 @@ public abstract class BaseMenuPresenter extends BasePresenter<Void> {
         }
 
         boolean isPlaylist = original.hasPlaylist() || original.isPlaylistAsChannel() || (original.hasNestedItems() && original.belongsToUserPlaylists());
+        // MEETUBE(pin): an item already pinned offers Unpin. The pinned copy is matched by its id: a
+        // fresh copy of the card isn't equal() to it (Video's hash covers the card's own mediaItem).
+        Video pinned = findPinned(original);
         getDialogPresenter().appendSingleButton(
                 UiOptionItem.from(
-                        getContext().getString(isPlaylist ? R.string.pin_playlist : R.string.pin_channel),
+                        getContext().getString(pinned != null ? (isPlaylist ? R.string.unpin_playlist : R.string.unpin_from_sidebar)
+                                : isPlaylist ? R.string.pin_playlist : R.string.pin_channel),
                         optionItem -> {
-                            if (original.hasPlaylist()) {
+                            if (pinned != null) {
+                                if (PhoneUi.isEnabled()) {
+                                    closeDialog();
+                                }
+                                BrowsePresenter.instance(getContext()).unpinItem(pinned);
+                                confirm(getContext().getString(R.string.unpinned_from_sidebar));
+                            } else if (original.hasPlaylist()) {
                                 togglePinToSidebar(createPinnedPlaylist(original));
                             } else if (original.hasVideo()) {
                                 // NEWTUBE(menu): the phone looks the channel up quietly; the result
@@ -100,6 +110,23 @@ public abstract class BaseMenuPresenter extends BasePresenter<Void> {
                         }));
     }
     
+    /** The pinned entry for this card's playlist, or for its channel when it has no playlist. */
+    private Video findPinned(Video item) {
+        String playlistId = item.getPlaylistId();
+        String channelId = item.channelId;
+        for (Video pinned : com.liskovsoft.smartyoutubetv2.common.app.presenters.service.SidebarService
+                .instance(getContext()).getPinnedItems()) {
+            if (pinned == null) {
+                continue;
+            }
+            if (playlistId != null ? playlistId.equals(pinned.playlistId)
+                    : channelId != null && pinned.playlistId == null && channelId.equals(pinned.channelId)) {
+                return pinned;
+            }
+        }
+        return null;
+    }
+
     private void togglePinToSidebar(Video section) {
         BrowsePresenter presenter = BrowsePresenter.instance(getContext());
 
@@ -149,7 +176,7 @@ public abstract class BaseMenuPresenter extends BasePresenter<Void> {
         }
     }
 
-    private static Video createPinnedPlaylist(Video video) {
+    public static Video createPinnedPlaylist(Video video) {
         if (video == null) {
             return null;
         }
@@ -225,6 +252,11 @@ public abstract class BaseMenuPresenter extends BasePresenter<Void> {
 
     protected void appendSaveRemovePlaylistButton() {
         if (!mIsSaveRemovePlaylistEnabled) {
+            return;
+        }
+
+        // MEETUBE(issue #242): signed out, this account action only failed; "Save playlist to You" saves on the phone.
+        if (PhoneUi.isEnabled() && !com.liskovsoft.youtubeapi.service.YouTubeSignInService.instance().isSigned()) {
             return;
         }
 
