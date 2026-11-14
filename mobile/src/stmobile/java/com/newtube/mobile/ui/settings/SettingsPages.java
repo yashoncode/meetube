@@ -235,8 +235,30 @@ public final class SettingsPages {
         rows.add(icon(R.drawable.ic_about_gavel, SettingsRow.action(context.getString(R.string.about_license),
                 context.getString(R.string.about_license_name),
                 page -> Utils.openLinkExt(page.requireContext(), context.getString(R.string.about_license_url)))));
+        rows.add(SettingsRow.custom(context.getString(R.string.mobile_about_tv_title), SettingsPages::tvTeaser));
 
         return new Page(context.getString(R.string.about_app, context.getString(R.string.app_name)), rows);
+    }
+
+    /**
+     * MEETUBE(about): a look at MeeTube TV at the bottom of About. The card leans with the phone and the
+     * screenshot, a little zoomed, pans inside its rounded window. The button opens Install on TV.
+     */
+    private static android.view.View tvTeaser(@NonNull android.view.ViewGroup parent, @NonNull SettingsAdapter.Listener page) {
+        Context context = parent.getContext();
+        android.view.View card = android.view.LayoutInflater.from(context).inflate(R.layout.item_mobile_about_tv, parent, false);
+        card.findViewById(R.id.about_tv_window).setClipToOutline(true);
+        card.findViewById(R.id.about_tv_install).setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= 26 && page instanceof SettingsPageFragment) {
+                ((SettingsPageFragment) page).openPage(TV_INSTALL);
+            } else {
+                Utils.openLinkExt(context, "https://github.com/yashoncode/meetube-tv");
+            }
+        });
+        card.findViewById(R.id.about_tv_repo).setOnClickListener(v ->
+                Utils.openLinkExt(context, "https://github.com/yashoncode/meetube-tv"));
+        TiltParallax.attach((android.view.ViewGroup) card, 0.6f, card.findViewById(R.id.about_tv_shot));
+        return card;
     }
 
     /** MEETUBE(about): an About row's icon, in the same glass bead as the top level's. */

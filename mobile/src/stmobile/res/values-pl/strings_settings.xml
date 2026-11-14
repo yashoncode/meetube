@@ -103,7 +103,7 @@
     <string name="mobile_settings_indian_counts">Liczby w lakh i crore</string>
     <string name="mobile_settings_indian_counts_summary">Wyświetlenia i polubienia jako 2,5 lakh i 1,2 crore zamiast 250 tys. i 12 mln</string>
     <string name="mobile_settings_tabs">Karty</string>
-    <string name="mobile_settings_tabs_summary">Wybierz, co widać na dolnym pasku i w zakładce Ty</string>
+    <string name="mobile_settings_tabs_summary">Wybierz, co widać na dolnym pasku i w zakładce Mój profil</string>
     <string name="mobile_settings_tabs_bottom_bar">Dolny pasek</string>
     <string name="mobile_settings_nav_labels">Nazwy kart</string>
     <string name="mobile_settings_nav_labels_summary">Pokazuj nazwę każdej karty pod jej ikoną na dolnym pasku</string>
@@ -114,7 +114,7 @@
     <string name="mobile_settings_search_fab">Przycisk wyszukiwania, gdy pasek się chowa</string>
     <string name="mobile_settings_search_fab_right">Na dole po prawej</string>
     <string name="mobile_settings_search_fab_left">Na dole po lewej</string>
-    <string name="mobile_settings_tabs_you">Ty</string>
+    <string name="mobile_settings_tabs_you">Mój profil</string>
     <string name="mobile_settings_tabs_none">Brak</string>
     <string name="mobile_settings_tabs_bar_note">Przeciągnij kafelek za uchwyt lub przytrzymaj go, aby zmienić kolejność. Przeciągnij Szukaj w górę, aby przenieść je na górny pasek. Dotknij karty, aby zmienić jej zawartość.</string>
     <string name="mobile_settings_bar_top">Górny pasek</string>
@@ -133,7 +133,7 @@
     <string name="mobile_settings_search_place">Szukaj</string>
     <string name="mobile_settings_search_place_bottom">Na dolnym pasku</string>
     <string name="mobile_settings_search_place_top">Na górnym pasku</string>
-    <string name="mobile_settings_tabs_note">Możesz też przytrzymać kartę lub wiersz w zakładce Ty, aby go przenieść, zmienić nazwę lub ukryć.</string>
+    <string name="mobile_settings_tabs_note">Możesz też przytrzymać kartę lub wiersz w zakładce Mój profil, aby go przenieść, zmienić nazwę lub ukryć.</string>
     <string name="mobile_settings_hidden">Ukryte filmy</string>
     <string name="mobile_settings_hidden_none">Nic nie jest ukryte</string>
     <plurals name="mobile_settings_hidden_count">
@@ -178,14 +178,14 @@
     <string name="mobile_settings_thumbnails_end">Klatka z końca filmu</string>
     <string name="mobile_settings_original_titles">Oryginalne tytuły</string>
     <string name="mobile_settings_original_titles_summary">Pokazuj tytuły w języku, w którym je napisano, a nie w tłumaczeniu YouTube</string>
-    <string name="mobile_settings_channels_order">Kolejność kanałów w zakładce Ty</string>
+    <string name="mobile_settings_channels_order">Kolejność kanałów w zakładce Mój profil</string>
     <string name="mobile_settings_channels_order_recent">Ostatnio oglądane najpierw</string>
     <string name="mobile_settings_channels_order_name">Od A do Z</string>
     <string name="mobile_settings_channels_order_new">Najpierw nowe filmy</string>
     <string name="mobile_settings_pinned_channels">Przypięte kanały pokazują</string>
     <string name="mobile_settings_pinned_channels_all">Stronę główną kanału</string>
     <string name="mobile_settings_pinned_channels_uploads">Tylko jego filmy</string>
-    <string name="mobile_settings_playlists_style">Playlisty w zakładce Ty</string>
+    <string name="mobile_settings_playlists_style">Playlisty w zakładce Mój profil</string>
     <string name="mobile_settings_playlists_style_grid">Każdą playlistę osobno</string>
     <string name="mobile_settings_playlists_style_rows">Wszystkie ich filmy, jeden po drugim</string>
     <string name="mobile_settings_watch_history">Historia oglądania</string>
@@ -262,7 +262,7 @@
     <string name="mobile_settings_tab_motion">Animacja zmiany karty</string>
     <string name="mobile_settings_tab_motion_summary">Szklana soczewka przesuwa się do karty, a pasek się kołysze. Na wolniejszych telefonach wyłączona, dopóki jej nie włączysz</string>
     <string name="mobile_settings_tabs_reset">Przywróć domyślny pasek</string>
-    <string name="mobile_settings_tabs_reset_summary">Główna, Shorts, Szukaj, Subskrypcje, Ty</string>
+    <string name="mobile_settings_tabs_reset_summary">Główna, Shorts, Szukaj, Subskrypcje, Mój profil</string>
     <string name="mobile_settings_video_layout">Układ filmów</string>
     <string name="mobile_settings_video_layout_cards">Karty</string>
     <string name="mobile_settings_video_layout_cards_desc">Duża miniatura dla każdego filmu</string>
@@ -437,8 +437,8 @@
     <string name="mobile_settings_tab_glow_accent">Akcent</string>
     <string name="mobile_settings_tab_glow_accent_desc">Każda karta świeci czerwienią MeeTube</string>
     <string name="mobile_settings_tab_glow_off">Wył.</string>
-    <string name="mobile_settings_you_glow">Poświata strony Ty</string>
-    <string name="mobile_settings_you_glow_accent_desc">Światło w górnym rogu strony Ty przyjmuje kolor akcentu</string>
+    <string name="mobile_settings_you_glow">Poświata strony Mój profil</string>
+    <string name="mobile_settings_you_glow_accent_desc">Światło w górnym rogu strony Mój profil przyjmuje kolor akcentu</string>
     <string name="mobile_settings_you_glow_rgb">RGB</string>
     <string name="mobile_settings_you_glow_rgb_desc">Światło powoli przechodzi przez wszystkie kolory</string>
     <string name="mobile_settings_progress_glow">Poświata postępu</string>
