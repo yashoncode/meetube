@@ -329,11 +329,16 @@ public class MobileBrowseActivity extends MobileActivity
     private final List<BrowseSection> mSections = new ArrayList<>();
     private final List<Video> mCurrentVideos = new ArrayList<>();
     /**
-     * MEETUBE(refresh): Home cards already on screen when Home was pulled to refresh. YouTube answers
-     * a refresh with the same Home, so the refreshed list leaves these out and its top fills with
-     * the rest of the page, unseen - no extra request. For this run of the app.
+     * MEETUBE(refresh): cards already on screen when Home or one of its topics (issue #185: Gaming...)
+     * was pulled to refresh, by section. YouTube answers a refresh with much the same page, so the
+     * refreshed list leaves these out and its top fills with the rest, unseen - no extra request.
+     * For this run of the app.
      */
-    private final java.util.Set<Video> mSeenOnRefresh = new java.util.HashSet<>();
+    private final java.util.Map<Integer, java.util.Set<Video>> mSeenOnRefresh = new java.util.HashMap<>();
+
+    private java.util.Set<Video> seenOnRefresh() {
+        return mSeenOnRefresh.computeIfAbsent(mCurrentSectionId, id -> new java.util.HashSet<>());
+    }
     private int mCurrentSectionId = -1;
     private boolean mProgressShowing;
     private boolean mSuppressNavCallback;
@@ -581,7 +586,7 @@ public class MobileBrowseActivity extends MobileActivity
     /** A pull to refresh, or (issue #130) a tap on the tab you are on with its feed at the top. */
     private void refreshFeed() {
         com.newtube.mobile.ui.common.RefreshFeedback.play(mContentSwipe);
-        if (mCurrentSectionId == MediaGroup.TYPE_HOME) {
+        if (isHomeChip(mCurrentSectionId) && mHomeChip == null) {
             rememberSeenHome();
         }
         if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
@@ -589,8 +594,9 @@ public class MobileBrowseActivity extends MobileActivity
             updateStrip();
         }
         if (isHomeChip(mCurrentSectionId) && mHomeChip == null) {
-            mHomeChips = null; // MEETUBE(issue #79): the chips follow the watch history
-            updateStrip();
+            // MEETUBE(issue #79): the chips follow the watch history - asked again, the ones shown
+            // staying until it answers (dropped and rebuilt, the strip jumped twice per refresh)
+            loadHomeChips();
         }
         if (mHomeChip != null) {
             loadHomeChip(mHomeChip);
@@ -609,13 +615,14 @@ public class MobileBrowseActivity extends MobileActivity
 
     /** MEETUBE(refresh): every Home card down to the last one on screen counts as seen. */
     private void rememberSeenHome() {
-        if (mSeenOnRefresh.size() > 300) {
-            mSeenOnRefresh.clear(); // ponytail: most of Home's first pages seen, start over rather than run dry
+        java.util.Set<Video> seen = seenOnRefresh();
+        if (seen.size() > 300) {
+            seen.clear(); // ponytail: most of Home's first pages seen, start over rather than run dry
         }
         List<Video> shown = mAdapter.getCurrentList();
         int last = Math.min(lastVisibleCard(), shown.size() - 1);
         for (int i = 0; i <= last; i++) {
-            mSeenOnRefresh.add(shown.get(i));
+            seen.add(shown.get(i));
         }
     }
 
@@ -3289,17 +3296,35 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void loadHomeChips() {
-        mHomeChips = new ArrayList<>(); // asked once per visit (refresh asks again); none until it answers
+        if (mHomeChips == null) {
+            mHomeChips = new ArrayList<>(); // asked once per visit (refresh asks again); none until it answers
+        }
         com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mHomeChipsAction);
         mHomeChipsAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
                 com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService().getHistoryObserve(),
                 group -> runOnUiThread(() -> {
-                    mHomeChips = topChannels(VideoGroup.from(group).getVideos(), HOME_CHIPS_MAX);
+                    List<Video> chips = topChannels(VideoGroup.from(group).getVideos(), HOME_CHIPS_MAX);
+                    if (sameChannels(chips, mHomeChips)) {
+                        return; // the strip stays as it is
+                    }
+                    mHomeChips = chips;
                     if (mHomeChip == null && isHomeChip(mCurrentSectionId) && !mYouShowing) {
                         updateStrip();
                     }
                 }),
                 error -> android.util.Log.w("MobileBrowse", "Home chips: " + error));
+    }
+
+    private static boolean sameChannels(List<Video> a, @Nullable List<Video> b) {
+        if (b == null || a.size() != b.size()) {
+            return false;
+        }
+        for (int i = 0; i < a.size(); i++) {
+            if (!java.util.Objects.equals(a.get(i).channelId, b.get(i).channelId)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** The {@code max} channels with the most videos in {@code history}; a tie goes to the newer one. */
@@ -4753,11 +4778,22 @@ public class MobileBrowseActivity extends MobileActivity
         // recomputes both hashCodes per comparison). Same answer: Video.equals is "same hashCode
         // and same isMix()", so equal videos always share a bucket.
         java.util.Set<Video> present = new java.util.HashSet<>(mCurrentVideos);
-        boolean home = mCurrentSectionId == MediaGroup.TYPE_HOME;
+        java.util.Set<Video> seen = isHomeChip(mCurrentSectionId) && mSubsChannel == null ? seenOnRefresh() : null;
+        boolean skipped = false;
         for (Video video : videos) {
-            if (isVisibleFeedItem(video) && !(home && mSeenOnRefresh.contains(video)) && present.add(video)) {
+            if (!isVisibleFeedItem(video)) {
+                continue;
+            }
+            if (seen != null && seen.contains(video)) {
+                skipped = true;
+            } else if (present.add(video)) {
                 mCurrentVideos.add(video);
             }
+        }
+        if (skipped && mCurrentVideos.isEmpty()) {
+            // A topic with a short, fixed page (Gaming): all of it was seen - start over, never an empty feed.
+            seen.clear();
+            appendNew(videos);
         }
     }
 
@@ -4790,11 +4826,22 @@ public class MobileBrowseActivity extends MobileActivity
         if (videos == null || !isHomeChip(mCurrentSectionId) || !HomeLayout.isShortsShelf(this)) {
             return videos;
         }
+        // A Short an earlier shelf already holds stays out: News sends "National news" and "Top news"
+        // with mostly the same clips, and each became a shelf of its own - the row twice over.
+        java.util.Set<Video> shelved = new java.util.HashSet<>();
+        for (Video card : mCurrentVideos) {
+            if (card.shortsShelf != null) {
+                shelved.addAll(card.shortsShelf);
+            }
+        }
         List<Video> shorts = new ArrayList<>();
         int at = -1;
         List<Video> result = new ArrayList<>(videos.size());
         for (Video video : videos) {
             if (video != null && video.hasVideo() && ShortsFilter.isShort(video)) {
+                if (!shelved.add(video)) {
+                    continue;
+                }
                 if (at < 0) {
                     at = result.size();
                 }
@@ -4804,7 +4851,7 @@ public class MobileBrowseActivity extends MobileActivity
             }
         }
         if (shorts.size() < 2) {
-            return videos;
+            return result; // no shelf; a lone Short stays out like any stray one, a repeat too
         }
         for (Video video : shorts) {
             video.markShorts(); // plays in the Shorts player, and drawn as a tile
