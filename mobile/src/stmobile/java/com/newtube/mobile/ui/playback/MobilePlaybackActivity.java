@@ -737,7 +737,11 @@ public class MobilePlaybackActivity extends MobileActivity
         if (savedInstanceState != null && !presenterHasVideo && !PlayerTransitionBridge.hasPending()) {
             Video restored = Video.fromString(savedInstanceState.getString(STATE_VIDEO));
             if (restored != null && restored.hasVideo()) {
-                restored.pendingPosMs = savedInstanceState.getLong(STATE_POSITION_MS, -1);
+                long savedMs = savedInstanceState.getLong(STATE_POSITION_MS, -1);
+                // MEETUBE(restore-position): under 5 s the saved spot is no better than a fresh start
+                // (seen: 741 ms after a background kill); watch history, kept on disk, then decides
+                // where to pick up (restorePosition, which also knows finished and live videos).
+                restored.pendingPosMs = savedMs >= 5_000 ? savedMs : 0;
                 NetPath.log("playback-activity restore=process-death video=" + restored.videoId
                         + " posMs=" + restored.pendingPosMs);
                 mPresenter.onNewVideo(restored); // loads now, or pends until the engine initializes
@@ -8612,6 +8616,11 @@ public class MobilePlaybackActivity extends MobileActivity
             if (isFinishing() || isDestroyed() || mIsInPip || mPipEnterPending) {
                 return;
             }
+            // MEETUBE(restore-minimize): we ARE the resumed top. After a process-death restore Home
+            // resumed after us and its addTop (the root: clears the stack) made it the logical top,
+            // so startView skipped the reorder and left this transparent window over the card -
+            // which then kept the video surface when the app came back (blank video).
+            getViewManager().addTop(this);
             getViewManager().startView(hostView);
             if (host != null) {
                 overridePendingTransition(0, 0);
