@@ -24,12 +24,12 @@ screen in `ui/settings/`: a new setting is a row there (design and per-row audit
   `SharedModules`: the same, `origin` = yashoncode/SharedModules (our fork, made
   2026-11-03), `newtube` = aleixrodriala/SharedModules. HTTPS only. Commit INSIDE the
   submodule first, push `origin master`, then commit the pointer bump in main.
-- **MeeTube TV** (SmartTube with MeeTube's glass design, `io.yash.meetube.tv`) lives on branch
-  `tv` of the same repo: its own root commit (SmartTube master `b8fbe00`, 2026-11-03, plus the TV
-  changes), cloned locally in `meetubetv/` (ignored on main; `origin` = this repo, `upstream` =
-  yuliskov/SmartTube; Gradle 7.5, JDK 17). Never merge `tv` and `main`. SmartTube's later changes
-  come in as a diff from `b8fbe00`. TV releases: tag `tv-vX.Y.Z` (or `-beta`) on `tv`, built by its
-  `release-tv.yml`, never marked Latest (the phone updater reads `releases/latest`).
+- **MeeTube TV** (`io.yash.meetube.tv`) has its own repo since 2026-11-14:
+  github.com/yashoncode/meetube-tv, local `C:\Users\Yashwanth\meetube-tv`, with its own CLAUDE.md.
+  Do TV work there, never from here; nothing in this repo is TV code. The old branch `tv` here stays
+  only because TVs on 1.1.0 or older read its `meetube_tv.json`; never merge it into `main`. The
+  phone's TV install (`TvInstall`) and `release.yml`'s TV download row still read `tv-v` releases
+  of this repo.
 - Upstream (yuliskov) fixes are merged into the **submodule forks only**; the
   main repo never merges upstream (TV code is gone). Submodules have repo-local
   `core.autocrlf=false` — keep it; several upstream build files are CRLF.
