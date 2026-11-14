@@ -15,8 +15,6 @@
 
 <p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
 
-<p align="center"><img src=".github/assets/meetube/tv.webp" width="100%" alt="MeeTube TV: the glass sidebar over Home, the Sports page, the Shorts player and Subscriptions"></p>
-
 <p align="center"><a href="#meetube-tv"><b>📺 On a TV? Get MeeTube TV</b></a></p>
 
 > [!IMPORTANT]
@@ -80,15 +78,16 @@ MeeTube's glass design on Android TV and Google TV, tuned its own way. It instal
 - **Glass player.** One frosted panel at the bottom: a seek bar with a glowing knob, and every button in a single row.
 - **Search that glows.** The screen's edges light up when Search opens, and your words glow as you type.
 
-Get it from [MeeTube TV 1.0.0](https://github.com/yashoncode/meetube/releases/tag/tv-v1.0.0) on Releases:
+<p align="center">
+<a href="https://github.com/yashoncode/meetube-tv"><img src="https://raw.githubusercontent.com/yashoncode/meetube-tv/main/.github/assets/meetube/tv_home.jpg" width="49%" alt="MeeTube TV: Home with the glass sidebar open"></a>
+<a href="https://github.com/yashoncode/meetube-tv"><img src="https://raw.githubusercontent.com/yashoncode/meetube-tv/main/.github/assets/meetube/tv_player.jpg" width="49%" alt="MeeTube TV: the glass player, every button in one row"></a>
+<a href="https://github.com/yashoncode/meetube-tv"><img src="https://raw.githubusercontent.com/yashoncode/meetube-tv/main/.github/assets/meetube/tv_shorts_player.jpg" width="49%" alt="MeeTube TV: a short in a rounded 9:16 card, its colors glowing around it"></a>
+<a href="https://github.com/yashoncode/meetube-tv"><img src="https://raw.githubusercontent.com/yashoncode/meetube-tv/main/.github/assets/meetube/tv_search.jpg" width="49%" alt="MeeTube TV: search results with suggestions on top"></a>
+</p>
 
-| Your TV | File |
-|:--|:--|
-| Most TVs and boxes | [MeeTubeTV_1.0.0_armeabi-v7a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_armeabi-v7a.apk) |
-| Newer 64-bit boxes (Nvidia Shield, Google TV Streamer) | [MeeTubeTV_1.0.0_arm64-v8a.apk](https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_arm64-v8a.apk) |
-| Not sure | [MeeTubeTV_1.0.0_universal.apk](https://github.com/yashoncode/meetube/releases/download/tv-v1.0.0/MeeTubeTV_1.0.0_universal.apk) |
+<p align="center"><a href="https://github.com/yashoncode/meetube-tv"><b>📺 MeeTube TV has its own home now: yashoncode/meetube-tv</b></a></p>
 
-Android 4.2 or later. The code is on the [tv branch](https://github.com/yashoncode/meetube/tree/tv), with its own [changelog](https://github.com/yashoncode/meetube/blob/tv/CHANGELOG.md). Found a bug? [Open an issue](https://github.com/yashoncode/meetube/issues/new/choose) and pick MeeTube TV.
+Downloads, the changelog and the code all live in [meetube-tv](https://github.com/yashoncode/meetube-tv). Get the newest APK from its [latest release](https://github.com/yashoncode/meetube-tv/releases/latest), and report TV bugs in its [issues](https://github.com/yashoncode/meetube-tv/issues).
 
 ## Build
 
