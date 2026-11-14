@@ -530,6 +530,14 @@
     <string name="mobile_download_unavailable">This video can\'t be downloaded</string>
     <string name="mobile_download_unavailable_live">Live streams can\'t be downloaded</string>
     <string name="mobile_download_audio_only">Audio only</string>
+    <string name="mobile_download_part">Download a part</string>
+    <string name="mobile_download_part_description">Choose where it starts and ends</string>
+    <string name="mobile_download_part_start">Start</string>
+    <string name="mobile_download_part_end">End</string>
+    <string name="mobile_download_part_next">Next</string>
+    <string name="mobile_download_part_invalid">Use times like 1:30, end after start</string>
+    <string name="mobile_download_part_title">Download %1$s</string>
+    <string name="mobile_download_part_note">Only this part downloads. Above 1080p, the whole video downloads first and is cut after.</string>
     <string name="mobile_download_already">already downloaded</string>
     <string name="mobile_download_state_queued">Waiting to download</string>
     <string name="mobile_download_state_downloading">Downloading · %1$d%% · %2$s of %3$s</string>

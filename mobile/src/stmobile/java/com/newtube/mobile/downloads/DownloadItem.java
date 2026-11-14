@@ -41,6 +41,9 @@ public final class DownloadItem {
      */
     @Nullable public volatile String audioTrack;
     public final long createdAt;
+    /** A part of the video only (issue #241): start and end in ms; both 0 = the whole video. */
+    public volatile long clipStartMs;
+    public volatile long clipEndMs;
 
     public volatile int state = STATE_QUEUED;
     public volatile long bytesDone;
@@ -57,6 +60,11 @@ public final class DownloadItem {
     @Nullable public transient volatile String audioUrl;
     public transient volatile long videoLength = -1;
     public transient volatile long audioLength = -1;
+    /** The streams' header and index byte ranges ("0-740"): a part download fetches only its bytes. */
+    @Nullable public transient volatile String videoInit;
+    @Nullable public transient volatile String videoIndex;
+    @Nullable public transient volatile String audioInit;
+    @Nullable public transient volatile String audioIndex;
     public transient volatile boolean cancelRequested;
     public transient volatile boolean pauseRequested;
 
@@ -87,12 +95,25 @@ public final class DownloadItem {
         item.audioTrack = DownloadOptions.audioTrackKey(option.audio);
         item.videoLength = DownloadOptions.lengthOf(option.video);
         item.audioLength = DownloadOptions.lengthOf(option.audio);
+        item.setRanges(option.video, option.audio);
         item.bytesTotal = option.totalBytes;
         return item;
     }
 
+    void setRanges(@Nullable com.liskovsoft.mediaserviceinterfaces.data.MediaFormat video,
+                   @Nullable com.liskovsoft.mediaserviceinterfaces.data.MediaFormat audio) {
+        videoInit = video != null ? video.getInit() : null;
+        videoIndex = video != null ? video.getIndex() : null;
+        audioInit = audio != null ? audio.getInit() : null;
+        audioIndex = audio != null ? audio.getIndex() : null;
+    }
+
     public boolean isAudioOnly() {
         return kind == DownloadOption.KIND_AUDIO;
+    }
+
+    public boolean isClip() {
+        return clipEndMs > clipStartMs;
     }
 
     public boolean isActive() {
@@ -133,6 +154,10 @@ public final class DownloadItem {
         json.putOpt("audioItag", audioItag);
         json.putOpt("audioTrack", audioTrack);
         json.put("createdAt", createdAt);
+        if (isClip()) {
+            json.put("clipStartMs", clipStartMs);
+            json.put("clipEndMs", clipEndMs);
+        }
         json.put("state", state);
         json.put("bytesDone", bytesDone);
         json.put("bytesTotal", bytesTotal);
@@ -151,6 +176,8 @@ public final class DownloadItem {
                 optString(json, "qualityLabel"), optString(json, "videoItag"), optString(json, "audioItag"),
                 json.optLong("createdAt", 0));
         item.audioTrack = optString(json, "audioTrack");
+        item.clipStartMs = json.optLong("clipStartMs", 0);
+        item.clipEndMs = json.optLong("clipEndMs", 0);
         item.state = json.optInt("state", STATE_FAILED);
         item.bytesDone = json.optLong("bytesDone", 0);
         item.bytesTotal = json.optLong("bytesTotal", -1);

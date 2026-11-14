@@ -69,6 +69,15 @@ final class StreamFetcher {
      * @return the final file length
      */
     long fetch(String url, File target, long expectedLength, Progress progress) throws IOException {
+        return fetch(url, target, expectedLength, 0, progress);
+    }
+
+    /**
+     * Same, with the file's byte {@code n} being the stream's byte {@code n + shift} (issue #241: a part
+     * of the video, where the file starts with the stream's header and then jumps to the part's bytes).
+     * {@code expectedLength} is then required: the file length to stop at.
+     */
+    long fetch(String url, File target, long expectedLength, long shift, Progress progress) throws IOException {
         long total = expectedLength;
         long position = target.exists() ? target.length() : 0;
         int attempt = 0;
@@ -86,7 +95,7 @@ final class StreamFetcher {
             Request request = new Request.Builder()
                     .url(url)
                     .header("User-Agent", mUserAgent)
-                    .header("Range", "bytes=" + position + "-" + end)
+                    .header("Range", "bytes=" + (position + shift) + "-" + (end + shift))
                     .build();
 
             try (Response response = mClient.newCall(request).execute()) {
@@ -101,6 +110,9 @@ final class StreamFetcher {
                 if (code != 206 && code != 200) {
                     throw new IOException("stream HTTP " + code);
                 }
+                if (code == 200 && shift != 0) {
+                    throw new IOException("range ignored on a part download");
+                }
                 if (code == 200 && position > 0) {
                     // Server ignored the range: restart from zero rather than corrupt the file.
                     Log.w(TAG, "range ignored, restarting " + target.getName());
@@ -110,7 +122,7 @@ final class StreamFetcher {
                     position = 0;
                 }
 
-                long announcedTotal = totalFromContentRange(response.header("Content-Range"));
+                long announcedTotal = shift != 0 ? -1 : totalFromContentRange(response.header("Content-Range"));
                 if (announcedTotal > 0) {
                     total = announcedTotal;
                 } else if (code == 200 && response.body() != null && response.body().contentLength() > 0) {
@@ -170,6 +182,30 @@ final class StreamFetcher {
                     throw new CancelledException();
                 }
             }
+        }
+    }
+
+    /** Bytes {@code from..to} (inclusive) of a stream, in one request: a part download's header. */
+    byte[] fetchBytes(String url, long from, long to) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("User-Agent", mUserAgent)
+                .header("Range", "bytes=" + from + "-" + to)
+                .build();
+        try (Response response = mClient.newCall(request).execute()) {
+            int code = response.code();
+            if (code == 403 || code == 410 || code == 404) {
+                throw new UrlRefusedException(code);
+            }
+            ResponseBody body = response.body();
+            if (code != 206 || body == null) {
+                throw new IOException("header HTTP " + code);
+            }
+            byte[] bytes = body.bytes();
+            if (bytes.length != to - from + 1) {
+                throw new IOException("short header: " + bytes.length);
+            }
+            return bytes;
         }
     }
 

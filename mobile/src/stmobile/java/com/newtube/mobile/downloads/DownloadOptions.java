@@ -433,6 +433,31 @@ public final class DownloadOptions {
                 : String.format(Locale.US, "%d:%02d", m, s);
     }
 
+    /** "1:20 to 3:45": a downloaded part's range, as the picker and the file name show it. */
+    public static String clipLabel(long startMs, long endMs) {
+        return formatDuration(startMs) + " to " + formatDuration(endMs);
+    }
+
+    /** "90", "1:30" or "1:01:30" -> ms; -1 when it is not a time. */
+    public static long parseTime(@Nullable CharSequence text) {
+        if (text == null || text.toString().trim().isEmpty()) {
+            return -1;
+        }
+        String[] parts = text.toString().trim().split(":", -1);
+        if (parts.length > 3) {
+            return -1;
+        }
+        long seconds = 0;
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i].trim();
+            if (!part.matches("[0-9]{1,5}") || (i > 0 && (part.length() > 2 || Integer.parseInt(part) > 59))) {
+                return -1;
+            }
+            seconds = seconds * 60 + Long.parseLong(part);
+        }
+        return seconds * 1000;
+    }
+
     /** A file name the media store and every file system accept; falls back to the video id. */
     public static String fileNameFor(@Nullable String title, String videoId, String extension) {
         String base = title == null ? "" : title;

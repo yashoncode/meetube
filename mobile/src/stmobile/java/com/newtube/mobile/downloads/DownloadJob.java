@@ -38,6 +38,9 @@ final class DownloadJob {
     private final StreamFetcher mFetcher;
     private final Listener mListener;
     private long mLastNotifyMs;
+    /** Where a part download's files start in their streams (issue #241), for the mux. */
+    private long mVideoPartStartMs;
+    private long mAudioPartStartMs;
 
     DownloadJob(Context context, DownloadItem item, DownloadRegistry registry, Listener listener) {
         mContext = context.getApplicationContext();
@@ -149,8 +152,13 @@ final class DownloadJob {
     }
 
     private void fetchPartsOnce(@Nullable File videoPart, @Nullable File audioPart) throws IOException {
-        long videoLen = mItem.videoLength;
-        long audioLen = mItem.audioLength;
+        // Issue #241: a part of the video fetches only the fragments that cover it.
+        ClipRanges.Plan videoPlan = videoPart != null ? clipPlan(mItem.videoUrl, mItem.videoInit, mItem.videoIndex) : null;
+        ClipRanges.Plan audioPlan = audioPart != null ? clipPlan(mItem.audioUrl, mItem.audioInit, mItem.audioIndex) : null;
+        mVideoPartStartMs = videoPlan != null ? videoPlan.startMs : 0;
+        mAudioPartStartMs = audioPlan != null ? audioPlan.startMs : 0;
+        long videoLen = videoPlan != null ? videoPlan.fileLength() : mItem.videoLength;
+        long audioLen = audioPlan != null ? audioPlan.fileLength() : mItem.audioLength;
         long total = videoLen > 0 && (audioPart == null || audioLen > 0) ? videoLen + Math.max(0, audioLen) : -1;
         if (total > 0) {
             mItem.bytesTotal = total;
@@ -161,7 +169,7 @@ final class DownloadJob {
             if (mItem.videoUrl == null) {
                 throw new IOException("no video link");
             }
-            mFetcher.fetch(mItem.videoUrl, videoPart, videoLen, (fileBytes, streamTotal) -> {
+            mFetcher.fetch(mItem.videoUrl, videoPart, videoLen, startPart(videoPart, videoPlan), (fileBytes, streamTotal) -> {
                 done[0] = fileBytes;
                 return report(done[0] + done[1]);
             });
@@ -173,13 +181,47 @@ final class DownloadJob {
             }
             // Synced before any byte: what the part holds must survive a process death.
             DownloadOptions.writeAudioPartTrack(audioPart, mItem.audioTrack);
-            mFetcher.fetch(mItem.audioUrl, audioPart, audioLen, (fileBytes, streamTotal) -> {
+            mFetcher.fetch(mItem.audioUrl, audioPart, audioLen, startPart(audioPart, audioPlan), (fileBytes, streamTotal) -> {
                 done[1] = fileBytes;
                 return report(done[0] + done[1]);
             });
             done[1] = audioPart.length();
         }
         report(done[0] + done[1]);
+    }
+
+    /**
+     * The fragments of a part download, or null to fetch the stream whole: not a part, a WebM or
+     * progressive stream (no sidx), or an index that does not read.
+     */
+    @Nullable
+    private ClipRanges.Plan clipPlan(@Nullable String url, @Nullable String init, @Nullable String index)
+            throws IOException {
+        long[] initRange = ClipRanges.range(init);
+        long[] indexRange = ClipRanges.range(index);
+        if (!mItem.isClip() || url == null || initRange == null || indexRange == null
+                || initRange[0] != 0 || indexRange[1] > 1024 * 1024) {
+            return null;
+        }
+        byte[] head = mFetcher.fetchBytes(url, 0, indexRange[1]);
+        ClipRanges.Plan plan = ClipRanges.plan(head, (int) initRange[1], (int) indexRange[0],
+                mItem.clipStartMs, mItem.clipEndMs);
+        NetPath.log("download part-plan video=" + mItem.videoId + " ok=" + (plan != null)
+                + (plan != null ? " bytes=" + plan.fileLength() : ""));
+        return plan;
+    }
+
+    /** Writes a part plan's header unless the file already holds it; the shift for the rest. */
+    private static long startPart(File part, @Nullable ClipRanges.Plan plan) throws IOException {
+        if (plan == null) {
+            return 0;
+        }
+        if (!part.exists() || part.length() < plan.header.length || part.length() > plan.fileLength()) {
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(part, false)) {
+                out.write(plan.header);
+            }
+        }
+        return plan.from - plan.header.length;
     }
 
     private boolean report(long bytesDone) {
@@ -260,6 +302,7 @@ final class DownloadJob {
         }
         mItem.videoLength = videoLength;
         mItem.audioLength = audioLength;
+        mItem.setRanges(video, audio);
     }
 
     private static long lengthOfPart(File part) {
@@ -297,13 +340,16 @@ final class DownloadJob {
 
         // MEETUBE(4k-download): VP9 + Opus parts (1440p and up) can only go into WebM.
         boolean webm = DownloadOptions.isWebmFile(videoPart);
-        String fileName = DownloadOptions.fileNameFor(mItem.title, mItem.videoId,
+        String fileName = DownloadOptions.fileNameFor(mItem.isClip() ? mItem.title + " ("
+                        + DownloadOptions.clipLabel(mItem.clipStartMs, mItem.clipEndMs).replace(':', '.') + ")"
+                        : mItem.title, mItem.videoId,
                 mItem.isAudioOnly() ? "m4a" : webm ? "webm" : "mp4");
         DownloadStorage.Target target = mStorage.create(fileName, mItem.isAudioOnly(), mimeOf(fileName));
         MediaMuxer muxer = null;
         try {
             muxer = mStorage.openMuxer(target, webm);
             long durationMs = MediaMuxHelper.mux(videoPart, audioPart, muxer,
+                    mItem.clipStartMs * 1000, mItem.clipEndMs * 1000, mVideoPartStartMs * 1000, mAudioPartStartMs * 1000,
                     (timeUs, durationUs) -> !mItem.cancelRequested);
             muxer.release();
             muxer = null;
@@ -338,10 +384,11 @@ final class DownloadJob {
         return fileName != null && fileName.endsWith(".m4a") ? "audio/mp4" : "video/mp4";
     }
 
-    /** One copy per video and kind: a re-download replaces the earlier file. */
+    /** One copy per video, kind and part: a re-download replaces the earlier file. */
     private void retirePreviousCopies() {
         for (DownloadItem other : mRegistry.items()) {
-            if (other != mItem && other.isDone() && other.videoId.equals(mItem.videoId) && other.kind == mItem.kind) {
+            if (other != mItem && other.isDone() && other.videoId.equals(mItem.videoId) && other.kind == mItem.kind
+                    && other.clipStartMs == mItem.clipStartMs && other.clipEndMs == mItem.clipEndMs) {
                 mStorage.delete(other.outputUri);
                 if (other.thumbPath != null) {
                     //noinspection ResultOfMethodCallIgnored
