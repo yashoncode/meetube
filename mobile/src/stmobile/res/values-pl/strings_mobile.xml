@@ -517,6 +517,22 @@
     <string name="mobile_about_share_short">Udostępnij</string>
     <string name="mobile_about_log_short">Wyślij log</string>
     <string name="mobile_about_creator">Twórca</string>
+    <string name="mobile_stats_today">Dziś</string>
+    <string name="mobile_stats_week">Ostatnie 7 dni</string>
+    <string name="mobile_stats_videos">Filmy dziś</string>
+    <string name="mobile_stats_footer">Oglądano %1$s dziś · średnio %2$s dziennie</string>
+    <string name="mobile_stats_storage_header">Twoje statystyki</string>
+    <string name="mobile_stats_delete">Usuń moje statystyki</string>
+    <string name="mobile_stats_delete_confirm">Usunąć statystyki?</string>
+    <string name="mobile_stats_delete_body">Czas w aplikacji, czas oglądania i liczba filmów, z każdego dnia. Liczenie zacznie się od zera.</string>
+    <string name="mobile_stats_private">Twoje statystyki (czas w MeeTube, czas oglądania, uruchomione filmy) są przechowywane tylko na tym telefonie. Nigdy nie są wysyłane ani udostępniane: żadne dane nie opuszczają urządzenia.</string>
+    <string name="mobile_stats_on_device">🔒 Tylko na tym telefonie. Nic nie opuszcza urządzenia.</string>
+    <plurals name="mobile_stats_delete_summary">
+        <item quantity="one">%d dzień zapisany na tym telefonie</item>
+        <item quantity="few">%d dni zapisane na tym telefonie</item>
+        <item quantity="many">%d dni zapisanych na tym telefonie</item>
+        <item quantity="other">%d dnia zapisanego na tym telefonie</item>
+    </plurals>
     <string name="mobile_about_tv_badge">NOWOŚĆ</string>
     <string name="mobile_about_tv_title">MeeTube TV już jest 📺</string>
     <string name="mobile_about_tv_text">Wszystko, co tu lubisz, teraz na dużym ekranie. Szklany pasek boczny, Shorts świecące we własnych kartach i logowanie kodem. Kanapa czeka.</string>

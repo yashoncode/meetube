@@ -1452,6 +1452,7 @@ public class Media3PlayerController implements Player.Listener {
             mOnSourceChanged = false;
 
             mEventListener.onVideoLoaded(getVideo());
+            com.newtube.mobile.ui.common.UsageStats.videoOpened(); // MEETUBE(stats)
 
             if (mOnVideoLoaded != null) {
                 mOnVideoLoaded.run();
@@ -1481,6 +1482,11 @@ public class Media3PlayerController implements Player.Listener {
         if (mNextPreloader != null) {
             mNextPreloader.update();
         }
+    }
+
+    @Override
+    public void onIsPlayingChanged(boolean isPlaying) {
+        com.newtube.mobile.ui.common.UsageStats.playing(isPlaying); // MEETUBE(stats): watch time
     }
 
     @Override
