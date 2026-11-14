@@ -217,6 +217,7 @@ public class MobileMainApplication extends MainApplication {
         // Release-visible launch milestones + the "first frame drawn" hook used below.
         LaunchMilestones.install(this);
         com.newtube.mobile.ui.common.UsageStats.install(this); // MEETUBE(stats): time spent, for the greeting
+        com.newtube.mobile.ui.common.BatterySaver.install(this); // MEETUBE(issue #93)
 
         // Counts our started screens from the first one on, so a PiP the user opened from the
         // player menu is not "restored" by Home gaining focus under it (SystemPipBridge).

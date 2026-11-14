@@ -14,7 +14,8 @@ public final class Glass {
 
     /** The Liquid glass setting: off, every glass is a plain frosted blur (no lens, light or grain). */
     public static boolean isLiquid(android.content.Context context) {
-        return context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).getBoolean(KEY_LIQUID, true);
+        return !BatterySaver.lite() // MEETUBE(issue #93)
+                && context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).getBoolean(KEY_LIQUID, true);
     }
 
     public static void setLiquid(android.content.Context context, boolean on) {
@@ -31,8 +32,9 @@ public final class Glass {
     /** See-through tinted discs by default; the old Frosted player buttons switch carries over. */
     public static int playerButtons(android.content.Context context) {
         android.content.SharedPreferences prefs = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE);
-        return prefs.getInt(KEY_PLAYER_BUTTONS,
+        int style = prefs.getInt(KEY_PLAYER_BUTTONS,
                 prefs.getBoolean(KEY_PLAYER_FROST, false) ? BUTTONS_FROSTED : BUTTONS_SEE_THROUGH);
+        return style == BUTTONS_FROSTED && BatterySaver.lite() ? BUTTONS_SEE_THROUGH : style; // MEETUBE(issue #93)
     }
 
     public static void setPlayerButtons(android.content.Context context, int style) {

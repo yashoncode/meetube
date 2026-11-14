@@ -14,6 +14,8 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.about.AboutShareRows;
 import com.newtube.mobile.ui.common.ThemeMode;
 
+import com.newtube.mobile.ui.common.BatterySaver;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +56,7 @@ public final class SettingsPages {
     public static final String DOWNLOADS = "downloads";
     public static final String BACKUP = "backup";
     public static final String STORAGE = "storage";
+    public static final String BATTERY = "battery";
     public static final String ADVANCED = "advanced";
     public static final String ABOUT = "about";
     public static final String TV_INSTALL = "tv_install";
@@ -121,6 +124,8 @@ public final class SettingsPages {
                 return AppPages.backup(context);
             case STORAGE:
                 return StoragePage.page(context);
+            case BATTERY:
+                return battery(context);
             case ADVANCED:
                 return PlayerPages.advanced(context);
             case ABOUT:
@@ -173,6 +178,10 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_backup_summary), BACKUP));
         rows.add(SettingsRow.page(R.drawable.ic_settings_storage, context.getString(R.string.mobile_settings_storage),
                 context.getString(R.string.mobile_settings_storage_summary), STORAGE));
+        rows.add(SettingsRow.page(R.drawable.ic_settings_battery, context.getString(R.string.mobile_settings_battery),
+                null, BATTERY).summary(() -> context.getString(BatterySaver.isManual(context)
+                ? R.string.mobile_settings_battery_manual_on : BatterySaver.mode(context) == BatterySaver.LIGHT
+                ? R.string.mobile_settings_battery_light : R.string.mobile_settings_battery_keep)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_advanced, context.getString(R.string.mobile_settings_advanced),
                 context.getString(R.string.mobile_settings_advanced_summary), ADVANCED));
         rows.add(SettingsRow.page(R.drawable.ic_settings_about, context.getString(R.string.mobile_settings_about),
@@ -183,6 +192,22 @@ public final class SettingsPages {
         }
 
         return new Page(context.getString(R.string.header_settings), rows);
+    }
+
+    /** MEETUBE(issue #93): what Battery Saver does to the effects. */
+    private static Page battery(Context context) {
+        List<SettingsRow> rows = new ArrayList<>();
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_battery_manual),
+                context.getString(R.string.mobile_settings_battery_manual_summary),
+                () -> BatterySaver.isManual(context), on -> BatterySaver.setManual(context, on)));
+        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_battery_when))
+                .option(context.getString(R.string.mobile_settings_battery_light),
+                        context.getString(R.string.mobile_settings_battery_light_desc), BatterySaver.LIGHT)
+                .option(context.getString(R.string.mobile_settings_battery_keep),
+                        context.getString(R.string.mobile_settings_battery_keep_desc), BatterySaver.KEEP)
+                .bind(() -> BatterySaver.mode(context), mode -> BatterySaver.setMode(context, mode)));
+        rows.add(SettingsRow.note(context.getString(R.string.mobile_settings_battery_note)));
+        return new Page(context.getString(R.string.mobile_settings_battery), rows);
     }
 
     /** "Dark theme, tabs, ...": the theme is what people open Customization for most. */

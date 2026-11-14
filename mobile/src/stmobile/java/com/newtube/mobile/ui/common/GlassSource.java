@@ -45,7 +45,7 @@ public class GlassSource extends FrameLayout {
 
     @Override
     protected void dispatchDraw(@NonNull Canvas canvas) {
-        if (node != null && sampling && canvas.isHardwareAccelerated()) {
+        if (node != null && sampling && !BatterySaver.lite() && canvas.isHardwareAccelerated()) {
             node.setPosition(0, 0, getWidth(), getHeight());
             Canvas recording = node.beginRecording();
             super.dispatchDraw(recording);
