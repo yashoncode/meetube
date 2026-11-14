@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Compact horizontal "up next / related" row for the watch page: a small 16:9 thumbnail
-  on the left with title + channel + meta on the right. Deliberately more compact than the
+  on the left with title + channel + meta on the right,
+  laid out like the feeds' list row (item_video_row, issue #131). Deliberately more compact than the
   full-width Home card (item_video_card) so a related list reads as a list, not a feed.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -13,7 +14,7 @@
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
-    android:gravity="center_vertical"
+    android:gravity="top"
     android:orientation="horizontal"
     android:paddingHorizontal="@dimen/mobile_watch_content_padding"
     android:paddingTop="6dp"
@@ -74,7 +75,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="12dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -84,25 +85,37 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:fontFamily="sans-serif-medium"
-            android:maxLines="2"
+            android:lineSpacingExtra="1sp"
+            android:maxLines="3"
             android:textColor="@color/mobile_color_on_surface"
             android:textSize="15sp"
             tools:text="A related video title that can wrap onto two lines" />
 
-        <!-- Single subtitle line: "Channel • views • date" (Video.getSecondTitle()). The former
+        <!-- One subtitle, up to two lines: "Channel • views • date" (Video.getSecondTitle()). The former
              separate channel byline was dropped - it duplicated the channel token already at the
              head of this line (see RelatedVideoAdapter.bind). -->
         <TextView
             android:id="@+id/related_subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:maxLines="2"
             android:textColor="@color/mobile_color_on_surface_secondary"
-            android:textSize="13sp"
+            android:textSize="12sp"
             tools:text="Channel name • 1.2M views • 2 days ago" />
 
     </LinearLayout>
+
+    <!-- Issue #131: the same overflow button as the feeds' list rows (item_video_row). -->
+    <ImageButton
+        android:id="@+id/related_overflow"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="-10dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/mobile_player_more"
+        android:padding="10dp"
+        android:src="@drawable/ic_mobile_more_vert" />
 
 </LinearLayout>
