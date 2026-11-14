@@ -52,22 +52,22 @@ Every MeeTube release, newest first.<br>
 > **Stable**<br>
 > 📅 2026-11-15 · closes #92, #93, #131, #237, #238, #241, #242 and #244
 
+### ✨ Highlights
+
+- **Stable build:** after Android clears MeeTube in the background, the player comes back right where you left off instead of a blank video or 0:00, and the mini player and picture-in-picture behave on return.
+- **Timer:** hold the logo for a small frosted Timer (15, 25, 45, 60 min, or hold it to type any length). When it runs out MeeTube asks "Are ya winning, son?" and sends you back to focus, or gives you 5 more min.
+- **Battery Saver:** with the phone's Battery Saver on, MeeTube offers once to turn off animations and frosted glass, and Settings > Battery Saver has a switch to turn them off any time (#93).
+- **Your stats:** holding the logo also shows today's time in MeeTube, watch time, videos and the last 7 days as bars, kept only on your phone.
+
 ### 📣 A note from me
 
 - **MeeTube TV now lives in its own repo, give it a try on your TV whenever you like:** [yashoncode/meetube-tv](https://github.com/yashoncode/meetube-tv) has its downloads, changelog and issues. Settings > About > Install on my TV sends it over from your phone. No rush at all, only if you feel like it.
 - **Love MeeTube? A coffee keeps the late nights going, totally optional:** sudo brew coffee in About, [Buy me a coffee](https://buymeacoffee.com/yashwynth), or UPI `yashwynth@slc` in India. Thank you for every star, issue and kind word.
 
-### ✨ Highlights
-
-- **Stable:** after Android clears MeeTube in the background, the player comes back right where you left off instead of a blank video or 0:00, and the mini player and picture-in-picture behave on return.
-- **Timer:** hold the logo for a small frosted Timer (15, 25, 45, 60 min, or hold it to type any length). When it runs out MeeTube asks "Are ya winning, son?" and sends you back to focus, or gives you 5 more min.
-- **Your stats:** holding the logo also shows today's time in MeeTube, watch time, videos and the last 7 days as bars, kept only on your phone.
-- **Battery Saver:** with the phone's Battery Saver on, MeeTube offers once to turn off animations and frosted glass, and Settings > Battery Saver has a switch to turn them off any time (#93).
-- **Download a part of a video:** pick start and end frames on a trim slider, and MP4 parts fetch only their own bytes (#241).
-- **A layout for every page:** pick the video layout for Home, Subscriptions, playlists, channels, search and Up next, with Customization split into five pages (#92).
-
 ### New
 
+- Download a part of a video: pick start and end frames on a trim slider, and MP4 parts fetch only their own bytes (#241).
+- A layout for every page: pick the video layout for Home, Subscriptions, playlists, channels, search and Up next, with Customization split into five pages (#92).
 - Save other people's playlists to You (and your account's library when signed in), with Saved playlists and Pinned channels on glass cards under History (#242).
 - 240p and 144p join the default quality choices for Wi-Fi, mobile data and Shorts, for limited data plans (#244).
 - About ends with a MeeTube TV card that leans with your phone, with Install on my TV and a link to its repo.
