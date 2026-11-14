@@ -1,8 +1,19 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/yashoncode/meetube/releases/download/tv-v1.1.0/MeeTubeTV_1.1.0_universal.apk",
-    "downloadUrlList_armeabi-v7a": ["https://github.com/yashoncode/meetube/releases/download/tv-v1.1.0/MeeTubeTV_1.1.0_armeabi-v7a.apk"],
-    "downloadUrlList_arm64-v8a": ["https://github.com/yashoncode/meetube/releases/download/tv-v1.1.0/MeeTubeTV_1.1.0_arm64-v8a.apk"]
+    "downloadUrl": "https://github.com/yashoncode/meetube-tv/releases/download/tv-v1.1.1/MeeTubeTV_1.1.1_universal.apk",
+    "downloadUrlList_armeabi-v7a": ["https://github.com/yashoncode/meetube-tv/releases/download/tv-v1.1.1/MeeTubeTV_1.1.1_armeabi-v7a.apk"],
+    "downloadUrlList_arm64-v8a": ["https://github.com/yashoncode/meetube-tv/releases/download/tv-v1.1.1/MeeTubeTV_1.1.1_arm64-v8a.apk"]
+  },
+  "1.1.1": {
+    "versionCode": 10101,
+    "changelog": [
+      "The player's clock lines up with the video title.",
+      "Updates now come from MeeTube TV's own repository.",
+      "Home: bigger cards set closer together, bigger clock and category chips.",
+      "Card previews on Home are off by default.",
+      "Smaller player controls, with arrows when more buttons are hidden.",
+      "The sidebar glass reaches the bottom and the chips no longer flicker."
+    ]
   },
   "1.1.0": {
     "versionCode": 10100,
