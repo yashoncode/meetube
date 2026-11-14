@@ -165,6 +165,16 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
                         .instance(v.getContext()).showMenu(mVideo);
                 return true;
             });
+            // Issue #131: the list rows' overflow button; the card layout has none.
+            View overflow = itemView.findViewById(R.id.related_overflow);
+            if (overflow != null) {
+                overflow.setOnClickListener(v -> {
+                    if (mVideo != null) {
+                        com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.menu.VideoMenuPresenter
+                                .instance(v.getContext()).showMenu(mVideo);
+                    }
+                });
+            }
 
             if (pressListener != null) {
                 PressIntentDetector detector = new PressIntentDetector(
