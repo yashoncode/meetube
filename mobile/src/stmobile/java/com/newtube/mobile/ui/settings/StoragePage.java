@@ -48,8 +48,22 @@ final class StoragePage {
 
     static SettingsPages.Page page(Context context) {
         String title = context.getString(R.string.mobile_settings_storage);
-        return new SettingsPages.Page(title,
-                Collections.singletonList(SettingsRow.custom(title, (parent, page) -> card(parent.getContext()))));
+        java.util.List<SettingsRow> rows = new java.util.ArrayList<>();
+        rows.add(SettingsRow.custom(title, (parent, page) -> card(parent.getContext())));
+        // MEETUBE(stats): the greeting's time-spent stats, deleted on their own.
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_stats_storage_header)));
+        rows.add(SettingsRow.action(R.drawable.ic_settings_storage, context.getString(R.string.mobile_stats_delete),
+                () -> context.getResources().getQuantityString(R.plurals.mobile_stats_delete_summary,
+                        com.newtube.mobile.ui.common.UsageStats.daysKept(),
+                        com.newtube.mobile.ui.common.UsageStats.daysKept()),
+                page -> AppPages.confirm(page, R.string.mobile_stats_delete_confirm, R.string.mobile_stats_delete_body,
+                        R.string.mobile_settings_clear, () -> {
+                            com.newtube.mobile.ui.common.UsageStats.clear();
+                            com.newtube.mobile.ui.common.MobileSnackbar.show(context, R.string.mobile_settings_cleared);
+                            page.rebuild();
+                        })));
+        rows.add(SettingsRow.note(context.getString(R.string.mobile_stats_private)));
+        return new SettingsPages.Page(title, rows);
     }
 
     /** Sizes, in bytes: app, cache, downloads, data. */
