@@ -277,6 +277,7 @@
     <string name="pin_channel">Add channel to the sidebar</string>
     <string name="pinned_to_sidebar">Added to the sidebar</string>
     <string name="unpin_from_sidebar">Remove from the sidebar</string>
+    <string name="unpin_playlist">Remove playlist from the sidebar</string>
     <string name="unpin_group_from_sidebar">Remove the subscription group</string>
     <string name="unpinned_from_sidebar">Removed from the sidebar</string>
     <string name="dialog_select_country">Country</string>

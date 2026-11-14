@@ -146,6 +146,19 @@
                 android:visibility="gone"
                 app:tint="@color/mobile_color_on_surface" />
 
+            <!-- MEETUBE(issue #242): save someone else's playlist to You, and to the account's library when signed in. -->
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/mobile_channel_uploads_save"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_glass_circle"
+                android:contentDescription="@string/mobile_playlist_save"
+                android:padding="12dp"
+                android:src="@drawable/ic_mobile_bookmark"
+                android:visibility="gone"
+                app:tint="@color/mobile_color_on_surface" />
+
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/mobile_channel_uploads_shuffle"
                 android:layout_width="48dp"
