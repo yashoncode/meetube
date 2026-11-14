@@ -10,8 +10,12 @@
 
 **YouTube, reimagined. Different by design. Smooth by nature.** <br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
 
-<p align="center"><img src=".github/assets/meetube/showcase.webp" width="100%" alt="MeeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Shorts (full screen, swipe ready), Channels (banner, Subscribe, Shorts tab), Liquid glass (a tab bar that floats), Search (YouTube's chips and filters) and Offline (save it in 4K)"></p>
-<p align="center"><img src=".github/assets/meetube/collage.webp" width="100%" alt="MeeTube on a phone, one screen at a time: the liquid glass tab bar switching tabs, the player with comments, synced lyrics, search and Shorts"></p>
+<p align="center">
+<img src=".github/assets/meetube/screens/home.jpg" width="24%" alt="Home, the top video playing as you scroll">
+<img src=".github/assets/meetube/screens/compact_player.jpg" width="24%" alt="The compact watch page">
+<img src=".github/assets/meetube/lyrics.jpg" width="24%" alt="Synced lyrics under the video">
+<img src=".github/assets/meetube/screens/youtube_mode.jpg" width="24%" alt="YouTube mode: a flat bottom bar and text tabs">
+</p>
 
 <p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
 
@@ -24,37 +28,77 @@
 
 <table>
 <tr>
-<td colspan="2" valign="top">🎚️ <b>YouTube Equalizer</b><br>Tune how YouTube sounds with your phone's presets or your own bands, live as it plays. Hear the original audio instead of YouTube's compressed track, and turn the volume up to 200%.</td>
+<td width="25%"><img src=".github/assets/meetube/screens/home.jpg" alt="Home with autoplay"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/youtube_mode.jpg" alt="YouTube mode"></td>
+<td width="50%">
+
+### Liquid glass, or YouTube mode
+Frosted glass on the tab bar, the player and Shorts, lit by a glow that follows your tab. Videos on Home start playing as you scroll. Prefer the familiar look? **YouTube mode** docks a flat bar at the bottom and puts Search up top.
+
+</td>
 </tr>
 <tr>
-<td width="50%" valign="top">🚫 <b>No ads, no sponsors</b><br>Ads are gone, and SponsorBlock skips sponsors, intros and "like and subscribe" reminders.</td>
-<td width="50%" valign="top">💎 <b>Liquid glass</b><br>Frosted, lens-bending glass on the tab bar, the player and Shorts, lit by GlowFlow: a glow that follows your tab, your progress and live channels.</td>
+<td width="25%"><img src=".github/assets/meetube/screens/compact_player.jpg" alt="Compact watch page"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/most_replayed.jpg" alt="Most replayed graph"></td>
+<td width="50%">
+
+### A player that shows more
+The compact watch page puts the actions beside Subscribe and the top comments right under the video. A **Most replayed** graph rises over the seek bar, and seeking shows the real frame.
+
+</td>
 </tr>
 <tr>
-<td valign="top">🎤 <b>Synced lyrics</b><br>Music videos get live, line-by-line lyrics. Pick your lyrics provider in one tap.</td>
-<td valign="top">🎧 <b>Background play and picture-in-picture</b><br>Lock the screen or switch apps and it keeps playing. Shorts float in their own portrait window.</td>
+<td width="25%"><img src=".github/assets/meetube/lyrics.jpg" alt="Synced lyrics"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/equalizer.jpg" alt="Equalizer in the player"></td>
+<td width="50%">
+
+### Synced lyrics and an equalizer
+Music videos get live, line-by-line lyrics from the provider you pick. The **equalizer** sits in the player menu, with presets or your own bands applied live, original audio and volume up to 200%.
+
+</td>
 </tr>
 <tr>
-<td valign="top">⬇️ <b>Offline downloads</b><br>Save videos up to 4K for a flight, a train or a day without data, in any folder you pick.</td>
-<td valign="top">📱 <b>Shorts done right</b><br>A clean full-screen player with glass like, comment and share buttons.</td>
+<td width="25%"><img src=".github/assets/meetube/screens/channel.jpg" alt="A channel page"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/posts.jpg" alt="Community posts"></td>
+<td width="50%">
+
+### Channels, posts and live chat
+Channel pages with the banner, Subscribe and every tab. Like and reply to **community posts**. On a live stream, **live chat** sits under the video, or beside it in fullscreen, and you can chat as any of your accounts.
+
+</td>
 </tr>
 <tr>
-<td valign="top">🧑‍🎤 <b>Channels at a glance</b><br>Every card shows the channel's photo; tap it to open the channel with its banner, Subscribe button and Shorts tab.</td>
-<td valign="top">🔎 <b>YouTube's search filters</b><br>One-tap chips for Videos, Shorts, Live and Recently uploaded, plus the full filter dialog.</td>
+<td width="25%"><img src=".github/assets/meetube/screens/search.jpg" alt="Search with filters"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/subscriptions.jpg" alt="Subscriptions"></td>
+<td width="50%">
+
+### Search and Subscriptions
+YouTube's one-tap chips for Videos, Shorts, Live and Recently uploaded, plus the full filter dialog. Your channels in a row on top of Subscriptions.
+
+</td>
 </tr>
 <tr>
-<td valign="top">👎 <b>Dislikes are back</b><br>Return YouTube Dislike shows the real count, and DeArrow swaps clickbait titles and thumbnails.</td>
-<td valign="top">💬 <b>Smooth comments and fullscreen</b><br>A glass comment bar that rises with the keyboard, and vertical videos go fullscreen upright.</td>
-</tr>
-<tr>
-<td valign="top">🎨 <b>Make it yours</b><br>Theme, app icon, glass, Home layout, tabs, double-tap skip time and the video menu, all on one page.</td>
-<td valign="top">🔄 <b>Always something new</b><br>Pull Home to refresh and get videos you haven't seen yet.</td>
-</tr>
-<tr>
-<td valign="top">🌏 <b>Speaks your language</b><br>English, Español, Română, Русский, 简体中文, 繁體中文 and العربية. Channel pages, view counts and dates follow your language too. <a href="TRANSLATING.md">Help translate</a>.</td>
-<td valign="top">🔐 <b>Your account, your subscriptions</b><br>Sign in with a code, or use it without an account. Cast to your TV.</td>
+<td width="25%"><img src=".github/assets/meetube/screens/you.jpg" alt="The You page with Downloads"></td>
+<td colspan="2">
+
+### Downloads in 4K, smart and automatic
+Save videos up to **4K** in any folder you pick. **Smart downloads** remember your quality, so one tap saves. Turn on **auto download** and new uploads from the channels and playlists you choose download on their own.
+
+</td>
 </tr>
 </table>
+
+### And more
+
+| | |
+|---|---|
+| 🚫 **No ads, no sponsors** | Ads are gone, and SponsorBlock skips sponsors, intros and "like and subscribe" reminders. |
+| 👎 **Dislikes are back** | Return YouTube Dislike shows the real count, and DeArrow swaps clickbait titles and thumbnails. |
+| 🎧 **Background play** | Lock the screen or switch apps and it keeps playing, with picture-in-picture for videos and Shorts. |
+| 📱 **Shorts done right** | A clean full-screen player with glass like, comment and share buttons. |
+| 🎨 **Make it yours** | Theme, light or dark, app icon, glass, Home layout, tabs and the video menu, all on one page. |
+| 🌏 **Speaks your language** | English, Español, Polski, Português (Brasil), Română, Русский, 简体中文, 繁體中文 and العربية. [Help translate](TRANSLATING.md). |
+| 🔐 **Your account** | Sign in with a code, or use it without an account. Cast to your TV. |
 
 ## Download
 
