@@ -85,7 +85,7 @@ MeeTube's glass design on Android TV and Google TV, tuned its own way. It instal
 <a href="https://github.com/yashoncode/meetube-tv"><img src="https://raw.githubusercontent.com/yashoncode/meetube-tv/main/.github/assets/meetube/tv_search.jpg" width="49%" alt="MeeTube TV: search results with suggestions on top"></a>
 </p>
 
-<p align="center"><a href="https://github.com/yashoncode/meetube-tv"><b>📺 MeeTube TV has its own home now: yashoncode/meetube-tv</b></a></p>
+<p align="center"><a href="https://github.com/yashoncode/meetube-tv"><b>📺 Get MeeTube TV for your Android TV</b></a></p>
 
 Downloads, the changelog and the code all live in [meetube-tv](https://github.com/yashoncode/meetube-tv). Get the newest APK from its [latest release](https://github.com/yashoncode/meetube-tv/releases/latest), and report TV bugs in its [issues](https://github.com/yashoncode/meetube-tv/issues).
 
