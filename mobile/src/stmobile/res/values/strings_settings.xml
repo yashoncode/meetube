@@ -72,6 +72,19 @@
     <string name="mobile_settings_advanced">Advanced</string>
     <string name="mobile_settings_storage">Storage</string>
     <string name="mobile_settings_storage_summary">Phone space and the cache</string>
+    <!-- MEETUBE(issue #93) -->
+    <string name="mobile_settings_battery">Battery Saver</string>
+    <string name="mobile_settings_battery_manual">Battery saving mode</string>
+    <string name="mobile_settings_battery_manual_summary">Effects off now, whether the phone\'s Battery Saver is on or not</string>
+    <string name="mobile_settings_battery_manual_on">Battery saving mode on</string>
+    <string name="mobile_settings_battery_when">When Battery Saver is on</string>
+    <string name="mobile_settings_battery_light">Turn off effects</string>
+    <string name="mobile_settings_battery_light_desc">No animations, and plain glass instead of the frosted blur</string>
+    <string name="mobile_settings_battery_keep">Keep effects</string>
+    <string name="mobile_settings_battery_keep_desc">Everything looks and moves as usual</string>
+    <string name="mobile_settings_battery_note">Animations, the frosted glass and the liquid lens redraw the screen many times a second. With Battery Saver on in the phone settings, MeeTube can skip them to save power. They come back when Battery Saver goes off.</string>
+    <string name="mobile_battery_saver_ask">Battery Saver is on. Turn off animations and frosted glass while it is?</string>
+    <string name="mobile_battery_saver_ask_action">Turn off</string>
     <string name="mobile_settings_storage_device">Device storage</string>
     <string name="mobile_settings_storage_used">%1$s used of %2$s</string>
     <string name="mobile_settings_storage_free">%1$s free</string>

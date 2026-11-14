@@ -132,6 +132,9 @@ public class GlassSwitch extends SwitchMaterial {
         if (!spring.isRunning()) {
             spring.start();
         }
+        if (BatterySaver.lite()) {
+            spring.skipToEnd(); // MEETUBE(issue #93): no motion
+        }
     }
 
     @Override

@@ -209,7 +209,7 @@ public final class GlassDrawable extends Drawable {
             return;
         }
         float r = Math.min(mShape.width(), mShape.height()) / 2f;
-        mSampled = mSource != null && mSource.sampling;
+        mSampled = mSource != null && mSource.sampling && !BatterySaver.lite(); // MEETUBE(issue #93)
         boolean live = mNode != null && !mPaused && mSampled && canvas.isHardwareAccelerated()
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
         mTint.setColor(live || mSource == null || mPaused || !mSampled

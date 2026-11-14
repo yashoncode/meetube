@@ -366,6 +366,7 @@ public class GlassView extends FrameLayout {
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         boolean live = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && mNode != null && mSource != null
+                && !BatterySaver.lite() // MEETUBE(issue #93): the tint alone
                 && mSource.node != null && canvas.isHardwareAccelerated() && getWidth() > 0 && getHeight() > 0;
         // The frost (not the bar's children) in a layer, so its bottom can be faded out below.
         int faded = mFadeBottom > 0 ? canvas.saveLayer(0, 0, getWidth(), getHeight(), null) : -1;
