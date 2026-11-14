@@ -368,7 +368,7 @@ final class PlayerPages {
         int autoHeight = auto != null && auto.getHeight() > 0 ? auto.getHeight() : 1080;
 
         List<VideoPreset> caps = new ArrayList<>();
-        for (int height : new int[] {2160, 1440, 1080, 720, 480, 360}) {
+        for (int height : new int[] {2160, 1440, 1080, 720, 480, 360, 240, 144}) {
             if (height == autoHeight) {
                 continue; // Auto is that cap already
             }
