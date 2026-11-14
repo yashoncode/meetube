@@ -56,14 +56,16 @@ def glow(size, center, radius, color, alpha):
 BENTO_COLS, BENTO_ROWS = 5, 2
 CARD_W, CARD_H, GAP = 470, 640, 26
 CARDS = [  # screen, caption, headline, col, row, col span, row span, layout, tint
-    ('watch', 'Watch', 'No ads.\nReal dislikes.', 0, 0, 1, 2, 'full', (255, 69, 58)),
+    ('screens/compact_player', 'Watch', 'No ads.\nReal dislikes.', 0, 0, 1, 2, 'full', (255, 69, 58)),
     ('lyrics', 'Synced lyrics', 'Every line,\nright on time.', 1, 0, 2, 1, 'side', (150, 70, 255)),
-    ('shorts', 'Shorts', 'Full screen,\nswipe ready.', 3, 0, 1, 2, 'full', (255, 140, 40)),
-    ('channel', 'Channels', 'Banner, Subscribe,\nShorts tab.', 4, 0, 1, 1, 'peek', (255, 70, 150)),
-    ('home', 'Liquid glass', 'A tab bar\nthat floats.', 1, 1, 1, 1, 'peek', (70, 140, 255)),
-    ('search', 'Search', "YouTube's chips\nand filters.", 2, 1, 1, 1, 'peek', (40, 200, 190)),
-    ('downloads', 'Offline', 'Save it\nin 4K.', 4, 1, 1, 1, 'peek', (60, 210, 110)),
+    ('screens/home', 'Home', 'Videos play\nas you scroll.', 3, 0, 1, 2, 'full', (255, 140, 40)),
+    ('screens/channel', 'Channels', 'Posts, Shorts\nand live chat.', 4, 0, 1, 1, 'peek', (255, 70, 150)),
+    ('screens/youtube_mode', 'YouTube mode', 'The look\nyou know.', 1, 1, 1, 1, 'peek', (70, 140, 255)),
+    ('screens/equalizer', 'Equalizer', 'Tune how\nit sounds.', 2, 1, 1, 1, 'peek', (40, 200, 190)),
+    ('screens/you', 'Offline', '4K, smart and\nauto downloads.', 4, 1, 1, 1, 'peek', (60, 210, 110)),
 ]
+
+PEEK_FROM = {'screens/equalizer': 0.38, 'screens/you': 0.37}
 
 
 def card(name, caption, headline, w, h, layout, tint):
@@ -89,7 +91,8 @@ def card(name, caption, headline, w, h, layout, tint):
             img.alpha_composite(s, ((w - s.width) // 2, top))
         else:
             s = screen(name, w - 2 * pad - 30)
-            img.alpha_composite(s.crop((0, 0, s.width, h - top)), ((w - s.width) // 2, top))
+            y0 = int(s.height * PEEK_FROM.get(name, 0))   # where the peek starts, for screens whose subject sits low
+            img.alpha_composite(s.crop((0, y0, s.width, y0 + h - top)), ((w - s.width) // 2, top))
     return finish(img)
 
 
