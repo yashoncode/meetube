@@ -31,8 +31,8 @@
     <string name="mobile_settings_general">General</string>
     <string name="mobile_settings_general_summary">Language, country, voice search, clock</string>
     <string name="mobile_settings_customize">Customization</string>
-    <string name="mobile_settings_customize_summary">Theme, tabs, Home layout, video menu</string>
-    <string name="mobile_settings_customize_summary_value">%1$s theme, tabs, Home layout, video menu</string>
+    <string name="mobile_settings_customize_summary">Theme, Home and video lists, player, tabs, effects</string>
+    <string name="mobile_settings_customize_summary_value">%1$s theme, Home and video lists, player, tabs, effects</string>
     <string name="mobile_settings_theme_system_short">System</string>
     <string name="mobile_settings_theme_light_short">Light</string>
     <string name="mobile_settings_theme_dark_short">Dark</string>
@@ -450,7 +450,25 @@
     <!-- MEETUBE(customize): the Customization page's groups and its tiles' short names -->
     <string name="mobile_settings_customize_look">Look</string>
     <string name="mobile_settings_customize_layout">Layout</string>
-    <string name="mobile_settings_customize_effects">Glass and motion</string>
+    <string name="mobile_settings_customize_effects">Effects and feedback</string>
+    <string name="mobile_settings_customize_effects_summary">Liquid glass, glows, vibration, sounds</string>
+    <string name="mobile_settings_customize_theme">Theme and colours</string>
+    <string name="mobile_settings_customize_theme_summary">YouTube mode, theme, accent colour, app icon, size</string>
+    <string name="mobile_settings_customize_lists">Home and video lists</string>
+    <string name="mobile_settings_customize_lists_summary">Home layout, cards or list on each page, thumbnails</string>
+    <string name="mobile_settings_customize_player">Watch page and player</string>
+    <string name="mobile_settings_customize_player_summary">Watch page style, player buttons, seek bar, mini player</string>
+    <string name="mobile_settings_customize_bars">Tabs and bars</string>
+    <string name="mobile_settings_customize_bars_summary">Bottom tabs, top bar, Search button, video menu</string>
+    <string name="mobile_settings_video_layout_all">All pages</string>
+    <string name="mobile_settings_video_layout_follow">Same as All pages</string>
+    <string name="mobile_settings_video_layout_home">Home</string>
+    <string name="mobile_settings_video_layout_subscriptions">Subscriptions</string>
+    <string name="mobile_settings_video_layout_library">History, Downloads and other tabs</string>
+    <string name="mobile_settings_video_layout_playlists">Playlists, Watch later and Liked</string>
+    <string name="mobile_settings_video_layout_channels">Channel pages</string>
+    <string name="mobile_settings_video_layout_search">Search results</string>
+    <string name="mobile_settings_video_layout_up_next">Up next, under the player</string>
     <string name="mobile_settings_customize_tabs_menus">Tabs and menus</string>
     <string name="mobile_settings_thumbnails_default_short">Original</string>
     <string name="mobile_settings_thumbnails_start_short">Start</string>

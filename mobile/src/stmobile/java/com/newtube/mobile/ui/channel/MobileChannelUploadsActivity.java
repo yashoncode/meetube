@@ -268,7 +268,7 @@ public class MobileChannelUploadsActivity extends MobileActivity
         int spanCount = computeSpanCount();
         mLayoutManager = new GridLayoutManager(this, spanCount);
         mAdapter = new VideoCardAdapter(this::onVideoClicked, this::onVideoLongClicked)
-                .setListRows(com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this));
+                .setListRows(com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this, com.newtube.mobile.ui.browse.HomeLayout.PAGE_PLAYLISTS));
         mHeaderAdapter = new PlaylistHeaderAdapter(new PlaylistHeaderAdapter.Callbacks() {
             @Override
             public void onPlayAll() {
