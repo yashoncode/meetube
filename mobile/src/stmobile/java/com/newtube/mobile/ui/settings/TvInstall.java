@@ -64,7 +64,8 @@ import dadb.InstallResult;
 final class TvInstall {
     private static final String TAG = "TvInstall";
     private static final String LOCAL_NETWORK = "android.permission.ACCESS_LOCAL_NETWORK";
-    private static final String RELEASES = "https://api.github.com/repos/yashoncode/meetube/releases?per_page=30";
+    // MeeTube TV has its own repo since 1.1.1; its tv-vX.Y.Z tags and MeeTubeTV_X.Y.Z_<abi>.apk names stayed.
+    private static final String RELEASES = "https://api.github.com/repos/yashoncode/meetube-tv/releases?per_page=30";
     private static final AtomicBoolean INSTALLING = new AtomicBoolean();
     private final Context mContext;
     private final View mRoot;

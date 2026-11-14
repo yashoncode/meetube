@@ -585,16 +585,16 @@
     <string name="mobile_settings_tv_step_three">3</string>
     <string name="mobile_settings_tv_step_four">4</string>
     <string name="mobile_settings_tv_developer">Turn on developer mode</string>
-    <string name="mobile_settings_tv_developer_android">On the TV: Settings › System › About, then click Android TV OS build 7 times until it says you’re a developer.</string>
-    <string name="mobile_settings_tv_developer_fire">On the TV: Settings › My Fire TV › About, then click your TV’s name 7 times.</string>
+    <string name="mobile_settings_tv_developer_android">On the TV: Settings › System › About (older TVs: Settings › Device Preferences › About). Click Android TV OS build (or Build) 7 times, until it says you’re a developer.</string>
+    <string name="mobile_settings_tv_developer_fire">On the TV: Settings › My Fire TV › About. Click the first line, your Fire TV’s name, 7 times, until it says you’re a developer.</string>
     <string name="mobile_settings_tv_debugging">Turn on debugging</string>
-    <string name="mobile_settings_tv_debugging_android">Settings › System › Developer options › turn on USB debugging (some TVs call it ADB or network debugging).</string>
-    <string name="mobile_settings_tv_debugging_fire">Settings › My Fire TV › Developer options › turn on ADB debugging.</string>
+    <string name="mobile_settings_tv_debugging_android">Go back to Settings › System › Developer options (older TVs: Device Preferences › Developer options) and turn on USB debugging. It works over Wi-Fi too, no cable needed. If you also see Network debugging or ADB over network, turn that on too. Wireless debugging (the one with a pairing code) is not the one.</string>
+    <string name="mobile_settings_tv_debugging_fire">Go back to Settings › My Fire TV › Developer options and turn on ADB debugging.</string>
     <string name="mobile_settings_tv_find">Find your TV</string>
     <string name="mobile_settings_tv_same_wifi">Keep this phone and the TV on the same Wi-Fi.</string>
     <string name="mobile_settings_tv_search">Search my Wi-Fi</string>
     <string name="mobile_settings_tv_searching">Searching…</string>
-    <string name="mobile_settings_tv_none_found">No TV answered. Check step 2, or type the TV’s IP (Settings › Network on the TV).</string>
+    <string name="mobile_settings_tv_none_found">No TV answered. Check step 2, or type the TV’s IP. Android TV: Settings › Network &amp; Internet › your Wi-Fi. Fire TV: Settings › My Fire TV › About › Network.</string>
     <string name="mobile_settings_tv_found">Found %1$s. Tap an address below.</string>
     <string name="mobile_settings_tv_ip">TV IP address</string>
     <string name="mobile_settings_tv_ip_hint" translatable="false">192.168.1.20</string>
