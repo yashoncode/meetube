@@ -668,14 +668,15 @@
                  retries; only real playback or a new video clears it. -->
             <TextView
                 android:id="@+id/mobile_player_notice"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
                 android:layout_marginBottom="60dp"
                 android:ellipsize="end"
                 android:gravity="center"
                 android:maxLines="2"
-                android:paddingHorizontal="24dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
                 android:shadowColor="#B3000000"
                 android:shadowRadius="4"
                 android:textColor="@android:color/white"

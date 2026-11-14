@@ -3281,7 +3281,8 @@ public class MobilePlaybackActivity extends MobileActivity
         setMargins(mTopPill, 0, top + dp(12), 0, 0);
         setMargins(mLevelPill, 0, top + dp(12), 0, 0);
         // The playback notice sits just over the row (60 dp in portrait, as in the layout).
-        setMargins(mNoticeView, 0, 0, 0, dp(60) + bottom + lift);
+        // Sized to its text like the other pills (issue #237), kept off the screen edges.
+        setMargins(mNoticeView, left + dp(16), 0, right + dp(16), dp(60) + bottom + lift);
         // The skip pill: left of fullscreen (and its chevron outside portrait), centered on the row.
         setMargins(mSkipSegmentPill, 0, 0, right + dp(inline ? 56 : 96), bottom + lift
                 + getResources().getDimensionPixelSize(R.dimen.mobile_player_bottom_row_margin) + dp(8));
