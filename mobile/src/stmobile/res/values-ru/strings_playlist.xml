@@ -7,8 +7,8 @@
     <string name="mobile_playlist_download_confirm">Скачать %1$d видео?</string>
     <string name="mobile_playlist_download_quality">Качество загрузки для всех видео</string>
     <string name="mobile_playlist_download_best">Наилучшее доступное</string>
-    <string name="mobile_playlist_download_queued">В очередь добавлено: %1$d видео</string>
-    <string name="mobile_playlist_download_skipped">В очередь добавлено: %1$d видео. Недоступно: %2$d.</string>
+    <string name="mobile_playlist_download_queued">Добавлено в очередь: %1$d видео</string>
+    <string name="mobile_playlist_download_skipped">Добавлено в очередь: %1$d видео. Недоступно: %2$d.</string>
     <string name="mobile_playlist_load_failed">Не удалось загрузить весь плейлист. Попробуйте ещё раз.</string>
     <string name="mobile_playlist_sort">Сортировать по</string>
     <string name="mobile_playlist_sort_manual">Вручную</string>
@@ -23,7 +23,7 @@
     <string name="mobile_playlist_selected">Выбрано: %1$d</string>
     <string name="mobile_playlist_download_selected">Скачать</string>
     <string name="mobile_playlist_add_videos">Добавить видео</string>
-    <string name="mobile_playlist_add_hint">Найдите видео для добавления в %1$s</string>
+    <string name="mobile_playlist_add_hint">Найдите видео, чтобы добавить их в %1$s</string>
     <string name="mobile_playlist_loading">Загрузка плейлиста…</string>
     <plurals name="mobile_playlist_video_count">
         <item quantity="one">%d видео</item>
