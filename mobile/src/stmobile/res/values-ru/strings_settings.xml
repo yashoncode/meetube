@@ -174,7 +174,7 @@
     <string name="mobile_settings_clear_watch_history_confirm">Очистить историю просмотров?</string>
     <string name="mobile_settings_clear_watch_history_body">Вся история просмотров YouTube будет удалена. Это действие нельзя отменить.</string>
     <string name="mobile_settings_search_history_off">Не сохранять историю поиска</string>
-    <string name="mobile_settings_search_history_off_summary">Предыдущие запросы не сохраняются и не предлагаются</string>
+    <string name="mobile_settings_search_history_off_summary">Предыдущие запросы не сохраняются и не появляются в подсказках.</string>
     <string name="mobile_settings_clear_search_history">Очистить историю поиска</string>
     <string name="mobile_settings_clear_search_history_summary">Удаляет поисковые запросы, сохранённые на этом телефоне</string>
     <string name="mobile_settings_clear_search_history_confirm">Очистить историю поиска?</string>
@@ -248,7 +248,7 @@
     <string name="mobile_settings_screen_off_on">Разрешено: режим энергосбережения не будет останавливать звук</string>
     <string name="mobile_settings_screen_off_off">Режим энергосбережения может остановить звук. Нажмите, чтобы разрешить MeeTube работать в фоне</string>
     <string name="mobile_settings_auto_pip">Картинка в картинке</string>
-    <string name="mobile_settings_auto_pip_summary">При выходе из приложения воспроизводимое видео сворачивается в небольшое окно. При выключении продолжает воспроизводиться только звук</string>
+    <string name="mobile_settings_auto_pip_summary">При выходе из приложения видео продолжает воспроизводиться в небольшом окне. Если выключить эту функцию, в фоне будет продолжать играть только звук.</string>
     <string name="mobile_settings_video_ends">Когда видео закончится</string>
     <string name="mobile_settings_video_ends_next">Воспроизвести следующее видео</string>
     <string name="mobile_settings_video_ends_repeat">Повторять видео</string>
@@ -343,12 +343,12 @@
 
     <!-- Advanced -->
     <string name="mobile_settings_advanced_note">Эти настройки обычно не нужны. Они меняют способ потоковой передачи данных и подключения MeeTube.</string>
-    <string name="mobile_settings_streaming">Потоковая передача</string>
-    <string name="mobile_settings_buffer">Буфер</string>
-    <string name="mobile_settings_buffer_low_desc">Около 25 секунд видео загружается заранее. Минимальный расход памяти.</string>
-    <string name="mobile_settings_buffer_med_desc">Около 50 секунд видео загружается заранее.</string>
-    <string name="mobile_settings_buffer_high_desc">До 75 секунд видео загружается заранее.</string>
-    <string name="mobile_settings_buffer_highest_desc">До 2 минут видео загружается заранее. Максимальный расход памяти.</string>
+    <string name="mobile_settings_streaming">Потоковое воспроизведение</string>
+    <string name="mobile_settings_buffer">Размер буфера</string>
+    <string name="mobile_settings_buffer_low_desc">Буфер примерно на 25 секунд вперёд. Минимальный расход памяти.</string>
+    <string name="mobile_settings_buffer_med_desc">Буфер примерно на 50 секунд вперёд.</string>
+    <string name="mobile_settings_buffer_high_desc">Буфер до 75 секунд вперёд.</string>
+    <string name="mobile_settings_buffer_highest_desc">Буфер до 2 минут вперёд. Максимальный расход памяти.</string>
     <string name="mobile_settings_stall_quality">Снижать качество при постоянной буферизации</string>
     <string name="mobile_settings_stall_quality_summary">При буферизации дольше 20 секунд качество снижается на один уровень. Отключение этой функции может помочь при использовании VPN.</string>
     <string name="mobile_settings_high_bitrate">Форматы с высоким битрейтом</string>
@@ -366,7 +366,7 @@
     <string name="mobile_settings_controls_on_next">Показывать элементы управления при запуске следующего видео</string>
     <string name="mobile_settings_controls_on_next_summary">Элементы управления появляются при запуске следующего видео</string>
     <string name="mobile_settings_list_queue">Воспроизводить исходный список</string>
-    <string name="mobile_settings_list_queue_summary">Видео, открытое из плейлиста, продолжит воспроизводить остальные видео в исходном порядке</string>
+    <string name="mobile_settings_list_queue_summary">Если открыть видео из плейлиста, после него будут воспроизводиться остальные видео в том же порядке.</string>
     <string name="mobile_settings_queue_mode">Очередь следует настройке «Когда видео закончится»</string>
     <string name="mobile_settings_queue_mode_summary">При выборе «Остановить» или «Закрыть плеер» воспроизведение очереди тоже прекращается</string>
     <string name="mobile_settings_chapter_popup">Всплывающие названия глав</string>
@@ -419,9 +419,9 @@
     <string name="mobile_settings_search_glow_summary">При открытии поиска края экрана подсвечиваются цветами Siri</string>
     <string name="mobile_settings_typing_glow">Свечение при вводе</string>
     <string name="mobile_settings_typing_glow_summary">Поисковый запрос подсвечивается цветами Siri во время ввода</string>
-    <string name="mobile_settings_short_ends">Когда Shorts заканчивается</string>
+    <string name="mobile_settings_short_ends">Когда заканчивается ролик Shorts</string>
     <string name="mobile_settings_short_ends_loop">Повторить</string>
-    <string name="mobile_settings_short_ends_next">Перейти к следующему Shorts</string>
+    <string name="mobile_settings_short_ends_next">Переходить к следующему ролику Shorts</string>
     <string name="mobile_settings_watched_bar">Красная полоса просмотра на миниатюрах</string>
     <string name="mobile_settings_watched_bar_summary">Показывает под миниатюрой, какую часть видео вы посмотрели</string>
     <string name="mobile_settings_refresh_sound">Звук обновления</string>
@@ -494,8 +494,8 @@
     <string name="mobile_settings_haptics">Виброотклик</string>
     <string name="mobile_settings_haptics_summary">Лёгкая вибрация при касании, перетаскивании и долгом нажатии</string>
     <string name="mobile_settings_dolby">Dolby Atmos</string>
-    <string name="mobile_settings_dolby_summary">Если доступна дорожка Dolby Atmos или 5.1, воспроизводить её. Изменение применяется к следующему открытому видео</string>
-    <string name="mobile_settings_dolby_summary_none">На этом телефоне нет декодера Dolby. Видео будет воспроизводиться в стерео</string>
+    <string name="mobile_settings_dolby_summary">Если для видео доступна дорожка Dolby Atmos или 5.1, воспроизводить её. Настройка применяется к следующему открытому видео.</string>
+    <string name="mobile_settings_dolby_summary_none">На этом телефоне нет декодера Dolby, поэтому видео будут воспроизводиться в стерео.</string>
     <string name="mobile_settings_home_autoplay">Автовоспроизведение на главном экране</string>
     <string name="mobile_settings_home_autoplay_wifi">Только по Wi-Fi</string>
     <string name="mobile_settings_home_autoplay_wifi_desc">Видео в центре главного экрана воспроизводится без звука только по Wi-Fi</string>
@@ -575,7 +575,7 @@
     <string name="mobile_settings_badge_icons">Значки на плашках времени</string>
     <string name="mobile_settings_badge_icons_summary">Радиоволны перед миксом, нота перед временем музыкального клипа</string>
     <string name="mobile_settings_seek_pill">Плашка перемотки</string>
-    <string name="mobile_settings_seek_pill_summary">При двойном касании для перемотки появляется плашка «+10» с пружинящей анимацией, а видео слегка сдвигается. Если выключить эту функцию, останется классическая анимация отклика.</string>
+    <string name="mobile_settings_seek_pill_summary">При двойном касании для перемотки появляется плашка «+10» с эффектом упругого отскока, а видео слегка смещается. При выключении используется стандартная анимация касания.</string>
     <string name="mobile_settings_segment_ask_short">Спросить</string>
     <string name="mobile_settings_segment_modes_note">Можно пропустить фрагмент, запросить подтверждение кнопкой, только показать его на шкале перемотки или отключить эту функцию.</string>
     <string name="mobile_settings_segment_show">Показать</string>
