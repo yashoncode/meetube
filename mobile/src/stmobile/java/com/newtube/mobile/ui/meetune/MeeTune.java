@@ -43,8 +43,15 @@ public final class MeeTune {
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     /** Square art of the songs MeeTune showed, by video id; the player's cover. */
     private static final Map<String, String> ART = new HashMap<>();
+    /** The songs MeeTune started or queued, by video id: the music player's menu (album, artist). */
+    private static final Map<String, MusicApi.Item> ITEMS = new HashMap<>();
+    /** A page the music player's menu asked for, opened when MeeTune is back on screen. */
+    @Nullable
+    private static String sOpenOnReturn;
     @Nullable
     private static String sPlaylistId;
+    /** Songs put in the queue from MeeTune's menu (Play next, Add to queue): they play as MeeTune's too. */
+    private static final java.util.Set<String> QUEUED = new java.util.HashSet<>();
     @Nullable
     private static String sVideoId;
 
@@ -247,11 +254,79 @@ public final class MeeTune {
 
     static void play(Context context, MusicApi.Item item) {
         if (item.videoId == null) return;
+        ITEMS.put(item.videoId, item);
         if (item.art != null) ART.put(item.videoId, item.art);
         Video video = video(item);
+        offline(context, video);
         sPlaylistId = video.playlistId;
         sVideoId = item.videoId;
         PlaybackPresenter.instance(context).openVideo(video);
+    }
+
+    /** The song's menu's Play next ({@code next}) or Add to queue: MeeTube's playback queue, in the music look. */
+    static void queue(Context context, MusicApi.Item item, boolean next) {
+        if (item.videoId == null) return;
+        ITEMS.put(item.videoId, item);
+        if (item.art != null) ART.put(item.videoId, item.art);
+        Video video = video(item);
+        offline(context, video);
+        video.fromQueue = true;
+        QUEUED.add(item.videoId);
+        com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist playlist =
+                com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance();
+        if (next) playlist.next(video); else playlist.add(video);
+    }
+
+    /** A song downloaded on this phone plays from its file: offline too, and with no data used. */
+    private static void offline(Context context, Video video) {
+        video.localUri = com.newtube.mobile.downloads.DownloadsBridge.instance(context).localSongUri(video.videoId);
+    }
+
+    /**
+     * The playing song's album and artist, when it came without them (a radio's next song, a video's
+     * song): asked of YouTube Music once, so the player's menu has Open album and Open artist.
+     */
+    public static void learn(Activity activity, Video video) {
+        if (video == null || video.videoId == null) return;
+        MusicApi.Item known = ITEMS.get(video.videoId);
+        if (known != null && known.albumId != null && known.artistId != null) return;
+        String id = video.videoId;
+        run(activity, () -> MusicApi.song(activity, id), (found, error) -> {
+            if (found == null) return;
+            MusicApi.Item item = ITEMS.get(id);
+            if (item == null) {
+                item = item(video);
+                ITEMS.put(id, item);
+            }
+            if (item.albumId == null) {
+                item.albumId = found.albumId;
+                item.album = found.album;
+            }
+            if (item.artistId == null) item.artistId = found.artistId;
+            if (item.artist == null) item.artist = found.artist;
+        });
+    }
+
+    /** Convert to video: the song's video in MeeTube's player, picture on; it plays as a MeeTube video now. */
+    static void watch(Context context, MusicApi.Item item) {
+        if (item.videoId == null) return;
+        QUEUED.remove(item.videoId);
+        if (item.videoId.equals(sVideoId)) sVideoId = null;
+        Video video = Video.from(item.videoId);
+        video.title = item.title;
+        video.author = artist(item.subtitle);
+        PlaybackPresenter.instance(context).openVideo(video);
+    }
+
+    /** Remove from cache: the song's streams the player kept on disk; how many it found (0: none cached). */
+    static int uncache(Context context, String videoId) {
+        com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo info =
+                com.liskovsoft.youtubeapi.service.YouTubeMediaItemService.instance().getFormatInfoObserve(videoId).blockingFirst();
+        List<String> urls = new java.util.ArrayList<>();
+        if (info != null && info.getAdaptiveFormats() != null) {
+            for (com.liskovsoft.mediaserviceinterfaces.data.MediaFormat format : info.getAdaptiveFormats()) urls.add(format.getUrl());
+        }
+        return com.newtube.mobile.player.Media3PlayerCache.remove(context, urls);
     }
 
     /** A song as MeeTube's video: what plays it, and what its Add to playlist saves. */
@@ -271,6 +346,72 @@ public final class MeeTune {
         return dot > 0 ? subtitle.substring(0, dot) : subtitle;
     }
 
+    /** The Library's Downloads card and page: not a YouTube Music page, read off this phone's downloads. */
+    static final String DOWNLOADS = "meetune:downloads";
+
+    /** The song's MeeTune download (done, coming or failed), or null when it has none. */
+    @androidx.annotation.Nullable
+    static com.newtube.mobile.downloads.DownloadItem songDownload(Context context, String videoId) {
+        for (com.newtube.mobile.downloads.DownloadItem download
+                : com.newtube.mobile.downloads.DownloadRegistry.instance(context).items()) {
+            if (download.song && download.videoId != null && download.videoId.equals(videoId)) return download;
+        }
+        return null;
+    }
+
+    /** The songs downloaded from MeeTune, newest first, one shelf; a song still coming says how far it is. */
+    static List<MusicApi.Shelf> downloads(Context context) {
+        MusicApi.Shelf shelf = new MusicApi.Shelf();
+        for (com.newtube.mobile.downloads.DownloadItem download
+                : com.newtube.mobile.downloads.DownloadRegistry.instance(context).itemsNewestFirst()) {
+            if (!download.song) continue;
+            MusicApi.Item item = new MusicApi.Item();
+            item.kind = MusicApi.SONG;
+            item.videoId = download.videoId;
+            item.title = download.title;
+            item.artist = download.author;
+            String state = download.isFailed() ? context.getString(R.string.meetune_download_failed)
+                    : download.isDone() ? null
+                    : context.getString(R.string.meetune_downloading, download.progressPercent());
+            item.subtitle = state == null ? download.author
+                    : download.author != null ? download.author + " • " + state : state;
+            item.art = download.thumbPath != null && new java.io.File(download.thumbPath).exists()
+                    ? download.thumbPath : download.thumbUrl;
+            if (download.durationMs > 0) {
+                long s = download.durationMs / 1000;
+                item.duration = s / 60 + ":" + String.format(java.util.Locale.US, "%02d", s % 60);
+            }
+            shelf.items.add(item);
+        }
+        List<MusicApi.Shelf> shelves = new java.util.ArrayList<>();
+        if (!shelf.items.isEmpty()) shelves.add(shelf);
+        return shelves;
+    }
+
+    /** The playing song as MeeTune knows it; a radio's next song only by its video's title, artist and cover. */
+    static MusicApi.Item item(Video video) {
+        MusicApi.Item known = ITEMS.get(video.videoId);
+        if (known != null) return known;
+        MusicApi.Item item = new MusicApi.Item();
+        item.videoId = video.videoId;
+        item.title = video.getTitle();
+        item.subtitle = video.getAuthor();
+        item.art = art(video);
+        item.playlistId = video.playlistId;
+        return item;
+    }
+
+    static void openOnReturn(String browseId) {
+        sOpenOnReturn = browseId;
+    }
+
+    @Nullable
+    static String takeOpenOnReturn() {
+        String browseId = sOpenOnReturn;
+        sOpenOnReturn = null;
+        return browseId;
+    }
+
     /** A song picked from the music player's Up next stays in the music look. */
     public static void keep(Video video) {
         if (video != null) sVideoId = video.videoId;
@@ -279,7 +420,7 @@ public final class MeeTune {
     /** True while {@code video} is a song MeeTune started (or its radio's next one). */
     public static boolean isMusic(@Nullable Video video) {
         if (video == null) return false;
-        return (sVideoId != null && sVideoId.equals(video.videoId))
+        return QUEUED.contains(video.videoId) || (sVideoId != null && sVideoId.equals(video.videoId))
                 || (sPlaylistId != null && sPlaylistId.equals(video.playlistId));
     }
 
@@ -324,6 +465,11 @@ public final class MeeTune {
      * comes up after the finger; {@code carried}: the player flies its own cover and name onto it,
      * so the pill's own stay hidden until it lands.
      */
+    /** How far the pill's own cover and name have taken over from the player's at flight fraction {@code f}. */
+    public static float handoff(float f) {
+        return Math.max(0f, Math.min(1f, (f - 0.8f) / 0.2f));
+    }
+
     public static void flyToPill(float f, @Nullable Video video, boolean playing, boolean carried) {
         MeeTuneMiniPill pill = sPill != null ? sPill.get() : null;
         if (pill != null && (f <= 0f || pill() != null)) pill.fly(f, video, playing, carried);
@@ -361,5 +507,46 @@ public final class MeeTune {
 
     static void setBrandName(Context context, boolean on) {
         prefs(context).edit().putBoolean("brand_name", on).apply();
+    }
+
+    /** Streaming quality, YouTube Music's three: High (the best sound), Normal, Low. */
+    static final int STREAM_HIGH = 0;
+    static final int STREAM_NORMAL = 1;
+    static final int STREAM_LOW = 2;
+
+    static int streamQuality(Context context) {
+        return prefs(context).getInt("stream_quality", STREAM_HIGH);
+    }
+
+    static void setStreamQuality(Context context, int quality) {
+        prefs(context).edit().putInt("stream_quality", quality).apply();
+    }
+
+    /** The most a song's sound may take, in bits a second: Normal stops at AAC's 128k, Low at Opus' 70k. */
+    public static int maxAudioBitrate(Context context) {
+        switch (streamQuality(context)) {
+            case STREAM_NORMAL: return 135_000;
+            case STREAM_LOW: return 72_000;
+            default: return Integer.MAX_VALUE;
+        }
+    }
+
+    /** What a song's Download takes, always sound only: High (AAC 128 kbps) or Low (AAC 48 kbps). */
+    static int downloadQuality(Context context) {
+        return prefs(context).getInt("download_quality", 0) == com.newtube.mobile.downloads.DownloadPicker.AUDIO_LOW
+                ? com.newtube.mobile.downloads.DownloadPicker.AUDIO_LOW : com.newtube.mobile.downloads.AutoDownload.AUDIO;
+    }
+
+    static void setDownloadQuality(Context context, int quality) {
+        prefs(context).edit().putInt("download_quality", quality).apply();
+    }
+
+    /** Whether a song's Download also saves its lyrics, so they show with no internet. */
+    static boolean downloadLyrics(Context context) {
+        return prefs(context).getBoolean("download_lyrics", true);
+    }
+
+    static void setDownloadLyrics(Context context, boolean on) {
+        prefs(context).edit().putBoolean("download_lyrics", on).apply();
     }
 }

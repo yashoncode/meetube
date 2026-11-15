@@ -136,6 +136,25 @@ public final class DownloadOptions {
         return best;
     }
 
+    /** MEETUNE: a song's Low download, sound only: the original track's smallest AAC (48 kbps where YouTube has it). */
+    @Nullable
+    static DownloadOption lowAudio(@Nullable List<MediaFormat> formats) {
+        MediaFormat best = null;
+        long bestRank = -1;
+        for (int i = 0; formats != null && i < formats.size(); i++) {
+            MediaFormat format = formats.get(i);
+            if (format.getUrl() == null || format.isDrc() || !isAacAudio(format)) {
+                continue;
+            }
+            long rank = audioTrackRank(format) * 1_000_000_000L + (999_999_999L - bitrateOf(format));
+            if (rank > bestRank) {
+                best = format;
+                bestRank = rank;
+            }
+        }
+        return best != null ? new DownloadOption(DownloadOption.KIND_AUDIO, null, 0, null, best, sumLengths(null, best)) : null;
+    }
+
     /** Highest-bitrate H.264 track per height, tallest first. */
     static Map<Integer, MediaFormat> pickVideoRungs(@Nullable List<MediaFormat> formats) {
         return pickVideoRungs(formats, false);

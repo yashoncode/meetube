@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUNE: the music player's thick round bars (song position, volume). -->
+<!-- MEETUNE: the music player's thick round bars (song position, volume). The played part is
+     clear here: GlowSeek draws it as a pill, so it starts round instead of as a sliver. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@android:id/background" android:gravity="center_vertical|fill_horizontal">
         <shape>
@@ -12,7 +13,7 @@
         <scale android:scaleWidth="100%">
             <shape>
                 <size android:height="8dp" />
-                <solid android:color="#F2FFFFFF" />
+                <solid android:color="#00FFFFFF" />
                 <corners android:radius="4dp" />
             </shape>
         </scale>

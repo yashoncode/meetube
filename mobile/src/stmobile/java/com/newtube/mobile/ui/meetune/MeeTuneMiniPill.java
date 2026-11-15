@@ -210,7 +210,9 @@ final class MeeTuneMiniPill {
         float shown = Math.min(1f, f);
         mPill.setAlpha(Math.min(1f, shown * 1.6f));
         mPill.setTranslationY((1f - shown) * 32 * mDp);
-        float own = carried ? 0f : 1f;
+        // The pill's own cover and name fade in over the flight's last fifth as the player's fade out
+        // (MeeTune#handoff): their sizes differ a little (14/12sp against 22/20sp scaled), so a hard swap jumped.
+        float own = carried ? MeeTune.handoff(shown) : 1f;
         mArt.setAlpha(own);
         ((View) mTitle.getParent()).setAlpha(own);
     }

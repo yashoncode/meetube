@@ -60,6 +60,7 @@ public final class DownloadsBridge implements VideoDownloads.Handler {
             List<DownloadItem> items = DownloadRegistry.instance(mContext).itemsNewestFirst();
             Map<String, Video> alive = new HashMap<>();
             for (DownloadItem item : items) {
+                if (item.song) continue; // MEETUNE: songs are on MeeTune's own Downloads
                 Video card = videoFor(item);
                 alive.put(item.id, card);
                 result.add(card);
@@ -68,6 +69,16 @@ public final class DownloadsBridge implements VideoDownloads.Handler {
             mCards.putAll(alive);
         }
         return result;
+    }
+
+    /** MEETUNE: a downloaded song's file (sound only), so MeeTune plays it from the phone; null when none is here. */
+    @Nullable
+    public String localSongUri(String videoId) {
+        DownloadItem item = DownloadRegistry.instance(mContext).findDone(videoId, DownloadOption.KIND_AUDIO);
+        if (item == null || item.outputUri == null) {
+            return null;
+        }
+        return new DownloadStorage(mContext).exists(item.outputUri) ? item.outputUri : null;
     }
 
     @Override

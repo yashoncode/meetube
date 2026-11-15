@@ -44,6 +44,8 @@ public final class DownloadItem {
     /** A part of the video only (issue #241): start and end in ms; both 0 = the whole video. */
     public volatile long clipStartMs;
     public volatile long clipEndMs;
+    /** MEETUNE: downloaded from MeeTune: listed on its Library's Downloads, not on MeeTube's. */
+    public volatile boolean song;
 
     public volatile int state = STATE_QUEUED;
     public volatile long bytesDone;
@@ -166,6 +168,7 @@ public final class DownloadItem {
         json.putOpt("thumbPath", thumbPath);
         json.put("durationMs", durationMs);
         json.putOpt("error", error);
+        if (song) json.put("song", true);
         return json;
     }
 
@@ -186,6 +189,7 @@ public final class DownloadItem {
         item.thumbPath = optString(json, "thumbPath");
         item.durationMs = json.optLong("durationMs", 0);
         item.error = optString(json, "error");
+        item.song = json.optBoolean("song", false);
         return item;
     }
 

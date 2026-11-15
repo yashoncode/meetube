@@ -10,7 +10,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -173,10 +172,21 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         View clear = findViewById(R.id.meetune_search_clear);
         clear.setOnClickListener(v -> { // clear the query, keep typing, as MeeTube's Search
             mSearchField.setText(null);
-            mSearchField.requestFocus();
-            android.view.inputmethod.InputMethodManager input = (android.view.inputmethod.InputMethodManager)
-                    getSystemService(INPUT_METHOD_SERVICE);
-            if (input != null) input.showSoftInput(mSearchField, 0);
+            typeSearch();
+        });
+        mSuggestions = findViewById(R.id.meetune_suggestions);
+        mTagAdapter = new com.newtube.mobile.ui.search.SearchTagAdapter(tag -> {
+            mSearchField.setText(tag.tag);
+            search(tag.tag);
+        }, tag -> false, tag -> { // the NW arrow: into the field to refine, as MeeTube's Search
+            mSearchField.setText(tag.tag);
+            mSearchField.setSelection(tag.tag.length());
+        });
+        mSuggestSongs = new MeeTuneAdapter(this); // the songs, albums and artists YouTube Music suggests, under the words
+        mSuggestions.setAdapter(new androidx.recyclerview.widget.ConcatAdapter(mTagAdapter, mSuggestSongs));
+        // Tapping back into the field brings the suggestions back for its text (MeeTube's Search).
+        mSearchField.setOnFocusChangeListener((v, focused) -> {
+            if (focused) loadSuggestions();
         });
         mSearchField.addTextChangedListener(new android.text.TextWatcher() {
             @Override
@@ -190,6 +200,10 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             @Override
             public void afterTextChanged(android.text.Editable s) {
                 clear.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+                // One suggest call per burst of keys; an emptied field shows recent searches at once.
+                mSearchField.removeCallbacks(mSuggestReload);
+                if (s.length() == 0) loadSuggestions();
+                else mSearchField.postDelayed(mSuggestReload, 200);
             }
         });
         mSearchField.setOnEditorActionListener((v, actionId, event) -> {
@@ -245,6 +259,12 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         }
     }
 
+    /** A song's download was deleted: the Downloads page, when it shows, lists the rest. */
+    void downloadsChanged() {
+        Page page = current();
+        if (page != null && MeeTune.DOWNLOADS.equals(page.browseId)) load(page, true);
+    }
+
     private Page current() {
         return mStack.isEmpty() ? mTabs[mTab] : mStack.peek();
     }
@@ -252,11 +272,59 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     private void switchTab(int tab) {
         saveScroll();
         mStack.clear();
-        if (tab == SEARCH && mTab != SEARCH) {
+        boolean opening = tab == SEARCH && mTab != SEARCH;
+        if (opening) {
             com.newtube.mobile.ui.search.SiriGlow.play(this); // MeeTube's Search glow, as its Search opens
         }
         mTab = tab;
         show(current(), false);
+        if (opening) typeSearch(); // straight to typing: the keyboard and the suggestions come up
+    }
+
+    /** The search field focused with the keyboard up; its focus brings up the suggestions. */
+    private void typeSearch() {
+        mSearchField.requestFocus();
+        mSearchField.post(() -> { // once the field shows (it was gone off Search)
+            InputMethodManager input = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            if (input != null) input.showSoftInput(mSearchField, InputMethodManager.SHOW_IMPLICIT);
+        });
+    }
+
+    private RecyclerView mSuggestions;
+    private com.newtube.mobile.ui.search.SearchTagAdapter mTagAdapter;
+    private MeeTuneAdapter mSuggestSongs;
+    /** Suggestions arrive out of order on a slow network: only the newest request's show. */
+    private int mSuggestGeneration;
+    private final Runnable mSuggestReload = this::loadSuggestions;
+
+    private void loadSuggestions() {
+        String query = mSearchField.getText().toString().trim();
+        int generation = ++mSuggestGeneration;
+        MeeTune.run(this, () -> MusicApi.suggestions(this, query), (found, error) -> {
+            if (generation != mSuggestGeneration) return;
+            List<com.liskovsoft.smartyoutubetv2.common.app.models.search.vineyard.Tag> tags = new ArrayList<>();
+            List<MusicApi.Shelf> songs = new ArrayList<>();
+            if (found != null) {
+                for (String text : found.words) tags.add(new com.liskovsoft.smartyoutubetv2.common.app.models.search.vineyard.Tag(text));
+                songs.add(found.songs);
+            }
+            mTagAdapter.setHistoryMode(query.isEmpty());
+            mTagAdapter.setTags(tags);
+            mSuggestSongs.setRows(MeeTuneAdapter.searchRows(songs));
+            // Only while the field is typed in: a late answer never covers results searched since.
+            boolean show = (!tags.isEmpty() || mSuggestSongs.getItemCount() > 0)
+                    && mSearchField.hasFocus() && mSearchGlass.getVisibility() == View.VISIBLE;
+            mSuggestions.setVisibility(show ? View.VISIBLE : View.GONE);
+        });
+    }
+
+    /** The suggestions and the keyboard away: a search ran, Back, or another page. */
+    private void closeSuggestions() {
+        mSearchField.removeCallbacks(mSuggestReload);
+        mSuggestGeneration++; // an answer on its way is moot now
+        mSuggestions.setVisibility(View.GONE);
+        hideKeyboard();
+        mSearchField.clearFocus();
     }
 
     private void push(Page page) {
@@ -266,7 +334,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     }
 
     private void back() {
-        if (!mStack.isEmpty()) {
+        if (mSuggestions.getVisibility() == View.VISIBLE) { // first Back puts the suggestions away
+            closeSuggestions();
+        } else if (!mStack.isEmpty()) {
             mStack.pop();
             show(current(), false);
         } else if (mTab != HOME) {
@@ -299,7 +369,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         boolean home = !pushed && page.tab == HOME;
         mSettings.setVisibility(home || search ? View.VISIBLE : View.GONE); // the avatar beside the search bar too
         mSort.setVisibility(View.GONE); // until a list that sorts has loaded
-        if (!search) hideKeyboard();
+        if (!search) closeSuggestions();
         showBackdrop(pushed ? page.art : null); // up while the page loads too
 
         if (page.settings != 0) { // built fresh each time: a value set on the page above shows here
@@ -368,6 +438,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         }
         mProgress.setVisibility(View.VISIBLE);
         MeeTune.run(this, () -> {
+            if (pushed && MeeTune.DOWNLOADS.equals(page.browseId)) {
+                return MeeTuneAdapter.rows(MeeTune.downloads(this), true, false);
+            }
             if (pushed) {
                 return MeeTuneAdapter.rows(MusicApi.browse(this, page.browseId, page.params), true, false);
             }
@@ -378,15 +451,31 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     private List<MusicApi.Shelf> library() throws Exception {
         List<MusicApi.Shelf> shelves = MusicApi.browse(this, "FEmusic_library_landing", null);
-        for (MusicApi.Shelf shelf : shelves) { // YouTube Music lists its own Liked Music now: no second one
-            for (MusicApi.Item item : shelf.items) if ("VLLM".equals(item.browseId)) return shelves;
-        }
-        MusicApi.Item liked = new MusicApi.Item();
-        liked.kind = MusicApi.CARD;
-        liked.title = getString(R.string.meetune_liked);
-        liked.browseId = "VLLM";
         MusicApi.Shelf top = new MusicApi.Shelf();
-        top.items.add(liked);
+        MusicApi.Item downloads = new MusicApi.Item(); // the songs downloaded from MeeTune, on this phone
+        downloads.kind = MusicApi.CARD;
+        downloads.title = getString(R.string.meetune_downloads);
+        downloads.browseId = MeeTune.DOWNLOADS;
+        downloads.icon = R.drawable.ic_meetune_download;
+        List<MusicApi.Shelf> saved = MeeTune.downloads(this);
+        int count = saved.isEmpty() ? 0 : saved.get(0).items.size();
+        downloads.subtitle = getResources().getQuantityString(R.plurals.meetune_download_count, count, count);
+        MusicApi.Shelf liked = null; // YouTube Music lists its own Liked Music now: no second one
+        for (MusicApi.Shelf shelf : shelves) {
+            for (MusicApi.Item item : shelf.items) if ("VLLM".equals(item.browseId)) liked = shelf;
+        }
+        if (liked != null) { // Downloads first in Liked Music's row, a card like it
+            liked.items.add(0, downloads);
+            return shelves;
+        }
+        top.items.add(downloads);
+        {
+            MusicApi.Item item = new MusicApi.Item();
+            item.kind = MusicApi.CARD;
+            item.title = getString(R.string.meetune_liked);
+            item.browseId = "VLLM";
+            top.items.add(item);
+        }
         shelves.add(0, top);
         return shelves;
     }
@@ -423,6 +512,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                     getString(R.string.meetune_filter_playlists)));
             mFilters.setSelected(mFilter);
             mFilters.setOnPicked(index -> {
+                android.util.Log.d("MeeTune", "filter picked=" + index + " was=" + mFilter + " query=" + (mQuery != null));
                 if (index == mFilter || mQuery == null) return;
                 Haptics.click(mFilters);
                 mFilter = index;
@@ -436,7 +526,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     }
 
     private void runSearch(String query) {
-        hideKeyboard();
+        closeSuggestions();
         Page page = mTabs[SEARCH];
         int generation = ++mGeneration;
         List<MeeTuneAdapter.Row> waiting = new ArrayList<>();
@@ -446,6 +536,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mProgress.setVisibility(View.VISIBLE);
         String filter = MusicApi.FILTERS[mFilter];
         MeeTune.run(this, () -> MeeTuneAdapter.searchRows(MusicApi.search(this, query, filter)), (rows, error) -> {
+            android.util.Log.d("MeeTune", "search filter=" + mFilter + " rows=" + (rows != null ? rows.size() : -1)
+                    + " stale=" + (generation != mGeneration) + " shown=" + (current() == page) + " error=" + error);
             if (generation != mGeneration) return;
             mProgress.setVisibility(View.GONE);
             if (rows == null) {
@@ -643,23 +735,11 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     /** A frosted popup like MeeTube's: the page copied as it opens, blurred inside 18dp corners. */
     private android.widget.PopupWindow glassPopup(android.widget.LinearLayout content, int widthDp) {
-        content.setOrientation(android.widget.LinearLayout.VERTICAL);
-        int pad = MeeTuneAdapter.dp(this, 6);
-        content.setPadding(0, pad, 0, pad);
-        float corner = MeeTuneAdapter.dp(this, 18);
-        content.setOutlineProvider(new android.view.ViewOutlineProvider() {
-            @Override
-            public void getOutline(View view, android.graphics.Outline outline) {
-                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), corner);
-            }
-        });
-        content.setClipToOutline(true);
-        com.newtube.mobile.ui.common.SheetGlass.frost(content, getWindow(), corner);
-        android.widget.PopupWindow popup = new android.widget.PopupWindow(content,
-                MeeTuneAdapter.dp(this, widthDp), ViewGroup.LayoutParams.WRAP_CONTENT, true);
-        popup.setElevation(MeeTuneAdapter.dp(this, 12));
-        Haptics.watch(popup);
-        return popup;
+        return glassPopup(content, widthDp, 18);
+    }
+
+    private android.widget.PopupWindow glassPopup(android.widget.LinearLayout content, int widthDp, int cornerDp) {
+        return MeeTuneSongMenu.glassPopup(this, content, widthDp, cornerDp);
     }
 
     private void popupRow(ViewGroup parent, String label, boolean checked, Runnable onClick) {
@@ -792,6 +872,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     @Override
     public void open(MusicApi.Item item, List<MusicApi.Item> siblings) {
         Haptics.click(mList);
+        if (mSuggestions.getVisibility() == View.VISIBLE) closeSuggestions(); // a suggested song or artist picked
         if (item.playable()) {
             MeeTune.play(this, item);
             return;
@@ -800,7 +881,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         Page page = new Page(mTab);
         page.browseId = item.browseId;
         page.params = item.params;
-        page.title = item.kind == MusicApi.MOOD ? item.title : null;
+        page.title = item.kind == MusicApi.MOOD || MeeTune.DOWNLOADS.equals(item.browseId) ? item.title : null;
         page.art = item.kind == MusicApi.MOOD ? null : item.art;
         push(page);
     }
@@ -821,20 +902,15 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     @Override
     public void songMenu(View anchor, MusicApi.Item item) {
-        PopupMenu menu = new PopupMenu(this, anchor);
-        menu.getMenu().add(0, 0, 0, R.string.meetune_play);
-        menu.getMenu().add(0, 1, 1, R.string.mobile_watch_share);
-        menu.setOnMenuItemClickListener(choice -> {
-            if (choice.getItemId() == 0) {
-                MeeTune.play(this, item);
-            } else {
-                startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("text/plain")
-                        .putExtra(Intent.EXTRA_TEXT, Uri.parse(MusicApi.ORIGIN + "/watch?v=" + item.videoId)
-                                .toString()), null));
-            }
-            return true;
-        });
-        menu.show();
+        MeeTuneSongMenu.show(this, anchor, item, this::openBrowse);
+    }
+
+    /** Open album, Open artist: their page, pushed as a card's is. */
+    private void openBrowse(String browseId) {
+        MusicApi.Item page = new MusicApi.Item();
+        page.browseId = browseId;
+        page.kind = MusicApi.CARD;
+        open(page, new ArrayList<>());
     }
 
     // ----------------------------------------------------------------------------- the bar
@@ -869,6 +945,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 show(current(), true);
             }
         }
+        String browse = MeeTune.takeOpenOnReturn(); // the music player's Open album or Open artist
+        if (browse != null) openBrowse(browse);
     }
 
     @Nullable

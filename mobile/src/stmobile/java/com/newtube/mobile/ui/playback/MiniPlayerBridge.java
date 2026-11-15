@@ -351,6 +351,12 @@ public final class MiniPlayerBridge {
      * own parked session, if any, comes back paused in its place. True when the docked session is
      * now this side's (show it), false when there is none for this side (hide the card).
      */
+    /** MeeTune's Streaming quality changed: the song playing (if one is) takes it now. */
+    public static void applyMusicQuality() {
+        MobilePlaybackActivity activity = sActivity.get();
+        if (activity != null) activity.applyMeeTuneQuality();
+    }
+
     public static boolean claim(boolean music) {
         if (!isActive()) {
             return false;

@@ -82,6 +82,13 @@ class Media3TrackAdapter {
      * it, and {@link #onSourceChanged} only drops group-bound overrides - so the flag survives an
      * autoplay-advance on the reused selector.
      */
+    /** MEETUNE: a song's Streaming quality, the most its sound may take ({@code Integer.MAX_VALUE}: no cap). */
+    void setMaxAudioBitrate(int bitsPerSecond) {
+        if (mTrackSelector.getParameters().maxAudioBitrate != bitsPerSecond) {
+            mTrackSelector.setParameters(mTrackSelector.buildUponParameters().setMaxAudioBitrate(bitsPerSecond));
+        }
+    }
+
     void setVideoTrackDisabled(boolean disabled) {
         mTrackSelector.setParameters(mTrackSelector.buildUponParameters()
                 .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, disabled));

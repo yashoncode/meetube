@@ -108,6 +108,74 @@ final class MeeTuneSettings {
         card = card();
         row(card, R.drawable.ic_player_equalizer, getString(R.string.meetune_eq), summary(), null, true,
                 v -> mHost.open(EQUALIZER));
+        String[] streams = {getString(R.string.meetune_stream_high), getString(R.string.meetune_stream_normal),
+                getString(R.string.meetune_stream_low)};
+        String[] streamNotes = {getString(R.string.meetune_stream_high_summary),
+                getString(R.string.meetune_stream_normal_summary), getString(R.string.meetune_stream_low_summary)};
+        int stream = MeeTune.streamQuality(mActivity);
+        card.addView(divider());
+        row(card, R.drawable.ic_mobile_tune, getString(R.string.meetune_set_stream), streams[stream], null, true,
+                v -> choose(getString(R.string.meetune_set_stream), streams, streamNotes, stream, picked -> {
+                    MeeTune.setStreamQuality(mActivity, picked);
+                    com.newtube.mobile.ui.playback.MiniPlayerBridge.applyMusicQuality(); // the playing song too
+                }));
+
+        // MeeTube's download folder for music and its download qualities; a song's own default.
+        header(R.string.header_downloads);
+        card = card();
+        if (com.newtube.mobile.downloads.DownloadFolder.isSupported()) {
+            row(card, R.drawable.ic_watch_download, getString(R.string.mobile_download_folder_audio),
+                    com.newtube.mobile.downloads.DownloadFolder.label(mActivity, true).toString(), null, true, v -> {
+                        android.app.Dialog dialog = com.newtube.mobile.downloads.DownloadFolder.showOptions(mActivity, true);
+                        if (dialog != null) dialog.setOnDismissListener(d -> mRoot.postDelayed(this::rebuild, 300));
+                    });
+            card.addView(divider());
+        }
+        // Songs download as sound only: the two AAC qualities YouTube has for a song.
+        int[] values = {com.newtube.mobile.downloads.AutoDownload.AUDIO, com.newtube.mobile.downloads.DownloadPicker.AUDIO_LOW};
+        String[] qualityLabels = {getString(R.string.meetune_stream_high), getString(R.string.meetune_stream_low)};
+        String[] qualityNotes = {getString(R.string.meetune_download_high_summary), getString(R.string.meetune_download_low_summary)};
+        int quality = MeeTune.downloadQuality(mActivity) == values[1] ? 1 : 0;
+        row(card, R.drawable.ic_mobile_tune, getString(R.string.mobile_settings_download_quality), qualityLabels[quality],
+                null, true, v -> choose(getString(R.string.mobile_settings_download_quality), qualityLabels, qualityNotes,
+                        quality, picked -> MeeTune.setDownloadQuality(mActivity, values[picked])));
+        card.addView(divider());
+        row(card, R.drawable.ic_watch_lyrics, getString(R.string.meetune_download_lyrics),
+                getString(R.string.meetune_download_lyrics_summary), MeeTune.downloadLyrics(mActivity), false,
+                v -> MeeTune.setDownloadLyrics(mActivity, !MeeTune.downloadLyrics(mActivity)));
+        note(R.string.meetune_downloads_note);
+    }
+
+    /** MeeTube's choice sheet (its settings' radio list in the frosted bottom sheet); a pick rebuilds the page. */
+    private void choose(String title, String[] labels, @Nullable String[] notes, int current,
+                        java.util.function.IntConsumer onPick) {
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet = Haptics.watch(
+                new com.google.android.material.bottomsheet.BottomSheetDialog(mActivity));
+        View content = mInflater.inflate(R.layout.sheet_mobile_speed, null);
+        ((TextView) content.findViewById(R.id.speed_sheet_title)).setText(title);
+        content.findViewById(R.id.speed_sheet_more).setVisibility(View.GONE);
+        ViewGroup list = content.findViewById(R.id.speed_sheet_list);
+        for (int i = 0; i < labels.length; i++) {
+            View view = mInflater.inflate(R.layout.item_mobile_settings_choice, list, false);
+            ((android.widget.RadioButton) view.findViewById(R.id.settings_choice_radio)).setChecked(i == current);
+            ((TextView) view.findViewById(R.id.settings_choice_label)).setText(labels[i]);
+            TextView description = view.findViewById(R.id.settings_choice_description);
+            description.setText(notes != null ? notes[i] : null);
+            description.setVisibility(notes != null ? View.VISIBLE : View.GONE);
+            view.findViewById(R.id.settings_choice_icon).setVisibility(View.GONE);
+            int which = i;
+            view.setOnClickListener(v -> {
+                sheet.dismiss();
+                if (which == current) return;
+                onPick.accept(which);
+                rebuild();
+            });
+            list.addView(view);
+        }
+        sheet.setContentView(content);
+        sheet.getBehavior().setSkipCollapsed(true);
+        sheet.getBehavior().setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+        sheet.show();
     }
 
     private void customize() {

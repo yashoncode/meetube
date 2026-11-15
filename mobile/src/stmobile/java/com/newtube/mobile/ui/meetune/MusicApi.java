@@ -64,6 +64,8 @@ final class MusicApi {
         int kind;
         int color;
         boolean round;
+        /** A drawable drawn on its own cover when it has no art (MeeTune's Downloads); 0 for none. */
+        int icon;
         /** A song's length ("2:28"); an album track's number (0: none). */
         String duration;
         int number;
@@ -72,6 +74,10 @@ final class MusicApi {
         String meta;
         String saveId;
         boolean saved;
+        /** The album and the first artist its line links to: the song menu's Open album and Open artist. */
+        String album;
+        String albumId;
+        String artistId;
 
         boolean playable() {
             return videoId != null;
@@ -131,6 +137,31 @@ final class MusicApi {
         return shelves;
     }
 
+    /** What music.youtube.com suggests as {@code input} is typed: words to search, then songs, albums and artists. */
+    static final class Suggestions {
+        final List<String> words = new ArrayList<>();
+        final Shelf songs = new Shelf();
+    }
+
+    /** With nothing typed, a signed-in account's recent searches. */
+    static Suggestions suggestions(Context context, String input) throws Exception {
+        Suggestions out = new Suggestions();
+        JSONArray sections = post(context, "music/get_search_suggestions", new JSONObject().put("input", input))
+                .optJSONArray("contents");
+        for (int i = 0; sections != null && i < sections.length(); i++) {
+            Object rows = path(sections.optJSONObject(i), "searchSuggestionsSectionRenderer", "contents");
+            for (int j = 0; rows instanceof JSONArray && j < ((JSONArray) rows).length(); j++) {
+                JSONObject wrapper = ((JSONArray) rows).optJSONObject(j);
+                JSONObject row = first(wrapper, "searchSuggestionRenderer", "historySuggestionRenderer");
+                String text = row != null ? text(row.opt("suggestion")) : null;
+                if (text != null && !text.isEmpty()) out.words.add(text);
+                Item item = row == null ? item(wrapper) : null;
+                if (item != null) out.songs.items.add(item);
+            }
+        }
+        return out;
+    }
+
     static boolean signedIn(Context context) {
         return WebSignInState.isSignedIn(context) && WebSession.getCookieStore() != null;
     }
@@ -140,6 +171,45 @@ final class MusicApi {
         post(context, save ? "like/like" : "like/removelike",
                 new JSONObject().put("target", new JSONObject().put("playlistId", playlistId)));
         return save;
+    }
+
+    /** A song's album and artist links, from the queue YouTube Music builds around it; null when it has none. */
+    @Nullable
+    static Item song(Context context, String videoId) throws Exception {
+        JSONObject response = post(context, "next", new JSONObject().put("videoId", videoId).put("isAudioOnly", true));
+        JSONObject renderer = findPanelVideo(response, videoId, 0);
+        if (renderer == null) return null;
+        Item item = new Item();
+        links(item, renderer.opt("longBylineText"));
+        if (item.artistId != null) item.artist = artists(renderer.opt("longBylineText"));
+        return item.albumId != null || item.artistId != null ? item : null;
+    }
+
+    @Nullable
+    private static JSONObject findPanelVideo(@Nullable Object node, String videoId, int depth) {
+        if (depth > 40) return null;
+        if (node instanceof JSONObject) {
+            JSONObject o = (JSONObject) node;
+            JSONObject panel = o.optJSONObject("playlistPanelVideoRenderer");
+            if (panel != null && videoId.equals(panel.optString("videoId"))) return panel;
+            for (java.util.Iterator<String> keys = o.keys(); keys.hasNext(); ) {
+                JSONObject found = findPanelVideo(o.opt(keys.next()), videoId, depth + 1);
+                if (found != null) return found;
+            }
+        } else if (node instanceof JSONArray) {
+            JSONArray a = (JSONArray) node;
+            for (int i = 0; i < a.length(); i++) {
+                JSONObject found = findPanelVideo(a.opt(i), videoId, depth + 1);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
+    /** A song's thumbs: {@code like/like}, {@code like/dislike} or {@code like/removelike}. */
+    static boolean rate(Context context, String videoId, String action) throws Exception {
+        post(context, "like/" + action, new JSONObject().put("target", new JSONObject().put("videoId", videoId)));
+        return true;
     }
 
     private static JSONObject post(Context context, String endpoint, JSONObject body) throws Exception {
@@ -253,6 +323,7 @@ final class MusicApi {
             endpoint(item, firstRunEndpoint(card.opt("title")));
             item.kind = item.videoId != null ? SONG : CARD;
             item.artist = artists(card.opt("subtitle"));
+            links(item, card.opt("subtitle"));
             item.explicit = explicit(card.optJSONArray("subtitleBadges"));
             Shelf shelf = new Shelf();
             shelf.top = true;
@@ -291,6 +362,7 @@ final class MusicApi {
             item.title = text(r.opt("title"));
             item.subtitle = text(r.opt("subtitle"));
             item.art = thumb(obj(r, "thumbnailRenderer", "musicThumbnailRenderer"));
+            links(item, r.opt("subtitle"));
             endpoint(item, r.optJSONObject("navigationEndpoint"));
         } else if ((r = wrapper.optJSONObject("musicResponsiveListItemRenderer")) != null) {
             JSONArray columns = r.optJSONArray("flexColumns");
@@ -302,6 +374,7 @@ final class MusicApi {
                     item.title = value;
                     endpoint(item, firstRunEndpoint(text));
                 } else if (value != null && !value.isEmpty()) {
+                    links(item, text);
                     if (item.artist == null) item.artist = artists(text);
                     if (subtitle.length() > 0) subtitle.append(" • ");
                     subtitle.append(value);
@@ -341,6 +414,24 @@ final class MusicApi {
 
     /** The artists in a "Song • A, B • 3:30" line, from their links on: in any language. */
     @Nullable
+    private static void links(Item item, @Nullable Object text) {
+        JSONArray runs = text instanceof JSONObject ? ((JSONObject) text).optJSONArray("runs") : null;
+        for (int i = 0; runs != null && i < runs.length(); i++) {
+            JSONObject run = runs.optJSONObject(i);
+            JSONObject browse = obj(run, "navigationEndpoint", "browseEndpoint");
+            if (browse == null) continue;
+            String page = String.valueOf(path(browse, "browseEndpointContextSupportedConfigs",
+                    "browseEndpointContextMusicConfig", "pageType"));
+            String id = browse.optString("browseId", null);
+            if (page.contains("ALBUM") && item.albumId == null) {
+                item.albumId = id;
+                item.album = run.optString("text");
+            } else if ((page.contains("ARTIST") || page.contains("USER_CHANNEL")) && item.artistId == null) {
+                item.artistId = id;
+            }
+        }
+    }
+
     private static String artists(@Nullable Object text) {
         if (!(text instanceof JSONObject)) return null;
         JSONArray runs = ((JSONObject) text).optJSONArray("runs");

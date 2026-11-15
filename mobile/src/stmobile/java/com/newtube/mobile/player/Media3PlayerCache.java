@@ -159,6 +159,26 @@ public final class Media3PlayerCache {
         }
     }
 
+    /**
+     * MEETUNE: a song's Remove from cache. Its streams' cached bytes, found by the stable keys its
+     * stream URLs make (the same id, itag and lmt the player keyed them by). Slow: off the main thread.
+     */
+    public static int remove(Context context, List<String> urls) {
+        Cache cache = get(context);
+        if (cache == null) {
+            return 0;
+        }
+        int removed = 0;
+        for (String url : urls) {
+            String key = url != null ? buildStableKey(Uri.parse(url)) : null;
+            if (key != null && !cache.getCachedSpans(key).isEmpty()) {
+                cache.removeResource(key);
+                removed++;
+            }
+        }
+        return removed;
+    }
+
     /** The cache's folder, for the Storage page to size. */
     public static File dir(Context context) {
         return new File(context.getApplicationContext().getCacheDir(), CACHE_DIR_NAME);

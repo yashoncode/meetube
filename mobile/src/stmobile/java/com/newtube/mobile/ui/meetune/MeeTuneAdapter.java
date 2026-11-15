@@ -462,7 +462,19 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             cover.setRadius(item.round ? card.getLayoutParams().width / 2f : (Float) cover.getTag());
         }
         if (art != null) {
-            Glide.with(art).load(item.art).placeholder(new MeeTuneCover(item.title)).into(art); // no art: its own cover
+            android.graphics.drawable.Drawable cover = new MeeTuneCover(item.title);
+            if (item.icon != 0) { // its sign in the middle of its cover
+                android.graphics.drawable.Drawable glyph = art.getContext().getDrawable(item.icon).mutate();
+                glyph.setTint(0xF2FFFFFF);
+                android.graphics.drawable.LayerDrawable layers =
+                        new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[] {
+                                new MeeTuneCover(item.title, 0xFF2E7DFF), glyph});
+                int side = dp(art.getContext(), 56);
+                layers.setLayerSize(1, side, side);
+                layers.setLayerGravity(1, android.view.Gravity.CENTER);
+                cover = layers;
+            }
+            Glide.with(art).load(item.art).placeholder(cover).into(art); // no art: its own cover
         }
     }
 

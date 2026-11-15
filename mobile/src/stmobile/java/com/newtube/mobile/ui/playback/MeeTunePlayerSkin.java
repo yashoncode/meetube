@@ -45,7 +45,7 @@ import java.util.Locale;
  * (so a song gets the video path's source planning and 403 recovery); this view only covers the
  * watch page while a MeeTune song plays and drives the player through {@link Controls}.
  */
-final class MeeTunePlayerSkin {
+public final class MeeTunePlayerSkin {
     interface Controls {
         long position();
 
@@ -113,6 +113,8 @@ final class MeeTunePlayerSkin {
     private final android.graphics.drawable.Drawable mLyricsButtonBg;
     @Nullable
     private Lyrics mLyrics;
+    /** The menu's Lyrics offset, this song's: a positive one lights each line sooner. */
+    private long mLyricsOffset;
     private boolean mLyricsAsked;
     private int mSung = -2;
     private long mTouchedAt = -HANDS_OFF_MS;
@@ -266,6 +268,8 @@ final class MeeTunePlayerSkin {
                 @Override
                 public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
                     if (fromUser) mAudio.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+                    if (mShownVolume >= 0 && progress != mShownVolume) showVolumeLevel(bar, progress);
+                    mShownVolume = progress;
                 }
 
                 @Override public void onStartTrackingTouch(SeekBar bar) { }
@@ -276,6 +280,32 @@ final class MeeTunePlayerSkin {
         String device = Settings.Global.getString(context.getContentResolver(), "device_name");
         ((TextView) mRoot.findViewById(R.id.meetune_player_device)).setText(
                 device != null && !device.isEmpty() ? device : context.getString(R.string.meetune_this_phone));
+    }
+
+    /** The volume's last level; -1 until the bar first shows it, so opening the player shows no bubble. */
+    private int mShownVolume = -1;
+    private final Runnable mHideVolumeLevel = this::hideVolumeLevel;
+
+    private void hideVolumeLevel() {
+        mRoot.findViewById(R.id.meetune_player_volume_bubble).animate().alpha(0f).setDuration(260).start();
+    }
+
+    /** The glass pill over the volume bar's end, with the level in percent; it glides as the level moves and fades soon after. */
+    private void showVolumeLevel(SeekBar bar, int level) {
+        View bubble = mRoot.findViewById(R.id.meetune_player_volume_bubble);
+        TextView text = mRoot.findViewById(R.id.meetune_player_volume_level);
+        text.setText(String.format(Locale.getDefault(), "%d%%", Math.round(100f * level / Math.max(1, bar.getMax()))));
+        bubble.removeCallbacks(mHideVolumeLevel);
+        bubble.post(() -> { // its width follows the text
+            int left = bar.getPaddingLeft();
+            float x = left + (bar.getWidth() - left - bar.getPaddingRight()) * (float) level / Math.max(1, bar.getMax())
+                    - bubble.getWidth() / 2f;
+            x = Math.max(0f, Math.min(x, bar.getWidth() - bubble.getWidth()));
+            if (bubble.getAlpha() == 0f) bubble.setTranslationX(x);
+            bubble.animate().alpha(1f).translationX(x).setDuration(180)
+                    .setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD).start();
+            bubble.postDelayed(mHideVolumeLevel, 1100);
+        });
     }
 
     /**
@@ -289,7 +319,7 @@ final class MeeTunePlayerSkin {
             view.setOutlineProvider(new android.view.ViewOutlineProvider() {
                 @Override
                 public void getOutline(View v, android.graphics.Outline outline) {
-                    outline.setOval(0, 0, v.getWidth(), v.getHeight());
+                    outline.setRoundRect(0, 0, v.getWidth(), v.getHeight(), v.getHeight() / 2f); // round, or a pill
                 }
             });
             view.setClipToOutline(true);
@@ -319,6 +349,9 @@ final class MeeTunePlayerSkin {
             mVideoId = video.videoId;
             Glide.with(mArt).load(MeeTune.art(video)).into((ImageView) mRoot.findViewById(R.id.meetune_player_head_art));
             fetchLyrics(video);
+            if (mRoot.getContext() instanceof android.app.Activity) {
+                MeeTune.learn((android.app.Activity) mRoot.getContext(), video); // the menu's Open album, Open artist
+            }
             mFormat.setText(null);
             String fallback = "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg";
             Glide.with(mArt).load(MeeTune.art(video)).error(Glide.with(mArt).load(fallback)).into(mArt);
@@ -332,6 +365,14 @@ final class MeeTunePlayerSkin {
         String id = video.videoId;
         mLyrics = null;
         mLyricsAsked = false;
+        mLyricsOffset = 0;
+        Lyrics kept = keptLyrics(mRoot.getContext(), video);
+        if (kept != null) { // saved with the song's download: no internet needed
+            mLyricsAsked = true;
+            mLyrics = kept;
+            showLyrics();
+            return;
+        }
         showLyrics();
         Lyrics.fetch(id, video.getTitle() != null ? video.getTitle() : "",
                 video.getAuthor() != null ? video.getAuthor() : "", song -> {
@@ -340,6 +381,66 @@ final class MeeTunePlayerSkin {
                     mLyrics = song != null ? song.lyrics(song.shown) : null;
                     showLyrics();
                 });
+    }
+
+    private static java.io.File lyricsFile(Context context, String videoId) {
+        return new java.io.File(context.getFilesDir(), "meetune_lyrics/" + videoId + ".lrc");
+    }
+
+    /**
+     * Saves a downloaded song's lyrics on the phone, for the player to show offline. The file's first
+     * line is T (timed) or U, then the source; the rest is LRC or plain lines.
+     */
+    public static void keepLyrics(Context context, Video video) {
+        if (video == null || video.videoId == null) return;
+        java.io.File file = lyricsFile(context.getApplicationContext(), video.videoId);
+        Lyrics.fetch(video.videoId, video.getTitle() != null ? video.getTitle() : "",
+                video.getAuthor() != null ? video.getAuthor() : "", song -> {
+                    Lyrics lyrics = song != null ? song.lyrics(song.shown) : null;
+                    if (lyrics == null || lyrics.lines.isEmpty()) return;
+                    StringBuilder out = new StringBuilder(lyrics.times != null ? "T" : "U")
+                            .append(lyrics.source != null ? lyrics.source : "").append('\n');
+                    for (int i = 0; i < lyrics.lines.size(); i++) {
+                        if (lyrics.times != null) {
+                            long t = lyrics.times[i];
+                            out.append(String.format(Locale.ROOT, "[%02d:%02d.%03d]", t / 60_000, t / 1000 % 60, t % 1000));
+                        }
+                        out.append(lyrics.lines.get(i).replace('\n', ' ')).append('\n');
+                    }
+                    Lyrics.POOL.execute(() -> {
+                        file.getParentFile().mkdirs();
+                        try (java.io.FileOutputStream stream = new java.io.FileOutputStream(file)) {
+                            stream.write(out.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                        } catch (java.io.IOException ignored) {
+                            // no space: the player asks online as before
+                        }
+                    });
+                });
+    }
+
+    /** Drops a song's saved lyrics with its download. */
+    public static void forgetLyrics(Context context, String videoId) {
+        //noinspection ResultOfMethodCallIgnored
+        lyricsFile(context.getApplicationContext(), videoId).delete();
+    }
+
+    @Nullable
+    private static Lyrics keptLyrics(Context context, Video video) {
+        java.io.File file = lyricsFile(context, video.videoId);
+        if (!file.isFile()) return null;
+        try (java.util.Scanner in = new java.util.Scanner(file, "UTF-8")) {
+            String text = in.useDelimiter("\\A").hasNext() ? in.next() : "";
+            int cut = text.indexOf('\n');
+            if (cut < 1) return null;
+            String source = text.substring(1, cut);
+            String body = text.substring(cut + 1);
+            String title = video.getTitle() != null ? video.getTitle() : "";
+            String artist = video.getAuthor() != null ? video.getAuthor() : "";
+            return text.charAt(0) == 'T' ? Lyrics.parseLrc(body, title, artist, source)
+                    : new Lyrics(title, artist, java.util.Arrays.asList(body.split("\n")), null, source);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /** The lines into the lyrics page; the line over the bar shows only for timed lyrics. */
@@ -381,6 +482,14 @@ final class MeeTunePlayerSkin {
         return line;
     }
 
+    public long lyricsOffset() {
+        return mLyricsOffset;
+    }
+
+    public void setLyricsOffset(long offsetMs) {
+        mLyricsOffset = offsetMs;
+    }
+
     private boolean timed() {
         return mLyrics != null && mLyrics.times != null && !mLyrics.lines.isEmpty();
     }
@@ -389,7 +498,7 @@ final class MeeTunePlayerSkin {
     private void followLyrics(long position) {
         if (!timed()) return;
         long[] times = mLyrics.times;
-        long at = position + LEAD_MS;
+        long at = position + LEAD_MS + mLyricsOffset;
         int sung = -1;
         while (sung + 1 < times.length && times[sung + 1] <= at) sung++;
         if (sung == mSung) return;
@@ -558,6 +667,9 @@ final class MeeTunePlayerSkin {
         mArtCorner = 8 * density * clamped / scale;
         mArt.invalidateOutline();
         ((FadeImage) mArt).setFade(1f - clamped); // its melting foot firms up into a tile
+        float handoff = MeeTune.handoff(clamped); // the pill's own take over at the end
+        mArt.setAlpha(1f - handoff);
+        text.setAlpha(1f - handoff);
         // the name beside it, at the pill's text size
         android.graphics.Rect box = MeeTune.pillText();
         float small = 14f / 22f;
@@ -617,7 +729,9 @@ final class MeeTunePlayerSkin {
         mArtCorner = 0f;
         mArt.invalidateOutline();
         ((FadeImage) mArt).setFade(1f);
+        mArt.setAlpha(1f);
         View text = (View) mTitle.getParent();
+        text.setAlpha(1f);
         text.setScaleX(1f);
         text.setScaleY(1f);
         text.setTranslationX(0f);
@@ -744,10 +858,12 @@ final class MeeTunePlayerSkin {
     public static final class GlowSeek extends SeekBar {
         private final GlowProgressBar.Head mHead = new GlowProgressBar.Head();
         private final Paint mHalo = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint mFill = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final float mDensity;
         public GlowSeek(Context context, AttributeSet attrs) {
             super(context, attrs);
             mDensity = getResources().getDisplayMetrics().density;
+            mFill.setColor(0xF2FFFFFF);
             mHalo.setColor(0x73FFFFFF);
             mHalo.setMaskFilter(new BlurMaskFilter(7 * mDensity, BlurMaskFilter.Blur.NORMAL));
         }
@@ -768,6 +884,34 @@ final class MeeTunePlayerSkin {
                     mHead.draw(getContext(), canvas, x, cy, 20 * mDensity, 0xFFFFFFFF);
                 }
             }
+            super.onDraw(canvas);
+            if (range > 0 && progress > 0) {
+                // The played part as a pill, round from the first second (meetune_seek leaves it clear).
+                int left = getPaddingLeft();
+                float half = 4 * mDensity;
+                float x = left + (getWidth() - left - getPaddingRight()) * (float) progress / range;
+                float cy = getHeight() / 2f;
+                canvas.drawRoundRect(left, cy - half, Math.max(x, left + 2 * half), cy + half, half, half, mFill);
+            }
+        }
+    }
+
+    /** Back, play and next: a bare icon with the bar's head glow behind it, soft white (off with the bar's glow). */
+    public static final class GlowIcon extends ImageView {
+        private final GlowProgressBar.Head mHead = new GlowProgressBar.Head();
+
+        public GlowIcon(Context context, AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            float cx = getWidth() / 2f;
+            float cy = getHeight() / 2f;
+            int save = canvas.save();
+            canvas.scale(1f, 1f / 0.6f, cx, cy); // the head's glow is flattened for a line: round again
+            mHead.draw(getContext(), canvas, cx, cy, Math.min(cx, cy), 0x66FFFFFF);
+            canvas.restoreToCount(save);
             super.onDraw(canvas);
         }
     }

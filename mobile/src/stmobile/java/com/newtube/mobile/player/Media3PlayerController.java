@@ -1220,6 +1220,13 @@ public class Media3PlayerController implements Player.Listener {
      * playback (see {@link Media3TrackAdapter#setVideoTrackDisabled}). Routed through the adapter
      * so the track selector has a single owner for its parameters.
      */
+    /** MEETUNE: MeeTune's Streaming quality on a song; a MeeTube video plays with no cap. */
+    public void setMaxAudioBitrate(int bitsPerSecond) {
+        if (mTrackAdapter != null) {
+            mTrackAdapter.setMaxAudioBitrate(bitsPerSecond);
+        }
+    }
+
     public void setVideoTrackDisabled(boolean disabled) {
         if (disabled && mNextPreloader != null) {
             mNextPreloader.cancel("background-audio");

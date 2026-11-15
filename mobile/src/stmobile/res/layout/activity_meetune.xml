@@ -78,6 +78,18 @@
 
         </LinearLayout>
 
+        <!-- Search's suggestions while the field is typed in, over the results: MeeTube Search's rows. -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/meetune_suggestions"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/mobile_color_background"
+            android:clipToPadding="false"
+            android:paddingTop="64dp"
+            android:paddingBottom="@dimen/meetune_bottom_clearance"
+            android:visibility="gone"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
     </com.newtube.mobile.ui.common.GlassSource>
 
     <!-- The top row: Back on a pushed page, the search field on Search, Settings and MeeTube on Home. -->

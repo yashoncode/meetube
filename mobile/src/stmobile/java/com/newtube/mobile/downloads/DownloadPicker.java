@@ -52,6 +52,18 @@ public final class DownloadPicker {
     }
 
     public static void show(Context context, Video video) {
+        show(context, video, context != null ? AutoDownload.defaultQuality(context) : AutoDownload.ASK, false);
+    }
+
+    /** MEETUNE: a song's Low download (sound only, the smallest AAC); {@link AutoDownload#AUDIO} is its High. */
+    public static final int AUDIO_LOW = -2;
+
+    /** MEETUNE: a song's Download, at MeeTune's own download quality instead of Settings > Downloads'. */
+    public static void show(Context context, Video video, int quality) {
+        show(context, video, quality, true);
+    }
+
+    private static void show(Context context, Video video, int quality, boolean song) {
         if (context == null || video == null || video.videoId == null) {
             return;
         }
@@ -71,14 +83,14 @@ public final class DownloadPicker {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(info -> {
                     main.removeCallbacks(slowNotice);
-                    present(context, video, info);
+                    present(context, video, info, quality, song);
                 }, error -> {
                     main.removeCallbacks(slowNotice);
                     MobileSnackbar.show(context, R.string.mobile_download_unavailable);
                 });
     }
 
-    private static void present(Context context, Video video, @Nullable MediaItemFormatInfo info) {
+    private static void present(Context context, Video video, @Nullable MediaItemFormatInfo info, int quality, boolean song) {
         if (info == null || info.isUnplayable()) {
             String reason = info != null ? info.getPlayabilityReason() : null;
             MobileSnackbar.show(context, reason != null ? reason : context.getString(R.string.mobile_download_unavailable), null, null);
@@ -101,12 +113,14 @@ public final class DownloadPicker {
                 : "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg";
 
         // MEETUBE(download quality): Settings > Downloads can set one, then a tap downloads at once.
-        DownloadOption preset = AutoDownload.defaultQuality(context) == AutoDownload.ASK ? null
-                : AutoDownload.pick(options, AutoDownload.defaultQuality(context));
+        DownloadOption preset = quality == AutoDownload.ASK ? null
+                : quality == AUDIO_LOW ? DownloadOptions.lowAudio(info.getAdaptiveFormats())
+                : AutoDownload.pick(options, quality);
+        if (preset == null && quality == AUDIO_LOW) preset = AutoDownload.pick(options, AutoDownload.AUDIO);
         if (preset != null) {
             DownloadItem existing = DownloadRegistry.instance(context).findDone(video.videoId, preset.kind);
             start(context, video, title, author, thumb, preset, existing != null && (preset.isAudioOnly()
-                    || (existing.qualityLabel != null && existing.qualityLabel.equals(preset.qualityLabel))));
+                    || (existing.qualityLabel != null && existing.qualityLabel.equals(preset.qualityLabel))), song);
             return;
         }
 
@@ -140,7 +154,7 @@ public final class DownloadPicker {
 
             dialog.appendSingleButton(UiOptionItem.from(label, description, optionItem -> {
                 dialog.closeDialog();
-                start(context, video, title, author, thumb, option, alreadyHere, clipStartMs, clipEndMs, bytes);
+                start(context, video, title, author, thumb, option, alreadyHere, clipStartMs, clipEndMs, bytes, false);
             }));
         }
 
@@ -295,13 +309,25 @@ public final class DownloadPicker {
     }
 
     private static void start(Context context, Video video, String title, String author, String thumb,
-                              DownloadOption option, boolean alreadyHere) {
-        start(context, video, title, author, thumb, option, alreadyHere, 0, 0, option.totalBytes);
+                              DownloadOption option, boolean alreadyHere, boolean song) {
+        start(context, video, title, author, thumb, option, alreadyHere, 0, 0, option.totalBytes, song);
     }
 
     private static void start(Context context, Video video, String title, String author, String thumb,
                               DownloadOption option, boolean alreadyHere, long clipStartMs, long clipEndMs,
-                              long bytes) {
+                              long bytes, boolean song) {
+        if (song) { // MEETUNE: a song only says where it will be; MeeTune's Library has its Downloads
+            if (alreadyHere) {
+                MobileSnackbar.show(context, R.string.meetune_download_already_here);
+                return;
+            }
+            DownloadItem item = DownloadItem.create(video.videoId, title != null ? title : video.videoId,
+                    author, thumb, option);
+            item.song = true;
+            MobileDownloadService.enqueue(context, item);
+            MobileSnackbar.show(context, R.string.meetune_download_started);
+            return;
+        }
         if (alreadyHere) {
             // NEWTUBE(snackbar): the same file is already on the device - say so rather
             // than queue a second copy under a "Download started".

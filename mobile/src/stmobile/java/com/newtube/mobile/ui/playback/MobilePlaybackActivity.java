@@ -4010,10 +4010,21 @@ public class MobilePlaybackActivity extends MobileActivity
     // MEETUNE: a song started from MeeTune plays here in the music look. Nothing below runs for a
     // MeeTube video: updateMeeTune only hides a skin that exists and undoes MeeTune's own sound-only.
 
+    /** MeeTune's Streaming quality changed: the song playing takes it at once. */
+    void applyMeeTuneQuality() {
+        if (mExoPlayerController != null && com.newtube.mobile.ui.meetune.MeeTune.isMusic(getVideo())) {
+            mExoPlayerController.setMaxAudioBitrate(com.newtube.mobile.ui.meetune.MeeTune.maxAudioBitrate(this));
+        }
+    }
+
     private void updateMeeTune(@Nullable Video item) {
         boolean music = item != null && com.newtube.mobile.ui.meetune.MeeTune.isMusic(item)
                 && com.newtube.mobile.ui.meetune.MeeTune.musicPlayer(this);
         com.newtube.mobile.ui.meetune.MeeTuneEq.setPlaying(music); // MeeTune's equalizer: its songs only
+        if (mExoPlayerController != null) { // MeeTune's Streaming quality: its songs only
+            mExoPlayerController.setMaxAudioBitrate(music
+                    ? com.newtube.mobile.ui.meetune.MeeTune.maxAudioBitrate(this) : Integer.MAX_VALUE);
+        }
         if (!music) {
             if (mMeeTune != null) {
                 mMeeTune.hide();
@@ -4084,12 +4095,44 @@ public class MobilePlaybackActivity extends MobileActivity
                         == com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerUI.BUTTON_ON;
             }
             @Override public void more() {
-                openPlayerMenu();
+                showMeeTuneMenu();
             }
             @Nullable @Override public androidx.media3.common.Format audioFormat() {
                 return mExoPlayerController != null ? mExoPlayerController.getPlayingAudioFormat() : null;
             }
         };
+    }
+
+    /**
+     * MEETUNE: the music player's More is the song's own glass menu, as on MeeTune's lists, with
+     * the player's rows: Upgrade quality (only while Streaming quality caps the sound), Sleep timer,
+     * Lyrics offset and Send log.
+     */
+    /** MEETUNE: a song is playing, so the sleep timer says song instead of video. */
+    private boolean meeTuneSong() {
+        return com.newtube.mobile.ui.meetune.MeeTune.isMusic(getVideo());
+    }
+
+    private void showMeeTuneMenu() {
+        Video video = getVideo();
+        if (video == null || isFinishing()) {
+            return;
+        }
+        com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row upgrade =
+                com.newtube.mobile.ui.meetune.MeeTune.maxAudioBitrate(this) < Integer.MAX_VALUE && mExoPlayerController != null
+                ? new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_upgrade, R.string.meetune_upgrade_quality, () -> {
+                    mExoPlayerController.setMaxAudioBitrate(Integer.MAX_VALUE); // this song; the next one takes the setting again
+                    com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.meetune_upgraded);
+                }) : null;
+        com.newtube.mobile.ui.meetune.MeeTuneSongMenu.showForPlayer(this, video,
+                () -> getOnBackPressedDispatcher().onBackPressed(), upgrade,
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_sleep_timer,
+                        R.string.mobile_player_sleep_timer, this::showSleepTimerSheet),
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_mobile_tune, R.string.meetune_lyrics_offset,
+                        () -> com.newtube.mobile.ui.meetune.MeeTuneSongMenu.lyricsOffset(this,
+                                mMeeTune::lyricsOffset, mMeeTune::setLyricsOffset)),
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_about_bug_report, R.string.meetune_send_log,
+                        () -> com.liskovsoft.smartyoutubetv2.common.misc.DiagnosticLog.share(this)));
     }
 
     /** MEETUNE: Up next as a list of songs; a pick stays in the music look. */
@@ -10745,13 +10788,13 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private String sleepTimerLabel() {
         int picked = SleepTimer.picked();
-        return picked == SleepTimer.END_OF_VIDEO ? getString(R.string.mobile_sleep_end_of_video)
+        return picked == SleepTimer.END_OF_VIDEO ? getString(meeTuneSong() ? R.string.meetune_sleep_end_of_song : R.string.mobile_sleep_end_of_video)
                 : picked == SleepTimer.OFF ? getString(R.string.mobile_menu_off)
                 : getString(R.string.mobile_sleep_left, SleepTimer.minutesLeft());
     }
 
     private String sleepPresetLabel(int minutes) {
-        return minutes == SleepTimer.END_OF_VIDEO ? getString(R.string.mobile_sleep_end_of_video)
+        return minutes == SleepTimer.END_OF_VIDEO ? getString(meeTuneSong() ? R.string.meetune_sleep_end_of_song : R.string.mobile_sleep_end_of_video)
                 : minutes == SleepTimer.OFF ? getString(R.string.mobile_menu_off)
                 : getResources().getQuantityString(R.plurals.mobile_settings_minutes, minutes, minutes);
     }
@@ -10774,7 +10817,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 if (mPlayer != null) {
                     mPlayer.setPauseAtEndOfMediaItems(SleepTimer.isEndOfVideo());
                 }
-                String toast = minutes == SleepTimer.END_OF_VIDEO ? getString(R.string.mobile_sleep_toast_end)
+                String toast = minutes == SleepTimer.END_OF_VIDEO ? getString(meeTuneSong() ? R.string.meetune_sleep_toast_end : R.string.mobile_sleep_toast_end)
                         : minutes == SleepTimer.OFF ? getString(R.string.mobile_sleep_toast_off)
                         : getString(R.string.mobile_sleep_toast_minutes, sleepPresetLabel(minutes));
                 com.newtube.mobile.ui.common.MobileSnackbar.show(this, toast);
