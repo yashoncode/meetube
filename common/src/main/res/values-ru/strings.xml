@@ -790,4 +790,5 @@
     <string name="premium_users_only">Только для пользователей Premium. Исправление неполного списка форматов видео</string>
     <string name="install_bridge">Установить мост ATV/Amazon</string>
     <string name="fix_empty_subs_and_channels">Исправить пустые разделы «Подписки» и «Каналы»</string>
+<string name="unpin_playlist">Убрать плейлист с боковой панели</string>
 </resources>
