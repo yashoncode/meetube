@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="empty_directory_hint">Файлов нет</string>
+    <string name="empty_directory_hint">Папка пуста</string>
     <string name="action_close">Закрыть</string>
-    <string name="type_directory">Каталог</string>
+    <string name="type_directory">Папка</string>
     <string name="type_document">Файл</string>
     <string name="type_certificate">Сертификат</string>
     <string name="type_drawing">Рисунок</string>
-    <string name="type_excel">Таблица</string>
-    <string name="type_image">Картинка</string>
+    <string name="type_excel">Электронная таблица</string>
+    <string name="type_image">Изображение</string>
     <string name="type_music">Аудиофайл</string>
     <string name="type_video">Видео</string>
     <string name="type_pdf">Документ PDF</string>
