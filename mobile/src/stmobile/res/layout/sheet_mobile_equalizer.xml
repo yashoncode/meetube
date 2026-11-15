@@ -101,8 +101,36 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="12dp"
-                app:selectionRequired="true"
-                app:singleSelection="true" />
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="8dp" />
+
+            <!-- MEETUBE(eq bands): the rotate button turns the bands upright, side by side. -->
+            <LinearLayout
+                android:id="@+id/equalizer_bands_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/mobile_settings_equalizer_bands"
+                    android:textColor="@color/mobile_color_on_surface"
+                    android:textSize="15sp" />
+
+                <ImageView
+                    android:id="@+id/equalizer_rotate"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/mobile_settings_equalizer_rotate"
+                    android:focusable="true"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_equalizer_rotate" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/equalizer_bands"
