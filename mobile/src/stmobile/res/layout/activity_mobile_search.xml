@@ -27,6 +27,7 @@
     <!-- MEETUBE(glass): the results scroll under the floating search pill, which frosts them. -->
     <com.newtube.mobile.ui.common.GlassSource
         android:id="@+id/mobile_search_glass_source"
+        android:background="@color/mobile_color_background"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
@@ -39,6 +40,7 @@
              in the source it samples). -->
         <com.newtube.mobile.ui.common.GlassSource
             android:id="@+id/mobile_search_chips_source"
+            android:background="@color/mobile_color_background"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
