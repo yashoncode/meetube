@@ -393,7 +393,7 @@
     <!-- MEETUBE(customize): the Customization page's groups and its tiles' short names -->
     <string name="mobile_settings_customize_look">Внешний вид</string>
     <string name="mobile_settings_customize_layout">Макет</string>
-    <string name="mobile_settings_customize_effects">Стекло и анимация</string>
+    <string name="mobile_settings_customize_effects">Эффекты и отклик</string>
     <string name="mobile_settings_customize_tabs_menus">Вкладки и меню</string>
     <string name="mobile_settings_thumbnails_default_short">Исходная</string>
     <string name="mobile_settings_thumbnails_start_short">Начало</string>
@@ -425,7 +425,7 @@
     <string name="mobile_settings_watched_bar">Красная полоса просмотра на миниатюрах</string>
     <string name="mobile_settings_watched_bar_summary">Показывает под миниатюрой, какую часть видео вы посмотрели</string>
     <string name="mobile_settings_refresh_sound">Звук обновления</string>
-    <string name="mobile_settings_refresh_sound_summary">Ненавязчивый звук при потягивании страницы вниз для обновления</string>
+    <string name="mobile_settings_refresh_sound_summary">Негромкий звук при обновлении страницы свайпом вниз.</string>
     <!-- MEETUBE(settings-transfer): Backup > Share or move your settings. -->
     <string name="mobile_settings_transfer">Поделиться настройками или перенести их</string>
     <string name="mobile_settings_transfer_export">Сохранить настройки в файл</string>
@@ -526,16 +526,16 @@
     <string name="mobile_settings_tv_step_three">3</string>
     <string name="mobile_settings_tv_step_four">4</string>
     <string name="mobile_settings_tv_developer">Включите режим разработчика</string>
-    <string name="mobile_settings_tv_developer_android">На телевизоре откройте «Настройки» › «Система» › «Об устройстве» и 7 раз нажмите «Номер сборки Android TV», пока не появится сообщение о том, что режим разработчика включён.</string>
-    <string name="mobile_settings_tv_developer_fire">На телевизоре откройте «Настройки» › «Мой Fire TV» › «О системе», затем 7 раз нажмите на название телевизора.</string>
+    <string name="mobile_settings_tv_developer_android">На телевизоре откройте «Настройки» › «Система» › «Об устройстве» (на старых моделях: «Настройки» › «Настройки устройства» › «Об устройстве»). Нажмите 7 раз на пункт «Сборка ОС Android TV» (или «Номер сборки»), пока не появится сообщение, что вы стали разработчиком.</string>
+    <string name="mobile_settings_tv_developer_fire">На телевизоре откройте «Настройки» › «Мой Fire TV» › «Об устройстве». Выберите первую строку с названием Fire TV и нажмите её 7 раз, пока не появится сообщение, что вы стали разработчиком.</string>
     <string name="mobile_settings_tv_debugging">Включите отладку</string>
-    <string name="mobile_settings_tv_debugging_android">Откройте «Настройки» › «Система» › «Для разработчиков» и включите «Отладку по USB» (на некоторых телевизорах она называется «Отладка ADB» или «Сетевая отладка»).</string>
+    <string name="mobile_settings_tv_debugging_android">Вернитесь в «Настройки» › «Система» › «Для разработчиков» (на старых моделях: «Настройки устройства» › «Для разработчиков») и включите «Отладку по USB». Она работает и по Wi‑Fi — кабель не нужен. Если есть пункты «Сетевая отладка» или «ADB по сети», включите и их. «Беспроводная отладка» с кодом сопряжения — не то, что нужно.</string>
     <string name="mobile_settings_tv_debugging_fire">Откройте «Настройки» › «Мой Fire TV» › «Для разработчиков» и включите «Отладку ADB».</string>
     <string name="mobile_settings_tv_find">Найти телевизор</string>
     <string name="mobile_settings_tv_same_wifi">Подключите телефон и телевизор к одной сети Wi-Fi.</string>
     <string name="mobile_settings_tv_search">Найти в сети Wi-Fi</string>
     <string name="mobile_settings_tv_searching">Поиск…</string>
-    <string name="mobile_settings_tv_none_found">Телевизор не найден. Проверьте, включена ли отладка (шаг 2), или введите IP-адрес телевизора вручную («Настройки» › «Сеть» на телевизоре).</string>
+    <string name="mobile_settings_tv_none_found">Телевизор не ответил. Проверьте шаг 2 или введите его IP-адрес вручную. Android TV: «Настройки» › «Сеть и Интернет» › ваша сеть Wi‑Fi. Fire TV: «Настройки» › «Мой Fire TV» › «Об устройстве» › «Сеть».</string>
     <string name="mobile_settings_tv_found">Найдено: %1$s. Выберите адрес ниже.</string>
     <string name="mobile_settings_tv_ip">IP-адрес телевизора</string>
     <string name="mobile_settings_tv_ip_invalid">Введите IPv4-адрес телевизора, например %1$s</string>
@@ -546,7 +546,7 @@
     <string name="mobile_settings_tv_downloading">Загрузка MeeTube TV %1$s… %2$s%%</string>
     <string name="mobile_settings_tv_downloading_unknown">Загрузка MeeTube TV %1$s…</string>
     <string name="mobile_settings_tv_installing">Установка на телевизор…</string>
-    <string name="mobile_settings_tv_done">Готово! MeeTube TV открыт на телевизоре 🎉</string>
+    <string name="mobile_settings_tv_done">Готово! MeeTube TV уже запущено на телевизоре 🎉</string>
     <string name="mobile_settings_tv_unreachable">Не удалось подключиться к телевизору. Проверьте, включена ли отладка (шаг 2) и правильно ли указан IP-адрес.</string>
     <string name="mobile_settings_tv_auth_failed">Телевизор не разрешил подключение. Повторите попытку и нажмите «Разрешить» на телевизоре.</string>
     <string name="mobile_settings_tv_download_failed">Не удалось скачать MeeTube TV. Проверьте подключение к интернету.</string>
@@ -557,13 +557,13 @@
     <string name="mobile_settings_tv_permission">Разрешите доступ к локальной сети, чтобы найти телевизор и подключиться к нему.</string>
     <string name="mobile_settings_tv_footer">После установки отладку на телевизоре можно отключить.</string>
     <string name="mobile_settings_seek_line">Полоса прогресса под видео</string>
-    <string name="mobile_settings_seek_line_summary">Тонкая полоса просмотренного на краю видео, когда элементы управления скрыты, в портретном режиме</string>
+    <string name="mobile_settings_seek_line_summary">Тонкая полоса прогресса вдоль края видео, когда элементы управления скрыты (в портретной ориентации)</string>
     <string name="mobile_settings_progress_color">Палитра акцентного цвета</string>
     <string name="mobile_settings_progress_color_player">Полоса прогресса плеера</string>
     <string name="mobile_settings_progress_color_shorts">Полоса прогресса Shorts</string>
     <string name="mobile_settings_progress_color_default">По умолчанию</string>
     <string name="mobile_settings_accent">Акцент</string>
-    <string name="mobile_settings_progress_color_match">Как акцент</string>
+    <string name="mobile_settings_progress_color_match">В цвет акцента</string>
     <string name="mobile_accent_ember">Жар</string>
     <string name="mobile_accent_sakura">Сакура</string>
     <string name="mobile_accent_sunset">Закат</string>
@@ -575,17 +575,17 @@
     <string name="mobile_settings_badge_icons">Значки на плашках времени</string>
     <string name="mobile_settings_badge_icons_summary">Радиоволны перед миксом, нота перед временем музыкального клипа</string>
     <string name="mobile_settings_seek_pill">Плашка перемотки</string>
-    <string name="mobile_settings_seek_pill_summary">Двойное касание для перемотки показывает упругую плашку +10 и слегка сдвигает видео; выключите для классической волны</string>
+    <string name="mobile_settings_seek_pill_summary">При двойном касании для перемотки появляется пружинящая плашка «+10», а видео слегка сдвигается. При выключении остаётся классическая анимация отклика.</string>
     <string name="mobile_settings_segment_ask_short">Спросить</string>
-    <string name="mobile_settings_segment_modes_note">Пропустить, спросить кнопкой, только показать на шкале перемотки или ничего не делать.</string>
+    <string name="mobile_settings_segment_modes_note">Можно пропустить фрагмент, запросить подтверждение кнопкой, только показать его на шкале перемотки или отключить эту функцию.</string>
     <string name="mobile_settings_segment_show">Показать</string>
     <string name="mobile_settings_storage">Хранилище</string>
     <string name="mobile_settings_storage_app">Занято MeeTube</string>
     <string name="mobile_settings_storage_app_size">Приложение</string>
     <string name="mobile_settings_storage_cache">Кэш видео и изображений</string>
     <string name="mobile_settings_storage_clear">Очистить кэш</string>
-    <string name="mobile_settings_storage_clear_empty">Чистота ✨</string>
-    <string name="mobile_settings_storage_clear_empty_note">Кэш уже пуст. Мы даже под диванными подушками проверили. Посмотрите что-нибудь и возвращайтесь.</string>
+    <string name="mobile_settings_storage_clear_empty">Кэш вычищен до блеска ✨</string>
+    <string name="mobile_settings_storage_clear_empty_note">Кэш уже пуст. Мы даже под диванными подушками проверили. Посмотрите что-нибудь и загляните сюда позже.</string>
     <string name="mobile_settings_storage_clear_note">Загрузки останутся. Просмотренные видео при повторном просмотре загрузятся из сети.</string>
     <string name="mobile_settings_storage_cleared">Освобождено %1$s</string>
     <string name="mobile_settings_storage_data">Настройки и история</string>
@@ -614,7 +614,7 @@
     <string name="mobile_settings_battery_manual_on">Режим энергосбережения включён</string>
     <string name="mobile_settings_battery_when">При включённом энергосбережении</string>
     <string name="mobile_settings_battery_light">Отключить эффекты</string>
-    <string name="mobile_settings_battery_light_desc">Без анимации: обычная заливка вместо размытого матового стекла</string>
+    <string name="mobile_settings_battery_light_desc">Без анимации; вместо матового размытия используется обычная заливка</string>
     <string name="mobile_settings_battery_keep">Оставить эффекты</string>
     <string name="mobile_settings_battery_keep_desc">Всё будет выглядеть и работать как обычно</string>
     <string name="mobile_settings_battery_note">Анимация, матовое стекло и жидкая линза перерисовывают экран много раз в секунду. Когда в настройках телефона включено энергосбережение, MeeTube может отключить их ради экономии заряда. При отключении энергосбережения эффекты вернутся.</string>
@@ -683,7 +683,7 @@
     <string name="mobile_settings_you_glow_rgb_desc">Свечение медленно проходит через все цвета по кругу</string>
     <string name="mobile_settings_equalizer_bands">Полосы эквалайзера</string>
     <string name="mobile_settings_equalizer_rotate">Переключить полосы между вертикальным и горизонтальным расположением</string>
-    <string name="mobile_settings_most_replayed">График повторных просмотров</string>
+    <string name="mobile_settings_most_replayed">График самых пересматриваемых фрагментов</string>
     <string name="mobile_settings_most_replayed_summary">При перемещении ползунка над ним отображается волна, показывающая самые часто пересматриваемые участки видео</string>
     <string name="mobile_accent_custom">Свой цвет</string>
     <string name="mobile_accent_custom_title">Настроить цвет</string>
