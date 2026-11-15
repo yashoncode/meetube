@@ -289,7 +289,7 @@
     <string name="mobile_cast_unknown_subtitle">ТВ-приложение не определено · нажмите ⋮, чтобы выбрать его</string>
     <string name="mobile_cast_identify_app">Из какого приложения на телевизоре этот код?</string>
     <string name="mobile_cast_onboarding_title">MeeTube TV / SmartTube TV на вашем ТВ?</string>
-    <string name="mobile_cast_onboarding_body">Подключите один раз — и отправляйте видео на MeeTube TV / SmartTube TV.</string>
+    <string name="mobile_cast_onboarding_body">После подключения отправленные видео будут открываться в MeeTube TV / SmartTube TV.</string>
     <string name="mobile_cast_pair_smarttube">Подключить MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_receiver_no_playback">ТВ-приложение не запустило воспроизведение</string>
     <string name="mobile_cast_switching_tv_app">Открываем элементы управления YouTube на телевизоре…</string>
@@ -344,7 +344,7 @@
     <string name="mobile_download_delete">Удалить загрузку</string>
     <string name="mobile_download_file_missing">Загруженного файла больше нет на этом устройстве</string>
     <string name="mobile_download_pill_downloaded">Загружено</string>
-    <string name="mobile_downloads_empty">Здесь будут скачанные видео. Чтобы скачать видео, выберите «Скачать» в его меню или на странице просмотра.</string>
+    <string name="mobile_downloads_empty">Скачанные видео появятся здесь. Выберите «Скачать» в меню видео или на странице просмотра.</string>
     <string name="mobile_download_badge_queued">В очереди</string>
     <string name="mobile_download_badge_downloading">Загрузка</string>
     <string name="mobile_download_badge_failed">Ошибка</string>
@@ -402,7 +402,7 @@
     <string name="mobile_theme_light">Светлая</string>
     <string name="mobile_theme_dark">Тёмная</string>
     <string name="mobile_about_star">Поставить звезду MeeTube на GitHub</string>
-    <string name="mobile_about_star_desc">Бесплатное приложение с открытым кодом. Звезда поможет другим найти MeeTube.</string>
+    <string name="mobile_about_star_desc">Бесплатное приложение с открытым исходным кодом. Звезда поможет другим найти MeeTube.</string>
     <string name="mobile_about_share">Поделиться MeeTube</string>
     <string name="mobile_about_share_desc">Отправить ссылку тому, кому она понравится</string>
     <string name="mobile_about_share_text">MeeTube — клиент YouTube для телефонов на базе SmartTube: %1$s</string>
@@ -477,7 +477,7 @@
     <string name="mobile_nav_hint_confirm_body">Откроются настройки, где можно выбрать вкладки нижней панели и изменить их порядок.</string>
     <string name="mobile_nav_hint_confirm_open">Открыть</string>
     <string name="mobile_subs_all_channels">Все подписки</string>
-    <string name="mobile_empty_my_videos">Здесь — ваши общедоступные видео. Телевизионный вход YouTube, который использует MeeTube, не показывает личные видео и видео с доступом по ссылке.</string>
+    <string name="mobile_empty_my_videos">Здесь — ваши общедоступные видео. Вход через YouTube для ТВ не показывает личные видео и видео по ссылке.</string>
     <string name="mobile_settings_double_tap_seek">Двойное касание для перемотки</string>
     <string name="mobile_comment_gif">GIF</string>
     <string name="mobile_download_open_folder">Открыть в папке</string>
