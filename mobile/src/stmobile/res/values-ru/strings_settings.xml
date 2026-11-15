@@ -178,7 +178,7 @@
     <string name="mobile_settings_clear_search_history">Очистить историю поиска</string>
     <string name="mobile_settings_clear_search_history_summary">Удаляет поисковые запросы, сохранённые на этом телефоне</string>
     <string name="mobile_settings_clear_search_history_confirm">Очистить историю поиска?</string>
-    <string name="mobile_settings_clear_search_history_body">Удалить историю поиска MeeTube на этом телефоне? Действие необратимо.</string>
+    <string name="mobile_settings_clear_search_history_body">Будет удалена история поиска MeeTube на этом телефоне. Действие необратимо.</string>
 
     <!-- Backup -->
     <string name="mobile_settings_backup_now">Создать резервную копию</string>
@@ -228,7 +228,7 @@
     <!-- MEETUBE(performance) -->
     <string name="mobile_settings_performance">Производительность</string>
     <string name="mobile_settings_high_refresh">Режим высокой производительности</string>
-    <string name="mobile_settings_high_refresh_summary">%1$d Гц для плавной анимации. Расход заряда выше; Android может снизить частоту при перегреве или энергосбережении.</string>
+    <string name="mobile_settings_high_refresh_summary">Частота приложения — %1$d Гц для плавной анимации. Расход заряда выше; Android может снизить её при перегреве или энергосбережении.</string>
     <!-- MEETUBE(nav lens, issue #46) -->
     <string name="mobile_settings_tab_motion">Анимация переключения вкладок</string>
     <string name="mobile_settings_tab_motion_summary">Стеклянный блик скользит к вкладке, панель покачивается. На медленных телефонах выключено по умолчанию.</string>
@@ -275,7 +275,7 @@
     <string name="mobile_settings_sleep_timer">Таймер сна</string>
     <string name="mobile_settings_sleep_timer_summary">Приостанавливает воспроизведение через %1$s после открытия видео</string>
     <string name="mobile_settings_audio_focus">Приостанавливать при других звуках</string>
-    <string name="mobile_settings_audio_focus_summary">Пауза при звонках и звуке из других приложений. Для следующего видео.</string>
+    <string name="mobile_settings_audio_focus_summary">Пауза при звонках и звуке из других приложений. Действует для следующего видео.</string>
     <string name="mobile_settings_resume">Возобновление</string>
     <string name="mobile_settings_resume_short">Продолжать просмотр коротких видео</string>
     <string name="mobile_settings_resume_short_summary">Видео короче 6 минут начинаются с начала, если эта функция выключена</string>
@@ -380,7 +380,7 @@
     <string name="mobile_settings_dns_system">DNS-сервер системы</string>
     <string name="mobile_settings_dns_google">DNS Google</string>
     <string name="mobile_settings_conscrypt">Conscrypt</string>
-    <string name="mobile_settings_conscrypt_summary">Библиотека защищённых соединений. Может улучшить совместимость с HTTPS/TLS и ByeByeDPI; результат зависит от устройства и сети.</string>
+    <string name="mobile_settings_conscrypt_summary">Библиотека защищённых соединений. Может улучшить совместимость с HTTPS/TLS и ByeByeDPI; эффект зависит от устройства и сети.</string>
     <string name="mobile_settings_accounts">Аккаунты</string>
     <string name="mobile_settings_multi_profiles">Отдельные настройки для каждого аккаунта</string>
     <string name="mobile_settings_multi_profiles_summary">У каждого аккаунта будут свои настройки, начиная со значений по умолчанию</string>
@@ -617,7 +617,7 @@
     <string name="mobile_settings_battery_light_desc">Анимация отключена, вместо матового размытия используется обычное стекло</string>
     <string name="mobile_settings_battery_keep">Оставить эффекты</string>
     <string name="mobile_settings_battery_keep_desc">Всё будет выглядеть и работать как обычно</string>
-    <string name="mobile_settings_battery_note">Анимация, матовое стекло и жидкая линза часто перерисовывают экран. При включённом энергосбережении MeeTube отключает их для экономии заряда. После его выключения эффекты вернутся.</string>
+    <string name="mobile_settings_battery_note">Анимация, матовое стекло и жидкая линза часто перерисовывают экран. При включённом энергосбережении MeeTube может отключать их для экономии заряда. После его выключения эффекты вернутся.</string>
     <string name="mobile_battery_saver_ask">Включено энергосбережение. Отключить анимацию и матовое стекло на это время?</string>
     <string name="mobile_battery_saver_ask_action">Отключить</string>
     <string name="mobile_settings_new_uploads">Уведомлять о новых видео</string>
