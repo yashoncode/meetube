@@ -116,10 +116,10 @@
     <string name="next_video_info_is_not_loaded_yet">Информация о следующем видео ещё не загрузилась</string>
     <string name="card_multiline_title">Несколько строк в заголовках</string>
     <string name="cards_style">Стиль карточек</string>
-    <string name="repeat_mode_all">Воспроизводить видео непрерывно</string>
+    <string name="repeat_mode_all">Непрерывно воспроизводить все видео</string>
     <string name="repeat_mode_one">Повторять текущее видео</string>
     <string name="repeat_mode_pause">Ставить воспроизведение на паузу после каждого видео (кроме очереди)</string>
-    <string name="repeat_mode_pause_alt">Воспроизводить непрерывно только видео из плейлиста</string>
+    <string name="repeat_mode_pause_alt">Непрерывно воспроизводить только видео из плейлиста</string>
     <string name="repeat_mode_none">Завершать воспроизведение после одного видео (кроме очереди)</string>
     <string name="subscribed_to_channel">Вы подписаны</string>
     <string name="unsubscribed_from_channel">Вы отписаны</string>
@@ -129,7 +129,7 @@
     <string name="player_seek_preview">Предпросмотр при перемотке</string>
     <string name="color_scheme_dark_grey_oled">Тёмно-серая (OLED)</string>
     <string name="channels_section_sorting">Сортировка раздела Каналы</string>
-    <string name="sorting_by_new_content">Новый контент</string>
+    <string name="sorting_by_new_content">Сначала каналы с новыми видео</string>
     <string name="sorting_alphabetically">По алфавиту</string>
     <string name="sorting_last_viewed">Последние просмотренные</string>
     <string name="player_pause_when_seek">Пауза при перемотке</string>
@@ -250,7 +250,7 @@
     <string name="card_text_scroll_factor">Скорость прокрутки текста карточки</string>
     <string name="preferred_update_source">Выбрать источник обновлений</string>
     <string name="hide_shorts">Скрывать Shorts в разделе «Подписки»</string>
-    <string name="hide_shorts_channel">Скрывать shorts на канале</string>
+    <string name="hide_shorts_channel">Скрывать Shorts на страницах каналов</string>
     <string name="key_remapping">Переопределение клавиш</string>
     <string name="screen_dimming">Затемнение экрана</string>
     <string name="removed_from_playback_queue">Удалено из очереди воспроизведения</string>
@@ -349,12 +349,12 @@
     <string name="player_seek_regular">Обычное</string>
     <string name="player_seek_confirmation_pause">С подтверждением (пауза во время перемотки)</string>
     <string name="player_seek_confirmation_play">С подтверждением (играть во время перемотки)</string>
-    <string name="hide_shorts_from_home">Скрывать shorts с Главной</string>
+    <string name="hide_shorts_from_home">Скрывать Shorts на главной странице</string>
     <string name="finish_on_disconnect">Завершать приложение после отключения телефона/планшета</string>
     <string name="update_error">Ошибка обновления</string>
-    <string name="hide_shorts_from_search">Скрывать shorts из Поиска</string>
-    <string name="hide_shorts_from_history">Скрывать shorts из Истории</string>
-    <string name="hide_shorts_from_trending">Скрывать shorts из Трендов</string>
+    <string name="hide_shorts_from_search">Скрывать Shorts в результатах поиска</string>
+    <string name="hide_shorts_from_history">Скрывать Shorts в истории просмотров</string>
+    <string name="hide_shorts_from_trending">Скрывать Shorts в разделе «В тренде»</string>
     <string name="disable_screensaver">Отключить скринсейвер</string>
     <string name="description_not_found">Описание не найдено</string>
     <string name="proxy_port_hint">Порт прокси</string>
@@ -446,7 +446,7 @@
     <string name="sleep_timer">Таймер сна (если пульт не использовался один час)</string>
     <string name="sleep_timer_desc">Ставить проигрывание на паузу, если пользователь в течение часа не пользовался пультом.</string>
     <string name="disable_vsync">Отключить вертикальную синхронизацию</string>
-    <string name="disable_vsync_desc">Этот параметр отключает выравнивание кадров по сигналу вертикальной синхронизации дисплея. Может повысить производительность на слабых устройствах за счет высвобождения ресурсов ЦП.</string>
+    <string name="disable_vsync_desc">Отключает синхронизацию кадров с частотой обновления дисплея. На слабых устройствах это может повысить производительность за счёт снижения нагрузки на процессор.</string>
     <string name="skip_codec_profile_check">Пропустить проверку кодеков</string>
     <string name="skip_codec_profile_check_desc">Не проверять поддержку кодеков при запуске видео. Может быть полезно для глючных прошивок.</string>
     <string name="force_sw_codec">Активировать программный декодер</string>
@@ -522,7 +522,7 @@
     <string name="protect_settings_with_password">Защитить все настройки паролем</string>
     <string name="enter_settings_password">Введите пароль для входа в настройки</string>
     <string name="child_mode">Детский режим</string>
-    <string name="child_mode_desc">В этом режиме пользователь не может использовать поиск или просматривать предлагаемый контент. Настройки будут под паролем.</string>
+    <string name="child_mode_desc">В этом режиме нельзя пользоваться поиском и просматривать рекомендации. Доступ к настройкам защищён паролем.</string>
     <string name="lost_setting_warning">Настройки приложения будут изменены. Убедитесь, что вы создали резервную копию настроек.</string>
     <string name="player_button_long_click">Короткое нажатие на кнопку для быстрого действия и длинное для диалога настроек</string>
     <string name="pause_history">Поставить историю на паузу</string>
@@ -570,7 +570,7 @@
     <string name="cronet_desc">Cronet — сетевой стек Chromium. Он может снизить задержку и повысить производительность сети, что иногда помогает при буферизации.</string>
     <string name="unlock_all_formats">Разблокировать все форматы видео</string>
     <string name="unlock_all_formats_desc">На некоторых устройствах прошивка ошибочно сообщает, что определённые форматы не поддерживаются, хотя устройство умеет их воспроизводить. Например, телевизоры с разрешением 1080p могут ошибочно считать формат 4K неподдерживаемым.</string>
-    <string name="okhttp_desc">Этот сетевой движок является самым медленным, но имеет хорошую стабильность.</string>
+    <string name="okhttp_desc">Сетевой стек OkHttp работает медленнее остальных, но отличается стабильностью.</string>
     <string name="select_channel_section">Открывать соответствующий раздел при запуске приложения с каналов ATV.</string>
     <string name="enable_voice_search_desc">Официальное приложение будет заменено так называемым мостом. Мост помогает передавать глобальные поисковые запросы в наше приложение.</string>
     <string name="enable_master_password">Включить мастер-пароль</string>
@@ -582,7 +582,7 @@
     <string name="audio_language">Язык аудио</string>
     <string name="old_home_look">Старый вид Главного раздела</string>
     <string name="old_channel_look">Старый вид страницы Канала</string>
-    <string name="hide_shorts_everywhere">Скрывать shorts повсюду</string>
+    <string name="hide_shorts_everywhere">Скрывать Shorts во всех разделах</string>
     <string name="update_found">Обновление</string>
     <string name="volume_boost_warning">Настройки привышающие лимит могу повредить динамики</string>
     <string name="play_video_incognito">Воспроизвести анонимно</string>
@@ -606,7 +606,7 @@
     <string name="player_chapter_notification2">Перейти к следующему эпизоду, нажав на уведомление</string>
     <string name="subtitle_remember">Запомнить включенные субтитры для каждого канала</string>
     <string name="amazon_frame_drop_fix">Исправление выпадения кадров #2</string>
-    <string name="amazon_frame_drop_fix_desc">Исправляет лаги на Amazon Stick и некоторых других устройствах.</string>
+    <string name="amazon_frame_drop_fix_desc">Устраняет рывки изображения на Amazon Stick и некоторых других устройствах.</string>
     <string name="default_stack_desc">Встроенный сетевой движок. Этот движок может иметь лучшую стабильность в определенных ситуациях.</string>
     <string name="item_postion">Позиция</string>
     <string name="player_screen_off_dimming">Величина затемнения экрана</string>
@@ -650,9 +650,9 @@
     <string name="nothing_found">Ничего не найдено</string>
     <string name="auto_frame_rate_desc">Устраняет рывки в сценах с быстрым движением камеры, например во время спортивных трансляций.</string>
     <string name="channel_filter_hint">Фильтровать каналы</string>
-    <string name="player_loop_shorts">Зацикливать shorts</string>
-    <string name="player_quick_shorts_skip">Переключать shorts кнопками лево/право</string>
-    <string name="player_quick_shorts_skip_alt">Переключать shorts кнопками вверх/вниз</string>
+    <string name="player_loop_shorts">Зацикливать Shorts</string>
+    <string name="player_quick_shorts_skip">Переключать Shorts кнопками влево/вправо</string>
+    <string name="player_quick_shorts_skip_alt">Переключать Shorts кнопками вверх/вниз</string>
     <string name="player_quick_skip_videos">Переключать обычные видео кнопками лево/право</string>
     <string name="player_quick_skip_videos_alt">Переключать обычные видео кнопками вверх/вниз</string>
     <string name="channels_filter">Показывать поле Фильтровать каналы в разделе Каналы</string>
