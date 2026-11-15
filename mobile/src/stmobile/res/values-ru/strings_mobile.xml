@@ -53,12 +53,12 @@
     <string name="mobile_watch_chip_watched">Продолжить просмотр</string>
     <string name="mobile_settings_watch_style">Страница видео</string>
     <string name="mobile_settings_watch_style_compact">Компактная</string>
-    <string name="mobile_settings_watch_style_compact_desc">Кнопки действий рядом с «Подписаться», популярные комментарии по одному</string>
+    <string name="mobile_settings_watch_style_compact_desc">Кнопки действий рядом с кнопкой «Подписаться», популярные комментарии — по одному.</string>
     <string name="mobile_settings_watch_style_classic">Классическая</string>
     <string name="mobile_settings_watch_style_classic_desc">Кнопки с подписями и строка канала</string>
     <string name="mobile_settings_player_buttons">Кнопки плеера</string>
     <string name="mobile_settings_player_buttons_summary">Показать или скрыть кнопки на видео</string>
-    <string name="mobile_settings_player_buttons_note">Скрытые кнопки не показываются ни на одном видео. Изменение видно при следующем открытии плеера.</string>
+    <string name="mobile_settings_player_buttons_note">Скрытые кнопки не будут отображаться ни на одном видео. Новые настройки вступят в силу при следующем запуске плеера.</string>
     <string name="mobile_settings_player_buttons_top">Верхняя панель</string>
     <string name="mobile_settings_player_buttons_center">Центр</string>
     <string name="mobile_settings_player_buttons_fullscreen">Действия в полноэкранном режиме</string>
@@ -175,7 +175,7 @@
     <string name="mobile_signin_step2_caption">Страница может сообщить, что вход выполняется на телевизоре или другом устройстве. Это нормально: MeeTube использует тот же способ входа, что и телевизоры, поэтому пароль не вводится в самом приложении.</string>
     <string name="mobile_signin_step3_title">Вернитесь в MeeTube</string>
     <string name="mobile_signin_step3_caption">Вход завершается сам — больше ничего делать не нужно.</string>
-    <string name="mobile_signin_code_label">Google покажет этот код — проверьте, что он совпадает:</string>
+    <string name="mobile_signin_code_label">Google покажет этот код — убедитесь, что он совпадает с кодом на этом экране:</string>
     <string name="mobile_signin_copy_hint">Нажмите на код, чтобы скопировать его</string>
     <string name="mobile_signin_code_copied">Код скопирован в буфер обмена</string>
     <string name="mobile_signin_open_button">Продолжить с Google</string>
@@ -232,7 +232,7 @@
     <string name="subscribed_to_channel">Вы подписаны</string>
     <string name="unsubscribed_from_channel">Вы отписаны</string>
     <string name="mobile_player_settings">Настройки</string>
-    <string name="mobile_more_options_for">Ещё опции для %1$s</string>
+    <string name="mobile_more_options_for">Другие действия для %1$s</string>
     <string name="mobile_comment_likes">%1$s лайков</string>
     <string name="mobile_mini_close">Закрыть плеер</string>
     <string name="mobile_first_run_setup">Одноразовая настройка — подготовка YouTube…</string>
@@ -243,12 +243,12 @@
     <string name="mobile_cast_subtitle_no_ads">Управление качеством на телефоне</string>
     <string name="mobile_cast_subtitle_youtube_app">YouTube или MeeTube TV / SmartTube TV на ТВ</string>
     <string name="mobile_cast_chooser_title">Трансляция на %1$s</string>
-    <string name="mobile_cast_option_direct_title">Прямая трансляция</string>
-    <string name="mobile_cast_option_direct_subtitle">Качество управляется с телефона · без субтитров</string>
-    <string name="mobile_cast_option_app_title">Воспроизведение через ТВ-приложение</string>
-    <string name="mobile_cast_option_app_subtitle">Требуется для трансляций и субтитров · качество управляется с пульта ТВ</string>
+    <string name="mobile_cast_option_direct_title">Напрямую на ТВ</string>
+    <string name="mobile_cast_option_direct_subtitle">Качество настраивается с телефона · субтитры недоступны</string>
+    <string name="mobile_cast_option_app_title">Через ТВ-приложение</string>
+    <string name="mobile_cast_option_app_subtitle">Нужно для прямого эфира и субтитров · качество настраивается с пульта ТВ</string>
     <string name="mobile_cast_connecting_youtube_app">Подключаемся к приложению YouTube на телевизоре…</string>
-    <string name="mobile_cast_direct_live_unsupported">Для прямых трансляций нужно приложение YouTube или MeeTube TV / SmartTube TV на телевизоре</string>
+    <string name="mobile_cast_direct_live_unsupported">Для прямого эфира нужно приложение YouTube или MeeTube TV / SmartTube TV на телевизоре</string>
     <string name="mobile_cast_direct_incompatible">Это видео нельзя транслировать напрямую: телевизор не поддерживает ни один из доступных форматов</string>
     <string name="mobile_cast_direct_load_failed">Не удалось подготовить видео для прямой трансляции</string>
     <string name="mobile_cast_direct_no_wifi">Для прямой трансляции телефон и телевизор должны быть подключены к одной сети Wi‑Fi</string>
@@ -278,7 +278,7 @@
     <string name="mobile_cast_channel_desc">Управление воспроизведением на телевизоре</string>
     <string name="mobile_cast_fallback_switching">Пробуем запустить YouTube на телевизоре…</string>
     <string name="mobile_cast_trying_smarttube">Пробуем запустить MeeTube TV / SmartTube TV на телевизоре…</string>
-    <string name="mobile_cast_trying_direct">Пробуем начать прямую трансляцию…</string>
+    <string name="mobile_cast_trying_direct">Пробуем передать видео напрямую на телевизор…</string>
     <string name="mobile_cast_trying_saved">Пробуем открыть сохранённое ТВ-приложение…</string>
     <string name="mobile_cast_checking_ad_free">Проверяем телевизор…</string>
     <string name="mobile_cast_smarttube_title">MeeTube TV / SmartTube TV</string>
@@ -296,8 +296,8 @@
     <string name="mobile_cast_choose_method">Выберите способ трансляции</string>
     <string name="mobile_cast_more_options">Параметры воспроизведения на ТВ</string>
     <string name="mobile_cast_controls_title">Параметры воспроизведения на ТВ</string>
-    <string name="mobile_cast_direct_summary">Прямая трансляция · качество настраивается с телефона · для субтитров нужно ТВ-приложение</string>
-    <string name="mobile_cast_app_summary">ТВ-приложение · субтитры настраиваются с телефона · качество — с пульта ТВ</string>
+    <string name="mobile_cast_direct_summary">Напрямую на ТВ · качество настраивается с телефона · субтитры доступны через ТВ-приложение</string>
+    <string name="mobile_cast_app_summary">Через ТВ-приложение · субтитрами можно управлять с телефона · качество настраивается с пульта ТВ</string>
     <string name="mobile_cast_quality_auto_1080">Авто (до 1080p)</string>
     <string name="mobile_cast_quality_cap">До %1$dp</string>
     <string name="mobile_cast_quality_tv_remote">Использовать пульт ТВ</string>
@@ -321,8 +321,8 @@
     <string name="mobile_dislike_removed">Дизлайк убран</string>
     <string name="mobile_rate_not_ready">Видео ещё загружается. Попробуйте через несколько секунд.</string>
     <string name="mobile_rating_not_saved">Не удалось сохранить вашу оценку. Проверьте подключение и попробуйте снова.</string>
-    <string name="mobile_download_started">Загрузка начата</string>
-    <string name="mobile_download_started_size">Загрузка начата • %1$s</string>
+    <string name="mobile_download_started">Загрузка началась</string>
+    <string name="mobile_download_started_size">Загрузка началась • %1$s</string>
     <string name="mobile_download_done">Загружено</string>
     <string name="mobile_download_done_size">Загружено • %1$s</string>
     <string name="mobile_download_already_here">Уже загружено</string>
@@ -344,7 +344,8 @@
     <string name="mobile_download_delete">Удалить загрузку</string>
     <string name="mobile_download_file_missing">Загруженного файла больше нет на этом устройстве</string>
     <string name="mobile_download_pill_downloaded">Загружено</string>
-    <string name="mobile_downloads_empty">Загруженные вами видео появятся здесь.\nИспользуйте «Скачать» в меню видео или на странице просмотра.</string>
+    <string name="mobile_downloads_empty">Здесь будут отображаться скачанные видео.
+Чтобы скачать видео, выберите «Скачать» в его меню или на странице видео.</string>
     <string name="mobile_download_badge_queued">В очереди</string>
     <string name="mobile_download_badge_downloading">Загрузка</string>
     <string name="mobile_download_badge_failed">Ошибка</string>
