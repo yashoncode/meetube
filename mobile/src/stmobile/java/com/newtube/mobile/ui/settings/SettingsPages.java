@@ -27,7 +27,7 @@ import java.util.List;
  * <pre>
  * Settings
  *   [ Search settings ]          (SettingsSearchFragment: every row of every page)
- *   App:    General · Customization · Feeds · History and privacy
+ *   App:    General · Customization · Feeds · History and privacy · Downloads · Notifications
  *   Video:  Playback · Video quality · Audio quality · Captions · SponsorBlock · DeArrow
  *   Other:  Backup and restore · Advanced · About
  * </pre>
@@ -54,6 +54,7 @@ public final class SettingsPages {
     public static final String SPONSORBLOCK = "sponsorblock";
     public static final String DEARROW = "dearrow";
     public static final String DOWNLOADS = "downloads";
+    public static final String NOTIFICATIONS = "notifications";
     public static final String BACKUP = "backup";
     public static final String STORAGE = "storage";
     public static final String BATTERY = "battery";
@@ -120,6 +121,8 @@ public final class SettingsPages {
                 return PlayerPages.deArrow(context);
             case DOWNLOADS:
                 return DownloadPages.downloads(context);
+            case NOTIFICATIONS:
+                return NotificationPages.notifications(context);
             case BACKUP:
                 return AppPages.backup(context);
             case STORAGE:
@@ -158,6 +161,8 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_privacy_summary), PRIVACY));
         rows.add(SettingsRow.page(R.drawable.ic_nav_downloads_outline, context.getString(R.string.header_downloads),
                 context.getString(R.string.mobile_settings_downloads_summary), DOWNLOADS));
+        rows.add(SettingsRow.page(R.drawable.ic_about_notifications, context.getString(R.string.mobile_settings_notifications),
+                null, NOTIFICATIONS).summary(() -> NotificationPages.summary(context)));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_video)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_playback, context.getString(R.string.mobile_settings_playback),

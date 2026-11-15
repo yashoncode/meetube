@@ -101,6 +101,7 @@ public class MobileChannelActivity extends MobileActivity
     /** The tabs' place in the app bar; the tabs themselves float over the page (setupGlassBars). */
     private View mTabsSpace;
     private TextView mSubscribe;
+    private android.widget.ImageView mBell;
     private ProgressBar mProgressBar;
     private TextView mTitleView;
     /** The header holds a real channel name (from the card, or from the loaded videos). */
@@ -218,6 +219,7 @@ public class MobileChannelActivity extends MobileActivity
         findViewById(R.id.mobile_channel_header).setVisibility(View.GONE);
         // Its place is kept (no jump) until this channel's state is known; signed out, no pill.
         mSubscribe.animate().cancel();
+        mBell.setVisibility(View.GONE);
         mSubscribe.setVisibility(com.liskovsoft.youtubeapi.service.YouTubeSignInService.instance().isSigned()
                 ? View.INVISIBLE : View.GONE);
         mSubscribeStateFor = null;
@@ -347,6 +349,62 @@ public class MobileChannelActivity extends MobileActivity
         mSubscribe.setText(on ? R.string.mobile_watch_subscribed : R.string.mobile_watch_subscribe);
         mSubscribe.setTextColor(getResources().getColor(on
                 ? R.color.mobile_color_on_surface : R.color.mobile_color_on_inverse_surface));
+        showBell(on);
+    }
+
+    /** MEETUBE(issue #239): the new-uploads bell, beside Subscribed only. */
+    private void showBell(boolean subscribed) {
+        String id = mHeaderChannelId;
+        if (!subscribed || id == null) {
+            mBell.setVisibility(View.GONE);
+            return;
+        }
+        boolean on = com.newtube.mobile.notify.NewUploadsWorker.isBellOn(this, id);
+        mBell.setImageResource(on ? R.drawable.ic_meetube_bell_on : R.drawable.ic_meetube_bell_off);
+        mBell.setContentDescription(getString(on ? R.string.mobile_channel_bell_on : R.string.mobile_channel_bell_off));
+        if (mBell.getVisibility() != View.VISIBLE) {
+            mBell.setAlpha(0f);
+            mBell.setVisibility(View.VISIBLE);
+            mBell.animate().alpha(1f).setDuration(150).start();
+        }
+    }
+
+    /** A swing from its top, damped, with the subscribe splash and a two-note chime. */
+    private void ringBell() {
+        mBell.setPivotX(mBell.getWidth() / 2f);
+        mBell.setPivotY(mBell.getHeight() * 0.3f);
+        android.animation.ObjectAnimator swing = android.animation.ObjectAnimator.ofFloat(mBell, View.ROTATION,
+                0f, -24f, 20f, -14f, 9f, -4f, 0f);
+        swing.setDuration(650);
+        swing.setInterpolator(new android.view.animation.LinearInterpolator());
+        swing.start();
+        Motion.pop(mBell);
+        com.newtube.mobile.ui.common.Burst.play(mBell, getResources().getColor(R.color.mobile_color_on_surface));
+        com.newtube.mobile.ui.common.RefreshFeedback.sound(this, R.raw.bell_ding, 0.5f);
+    }
+
+    private void onBellTapped() {
+        String id = mHeaderChannelId;
+        if (id == null) {
+            return;
+        }
+        boolean on = !com.newtube.mobile.notify.NewUploadsWorker.isBellOn(this, id);
+        String name = mTitleView.getText().toString();
+        com.newtube.mobile.notify.NewUploadsWorker.setBell(this, id, name, on);
+        showBell(true);
+        com.newtube.mobile.ui.common.Haptics.click(mBell);
+        if (on) {
+            ringBell();
+        }
+        if (on && !com.newtube.mobile.notify.NewUploadsWorker.isEnabled(this)) {
+            // The bell does nothing while notifications are off app-wide: offer to turn them on
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_channel_bell_on_master_off),
+                    getString(R.string.mobile_channel_bell_turn_on),
+                    () -> com.newtube.mobile.notify.NewUploadsWorker.setEnabled(this, true));
+            return;
+        }
+        com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(on
+                ? R.string.mobile_channel_bell_on_done : R.string.mobile_channel_bell_off_done, name));
     }
 
     /** The watch page's Subscribe: flips at once with its splash, put back if YouTube refuses. */
@@ -464,6 +522,8 @@ public class MobileChannelActivity extends MobileActivity
         mTabsSpace = findViewById(R.id.mobile_channel_tabs_space);
         mSubscribe = findViewById(R.id.mobile_channel_subscribe);
         mSubscribe.setOnClickListener(v -> onSubscribeTapped());
+        mBell = findViewById(R.id.mobile_channel_bell);
+        mBell.setOnClickListener(v -> onBellTapped());
         mPeek = findViewById(R.id.mobile_channel_peek);
         mProgressBar = findViewById(R.id.mobile_channel_progress);
         mTitleView = findViewById(R.id.mobile_channel_title);
