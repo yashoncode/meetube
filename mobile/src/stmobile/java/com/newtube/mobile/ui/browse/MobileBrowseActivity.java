@@ -491,7 +491,6 @@ public class MobileBrowseActivity extends MobileActivity
             com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_brand_glass), findViewById(R.id.mobile_blur_target));
             com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_actions_glass), findViewById(R.id.mobile_blur_target));
         }
-        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_quote_card), findViewById(R.id.mobile_blur_target));
         topGlass.addOnLayoutChangeListener((v, l, t, r, bottom, ol, ot, or, oldBottom) -> {
             if (bottom - t != oldBottom - ot) {
                 refreshTopPadding();
@@ -2177,6 +2176,13 @@ public class MobileBrowseActivity extends MobileActivity
         findViewById(R.id.mobile_you_actions).setBackground(new com.newtube.mobile.ui.common.AccentCard(this,
                 com.newtube.mobile.ui.common.AccentCard.YOU_GLASS));
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_you_avatar_glass), findViewById(R.id.mobile_you_glow_source));
+        // MEETUBE: the heart beside the name opens MeeTune.
+        View meetune = findViewById(R.id.mobile_you_meetune);
+        com.newtube.mobile.ui.common.Glass.blur(meetune, findViewById(R.id.mobile_you_glow_source));
+        meetune.setOnClickListener(v -> {
+            com.newtube.mobile.ui.common.Haptics.click(v);
+            com.newtube.mobile.ui.meetune.MeeTune.open(this);
+        });
         findViewById(R.id.mobile_you_history_title).setOnClickListener(v -> openFromYou(MediaGroup.TYPE_HISTORY));
         // MEETUBE(you page): the avatar leans with the phone, as the About photo does.
         com.newtube.mobile.ui.settings.TiltParallax.attach((ViewGroup) findViewById(R.id.mobile_you_avatar_glass), 0.4f,
@@ -3866,6 +3872,8 @@ public class MobileBrowseActivity extends MobileActivity
     protected void onResume() {
         super.onResume();
         mPreview.schedule();
+        findViewById(R.id.mobile_you_meetune).setVisibility( // MEETUNE: MeeTune's settings can hide it
+                com.newtube.mobile.ui.meetune.MeeTune.youButton(this) ? View.VISIBLE : View.GONE);
         mTopBar.syncMark(this);
         mBottomNav.setLabelVisibilityMode(NavTabs.showLabels(this) // MEETUBE(nav labels)
                 ? BottomNavigationView.LABEL_VISIBILITY_LABELED : BottomNavigationView.LABEL_VISIBILITY_UNLABELED);

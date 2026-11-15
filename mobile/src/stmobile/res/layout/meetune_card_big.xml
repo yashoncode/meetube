@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A Home shelf's lead cards: big art, its line over a scrim at the foot. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="236dp"
+    android:layout_height="320dp"
+    android:layout_marginEnd="14dp"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/mobile_color_card"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/meetube_glass_stroke"
+    app:strokeWidth="1dp">
+
+    <ImageView
+        android:id="@+id/meetune_art"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="170dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/meetune_card_scrim" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/meetune_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/meetune_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#D9FFFFFF"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

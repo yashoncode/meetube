@@ -99,7 +99,7 @@ public final class MiniPlayerBridge {
 
     /** The registered destination host, or null (deep-linked player with no screen beneath). */
     @Nullable
-    static MiniHost getMiniHost() {
+    public static MiniHost getMiniHost() {
         return sMiniHost.get();
     }
 
@@ -336,6 +336,13 @@ public final class MiniPlayerBridge {
      */
     public static void expand(Context context) {
         ViewManager.instance(context).startView(PlaybackView.class);
+    }
+
+    /** MEETUNE: the next song, from the music pill. No-op when no mini session is active. */
+    public static void next() {
+        if (isActive()) {
+            sActivity.get().nextFromMiniPlayer();
+        }
     }
 
     /** Close from the bar's X: stop playback and finish the hidden playback activity. */

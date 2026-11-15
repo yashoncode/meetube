@@ -136,7 +136,7 @@ public final class NavBloom extends Drawable {
      * MEETUBE(#90): the glow under a finger dragging along the bar, at {@code x} (bar coordinates) in
      * the colour of the tab it is over; NaN lets go, and it glides to the lit tab from there.
      */
-    void follow(float x, int itemId) {
+    public void follow(float x, int itemId) {
         if (Float.isNaN(x)) {
             mFollowing = false;
             mItemId = View.NO_ID; // the next frame glides it home (or on to the newly picked tab)

@@ -524,7 +524,9 @@ public class Media3PlayerInitializer {
                     .setEnableFloatOutput(enableFloatOutput)
                     .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParams)
                     .setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[] {
-                            HeadphoneEq.processor(context)})
+                            HeadphoneEq.processor(context),
+                            // MEETUNE: its own equalizer, only on MeeTune songs (untouched copy otherwise)
+                            com.newtube.mobile.ui.meetune.MeeTuneEq.processor(context)})
                     .build();
         }
 

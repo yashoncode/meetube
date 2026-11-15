@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="152dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="14dp"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/meetune_art_card"
+        android:layout_width="152dp"
+        android:layout_height="152dp"
+        app:cardBackgroundColor="@color/mobile_color_card"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp">
+
+        <ImageView
+            android:id="@+id/meetune_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/meetune_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/mobile_color_on_surface"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/meetune_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/mobile_color_on_surface_secondary"
+        android:textSize="13sp" />
+
+</LinearLayout>

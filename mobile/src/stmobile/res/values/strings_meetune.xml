@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="meetune_name" translatable="false">MeeTune</string>
+    <string name="meetune_try">Try MeeTune</string>
+    <string name="meetune_home">Home</string>
+    <string name="meetune_explore">Explore</string>
+    <string name="meetune_library">Library</string>
+    <string name="meetune_search">Search</string>
+    <string name="meetune_search_hint">Songs, albums, artists</string>
+    <string name="meetune_back">Back</string>
+    <string name="meetune_settings">MeeTune settings</string>
+    <string name="meetune_account">Account and settings</string>
+    <string name="meetune_add_account">Add account</string>
+    <string name="meetune_to_meetube">Back to MeeTube</string>
+    <string name="meetune_show_all">Show all</string>
+    <string name="meetune_more">More</string>
+    <string name="meetune_play">Play</string>
+    <string name="meetune_play_pause">Play or pause</string>
+    <string name="meetune_next">Next</string>
+    <string name="meetune_lyrics_finding">Finding the lyrics</string>
+    <string name="meetune_lyrics_none">No lyrics for this song</string>
+    <string name="meetune_share">Share</string>
+    <string name="meetune_shuffle">Shuffle</string>
+    <string name="meetune_mood">Find Your Mood</string>
+    <string name="meetune_error">Could not reach YouTube Music.</string>
+    <string name="meetune_retry">Try again</string>
+    <string name="meetune_empty">Nothing here yet.</string>
+    <string name="meetune_search_empty">Search for songs, albums and artists.</string>
+    <string name="meetune_library_signed_out">Sign in to YouTube to see your playlists, albums and liked songs.</string>
+    <string name="meetune_sign_in">Sign in</string>
+    <string name="meetune_liked">Liked music</string>
+    <string name="meetune_set_accounts">Manage accounts</string>
+    <string name="meetune_set_accounts_summary">Sign in, add, switch or sign out of your YouTube accounts</string>
+    <string name="meetune_set_you">MeeTune on the You page</string>
+    <string name="meetune_set_you_summary">The heart beside your name opens MeeTune</string>
+    <string name="meetune_queue">Up next</string>
+    <string name="meetune_lyrics">Lyrics</string>
+    <string name="meetune_cast">Cast</string>
+    <string name="meetune_minimize">Minimize</string>
+    <string name="meetune_like">Like</string>
+    <string name="meetune_this_phone">This phone</string>
+    <string name="meetune_sort">Sort</string>
+    <string name="meetune_sort_added">Date added</string>
+    <string name="meetune_sort_default">Default order</string>
+    <string name="meetune_sort_az">Alphabetical (A to Z)</string>
+    <string name="meetune_sort_za">Alphabetical (Z to A)</string>
+    <string name="meetune_find">Find in songs</string>
+    <string name="meetune_save">Add to library</string>
+    <string name="meetune_unsave">Remove from library</string>
+    <string name="meetune_save_sign_in">Sign in to save music to your library</string>
+    <string name="meetune_save_failed">Couldn\'t change your library</string>
+    <!-- MeeTune's Equalizer -->
+    <string name="meetune_eq">MeeTune Equalizer</string>
+    <string name="meetune_eq_sound">Sound</string>
+    <string name="meetune_eq_off">Off</string>
+    <string name="meetune_eq_note">Shapes MeeTune\'s songs inside the app, before they reach the phone. MeeTube videos keep their own sound.</string>
+    <string name="meetune_eq_dynamic">Dynamic</string>
+    <string name="meetune_eq_manual">Manual</string>
+    <string name="meetune_eq_tone">Tone</string>
+    <string name="meetune_eq_tone_readout">Tilt %1$s  ·  Mid %2$s</string>
+    <string name="meetune_eq_tone_desc">Tone pad. Tilt %1$s, mid %2$s. Drag to change.</string>
+    <string name="meetune_eq_broad">Broad</string>
+    <string name="meetune_eq_focused">Focused</string>
+    <string name="meetune_eq_tone_note_broad">Drag left for a warmer sound and right for a brighter one; down scoops the middle, up brings it forward. Broad moves wide stretches of the spectrum at once.</string>
+    <string name="meetune_eq_tone_note_focused">Drag left for a warmer sound and right for a brighter one; down scoops the middle, up brings it forward. Focused moves only the far ends and a narrow middle.</string>
+    <string name="meetune_eq_preset">Preset</string>
+    <string name="meetune_eq_custom">Custom</string>
+    <string-array name="meetune_eq_presets">
+        <item>Flat</item>
+        <item>Bass boost</item>
+        <item>Bass reducer</item>
+        <item>Treble boost</item>
+        <item>Vocal</item>
+        <item>Rock</item>
+        <item>Pop</item>
+        <item>Jazz</item>
+        <item>Classical</item>
+        <item>Electronic</item>
+        <item>Hip hop</item>
+        <item>Acoustic</item>
+        <item>Loudness</item>
+    </string-array>
+    <string name="meetune_eq_bands">Bands</string>
+    <string name="meetune_eq_reset">Reset all bands</string>
+    <string name="meetune_eq_bands_note">Moving a band leaves the preset behind and the curve becomes your own.</string>
+    <string name="meetune_eq_balance">Balance</string>
+    <string name="meetune_eq_balance_note">Shifts the sound towards one ear by quietening the other.</string>
+    <string name="meetune_eq_left">L</string>
+    <string name="meetune_eq_right">R</string>
+    <string name="meetune_eq_system">System equalizer</string>
+    <string name="meetune_eq_system_summary">Your phone\'s own panel</string>
+    <string name="meetune_eq_system_none">This phone has no equalizer panel</string>
+    <string name="meetune_eq_system_note">Runs after MeeTune\'s, on the phone\'s sound. Using both applies both.</string>
+</resources>

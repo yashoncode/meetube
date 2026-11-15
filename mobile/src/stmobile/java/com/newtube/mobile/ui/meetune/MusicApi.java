@@ -1,0 +1,456 @@
+package com.newtube.mobile.ui.meetune;
+
+import android.content.Context;
+
+import androidx.annotation.Nullable;
+
+import com.liskovsoft.googlecommon.common.locale.LocaleManager;
+import com.liskovsoft.youtubeapi.web.CookieStore;
+import com.liskovsoft.youtubeapi.web.WebSession;
+import com.newtube.mobile.ui.signin.WebSignInState;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+/**
+ * MEETUNE: YouTube Music's own InnerTube (client WEB_REMIX at music.youtube.com). Signed out it
+ * answers as a visitor; with MeeTube's web sign-in it sends the same .youtube.com cookies with the
+ * music origin's SAPISIDHASH, so Home, Library and the mixes are the account's. Blocking: call from
+ * a worker ({@link MeeTune#run}).
+ */
+final class MusicApi {
+    static final String ORIGIN = "https://music.youtube.com";
+    private static final String UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            + "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    // Its own client: the shared one's interceptors add the TV account to youtube.com calls.
+    private static final OkHttpClient CLIENT = new OkHttpClient.Builder()
+            .callTimeout(20, TimeUnit.SECONDS).build();
+
+    static final int SONG = 0;
+    static final int CARD = 1;
+    static final int MOOD = 2;
+
+    static final class Item {
+        String title;
+        String subtitle;
+        String art;
+        String videoId;
+        String playlistId;
+        String browseId;
+        String params;
+        int kind;
+        int color;
+        boolean round;
+        /** A song's length ("2:28"); an album track's number (0: none). */
+        String duration;
+        int number;
+        /** A page head's artist line, its "Album • 2026 • 17 songs • 37 minutes", and what saves it. */
+        String artist;
+        String meta;
+        String saveId;
+        boolean saved;
+
+        boolean playable() {
+            return videoId != null;
+        }
+    }
+
+    static final class Shelf {
+        String title;
+        final List<Item> items = new ArrayList<>();
+        String moreBrowseId;
+        String moreParams;
+        /** Album/playlist/artist header: one big item over the tracks. */
+        boolean header;
+
+        boolean allSongs() {
+            for (Item item : items) {
+                if (item.kind != SONG) return false;
+            }
+            return !items.isEmpty();
+        }
+
+        boolean allMoods() {
+            for (Item item : items) {
+                if (item.kind != MOOD) return false;
+            }
+            return !items.isEmpty();
+        }
+    }
+
+    private MusicApi() {
+    }
+
+    static List<Shelf> browse(Context context, String browseId, @Nullable String params) throws Exception {
+        JSONObject body = new JSONObject().put("browseId", browseId);
+        if (params != null) body.put("params", params);
+        JSONObject response = post(context, "browse", body);
+        List<Shelf> shelves = new ArrayList<>();
+        Shelf header = header(response);
+        if (header != null) {
+            Item head = header.items.get(0);
+            if (head.saveId == null && browseId.startsWith("VL") && !"VLLM".equals(browseId)) {
+                head.saveId = browseId.substring(2);
+            }
+            shelves.add(header);
+        }
+        walk(response.opt("contents"), shelves);
+        return shelves;
+    }
+
+    static List<Shelf> search(Context context, String query) throws Exception {
+        List<Shelf> shelves = new ArrayList<>();
+        walk(post(context, "search", new JSONObject().put("query", query)).opt("contents"), shelves);
+        return shelves;
+    }
+
+    static boolean signedIn(Context context) {
+        return WebSignInState.isSignedIn(context) && WebSession.getCookieStore() != null;
+    }
+
+    /** Saves a playlist or album to the library (a like), or takes it out. */
+    static boolean save(Context context, String playlistId, boolean save) throws Exception {
+        post(context, save ? "like/like" : "like/removelike",
+                new JSONObject().put("target", new JSONObject().put("playlistId", playlistId)));
+        return save;
+    }
+
+    private static JSONObject post(Context context, String endpoint, JSONObject body) throws Exception {
+        SimpleDateFormat day = new SimpleDateFormat("yyyyMMdd", Locale.US);
+        day.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String version = "1." + day.format(new Date()) + ".01.00"; // as music.youtube.com sends today
+        LocaleManager locale = LocaleManager.instance();
+        body.put("context", new JSONObject().put("client", new JSONObject()
+                .put("clientName", "WEB_REMIX").put("clientVersion", version)
+                .put("hl", locale.getLanguage()).put("gl", locale.getCountry())));
+        Request.Builder request = new Request.Builder()
+                .url(ORIGIN + "/youtubei/v1/" + endpoint + "?prettyPrint=false")
+                .post(RequestBody.create(body.toString(), JSON))
+                .header("Origin", ORIGIN).header("X-Origin", ORIGIN).header("Referer", ORIGIN + "/")
+                .header("User-Agent", UA).header("X-Youtube-Client-Name", "67")
+                .header("X-Youtube-Client-Version", version);
+        CookieStore store = signedIn(context) ? WebSession.getCookieStore() : null;
+        if (store == null) {
+            return execute(request.build(), null);
+        }
+        // Same lock as WebSession: sign-out cannot race a rotated cookie back in.
+        synchronized (store) {
+            String cookies = store.get(ORIGIN + "/");
+            String auth = WebSession.authorization(cookies, System.currentTimeMillis() / 1000, ORIGIN);
+            if (auth != null) {
+                request.header("Cookie", cookies).header("Authorization", auth)
+                        .header("X-Goog-AuthUser", String.valueOf(WebSession.getAuthUser()));
+            }
+            return execute(request.build(), auth != null ? store : null);
+        }
+    }
+
+    private static JSONObject execute(Request request, @Nullable CookieStore store) throws IOException {
+        try (Response response = CLIENT.newCall(request).execute()) {
+            if (store != null) {
+                for (String cookie : response.headers("Set-Cookie")) store.put(ORIGIN + "/", cookie);
+            }
+            if (!response.isSuccessful()) {
+                throw new IOException("YouTube Music returned HTTP " + response.code());
+            }
+            try {
+                return new JSONObject(response.body() != null ? response.body().string() : "{}");
+            } catch (org.json.JSONException e) {
+                throw new IOException("Unreadable YouTube Music response");
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------------- parsing
+    // A walk, not fixed paths: YouTube moves the wrappers around (tabs, twoColumn, sectionList)
+    // far more often than it renames the shelves and items themselves.
+
+    private static void walk(@Nullable Object node, List<Shelf> out) {
+        if (node instanceof JSONArray) {
+            JSONArray array = (JSONArray) node;
+            for (int i = 0; i < array.length(); i++) walk(array.opt(i), out);
+            return;
+        }
+        if (!(node instanceof JSONObject)) return;
+        JSONObject o = (JSONObject) node;
+        JSONObject carousel = first(o, "musicCarouselShelfRenderer", "musicImmersiveCarouselShelfRenderer");
+        if (carousel != null) {
+            JSONObject header = first(carousel.optJSONObject("header"),
+                    "musicCarouselShelfBasicHeaderRenderer", "musicImmersiveCarouselShelfBasicHeaderRenderer");
+            Shelf shelf = new Shelf();
+            if (header != null) {
+                shelf.title = text(header.opt("title"));
+                JSONObject more = obj(header, "moreContentButton", "buttonRenderer", "navigationEndpoint", "browseEndpoint");
+                if (more != null) {
+                    shelf.moreBrowseId = more.optString("browseId", null);
+                    shelf.moreParams = more.optString("params", null);
+                }
+            }
+            items(carousel.optJSONArray("contents"), shelf);
+            add(out, shelf);
+            return;
+        }
+        JSONObject list = first(o, "musicShelfRenderer", "musicPlaylistShelfRenderer");
+        if (list != null) {
+            Shelf shelf = new Shelf();
+            shelf.title = text(list.opt("title"));
+            items(list.optJSONArray("contents"), shelf);
+            add(out, shelf);
+            return;
+        }
+        JSONObject grid = o.optJSONObject("gridRenderer");
+        if (grid != null) {
+            Shelf shelf = new Shelf();
+            shelf.title = text(path(grid, "header", "gridHeaderRenderer", "title"));
+            items(grid.optJSONArray("items"), shelf);
+            add(out, shelf);
+            return;
+        }
+        JSONObject card = o.optJSONObject("musicCardShelfRenderer"); // search's top result
+        if (card != null) {
+            Item item = new Item();
+            item.title = text(card.opt("title"));
+            item.subtitle = text(card.opt("subtitle"));
+            item.art = thumb(obj(card, "thumbnail", "musicThumbnailRenderer"));
+            endpoint(item, card.optJSONObject("onTap"));
+            endpoint(item, firstRunEndpoint(card.opt("title")));
+            Shelf shelf = new Shelf();
+            shelf.title = text(path(card, "header", "musicCardShelfHeaderBasicRenderer", "title"));
+            if (item.title != null && (item.videoId != null || item.browseId != null)) shelf.items.add(item);
+            items(card.optJSONArray("contents"), shelf);
+            add(out, shelf);
+            return;
+        }
+        Iterator<String> keys = o.keys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            if (!key.endsWith("HeaderRenderer") && !"header".equals(key)) walk(o.opt(key), out);
+        }
+    }
+
+    private static void add(List<Shelf> out, Shelf shelf) {
+        if (!shelf.items.isEmpty()) out.add(shelf);
+    }
+
+    private static void items(@Nullable JSONArray contents, Shelf shelf) {
+        if (contents == null) return;
+        for (int i = 0; i < contents.length(); i++) {
+            Item item = item(contents.optJSONObject(i));
+            if (item != null) shelf.items.add(item);
+        }
+    }
+
+    @Nullable
+    private static Item item(@Nullable JSONObject wrapper) {
+        if (wrapper == null) return null;
+        Item item = new Item();
+        JSONObject r;
+        if ((r = wrapper.optJSONObject("musicTwoRowItemRenderer")) != null) {
+            item.kind = CARD;
+            item.title = text(r.opt("title"));
+            item.subtitle = text(r.opt("subtitle"));
+            item.art = thumb(obj(r, "thumbnailRenderer", "musicThumbnailRenderer"));
+            endpoint(item, r.optJSONObject("navigationEndpoint"));
+        } else if ((r = wrapper.optJSONObject("musicResponsiveListItemRenderer")) != null) {
+            JSONArray columns = r.optJSONArray("flexColumns");
+            StringBuilder subtitle = new StringBuilder();
+            for (int c = 0; columns != null && c < columns.length(); c++) {
+                Object text = path(columns.optJSONObject(c), "musicResponsiveListItemFlexColumnRenderer", "text");
+                String value = text(text);
+                if (c == 0) {
+                    item.title = value;
+                    endpoint(item, firstRunEndpoint(text));
+                } else if (value != null && !value.isEmpty()) {
+                    if (subtitle.length() > 0) subtitle.append(" • ");
+                    subtitle.append(value);
+                }
+            }
+            item.subtitle = subtitle.toString();
+            JSONArray fixed = r.optJSONArray("fixedColumns");
+            if (fixed != null && fixed.length() > 0) {
+                item.duration = text(path(fixed.optJSONObject(0), "musicResponsiveListItemFixedColumnRenderer", "text"));
+            }
+            item.art = thumb(obj(r, "thumbnail", "musicThumbnailRenderer"));
+            JSONObject data = r.optJSONObject("playlistItemData");
+            if (data != null && item.videoId == null) item.videoId = data.optString("videoId", null);
+            endpoint(item, obj(r, "overlay", "musicItemThumbnailOverlayRenderer", "content",
+                    "musicPlayButtonRenderer", "playNavigationEndpoint"));
+            endpoint(item, r.optJSONObject("navigationEndpoint"));
+            item.kind = item.videoId != null ? SONG : CARD;
+        } else if ((r = wrapper.optJSONObject("musicNavigationButtonRenderer")) != null) {
+            item.kind = MOOD;
+            item.title = text(r.opt("buttonText"));
+            JSONObject solid = r.optJSONObject("solid");
+            item.color = solid != null ? (int) solid.optLong("leftStripeColor") : 0;
+            endpoint(item, r.optJSONObject("clickCommand"));
+        } else if ((r = wrapper.optJSONObject("musicMultiRowListItemRenderer")) != null) {
+            item.kind = SONG;
+            item.title = text(r.opt("title"));
+            item.subtitle = text(r.opt("subtitle"));
+            item.art = thumb(obj(r, "thumbnail", "musicThumbnailRenderer"));
+            endpoint(item, r.optJSONObject("onTap"));
+            if (item.videoId == null) item.kind = CARD;
+        } else {
+            return null;
+        }
+        return item.title != null && (item.videoId != null || item.browseId != null) ? item : null;
+    }
+
+    /** First endpoint wins: an item's own link is read before its play overlay's. */
+    private static void endpoint(Item item, @Nullable JSONObject endpoint) {
+        if (endpoint == null) return;
+        JSONObject watch = endpoint.optJSONObject("watchEndpoint");
+        if (watch != null && item.videoId == null && item.browseId == null) {
+            item.videoId = watch.optString("videoId", null);
+            item.playlistId = watch.optString("playlistId", null);
+            return;
+        }
+        JSONObject browse = endpoint.optJSONObject("browseEndpoint");
+        if (browse != null && item.browseId == null && item.videoId == null) {
+            item.browseId = browse.optString("browseId", null);
+            item.params = browse.optString("params", null);
+            String page = String.valueOf(path(browse, "browseEndpointContextSupportedConfigs",
+                    "browseEndpointContextMusicConfig", "pageType"));
+            item.round = page.contains("ARTIST") || page.contains("USER_CHANNEL");
+        }
+    }
+
+    @Nullable
+    private static JSONObject firstRunEndpoint(@Nullable Object text) {
+        if (!(text instanceof JSONObject)) return null;
+        JSONArray runs = ((JSONObject) text).optJSONArray("runs");
+        JSONObject run = runs != null ? runs.optJSONObject(0) : null;
+        return run != null ? run.optJSONObject("navigationEndpoint") : null;
+    }
+
+    /** An album, playlist, artist or mood page's head: title, subtitle and big art. */
+    @Nullable
+    private static Shelf header(JSONObject response) {
+        JSONObject found = findHeader(response, 0);
+        if (found == null) return null;
+        Item item = new Item();
+        item.kind = CARD;
+        item.title = text(found.opt("title"));
+        String sub = text(found.opt("straplineTextOne"));
+        String sub2 = text(found.opt("subtitle"));
+        item.subtitle = sub != null && sub2 != null ? sub + " • " + sub2 : sub != null ? sub : sub2;
+        item.artist = sub;
+        String sub3 = text(found.opt("secondSubtitle"));
+        item.meta = sub2 != null && sub3 != null ? sub2 + " • " + sub3 : sub2 != null ? sub2 : sub3;
+        // Its save (like) button: what it saves and whether it already is.
+        String raw = response.toString();
+        int like = raw.indexOf("\"likeButtonRenderer\"");
+        if (like >= 0) {
+            String near = raw.substring(like, Math.min(raw.length(), like + 1200));
+            java.util.regex.Matcher id = java.util.regex.Pattern.compile("\"playlistId\":\"([^\"]+)\"").matcher(near);
+            if (id.find()) item.saveId = id.group(1);
+            item.saved = near.contains("\"likeStatus\":\"LIKE\"");
+        }
+        Object thumbnail = path(found, "thumbnail", "musicThumbnailRenderer");
+        if (thumbnail == null) thumbnail = path(found, "thumbnail", "croppedSquareThumbnailRenderer");
+        item.art = thumbnail instanceof JSONObject ? thumb((JSONObject) thumbnail) : null;
+        if (item.title == null) return null;
+        Shelf shelf = new Shelf();
+        shelf.header = true;
+        shelf.items.add(item);
+        return shelf;
+    }
+
+    @Nullable
+    private static JSONObject findHeader(Object node, int depth) {
+        if (depth > 12) return null;
+        if (node instanceof JSONArray) {
+            JSONArray array = (JSONArray) node;
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject found = findHeader(array.opt(i), depth + 1);
+                if (found != null) return found;
+            }
+        } else if (node instanceof JSONObject) {
+            JSONObject o = (JSONObject) node;
+            Iterator<String> keys = o.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                Object value = o.opt(key);
+                if (key.endsWith("HeaderRenderer") && key.startsWith("music") && value instanceof JSONObject
+                        && ((JSONObject) value).has("title")) {
+                    return (JSONObject) value;
+                }
+                if (!key.endsWith("ShelfRenderer")) {
+                    JSONObject found = findHeader(value, depth + 1);
+                    if (found != null) return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String thumb(@Nullable JSONObject renderer) {
+        Object nested = path(renderer, "thumbnail", "thumbnails");
+        JSONArray thumbs = nested instanceof JSONArray ? (JSONArray) nested : null;
+        if (thumbs == null && renderer != null) thumbs = renderer.optJSONArray("thumbnails");
+        if (thumbs == null || thumbs.length() == 0) return null;
+        String url = thumbs.optJSONObject(thumbs.length() - 1).optString("url", null);
+        return url != null ? sized(url, 544) : null;
+    }
+
+    /** googleusercontent art is any size asked for: =w120-h120 becomes =w544-h544. */
+    static String sized(String url, int px) {
+        return url.replaceFirst("=w\\d+-h\\d+", "=w" + px + "-h" + px);
+    }
+
+    @Nullable
+    private static String text(@Nullable Object value) {
+        if (!(value instanceof JSONObject)) return null;
+        JSONObject o = (JSONObject) value;
+        if (o.has("simpleText")) return o.optString("simpleText");
+        JSONArray runs = o.optJSONArray("runs");
+        if (runs == null) return null;
+        StringBuilder text = new StringBuilder();
+        for (int i = 0; i < runs.length(); i++) text.append(runs.optJSONObject(i).optString("text"));
+        return text.toString();
+    }
+
+    @Nullable
+    private static JSONObject first(@Nullable JSONObject o, String... keys) {
+        if (o == null) return null;
+        for (String key : keys) {
+            JSONObject value = o.optJSONObject(key);
+            if (value != null) return value;
+        }
+        return null;
+    }
+
+    @Nullable
+    private static JSONObject obj(@Nullable JSONObject o, String... keys) {
+        Object node = path(o, keys);
+        return node instanceof JSONObject ? (JSONObject) node : null;
+    }
+
+    @Nullable
+    private static Object path(@Nullable JSONObject o, String... keys) {
+        Object node = o;
+        for (String key : keys) {
+            if (!(node instanceof JSONObject)) return null;
+            node = ((JSONObject) node).opt(key);
+        }
+        return node;
+    }
+}

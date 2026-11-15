@@ -73,4 +73,6 @@
          list leaves above its first row for it (52dp + 4dp above + 8dp below). -->
     <dimen name="mobile_settings_search_top">@dimen/mobile_settings_bar_height</dimen>
     <dimen name="mobile_settings_search_room">64dp</dimen>
+    <!-- MEETUNE: the nav bar plus a mini card over it -->
+    <dimen name="meetune_bottom_clearance">120dp</dimen>
 </resources>

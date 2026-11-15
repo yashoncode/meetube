@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An Explore card (New releases, Charts, a mood): its first song's cover as a stack of songs, two
+     narrower dimmer cards peeking out behind the front one. Until the cover loads (or with none),
+     soft blurred lights in the card's colour (MeeTuneCover). -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="178dp"
+    android:layout_height="122dp"
+    android:layout_marginEnd="12dp"
+    android:clipChildren="false">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/meetune_mood_back2"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_marginHorizontal="18dp"
+        android:alpha="0.45"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp">
+
+        <ImageView
+            android:id="@+id/meetune_mood_art_back2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:foreground="#59000000"
+            android:scaleType="centerCrop" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/meetune_mood_back1"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_marginHorizontal="9dp"
+        android:layout_marginTop="6dp"
+        android:alpha="0.75"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="0dp">
+
+        <ImageView
+            android:id="@+id/meetune_mood_art_back1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:foreground="#40000000"
+            android:scaleType="centerCrop" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/meetune_mood_card"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_marginTop="12dp"
+        android:duplicateParentState="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#38FFFFFF"
+        app:strokeWidth="1dp">
+
+        <ImageView
+            android:id="@+id/meetune_mood_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/meetune_mood_scrim" />
+
+        <TextView
+            android:id="@+id/meetune_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="2"
+            android:padding="14dp"
+            android:shadowColor="#66000000"
+            android:shadowRadius="8"
+            android:textColor="@android:color/white"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+</FrameLayout>
