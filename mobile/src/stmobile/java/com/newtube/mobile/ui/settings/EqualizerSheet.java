@@ -1,9 +1,13 @@
 package com.newtube.mobile.ui.settings;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -11,13 +15,13 @@ import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.player.AudioEffects;
 import com.newtube.mobile.player.AudioPreferences;
 import com.newtube.mobile.player.HeadphoneEq;
 import com.newtube.mobile.ui.common.FocusRing;
+import com.newtube.mobile.ui.common.GlassDrawable;
+import com.newtube.mobile.ui.common.GlassSlider;
 import com.newtube.mobile.ui.common.GlassSwitch;
 import com.newtube.mobile.ui.common.MobileSheets;
 
@@ -26,18 +30,29 @@ import java.util.Locale;
 
 /** MEETUBE(issue #177): the phone's device equalizer, applied live to the playing session. */
 public final class EqualizerSheet {
+    /** MEETUBE(eq bands): the bands stand upright side by side, as on a mixing desk; else rows. */
+    private static final String KEY_VERTICAL = "equalizer_vertical";
     private final Context mContext;
     private final LayoutInflater mInflater;
-    private final ChipGroup mPresets;
-    private final ViewGroup mBandRows;
+    /** Glass pills, as Search's chips; the picked one a solid pill. */
+    private final ViewGroup mPresets;
+    private final LinearLayout mBandRows;
+    private final View mBandsHeader;
     @Nullable private AudioEffects.Bands mBands;
-    private boolean mBinding;
 
     private EqualizerSheet(Context context, View content) {
         mContext = context;
         mInflater = LayoutInflater.from(context);
         mPresets = content.findViewById(R.id.equalizer_presets);
         mBandRows = content.findViewById(R.id.equalizer_bands);
+        mBandsHeader = content.findViewById(R.id.equalizer_bands_header);
+        View rotate = content.findViewById(R.id.equalizer_rotate);
+        GlassDrawable.applyPage(rotate, null, 0);
+        rotate.setOnClickListener(v -> {
+            prefs(context).edit().putBoolean(KEY_VERTICAL, !isVertical(context)).apply();
+            v.animate().rotationBy(isVertical(context) ? 90f : -90f).setDuration(260).start();
+            showBands();
+        });
         mBands = AudioEffects.bands(context);
 
         GlassSwitch enabled = content.findViewById(R.id.equalizer_enabled);
@@ -61,15 +76,6 @@ public final class EqualizerSheet {
         addPreset(context.getString(R.string.mobile_settings_equalizer_custom), AudioPreferences.CUSTOM);
         selectPreset();
         showBands();
-        mPresets.setOnCheckedStateChangeListener((group, checked) -> {
-            if (mBinding || checked.isEmpty()) {
-                return;
-            }
-            Chip chip = group.findViewById(checked.get(0));
-            AudioPreferences.setPreset(context, (int) chip.getTag(), chip.getText().toString());
-            mBands = AudioEffects.bands(context);
-            showBands();
-        });
 
         View reset = content.findViewById(R.id.equalizer_reset);
         reset.setEnabled(mBands != null);
@@ -115,32 +121,93 @@ public final class EqualizerSheet {
     }
 
     private void addPreset(String label, int preset) {
-        Chip chip = (Chip) mInflater.inflate(R.layout.mobile_search_filter_chip, mPresets, false);
-        chip.setId(View.generateViewId());
+        TextView chip = (TextView) mInflater.inflate(R.layout.mobile_search_chip, mPresets, false);
+        ((ViewGroup.MarginLayoutParams) chip.getLayoutParams()).setMarginEnd(0); // the group spaces them
+        chip.setElevation(0); // on the sheet's glass, not over a page
         chip.setTag(preset);
         chip.setText(label);
+        GlassDrawable.applyPage(chip, null, 0);
+        chip.setTag(R.id.equalizer_presets, chip.getBackground());
         chip.setEnabled(mBands != null);
+        chip.setAlpha(mBands != null ? 1f : 0.5f);
+        chip.setOnClickListener(v -> {
+            AudioPreferences.setPreset(mContext, preset, label);
+            mBands = AudioEffects.bands(mContext);
+            selectPreset();
+            showBands();
+        });
         mPresets.addView(chip);
     }
 
     private void selectPreset() {
-        mBinding = true;
         int preset = AudioPreferences.getPreset(mContext);
         if (mBands == null || preset < 0 || preset >= mBands.presets.length) {
             preset = AudioPreferences.CUSTOM;
         }
         for (int i = 0; i < mPresets.getChildCount(); i++) {
-            Chip chip = (Chip) mPresets.getChildAt(i);
-            if ((int) chip.getTag() == preset) {
-                mPresets.check(chip.getId());
-                break;
+            TextView chip = (TextView) mPresets.getChildAt(i);
+            boolean picked = (int) chip.getTag() == preset;
+            chip.setSelected(picked);
+            if (picked) {
+                android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+                bg.setCornerRadius(18 * mContext.getResources().getDisplayMetrics().density);
+                bg.setColor(GlassDrawable.pickedPill(mContext));
+                chip.setBackground(bg);
+            } else {
+                chip.setBackground((android.graphics.drawable.Drawable) chip.getTag(R.id.equalizer_presets));
             }
+            chip.setTextColor(picked ? GlassDrawable.pickedInk(mContext) : GlassDrawable.pageInk(mContext));
         }
-        mBinding = false;
+    }
+
+    private static android.content.SharedPreferences prefs(Context context) {
+        return context.getSharedPreferences("meetube_audio", Context.MODE_PRIVATE);
+    }
+
+    private static boolean isVertical(Context context) {
+        return prefs(context).getBoolean(KEY_VERTICAL, false);
+    }
+
+    /** One upright band: its level on top, the slider stood on end (low at the bottom), its frequency below. */
+    private View verticalBand() {
+        float dp = mContext.getResources().getDisplayMetrics().density;
+        LinearLayout column = new LinearLayout(mContext);
+        column.setOrientation(LinearLayout.VERTICAL);
+        column.setGravity(Gravity.CENTER_HORIZONTAL);
+        column.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        column.addView(label(R.id.equalizer_band_level, R.color.mobile_color_on_surface_secondary));
+        int height = Math.round(220 * dp);
+        FrameLayout track = new FrameLayout(mContext);
+        GlassSlider slider = new GlassSlider(mContext);
+        slider.setId(R.id.equalizer_band_slider);
+        slider.setRotation(-90f);
+        slider.setOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                v.getParent().requestDisallowInterceptTouchEvent(true); // an up/down drag is the band's, not the sheet's
+            }
+            return false;
+        });
+        track.addView(slider, new FrameLayout.LayoutParams(height, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        column.addView(track, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
+        column.addView(label(R.id.equalizer_band_frequency, R.color.mobile_color_on_surface));
+        return column;
+    }
+
+    private TextView label(int id, int color) {
+        TextView label = new TextView(mContext);
+        label.setId(id);
+        label.setTextSize(12);
+        label.setMaxLines(1);
+        label.setGravity(Gravity.CENTER);
+        label.setTextColor(androidx.core.content.ContextCompat.getColor(mContext, color));
+        return label;
     }
 
     private void showBands() {
         mBandRows.removeAllViews();
+        mBandsHeader.setVisibility(mBands == null ? View.GONE : View.VISIBLE);
+        boolean vertical = mBands != null && isVertical(mContext);
+        mBandRows.setOrientation(vertical ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
         if (mBands == null) {
             TextView unavailable = new TextView(mContext);
             unavailable.setText(R.string.mobile_settings_equalizer_unavailable);
@@ -152,7 +219,7 @@ public final class EqualizerSheet {
         AudioEffects.Bands bands = mBands;
         for (int band = 0; band < bands.levels.length; band++) {
             int index = band;
-            View row = mInflater.inflate(R.layout.item_mobile_equalizer_band, mBandRows, false);
+            View row = vertical ? verticalBand() : mInflater.inflate(R.layout.item_mobile_equalizer_band, mBandRows, false);
             String frequency = frequencyLabel(bands.frequencies[band]);
             ((TextView) row.findViewById(R.id.equalizer_band_frequency)).setText(frequency);
             TextView level = row.findViewById(R.id.equalizer_band_level);

@@ -580,6 +580,8 @@
     <string name="mobile_settings_equalizer_enable">Use equalizer</string>
     <string name="mobile_settings_equalizer_custom">Custom</string>
     <string name="mobile_settings_equalizer_reset">Reset</string>
+    <string name="mobile_settings_equalizer_bands">Bands</string>
+    <string name="mobile_settings_equalizer_rotate">Turn the bands upright or on their side</string>
     <string name="mobile_settings_autoeq">Headphone correction</string>
     <string name="mobile_settings_autoeq_summary">Off. Pick your headphones to make them sound neutral</string>
     <string name="mobile_settings_autoeq_credit">Profiles by AutoEq (github.com/jaakkopasanen/AutoEq)</string>
