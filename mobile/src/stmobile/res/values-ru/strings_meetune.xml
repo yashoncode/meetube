@@ -30,7 +30,7 @@
     <string name="meetune_sign_in">Войти</string>
     <string name="meetune_liked">Понравившаяся музыка</string>
     <string name="meetune_playlist">Плейлист</string>
-    <string name="meetune_explicit">Содержит ненормативную лексику</string>
+    <string name="meetune_explicit">Ненормативная лексика</string>
     <string name="meetune_clear">Очистить</string>
     <string name="meetune_filter_all">Все</string>
     <string name="meetune_filter_songs">Песни</string>
