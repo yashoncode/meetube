@@ -2307,6 +2307,12 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     protected void onResume() {
         super.onResume();
+        if (MiniPlayerBridge.isActive() && MiniPip.isHostEntering()) {
+            // MEETUBE(mini-pip): resumed only because Home under us left for its PiP task; the
+            // card is the PiP window, so keep the video there. The system stops us right after.
+            logPip("resume-skipped host-entering-pip");
+            return;
+        }
 
         PlayerTransitionBridge.LaunchSnapshot launch = PlayerTransitionBridge.take();
 

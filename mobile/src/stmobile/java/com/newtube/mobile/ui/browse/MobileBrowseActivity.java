@@ -295,6 +295,8 @@ public class MobileBrowseActivity extends MobileActivity
     private ProgressBar mMiniProgress;
     /** 500ms UI ticker while the bar is visible: progress line, play/pause icon, liveness check. */
     private final Runnable mMiniPlayerTick = this::onMiniPlayerTick;
+    private float[] mMiniPlace; // the card's dragged place, kept while the app is away (onStop)
+    private int mMiniPlaceSession;
     /**
      * SCREEN-ON (#50): the card's screen-on hold follows the player's own events, not the 500 ms
      * tick. onPause stops the tick but keeps the card up (frozen, audio playing) while a translucent
@@ -865,6 +867,10 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniPlayerBar.setTranslationX(0f);
         // MEETUBE(mini-float): back home from the corner it was dragged to (issue #125: lower while the nav is away)
         mMiniPlayerBar.setTranslationY(mMiniSwipe != null ? mMiniSwipe.homeY() : 0f);
+        if (mMiniPlace != null && mMiniSwipe != null && mMiniPlaceSession == MiniPlayerBridge.session()) {
+            mMiniSwipe.restorePlace(mMiniPlace); // same card, back from the app being away
+        }
+        mMiniPlace = null;
         com.newtube.mobile.ui.playback.MiniSize.apply(this); // the type may have changed while Home stayed alive
         mMiniPlayerBar.setVisibility(View.VISIBLE);
         mMiniControls.show();
@@ -4090,6 +4096,13 @@ public class MobileBrowseActivity extends MobileActivity
         }
         // Covered: a card still waiting for the player to fold it can go now.
         if (mMiniTexture == null) {
+            if (mMiniSwipe != null && mMiniPlayerBar.getVisibility() == View.VISIBLE
+                    && MiniPlayerBridge.isActive()) {
+                // The app went away with the card still docked (not expanded): it comes back
+                // where it was dragged to, not at home.
+                mMiniPlace = mMiniSwipe.place();
+                mMiniPlaceSession = MiniPlayerBridge.session();
+            }
             hideMiniPlayer();
         }
 
