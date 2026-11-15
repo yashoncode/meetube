@@ -4,7 +4,7 @@
     <string name="meetune_try">Попробовать MeeTune</string>
     <string name="meetune_home">Главная</string>
     <string name="meetune_explore">Обзор</string>
-    <string name="meetune_library">Медиатека</string>
+    <string name="meetune_library">Библиотека</string>
     <string name="meetune_search">Поиск</string>
     <string name="meetune_search_hint">Песни, альбомы, исполнители</string>
     <string name="meetune_back">Назад</string>
@@ -30,7 +30,7 @@
     <string name="meetune_sign_in">Войти</string>
     <string name="meetune_liked">Понравившаяся музыка</string>
     <string name="meetune_playlist">Плейлист</string>
-    <string name="meetune_explicit">Ненормативный контент</string>
+    <string name="meetune_explicit">Содержит ненормативную лексику</string>
     <string name="meetune_clear">Очистить</string>
     <string name="meetune_filter_all">Все</string>
     <string name="meetune_filter_songs">Песни</string>
@@ -55,21 +55,21 @@
     <string name="meetune_sort_default">По умолчанию</string>
     <string name="meetune_sort_az">По алфавиту (А–Я)</string>
     <string name="meetune_sort_za">По алфавиту (Я–А)</string>
-    <string name="meetune_find">Найти в песнях</string>
-    <string name="meetune_save">Добавить в медиатеку</string>
-    <string name="meetune_unsave">Удалить из медиатеки</string>
-    <string name="meetune_save_sign_in">Войдите, чтобы сохранять музыку в медиатеку</string>
-    <string name="meetune_save_failed">Не удалось изменить медиатеку</string>
+    <string name="meetune_find">Искать в песнях</string>
+    <string name="meetune_save">Добавить в библиотеку</string>
+    <string name="meetune_unsave">Удалить из библиотеки</string>
+    <string name="meetune_save_sign_in">Войдите, чтобы сохранять музыку в библиотеку</string>
+    <string name="meetune_save_failed">Не удалось изменить библиотеку</string>
     <!-- MeeTune's Equalizer -->
     <string name="meetune_eq">Эквалайзер MeeTune</string>
     <string name="meetune_eq_sound">Звук</string>
     <string name="meetune_eq_off">Выкл.</string>
-    <string name="meetune_eq_note">Настраивает звучание песен MeeTune внутри приложения, до передачи звука на телефон. На видео MeeTube это не влияет.</string>
+    <string name="meetune_eq_note">Применяется к музыке MeeTune внутри приложения, до передачи звука на телефон. На звучание видео MeeTube не влияет.</string>
     <string name="meetune_eq_dynamic">Динамический</string>
     <string name="meetune_eq_manual">Вручную</string>
     <string name="meetune_eq_tone">Тембр</string>
-    <string name="meetune_eq_tone_readout">Наклон %1$s  ·  Середина %2$s</string>
-    <string name="meetune_eq_tone_desc">Панель настройки тембра. Наклон %1$s, середина %2$s. Перетаскивайте, чтобы изменить значения.</string>
+    <string name="meetune_eq_tone_readout">Наклон АЧХ %1$s  ·  Средние частоты %2$s</string>
+    <string name="meetune_eq_tone_desc">Панель настройки тембра. Наклон АЧХ %1$s, средние частоты %2$s. Перетаскивайте, чтобы изменить значения.</string>
     <string name="meetune_eq_broad">Широкий диапазон</string>
     <string name="meetune_eq_focused">Узкий диапазон</string>
     <string name="meetune_eq_tone_note_broad">Перетащите влево, чтобы сделать звук теплее, и вправо — чтобы сделать его ярче; движение вниз ослабляет середину, вверх — подчёркивает её. Широкий режим одновременно затрагивает большие участки спектра.</string>
@@ -93,13 +93,13 @@
     </string-array>
     <string name="meetune_eq_bands">Полосы эквалайзера</string>
     <string name="meetune_eq_reset">Сбросить все полосы</string>
-    <string name="meetune_eq_bands_note">При изменении любой полосы выбранная предустановка сбрасывается, а кривая эквалайзера становится вашей собственной.</string>
+    <string name="meetune_eq_bands_note">При изменении любой полосы предустановка больше не используется — вы настраиваете собственную кривую эквалайзера.</string>
     <string name="meetune_eq_balance">Баланс</string>
-    <string name="meetune_eq_balance_note">Смещает звук в сторону одного уха, приглушая другое.</string>
+    <string name="meetune_eq_balance_note">Перемещает звук влево или вправо, приглушая другой канал.</string>
     <string name="meetune_eq_left">Л</string>
     <string name="meetune_eq_right">П</string>
     <string name="meetune_eq_system">Системный эквалайзер</string>
-    <string name="meetune_eq_system_summary">Встроенная панель телефона</string>
+    <string name="meetune_eq_system_summary">Системная панель эквалайзера телефона</string>
     <string name="meetune_eq_system_none">На этом телефоне нет панели эквалайзера</string>
-    <string name="meetune_eq_system_note">Работает после эквалайзера MeeTune, обрабатывая звук на телефоне. При включении обоих применяются обе настройки.</string>
+    <string name="meetune_eq_system_note">Работает после эквалайзера MeeTune и обрабатывает звук уже на уровне телефона. Если включить оба эквалайзера, будут применяться обе настройки.</string>
 </resources>
