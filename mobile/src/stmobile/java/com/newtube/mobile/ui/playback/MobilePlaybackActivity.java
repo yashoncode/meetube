@@ -10070,7 +10070,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         com.google.android.material.bottomsheet.BottomSheetDialog dialog =
-                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+                Haptics.watch(new com.google.android.material.bottomsheet.BottomSheetDialog(this)); // MEETUBE(glass): frosted
         View content = getLayoutInflater().inflate(R.layout.sheet_mobile_quality, null);
         dialog.setContentView(content);
 
@@ -10401,7 +10401,7 @@ public class MobilePlaybackActivity extends MobileActivity
         moveLastUsedCaptionsFirst(autoTracks);
 
         com.google.android.material.bottomsheet.BottomSheetDialog dialog =
-                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+                Haptics.watch(new com.google.android.material.bottomsheet.BottomSheetDialog(this)); // MEETUBE(glass): frosted
         View content = getLayoutInflater().inflate(R.layout.sheet_mobile_captions, null);
         dialog.setContentView(content);
 
@@ -10548,7 +10548,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
 
         com.google.android.material.bottomsheet.BottomSheetDialog dialog =
-                new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+                Haptics.watch(new com.google.android.material.bottomsheet.BottomSheetDialog(this)); // MEETUBE(glass): frosted
         View content = getLayoutInflater().inflate(R.layout.sheet_mobile_speed, null);
         dialog.setContentView(content);
 

@@ -64,7 +64,7 @@ final class HeadphonePicker {
 
     /** {@code changed} runs after a pick or "Off", on the main thread. */
     static void show(Context context, Runnable changed) {
-        BottomSheetDialog sheet = new BottomSheetDialog(context);
+        BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(new BottomSheetDialog(context)); // MEETUBE(glass): frosted
         Context themed = sheet.getContext();
         LinearLayout root = new LinearLayout(themed);
         root.setOrientation(LinearLayout.VERTICAL);

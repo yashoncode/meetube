@@ -85,11 +85,14 @@ public final class AudioEffects {
             return;
         }
         try {
-            if (!enabled) {
-                equalizer.setEnabled(false);
-            }
+            // MEETUBE(eq switch): the effect stays on and Off is a flat curve. setEnabled() rebuilds
+            // the phone's effect chain, which dropped the sound for about a second on every switch.
             int preset = AudioPreferences.getPreset(context);
-            if (preset >= 0 && preset < equalizer.getNumberOfPresets()) {
+            if (!enabled) {
+                for (short band = 0; band < equalizer.getNumberOfBands(); band++) {
+                    equalizer.setBandLevel(band, (short) 0);
+                }
+            } else if (preset >= 0 && preset < equalizer.getNumberOfPresets()) {
                 equalizer.usePreset((short) preset);
             } else {
                 short[] range = equalizer.getBandLevelRange();
@@ -98,8 +101,8 @@ public final class AudioEffects {
                     equalizer.setBandLevel(band, (short) Math.max(range[0], Math.min(range[1], levels[band])));
                 }
             }
-            if (enabled) {
-                equalizer.setEnabled(true);
+            if (!equalizer.getEnabled()) {
+                equalizer.setEnabled(true); // once, at attach, before the sound starts
             }
         } catch (RuntimeException e) {
             Log.w(TAG, "Can't apply equalizer: " + e);
@@ -126,7 +129,8 @@ public final class AudioEffects {
     @Nullable
     public static Bands bands(Context context) {
         AudioEffects current = sCurrent;
-        if (current != null && current.mEqualizer != null) {
+        // Switched off, the live equalizer is flat: the configured curve comes from the probe below.
+        if (current != null && current.mEqualizer != null && AudioPreferences.isEqualizerEnabled(context)) {
             return readBands(current.mEqualizer);
         }
         // Settings can be opened before a video: query a private, silent session and release it.
@@ -138,7 +142,7 @@ public final class AudioEffects {
                 return null;
             }
             probe = new Equalizer(0, sessionId);
-            applyEqualizer(context, probe, false);
+            applyEqualizer(context, probe, true); // a private silent session: the curve, never heard
             return readBands(probe);
         } catch (RuntimeException e) {
             Log.w(TAG, "Can't query equalizer: " + e);

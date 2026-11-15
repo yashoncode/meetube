@@ -26,7 +26,7 @@ final class CoffeeSheet {
     private CoffeeSheet() { }
 
     static void show(Context context) {
-        BottomSheetDialog sheet = new BottomSheetDialog(context);
+        BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(new BottomSheetDialog(context)); // MEETUBE(glass): frosted
         Context themed = sheet.getContext();
         ViewGroup root = (ViewGroup) LayoutInflater.from(themed).inflate(R.layout.sheet_mobile_coffee, null);
         root.findViewById(R.id.coffee_india).setOnClickListener(v -> {

@@ -382,6 +382,16 @@ final class AppPages {
                 () -> com.newtube.mobile.ui.common.HomeBar.chipsShown(context),
                 on -> com.newtube.mobile.ui.common.HomeBar.setChipsShown(context, on)), Tiles.FX_TOP_BAR));
 
+        // MEETUBE(fixed bars): the top bar and the nav bar stay put while a list scrolls.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_fixed_top),
+                context.getString(R.string.mobile_settings_fixed_top_summary),
+                () -> com.newtube.mobile.ui.common.NavHider.isFixed(context, true),
+                on -> com.newtube.mobile.ui.common.NavHider.setFixed(context, true, on)), Tiles.FX_TOP_BAR));
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_fixed_nav),
+                context.getString(R.string.mobile_settings_fixed_nav_summary),
+                () -> com.newtube.mobile.ui.common.NavHider.isFixed(context, false),
+                on -> com.newtube.mobile.ui.common.NavHider.setFixed(context, false, on)), Tiles.FX_MOTION));
+
         // MEETUBE(glass segmented): Home's topic chips and the search filters.
         rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_chip_style))
                 .option(context.getString(R.string.mobile_settings_chip_style_segment),

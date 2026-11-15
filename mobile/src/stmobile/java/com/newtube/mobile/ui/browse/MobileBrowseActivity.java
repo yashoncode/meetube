@@ -1266,7 +1266,6 @@ public class MobileBrowseActivity extends MobileActivity
         mChipRow.setItemAnimator(null);
         mChipRow.setAdapter(mStrip.items());
         View chipExpand = findViewById(R.id.mobile_chip_expand);
-        com.newtube.mobile.ui.common.GlassDrawable.applyPage(chipExpand, findViewById(R.id.mobile_blur_target), 0);
         mChipTrack = findViewById(R.id.mobile_chip_track);
         mChipTrack.setGlassSource(findViewById(R.id.mobile_blur_target));
         mStrip.setTrack(mChipTrack);

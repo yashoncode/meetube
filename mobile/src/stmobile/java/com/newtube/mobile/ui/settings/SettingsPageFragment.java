@@ -286,7 +286,7 @@ public final class SettingsPageFragment extends Fragment implements SettingsAdap
         List<SettingsRow.Option> options = row.options;
         int current = row.currentIndex();
 
-        BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
+        BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(new BottomSheetDialog(requireContext())); // MEETUBE(glass): frosted
         LayoutInflater inflater = LayoutInflater.from(requireContext());
         View content = inflater.inflate(R.layout.sheet_mobile_speed, null);
         ((TextView) content.findViewById(R.id.speed_sheet_title)).setText(row.title);

@@ -50,7 +50,7 @@ final class ColorPickerSheet {
     }
 
     static void show(Context context, int initial, IntConsumer onPick) {
-        BottomSheetDialog sheet = new BottomSheetDialog(context);
+        BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(new BottomSheetDialog(context)); // MEETUBE(glass): frosted
         Context c = sheet.getContext();
         float dp = c.getResources().getDisplayMetrics().density;
         int onSurface = ContextCompat.getColor(c, R.color.mobile_color_on_surface);
