@@ -93,7 +93,7 @@
     </string-array>
     <string name="meetune_eq_bands">Полосы эквалайзера</string>
     <string name="meetune_eq_reset">Сбросить все полосы</string>
-    <string name="meetune_eq_bands_note">Измените полосу — и вместо пресета будет ваша кривая эквалайзера.</string>
+    <string name="meetune_eq_bands_note">Изменение полосы отключает пресет — вы создаёте свою кривую эквалайзера.</string>
     <string name="meetune_eq_balance">Баланс</string>
     <string name="meetune_eq_balance_note">Перемещает звук влево или вправо, приглушая другой канал.</string>
     <string name="meetune_eq_left">Л</string>
