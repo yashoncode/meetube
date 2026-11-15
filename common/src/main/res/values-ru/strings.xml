@@ -12,7 +12,7 @@
     <string name="subscriptions_signin_title">Смотрите новые видео с каналов, на которые вы подписаны</string>
     <string name="subscriptions_signin_subtitle">Для начала вам нужно войти в аккаунт.</string>
     <string name="subscriptions_signin_button_text">ВОЙТИ</string>
-    <string name="library_signin_to_show_more">Смотрите видео, которые вам понравились или которые вы сохранили, а также видео с каналов, на которые вы подписаны.</string>
+    <string name="library_signin_to_show_more">Смотрите понравившиеся и сохранённые видео, а также видео из подписок.</string>
     <string name="library_signin_subtitle">Чтобы увидеть их, войдите в аккаунт.</string>
     <string name="action_signin">ВОЙТИ</string>
     <string name="title_video_formats">Видеоформат</string>
@@ -216,10 +216,10 @@
     <string name="player_remember_speed_all">Одинаковая скорость на всех видео</string>
     <string name="player_remember_speed_each">На каждом видео своя скорость</string>
     <string name="msg_player_error_source">Не получается загрузить видео</string>
-    <string name="msg_player_error_renderer">Выбранный формат не поддерживается.\nПопробуйте выбрать другой формат.\nЕсли это не поможет, то перезагрузите устройство.</string>
-    <string name="msg_player_error_video_renderer">Выбранный ВИДЕОФОРМАТ не поддерживается.\nПопробуйте выбрать другой формат, нажав на кнопку HQ в плеере.\nЕсли это не поможет, то перезагрузите устройство.</string>
-    <string name="msg_player_error_audio_renderer">Выбранный АУДИОФОРМАТ не поддерживается.\nПопробуйте выбрать другой формат, нажав на кнопку HQ в плеере.\nЕсли это не поможет, то перезагрузите устройство.</string>
-    <string name="msg_player_error_subtitle_renderer">Выбранный формат СУБТИТРОВ не поддерживается.\nПопробуйте выбрать другой формат, удерживая кнопку CC в плеере.\nЕсли это не поможет, то перезагрузите устройство.</string>
+    <string name="msg_player_error_renderer">Формат не поддерживается.\nВыберите другой. Не помогло? Перезагрузите устройство.</string>
+    <string name="msg_player_error_video_renderer">Видеоформат не поддерживается.\nВыберите другой кнопкой HQ в плеере. Не помогло? Перезагрузите устройство.</string>
+    <string name="msg_player_error_audio_renderer">Аудиоформат не поддерживается.\nВыберите другой кнопкой HQ в плеере. Не помогло? Перезагрузите устройство.</string>
+    <string name="msg_player_error_subtitle_renderer">Формат субтитров не поддерживается.\nВыберите другой, удерживая CC в плеере. Не помогло? Перезагрузите устройство.</string>
     <string name="msg_player_error_unexpected">Неизвестная ошибка в видеодекодере</string>
     <string name="player_unexpected_error">Неожиданная ошибка воспроизведения</string>
     <string name="video_aspect">Соотношение сторон</string>
@@ -392,7 +392,7 @@
     <string name="subtitle_scale">Масштаб субтитров</string>
     <string name="audio_sync_fix_desc">Альтернативный способ синхронизации аудио/видео. Считается устаревшим, но, в некоторых случаях, помогает.</string>
     <string name="audio_sync_fix">Исправление рассинхронизации звука</string>
-    <string name="ambilight_ratio_fix_desc">Исправляет отсутствующую фоновую подсветку. Исправляет неправильное соотношение сторон или масштаб видео. Исправляет пустые скриншоты. Влияет на производительность!</string>
+    <string name="ambilight_ratio_fix_desc">Исправляет проблемы с подсветкой, соотношением сторон, масштабом и пустыми скриншотами. Может снизить производительность.</string>
     <string name="ambilight_ratio_fix">Исправление Ambilight, соотношения сторон, масштаба видео и скриншотов</string>
     <string name="force_legacy_codecs_desc">Значительно повышает производительность на слабых устройствах. Максимальное разрешение 720p.</string>
     <string name="force_legacy_codecs">Использовать устаревшие кодеки (720p)</string>
@@ -442,15 +442,15 @@
     <string name="lb_playback_controls_skip_next">"Перейти к следующему видео"</string>
     <string name="lb_playback_controls_skip_previous">"Перейти к предыдущему видео/Перемотать в начало"</string>
     <string name="alt_presets_behavior">Альтернативное поведение видео пресетов (ограничение пропускной способности)</string>
-    <string name="alt_presets_behavior_desc">Приложение попытается поддерживать пропускную способность близкую к пресету вместо того, чтобы выбрать точное соответсвие между разрешением, частотой кадров и кодеком.</string>
+    <string name="alt_presets_behavior_desc">Подстраивает пропускную способность под пресет вместо точного подбора разрешения, FPS и кодека.</string>
     <string name="sleep_timer">Таймер сна (если пульт не использовался один час)</string>
     <string name="sleep_timer_desc">Ставить проигрывание на паузу, если пользователь в течение часа не пользовался пультом.</string>
     <string name="disable_vsync">Отключить вертикальную синхронизацию</string>
-    <string name="disable_vsync_desc">Отключает синхронизацию кадров с частотой обновления дисплея. На слабых устройствах это может повысить производительность за счёт снижения нагрузки на процессор.</string>
+    <string name="disable_vsync_desc">Отключает синхронизацию кадров с частотой экрана. Может повысить производительность на слабых устройствах.</string>
     <string name="skip_codec_profile_check">Пропустить проверку кодеков</string>
     <string name="skip_codec_profile_check_desc">Не проверять поддержку кодеков при запуске видео. Может быть полезно для глючных прошивок.</string>
     <string name="force_sw_codec">Активировать программный декодер</string>
-    <string name="force_sw_codec_desc">Программный декодер позволяет воспроизводить почти любые видео, но работает очень медленно.</string>
+    <string name="force_sw_codec_desc">Программный декодер поддерживает почти любые видео, но работает медленно.</string>
     <string name="playlist_order">Сортировать плейлист</string>
     <string name="playlist_order_added_date_newer_first">Дата добавления (сначала более новые)</string>
     <string name="playlist_order_added_date_older_first">Дата добавления (сначала более старые)</string>
@@ -468,7 +468,7 @@
     <string name="action_playlist_remove">Удалить из плейлиста</string>
     <!-- BEGIN Moved strings -->
     <string name="signin_view_title">Код загружается…</string>
-    <string name="signin_view_description">Чтобы войти в аккаунт, введите этот код на странице %s\nПРИМЕЧАНИЕ. Работает только с браузерами Firefox или Chrome.</string>
+    <string name="signin_view_description">Введите код на странице %s.\nРаботает только в Firefox или Chrome.</string>
     <string name="signin_view_action_text">Готово</string>
     <string name="require_checked">Требуется \"%s\"</string>
     <string name="msg_press_again_to_exit">Нажмите ещё раз для выхода</string>
@@ -476,7 +476,7 @@
     <string name="player_ending_time">Закончится в %s</string>
     <string name="badge_new_content">НОВЫЙ КОНТЕНТ</string>
     <string name="badge_live">В ЭФИРЕ</string>
-    <string name="add_device_view_description">Чтобы привязать устройство, введите этот код в приложении YouTube на телефоне в разделе Настройки/Смотреть на ТВ\nПРИМЕЧАНИЕ. Работает только с клавиатурой Gboard.</string>
+    <string name="add_device_view_description">Введите код в приложении YouTube на телефоне: «Настройки» › «Смотреть на ТВ».\nТребуется Gboard.</string>
     <!-- END Moved strings -->
     <string name="skip_24_rate">Пропускать 24fps форматы (исправление для режима real cinema?)</string>
     <string name="skip_shorts">Пропускать Shorts</string>
@@ -567,16 +567,16 @@
     <string name="alt_app_icon">Альтернативный значок приложения (требуется перезагрузка)</string>
     <string name="network_stack">Предпочтительный сетевой стек: %s</string>
     <string name="player_network_stack">Сетевой стек</string>
-    <string name="cronet_desc">Cronet — сетевой стек Chromium. Он может снизить задержку и повысить производительность сети, что иногда помогает при буферизации.</string>
+    <string name="cronet_desc">Cronet — сетевой стек Chromium. Может снизить задержку и ускорить сеть, что иногда уменьшает буферизацию.</string>
     <string name="unlock_all_formats">Разблокировать все форматы видео</string>
-    <string name="unlock_all_formats_desc">На некоторых устройствах прошивка ошибочно сообщает, что определённые форматы не поддерживаются, хотя устройство умеет их воспроизводить. Например, телевизоры с разрешением 1080p могут ошибочно считать формат 4K неподдерживаемым.</string>
+    <string name="unlock_all_formats_desc">Некоторые прошивки ошибочно скрывают поддерживаемые устройством форматы. Например, ТВ с разрешением 1080p может считать 4K неподдерживаемым.</string>
     <string name="okhttp_desc">Сетевой стек OkHttp работает медленнее остальных, но отличается стабильностью.</string>
     <string name="select_channel_section">Открывать соответствующий раздел при запуске приложения с каналов ATV.</string>
     <string name="enable_voice_search_desc">Официальное приложение будет заменено так называемым мостом. Мост помогает передавать глобальные поисковые запросы в наше приложение.</string>
     <string name="enable_master_password">Включить мастер-пароль</string>
     <string name="enter_master_password">Введите мастер-пароль</string>
     <string name="disable_stream_buffer">Отключить буферизацию трансляций</string>
-    <string name="disable_stream_buffer_desc">Может помочь, если трансляция сильно отстаёт от прямого эфира. При этом воспроизведение может стать менее плавным.</string>
+    <string name="disable_stream_buffer_desc">Помогает, если трансляция отстаёт от эфира. Может вызвать рывки.</string>
     <string name="sony_frame_drop_fix">Исправление выпадения кадров #1</string>
     <string name="sony_frame_drop_fix_desc">Устраняет подтормаживания на телевизорах Sony и некоторых других устройствах. Возможны проблемы с синхронизацией звука.</string>
     <string name="audio_language">Язык аудио</string>
@@ -607,7 +607,7 @@
     <string name="subtitle_remember">Запомнить включенные субтитры для каждого канала</string>
     <string name="amazon_frame_drop_fix">Исправление выпадения кадров #2</string>
     <string name="amazon_frame_drop_fix_desc">Устраняет рывки изображения на Amazon Stick и некоторых других устройствах.</string>
-    <string name="default_stack_desc">Встроенный сетевой движок. Этот движок может иметь лучшую стабильность в определенных ситуациях.</string>
+    <string name="default_stack_desc">Встроенный сетевой движок. В некоторых случаях стабильнее других.</string>
     <string name="item_postion">Позиция</string>
     <string name="player_screen_off_dimming">Величина затемнения экрана</string>
     <string name="screensaver_timout">Тайм-аут включения заставки</string>
@@ -685,9 +685,9 @@
     <string name="video_disabled">Видео отключено</string>
     <string name="applying_fix">Не закрывайте плеер. Применение исправления…</string>
     <string name="hide_mixes">Скрывать Миксы</string>
-    <string name="player_global_focus_desc">Эта функция влияет на то, какая кнопка проигрывателя получит фокус при навигации между рядами кнопок проигрывателя</string>
+    <string name="player_global_focus_desc">Определяет, какая кнопка плеера получает фокус при переходе между рядами.</string>
     <string name="disable_network_error_fixing">Отключить автоматическое исправление сетевых ошибок</string>
-    <string name="disable_network_error_fixing_desc">При использовании VPN попробуйте включить эту настройку, если возникают проблемы с подключением.</string>
+    <string name="disable_network_error_fixing_desc">При проблемах с подключением через VPN попробуйте включить эту настройку.</string>
     <string name="recommended">Рекомендации</string>
     <string name="add_to_subscriptions_group">Добавить/удалить из группы подписок</string>
     <string name="new_subscriptions_group">Новая группа</string>
@@ -723,7 +723,7 @@
     <string name="header_blocked_channels">Заблокированные каналы</string>
     <string name="msg_no_blocked_channels">Нет заблокированных каналов</string>
     <string name="player_time_stretching">Растяжение аудио во времени</string>
-    <string name="player_time_stretching_desc">Сохраняет естественное звучание голоса при изменении скорости. Может значительно снизить производительность на некоторых устройствах.</string>
+    <string name="player_time_stretching_desc">Сохраняет естественный тембр голоса при смене скорости. На некоторых устройствах снижает производительность.</string>
     <string name="queue_respects_playback_mode">Очередь учитывает режим воспроизведения</string>
     <string name="ignore_short_segments">Игнорировать короткие сегменты</string>
     <string name="local_backup_not_supported">Автобэкап на Android TV 11+ не поддерживается из-за ограничений системы. Используйте GDrive.</string>
@@ -732,7 +732,7 @@
     <string name="app_backup_desc">ВНИМАНИЕ: Резервная копия будет создана в формате ZIP</string>
     <string name="add_video_to_watch_later">Добавить в \'Смотреть позже\'</string>
     <string name="enable_conscrypt">Включить Conscrypt</string>
-    <string name="enable_conscrypt_desc">Может улучшить совместимость с HTTPS, TLS и VPN на некоторых устройствах. Иногда вызывает сбои воспроизведения или замедляет работу сети.</string>
+    <string name="enable_conscrypt_desc">Может улучшить совместимость с HTTPS/TLS и VPN. Иногда вызывает сбои воспроизведения или замедляет сеть.</string>
     <string name="network_settings">Настройки сети</string>
     <string name="comments_disabled">Комментарии отключены для этого видео</string>
     <plurals name="hours">
@@ -755,7 +755,7 @@
     <string name="about_source_code">Исходный код</string>
     <string name="about_license">Лицензия</string>
     <string name="diagnostic_log_send">Отправить журнал диагностики</string>
-    <string name="diagnostic_log_send_desc">Для сообщений об ошибках. Включает видео и каналы, которые вы открывали; пароли и токены входа удаляются</string>
+    <string name="diagnostic_log_send_desc">Для отчётов об ошибках. Содержит просмотренные видео и каналы; пароли и токены удаляются.</string>
     <string name="diagnostic_log_subject">%1$s %2$s — журнал диагностики</string>
     <string name="diagnostic_log_failed">Не удалось создать журнал диагностики</string>
     <string name="signed_in_success">Вход выполнен</string>
@@ -765,7 +765,7 @@
     <string name="subscribe_failed">Не удалось подписаться. Попробуйте ещё раз.</string>
     <string name="unsubscribe_failed">Не удалось отменить подписку. Попробуйте ещё раз.</string>
     <string name="action_undo">Отменить</string>
-    <string name="msg_player_no_connection_retry">Нет подключения. Повторим попытку, когда вы снова будете в сети, или нажмите «Воспроизвести», чтобы повторить её.</string>
+    <string name="msg_player_no_connection_retry">Нет подключения. Повторим попытку, когда сеть появится, или нажмите «Воспроизвести».</string>
     <string name="msg_player_no_connection_short">Нет подключения — повторная попытка…</string>
     <string name="msg_player_no_connection_tap">Нет подключения — нажмите «Воспроизвести», чтобы повторить попытку</string>
     <string name="auto_frame_rate_sec">%s с</string>
@@ -773,7 +773,7 @@
     <string name="ui_hide_timeout_sec">%s с</string>
     <string name="screen_dimming_timeout_min">%s мин</string>
     <string name="msg_quality_pin_fallback">Не удалось применить %1$s — для этого видео установлено качество «Авто»</string>
-    <string name="msg_audio_pin_fallback">Не удалось использовать аудиодорожку — для этого видео используется дорожка по умолчанию</string>
+    <string name="msg_audio_pin_fallback">Не удалось использовать аудиодорожку. Включена дорожка по умолчанию.</string>
     <string name="update_check_failed">Не удалось проверить наличие обновлений. Попробуйте позже.</string>
     <string name="playlist_name_hint">Название плейлиста</string>
     <string name="playback_controls_repeat_pause">Повтор: пауза</string>
