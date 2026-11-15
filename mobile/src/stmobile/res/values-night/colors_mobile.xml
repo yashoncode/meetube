@@ -46,10 +46,12 @@
     <color name="meetube_watch_card">#17FFFFFF</color>
     <!-- MEETUBE(issue #250): dark like the rest of the app's glass, not a white lift. -->
     <color name="meetube_search_glass_tint">#66000000</color>
+    <color name="meetube_dialog_glass_tint">#A6000000</color>
+    <color name="meetube_greet_glass_tint">#66000000</color>
     <!-- MEETUBE(glass): a pill on a frosted sheet ("Add a comment"): a see-through lift. -->
     <color name="meetube_glass_pill_tint">#1FFFFFFF</color>
-    <!-- Static glass (no live blur behind it): a 9% white lift so it reads on the flat page. -->
-    <color name="meetube_sheet_glass">#C71C1C21</color>
+    <!-- A frosted sheet's tint over the blurred page: dark glass, as the search bar and dialogs (the grey surface at 78% read as milk). -->
+    <color name="meetube_sheet_glass">#A6000000</color>
     <color name="meetube_glass_fill">#17FFFFFF</color>
     <color name="meetube_glass_stroke">#24FFFFFF</color>
     <!-- MEETUBE(glass): the lit rim and top sheen of glass with nothing to blur (sheets, icon circles). -->

@@ -432,13 +432,13 @@
     <string name="mobile_download_saved_in">Zapisano w: %1$s</string>
     <string name="mobile_download_retry">Ponów pobieranie</string>
     <string name="mobile_download_folder">Folder pobierania</string>
+    <string name="mobile_download_folder_video">Folder wideo</string>
+    <string name="mobile_download_folder_audio">Folder muzyki</string>
     <string name="mobile_download_folder_title">Zapisywanie w: %1$s</string>
-    <string name="mobile_download_folder_default">Movies/MeeTube i Music/MeeTube</string>
     <string name="mobile_download_folder_internal">Pamięć wewnętrzna</string>
     <string name="mobile_download_folder_choose">Wybierz folder</string>
     <string name="mobile_download_folder_use_default">Użyj domyślnego folderu</string>
     <string name="mobile_download_folder_set">Pobrane pliki trafiają do: %1$s</string>
-    <string name="mobile_download_folder_reset">Pobrane pliki trafiają do domyślnego folderu</string>
     <string name="mobile_download_folder_failed">Nie można użyć tego folderu</string>
     <string name="mobile_download_cancel">Anuluj pobieranie</string>
     <string name="mobile_download_delete">Usuń pobrany plik</string>

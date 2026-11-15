@@ -50,6 +50,14 @@ public final class SimpleMediaItem implements MediaItem {
         return mediaItem;
     }
 
+    /** MEETUBE(issue: save a whole playlist): only the list id, so a content fetch browses the list. */
+    public static MediaItem fromPlaylistId(String playlistId) {
+        SimpleMediaItem mediaItem = new SimpleMediaItem();
+        mediaItem.mPlaylistId = playlistId;
+        mediaItem.mType = MediaItem.TYPE_PLAYLIST;
+        return mediaItem;
+    }
+
     public static MediaItem from(Video video) {
         SimpleMediaItem mediaItem = new SimpleMediaItem();
 

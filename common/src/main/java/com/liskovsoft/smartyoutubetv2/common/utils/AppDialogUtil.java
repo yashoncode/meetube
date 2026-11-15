@@ -1137,9 +1137,8 @@ public class AppDialogUtil {
                             context.getString(R.string.playlist_name_hint),
                             null,
                             newValue -> {
-                                MediaItem mediaItem = video.mediaItem != null ? video.mediaItem : SimpleMediaItem.from(video);
                                 RxHelper.execute(
-                                        YouTubeMediaItemService.instance().createPlaylistObserve(newValue, mediaItem),
+                                        createPlaylistFrom(video, newValue),
                                         error -> MessageHelpers.showMessage(context, error.getLocalizedMessage()),
                                         () -> MessageHelpers.showMessage(context, R.string.saved_to_playlists));
                                 return true;
@@ -1179,7 +1178,10 @@ public class AppDialogUtil {
         Observable<Void> editObserve;
         MediaItemService itemManager = YouTubeMediaItemService.instance();
 
-        if (add) {
+        if (add && wholeListId(video) != null) { // a playlist or Mix card: all its videos, in order
+            editObserve = listVideoIds(video).flatMap(ids -> Observable.fromIterable(ids)
+                    .concatMap(id -> itemManager.addToPlaylistObserve(playlistId, id)));
+        } else if (add) {
             MediaItem mediaItem = video.mediaItem != null ? video.mediaItem : SimpleMediaItem.from(video);
             editObserve = itemManager.addToPlaylistObserve(playlistId, mediaItem);
         } else {
@@ -1194,6 +1196,77 @@ public class AppDialogUtil {
         RxHelper.execute(editObserve, error -> MessageHelpers.showLongMessage(context, error.getMessage()),
                 // NEWTUBE(#36): pinned playlists (Watch later on the You tab) refetch on next visit.
                 () -> BrowsePresenter.instance(context).onPlaylistEdited());
+    }
+
+    /**
+     * MEETUBE(save a whole playlist): a playlist or Mix card ("13 videos") stands for its list, but
+     * saving it to a playlist saved only the one video the card plays first. These carry the list.
+     */
+    @androidx.annotation.Nullable
+    private static String wholeListId(Video video) {
+        if (video == null || !(video.isPlaylistCard() || video.isMix())) {
+            return null;
+        }
+        if (video.playlistId != null) {
+            return video.playlistId;
+        }
+        return video.channelId != null && video.channelId.startsWith("VL") ? video.channelId : null;
+    }
+
+    /** The card's videos (the list's first page), or just its own video when the list can't be read. */
+    private static Observable<List<String>> listVideoIds(Video video) {
+        List<String> single = new ArrayList<>();
+        if (video.videoId != null) {
+            single.add(video.videoId);
+        }
+        return com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService()
+                .getGroupObserve(SimpleMediaItem.fromPlaylistId(wholeListId(video)))
+                .map(group -> {
+                    List<String> ids = new ArrayList<>();
+                    List<MediaItem> items = group.getMediaItems();
+                    for (int i = 0; items != null && i < items.size(); i++) {
+                        String id = items.get(i).getVideoId();
+                        if (id != null && !ids.contains(id)) {
+                            ids.add(id);
+                        }
+                    }
+                    return ids.isEmpty() ? single : ids;
+                })
+                .onErrorReturnItem(single)
+                .defaultIfEmpty(single);
+    }
+
+    /**
+     * A new playlist holding the card's video, or every video of a playlist or Mix card: made with
+     * the first, then found by its name among the playlists holding that video, then filled.
+     */
+    public static Observable<Void> createPlaylistFrom(Video video, String name) {
+        MediaItemService itemManager = YouTubeMediaItemService.instance();
+        if (wholeListId(video) == null) {
+            MediaItem mediaItem = video.hasVideo() ? (video.mediaItem != null ? video.mediaItem : SimpleMediaItem.from(video)) : null;
+            return itemManager.createPlaylistObserve(name, mediaItem);
+        }
+        return listVideoIds(video).flatMap(ids -> {
+            if (ids.isEmpty()) {
+                return itemManager.createPlaylistObserve(name, (String) null);
+            }
+            String first = ids.get(0);
+            return itemManager.createPlaylistObserve(name, first).concatWith(Observable.defer(() ->
+                    itemManager.getPlaylistsInfoObserve(first).flatMap(infos -> {
+                        String newId = null;
+                        for (PlaylistInfo info : infos) {
+                            if (info.isSelected() && Helpers.equals(info.getTitle(), name)) {
+                                newId = info.getPlaylistId();
+                            }
+                        }
+                        if (newId == null || ids.size() < 2) {
+                            return Observable.<Void>empty();
+                        }
+                        String target = newId;
+                        return Observable.fromIterable(ids.subList(1, ids.size()))
+                                .concatMap(id -> itemManager.addToPlaylistObserve(target, id));
+                    })));
+        });
     }
 
     public static void showPlaylistOrderDialog(Context context, Video video, Runnable onClose) {

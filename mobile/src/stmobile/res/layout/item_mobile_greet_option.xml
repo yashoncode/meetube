@@ -12,7 +12,7 @@
     android:foreground="?attr/selectableItemBackground"
     app:glassCornerRadius="26dp"
     app:glassOnGlass="true"
-    app:glassTint="@color/meetube_frost_tint">
+    app:glassTint="@color/meetube_greet_glass_tint">
 
     <TextView
         android:id="@+id/mobile_greet_option_label"

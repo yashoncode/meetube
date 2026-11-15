@@ -59,7 +59,7 @@ final class DownloadStorage {
 
         // MEETUBE(download-folder): the user's own folder first; if it is gone or no longer
         // writable, the download still lands in the default place instead of failing.
-        Uri tree = DownloadFolder.get(mContext);
+        Uri tree = DownloadFolder.get(mContext, audioOnly);
         if (tree != null) {
             try {
                 return createInTree(tree, fileName, mime);

@@ -37,8 +37,9 @@ public final class DownloadFolderActivity extends Activity {
             try {
                 getContentResolver().takePersistableUriPermission(tree,
                         Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                DownloadFolder.set(this, tree);
-                com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_download_folder_set, DownloadFolder.label(this)));
+                boolean audio = getIntent().getBooleanExtra(DownloadFolder.EXTRA_AUDIO, false);
+                DownloadFolder.set(this, audio, tree);
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_download_folder_set, DownloadFolder.label(this, audio)));
             } catch (SecurityException e) {
                 com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.mobile_download_folder_failed);
             }
