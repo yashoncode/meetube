@@ -16,7 +16,7 @@
     <string name="meetune_more">Ещё</string>
     <string name="meetune_play">Воспроизвести</string>
     <string name="meetune_play_pause">Воспроизвести или приостановить</string>
-    <string name="meetune_next">Следующий</string>
+    <string name="meetune_next">Следующий трек</string>
     <string name="meetune_lyrics_finding">Поиск текста песни…</string>
     <string name="meetune_lyrics_none">Для этой песни нет текста</string>
     <string name="meetune_share">Поделиться</string>
@@ -30,7 +30,7 @@
     <string name="meetune_sign_in">Войти</string>
     <string name="meetune_liked">Понравившаяся музыка</string>
     <string name="meetune_playlist">Плейлист</string>
-    <string name="meetune_explicit">Содержит ненормативную лексику</string>
+    <string name="meetune_explicit">Ненормативный контент</string>
     <string name="meetune_clear">Очистить</string>
     <string name="meetune_filter_all">Все</string>
     <string name="meetune_filter_songs">Песни</string>

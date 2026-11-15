@@ -641,16 +641,16 @@
     <string name="mobile_settings_notify_channels">Каналы</string>
     <string name="mobile_settings_notify_channels_all">Все каналы, на которые вы подписаны</string>
     <plurals name="mobile_settings_notify_channels_muted">
-        <item quantity="one">Все каналы, кроме %d</item>
-        <item quantity="few">Все каналы, кроме %d</item>
-        <item quantity="many">Все каналы, кроме %d</item>
-        <item quantity="other">Все каналы, кроме %d</item>
+        <item quantity="one">Уведомления отключены для %d канала</item>
+        <item quantity="few">Уведомления отключены для %d каналов</item>
+        <item quantity="many">Уведомления отключены для %d каналов</item>
+        <item quantity="other">Уведомления отключены для %d каналов</item>
     </plurals>
     <string name="mobile_settings_notify_no_channels">Сначала войдите в аккаунт или подпишитесь на канал</string>
     <string name="mobile_settings_notify_reliable">Когда MeeTube закрыто</string>
     <string name="mobile_settings_notify_background">Работа в фоновом режиме</string>
     <string name="mobile_settings_notify_background_on">Разрешено: проверки продолжаются, даже когда MeeTube закрыто</string>
-    <string name="mobile_settings_notify_background_off">Нет разрешения: телефон может останавливать проверки, пока MeeTube закрыто. Нажмите, чтобы разрешить</string>
+    <string name="mobile_settings_notify_background_off">Работа в фоне не разрешена: телефон может останавливать проверки, пока MeeTube закрыто. Нажмите, чтобы разрешить</string>
     <string name="mobile_settings_notify_system">Звук и оформление</string>
     <string name="mobile_settings_notify_system_summary">Настройки уведомлений MeeTube на этом телефоне</string>
     <string name="mobile_settings_notify_note">Новые видео проверяются по расписанию, а не приходят push-уведомлениями: Android позволяет выполнять проверку не чаще одного раза в 15 минут. Некоторые телефоны (Infinix, Xiaomi, Oppo, Vivo и другие) также останавливают фоновые проверки, пока MeeTube не разрешено работать в фоне. Включите это разрешение выше.</string>

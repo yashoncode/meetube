@@ -12,8 +12,8 @@
     <string name="mobile_playlist_load_failed">Не удалось загрузить весь плейлист. Попробуйте ещё раз.</string>
     <string name="mobile_playlist_sort">Сортировать по</string>
     <string name="mobile_playlist_sort_manual">Вручную</string>
-    <string name="mobile_playlist_sort_newest">Дате публикации (сначала новые)</string>
-    <string name="mobile_playlist_sort_oldest">Дате публикации (сначала старые)</string>
+    <string name="mobile_playlist_sort_newest">По дате публикации (сначала новые)</string>
+    <string name="mobile_playlist_sort_oldest">По дате публикации (сначала старые)</string>
     <string name="mobile_playlist_sort_popular">Популярности</string>
     <string name="mobile_playlist_filter_all">Все</string>
     <string name="mobile_playlist_filter_videos">Видео</string>
