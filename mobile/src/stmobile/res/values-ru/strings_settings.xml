@@ -73,9 +73,9 @@
     <string name="mobile_settings_24_hour">24-часовой формат времени</string>
     <string name="mobile_settings_24_hour_summary">Для времени начала премьер и прямых трансляций</string>
     <string name="mobile_settings_liquid_glass">Эффект жидкого стекла</string>
-    <string name="mobile_settings_liquid_glass_summary">Блики, свечение и зернистость на стеклянных панелях. При выключении используется обычное матовое размытие, которое меньше расходует заряд батареи</string>
+    <string name="mobile_settings_liquid_glass_summary">Блики, свечение и зерно на стеклянных панелях. Выключение заменяет их матовым размытием и экономит заряд.</string>
     <string name="mobile_settings_indian_counts">Индийская система чисел</string>
-    <string name="mobile_settings_indian_counts_summary">Показывать просмотры и отметки «Нравится» в лакхах и крорах, например 2,5 лакха и 1,2 крора, вместо 250 тыс. и 12 млн</string>
+    <string name="mobile_settings_indian_counts_summary">Показывать просмотры и лайки в лакхах и крорах (2,5 лакха; 1,2 крора) вместо 250 тыс. и 12 млн.</string>
 
     <!-- Tabs and feeds -->
     <string name="mobile_settings_tabs">Вкладки</string>
@@ -92,7 +92,7 @@
     <string name="mobile_settings_search_fab_left">Внизу слева</string>
     <string name="mobile_settings_tabs_you">Вы</string>
     <string name="mobile_settings_tabs_none">Нет</string>
-    <string name="mobile_settings_tabs_bar_note">Перетащите элемент за значок или удерживайте его, чтобы изменить порядок панели. Перетащите «Поиск» вверх, чтобы переместить его на верхнюю панель. Нажмите вкладку, чтобы изменить её содержимое.</string>
+    <string name="mobile_settings_tabs_bar_note">Перетаскивайте элементы за значок или удерживайте их, чтобы менять порядок. Перетащите «Поиск» вверх на верхнюю панель. Нажмите вкладку, чтобы настроить её содержимое.</string>
     <string name="mobile_settings_bar_top">Верхняя панель</string>
     <string name="mobile_settings_bar_tab">Вкладка</string>
     <string name="mobile_settings_bar_tab_summary">Нажмите, чтобы изменить</string>
@@ -105,7 +105,7 @@
     <string name="mobile_settings_search_place">Поиск</string>
     <string name="mobile_settings_search_place_bottom">На нижней панели</string>
     <string name="mobile_settings_search_place_top">На верхней панели</string>
-    <string name="mobile_settings_tabs_note">Также можно удерживать вкладку или раздел во вкладке «Вы», чтобы переместить, переименовать или скрыть его.</string>
+    <string name="mobile_settings_tabs_note">Удерживайте вкладку или раздел во вкладке «Вы», чтобы переместить, переименовать или скрыть.</string>
     <string name="mobile_settings_hidden">Скрытые видео</string>
     <string name="mobile_settings_hidden_none">Ничего не скрыто</string>
     <plurals name="mobile_settings_hidden_count">
@@ -178,7 +178,7 @@
     <string name="mobile_settings_clear_search_history">Очистить историю поиска</string>
     <string name="mobile_settings_clear_search_history_summary">Удаляет поисковые запросы, сохранённые на этом телефоне</string>
     <string name="mobile_settings_clear_search_history_confirm">Очистить историю поиска?</string>
-    <string name="mobile_settings_clear_search_history_body">Поисковые запросы, сохранённые MeeTube на этом телефоне, будут удалены. Это действие нельзя отменить.</string>
+    <string name="mobile_settings_clear_search_history_body">Удалить историю поиска MeeTube на этом телефоне? Действие необратимо.</string>
 
     <!-- Backup -->
     <string name="mobile_settings_backup_now">Создать резервную копию</string>
@@ -228,10 +228,10 @@
     <!-- MEETUBE(performance) -->
     <string name="mobile_settings_performance">Производительность</string>
     <string name="mobile_settings_high_refresh">Режим высокой производительности</string>
-    <string name="mobile_settings_high_refresh_summary">Поддерживает частоту обновления приложения на уровне %1$d Гц для максимально плавной анимации. Расходует больше заряда; Android может снизить частоту при перегреве телефона или включённом энергосбережении</string>
+    <string name="mobile_settings_high_refresh_summary">%1$d Гц для плавной анимации. Расход заряда выше; Android может снизить частоту при перегреве или энергосбережении.</string>
     <!-- MEETUBE(nav lens, issue #46) -->
     <string name="mobile_settings_tab_motion">Анимация переключения вкладок</string>
-    <string name="mobile_settings_tab_motion_summary">Стеклянный блик перемещается к вкладке, а панель слегка покачивается. На медленных телефонах функция выключена, пока вы не включите её</string>
+    <string name="mobile_settings_tab_motion_summary">Стеклянный блик скользит к вкладке, панель покачивается. На медленных телефонах выключено по умолчанию.</string>
     <!-- MEETUBE(bar reset) -->
     <string name="mobile_settings_tabs_reset">Сбросить панель к настройкам по умолчанию</string>
     <string name="mobile_settings_tabs_reset_summary">Главная, Shorts, Поиск, Подписки, Вы</string>
@@ -248,7 +248,7 @@
     <string name="mobile_settings_screen_off_on">Разрешено: режим энергосбережения не будет останавливать звук</string>
     <string name="mobile_settings_screen_off_off">Режим энергосбережения может остановить звук. Нажмите, чтобы разрешить MeeTube работать в фоне</string>
     <string name="mobile_settings_auto_pip">Картинка в картинке</string>
-    <string name="mobile_settings_auto_pip_summary">При выходе из приложения видео продолжает воспроизводиться в небольшом окне. Если выключить эту функцию, в фоне будет продолжать играть только звук.</string>
+    <string name="mobile_settings_auto_pip_summary">При выходе видео сворачивается в небольшое окно. При выключении функции в фоне остаётся только звук.</string>
     <string name="mobile_settings_video_ends">Когда видео закончится</string>
     <string name="mobile_settings_video_ends_next">Воспроизвести следующее видео</string>
     <string name="mobile_settings_video_ends_repeat">Повторять видео</string>
@@ -275,7 +275,7 @@
     <string name="mobile_settings_sleep_timer">Таймер сна</string>
     <string name="mobile_settings_sleep_timer_summary">Приостанавливает воспроизведение через %1$s после открытия видео</string>
     <string name="mobile_settings_audio_focus">Приостанавливать при других звуках</string>
-    <string name="mobile_settings_audio_focus_summary">Приостанавливает воспроизведение во время звонков и при звуке из других приложений. Применяется к следующему открытому видео</string>
+    <string name="mobile_settings_audio_focus_summary">Пауза при звонках и звуке из других приложений. Для следующего видео.</string>
     <string name="mobile_settings_resume">Возобновление</string>
     <string name="mobile_settings_resume_short">Продолжать просмотр коротких видео</string>
     <string name="mobile_settings_resume_short_summary">Видео короче 6 минут начинаются с начала, если эта функция выключена</string>
@@ -312,7 +312,7 @@
     <string name="mobile_settings_loudness">Выравнивать громкость</string>
     <string name="mobile_settings_loudness_summary">Снижает громкость слишком громких видео до обычного уровня YouTube</string>
     <string name="mobile_settings_player_volume">Громкость плеера</string>
-    <string name="mobile_settings_quality_data_saver_note">При включённой системной экономии трафика MeeTube использует меньший буфер при работе через мобильную сеть.</string>
+    <string name="mobile_settings_quality_data_saver_note">При системной экономии трафика MeeTube уменьшает буфер в мобильной сети.</string>
 
     <!-- Captions -->
     <string name="mobile_settings_caption_style">Стиль</string>
@@ -342,7 +342,7 @@
     <string name="mobile_settings_dearrow_note">DeArrow получает идентификаторы видео, которые вы видите в списках.</string>
 
     <!-- Advanced -->
-    <string name="mobile_settings_advanced_note">Эти настройки обычно не нужны. Они меняют способ потоковой передачи данных и подключения MeeTube.</string>
+    <string name="mobile_settings_advanced_note">Меняют способ передачи видео и подключения MeeTube. Обычно не нужны.</string>
     <string name="mobile_settings_streaming">Потоковое воспроизведение</string>
     <string name="mobile_settings_buffer">Размер буфера</string>
     <string name="mobile_settings_buffer_low_desc">Буфер примерно на 25 секунд вперёд. Минимальный расход памяти.</string>
@@ -350,25 +350,25 @@
     <string name="mobile_settings_buffer_high_desc">Буфер до 75 секунд вперёд.</string>
     <string name="mobile_settings_buffer_highest_desc">Буфер до 2 минут вперёд. Максимальный расход памяти.</string>
     <string name="mobile_settings_stall_quality">Снижать качество при постоянной буферизации</string>
-    <string name="mobile_settings_stall_quality_summary">При буферизации дольше 20 секунд качество снижается на один уровень. Отключение этой функции может помочь при использовании VPN.</string>
+    <string name="mobile_settings_stall_quality_summary">После 20 секунд буферизации снижает качество на один уровень. При VPN отключение может помочь.</string>
     <string name="mobile_settings_high_bitrate">Форматы с высоким битрейтом</string>
-    <string name="mobile_settings_high_bitrate_summary">Добавляет потоки YouTube 1080p с более высоким битрейтом, если они доступны для видео. Требует дополнительного запроса</string>
+    <string name="mobile_settings_high_bitrate_summary">Добавляет доступные потоки YouTube 1080p с высоким битрейтом. Требует дополнительного запроса.</string>
     <string name="mobile_settings_sabr">Использовать SABR (экспериментально)</string>
-    <string name="mobile_settings_sabr_summary">Новый протокол потоковой передачи YouTube. Начнёт использоваться со следующего видео; если не сработает, видео воспроизведётся обычным способом.</string>
+    <string name="mobile_settings_sabr_summary">Новый протокол YouTube включится со следующего видео. При сбое видео запустится обычным способом.</string>
     <string name="mobile_settings_legacy_codecs">Потоки в одном файле</string>
     <string name="mobile_settings_legacy_codecs_summary">Воспроизводит старый поток в одном файле (обычно 360p) без смены качества. Только для очень медленных телефонов</string>
     <string name="mobile_settings_live">Прямые трансляции</string>
     <string name="mobile_settings_live_edge">Начинать с текущего момента эфира</string>
     <string name="mobile_settings_live_edge_summary">Воспроизводит трансляцию максимально близко к прямому эфиру, без 15-секундной задержки</string>
     <string name="mobile_settings_live_hls">Воспроизводить прямые трансляции через HLS</string>
-    <string name="mobile_settings_live_hls_summary">Может работать плавнее на медленных телефонах. Нельзя перематывать назад, максимальное качество — 1080p</string>
+    <string name="mobile_settings_live_hls_summary">Плавнее на медленных телефонах, но без перемотки назад и качества выше 1080p.</string>
     <string name="mobile_settings_player">Плеер</string>
     <string name="mobile_settings_controls_on_next">Показывать элементы управления при запуске следующего видео</string>
     <string name="mobile_settings_controls_on_next_summary">Элементы управления появляются при запуске следующего видео</string>
     <string name="mobile_settings_list_queue">Воспроизводить исходный список</string>
     <string name="mobile_settings_list_queue_summary">Если открыть видео из плейлиста, после него будут воспроизводиться остальные видео в том же порядке.</string>
     <string name="mobile_settings_queue_mode">Очередь следует настройке «Когда видео закончится»</string>
-    <string name="mobile_settings_queue_mode_summary">При выборе «Остановить» или «Закрыть плеер» воспроизведение очереди тоже прекращается</string>
+    <string name="mobile_settings_queue_mode_summary">При паузе или закрытии плеера очередь тоже останавливается.</string>
     <string name="mobile_settings_chapter_popup">Всплывающие названия глав</string>
     <string name="mobile_settings_chapter_popup_summary">Показывает название каждой главы при её начале. Нажмите, чтобы перейти к следующей</string>
     <string name="mobile_settings_network">Сеть и подключение</string>
@@ -380,7 +380,7 @@
     <string name="mobile_settings_dns_system">DNS-сервер системы</string>
     <string name="mobile_settings_dns_google">DNS Google</string>
     <string name="mobile_settings_conscrypt">Conscrypt</string>
-    <string name="mobile_settings_conscrypt_summary">Встроенная библиотека для защищённых соединений. На некоторых устройствах может улучшить совместимость с HTTPS/TLS и сетевыми инструментами вроде ByeByeDPI. Эффект зависит от устройства и сети.</string>
+    <string name="mobile_settings_conscrypt_summary">Библиотека защищённых соединений. Может улучшить совместимость с HTTPS/TLS и ByeByeDPI; результат зависит от устройства и сети.</string>
     <string name="mobile_settings_accounts">Аккаунты</string>
     <string name="mobile_settings_multi_profiles">Отдельные настройки для каждого аккаунта</string>
     <string name="mobile_settings_multi_profiles_summary">У каждого аккаунта будут свои настройки, начиная со значений по умолчанию</string>
@@ -526,28 +526,28 @@
     <string name="mobile_settings_tv_step_three">3</string>
     <string name="mobile_settings_tv_step_four">4</string>
     <string name="mobile_settings_tv_developer">Включите режим разработчика</string>
-    <string name="mobile_settings_tv_developer_android">На телевизоре откройте «Настройки» › «Система» › «Об устройстве» (на старых моделях: «Настройки» › «Настройки устройства» › «Об устройстве»). Нажмите 7 раз на пункт «Сборка ОС Android TV» (или «Номер сборки»), пока не появится сообщение, что вы стали разработчиком.</string>
-    <string name="mobile_settings_tv_developer_fire">На телевизоре откройте «Настройки» › «Мой Fire TV» › «Об устройстве». Нажмите на первую строку с названием Fire TV 7 раз, пока не появится сообщение, что вы стали разработчиком.</string>
+    <string name="mobile_settings_tv_developer_android">На ТВ откройте «Настройки» › «Система» › «Об устройстве» (старые модели: «Настройки» › «Настройки устройства» › «Об устройстве»). Нажмите «Сборка ОС Android TV» (или «Номер сборки») 7 раз, пока не появится сообщение о режиме разработчика.</string>
+    <string name="mobile_settings_tv_developer_fire">На ТВ: «Настройки» › «Мой Fire TV» › «Об устройстве». Нажмите строку с названием Fire TV 7 раз, пока не появится сообщение о режиме разработчика.</string>
     <string name="mobile_settings_tv_debugging">Включите отладку</string>
-    <string name="mobile_settings_tv_debugging_android">Вернитесь в «Настройки» › «Система» › «Для разработчиков» (на старых моделях: «Настройки устройства» › «Для разработчиков») и включите «Отладку по USB». Она работает и по Wi‑Fi — кабель не нужен. Если есть пункты «Сетевая отладка» или «ADB по сети», включите и их. «Беспроводная отладка» с кодом сопряжения — не то, что нужно.</string>
+    <string name="mobile_settings_tv_debugging_android">Откройте «Настройки» › «Система» › «Для разработчиков» (на старых моделях: «Настройки устройства» › «Для разработчиков») и включите «Отладку по USB». Она работает и по Wi‑Fi. Если есть «Сетевая отладка» или «ADB по сети», включите их. «Беспроводная отладка» с кодом сопряжения не подходит.</string>
     <string name="mobile_settings_tv_debugging_fire">Откройте «Настройки» › «Мой Fire TV» › «Для разработчиков» и включите «Отладку ADB».</string>
     <string name="mobile_settings_tv_find">Найти телевизор</string>
     <string name="mobile_settings_tv_same_wifi">Подключите телефон и телевизор к одной сети Wi-Fi.</string>
     <string name="mobile_settings_tv_search">Найти в сети Wi-Fi</string>
     <string name="mobile_settings_tv_searching">Поиск…</string>
-    <string name="mobile_settings_tv_none_found">Телевизор не ответил. Проверьте шаг 2 или введите его IP-адрес вручную. Android TV: «Настройки» › «Сеть и Интернет» › ваша сеть Wi‑Fi. Fire TV: «Настройки» › «Мой Fire TV» › «Об устройстве» › «Сеть».</string>
+    <string name="mobile_settings_tv_none_found">Телевизор не найден. Проверьте шаг 2 или введите IP-адрес вручную. Android TV: «Настройки» › «Сеть и Интернет» › Wi-Fi. Fire TV: «Настройки» › «Мой Fire TV» › «Об устройстве» › «Сеть».</string>
     <string name="mobile_settings_tv_found">Найдено: %1$s. Выберите адрес ниже.</string>
     <string name="mobile_settings_tv_ip">IP-адрес телевизора</string>
     <string name="mobile_settings_tv_ip_invalid">Введите IPv4-адрес телевизора, например %1$s</string>
     <string name="mobile_settings_tv_install">Установить</string>
     <string name="mobile_settings_tv_install_button">Установить MeeTube TV</string>
-    <string name="mobile_settings_tv_connecting">Подключение к %1$s… Посмотрите на экран телевизора и нажмите «Разрешить». Также отметьте пункт «Всегда разрешать».</string>
+    <string name="mobile_settings_tv_connecting">Подключение к %1$s… Подтвердите запрос на ТВ и включите «Всегда разрешать».</string>
     <string name="mobile_settings_tv_finding_release">Поиск последней версии MeeTube TV…</string>
     <string name="mobile_settings_tv_downloading">Загрузка MeeTube TV %1$s… %2$s%%</string>
     <string name="mobile_settings_tv_downloading_unknown">Загрузка MeeTube TV %1$s…</string>
     <string name="mobile_settings_tv_installing">Установка на телевизор…</string>
     <string name="mobile_settings_tv_done">Готово! MeeTube TV уже запущено на телевизоре 🎉</string>
-    <string name="mobile_settings_tv_unreachable">Не удалось подключиться к телевизору. Проверьте, включена ли отладка (шаг 2) и правильно ли указан IP-адрес.</string>
+    <string name="mobile_settings_tv_unreachable">Нет связи с ТВ. Проверьте отладку (шаг 2) и IP-адрес.</string>
     <string name="mobile_settings_tv_auth_failed">Телевизор не разрешил подключение. Повторите попытку и нажмите «Разрешить» на телевизоре.</string>
     <string name="mobile_settings_tv_download_failed">Не удалось скачать MeeTube TV. Проверьте подключение к интернету.</string>
     <string name="mobile_settings_tv_install_failed">Не удалось установить приложение на телевизор: %1$s</string>
@@ -557,7 +557,7 @@
     <string name="mobile_settings_tv_permission">Разрешите доступ к локальной сети, чтобы найти телевизор и подключиться к нему.</string>
     <string name="mobile_settings_tv_footer">После установки отладку на телевизоре можно отключить.</string>
     <string name="mobile_settings_seek_line">Полоса прогресса под видео</string>
-    <string name="mobile_settings_seek_line_summary">Тонкая полоса прогресса по краю видео, когда элементы управления скрыты (в вертикальной ориентации)</string>
+    <string name="mobile_settings_seek_line_summary">Полоса прогресса по краю видео при скрытых элементах управления (вертикальный режим).</string>
     <string name="mobile_settings_progress_color">Палитра акцентного цвета</string>
     <string name="mobile_settings_progress_color_player">Полоса прогресса плеера</string>
     <string name="mobile_settings_progress_color_shorts">Полоса прогресса Shorts</string>
@@ -575,9 +575,9 @@
     <string name="mobile_settings_badge_icons">Значки на плашках времени</string>
     <string name="mobile_settings_badge_icons_summary">Радиоволны перед миксом, нота перед временем музыкального клипа</string>
     <string name="mobile_settings_seek_pill">Плашка перемотки</string>
-    <string name="mobile_settings_seek_pill_summary">При двойном касании для перемотки появляется плашка «+10» с эффектом упругого отскока, а видео слегка смещается. При выключении используется стандартная анимация касания.</string>
+    <string name="mobile_settings_seek_pill_summary">При двойном касании появляется упругая плашка «+10», а видео слегка смещается. При выключении — обычная анимация.</string>
     <string name="mobile_settings_segment_ask_short">Спросить</string>
-    <string name="mobile_settings_segment_modes_note">Можно пропустить фрагмент, запросить подтверждение кнопкой, только показать его на шкале перемотки или отключить эту функцию.</string>
+    <string name="mobile_settings_segment_modes_note">Можно пропустить фрагмент, подтвердить пропуск кнопкой, показать его только на шкале или отключить функцию.</string>
     <string name="mobile_settings_segment_show">Показать</string>
     <string name="mobile_settings_storage">Хранилище</string>
     <string name="mobile_settings_storage_app">Занято MeeTube</string>
@@ -585,7 +585,7 @@
     <string name="mobile_settings_storage_cache">Кэш видео и изображений</string>
     <string name="mobile_settings_storage_clear">Очистить кэш</string>
     <string name="mobile_settings_storage_clear_empty">Кэш вычищен до блеска ✨</string>
-    <string name="mobile_settings_storage_clear_empty_note">Кэш уже пуст. Мы даже под диванными подушками проверили. Посмотрите что-нибудь и загляните сюда позже.</string>
+    <string name="mobile_settings_storage_clear_empty_note">Кэш уже пуст. Посмотрите что-нибудь и загляните позже.</string>
     <string name="mobile_settings_storage_clear_note">Загрузки останутся. Просмотренные видео при повторном просмотре загрузятся из сети.</string>
     <string name="mobile_settings_storage_cleared">Освобождено %1$s</string>
     <string name="mobile_settings_storage_data">Настройки и история</string>
@@ -617,7 +617,7 @@
     <string name="mobile_settings_battery_light_desc">Анимация отключена, вместо матового размытия используется обычное стекло</string>
     <string name="mobile_settings_battery_keep">Оставить эффекты</string>
     <string name="mobile_settings_battery_keep_desc">Всё будет выглядеть и работать как обычно</string>
-    <string name="mobile_settings_battery_note">Анимация, матовое стекло и жидкая линза перерисовывают экран много раз в секунду. Когда в настройках телефона включено энергосбережение, MeeTube может отключить их ради экономии заряда. При отключении энергосбережения эффекты вернутся.</string>
+    <string name="mobile_settings_battery_note">Анимация, матовое стекло и жидкая линза часто перерисовывают экран. При включённом энергосбережении MeeTube отключает их для экономии заряда. После его выключения эффекты вернутся.</string>
     <string name="mobile_battery_saver_ask">Включено энергосбережение. Отключить анимацию и матовое стекло на это время?</string>
     <string name="mobile_battery_saver_ask_action">Отключить</string>
     <string name="mobile_settings_new_uploads">Уведомлять о новых видео</string>
@@ -650,10 +650,10 @@
     <string name="mobile_settings_notify_reliable">Когда MeeTube закрыто</string>
     <string name="mobile_settings_notify_background">Работа в фоновом режиме</string>
     <string name="mobile_settings_notify_background_on">Разрешено: проверки продолжаются, даже когда MeeTube закрыто</string>
-    <string name="mobile_settings_notify_background_off">Работа в фоне не разрешена: телефон может останавливать проверки, пока MeeTube закрыто. Нажмите, чтобы разрешить</string>
+    <string name="mobile_settings_notify_background_off">Нет фонового доступа: телефон может останавливать проверки при закрытом MeeTube. Нажмите, чтобы разрешить.</string>
     <string name="mobile_settings_notify_system">Звук и оформление</string>
     <string name="mobile_settings_notify_system_summary">Настройки уведомлений MeeTube на этом телефоне</string>
-    <string name="mobile_settings_notify_note">Новые видео проверяются по расписанию, а не приходят push-уведомлениями: Android позволяет выполнять проверку не чаще одного раза в 15 минут. Некоторые телефоны (Infinix, Xiaomi, Oppo, Vivo и другие) также останавливают фоновые проверки, пока MeeTube не разрешено работать в фоне. Включите это разрешение выше.</string>
+    <string name="mobile_settings_notify_note">Новые видео проверяются по расписанию, не через push (Android — не чаще раза в 15 минут). Некоторые телефоны блокируют фоновые проверки. Разрешите MeeTube работу в фоне выше.</string>
     <string name="mobile_app_icon_red_crt">Красный кинескоп</string>
     <string name="mobile_app_icon_chrome">Chrome Play</string>
     <string name="mobile_app_icon_pixel_play">Pixel Play</string>
@@ -684,7 +684,7 @@
     <string name="mobile_settings_equalizer_bands">Полосы эквалайзера</string>
     <string name="mobile_settings_equalizer_rotate">Переключить полосы между вертикальным и горизонтальным расположением</string>
     <string name="mobile_settings_most_replayed">График самых пересматриваемых фрагментов</string>
-    <string name="mobile_settings_most_replayed_summary">При перемещении ползунка над ним отображается волна, показывающая самые часто пересматриваемые участки видео</string>
+    <string name="mobile_settings_most_replayed_summary">Волна над ползунком показывает самые пересматриваемые моменты видео.</string>
     <string name="mobile_accent_custom">Свой цвет</string>
     <string name="mobile_accent_custom_title">Настроить цвет</string>
     <string name="mobile_accent_custom_use">Использовать цвет</string>
@@ -694,5 +694,5 @@
     <string name="mobile_settings_fixed_nav">Закреплённая нижняя панель</string>
     <string name="mobile_settings_fixed_nav_summary">Нижняя панель остаётся на экране при прокрутке</string>
     <string name="mobile_settings_youtube_mode">Режим OG</string>
-    <string name="mobile_settings_youtube_mode_summary">Квадратные карточки видео на всех страницах и нижняя панель у края экрана — с матовым стеклом, как в YouTube</string>
+    <string name="mobile_settings_youtube_mode_summary">Квадратные карточки видео и нижняя панель с матовым стеклом, как в YouTube.</string>
 </resources>
