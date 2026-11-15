@@ -27,14 +27,13 @@ final class BrowseTopBar {
         mMark = activity.findViewById(R.id.mobile_brand_mark);
         syncMark(activity);
         mBack.setOnClickListener(v -> onBack.run());
-        // MEETUBE(quotes): on a tab the brand pill shows a quote; on a sub-screen it goes back.
-        QuoteCard quote = new QuoteCard(activity);
+        // MEETUNE: on a tab the brand pill opens MeeTune; on a sub-screen it goes back.
         activity.findViewById(R.id.mobile_brand_glass).setOnClickListener(v -> {
             if (mBack.getVisibility() == View.VISIBLE) {
                 onBack.run();
             } else {
                 com.newtube.mobile.ui.common.Motion.nudge(v);
-                quote.show();
+                com.newtube.mobile.ui.meetune.MeeTune.open(activity);
             }
         });
         // MEETUBE(greeting): held, on a tab or a sub-screen, it greets with three shortcuts.

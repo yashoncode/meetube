@@ -968,6 +968,12 @@ public class Media3PlayerController implements Player.Listener {
         return mPlayer != null && mPlayer.getPlayWhenReady();
     }
 
+    /** MEETUNE: the audio track playing now, for the music player's format line. */
+    @androidx.annotation.Nullable
+    public androidx.media3.common.Format getPlayingAudioFormat() {
+        return mPlayer != null ? mPlayer.getAudioFormat() : null;
+    }
+
     public boolean isPlaying() {
         if (mPlayer == null) {
             return false;

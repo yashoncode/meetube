@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUNE: the music look of the player (MeeTunePlayerSkin), over the whole watch page while a
+     MeeTune song plays: the art full-bleed at the top fading out into its own blur, the song, a thick
+     bar, the transport, the volume, and Lyrics / Cast / Up next. Text is white on the art's dark
+     scrim in both themes, as the video player's is; the buttons are glowing glass over the art. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/meetune_player"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF141414"
+    android:clickable="true"
+    android:focusable="false"
+    android:visibility="gone">
+
+    <!-- What the glass buttons frost: the blurred art, its scrim and the art. -->
+    <com.newtube.mobile.ui.common.GlassSource
+        android:id="@+id/meetune_player_source"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/meetune_player_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#40000000" />
+
+    <!-- The art's lower part fades out to nothing, so it melts into its own blur under the controls. -->
+    <view
+        class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$FadeImage"
+        android:id="@+id/meetune_player_art"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop" />
+
+    </com.newtube.mobile.ui.common.GlassSource>
+
+    <View
+        android:id="@+id/meetune_player_handle"
+        android:layout_width="40dp"
+        android:layout_height="5dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/meetune_handle" />
+
+    <!-- Lyrics: the song small at the top, the synced lines under it down to the controls (or the
+         whole page, a tap on the lines away). -->
+    <LinearLayout
+        android:id="@+id/meetune_player_lyrics_page"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/meetune_player_head"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="22dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:cardBackgroundColor="#33FFFFFF"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <ImageView
+                    android:id="@+id/meetune_player_head_art"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@null"
+                    android:scaleType="centerCrop" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/meetune_player_head_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:singleLine="true"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/meetune_player_head_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+
+            <com.newtube.mobile.ui.common.GlassView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="12dp"
+                app:glassCornerRadius="999dp"
+                app:glassTint="@color/meetune_player_glass">
+
+                <ImageView
+                    android:id="@+id/meetune_player_head_like"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/meetune_like"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_meetune_star" />
+
+            </com.newtube.mobile.ui.common.GlassView>
+
+            <com.newtube.mobile.ui.common.GlassView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="14dp"
+                app:glassCornerRadius="999dp"
+                app:glassTint="@color/meetune_player_glass">
+
+                <ImageView
+                    android:id="@+id/meetune_player_head_more"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/meetune_more"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_meetune_more"
+                    android:tint="@android:color/white" />
+
+            </com.newtube.mobile.ui.common.GlassView>
+
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/meetune_player_lyrics_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fadingEdgeLength="64dp"
+            android:overScrollMode="never"
+            android:requiresFadingEdge="vertical"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/meetune_player_lyrics_lines"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="22dp"
+                android:paddingTop="28dp"
+                android:paddingBottom="28dp" />
+
+        </ScrollView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/meetune_player_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:paddingHorizontal="28dp"
+        android:paddingBottom="18dp">
+
+        <TextView
+            android:id="@+id/meetune_player_format"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="18dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="#8CFFFFFF"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:id="@+id/meetune_player_title_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/meetune_player_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="marquee"
+                    android:fontFamily="sans-serif-medium"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:singleLine="true"
+                    android:textColor="@android:color/white"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:id="@+id/meetune_player_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="20sp" />
+
+            </LinearLayout>
+
+            <com.newtube.mobile.ui.common.GlassView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="12dp"
+                app:glassCornerRadius="999dp"
+                app:glassTint="@color/meetune_player_glass">
+
+                <ImageView
+                    android:id="@+id/meetune_player_like"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/meetune_like"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_meetune_star" />
+
+            </com.newtube.mobile.ui.common.GlassView>
+
+            <com.newtube.mobile.ui.common.GlassView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="14dp"
+                app:glassCornerRadius="999dp"
+                app:glassTint="@color/meetune_player_glass">
+
+                <ImageView
+                    android:id="@+id/meetune_player_more"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/meetune_more"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_meetune_more" />
+
+            </com.newtube.mobile.ui.common.GlassView>
+
+        </LinearLayout>
+
+        <!-- The line being sung, over the bar; tap for the lyrics. -->
+        <LinearLayout
+            android:id="@+id/meetune_player_line_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/meetune_player_line"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:alpha="0"
+                android:shadowColor="#59FFFFFF"
+                android:shadowRadius="14"
+                android:textColor="#A6FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="6dp"
+                android:alpha="0"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_chevron_right"
+                android:tint="#99FFFFFF" />
+
+        </LinearLayout>
+
+        <view
+            class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$GlowSeek"
+            android:id="@+id/meetune_player_seek"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginTop="26dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:progressDrawable="@drawable/meetune_seek"
+            android:splitTrack="false"
+            android:thumb="@android:color/transparent" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/meetune_player_elapsed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFeatureSettings="tnum"
+                android:textColor="#B3FFFFFF"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/meetune_player_remaining"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFeatureSettings="tnum"
+                android:gravity="end"
+                android:textColor="#B3FFFFFF"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <com.newtube.mobile.ui.common.GlassView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_gravity="center"
+                    app:glassCornerRadius="999dp"
+                    app:glassTint="@color/meetune_player_glass">
+
+                    <ImageView
+                        android:id="@+id/meetune_player_previous"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/meetune_back"
+                        android:padding="16dp"
+                        android:src="@drawable/ic_meetune_rewind" />
+
+                </com.newtube.mobile.ui.common.GlassView>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <com.newtube.mobile.ui.common.GlassView
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    android:layout_gravity="center"
+                    app:glassCornerRadius="999dp"
+                    app:glassTint="@color/meetune_player_glass">
+
+                    <ImageView
+                        android:id="@+id/meetune_player_play"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/meetune_play"
+                        android:padding="20dp"
+                        android:src="@drawable/ic_meetune_pause" />
+
+                </com.newtube.mobile.ui.common.GlassView>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <com.newtube.mobile.ui.common.GlassView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_gravity="center"
+                    app:glassCornerRadius="999dp"
+                    app:glassTint="@color/meetune_player_glass">
+
+                    <ImageView
+                        android:id="@+id/meetune_player_next"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/meetune_queue"
+                        android:padding="16dp"
+                        android:src="@drawable/ic_meetune_forward" />
+
+                </com.newtube.mobile.ui.common.GlassView>
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_player_volume_down"
+                android:tint="#B3FFFFFF" />
+
+            <view
+                class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$GlowSeek"
+                android:id="@+id/meetune_player_volume"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:progressDrawable="@drawable/meetune_seek"
+                android:splitTrack="false"
+                android:thumb="@android:color/transparent" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_player_volume_up"
+                android:tint="#B3FFFFFF" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <com.newtube.mobile.ui.common.GlassView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    app:glassCornerRadius="999dp"
+                    app:glassTint="@color/meetune_player_glass">
+
+                    <ImageView
+                        android:id="@+id/meetune_player_lyrics"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/meetune_lyrics"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_watch_lyrics"
+                        android:tint="#D9FFFFFF" />
+
+                </com.newtube.mobile.ui.common.GlassView>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <com.newtube.mobile.ui.common.GlassView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    app:glassCornerRadius="999dp"
+                    app:glassTint="@color/meetune_player_glass">
+
+                    <ImageView
+                        android:id="@+id/meetune_player_cast"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/meetune_cast"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_mobile_cast"
+                        android:tint="#D9FFFFFF" />
+
+                </com.newtube.mobile.ui.common.GlassView>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <com.newtube.mobile.ui.common.GlassView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    app:glassCornerRadius="999dp"
+                    app:glassTint="@color/meetune_player_glass">
+
+                    <ImageView
+                        android:id="@+id/meetune_player_queue"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/meetune_queue"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_player_queue"
+                        android:tint="#D9FFFFFF" />
+
+                </com.newtube.mobile.ui.common.GlassView>
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/meetune_player_device"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:alpha="0.7"
+            android:textColor="#B3FFFFFF"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+</FrameLayout>

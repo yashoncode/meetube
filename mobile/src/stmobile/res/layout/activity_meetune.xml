@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUNE: MeeTube's music side. One list shows the page (Home, Explore, Library, Search, or an
+     album/playlist/artist/mood opened from one); MeeTube's floating glass bar, with Home / Explore /
+     Library / Search, switches them. Home's label goes back to MeeTube; its corner has Settings. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/mobile_color_background">
+
+    <com.newtube.mobile.ui.common.GlassSource
+        android:id="@+id/meetune_blur"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/mobile_color_background">
+
+        <!-- An album, playlist or artist page's cover, blurred and fading into the page behind its
+             head; it follows the head up as the list scrolls. -->
+        <com.newtube.mobile.ui.common.GlassSource
+            android:id="@+id/meetune_cover_source"
+            android:layout_width="match_parent"
+            android:layout_height="480dp"
+            android:background="@color/mobile_color_background">
+
+            <view
+                class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$FadeImage"
+                android:id="@+id/meetune_backdrop"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:alpha="0.85"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+        </com.newtube.mobile.ui.common.GlassSource>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/meetune_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="64dp"
+            android:paddingBottom="@dimen/meetune_bottom_clearance" />
+
+        <ProgressBar
+            android:id="@+id/meetune_progress"
+            style="@style/Widget.MeeTube.GlassSpinner"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/meetune_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingHorizontal="32dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/meetune_message_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="@color/mobile_color_on_surface_secondary"
+                android:textSize="15sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/meetune_message_action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="@color/meetune_accent"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                app:cornerRadius="22dp" />
+
+        </LinearLayout>
+
+    </com.newtube.mobile.ui.common.GlassSource>
+
+    <!-- The top row: Back on a pushed page, the search field on Search, Settings and MeeTube on Home. -->
+    <LinearLayout
+        android:id="@+id/meetune_top"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
+
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/meetune_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="10dp"
+            android:clickable="true"
+            android:contentDescription="@string/meetune_back"
+            android:focusable="true"
+            android:visibility="gone"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/meetube_glass_tint">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_mobile_back_arrow"
+                android:tint="@color/mobile_color_on_surface" />
+
+        </com.newtube.mobile.ui.common.GlassView>
+
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/meetune_search_glass"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:visibility="gone"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/meetube_glass_tint">
+
+            <EditText
+                android:id="@+id/meetune_search_field"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:drawablePadding="10dp"
+                android:hint="@string/meetune_search_hint"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingHorizontal="16dp"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textColorHint="@color/mobile_color_on_surface_secondary"
+                android:textCursorDrawable="@drawable/meetube_search_cursor"
+                android:textSize="16sp" />
+
+        </com.newtube.mobile.ui.common.GlassView>
+
+        <!-- Home's brand pill, MeeTube's own (mobile_brand_glass): MeeTune's heart and name on
+             glass; a tap goes back to MeeTube. -->
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/meetune_brand"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:clickable="true"
+            android:contentDescription="@string/meetune_to_meetube"
+            android:elevation="6dp"
+            android:focusable="true"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/meetube_glass_tint">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="16dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_marginEnd="8dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_meetune" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:text="@string/meetune_name"
+                    android:textColor="@color/mobile_color_on_surface"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+
+        </com.newtube.mobile.ui.common.GlassView>
+
+        <TextView
+            android:id="@+id/meetune_title"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/mobile_color_on_surface"
+            android:textSize="22sp" />
+
+        <View
+            android:id="@+id/meetune_title_space"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/meetune_sort"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            android:clickable="true"
+            android:contentDescription="@string/meetune_sort"
+            android:focusable="true"
+            android:visibility="gone"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/meetube_glass_tint">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_meetune_sort"
+                android:tint="@color/mobile_color_on_surface" />
+
+        </com.newtube.mobile.ui.common.GlassView>
+
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/meetune_settings"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            android:clickable="true"
+            android:contentDescription="@string/meetune_account"
+            android:focusable="true"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/meetube_glass_tint">
+
+            <!-- The web (Google) account's avatar; its popup lists the accounts and Settings. -->
+            <ImageView
+                android:id="@+id/meetune_account_avatar"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null" />
+
+        </com.newtube.mobile.ui.common.GlassView>
+
+    </LinearLayout>
+
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/meetune_nav_glass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginHorizontal="?attr/meetubeNavSideMargin"
+        android:layout_marginBottom="?attr/meetubeNavBottomMargin"
+        android:elevation="6dp"
+        android:padding="6dp"
+        app:glassCornerRadius="?attr/meetubeNavCorner"
+        app:glassLiquid="?attr/meetubeNavLiquid"
+        app:glassTint="?attr/meetubeNavTint">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/meetune_nav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:elevation="0dp"
+            app:itemBackground="?attr/meetubeNavItemBackground"
+            app:itemIconSize="24dp"
+            app:itemIconTint="@color/mobile_bottom_nav_item"
+            app:itemRippleColor="@android:color/transparent"
+            app:itemTextAppearanceActive="@style/MobileBottomNavText"
+            app:itemTextAppearanceActiveBoldEnabled="false"
+            app:itemTextAppearanceInactive="@style/MobileBottomNavText"
+            app:itemTextColor="@color/mobile_bottom_nav_item"
+            app:labelVisibilityMode="labeled"
+            app:paddingBottomSystemWindowInsets="false" />
+
+    </com.newtube.mobile.ui.common.GlassView>
+
+    <!-- A song playing: MeeTune's mini player, a glass pill above the bar. Scrolling down folds the
+         bar into the open tab's circle and Search's, the pill between them (MeeTuneMiniPill). -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/meetune_mini_tab"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|start"
+        android:alpha="0"
+        android:contentDescription="@string/meetune_home"
+        android:elevation="6dp"
+        android:visibility="gone"
+        app:glassCornerRadius="?attr/meetubeNavCorner"
+        app:glassTint="?attr/meetubeNavTint">
+
+        <ImageView
+            android:id="@+id/meetune_mini_tab_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:alpha="0"
+            android:contentDescription="@null"
+            android:tint="@color/mobile_color_on_surface" />
+
+    </com.newtube.mobile.ui.common.GlassView>
+
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/meetune_mini_search"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
+        android:alpha="0"
+        android:contentDescription="@string/meetune_search"
+        android:elevation="6dp"
+        android:visibility="gone"
+        app:glassCornerRadius="?attr/meetubeNavCorner"
+        app:glassTint="?attr/meetubeNavTint">
+
+        <ImageView
+            android:id="@+id/meetune_mini_search_icon"
+            android:alpha="0"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_mobile_search"
+            android:tint="@color/mobile_color_on_surface" />
+
+    </com.newtube.mobile.ui.common.GlassView>
+
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/meetune_mini"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:elevation="6dp"
+        android:visibility="gone"
+        app:glassCornerRadius="28dp"
+        app:glassTint="?attr/meetubeNavTint">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="6dp">
+
+            <ImageView
+                android:id="@+id/meetune_mini_art"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/meetune_mini_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:textColor="@color/mobile_color_on_surface"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/meetune_mini_artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/mobile_color_on_surface_secondary"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/meetune_mini_play"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/meetune_play_pause"
+                android:padding="10dp"
+                android:src="@drawable/ic_meetune_pause"
+                android:tint="@color/mobile_color_on_surface" />
+
+            <ImageView
+                android:id="@+id/meetune_mini_next"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/meetune_next"
+                android:padding="10dp"
+                android:src="@drawable/ic_meetune_forward"
+                android:tint="@color/mobile_color_on_surface" />
+
+        </LinearLayout>
+
+    </com.newtube.mobile.ui.common.GlassView>
+
+    <!-- MeeTube's tab-switch lens (NavLens), driven by GlassNavBar as on MeeTube's bar. -->
+    <com.newtube.mobile.ui.common.NavLens
+        android:id="@+id/meetune_nav_lens"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:elevation="8dp"
+        android:visibility="gone" />
+
+    <include layout="@layout/mobile_mini_player_overlay" />
+
+</FrameLayout>

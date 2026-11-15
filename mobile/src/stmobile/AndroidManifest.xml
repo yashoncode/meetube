@@ -452,6 +452,16 @@
             android:screenOrientation="unspecified"
             android:theme="@style/Theme.NewTube" />
 
+        <!-- MEETUNE: the music screen (Home / Explore / Library / Search). -->
+        <activity
+            android:name="com.newtube.mobile.ui.meetune.MeeTuneActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|keyboardHidden|uiMode"
+            android:screenOrientation="unspecified"
+            android:windowSoftInputMode="adjustNothing"
+            android:theme="@style/Theme.NewTube" />
+
         <activity
             android:name="com.newtube.mobile.ui.channel.MobileChannelActivity"
             android:exported="false"

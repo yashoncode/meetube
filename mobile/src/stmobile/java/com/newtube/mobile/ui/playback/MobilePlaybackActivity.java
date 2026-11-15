@@ -566,6 +566,11 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mBackgroundAudioMode;
     /** MEETUBE(audio-only): the headphones button is on - the video track stays dropped on screen too. */
     private boolean mAudioOnly;
+    /** MEETUNE: the music look, made the first time a MeeTune song plays (else never). */
+    @Nullable
+    private MeeTunePlayerSkin mMeeTune;
+    /** MEETUNE: sound-only was switched on for a song, so the next plain video turns it back off. */
+    private boolean mMeeTuneAudioOnly;
     /** MEETUBE(audio-only): the live session's state, for the mini card's headphones button. */
     static volatile boolean sAudioOnly;
     static final String EXTRA_AUDIO_TOGGLE = "toggle";
@@ -2317,6 +2322,9 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     protected void onResume() {
         super.onResume();
+        if (mMeeTune != null) {
+            mMeeTune.restore(); // MEETUNE: back from the mini card, the music look comes back
+        }
         if (MiniPlayerBridge.isActive() && MiniPip.isHostEntering()) {
             // MEETUBE(mini-pip): resumed only because Home under us left for its PiP task; the
             // card is the PiP window, so keep the video there. The system stops us right after.
@@ -3904,6 +3912,11 @@ public class MobilePlaybackActivity extends MobileActivity
      * ponytail: the in-app mini card shows the frozen frame meanwhile; draw the cover there if asked.
      */
     private void setAudioOnly(boolean audioOnly) {
+        setAudioOnly(audioOnly, true);
+    }
+
+    private void setAudioOnly(boolean audioOnly, boolean announce) {
+        mMeeTuneAudioOnly = false; // a choice made here is the user's; MeeTune sets it again after its own
         mAudioOnly = audioOnly;
         sAudioOnly = audioOnly;
         mAudioButton.setSelected(audioOnly);
@@ -3912,7 +3925,144 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         showAudioCover(getVideo());
         updatePipActions();
-        com.newtube.mobile.ui.common.MobileSnackbar.show(this, audioOnly ? R.string.mobile_player_audio_only : R.string.mobile_player_audio_off);
+        if (announce) {
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, audioOnly ? R.string.mobile_player_audio_only : R.string.mobile_player_audio_off);
+        }
+    }
+
+    // ---------------------------------------------------------------------------------
+    // MEETUNE: a song started from MeeTune plays here in the music look. Nothing below runs for a
+    // MeeTube video: updateMeeTune only hides a skin that exists and undoes MeeTune's own sound-only.
+
+    private void updateMeeTune(@Nullable Video item) {
+        boolean music = item != null && com.newtube.mobile.ui.meetune.MeeTune.isMusic(item)
+                && com.newtube.mobile.ui.meetune.MeeTune.musicPlayer(this);
+        com.newtube.mobile.ui.meetune.MeeTuneEq.setPlaying(music); // MeeTune's equalizer: its songs only
+        if (!music) {
+            if (mMeeTune != null) {
+                mMeeTune.hide();
+            }
+            if (item != null && mMeeTuneAudioOnly && mAudioOnly) {
+                setAudioOnly(false, false); // MeeTune turned it on; the video gets its picture back
+            }
+            return;
+        }
+        if (mMeeTune == null) {
+            mMeeTune = new MeeTunePlayerSkin(findViewById(R.id.mobile_player_container), meeTuneControls());
+        }
+        mMeeTune.bind(item);
+        mMeeTune.show();
+        if (com.newtube.mobile.ui.meetune.MeeTune.audioOnly(this) && !mAudioOnly) {
+            setAudioOnly(true, false);
+            mMeeTuneAudioOnly = true;
+        }
+    }
+
+    private MeeTunePlayerSkin.Controls meeTuneControls() {
+        return new MeeTunePlayerSkin.Controls() {
+            @Override public long position() {
+                return mExoPlayerController != null ? mExoPlayerController.getPositionMs() : 0;
+            }
+            @Override public long duration() {
+                return mExoPlayerController != null ? mExoPlayerController.getDurationMs() : 0;
+            }
+            @Override public boolean playing() {
+                return mExoPlayerController != null && mExoPlayerController.getPlayWhenReady();
+            }
+            @Override public void playPause() {
+                if (mExoPlayerController != null) {
+                    mExoPlayerController.setPlayWhenReady(!mExoPlayerController.getPlayWhenReady());
+                }
+            }
+            @Override public void seek(long positionMs) {
+                if (mExoPlayerController != null) {
+                    mExoPlayerController.setPositionMs(positionMs);
+                }
+            }
+            @Override public void previous() {
+                if (mPresenter != null) {
+                    mPresenter.onPreviousClicked();
+                }
+            }
+            @Override public void next() {
+                if (mPresenter != null) {
+                    mPresenter.onNextClicked();
+                }
+            }
+            @Override public void minimize() {
+                getOnBackPressedDispatcher().onBackPressed();
+            }
+            @Override public void cast() {
+                openCastPicker();
+            }
+            @Override public void queue() {
+                showMeeTuneQueue();
+            }
+            @Override public void like() {
+                if (mWatchLike != null) {
+                    mWatchLike.performClick();
+                }
+            }
+            @Override public boolean liked() {
+                return getButtonState(R.id.action_thumbs_up)
+                        == com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerUI.BUTTON_ON;
+            }
+            @Override public void more() {
+                openPlayerMenu();
+            }
+            @Nullable @Override public androidx.media3.common.Format audioFormat() {
+                return mExoPlayerController != null ? mExoPlayerController.getPlayingAudioFormat() : null;
+            }
+        };
+    }
+
+    /** MEETUNE: Up next as a list of songs; a pick stays in the music look. */
+    private void showMeeTuneQueue() {
+        if (mRelatedVideos.isEmpty() || isFinishing()) {
+            return;
+        }
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this));
+        androidx.recyclerview.widget.RecyclerView list = new androidx.recyclerview.widget.RecyclerView(this);
+        list.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        List<Video> videos = new ArrayList<>(mRelatedVideos);
+        list.setAdapter(new androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+            @Override public int getItemCount() {
+                return videos.size();
+            }
+            @NonNull @Override public androidx.recyclerview.widget.RecyclerView.ViewHolder onCreateViewHolder(
+                    @NonNull ViewGroup parent, int viewType) {
+                View row = getLayoutInflater().inflate(R.layout.meetune_song_row, parent, false);
+                row.findViewById(R.id.meetune_row_more).setVisibility(View.GONE);
+                return new androidx.recyclerview.widget.RecyclerView.ViewHolder(row) { };
+            }
+            @Override public void onBindViewHolder(
+                    @NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder, int position) {
+                Video video = videos.get(position);
+                View row = holder.itemView;
+                ((TextView) row.findViewById(R.id.meetune_title)).setText(video.getTitle());
+                ((TextView) row.findViewById(R.id.meetune_subtitle)).setText(video.getAuthor());
+                com.bumptech.glide.Glide.with(row).load(video.cardImageUrl)
+                        .into((ImageView) row.findViewById(R.id.meetune_art));
+                row.setOnClickListener(v -> {
+                    sheet.dismiss();
+                    com.newtube.mobile.ui.meetune.MeeTune.keep(video);
+                    onRelatedClicked(video);
+                });
+            }
+        });
+        TextView title = new TextView(this);
+        title.setText(R.string.meetune_queue);
+        title.setTextSize(20);
+        title.setTextColor(getColorInt(R.color.mobile_color_on_surface));
+        int pad = Math.round(20 * getResources().getDisplayMetrics().density);
+        title.setPadding(pad, pad, pad, pad / 2);
+        android.widget.LinearLayout content = new android.widget.LinearLayout(this);
+        content.setOrientation(android.widget.LinearLayout.VERTICAL);
+        content.addView(title);
+        content.addView(list);
+        sheet.setContentView(sheetRoot(content));
+        showPlayerSheet(sheet);
     }
 
     /** The audio-only cover: {@code video}'s thumbnail, dimmed, with the headphones over it. */
@@ -7652,6 +7802,10 @@ public class MobilePlaybackActivity extends MobileActivity
             return PlayerContainerLayout.SWIPE_NONE;
         }
         mSwipeDownRawX = downRawX;
+        if (mMeeTune != null && mMeeTune.isShown()) { // MEETUNE: the music look only swipes down, to minimize
+            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag()
+                    ? SWIPE_MINIMIZE : PlayerContainerLayout.SWIPE_NONE;
+        }
         boolean vertical = direction == PlayerContainerLayout.UP || direction == PlayerContainerLayout.DOWN;
         if (mMoreVideos != null && mMoreVideos.isShown()) {
             // Up or down moves the panel; sideways is its row's own scroll, not a seek.
@@ -8216,6 +8370,12 @@ public class MobilePlaybackActivity extends MobileActivity
         // background more slowly. This reads as a black sheet becoming transparent while the live
         // video remains fully opaque above it.
         float contentAlpha = Math.max(0f, 1f - f * 5f);
+        if (mMeeTune != null && mMeeTune.isShown()) {
+            // MEETUNE: the music page slides down after the finger, over a blurring MeeTune; the
+            // (sound-only) video box it covered would fly to a card corner the pill is not at.
+            mMeeTune.follow(f);
+            mVideoArea.setAlpha(f > 0f ? 0f : 1f);
+        }
         if (mWatchContent != null) {
             mWatchContent.setAlpha(contentAlpha);
         }
@@ -8353,6 +8513,10 @@ public class MobilePlaybackActivity extends MobileActivity
         mMorphFraction = 0f;
         updateHdrOutput();
         mMorphOverOwnBackdrop = false;
+        if (mMeeTune != null && mMeeTune.isShown()) {
+            mMeeTune.follow(0f);
+            mVideoArea.setAlpha(1f);
+        }
         mVideoArea.setScaleX(1f);
         mVideoArea.setScaleY(1f);
         mVideoArea.setTranslationX(0f);
@@ -8760,6 +8924,13 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /** X tapped on the Browse mini bar: stop playback and quietly retire this hidden activity. */
+    /** MEETUNE: the music pill's next button, while the song plays minimized. */
+    void nextFromMiniPlayer() {
+        if (mPresenter != null) {
+            mPresenter.onNextClicked();
+        }
+    }
+
     void closeFromMiniPlayer() {
         mMiniBeforeShorts = null;
         mMiniHostBeforeShorts = null;
@@ -12873,6 +13044,7 @@ public class MobilePlaybackActivity extends MobileActivity
             maybeShowLoadingStill(item);
             showAudioCover(item); // MEETUBE(audio-only): the next video's thumbnail
             updateMusicPill(item);
+            updateMeeTune(item);
         });
 
         // LOADING SKELETON: a new video is being set on the view and its related feed hasn't landed

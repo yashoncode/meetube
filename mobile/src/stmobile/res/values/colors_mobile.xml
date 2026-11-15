@@ -119,4 +119,7 @@
          and the player's over the video - one dark frost in both themes, white text. -->
     <color name="meetube_toast_glass">#A3303034</color>
     <color name="meetube_toast_rim">#3DFFFFFF</color>
+    <!-- MEETUNE --><color name="meetune_accent">#FF2D55</color>
+    <!-- MEETUNE: the music player's glass buttons, white glass over the art in both themes. -->
+    <color name="meetune_player_glass">#29FFFFFF</color>
 </resources>
