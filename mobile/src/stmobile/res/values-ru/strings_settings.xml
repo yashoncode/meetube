@@ -35,8 +35,8 @@
     <string name="mobile_settings_general">Общие</string>
     <string name="mobile_settings_general_summary">Язык, регион, голосовой поиск и часы</string>
     <string name="mobile_settings_customize">Настройка интерфейса</string>
-    <string name="mobile_settings_customize_summary">Тема, вкладки, макет главной страницы и меню видео</string>
-    <string name="mobile_settings_customize_summary_value">Тема «%1$s», вкладки, макет главной страницы и меню видео</string>
+    <string name="mobile_settings_customize_summary">Тема, главная страница и списки видео, плеер, вкладки и эффекты</string>
+    <string name="mobile_settings_customize_summary_value">Тема «%1$s», главная страница и списки видео, плеер, вкладки и эффекты</string>
     <string name="mobile_settings_theme_system_short">Системная</string>
     <string name="mobile_settings_theme_light_short">Светлая</string>
     <string name="mobile_settings_theme_dark_short">Тёмная</string>
@@ -58,7 +58,7 @@
     <string name="mobile_settings_backup">Резервное копирование и восстановление</string>
     <string name="mobile_settings_backup_summary">Сохранить настройки в файл</string>
     <string name="mobile_settings_advanced">Дополнительно</string>
-    <string name="mobile_settings_advanced_summary">Сеть, потоковое воспроизведение и исправления</string>
+    <string name="mobile_settings_advanced_summary">Потоковое воспроизведение, сеть и исправления</string>
     <string name="mobile_settings_about">О приложении</string>
     <string name="mobile_settings_coffee">Угостить разработчика кофе</string>
     <string name="mobile_settings_coffee_summary">Поддержите MeeTube, если вам нравится приложение</string>
@@ -345,10 +345,10 @@
     <string name="mobile_settings_advanced_note">Эти настройки обычно не нужны. Они меняют способ потоковой передачи данных и подключения MeeTube.</string>
     <string name="mobile_settings_streaming">Потоковая передача</string>
     <string name="mobile_settings_buffer">Буфер</string>
-    <string name="mobile_settings_buffer_low_desc">Примерно 25 секунд вперёд. Использует минимум памяти</string>
-    <string name="mobile_settings_buffer_med_desc">Примерно 50 секунд вперёд</string>
-    <string name="mobile_settings_buffer_high_desc">До 75 секунд вперёд</string>
-    <string name="mobile_settings_buffer_highest_desc">До 2 минут вперёд. Использует больше всего памяти</string>
+    <string name="mobile_settings_buffer_low_desc">Около 25 секунд видео загружается заранее. Минимальный расход памяти.</string>
+    <string name="mobile_settings_buffer_med_desc">Около 50 секунд видео загружается заранее.</string>
+    <string name="mobile_settings_buffer_high_desc">До 75 секунд видео загружается заранее.</string>
+    <string name="mobile_settings_buffer_highest_desc">До 2 минут видео загружается заранее. Максимальный расход памяти.</string>
     <string name="mobile_settings_stall_quality">Снижать качество при постоянной буферизации</string>
     <string name="mobile_settings_stall_quality_summary">При буферизации дольше 20 секунд качество снижается на один уровень. Отключение этой функции может помочь при использовании VPN.</string>
     <string name="mobile_settings_high_bitrate">Форматы с высоким битрейтом</string>
@@ -374,7 +374,7 @@
     <string name="mobile_settings_network">Сеть и подключение</string>
     <string name="mobile_settings_proxy">Прокси-сервер</string>
     <string name="mobile_settings_proxy_summary">Направляет сетевые запросы MeeTube через HTTP- или SOCKS-прокси.</string>
-    <string name="mobile_settings_dns">DNS-сервер</string>
+    <string name="mobile_settings_dns">DNS для YouTube</string>
     <string name="mobile_settings_dns_ipv4">В первую очередь IPv4</string>
     <string name="mobile_settings_dns_ipv4_desc">Режим по умолчанию. Помогает в сетях, где IPv6 работает с ошибками.</string>
     <string name="mobile_settings_dns_system">DNS-сервер системы</string>
@@ -669,7 +669,7 @@
     <string name="mobile_settings_customize_bars">Вкладки и панели</string>
     <string name="mobile_settings_customize_bars_summary">Нижние вкладки, верхняя панель, кнопка поиска и меню видео</string>
     <string name="mobile_settings_video_layout_all">Все страницы</string>
-    <string name="mobile_settings_video_layout_follow">Как на всех страницах</string>
+    <string name="mobile_settings_video_layout_follow">Как для всех страниц</string>
     <string name="mobile_settings_video_layout_home">Главная</string>
     <string name="mobile_settings_video_layout_subscriptions">Подписки</string>
     <string name="mobile_settings_video_layout_library">История, загрузки и другие вкладки</string>
