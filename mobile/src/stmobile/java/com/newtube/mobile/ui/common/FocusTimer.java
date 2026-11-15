@@ -144,8 +144,9 @@ public final class FocusTimer {
         if (blur) {
             android.graphics.drawable.GradientDrawable card = new android.graphics.drawable.GradientDrawable();
             card.setCornerRadius(28 * dp);
-            int surface = androidx.core.content.ContextCompat.getColor(context, R.color.mobile_color_surface);
-            card.setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(surface, 0xB8));
+            // MEETUBE(glass): the grey surface at 72% washed the blurred page out to milk on the dark
+            // theme; a black tint keeps it dark glass, as the search bar.
+            card.setColor(androidx.core.content.ContextCompat.getColor(context, R.color.meetube_dialog_glass_tint));
             card.setStroke(Math.max(1, Math.round(dp)), androidx.core.content.ContextCompat.getColor(context,
                     R.color.meetube_frost_tint));
             builder.setBackground(card);
@@ -154,7 +155,9 @@ public final class FocusTimer {
         if (blur && dialog.getWindow() != null) {
             dialog.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
             dialog.getWindow().getAttributes().setBlurBehindRadius(Math.round(24 * dp));
-            dialog.getWindow().setDimAmount(0.2f);
+            boolean night = (context.getResources().getConfiguration().uiMode
+                    & android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+            dialog.getWindow().setDimAmount(night ? 0.4f : 0.2f);
         }
         return dialog;
     }

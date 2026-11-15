@@ -337,6 +337,15 @@
         <item name="shapeAppearanceMediumComponent">@style/MobileAlertDialogShape</item>
     </style>
 
+    <!-- MEETUBE(glass): a dialog whose multi-choice rows tick frosted glass boxes. -->
+    <style name="MobileAlertDialog.GlassCheck">
+        <item name="alertDialogStyle">@style/MobileAlertDialog.GlassCheckList</item>
+    </style>
+
+    <style name="MobileAlertDialog.GlassCheckList" parent="MaterialAlertDialog.MaterialComponents">
+        <item name="multiChoiceItemLayout">@layout/mobile_dialog_glass_check_row</item>
+    </style>
+
     <style name="MobileAlertDialogShape" parent="ShapeAppearance.MaterialComponents.MediumComponent">
         <item name="cornerSize">28dp</item>
     </style>

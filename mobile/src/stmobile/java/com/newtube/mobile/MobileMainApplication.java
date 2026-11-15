@@ -156,6 +156,21 @@ public class MobileMainApplication extends MainApplication {
         if (isPhoenixProcess()) {
             return;
         }
+        // MEETUBE(glass): the text dialogs (Create playlist, Rename...) as the app's frosted, rounded card.
+        com.liskovsoft.smartyoutubetv2.common.utils.SimpleEditDialog.sStyle =
+                new com.liskovsoft.smartyoutubetv2.common.utils.SimpleEditDialog.Style() {
+                    @Override
+                    public androidx.appcompat.app.AlertDialog.Builder builder(android.content.Context context) {
+                        return new com.google.android.material.dialog.MaterialAlertDialogBuilder(context,
+                                com.liskovsoft.smartyoutubetv2.tv.R.style.MobileAlertDialog);
+                    }
+
+                    @Override
+                    public androidx.appcompat.app.AlertDialog create(androidx.appcompat.app.AlertDialog.Builder builder) {
+                        return com.newtube.mobile.ui.common.FocusTimer.frosted(
+                                (com.google.android.material.dialog.MaterialAlertDialogBuilder) builder);
+                    }
+                };
         // Optional WEB auth: installing the bridge does not load WebView or construct OkHttp.
         com.liskovsoft.youtubeapi.web.WebSession.setCookieStore(new com.liskovsoft.youtubeapi.web.CookieStore() {
             @Override public String get(String url) {

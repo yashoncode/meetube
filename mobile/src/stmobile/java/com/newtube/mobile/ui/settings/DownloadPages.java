@@ -31,9 +31,12 @@ final class DownloadPages {
         List<SettingsRow> rows = new ArrayList<>();
 
         if (DownloadFolder.isSupported()) { // MEETUBE(download-folder): also a long press on any Download button
-            rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_folder),
-                    () -> DownloadFolder.label(context),
-                    page -> page.showDialog(DownloadFolder.showOptions(page.requireActivity()))));
+            rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_folder_video),
+                    () -> DownloadFolder.label(context, false),
+                    page -> page.showDialog(DownloadFolder.showOptions(page.requireActivity(), false))));
+            rows.add(SettingsRow.action(0, context.getString(R.string.mobile_download_folder_audio),
+                    () -> DownloadFolder.label(context, true),
+                    page -> page.showDialog(DownloadFolder.showOptions(page.requireActivity(), true))));
         }
         rows.add(quality(context, context.getString(R.string.mobile_settings_download_quality), true,
                 AutoDownload.defaultQuality(context), q -> AutoDownload.setDefaultQuality(context, q)));
@@ -115,7 +118,7 @@ final class DownloadPages {
             for (int i = 0; i < ids.size(); i++) {
                 checked[i] = picked.containsKey(ids.get(i));
             }
-            page.showDialog(new MaterialAlertDialogBuilder(page.requireActivity())
+            page.showDialog(new MaterialAlertDialogBuilder(page.requireActivity(), R.style.MobileAlertDialog_GlassCheck)
                     .setTitle(channels ? R.string.mobile_settings_auto_channels : R.string.mobile_settings_auto_playlists)
                     .setMultiChoiceItems(titles, checked, (dialog, which, on) -> {
                         if (on) {

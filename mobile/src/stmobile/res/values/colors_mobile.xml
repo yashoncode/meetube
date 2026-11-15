@@ -90,6 +90,10 @@
     <!-- MEETUBE(search): milky like the Home pills: a see-through grey let the 6dp shadow show through it
          (issue #162's look), and the pill and its discs turned a dull grey on a white page. -->
     <color name="meetube_search_glass_tint">#D9F7F7F8</color>
+    <!-- MEETUBE(glass): a frosted dialog card over the blurred page; dark tinted on the dark theme, as the search bar. -->
+    <color name="meetube_dialog_glass_tint">#B8FFFFFF</color>
+    <!-- MEETUBE(glass): the greeting's stats card and pills; dark tinted on the dark theme, as the search bar. -->
+    <color name="meetube_greet_glass_tint">#B3FFFFFF</color>
     <!-- MEETUBE(glass): a pill on a frosted sheet ("Add a comment"): a see-through lift. -->
     <color name="meetube_glass_pill_tint">#14000000</color>
     <!-- MEETUBE(glass): sheet surfaces - the surface, a little see-through over the blurred page. -->

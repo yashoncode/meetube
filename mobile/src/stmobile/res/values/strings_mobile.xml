@@ -557,13 +557,15 @@
     <string name="mobile_download_saved_in">Saved in %1$s</string>
     <string name="mobile_download_retry">Retry download</string>
     <string name="mobile_download_folder">Download folder</string>
+    <string name="mobile_download_folder_video">Video folder</string>
+    <string name="mobile_download_folder_audio">Music folder</string>
+    <string name="mobile_download_folder_default_video" translatable="false">Movies/MeeTube</string>
+    <string name="mobile_download_folder_default_audio" translatable="false">Music/MeeTube</string>
     <string name="mobile_download_folder_title">Saving to: %1$s</string>
-    <string name="mobile_download_folder_default">Movies/MeeTube and Music/MeeTube</string>
     <string name="mobile_download_folder_internal">Internal storage</string>
     <string name="mobile_download_folder_choose">Choose a folder</string>
     <string name="mobile_download_folder_use_default">Use the default folder</string>
     <string name="mobile_download_folder_set">Downloads go to %1$s</string>
-    <string name="mobile_download_folder_reset">Downloads go to the default folder</string>
     <string name="mobile_download_folder_failed">Couldn\'t use that folder</string>
     <string name="mobile_download_cancel">Cancel download</string>
     <string name="mobile_download_delete">Delete download</string>

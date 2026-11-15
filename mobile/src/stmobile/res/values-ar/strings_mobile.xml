@@ -414,13 +414,13 @@
     <string name="mobile_download_saved_in">تم الحفظ في %1$s</string>
     <string name="mobile_download_retry">إعادة محاولة التنزيل</string>
     <string name="mobile_download_folder">مجلد التنزيل</string>
+    <string name="mobile_download_folder_video">مجلد الفيديو</string>
+    <string name="mobile_download_folder_audio">مجلد الموسيقى</string>
     <string name="mobile_download_folder_title">الحفظ في: %1$s</string>
-    <string name="mobile_download_folder_default">Movies/MeeTube وMusic/MeeTube</string>
     <string name="mobile_download_folder_internal">وحدة التخزين الداخلية</string>
     <string name="mobile_download_folder_choose">اختيار مجلد</string>
     <string name="mobile_download_folder_use_default">استخدام المجلد الافتراضي</string>
     <string name="mobile_download_folder_set">سيتم حفظ التنزيلات في %1$s</string>
-    <string name="mobile_download_folder_reset">سيتم حفظ التنزيلات في المجلد الافتراضي</string>
     <string name="mobile_download_folder_failed">تعذّر استخدام هذا المجلد</string>
     <string name="mobile_download_cancel">إلغاء التنزيل</string>
     <string name="mobile_download_delete">حذف التنزيل</string>

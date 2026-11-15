@@ -10,7 +10,7 @@
     android:clickable="true"
     app:glassCornerRadius="24dp"
     app:glassOnGlass="true"
-    app:glassTint="@color/meetube_frost_tint">
+    app:glassTint="@color/meetube_greet_glass_tint">
 
     <LinearLayout
         android:layout_width="match_parent"

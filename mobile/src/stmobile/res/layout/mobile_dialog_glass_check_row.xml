@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(glass): a multi-choice dialog row with a frosted tick box. Material's own row sets its box
+     through app:drawableStartCompat, which this dialog's inflater ignores, so no box was drawn. -->
+<CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="?attr/listPreferredItemHeightSmall"
+    android:gravity="center_vertical"
+    android:textAlignment="viewStart"
+    android:paddingStart="24dp"
+    android:paddingEnd="?attr/dialogPreferredPadding"
+    android:drawableStart="@drawable/bg_glass_check"
+    android:drawablePadding="16dp"
+    android:textAppearance="?attr/textAppearanceSubtitle1"
+    android:textColor="?android:attr/textColorPrimary"
+    android:ellipsize="marquee" />

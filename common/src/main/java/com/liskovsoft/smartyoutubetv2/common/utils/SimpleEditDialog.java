@@ -16,6 +16,14 @@ public class SimpleEditDialog {
         boolean onChange(String newValue);
     }
 
+    /** MEETUBE(glass): how the phone builds these dialogs (its frosted, rounded card); null keeps AppDialog. */
+    public interface Style {
+        AlertDialog.Builder builder(Context context);
+        AlertDialog create(AlertDialog.Builder builder);
+    }
+
+    public static Style sStyle;
+
     public static void show(Context context, String dialogTitle, String defaultValue, OnChange onChange) {
         show(context, dialogTitle, dialogTitle, defaultValue, onChange, null);
     }
@@ -37,9 +45,14 @@ public class SimpleEditDialog {
     }
 
     private static void show(Context context, String dialogTitle, String dialogHint, String defaultValue, OnChange onChange, Runnable onDismiss, boolean isPassword) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppDialog);
+        Style style = sStyle;
+        AlertDialog.Builder builder = style != null ? style.builder(context) : new AlertDialog.Builder(context, R.style.AppDialog);
         LayoutInflater inflater = LayoutInflater.from(context);
         View contentView = inflater.inflate(R.layout.simple_edit_dialog, null);
+        if (style != null) { // in line with the title
+            float dp = context.getResources().getDisplayMetrics().density;
+            contentView.setPadding(Math.round(20 * dp), Math.round(4 * dp), Math.round(20 * dp), 0);
+        }
 
         EditText editField = contentView.findViewById(R.id.simple_edit_value);
         if (isPassword) {
@@ -57,12 +70,12 @@ public class SimpleEditDialog {
 
         // keep empty, will override below.
         // https://stackoverflow.com/a/15619098/5379584
-        AlertDialog configDialog = builder
+        builder
                 .setTitle(dialogTitle)
                 .setView(contentView)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> { })
-                .setNegativeButton(android.R.string.cancel, (dialog, which) -> { })
-                .create();
+                .setNegativeButton(android.R.string.cancel, (dialog, which) -> { });
+        AlertDialog configDialog = style != null ? style.create(builder) : builder.create();
 
         if (onDismiss != null) {
             configDialog.setOnDismissListener(dialog -> onDismiss.run());

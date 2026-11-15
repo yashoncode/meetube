@@ -431,13 +431,13 @@
     <string name="mobile_download_saved_in">Salvo em %1$s</string>
     <string name="mobile_download_retry">Tentar o download de novo</string>
     <string name="mobile_download_folder">Pasta de downloads</string>
+    <string name="mobile_download_folder_video">Pasta de vídeos</string>
+    <string name="mobile_download_folder_audio">Pasta de músicas</string>
     <string name="mobile_download_folder_title">Salvando em: %1$s</string>
-    <string name="mobile_download_folder_default">Movies/MeeTube e Music/MeeTube</string>
     <string name="mobile_download_folder_internal">Armazenamento interno</string>
     <string name="mobile_download_folder_choose">Escolher uma pasta</string>
     <string name="mobile_download_folder_use_default">Usar a pasta padrão</string>
     <string name="mobile_download_folder_set">Os downloads vão para %1$s</string>
-    <string name="mobile_download_folder_reset">Os downloads vão para a pasta padrão</string>
     <string name="mobile_download_folder_failed">Não foi possível usar essa pasta</string>
     <string name="mobile_download_cancel">Cancelar download</string>
     <string name="mobile_download_delete">Excluir download</string>

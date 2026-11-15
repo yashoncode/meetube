@@ -1000,6 +1000,16 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchScroll = findViewById(R.id.mobile_watch_scroll);
         mWatchFab = findViewById(R.id.mobile_watch_fullscreen_fab);
         if (mWatchFab != null) {
+            // MEETUBE(fullscreen): an opaque outline makes the renderer skip the shadow's centre under
+            // the button, and the see-through disc showed that hole as a lighter octagon; just under
+            // 1 alpha marks it see-through, so the shadow is drawn evenly under all of it.
+            mWatchFab.setOutlineProvider(new android.view.ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, android.graphics.Outline outline) {
+                    outline.setOval(0, 0, view.getWidth(), view.getHeight());
+                    outline.setAlpha(0.99f);
+                }
+            });
             mWatchFab.setOnClickListener(v -> {
                 if (v.getAlpha() > 0.5f) {
                     toggleFullscreen();
@@ -11796,7 +11806,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return false;
         }
         Haptics.longPress(mWatchDownload);
-        DownloadFolder.showOptions(this);
+        DownloadFolder.showKinds(this);
         return true;
     }
 
