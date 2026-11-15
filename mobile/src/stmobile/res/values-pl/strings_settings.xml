@@ -589,6 +589,6 @@
     <string name="mobile_web_signin_setting">Internetowe logowanie YouTube</string>
     <string name="mobile_web_signin_optional">Opcjonalne. Potrzebne do wysyłania wiadomości na czacie na żywo</string>
     <string name="mobile_web_signin_signed_as">Zalogowano jako %1$s</string>
-    <string name="mobile_settings_youtube_mode">Tryb YouTube</string>
+    <string name="mobile_settings_youtube_mode">OG Mode</string>
     <string name="mobile_settings_youtube_mode_summary">Kwadratowe karty filmów wszędzie i dolny pasek przyklejony do krawędzi ekranu, z matowego szkła, jak w YouTube</string>
 </resources>

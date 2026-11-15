@@ -48,6 +48,10 @@ public final class NavHider extends RecyclerView.OnScrollListener {
 
     @Override
     public void onScrolled(@NonNull RecyclerView list, int dx, int dy) {
+        if (isFixed(mBar.getContext(), mTop)) { // MEETUBE(fixed bars): stays put while the list scrolls
+            show();
+            return;
+        }
         if (!list.canScrollVertically(-1)) {
             show();
             return;
@@ -61,6 +65,19 @@ public final class NavHider extends RecyclerView.OnScrollListener {
         } else if (mTravel < -mSlopPx) {
             show();
         }
+    }
+
+    private static final String PREFS = "meetube_fixed_bars";
+
+    /** MEETUBE(fixed bars): Customization > Bars, Fixed Top Bar / Fixed Nav Bar; off by default. */
+    public static boolean isFixed(android.content.Context context, boolean top) {
+        return context.getApplicationContext().getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
+                .getBoolean(top ? "top" : "nav", false);
+    }
+
+    public static void setFixed(android.content.Context context, boolean top, boolean fixed) {
+        context.getApplicationContext().getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
+                .edit().putBoolean(top ? "top" : "nav", fixed).apply();
     }
 
     /** MEETUBE(issue #125): told where the bar slides to (0 back, its travel away), for what rides on it. */

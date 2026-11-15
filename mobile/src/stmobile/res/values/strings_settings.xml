@@ -493,7 +493,7 @@
     <string name="mobile_settings_customize_effects">Effects and feedback</string>
     <string name="mobile_settings_customize_effects_summary">Liquid glass, glows, vibration, sounds</string>
     <string name="mobile_settings_customize_theme">Theme and colours</string>
-    <string name="mobile_settings_customize_theme_summary">YouTube mode, theme, accent colour, app icon, size</string>
+    <string name="mobile_settings_customize_theme_summary">OG Mode, theme, accent colour, app icon, size</string>
     <string name="mobile_settings_customize_lists">Home and video lists</string>
     <string name="mobile_settings_customize_lists_summary">Home layout, cards or list on each page, thumbnails</string>
     <string name="mobile_settings_customize_player">Watch page and player</string>
@@ -681,6 +681,10 @@
     <string name="mobile_web_signin_setting">YouTube web sign-in</string>
     <string name="mobile_web_signin_optional">Optional. Needed to send live chat messages</string>
     <string name="mobile_web_signin_signed_as">Signed in as %1$s</string>
-    <string name="mobile_settings_youtube_mode">YouTube mode</string>
+    <string name="mobile_settings_fixed_top">Fixed Top Bar</string>
+    <string name="mobile_settings_fixed_top_summary">The top bar stays on screen while you scroll</string>
+    <string name="mobile_settings_fixed_nav">Fixed Nav Bar</string>
+    <string name="mobile_settings_fixed_nav_summary">The bottom bar stays on screen while you scroll</string>
+    <string name="mobile_settings_youtube_mode">OG Mode</string>
     <string name="mobile_settings_youtube_mode_summary">Square video cards everywhere and the bottom bar docked to the bottom edge, frosted glass, like YouTube</string>
 </resources>

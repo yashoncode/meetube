@@ -92,7 +92,7 @@ public final class EqualizerSheet {
 
     /** MEETUBE(issue #236): the same sheet from the player's gear menu; the caller shows it. */
     public static BottomSheetDialog create(Context context) {
-        BottomSheetDialog sheet = new BottomSheetDialog(context);
+        BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(new BottomSheetDialog(context)); // MEETUBE(glass): frosted
         View content = LayoutInflater.from(sheet.getContext()).inflate(R.layout.sheet_mobile_equalizer, null);
         new EqualizerSheet(sheet.getContext(), content);
         sheet.setContentView(content);

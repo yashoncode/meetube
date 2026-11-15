@@ -41,7 +41,7 @@ final class ProgressColorSheet {
     static void show(SettingsPageFragment page) {
         Context context = page.requireContext();
         int accentBefore = Accent.key(context);
-        BottomSheetDialog sheet = new BottomSheetDialog(context);
+        BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(new BottomSheetDialog(context)); // MEETUBE(glass): frosted
         Context c = sheet.getContext();
         float dp = c.getResources().getDisplayMetrics().density;
         LinearLayout content = new LinearLayout(c);
