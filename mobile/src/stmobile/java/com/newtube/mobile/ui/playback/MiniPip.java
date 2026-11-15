@@ -56,6 +56,8 @@ public final class MiniPip {
     // The card's own geometry, put back when the window expands.
     private ViewGroup.MarginLayoutParams mSavedLp;
     private float mSavedZ;
+    private float mSavedX;
+    private float mSavedY;
     private float mSavedRadius;
     private int mSavedStroke;
     private final Map<View, Integer> mSiblingVisibility = new LinkedHashMap<>();
@@ -66,6 +68,7 @@ public final class MiniPip {
         mCard = card;
         mOnClosed = onClosed;
         mChrome = chrome;
+        sAll.add(this);
     }
 
     private static final String PREFS = "mini_pip";
@@ -92,7 +95,25 @@ public final class MiniPip {
     private boolean canFloat() {
         ExoPlayer player = MiniPlayerBridge.getPlayer();
         return player != null && player.getPlayWhenReady() && mCard.getVisibility() == View.VISIBLE
-                && !MiniPlayerBridge.isClosing() && isAutoEnabled(mHost);
+                && !MiniPlayerBridge.isClosing() && isAutoEnabled(mHost)
+                && !MobilePlaybackActivity.sAudioOnly; // audio-only card: nothing to float
+    }
+
+    private static final java.util.Set<MiniPip> sAll =
+            java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+
+    /**
+     * A host is on its way into PiP (paused into it, mode callback not in yet). Android 17 resumes
+     * the player under it meanwhile; that resume must not take the video back from the card.
+     * A host already floating (mPinned) is not this: the app reopened from the launcher does take it.
+     */
+    public static boolean isHostEntering() {
+        for (MiniPip pip : sAll) {
+            if (!pip.mPinned && pip.isPinned()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Re-arm (or disarm) the window's auto-enter and refresh the PiP window's action. */
@@ -201,6 +222,8 @@ public final class MiniPip {
     private void fillWindow() {
         mSavedLp = new ViewGroup.MarginLayoutParams((ViewGroup.MarginLayoutParams) mCard.getLayoutParams());
         mSavedZ = mCard.getTranslationZ();
+        mSavedX = mCard.getTranslationX(); // the corner it was dragged to (MiniCardSwipe moves by translation)
+        mSavedY = mCard.getTranslationY();
         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) mCard.getLayoutParams();
         lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
         lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -264,6 +287,8 @@ public final class MiniPip {
             lp.setMarginEnd(mSavedLp.getMarginEnd());
             mCard.setLayoutParams(lp);
             mCard.setTranslationZ(mSavedZ);
+            mCard.setTranslationX(mSavedX);
+            mCard.setTranslationY(mSavedY);
             mSavedLp = null;
             shrinkBack(fullW, fullH);
         }
@@ -293,7 +318,9 @@ public final class MiniPip {
                 mCard.setScaleY((float) fullH / h);
                 mCard.setTranslationX(-mCard.getLeft());
                 mCard.setTranslationY(-mCard.getTop());
-                mCard.animate().scaleX(1f).scaleY(1f).translationX(0f).translationY(0f)
+                float toX = mSavedX;
+                float toY = mSavedY;
+                mCard.animate().scaleX(1f).scaleY(1f).translationX(toX).translationY(toY)
                         .setDuration(320).setInterpolator(new FastOutSlowInInterpolator())
                         .withEndAction(() -> {
                             mCard.setPivotX(w / 2f);

@@ -175,6 +175,14 @@ public final class MiniPlayerBridge {
     static void activate(MobilePlaybackActivity activity) {
         sActivity = new WeakReference<>(activity);
         sActive = true;
+        sSession++;
+    }
+
+    private static int sSession;
+
+    /** Bumps on every minimize: a host tells "the same docked card" from a fresh one. */
+    public static int session() {
+        return sSession;
     }
 
     /**

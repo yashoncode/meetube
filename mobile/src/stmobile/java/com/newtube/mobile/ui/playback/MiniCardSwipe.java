@@ -129,6 +129,20 @@ public final class MiniCardSwipe implements View.OnTouchListener {
         return mHomeY;
     }
 
+    /** Where the card rests now (see {@link #restorePlace}): x, y, at-top, rest y. */
+    public float[] place() {
+        return new float[] {mCard.getTranslationX(), mCard.getTranslationY(), mAtTop ? 1f : 0f, mRestY};
+    }
+
+    /** Back where {@link #place} found it: the host hid the card while the app was away. */
+    public void restorePlace(float[] place) {
+        mCard.setTranslationX(place[0]);
+        mCard.setTranslationY(place[1]);
+        mAtTop = place[2] != 0f;
+        mRestY = place[3];
+        mTopY = place[1];
+    }
+
     /**
      * MEETUBE(issue #125): home moves with the nav bar under it (slid off by a scroll, NavHider). A
      * card resting at a bottom corner rides along; one at the top, held, or closing stays put.
