@@ -185,11 +185,13 @@ public class MobileSearchActivity extends MobileActivity
                     syncChips();
                 }));
         setupChips();
-        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_search_glass),
-                findViewById(R.id.mobile_search_glass_source));
-        for (int glass : new int[] {R.id.mobile_search_back_glass, R.id.mobile_search_filters_glass}) {
+        // MEETUBE(issue #250): the default light frost left the titles scrolling under the pill
+        // readable, tangled with the query; a heavier one turns them into colour, not words.
+        for (int glass : new int[] {R.id.mobile_search_glass, R.id.mobile_search_back_glass,
+                R.id.mobile_search_filters_glass}) {
             com.newtube.mobile.ui.common.Glass.blur(findViewById(glass),
                     findViewById(R.id.mobile_search_glass_source));
+            ((com.newtube.mobile.ui.common.GlassView) findViewById(glass)).setBlur(24f);
         }
         if (savedInstanceState == null) {
             getWindow().getDecorView().post(() -> SiriGlow.play(this)); // MEETUBE(search glow)
