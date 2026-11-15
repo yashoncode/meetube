@@ -120,11 +120,20 @@
             app:glassCornerRadius="22dp"
             app:glassTint="@color/meetube_glass_tint">
 
-            <EditText
-                android:id="@+id/meetune_search_field"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+            <com.newtube.mobile.ui.search.GlowEditText
+                android:id="@+id/meetune_search_field"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:background="@null"
+                android:drawableStart="@drawable/ic_mobile_search"
+                android:drawableTint="@color/mobile_color_on_surface_secondary"
                 android:drawablePadding="10dp"
                 android:hint="@string/meetune_search_hint"
                 android:imeOptions="actionSearch"
@@ -136,6 +145,19 @@
                 android:textColorHint="@color/mobile_color_on_surface_secondary"
                 android:textCursorDrawable="@drawable/meetube_search_cursor"
                 android:textSize="16sp" />
+
+            <ImageButton
+                android:id="@+id/meetune_search_clear"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/meetune_clear"
+                android:padding="10dp"
+                android:src="@drawable/ic_sheet_close"
+                android:visibility="gone" />
+
+            </LinearLayout>
 
         </com.newtube.mobile.ui.common.GlassView>
 
@@ -168,6 +190,7 @@
                     android:src="@drawable/ic_meetune" />
 
                 <TextView
+                    android:id="@+id/meetune_brand_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-medium"

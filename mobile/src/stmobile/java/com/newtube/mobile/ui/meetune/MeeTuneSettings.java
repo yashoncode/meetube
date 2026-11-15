@@ -48,12 +48,11 @@ import java.util.Locale;
 final class MeeTuneSettings {
     static final int SETTINGS = 1;
     static final int EQUALIZER = 2;
+    static final int CUSTOMIZE = 3;
 
     interface Host {
-        void openEqualizer();
-
-        /** Signed in, out or switched: the music is the new account's. */
-        void accountsChanged();
+        /** Pushes {@link #EQUALIZER} or {@link #CUSTOMIZE}. */
+        void open(int which);
     }
 
     private final Activity mActivity;
@@ -79,7 +78,8 @@ final class MeeTuneSettings {
     }
 
     static String title(Context context, int which) {
-        return context.getString(which == EQUALIZER ? R.string.meetune_eq : R.string.meetune_settings);
+        return context.getString(which == EQUALIZER ? R.string.meetune_eq
+                : which == CUSTOMIZE ? R.string.meetune_set_customize : R.string.meetune_settings);
     }
 
     private void rebuild() {
@@ -90,6 +90,8 @@ final class MeeTuneSettings {
     private void build() {
         if (mWhich == EQUALIZER) {
             equalizer();
+        } else if (mWhich == CUSTOMIZE) {
+            customize();
         } else {
             settings();
         }
@@ -98,15 +100,31 @@ final class MeeTuneSettings {
     // ------------------------------------------------------------------------------ pages
 
     private void settings() {
+        // Accounts live in Home's corner menu.
         LinearLayout card = card();
-        row(card, 0, getString(R.string.meetune_set_accounts), getString(R.string.meetune_set_accounts_summary),
-                null, false, v -> com.newtube.mobile.ui.browse.AccountsSheet.show(mActivity, mHost::accountsChanged));
-        row(card, 0, getString(R.string.meetune_set_you), getString(R.string.meetune_set_you_summary),
-                MeeTune.youButton(mActivity), false, v -> MeeTune.setYouButton(mActivity, !MeeTune.youButton(mActivity)));
+        row(card, R.drawable.ic_settings_customize, getString(R.string.meetune_set_customize),
+                getString(R.string.meetune_set_customize_summary), null, true, v -> mHost.open(CUSTOMIZE));
         header(R.string.meetune_eq_sound);
         card = card();
         row(card, R.drawable.ic_player_equalizer, getString(R.string.meetune_eq), summary(), null, true,
-                v -> mHost.openEqualizer());
+                v -> mHost.open(EQUALIZER));
+    }
+
+    private void customize() {
+        LinearLayout card = card();
+        row(card, 0, getString(R.string.meetune_set_you), getString(R.string.meetune_set_you_summary),
+                MeeTune.youButton(mActivity), false, v -> MeeTune.setYouButton(mActivity, !MeeTune.youButton(mActivity)));
+        row(card, 0, getString(R.string.meetune_set_brand_name), getString(R.string.meetune_set_brand_name_summary),
+                MeeTune.brandName(mActivity), false, v -> MeeTune.setBrandName(mActivity, !MeeTune.brandName(mActivity)));
+        // MeeTube's own Search glow and Typing glow (Settings > Effects there): the same switches.
+        row(card, 0, getString(R.string.mobile_settings_search_glow), getString(R.string.mobile_settings_search_glow_summary),
+                com.newtube.mobile.ui.search.SiriGlow.enabled(mActivity), false,
+                v -> com.newtube.mobile.ui.search.SiriGlow.setEnabled(mActivity,
+                        !com.newtube.mobile.ui.search.SiriGlow.enabled(mActivity)));
+        row(card, 0, getString(R.string.mobile_settings_typing_glow), getString(R.string.mobile_settings_typing_glow_summary),
+                com.newtube.mobile.ui.search.GlowEditText.enabled(mActivity), false,
+                v -> com.newtube.mobile.ui.search.GlowEditText.setEnabled(mActivity,
+                        !com.newtube.mobile.ui.search.GlowEditText.enabled(mActivity)));
     }
 
     /** "Off", "Dynamic", or the Manual preset's name. */

@@ -73,6 +73,10 @@ public final class MeeTune {
     static void leave(Activity meetune) {
         pausePlaying(true); // a MeeTune song doesn't play on into MeeTube
         blurAway(meetune, () -> {
+            // Like issue #171's way back to Browse: the player MeeTune expanded sits between Browse and
+            // MeeTune, and a bare finish() put the song's full player on screen over MeeTube.
+            meetune.startActivity(new Intent(meetune, com.newtube.mobile.ui.browse.MobileBrowseActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP));
             meetune.finish();
             meetune.overridePendingTransition(0, R.anim.mobile_fade_out);
         });
@@ -244,14 +248,20 @@ public final class MeeTune {
     static void play(Context context, MusicApi.Item item) {
         if (item.videoId == null) return;
         if (item.art != null) ART.put(item.videoId, item.art);
+        Video video = video(item);
+        sPlaylistId = video.playlistId;
+        sVideoId = item.videoId;
+        PlaybackPresenter.instance(context).openVideo(video);
+    }
+
+    /** A song as MeeTube's video: what plays it, and what its Add to playlist saves. */
+    static Video video(MusicApi.Item item) {
         Video video = Video.from(item.videoId);
         video.title = item.title;
         video.author = artist(item.subtitle);
         video.cardImageUrl = item.art;
         video.playlistId = item.playlistId != null ? item.playlistId : "RDAMVM" + item.videoId;
-        sPlaylistId = video.playlistId;
-        sVideoId = item.videoId;
-        PlaybackPresenter.instance(context).openVideo(video);
+        return video;
     }
 
     /** "Artist • Album • 3:21" -> "Artist". */
@@ -342,5 +352,14 @@ public final class MeeTune {
 
     public static void setYouButton(Context context, boolean on) {
         prefs(context).edit().putBoolean("you_button", on).apply();
+    }
+
+    /** "MeeTune" beside the heart on Home's brand pill; off, the heart alone. */
+    static boolean brandName(Context context) {
+        return prefs(context).getBoolean("brand_name", true);
+    }
+
+    static void setBrandName(Context context, boolean on) {
+        prefs(context).edit().putBoolean("brand_name", on).apply();
     }
 }

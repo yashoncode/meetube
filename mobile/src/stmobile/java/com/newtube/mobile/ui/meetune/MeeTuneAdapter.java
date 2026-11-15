@@ -43,6 +43,9 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         /** The head's find box changed. */
         void find(String query);
+
+        /** Search's top result's Playlist: MeeTube's Add to playlist. */
+        void addToPlaylist(MusicApi.Item item);
     }
 
     static final int TITLE = 0;
@@ -51,6 +54,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     static final int HEADER = 3;
     /** A page that is one view of its own (MeeTune's settings and Equalizer). */
     static final int VIEW = 4;
+    /** Search's top result. */
+    static final int TOP = 5;
 
     static final int BIG = 0;
     static final int TILE = 1;
@@ -105,7 +110,7 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     int at = parent.getChildAdapterPosition(child);
                     if (at == RecyclerView.NO_POSITION || at + 1 >= mRows.size()
                             || mRows.get(at).type != SONG || mRows.get(at + 1).type != SONG) continue;
-                    View text = (View) child.findViewById(R.id.meetune_title).getParent();
+                    View text = (View) child.findViewById(R.id.meetune_subtitle).getParent();
                     float y = child.getBottom() + child.getTranslationY();
                     canvas.drawLine(child.getLeft() + text.getLeft(), y, child.getRight() - end, y, paint);
                 }
@@ -206,6 +211,34 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return rows;
     }
 
+    /**
+     * Search's results, as YouTube Music lists them: the top result big with Play and Playlist, then
+     * each section (Songs, Videos, Albums, Artists, Playlists) down the page, songs by their artists.
+     */
+    static List<Row> searchRows(List<MusicApi.Shelf> shelves) {
+        List<Row> rows = new ArrayList<>();
+        for (MusicApi.Shelf shelf : shelves) {
+            List<MusicApi.Item> playable = new ArrayList<>();
+            for (MusicApi.Item item : shelf.items) {
+                if (!item.playable()) continue;
+                if (item.artist != null) item.subtitle = item.artist;
+                playable.add(item);
+            }
+            if (shelf.title != null && !shelf.title.isEmpty()) {
+                Row title = new Row(TITLE);
+                title.shelf = shelf;
+                rows.add(title);
+            }
+            for (int i = 0; i < shelf.items.size(); i++) {
+                Row row = new Row(shelf.top && i == 0 ? TOP : SONG);
+                row.item = shelf.items.get(i);
+                row.siblings = playable;
+                rows.add(row);
+            }
+        }
+        return rows;
+    }
+
     static Row viewRow(View view) {
         Row row = new Row(VIEW);
         row.view = view;
@@ -233,6 +266,9 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 break;
             case SONG:
                 view = inflater.inflate(R.layout.meetune_song_row, parent, false);
+                break;
+            case TOP:
+                view = inflater.inflate(R.layout.meetune_top_result, parent, false);
                 break;
             case HEADER:
                 view = inflater.inflate(R.layout.meetune_page_header, parent, false);
@@ -281,7 +317,29 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     Motion.nudge(v);
                     mHost.open(row.item, row.siblings);
                 });
-                view.findViewById(R.id.meetune_row_more).setOnClickListener(v -> mHost.songMenu(v, row.item));
+                View songMore = view.findViewById(R.id.meetune_row_more);
+                songMore.setVisibility(row.item.playable() ? View.VISIBLE : View.INVISIBLE);
+                songMore.setOnClickListener(v -> mHost.songMenu(v, row.item));
+                break;
+            case TOP:
+                bindItem(view, row.item);
+                view.findViewById(R.id.meetune_top_head).setOnClickListener(v -> {
+                    Motion.nudge(v);
+                    mHost.open(row.item, row.siblings);
+                });
+                View topMore = view.findViewById(R.id.meetune_row_more);
+                topMore.setVisibility(row.item.playable() ? View.VISIBLE : View.GONE);
+                topMore.setOnClickListener(v -> mHost.songMenu(v, row.item));
+                view.findViewById(R.id.meetune_top_play).setOnClickListener(v -> {
+                    Motion.pop(v);
+                    mHost.open(row.item, row.siblings);
+                });
+                View playlist = view.findViewById(R.id.meetune_top_playlist);
+                playlist.setVisibility(row.item.playable() ? View.VISIBLE : View.GONE);
+                playlist.setOnClickListener(v -> {
+                    Motion.pop(v);
+                    mHost.addToPlaylist(row.item);
+                });
                 break;
             case HEADER:
                 bindHead(view, row);
@@ -395,9 +453,13 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             subtitle.setText(item.subtitle);
             subtitle.setVisibility(item.subtitle == null || item.subtitle.isEmpty() ? View.GONE : View.VISIBLE);
         }
+        View badge = view.findViewById(R.id.meetune_explicit);
+        if (badge != null) badge.setVisibility(item.explicit ? View.VISIBLE : View.GONE);
         View card = view.findViewById(R.id.meetune_art_card);
-        if (card instanceof MaterialCardView && item.round) {
-            ((MaterialCardView) card).setRadius(card.getLayoutParams().width / 2f);
+        if (card instanceof MaterialCardView) { // an artist round, the rest as the layout has them (rows are reused)
+            MaterialCardView cover = (MaterialCardView) card;
+            if (cover.getTag() == null) cover.setTag(cover.getRadius());
+            cover.setRadius(item.round ? card.getLayoutParams().width / 2f : (Float) cover.getTag());
         }
         if (art != null) {
             Glide.with(art).load(item.art).placeholder(new MeeTuneCover(item.title)).into(art); // no art: its own cover

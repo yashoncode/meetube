@@ -345,8 +345,40 @@ public final class MiniPlayerBridge {
         }
     }
 
-    /** Close from the bar's X: stop playback and finish the hidden playback activity. */
-    public static void close() {
+    /**
+     * MEETUNE: a MeeTube screen ({@code music} false) or MeeTune ({@code music} true) comes to the
+     * front. The other side's song or video never plays or shows there: it pauses, and this side's
+     * own parked session, if any, comes back paused in its place. True when the docked session is
+     * now this side's (show it), false when there is none for this side (hide the card).
+     */
+    public static boolean claim(boolean music) {
+        if (!isActive()) {
+            return false;
+        }
+        MobilePlaybackActivity activity = sActivity.get();
+        if (com.newtube.mobile.ui.meetune.MeeTune.isMusic(activity.getVideo()) == music) {
+            return true;
+        }
+        activity.getSharedPlayer().pause();
+        return activity.restoreParked(music);
+    }
+
+    /**
+     * Close from the bar's X. MEETUNE: when the other side (MeeTube or MeeTune) has a parked session,
+     * it takes the player back, paused and hidden here, and true is returned: the caller puts back the
+     * volume it lowered for the close. Otherwise {@link #closeAll()}.
+     */
+    public static boolean close() {
+        MobilePlaybackActivity activity = sActivity.get();
+        if (isActive() && activity.closeToParked()) {
+            return true;
+        }
+        closeAll();
+        return false;
+    }
+
+    /** Stop playback and finish the hidden playback activity, the other side's parked session with it. */
+    public static void closeAll() {
         MobilePlaybackActivity activity = sActivity.get();
         deactivate();
         if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
