@@ -61,6 +61,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     static final int TILE = 1;
     static final int MOODS = 2;
     static final int COLUMNS = 3;
+    /** The Library's cards: all of them, three a row, instead of one sideways row. */
+    static final int GRID = 4;
 
     static final class Row {
         final int type;
@@ -353,8 +355,15 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 }
                 break;
             default:
-                ((RecyclerView) view).setAdapter(new Carousel(row));
                 RecyclerView list = (RecyclerView) view;
+                boolean grid = row.style == GRID;
+                if (grid != list.getLayoutManager() instanceof androidx.recyclerview.widget.GridLayoutManager) {
+                    list.setLayoutManager(grid ? new androidx.recyclerview.widget.GridLayoutManager(view.getContext(), 3)
+                            : new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
+                    int side = dp(view.getContext(), grid ? 15 : 20); // a grid cell's 5dp margins make it 20
+                    list.setPadding(side, 0, side, 0);
+                }
+                list.setAdapter(new Carousel(row));
                 list.setOnFlingListener(null);
                 if (row.style == COLUMNS) new PagerSnapHelper().attachToRecyclerView(list);
         }
@@ -512,6 +521,19 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 int layout = mRow.style == BIG ? R.layout.meetune_card_big
                         : mRow.style == MOODS ? R.layout.meetune_mood : R.layout.meetune_tile;
                 view = inflater.inflate(layout, parent, false);
+                if (mRow.style == GRID) { // a third of the row, square cover, smaller type
+                    int gap = dp(parent.getContext(), 5);
+                    int size = (parent.getResources().getDisplayMetrics().widthPixels - dp(parent.getContext(), 30)) / 3 - 2 * gap;
+                    RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                    lp.setMargins(gap, 0, gap, dp(parent.getContext(), 14));
+                    view.setLayoutParams(lp);
+                    View card = view.findViewById(R.id.meetune_art_card);
+                    card.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+                    card.getLayoutParams().height = size;
+                    ((TextView) view.findViewById(R.id.meetune_title)).setTextSize(13);
+                    ((TextView) view.findViewById(R.id.meetune_subtitle)).setTextSize(12);
+                }
             }
             return new RecyclerView.ViewHolder(view) { };
         }

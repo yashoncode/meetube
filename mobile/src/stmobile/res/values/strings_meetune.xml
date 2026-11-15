@@ -105,6 +105,7 @@
     <!-- The song menu (a song's three dots): YouTube Music's, on MeeTube's frosted glass. -->
     <string name="meetune_dislike">Dislike</string>
     <string name="meetune_liked_done">Added to your liked songs</string>
+    <string name="meetune_unliked">Removed from your liked songs</string>
     <string name="meetune_disliked">You won\'t be shown this as much</string>
     <string name="meetune_rate_sign_in">Sign in to like songs</string>
     <string name="meetune_rate_failed">Couldn\'t rate this song</string>
@@ -154,6 +155,11 @@
     <string name="meetune_sleep_end_of_song">End of song</string>
     <string name="meetune_sleep_toast_end">Song will pause at the end</string>
     <string name="meetune_downloads">Downloads</string>
+    <string name="meetune_history">History</string>
+    <plurals name="meetune_history_count">
+        <item quantity="one">%1$d song played</item>
+        <item quantity="other">%1$d songs played</item>
+    </plurals>
     <string name="meetune_download_started">Downloading. Find it in Library &gt; Downloads</string>
     <string name="meetune_download_already_here">Already downloaded. Find it in Library &gt; Downloads</string>
     <string name="meetune_downloading">Downloading %1$d%%</string>

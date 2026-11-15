@@ -379,6 +379,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             render(page);
             return;
         }
+        if (MeeTune.HISTORY.equals(page.browseId)) reload = true; // the songs played since it was last open
+        if (page.rows != null && !reload && page.tab == LIBRARY && !pushed) countLocalCards(page);
         if (page.rows != null && !reload) {
             render(page);
             return;
@@ -438,6 +440,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         }
         mProgress.setVisibility(View.VISIBLE);
         MeeTune.run(this, () -> {
+            if (pushed && MeeTune.HISTORY.equals(page.browseId)) {
+                return MeeTuneAdapter.rows(MeeTune.history(this), true, false);
+            }
             if (pushed && MeeTune.DOWNLOADS.equals(page.browseId)) {
                 return MeeTuneAdapter.rows(MeeTune.downloads(this), true, false);
             }
@@ -445,8 +450,34 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 return MeeTuneAdapter.rows(MusicApi.browse(this, page.browseId, page.params), true, false);
             }
             return tab == EXPLORE ? MeeTuneAdapter.rows(MusicApi.browse(this, "FEmusic_explore", null), false, false)
-                    : MeeTuneAdapter.rows(library(), false, false);
+                    : grid(MeeTuneAdapter.rows(library(), false, false));
         }, done);
+    }
+
+    /** The Library's card rows as grids: every card on screen, three a row. */
+    private static List<MeeTuneAdapter.Row> grid(List<MeeTuneAdapter.Row> rows) {
+        for (MeeTuneAdapter.Row row : rows) {
+            if (row.type == MeeTuneAdapter.CAROUSEL && row.style == MeeTuneAdapter.TILE) row.style = MeeTuneAdapter.GRID;
+        }
+        return rows;
+    }
+
+    /** The Library from memory: its Downloads and History cards still count what is on the phone now. */
+    private void countLocalCards(Page page) {
+        for (MeeTuneAdapter.Row row : page.rows) {
+            if (row.shelf == null) continue;
+            for (MusicApi.Item item : row.shelf.items) {
+                if (MeeTune.HISTORY.equals(item.browseId)) {
+                    List<MusicApi.Shelf> played = MeeTune.history(this);
+                    int n = played.isEmpty() ? 0 : played.get(0).items.size();
+                    item.subtitle = getResources().getQuantityString(R.plurals.meetune_history_count, n, n);
+                } else if (MeeTune.DOWNLOADS.equals(item.browseId)) {
+                    List<MusicApi.Shelf> saved = MeeTune.downloads(this);
+                    int n = saved.isEmpty() ? 0 : saved.get(0).items.size();
+                    item.subtitle = getResources().getQuantityString(R.plurals.meetune_download_count, n, n);
+                }
+            }
+        }
     }
 
     private List<MusicApi.Shelf> library() throws Exception {
@@ -460,15 +491,25 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         List<MusicApi.Shelf> saved = MeeTune.downloads(this);
         int count = saved.isEmpty() ? 0 : saved.get(0).items.size();
         downloads.subtitle = getResources().getQuantityString(R.plurals.meetune_download_count, count, count);
+        MusicApi.Item history = new MusicApi.Item(); // the songs played in MeeTune, never MeeTube's History
+        history.kind = MusicApi.CARD;
+        history.title = getString(R.string.meetune_history);
+        history.browseId = MeeTune.HISTORY;
+        history.icon = R.drawable.ic_meetune_history;
+        List<MusicApi.Shelf> played = MeeTune.history(this);
+        int plays = played.isEmpty() ? 0 : played.get(0).items.size();
+        history.subtitle = getResources().getQuantityString(R.plurals.meetune_history_count, plays, plays);
         MusicApi.Shelf liked = null; // YouTube Music lists its own Liked Music now: no second one
         for (MusicApi.Shelf shelf : shelves) {
             for (MusicApi.Item item : shelf.items) if ("VLLM".equals(item.browseId)) liked = shelf;
         }
-        if (liked != null) { // Downloads first in Liked Music's row, a card like it
+        if (liked != null) { // Downloads and History first in Liked Music's row, cards like it
+            liked.items.add(0, history);
             liked.items.add(0, downloads);
             return shelves;
         }
         top.items.add(downloads);
+        top.items.add(history);
         {
             MusicApi.Item item = new MusicApi.Item();
             item.kind = MusicApi.CARD;
@@ -881,7 +922,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         Page page = new Page(mTab);
         page.browseId = item.browseId;
         page.params = item.params;
-        page.title = item.kind == MusicApi.MOOD || MeeTune.DOWNLOADS.equals(item.browseId) ? item.title : null;
+        page.title = item.kind == MusicApi.MOOD || MeeTune.DOWNLOADS.equals(item.browseId)
+                || MeeTune.HISTORY.equals(item.browseId) ? item.title : null;
         page.art = item.kind == MusicApi.MOOD ? null : item.art;
         push(page);
     }
@@ -946,7 +988,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             }
         }
         String browse = MeeTune.takeOpenOnReturn(); // the music player's Open album or Open artist
-        if (browse != null) openBrowse(browse);
+        if (MeeTune.EQUALIZER.equals(browse)) push(settingsPage(MeeTuneSettings.EQUALIZER)); // its Equalizer
+        else if (browse != null) openBrowse(browse);
     }
 
     @Nullable

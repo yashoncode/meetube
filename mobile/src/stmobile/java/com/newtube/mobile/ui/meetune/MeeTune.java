@@ -40,6 +40,10 @@ import java.util.concurrent.Executors;
  */
 public final class MeeTune {
     private static final ExecutorService WORKER = Executors.newFixedThreadPool(3);
+
+    static { // a song never lands in MeeTube's (YouTube's) History, only in MeeTune's own
+        com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoStateController.sOwnHistory = MeeTune::isMusic;
+    }
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     /** Square art of the songs MeeTune showed, by video id; the player's cover. */
     private static final Map<String, String> ART = new HashMap<>();
@@ -388,6 +392,50 @@ public final class MeeTune {
         return shelves;
     }
 
+    /** The Library's History card and page: the songs played in MeeTune, on this phone only. */
+    static final String HISTORY = "meetune:history";
+    private static final int HISTORY_MAX = 200;
+
+    /** The music player opened {@code video}: it goes to the top of MeeTune's History. */
+    public static void remember(Context context, Video video) {
+        if (video == null || video.videoId == null) return;
+        MusicApi.Item item = item(video);
+        try {
+            org.json.JSONArray old = new org.json.JSONArray(prefs(context).getString("history", "[]"));
+            org.json.JSONArray now = new org.json.JSONArray();
+            now.put(new org.json.JSONObject().put("v", video.videoId).put("t", item.title)
+                    .put("a", item.artist != null ? item.artist : artist(item.subtitle)).put("art", art(video)));
+            for (int i = 0; i < old.length() && now.length() < HISTORY_MAX; i++) {
+                org.json.JSONObject o = old.optJSONObject(i);
+                if (o != null && !video.videoId.equals(o.optString("v"))) now.put(o);
+            }
+            prefs(context).edit().putString("history", now.toString()).apply();
+        } catch (org.json.JSONException ignored) {
+        }
+    }
+
+    static List<MusicApi.Shelf> history(Context context) {
+        MusicApi.Shelf shelf = new MusicApi.Shelf();
+        try {
+            org.json.JSONArray saved = new org.json.JSONArray(prefs(context).getString("history", "[]"));
+            for (int i = 0; i < saved.length(); i++) {
+                org.json.JSONObject o = saved.getJSONObject(i);
+                MusicApi.Item item = new MusicApi.Item();
+                item.kind = MusicApi.SONG;
+                item.videoId = o.optString("v");
+                item.title = o.optString("t", null);
+                item.artist = o.optString("a", null);
+                item.subtitle = item.artist;
+                item.art = o.optString("art", null);
+                shelf.items.add(item);
+            }
+        } catch (org.json.JSONException ignored) {
+        }
+        List<MusicApi.Shelf> shelves = new java.util.ArrayList<>();
+        if (!shelf.items.isEmpty()) shelves.add(shelf);
+        return shelves;
+    }
+
     /** The playing song as MeeTune knows it; a radio's next song only by its video's title, artist and cover. */
     static MusicApi.Item item(Video video) {
         MusicApi.Item known = ITEMS.get(video.videoId);
@@ -399,6 +447,46 @@ public final class MeeTune {
         item.art = art(video);
         item.playlistId = video.playlistId;
         return item;
+    }
+
+    /** Not a browse id: the music player's Equalizer row, MeeTune's Equalizer page on return. */
+    static final String EQUALIZER = "meetune:equalizer";
+
+    /** Songs liked from the music player this run (YouTube Music's like, not MeeTube's video like). */
+    private static final java.util.Set<String> LIKED = new java.util.HashSet<>();
+
+    /** The song just opened: whether this account already likes it on YouTube Music. */
+    public static void checkLike(Activity a, @Nullable String videoId, Runnable changed) {
+        if (videoId == null || !MusicApi.signedIn(a)) return;
+        run(a, () -> MusicApi.liked(a, videoId), (liked, error) -> {
+            if (liked == null) return;
+            if (liked) LIKED.add(videoId); else LIKED.remove(videoId);
+            changed.run();
+        });
+    }
+
+    public static boolean liked(@Nullable String videoId) {
+        return videoId != null && LIKED.contains(videoId);
+    }
+
+    /** The music player's heart: likes the song on YouTube Music, or takes the like back. */
+    public static void toggleLike(Activity a, @Nullable String videoId, Runnable changed) {
+        if (videoId == null) return;
+        if (!MusicApi.signedIn(a)) {
+            com.newtube.mobile.ui.common.MobileSnackbar.show(a, R.string.meetune_rate_sign_in);
+            return;
+        }
+        boolean like = !LIKED.contains(videoId);
+        if (like) LIKED.add(videoId); else LIKED.remove(videoId);
+        changed.run();
+        run(a, () -> MusicApi.rate(a, videoId, like ? "like" : "removelike"), (ok, error) -> {
+            if (ok == null) { // back as it was
+                if (like) LIKED.remove(videoId); else LIKED.add(videoId);
+                changed.run();
+            }
+            com.newtube.mobile.ui.common.MobileSnackbar.show(a, ok == null ? R.string.meetune_rate_failed
+                    : like ? R.string.meetune_liked_done : R.string.meetune_unliked);
+        });
     }
 
     static void openOnReturn(String browseId) {

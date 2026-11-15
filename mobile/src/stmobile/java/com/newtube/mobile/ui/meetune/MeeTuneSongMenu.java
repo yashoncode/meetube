@@ -50,8 +50,19 @@ public final class MeeTuneSongMenu {
         PopupWindow popup = build(activity, item, browseId -> {
             MeeTune.openOnReturn(browseId);
             minimize.run();
-        }, upgrade, tail);
+        }, upgrade, withEqualizer(tail, minimize));
         place(activity, popup, null, false);
+    }
+
+    /** The player's menu alone: MeeTune's Equalizer, opened in MeeTune with the song minimized. */
+    private static Row[] withEqualizer(Row[] tail, Runnable minimize) {
+        Row[] rows = new Row[tail.length + 1];
+        rows[0] = new Row(R.drawable.ic_player_equalizer, R.string.meetune_eq, () -> {
+            MeeTune.openOnReturn(MeeTune.EQUALIZER);
+            minimize.run();
+        });
+        System.arraycopy(tail, 0, rows, 1, tail.length);
+        return rows;
     }
 
     static void show(Activity activity, View anchor, MusicApi.Item item, Consumer<String> openBrowse) {

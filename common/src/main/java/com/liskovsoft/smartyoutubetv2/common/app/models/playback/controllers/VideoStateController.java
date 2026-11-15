@@ -614,10 +614,14 @@ public class VideoStateController extends BasePlayerController {
         }
     }
 
+    /** MEETUNE: songs MeeTune plays keep their own history (on the phone), never YouTube's. */
+    @androidx.annotation.Nullable
+    public static java.util.function.Predicate<Video> sOwnHistory;
+
     private void updateHistory() {
         Video video = getVideo();
 
-        if (video == null || mIncognito || getPlayer() == null || !getPlayer().containsMedia()
+        if (video == null || mIncognito || (sOwnHistory != null && sOwnHistory.test(video)) || getPlayer() == null || !getPlayer().containsMedia()
                 || (video.isRemote && getRemoteControlData().isRemoteHistoryDisabled())
                 || getGeneralData().getHistoryState() == GeneralData.HISTORY_DISABLED) {
             return;

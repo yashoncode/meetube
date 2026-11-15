@@ -173,6 +173,7 @@ public final class MeeTunePlayerSkin {
             }
         });
         mArt.setClipToOutline(true);
+        ((FadeImage) mArt).setFeather(true);
         // A square art at the top.
         mArt.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             ViewGroup.LayoutParams params = mArt.getLayoutParams();
@@ -217,16 +218,14 @@ public final class MeeTunePlayerSkin {
         });
         bounce(mRoot.findViewById(R.id.meetune_player_previous), mControls::previous);
         bounce(mRoot.findViewById(R.id.meetune_player_next), mControls::next);
-        bounce(mLike, () -> {
-            mControls.like();
-            mLike.postDelayed(this::update, 400);
-        });
+        for (View transport : new View[] {mPlay, mRoot.findViewById(R.id.meetune_player_previous),
+                mRoot.findViewById(R.id.meetune_player_next)}) {
+            glassPress(transport);
+        }
+        bounce(mLike, this::like);
         bounce(mRoot.findViewById(R.id.meetune_player_more), mControls::more);
         bounce(mLyricsButton, () -> setMode(mMode == NORMAL ? LYRICS : NORMAL));
-        bounce(mHeadLike, () -> {
-            mControls.like();
-            mLike.postDelayed(this::update, 400);
-        });
+        bounce(mHeadLike, this::like);
         bounce(mHeadMore, () -> {
             if (mMode == FULL) {
                 share();
@@ -351,10 +350,23 @@ public final class MeeTunePlayerSkin {
             fetchLyrics(video);
             if (mRoot.getContext() instanceof android.app.Activity) {
                 MeeTune.learn((android.app.Activity) mRoot.getContext(), video); // the menu's Open album, Open artist
+                MeeTune.checkLike((android.app.Activity) mRoot.getContext(), video.videoId, this::update); // the heart
+                MeeTune.remember(mRoot.getContext(), video); // MeeTune's own History
             }
             mFormat.setText(null);
             String fallback = "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg";
-            Glide.with(mArt).load(MeeTune.art(video)).error(Glide.with(mArt).load(fallback)).into(mArt);
+            // A square cover fills the square; a wide thumbnail (a song with no album art) shows whole
+            // over the blurred backdrop instead of being cropped to its middle.
+            Glide.with(mArt).load(MeeTune.art(video)).error(Glide.with(mArt).load(fallback))
+                    .into(new com.bumptech.glide.request.target.DrawableImageViewTarget(mArt) {
+                        @Override
+                        protected void setResource(@Nullable android.graphics.drawable.Drawable art) {
+                            boolean wide = art != null && art.getIntrinsicHeight() > 0
+                                    && art.getIntrinsicWidth() > art.getIntrinsicHeight() * 1.15f;
+                            mArt.setScaleType(wide ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP);
+                            super.setResource(art);
+                        }
+                    });
             Glide.with(mBg).load(MeeTune.art(video)).error(Glide.with(mBg).load(fallback)).into(mBg);
         }
     }
@@ -615,10 +627,54 @@ public final class MeeTunePlayerSkin {
     }
 
     /** A button that bounces (pops with its glass) as it acts. */
+    /**
+     * Play, previous and next press like glass: a frosted bubble wells up under the finger as the
+     * icon sinks in, and on release the icon springs back past its size while the bubble swells
+     * and melts away.
+     */
+    private static void glassPress(View button) {
+        android.graphics.drawable.GradientDrawable bubble = new android.graphics.drawable.GradientDrawable();
+        bubble.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        bubble.setGradientType(android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT);
+        bubble.setColors(new int[] {0x40FFFFFF, 0x1AFFFFFF});
+        bubble.setGradientRadius(button.getLayoutParams().width * 0.55f);
+        bubble.setStroke(Math.max(1, Math.round(button.getResources().getDisplayMetrics().density)), 0x59FFFFFF);
+        bubble.setAlpha(0);
+        button.setBackground(bubble);
+        android.animation.ValueAnimator[] fade = {null};
+        java.util.function.BiConsumer<Integer, Long> fadeTo = (to, ms) -> {
+            if (fade[0] != null) fade[0].cancel();
+            fade[0] = android.animation.ValueAnimator.ofInt(bubble.getAlpha(), to);
+            fade[0].setDuration(ms);
+            fade[0].addUpdateListener(a -> bubble.setAlpha((int) a.getAnimatedValue()));
+            fade[0].start();
+        };
+        button.setOnTouchListener((v, e) -> {
+            switch (e.getActionMasked()) {
+                case android.view.MotionEvent.ACTION_DOWN:
+                    v.animate().scaleX(0.86f).scaleY(0.86f).setDuration(160)
+                            .setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD).start();
+                    fadeTo.accept(255, 160L);
+                    break;
+                case android.view.MotionEvent.ACTION_UP:
+                case android.view.MotionEvent.ACTION_CANCEL:
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(460)
+                            .setInterpolator(new android.view.animation.OvershootInterpolator(3f)).start();
+                    fadeTo.accept(0, 520L);
+                    break;
+                default:
+                    break;
+            }
+            return false; // the click still happens
+        });
+    }
+
     private static void bounce(View button, Runnable action) {
         button.setOnClickListener(v -> {
             Haptics.click(v);
-            com.newtube.mobile.ui.common.Motion.pop(v.getParent() instanceof GlassView ? (View) v.getParent() : v);
+            if (!(v.getBackground() instanceof android.graphics.drawable.GradientDrawable)) { // glassPress animates its own
+                com.newtube.mobile.ui.common.Motion.pop(v.getParent() instanceof GlassView ? (View) v.getParent() : v);
+            }
             action.run();
         });
     }
@@ -775,6 +831,17 @@ public final class MeeTunePlayerSkin {
         com.newtube.mobile.ui.common.Motion.frostIn(mRoot);
     }
 
+    /** The heart is YouTube Music's like (MeeTube's video like never takes for a song). */
+    private void like() {
+        if (mVideo != null && mRoot.getContext() instanceof android.app.Activity) {
+            com.newtube.mobile.ui.meetune.MeeTune.toggleLike((android.app.Activity) mRoot.getContext(), mVideo.videoId, this::update);
+        }
+    }
+
+    private boolean liked() {
+        return mVideo != null && com.newtube.mobile.ui.meetune.MeeTune.liked(mVideo.videoId);
+    }
+
     private void update() {
         long duration = mControls.duration();
         long position = mControls.position();
@@ -783,7 +850,7 @@ public final class MeeTunePlayerSkin {
             showTimes(position, duration);
         }
         mPlay.setImageResource(mControls.playing() ? R.drawable.ic_meetune_pause : R.drawable.ic_meetune_play);
-        int star = mControls.liked() ? R.drawable.ic_meetune_star_filled : R.drawable.ic_meetune_star;
+        int star = liked() ? R.drawable.ic_meetune_heart_filled : R.drawable.ic_meetune_heart;
         mLike.setImageResource(star);
         mHeadLike.setImageResource(star);
         followLyrics(position);
@@ -841,12 +908,52 @@ public final class MeeTunePlayerSkin {
                     new float[] {0f, 0.35f, 0.75f, 1f}, Shader.TileMode.CLAMP));
         }
 
+        private boolean mFeather;
+        private final Paint mEdge = new Paint();
+        private final android.graphics.RectF mDrawn = new android.graphics.RectF();
+        private final android.graphics.RectF mEdged = new android.graphics.RectF();
+        private float mEdgedFade = -1f;
+        private final Shader[] mEdges = new Shader[4];
+
+        /** The music player's cover: every edge of the picture melts into the ambient, never a hard line. */
+        void setFeather(boolean feather) {
+            mFeather = feather;
+            mEdge.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+            invalidate();
+        }
+
         @Override
         protected void onDraw(Canvas canvas) {
             int layer = canvas.saveLayer(0, 0, getWidth(), getHeight(), null);
             super.onDraw(canvas);
             canvas.drawRect(0, 0, getWidth(), getHeight(), mMask);
+            if (mFeather && getDrawable() != null && mFade > 0f) feather(canvas);
             canvas.restoreToCount(layer);
+        }
+
+        /** Fades the drawn picture (on screen, so a cropped cover's view edges) in from each side. */
+        private void feather(Canvas canvas) {
+            android.graphics.drawable.Drawable art = getDrawable();
+            mDrawn.set(0, 0, art.getIntrinsicWidth(), art.getIntrinsicHeight());
+            getImageMatrix().mapRect(mDrawn);
+            mDrawn.offset(getPaddingLeft(), getPaddingTop());
+            if (!mDrawn.intersect(0, 0, getWidth(), getHeight())) return;
+            if (!mDrawn.equals(mEdged) || mEdgedFade != mFade) {
+                mEdged.set(mDrawn);
+                mEdgedFade = mFade;
+                int clear = Math.round(0xFF * (1f - mFade)) << 24;
+                int[] in = {clear, 0xFF000000};
+                float v = mDrawn.height() * 0.22f;
+                float h = mDrawn.width() * 0.14f;
+                mEdges[0] = new LinearGradient(0, mDrawn.top, 0, mDrawn.top + v, in, null, Shader.TileMode.CLAMP);
+                mEdges[1] = new LinearGradient(0, mDrawn.bottom, 0, mDrawn.bottom - v, in, null, Shader.TileMode.CLAMP);
+                mEdges[2] = new LinearGradient(mDrawn.left, 0, mDrawn.left + h, 0, in, null, Shader.TileMode.CLAMP);
+                mEdges[3] = new LinearGradient(mDrawn.right, 0, mDrawn.right - h, 0, in, null, Shader.TileMode.CLAMP);
+            }
+            for (Shader edge : mEdges) {
+                mEdge.setShader(edge);
+                canvas.drawRect(0, 0, getWidth(), getHeight(), mEdge);
+            }
         }
     }
 

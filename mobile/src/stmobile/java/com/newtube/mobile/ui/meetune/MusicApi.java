@@ -185,6 +185,17 @@ final class MusicApi {
         return item.albumId != null || item.artistId != null ? item : null;
     }
 
+    /** Whether the signed-in account likes the song: its like button in YouTube Music's player page. */
+    static boolean liked(Context context, String videoId) throws Exception {
+        String raw = post(context, "next", new JSONObject().put("videoId", videoId).put("isAudioOnly", true)).toString();
+        String key = "\"likeButtonRenderer\"";
+        for (int at = raw.indexOf(key); at >= 0; at = raw.indexOf(key, at + 1)) {
+            String near = raw.substring(at, Math.min(raw.length(), at + 800));
+            if (near.contains("\"videoId\":\"" + videoId + "\"")) return near.contains("\"likeStatus\":\"LIKE\"");
+        }
+        return false;
+    }
+
     @Nullable
     private static JSONObject findPanelVideo(@Nullable Object node, String videoId, int depth) {
         if (depth > 40) return null;

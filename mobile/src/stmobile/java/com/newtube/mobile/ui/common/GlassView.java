@@ -189,6 +189,9 @@ public class GlassView extends FrameLayout {
     private final int mFadeBottom;
     private final Paint mFadePaint = new Paint();
     @Nullable private RenderNode mNode;
+    /** RuntimeShaders (API 33+), kept as Object so older phones never resolve the class. */
+    @Nullable private Object mLens;
+    @Nullable private Object mHighlight;
 
     private final ViewTreeObserver.OnPreDrawListener mTrackPosition = () -> {
         if (mSource != null && hasMoved()) {
@@ -356,7 +359,15 @@ public class GlassView extends FrameLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mRimRect.set(0, 0, w, h);
-        mRimPaint.setShader(rimShader(w, h, radius(w, h)));
+        // MEETUNE(fold): the mini pill and its two circles resize every frame while the bar folds;
+        // compiling a fresh AGSL shader per frame (rim and lens) stuttered. One each, new uniforms.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (mHighlight == null) mHighlight = highlight(w, h, radius(w, h));
+            else setHighlight((RuntimeShader) mHighlight, w, h, radius(w, h));
+            mRimPaint.setShader((Shader) mHighlight);
+        } else {
+            mRimPaint.setShader(rimShader(w, h, radius(w, h)));
+        }
         if (mFadeBottom > 0) {
             mFadePaint.setShader(new LinearGradient(0, h - mFadeBottom, 0, h,
                     0xFF000000, 0x00000000, Shader.TileMode.CLAMP));
@@ -430,7 +441,8 @@ public class GlassView extends FrameLayout {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || !mLiquid) {
             return frost;
         }
-        RuntimeShader lens = new RuntimeShader(REFRACTION_AGSL);
+        if (mLens == null) mLens = new RuntimeShader(REFRACTION_AGSL); // MEETUNE(fold): compiled once
+        RuntimeShader lens = (RuntimeShader) mLens;
         lens.setFloatUniform("size", w, h);
         lens.setFloatUniform("radius", radius(w, h));
         lens.setFloatUniform("refractionHeight", REFRACTION_HEIGHT_DP * mDensity);
@@ -443,12 +455,17 @@ public class GlassView extends FrameLayout {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private static Shader highlight(int w, int h, float radius) {
         RuntimeShader shader = new RuntimeShader(HIGHLIGHT_AGSL);
-        shader.setFloatUniform("size", w, h);
-        shader.setFloatUniform("radius", radius);
         shader.setColorUniform("color", 0x80FFFFFF);
         shader.setFloatUniform("angle", (float) Math.toRadians(HIGHLIGHT_ANGLE));
         shader.setFloatUniform("falloff", 1f);
+        setHighlight(shader, w, h, radius);
         return shader;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    private static void setHighlight(RuntimeShader shader, int w, int h, float radius) {
+        shader.setFloatUniform("size", w, h);
+        shader.setFloatUniform("radius", radius);
     }
 
     private float radius(int w, int h) {
