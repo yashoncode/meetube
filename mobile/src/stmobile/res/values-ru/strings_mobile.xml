@@ -66,7 +66,7 @@
     <string name="mobile_player_lock">Блокировка экрана</string>
     <string name="mobile_player_locked">Экран заблокирован · нажмите, чтобы разблокировать</string>
     <string name="mobile_transcript">Расшифровка</string>
-    <string name="mobile_transcript_follow">Следите за ходом видео по его расшифровке.</string>
+    <string name="mobile_transcript_follow">Смотрите видео, следя за текстом расшифровки.</string>
     <string name="mobile_transcript_show">Показать расшифровку</string>
     <string name="mobile_transcript_search">Поиск по расшифровке</string>
     <string name="mobile_transcript_none">У этого видео нет расшифровки.</string>
@@ -263,7 +263,7 @@
     <string name="mobile_cast_code_find">Найдите код в одном из этих приложений на телевизоре:</string>
     <string name="mobile_cast_code_youtube_path">Настройки → Связь с ТВ по коду</string>
     <string name="mobile_cast_code_smarttube_path">Настройки → Пульт дистанционного управления</string>
-    <string name="mobile_cast_code_helper">Дефисы и пробелы можно не вводить</string>
+    <string name="mobile_cast_code_helper">Дефисы и пробелы допустимы</string>
     <string name="mobile_cast_code_smarttube_benefit">Совет: с MeeTube TV / SmartTube TV можно управлять качеством и субтитрами на телевизоре.</string>
     <string name="mobile_cast_code_positive">Связать</string>
     <string name="mobile_cast_code_invalid">Код должен содержать 12 цифр</string>
@@ -289,7 +289,7 @@
     <string name="mobile_cast_unknown_subtitle">ТВ-приложение не определено · нажмите ⋮, чтобы выбрать его</string>
     <string name="mobile_cast_identify_app">Из какого приложения на телевизоре этот код?</string>
     <string name="mobile_cast_onboarding_title">MeeTube TV / SmartTube TV на вашем ТВ?</string>
-    <string name="mobile_cast_onboarding_body">Подключите его один раз — после этого отправленные на телевизор видео будут открываться в MeeTube TV / SmartTube TV.</string>
+    <string name="mobile_cast_onboarding_body">Настройте подключение один раз — и видео, которые вы отправляете на телевизор, будут открываться в MeeTube TV / SmartTube TV.</string>
     <string name="mobile_cast_pair_smarttube">Подключить MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_receiver_no_playback">ТВ-приложение не запустило воспроизведение</string>
     <string name="mobile_cast_switching_tv_app">Открываем элементы управления YouTube на телевизоре…</string>
@@ -303,7 +303,7 @@
     <string name="mobile_cast_quality_tv_remote">Использовать пульт ТВ</string>
     <string name="mobile_cast_subtitles_need_tv_app">Переключиться на ТВ-приложение</string>
     <string name="mobile_cast_quality_receiver_help">Выберите качество в настройках плеера на вашем ТВ.</string>
-    <string name="mobile_cast_subtitles_sent">Настройка субтитров отправлена на телевизор</string>
+    <string name="mobile_cast_subtitles_sent">Выбор субтитров отправлен на телевизор</string>
     <string name="mobile_cast_subtitles_failed">Не удалось изменить субтитры на этом телевизоре</string>
     <string name="mobile_cast_switch_subtitles_title">Использовать ТВ-приложение для субтитров?</string>
     <string name="mobile_cast_switch_subtitles_message">ТВ-приложение поддерживает субтитры и позволяет управлять качеством с пульта ТВ. Сначала попробуем подключённое MeeTube TV / SmartTube TV, затем YouTube.</string>
@@ -503,7 +503,7 @@
     <string name="mobile_about_coffee_note"><![CDATA[<font color="#FF5F56">●</font> <font color="#FFBD2E">●</font> <font color="#27C93F">●</font><br><br><font color="#4ADE80">$</font> meetube --thank-you<br><font color="#E6EDF3">&#160;&#160;реклама: 0 | спонсорские вставки: пропущены</font><br><font color="#8B949E">// собрано в 3 часа ночи на чистом кофеине<br>// ещё кофе? только по желанию :)</font>]]></string>
     <string name="mobile_about_reporters">Авторы обращений</string>
     <string name="mobile_about_reporters_summary">Спасибо всем, кто отправил обращение</string>
-    <string name="mobile_about_reporters_note">Спасибо всем, кто создавал обращения. Каждый отчёт и каждая идея сделали MeeTube лучше.</string>
+    <string name="mobile_about_reporters_note">Спасибо всем, кто создавал обращения на GitHub. Каждый отчёт и каждая идея помогли сделать MeeTube лучше.</string>
     <string name="mobile_about_reporters_loading">Загрузка с GitHub…</string>
     <string name="mobile_about_reporters_failed">Не удалось загрузить список с GitHub. Проверьте подключение и откройте эту страницу снова.</string>
     <plurals name="mobile_about_reporters_count">
