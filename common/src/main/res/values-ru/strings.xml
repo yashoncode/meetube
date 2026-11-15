@@ -12,7 +12,7 @@
     <string name="subscriptions_signin_title">Смотрите новые видео с каналов, на которые вы подписаны</string>
     <string name="subscriptions_signin_subtitle">Для начала вам нужно войти в аккаунт.</string>
     <string name="subscriptions_signin_button_text">ВОЙТИ</string>
-    <string name="library_signin_to_show_more">Здесь находятся понравившиеся, сохраненные и видео из подписок</string>
+    <string name="library_signin_to_show_more">Смотрите видео, которые вам понравились или которые вы сохранили, а также видео с каналов, на которые вы подписаны.</string>
     <string name="library_signin_subtitle">Чтобы увидеть их, войдите в аккаунт.</string>
     <string name="action_signin">ВОЙТИ</string>
     <string name="title_video_formats">Видеоформат</string>
@@ -159,7 +159,7 @@
     <string name="player_seek_preview_single">Один кадр</string>
     <string name="player_seek_preview_carousel">Карусель</string>
     <string name="player_seek_preview_carousel_slow">Карусель (медленно, по ключевым кадрам)</string>
-    <string name="player_seek_preview_carousel_fast">Карусель (быстро, не точные превью)</string>
+    <string name="player_seek_preview_carousel_fast">Карусель (быстрая, предпросмотр неточный)</string>
     <string name="unsubscribe_from_channel">Отписаться от канала</string>
     <string name="card_title_lines_num">Количество строк в карточках</string>
     <string name="card_auto_scrolled_title">Прокручивать обрезанный заголовок</string>
@@ -249,7 +249,7 @@
     <string name="share_embed_link">Поделиться встраиваемой ссылкой</string>
     <string name="card_text_scroll_factor">Скорость прокрутки текста карточки</string>
     <string name="preferred_update_source">Выбрать источник обновлений</string>
-    <string name="hide_shorts">Скрывать shorts из Подписок</string>
+    <string name="hide_shorts">Скрывать Shorts в разделе «Подписки»</string>
     <string name="hide_shorts_channel">Скрывать shorts на канале</string>
     <string name="key_remapping">Переопределение клавиш</string>
     <string name="screen_dimming">Затемнение экрана</string>
@@ -340,7 +340,7 @@
     <string name="msg_player_error_video_source">Ссылка на ВИДЕОПОТОК не работает или неправильное время на устройстве.\nСкорее всего проблема в приложении.</string>
     <string name="msg_player_error_audio_source">Ссылка на АУДИОПОТОК не работает или неправильное время на устройстве.\nСкорее всего проблема в приложении.</string>
     <string name="msg_player_error_subtitle_source">Ссылка на СУБТИТРЫ не работает или неправильное время на устройстве.\nСкорее всего проблема в приложении.</string>
-    <string name="hide_upcoming">Скрывать анонсы из Подписок</string>
+    <string name="hide_upcoming">Скрывать анонсы в разделе «Подписки»</string>
     <string name="hide_upcoming_channel">Скрывать анонсы на Канале</string>
     <string name="hide_upcoming_home">Скрывать анонсы из Главного раздела</string>
     <string name="search_background_playback">Фоновое воспроизведение при поиске/просмотре канала</string>
@@ -362,19 +362,19 @@
     <string name="proxy_username_hint">Имя пользователя прокси-сервера</string>
     <string name="proxy_password_hint">Пароль прокси-сервера</string>
     <string name="proxy_type">Тип прокси</string>
-    <string name="enable_web_proxy">Включить веб-прокси</string>
-    <string name="proxy_not_supported">Включить веб-прокси (Android 4.4 и новее)</string>
+    <string name="enable_web_proxy">Использовать прокси-сервер</string>
+    <string name="proxy_not_supported">Использовать прокси-сервер (требуется Android 4.4 или новее)</string>
     <string name="proxy_test_btn">Проверить</string>
     <string name="proxy_settings_title">Настройки прокси-сервера</string>
     <string name="proxy_test_urls">https://www.youtube.com\nhttps://www.google.com</string>
     <string name="proxy_test_cancelled">Проверка №%d отменена.</string>
     <string name="proxy_type_invalid">Не указан тип прокси.</string>
     <string name="proxy_host_invalid">Не указан адрес прокси-сервера.</string>
-    <string name="proxy_port_invalid">Порт прокси-сервера должен быть больше 0.</string>
+    <string name="proxy_port_invalid">Порт прокси-сервера должен быть больше нуля.</string>
     <string name="proxy_credentials_invalid">Неверное имя пользователя или пароль.</string>
     <string name="proxy_test_aborted">Проверка прервана. Сначала проверьте настройки прокси.</string>
     <string name="proxy_application_aborted">Сначала проверьте настройки прокси.</string>
-    <string name="proxy_test_start">Проверка №%d: %s…</string>
+    <string name="proxy_test_start">Тест №%d: %s…</string>
     <string name="proxy_test_error">Ошибка №%d: %s</string>
     <string name="proxy_test_status">Статус №%d: %s %d %s</string>
     <string name="openvpn_config_address_hint">Адрес или путь к файлу конфигурации (*.ovpn)</string>
@@ -499,7 +499,7 @@
     <string name="speech_engine">Движок голосового поиска</string>
     <string name="speech_recognizer_system">Системный (наилучший)</string>
     <string name="speech_recognizer_external_1">Внешний 1 (работает с ошибками; для его работы нужно запретить приложению доступ к микрофону)</string>
-    <string name="speech_recognizer_external_2">Внешний 2 (серьезно забагован)</string>
+    <string name="speech_recognizer_external_2">Внешний 2 (работает с ошибками)</string>
     <string name="real_channel_icon">Показать иконку на кнопке канала</string>
     <string name="subtitle_yellow_semi_transparent">Жёлтые на полупрозрачном фоне</string>
     <string name="subtitle_yellow_black">Жёлтые на чёрном фоне</string>
@@ -598,7 +598,7 @@
     <string name="mark_as_watched">Отметить как просмотренное</string>
     <string name="player_ui_animations">Включить анимацию интерфейса плеера</string>
     <string name="player_likes_count">Отображать количество лайков/дислайков</string>
-    <string name="sorting_alphabetically2">По алфавиту (быстро, анимированные превью)</string>
+    <string name="sorting_alphabetically2">По алфавиту (быстро, с анимированными предпросмотрами)</string>
     <string name="sorting_default">По умолчанию (быстро, с анимированными миниатюрами)</string>
     <string name="content_block_exclude_channel">Исключить канал из SponsorBlock</string>
     <string name="content_block_stop_excluding_channel">Перестать исключать канал из SponsorBlock</string>
@@ -643,7 +643,7 @@
     <string name="hide_unwanted_content">Скрывать содержимое</string>
     <string name="hide_watched_from_home">Скрывать просмотренные видео на главной странице</string>
     <string name="hide_watched_from_watch_later">Удалять просмотренные видео из плейлиста «Смотреть позже»</string>
-    <string name="remote_control_permission">Фоновое Дистанционное управление требует разрешения Перекрывать другие окна</string>
+    <string name="remote_control_permission">Для фонового дистанционного управления нужно разрешить показ поверх других окон.</string>
     <string name="login_from_browser">Войти через браузер</string>
     <string name="disable_remote_history">Отключить историю во время дистанционного управления</string>
     <string name="keyboard_fix">Исправить отображение клавиатуры при нажатии клавиши ОК (G20 и другие)</string>
@@ -717,7 +717,7 @@
     <string name="action_debug_info">Отладочная информация</string>
     <string name="dialog_block_channel">Заблокировать канал</string>
     <string name="dialog_unblock_channel">Разблокировать канал</string>
-    <string name="confirm_block_channel">Скрыть весь контент от %s?</string>
+    <string name="confirm_block_channel">Скрыть весь контент канала %s?</string>
     <string name="channel_blocked">Канал заблокирован</string>
     <string name="channel_unblocked">Канал разблокирован</string>
     <string name="header_blocked_channels">Заблокированные каналы</string>
