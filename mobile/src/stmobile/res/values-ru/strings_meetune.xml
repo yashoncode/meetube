@@ -41,7 +41,7 @@
     <string name="meetune_set_customize">Персонализация</string>
     <string name="meetune_set_customize_summary">Значок-сердце на странице «Вы», название рядом с логотипом и свечение поиска</string>
     <string name="meetune_set_brand_name">Название MeeTune рядом с логотипом</string>
-    <string name="meetune_set_brand_name_summary">Если выключено, в углу главной страницы останется только значок сердца</string>
+    <string name="meetune_set_brand_name_summary">Без подписи в углу главной останется только сердце.</string>
     <string name="meetune_set_you">MeeTune на странице «Вы»</string>
     <string name="meetune_set_you_summary">Нажатие на сердце рядом с вашим именем открывает MeeTune</string>
     <string name="meetune_queue">Далее</string>
@@ -64,16 +64,16 @@
     <string name="meetune_eq">Эквалайзер MeeTune</string>
     <string name="meetune_eq_sound">Звук</string>
     <string name="meetune_eq_off">Выкл.</string>
-    <string name="meetune_eq_note">Применяется к музыке MeeTune внутри приложения, до передачи звука на телефон. На звучание видео MeeTube не влияет.</string>
+    <string name="meetune_eq_note">Для музыки MeeTune; на видео MeeTube не влияет.</string>
     <string name="meetune_eq_dynamic">Динамический</string>
     <string name="meetune_eq_manual">Вручную</string>
     <string name="meetune_eq_tone">Тембр</string>
     <string name="meetune_eq_tone_readout">Наклон АЧХ %1$s  ·  Средние частоты %2$s</string>
-    <string name="meetune_eq_tone_desc">Панель настройки тембра. Наклон АЧХ %1$s, средние частоты %2$s. Перетаскивайте, чтобы изменить значения.</string>
+    <string name="meetune_eq_tone_desc">Настройка тембра: наклон АЧХ %1$s, середина %2$s. Перетащите для изменения.</string>
     <string name="meetune_eq_broad">Широкий диапазон</string>
     <string name="meetune_eq_focused">Узкий диапазон</string>
-    <string name="meetune_eq_tone_note_broad">Перетащите влево, чтобы сделать звук теплее, и вправо — чтобы сделать его ярче; движение вниз ослабляет середину, вверх — подчёркивает её. Широкий режим одновременно затрагивает большие участки спектра.</string>
-    <string name="meetune_eq_tone_note_focused">Перетащите влево, чтобы сделать звук теплее, и вправо — чтобы сделать его ярче; движение вниз ослабляет середину, вверх — подчёркивает её. Узкий режим затрагивает только крайние частоты и узкую область середины.</string>
+    <string name="meetune_eq_tone_note_broad">Влево — теплее, вправо — ярче; вниз ослабляет середину, вверх усиливает. Широкий режим меняет большую часть спектра.</string>
+    <string name="meetune_eq_tone_note_focused">Влево — теплее, вправо — ярче; вниз ослабляет середину, вверх усиливает. Узкий режим меняет края спектра и узкую область середины.</string>
     <string name="meetune_eq_preset">Предустановка</string>
     <string name="meetune_eq_custom">Пользовательская</string>
     <string-array name="meetune_eq_presets">
@@ -93,7 +93,7 @@
     </string-array>
     <string name="meetune_eq_bands">Полосы эквалайзера</string>
     <string name="meetune_eq_reset">Сбросить все полосы</string>
-    <string name="meetune_eq_bands_note">При изменении любой полосы предустановка больше не используется — вы настраиваете собственную кривую эквалайзера.</string>
+    <string name="meetune_eq_bands_note">Измените полосу — и вместо пресета будет ваша кривая эквалайзера.</string>
     <string name="meetune_eq_balance">Баланс</string>
     <string name="meetune_eq_balance_note">Перемещает звук влево или вправо, приглушая другой канал.</string>
     <string name="meetune_eq_left">Л</string>
@@ -101,5 +101,5 @@
     <string name="meetune_eq_system">Системный эквалайзер</string>
     <string name="meetune_eq_system_summary">Системная панель эквалайзера телефона</string>
     <string name="meetune_eq_system_none">На этом телефоне нет панели эквалайзера</string>
-    <string name="meetune_eq_system_note">Работает после эквалайзера MeeTune и обрабатывает звук уже на уровне телефона. Если включить оба эквалайзера, будут применяться обе настройки.</string>
+    <string name="meetune_eq_system_note">Обрабатывает звук после эквалайзера MeeTune, на уровне телефона. При включении обоих применяются обе настройки.</string>
 </resources>
