@@ -52,7 +52,7 @@ public final class SiriGlow extends View {
     }
 
     /** Play once over {@code activity}'s window. */
-    static void play(Activity activity) {
+    public static void play(Activity activity) {
         if (!enabled(activity)) {
             return;
         }

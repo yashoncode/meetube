@@ -508,7 +508,7 @@ public class MobileBrowseActivity extends MobileActivity
         setupMiniPlayerBar();
         mMiniPip = new com.newtube.mobile.ui.playback.MiniPip(this, mMiniPlayerBar, () -> {
             hideMiniPlayer();
-            MiniPlayerBridge.close(); // the PiP window was closed - so is the video
+            MiniPlayerBridge.closeAll(); // the PiP window was closed - so is the video
             // This screen floated in a task of its own; the app's task gets a fresh Home when
             // the player finishes, so this copy goes with its window.
             finishAndRemoveTask();
@@ -826,7 +826,9 @@ public class MobileBrowseActivity extends MobileActivity
         mMiniClosing = false;
         MiniPlayerBridge.setClosing(null);
         foldMiniCard();
-        MiniPlayerBridge.close();
+        if (MiniPlayerBridge.close()) { // MEETUNE: the other side's session lives on, paused: its sound back
+            MiniPlayerBridge.setVolume(mMiniVolumeBeforeClose);
+        }
     }
 
     /** The session was handed a new video while the card left: it lives on; the card still goes. */
@@ -842,7 +844,7 @@ public class MobileBrowseActivity extends MobileActivity
     private void syncMiniPlayer() {
         finishMiniClose(); // a card closing when this runs is closed, not brought back
         ExoPlayer player = MiniPlayerBridge.getPlayer();
-        if (player == null) {
+        if (player == null || !MiniPlayerBridge.claim(false)) { // MEETUNE: a song stays in MeeTune
             hideMiniPlayer();
             return;
         }

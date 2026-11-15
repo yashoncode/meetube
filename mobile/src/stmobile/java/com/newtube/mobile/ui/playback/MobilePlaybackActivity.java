@@ -2923,14 +2923,25 @@ public class MobilePlaybackActivity extends MobileActivity
         mMiniHostBeforeShorts = null;
         mShorts.bind(null); // cancel any pending page-open before putting the regular queue back
         mShortPausedByLeave = false;
+        loadPaused(video, position, mMiniQueue, mMiniQueueShuffled);
+        NetPath.log("mini shorts-restore video=" + video.videoId + " pos-ms=" + position);
+        if (host != null) {
+            MiniPlayerBridge.registerMiniHost(host);
+        }
+        minimizeByDrag(); // the host's normal show/texture handoff; keep this Activity alive
+        return true;
+    }
+
+    /** Loads {@code video} with its queue, paused at {@code position}, without bringing the player to the front. */
+    private void loadPaused(Video video, long position, @Nullable List<Video> queue, boolean shuffled) {
         setPlayWhenReady(false);
         Playlist playlist = Playlist.instance();
         playlist.clear();
-        if (mMiniQueue != null) {
-            playlist.addAll(mMiniQueue);
+        if (queue != null) {
+            playlist.addAll(queue);
         }
         playlist.setCurrent(video);
-        if (mMiniQueueShuffled) {
+        if (shuffled) {
             QueuePlaybackMode.shuffle(video.getPlaylistId());
         }
         video.fromQueue = true;
@@ -2942,11 +2953,76 @@ public class MobilePlaybackActivity extends MobileActivity
             mExoPlayerController.setOnVideoLoaded(null);
             setPositionMs(position); // exact, including zero (pendingPosMs treats zero as absent)
         });
-        NetPath.log("mini shorts-restore video=" + video.videoId + " pos-ms=" + position);
-        if (host != null) {
-            MiniPlayerBridge.registerMiniHost(host);
+    }
+
+    // MEETUNE: MeeTube and MeeTune share this one player but each keeps its own session. The side
+    // whose song or video is replaced by the other side's parks it here; going back to that side
+    // brings it back paused where it was (MiniPlayerBridge.claim), parking the other one in turn.
+    private static final class Parked {
+        Video video;
+        long position;
+        List<Video> queue;
+        boolean shuffled;
+    }
+
+    @Nullable
+    private Parked mParkedMusic;
+    @Nullable
+    private Parked mParkedVideo;
+
+    /** Called before {@code item} replaces the playing video: parks it when they are different sides. */
+    private void parkOtherSide(@Nullable Video item) {
+        Video previous = getVideo();
+        if (item == null || previous == null || item.belongsToShorts() || previous.belongsToShorts()
+                || Helpers.equals(item.videoId, previous.videoId)) {
+            return;
         }
-        minimizeByDrag(); // the host's normal show/texture handoff; keep this Activity alive
+        boolean music = com.newtube.mobile.ui.meetune.MeeTune.isMusic(previous);
+        if (music == com.newtube.mobile.ui.meetune.MeeTune.isMusic(item)) {
+            return;
+        }
+        Parked parked = new Parked();
+        parked.video = previous;
+        parked.position = Math.max(0, getPositionMs());
+        parked.queue = mMiniQueue != null ? new ArrayList<>(mMiniQueue) : null;
+        parked.shuffled = mMiniQueueShuffled;
+        if (music) {
+            mParkedMusic = parked;
+        } else {
+            mParkedVideo = parked;
+        }
+    }
+
+    /** Brings back {@code music}'s parked session paused, in place of the other side's; false when none. */
+    boolean restoreParked(boolean music) {
+        Parked parked = music ? mParkedMusic : mParkedVideo;
+        if (parked == null || mPresenter == null || mPlayer == null) {
+            return false;
+        }
+        if (music) {
+            mParkedMusic = null;
+        } else {
+            mParkedVideo = null;
+        }
+        loadPaused(parked.video, parked.position, parked.queue, parked.shuffled);
+        NetPath.log("mini side-restore music=" + music + " video=" + parked.video.videoId + " pos-ms=" + parked.position);
+        return true;
+    }
+
+    /**
+     * The X on one side's card: the other side's parked session takes the player back, paused, and
+     * the closed one is gone (not parked). False when the other side has none: close as before.
+     */
+    boolean closeToParked() {
+        boolean music = com.newtube.mobile.ui.meetune.MeeTune.isMusic(getVideo());
+        if (!restoreParked(!music)) {
+            return false;
+        }
+        if (music) { // setVideo (synchronous on a live engine) just parked the closed one
+            mParkedMusic = null;
+        } else {
+            mParkedVideo = null;
+        }
         return true;
     }
 
@@ -12981,6 +13057,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (item != null && item != getVideo() && mExoPlayerController != null) {
             mExoPlayerController.setOnVideoLoaded(null);
         }
+        parkOtherSide(item); // MEETUNE: before mMiniQueue below is the new video's
         // MEETUBE(issue #233): every Shorts entry reaches here before replacing the old Video or
         // resetting its position. Keep the original object: copy() drops playlistParams/localUri.
         if (item != null && item.belongsToShorts()) {

@@ -170,6 +170,28 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             com.newtube.mobile.ui.common.Motion.pop(v);
             showAccountMenu();
         });
+        View clear = findViewById(R.id.meetune_search_clear);
+        clear.setOnClickListener(v -> { // clear the query, keep typing, as MeeTube's Search
+            mSearchField.setText(null);
+            mSearchField.requestFocus();
+            android.view.inputmethod.InputMethodManager input = (android.view.inputmethod.InputMethodManager)
+                    getSystemService(INPUT_METHOD_SERVICE);
+            if (input != null) input.showSoftInput(mSearchField, 0);
+        });
+        mSearchField.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                clear.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+            }
+        });
         mSearchField.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 search(v.getText().toString().trim());
@@ -230,6 +252,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     private void switchTab(int tab) {
         saveScroll();
         mStack.clear();
+        if (tab == SEARCH && mTab != SEARCH) {
+            com.newtube.mobile.ui.search.SiriGlow.play(this); // MeeTube's Search glow, as its Search opens
+        }
         mTab = tab;
         show(current(), false);
     }
@@ -267,11 +292,12 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mSearchGlass.setVisibility(search ? View.VISIBLE : View.GONE);
         boolean brand = !pushed && page.tab == HOME;
         findViewById(R.id.meetune_brand).setVisibility(brand ? View.VISIBLE : View.GONE);
+        if (brand) showBrand();
         mTitle.setVisibility(search || brand ? View.GONE : View.VISIBLE);
         mTitleSpace.setVisibility(search ? View.GONE : View.VISIBLE);
         mTitle.setText(pushed ? (page.title != null ? page.title : "") : getString(tabTitle(page.tab)));
         boolean home = !pushed && page.tab == HOME;
-        mSettings.setVisibility(home ? View.VISIBLE : View.GONE);
+        mSettings.setVisibility(home || search ? View.VISIBLE : View.GONE); // the avatar beside the search bar too
         mSort.setVisibility(View.GONE); // until a list that sorts has loaded
         if (!search) hideKeyboard();
         showBackdrop(pushed ? page.art : null); // up while the page loads too
@@ -367,19 +393,66 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     private void search(String query) {
         if (query.isEmpty()) return;
+        mQuery = query;
+        mFilter = 0;
+        if (mFilters != null) mFilters.setSelected(0);
+        runSearch(query);
+    }
+
+    @Nullable
+    private String mQuery;
+    /** Search's chip: an index of {@link MusicApi#FILTERS}. */
+    private int mFilter;
+    @Nullable
+    private com.newtube.mobile.ui.common.GlassChipTrack mFilters;
+    @Nullable
+    private View mFilterRow;
+
+    /** All, Songs, Videos, Albums, Artists, Playlists: MeeTube's glass segment over the results. */
+    private View filterRow() {
+        if (mFilterRow == null) {
+            android.widget.FrameLayout frame = new android.widget.FrameLayout(this);
+            frame.setPadding(MeeTuneAdapter.dp(this, 14), MeeTuneAdapter.dp(this, 4), MeeTuneAdapter.dp(this, 14),
+                    MeeTuneAdapter.dp(this, 8));
+            frame.setClipToPadding(false); // the track swells as the pill runs: never cut flat
+            mFilters = new com.newtube.mobile.ui.common.GlassChipTrack(this);
+            mFilters.setGlassSource(null);
+            mFilters.setChips(java.util.Arrays.asList(getString(R.string.meetune_filter_all),
+                    getString(R.string.meetune_filter_songs), getString(R.string.meetune_filter_videos),
+                    getString(R.string.meetune_filter_albums), getString(R.string.meetune_filter_artists),
+                    getString(R.string.meetune_filter_playlists)));
+            mFilters.setSelected(mFilter);
+            mFilters.setOnPicked(index -> {
+                if (index == mFilter || mQuery == null) return;
+                Haptics.click(mFilters);
+                mFilter = index;
+                runSearch(mQuery);
+            });
+            frame.addView(mFilters, new android.widget.FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, MeeTuneAdapter.dp(this, 44)));
+            mFilterRow = frame;
+        }
+        return mFilterRow;
+    }
+
+    private void runSearch(String query) {
         hideKeyboard();
         Page page = mTabs[SEARCH];
         int generation = ++mGeneration;
-        mAdapter.setRows(new ArrayList<>());
+        List<MeeTuneAdapter.Row> waiting = new ArrayList<>();
+        waiting.add(MeeTuneAdapter.viewRow(filterRow())); // the chips stay while it loads
+        mAdapter.setRows(waiting);
         mMessage.setVisibility(View.GONE);
         mProgress.setVisibility(View.VISIBLE);
-        MeeTune.run(this, () -> MeeTuneAdapter.rows(MusicApi.search(this, query), true, false), (rows, error) -> {
+        String filter = MusicApi.FILTERS[mFilter];
+        MeeTune.run(this, () -> MeeTuneAdapter.searchRows(MusicApi.search(this, query, filter)), (rows, error) -> {
             if (generation != mGeneration) return;
             mProgress.setVisibility(View.GONE);
             if (rows == null) {
-                message(getString(R.string.meetune_error), getString(R.string.meetune_retry), () -> search(query));
+                message(getString(R.string.meetune_error), getString(R.string.meetune_retry), () -> runSearch(query));
                 return;
             }
+            rows.add(0, MeeTuneAdapter.viewRow(filterRow()));
             page.rows = rows;
             page.scroll = null;
             if (current() == page) render(page);
@@ -696,19 +769,23 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         return page;
     }
 
-    private final MeeTuneSettings.Host mSettingsHost = new MeeTuneSettings.Host() {
-        @Override
-        public void openEqualizer() {
-            push(settingsPage(MeeTuneSettings.EQUALIZER));
-        }
+    private final MeeTuneSettings.Host mSettingsHost = which -> push(settingsPage(which));
 
-        @Override
-        public void accountsChanged() {
-            showAvatar();
-            mAccount = accountKey();
-            for (Page page : mTabs) page.rows = null; // the music is the new account's
-        }
-    };
+    /** Home's brand pill: the heart and "MeeTune", or the heart alone on a round glass (Customization). */
+    private void showBrand() {
+        boolean name = MeeTune.brandName(this);
+        View label = findViewById(R.id.meetune_brand_name);
+        label.setVisibility(name ? View.VISIBLE : View.GONE);
+        android.widget.LinearLayout row = (android.widget.LinearLayout) label.getParent();
+        View heart = row.getChildAt(0);
+        ((ViewGroup.MarginLayoutParams) heart.getLayoutParams()).setMarginEnd(name ? MeeTuneAdapter.dp(this, 8) : 0);
+        row.setGravity(name ? android.view.Gravity.CENTER_VERTICAL : android.view.Gravity.CENTER);
+        row.setPaddingRelative(name ? MeeTuneAdapter.dp(this, 14) : 0, 0, name ? MeeTuneAdapter.dp(this, 16) : 0, 0);
+        row.getLayoutParams().width = name ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+        View brand = findViewById(R.id.meetune_brand);
+        brand.getLayoutParams().width = name ? ViewGroup.LayoutParams.WRAP_CONTENT : MeeTuneAdapter.dp(this, 44);
+        brand.requestLayout();
+    }
 
     // ----------------------------------------------------------------------------- MeeTuneAdapter.Host
 
@@ -726,6 +803,11 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         page.title = item.kind == MusicApi.MOOD ? item.title : null;
         page.art = item.kind == MusicApi.MOOD ? null : item.art;
         push(page);
+    }
+
+    @Override
+    public void addToPlaylist(MusicApi.Item item) {
+        com.liskovsoft.smartyoutubetv2.common.utils.AppDialogUtil.showAddToPlaylistDialog(this, MeeTune.video(item), null);
     }
 
     @Override
@@ -818,22 +900,21 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     @Override
     public boolean prepareMiniPlayerForHandoff(Runnable onDrawn) {
-        if (mPill.sync()) { // a song: the pill, not the video card
-            mMiniPlayer.hide();
-            mPill.whenDrawn(onDrawn);
-            return true;
-        }
-        return mMiniPlayer.prepareForHandoff(onDrawn);
+        mMiniPlayer.hide(); // MeeTube's video card never shows here
+        if (!mPill.sync()) return false;
+        mPill.whenDrawn(onDrawn);
+        return true;
     }
 
-    /** A MeeTune song docks as the pill; anything else (a MeeTube video) as the usual card. */
+    /**
+     * MeeTune's own song docks as the pill. A MeeTube video is MeeTube's: it pauses and the song it
+     * replaced comes back paused (MiniPlayerBridge.claim); the video waits for MeeTube the same way.
+     */
     private void syncMini() {
         mPill.land(); // MeeTune is on top again: a song that just landed shows its own cover
-        if (mPill.sync()) {
-            mMiniPlayer.hide();
-        } else {
-            mMiniPlayer.sync(false);
-        }
+        MiniPlayerBridge.claim(true);
+        mPill.sync();
+        mMiniPlayer.hide();
     }
 
     @Override

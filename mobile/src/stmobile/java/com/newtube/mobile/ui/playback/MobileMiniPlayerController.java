@@ -187,7 +187,9 @@ public final class MobileMiniPlayerController {
         mClosing = false;
         MiniPlayerBridge.setClosing(null);
         fold();
-        MiniPlayerBridge.close();
+        if (MiniPlayerBridge.close()) { // MEETUNE: the other side's session lives on, paused: its sound back
+            MiniPlayerBridge.setVolume(mVolumeBeforeClose);
+        }
     }
 
     /** The session was handed a new video while the card left: it lives on; the card still goes. */
@@ -237,7 +239,7 @@ public final class MobileMiniPlayerController {
         finishClose(); // a card closing when this runs is closed, not brought back
         MiniPlayerBridge.clearPendingCardFold(mCardFold);
         ExoPlayer player = MiniPlayerBridge.getPlayer();
-        if (player == null) {
+        if (player == null || !MiniPlayerBridge.claim(false)) { // MEETUNE: a song stays in MeeTune
             hide();
             return;
         }

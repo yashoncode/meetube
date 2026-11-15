@@ -47,8 +47,14 @@ final class MusicApi {
     static final int CARD = 1;
     static final int MOOD = 2;
 
+    /** Search's filters, as YouTube Music's chips: All, Songs, Videos, Albums, Artists, Playlists. */
+    static final String[] FILTERS = {null, "EgWKAQIIAWoMEA4QChADEAQQCRAF", "EgWKAQIQAWoMEA4QChADEAQQCRAF",
+            "EgWKAQIYAWoMEA4QChADEAQQCRAF", "EgWKAQIgAWoMEA4QChADEAQQCRAF", "EgWKAQIoAWoMEA4QChADEAQQCRAF"};
+
     static final class Item {
         String title;
+        /** Marked explicit (the E before its name). */
+        boolean explicit;
         String subtitle;
         String art;
         String videoId;
@@ -79,6 +85,8 @@ final class MusicApi {
         String moreParams;
         /** Album/playlist/artist header: one big item over the tracks. */
         boolean header;
+        /** Search's top result: its first item big, with Play and Playlist. */
+        boolean top;
 
         boolean allSongs() {
             for (Item item : items) {
@@ -115,9 +123,11 @@ final class MusicApi {
         return shelves;
     }
 
-    static List<Shelf> search(Context context, String query) throws Exception {
+    static List<Shelf> search(Context context, String query, @Nullable String filter) throws Exception {
         List<Shelf> shelves = new ArrayList<>();
-        walk(post(context, "search", new JSONObject().put("query", query)).opt("contents"), shelves);
+        JSONObject body = new JSONObject().put("query", query);
+        if (filter != null) body.put("params", filter);
+        walk(post(context, "search", body).opt("contents"), shelves);
         return shelves;
     }
 
@@ -215,6 +225,16 @@ final class MusicApi {
             add(out, shelf);
             return;
         }
+        // Search now sends each result in its own untitled section: a run of them is one list.
+        JSONObject section = o.optJSONObject("itemSectionRenderer");
+        JSONArray sectionItems = section != null ? section.optJSONArray("contents") : null;
+        if (sectionItems != null && item(sectionItems.optJSONObject(0)) != null) {
+            Shelf last = out.isEmpty() ? null : out.get(out.size() - 1);
+            Shelf shelf = last != null && last.title == null && !last.top ? last : new Shelf();
+            items(sectionItems, shelf);
+            if (shelf != last) add(out, shelf);
+            return;
+        }
         JSONObject grid = o.optJSONObject("gridRenderer");
         if (grid != null) {
             Shelf shelf = new Shelf();
@@ -231,7 +251,11 @@ final class MusicApi {
             item.art = thumb(obj(card, "thumbnail", "musicThumbnailRenderer"));
             endpoint(item, card.optJSONObject("onTap"));
             endpoint(item, firstRunEndpoint(card.opt("title")));
+            item.kind = item.videoId != null ? SONG : CARD;
+            item.artist = artists(card.opt("subtitle"));
+            item.explicit = explicit(card.optJSONArray("subtitleBadges"));
             Shelf shelf = new Shelf();
+            shelf.top = true;
             shelf.title = text(path(card, "header", "musicCardShelfHeaderBasicRenderer", "title"));
             if (item.title != null && (item.videoId != null || item.browseId != null)) shelf.items.add(item);
             items(card.optJSONArray("contents"), shelf);
@@ -278,6 +302,7 @@ final class MusicApi {
                     item.title = value;
                     endpoint(item, firstRunEndpoint(text));
                 } else if (value != null && !value.isEmpty()) {
+                    if (item.artist == null) item.artist = artists(text);
                     if (subtitle.length() > 0) subtitle.append(" • ");
                     subtitle.append(value);
                 }
@@ -288,6 +313,7 @@ final class MusicApi {
                 item.duration = text(path(fixed.optJSONObject(0), "musicResponsiveListItemFixedColumnRenderer", "text"));
             }
             item.art = thumb(obj(r, "thumbnail", "musicThumbnailRenderer"));
+            item.explicit = explicit(r.optJSONArray("badges"));
             JSONObject data = r.optJSONObject("playlistItemData");
             if (data != null && item.videoId == null) item.videoId = data.optString("videoId", null);
             endpoint(item, obj(r, "overlay", "musicItemThumbnailOverlayRenderer", "content",
@@ -311,6 +337,35 @@ final class MusicApi {
             return null;
         }
         return item.title != null && (item.videoId != null || item.browseId != null) ? item : null;
+    }
+
+    /** The artists in a "Song • A, B • 3:30" line, from their links on: in any language. */
+    @Nullable
+    private static String artists(@Nullable Object text) {
+        if (!(text instanceof JSONObject)) return null;
+        JSONArray runs = ((JSONObject) text).optJSONArray("runs");
+        StringBuilder out = new StringBuilder();
+        boolean in = false;
+        for (int i = 0; runs != null && i < runs.length(); i++) {
+            JSONObject run = runs.optJSONObject(i);
+            if (run == null) continue;
+            String page = String.valueOf(path(run, "navigationEndpoint", "browseEndpoint",
+                    "browseEndpointContextSupportedConfigs", "browseEndpointContextMusicConfig", "pageType"));
+            if (page.contains("ARTIST") || page.contains("USER_CHANNEL")) in = true;
+            if (!in) continue;
+            String part = run.optString("text");
+            if (part.contains("•")) break;
+            out.append(part);
+        }
+        return out.length() > 0 ? out.toString().trim() : null;
+    }
+
+    private static boolean explicit(@Nullable JSONArray badges) {
+        for (int i = 0; badges != null && i < badges.length(); i++) {
+            Object icon = path(badges.optJSONObject(i), "musicInlineBadgeRenderer", "icon", "iconType");
+            if ("MUSIC_EXPLICIT_BADGE".equals(icon)) return true;
+        }
+        return false;
     }
 
     /** First endpoint wins: an item's own link is read before its play overlay's. */
