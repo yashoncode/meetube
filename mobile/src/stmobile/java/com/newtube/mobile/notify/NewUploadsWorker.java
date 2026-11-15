@@ -44,9 +44,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * MEETUBE(issue #220): new uploads from your subscriptions in the notification shade, app closed or
- * not. Every 3 hours (online, battery not low) this reads the Subscriptions feed (the account's, or
- * the local subscriptions when signed out) and posts each video it hasn't seen; a tap plays it in
+ * not. Every hour by default (online, battery not low) this reads the Subscriptions feed (the account's,
+ * or the local subscriptions when signed out) and posts each video it hasn't seen; a tap plays it in
  * MeeTube. The first check only remembers what is there. Not push: a video shows up at the next check.
+ * MEETUBE(issue #239): each channel has a bell (the channel page, Settings > Notifications); a channel
+ * whose bell is off is skipped. Kept locally: YouTube's own bell setting is not readable by this client.
  */
 public class NewUploadsWorker extends Worker {
     private static final String TAG = "NewUploads";
@@ -55,6 +57,11 @@ public class NewUploadsWorker extends Worker {
     private static final String PREFS = "new_uploads";
     private static final String KEY_ON = "on";
     private static final String KEY_SEEN = "seen";
+    private static final String KEY_MUTED = "muted";
+    private static final String KEY_EVERY = "every_minutes";
+    private static final String SEP = "";
+    /** WorkManager's shortest period is 15 minutes. */
+    public static final int[] EVERY_MINUTES = {15, 30, 60, 180, 360};
     /** ponytail: a long gap (phone off a day) posts only the newest few; the rest are marked seen. */
     private static final int MAX_POSTS = 5;
     private static final int SEEN_MAX = 400;
@@ -73,15 +80,57 @@ public class NewUploadsWorker extends Worker {
         schedule(context);
     }
 
-    /** At app start and when the switch changes. */
+    public static int everyMinutes(Context context) {
+        return prefs(context).getInt(KEY_EVERY, 60);
+    }
+
+    public static void setEveryMinutes(Context context, int minutes) {
+        prefs(context).edit().putInt(KEY_EVERY, minutes).apply();
+        schedule(context);
+    }
+
+    /** Channels whose bell is off: id to name. Every other subscription notifies. */
+    public static java.util.Map<String, String> muted(Context context) {
+        java.util.Map<String, String> result = new java.util.LinkedHashMap<>();
+        for (String entry : prefs(context).getStringSet(KEY_MUTED, new java.util.HashSet<>())) {
+            String[] parts = entry.split(SEP, 2);
+            result.put(parts[0], parts.length > 1 ? parts[1] : "");
+        }
+        return result;
+    }
+
+    public static void setMuted(Context context, java.util.Map<String, String> muted) {
+        Set<String> all = new java.util.HashSet<>();
+        for (java.util.Map.Entry<String, String> channel : muted.entrySet()) {
+            all.add(channel.getKey() + SEP + (channel.getValue() != null ? channel.getValue() : ""));
+        }
+        prefs(context).edit().putStringSet(KEY_MUTED, all).apply();
+    }
+
+    public static boolean isBellOn(Context context, String channelId) {
+        return !muted(context).containsKey(channelId);
+    }
+
+    public static void setBell(Context context, String channelId, String name, boolean on) {
+        java.util.Map<String, String> muted = muted(context);
+        if (on) {
+            muted.remove(channelId);
+        } else {
+            muted.put(channelId, name);
+        }
+        setMuted(context, muted);
+    }
+
+    /** At app start and when the switch or the interval changes. */
     public static void schedule(Context context) {
         WorkManager work = WorkManager.getInstance(context);
         if (!isEnabled(context)) {
             work.cancelUniqueWork(WORK);
             return;
         }
-        work.enqueueUniquePeriodicWork(WORK, ExistingPeriodicWorkPolicy.KEEP,
-                new PeriodicWorkRequest.Builder(NewUploadsWorker.class, 3, TimeUnit.HOURS)
+        // UPDATE: a changed interval takes over the running schedule
+        work.enqueueUniquePeriodicWork(WORK, ExistingPeriodicWorkPolicy.UPDATE,
+                new PeriodicWorkRequest.Builder(NewUploadsWorker.class, everyMinutes(context), TimeUnit.MINUTES)
                         .setConstraints(new Constraints.Builder()
                                 .setRequiredNetworkType(NetworkType.CONNECTED)
                                 .setRequiresBatteryNotLow(true)
@@ -116,12 +165,13 @@ public class NewUploadsWorker extends Worker {
         boolean first = stored == null;
         Set<String> seen = new LinkedHashSet<>(first ? new ArrayList<>() : Arrays.asList(TextUtils.split(stored, ",")));
         List<MediaItem> fresh = new ArrayList<>();
+        java.util.Map<String, String> muted = muted(context);
         for (MediaItem item : items) { // newest first
             String id = item.getVideoId();
             if (id == null || item.isUpcoming() || !seen.add(id)) {
                 continue;
             }
-            if (!first && fresh.size() < MAX_POSTS) {
+            if (!first && fresh.size() < MAX_POSTS && !isMuted(muted, item)) {
                 fresh.add(item);
             }
         }
@@ -173,6 +223,16 @@ public class NewUploadsWorker extends Worker {
                             .bigLargeIcon((Bitmap) null).setSummaryText(item.getTitle()));
         }
         NotificationManagerCompat.from(context).notify(TAG, id, builder.build());
+    }
+
+    /** By channel id, or by name when the feed's tile carries no id. */
+    private static boolean isMuted(java.util.Map<String, String> muted, MediaItem item) {
+        String channelId = item.getChannelId();
+        if (channelId != null) {
+            return muted.containsKey(channelId);
+        }
+        String name = channelName(item.getAuthor());
+        return name != null && muted.containsValue(name);
     }
 
     /** "Zee Tamil • @zeetamil" as "Zee Tamil". */

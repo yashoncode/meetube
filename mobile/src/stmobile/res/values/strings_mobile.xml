@@ -628,6 +628,14 @@
     <string name="mobile_update_channel_desc">Downloading a MeeTube update</string>
     <string name="mobile_new_uploads_channel">New uploads</string>
     <string name="mobile_new_uploads_channel_desc">New videos from the channels you subscribe to</string>
+    <!-- MEETUBE(issue #239): the bell beside Subscribed on a channel page -->
+    <string name="mobile_channel_bell">Notifications for this channel</string>
+    <string name="mobile_channel_bell_on">Notifications on for this channel</string>
+    <string name="mobile_channel_bell_off">Notifications off for this channel</string>
+    <string name="mobile_channel_bell_on_done">New videos from %1$s will notify you</string>
+    <string name="mobile_channel_bell_off_done">No more notifications from %1$s</string>
+    <string name="mobile_channel_bell_on_master_off">New-upload notifications are off in Settings</string>
+    <string name="mobile_channel_bell_turn_on">Turn on</string>
     <string name="mobile_update_notify_channel">New versions</string>
     <string name="mobile_update_notify_channel_desc">When a new MeeTube version is out</string>
     <string name="mobile_update_notify_title">New update available ✨</string>

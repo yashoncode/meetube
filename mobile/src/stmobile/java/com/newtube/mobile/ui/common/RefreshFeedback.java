@@ -17,7 +17,8 @@ public final class RefreshFeedback {
     private static final String PREFS = "meetube_app";
     private static final String KEY_SOUND = "refresh_sound";
     private static SoundPool sPool;
-    private static int sPop;
+    /** raw resource to its loaded sound id. */
+    private static final java.util.Map<Integer, Integer> sSounds = new java.util.HashMap<>();
 
     private RefreshFeedback() {
     }
@@ -33,30 +34,41 @@ public final class RefreshFeedback {
     public static void play(View view) {
         Haptics.click(view);
         Context app = view.getContext().getApplicationContext();
-        if (!isSoundOn(app)) {
-            return;
+        if (isSoundOn(app)) {
+            sound(app, R.raw.refresh_pop, 0.6f);
         }
+    }
+
+    /**
+     * A short UI sound from res/raw, quiet while the phone is on silent or vibrate. MEETUBE(issue
+     * #239): also the channel bell's chime.
+     */
+    public static void sound(Context context, int rawRes, float volume) {
+        Context app = context.getApplicationContext();
         AudioManager audio = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
         if (audio == null || audio.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
             return;
         }
         if (sPool == null) {
             sPool = new SoundPool.Builder()
-                    .setMaxStreams(1)
+                    .setMaxStreams(2)
                     .setAudioAttributes(new AudioAttributes.Builder()
                             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
                             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                             .build())
                     .build();
-            // The first pull plays it once loaded (a few ms); later ones play at once.
-            sPool.setOnLoadCompleteListener((pool, id, status) -> {
-                if (status == 0) {
-                    pool.play(id, 0.6f, 0.6f, 1, 0, 1f);
-                }
-            });
-            sPop = sPool.load(app, R.raw.refresh_pop, 1);
+        }
+        Integer loaded = sSounds.get(rawRes);
+        if (loaded != null) {
+            sPool.play(loaded, volume, volume, 1, 0, 1f);
             return;
         }
-        sPool.play(sPop, 0.6f, 0.6f, 1, 0, 1f);
+        // The first time plays it once loaded (a few ms); later ones play at once.
+        sPool.setOnLoadCompleteListener((pool, id, status) -> {
+            if (status == 0) {
+                pool.play(id, volume, volume, 1, 0, 1f);
+            }
+        });
+        sSounds.put(rawRes, sPool.load(app, rawRes, 1));
     }
 }

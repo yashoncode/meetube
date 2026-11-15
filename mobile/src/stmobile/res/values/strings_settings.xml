@@ -112,7 +112,34 @@
     <string name="mobile_settings_voice_search">Search by voice right away</string>
     <string name="mobile_settings_voice_search_summary">Opening Search starts listening</string>
     <string name="mobile_settings_new_uploads">Notify about new uploads</string>
-    <string name="mobile_settings_new_uploads_summary">New videos from your subscriptions show up in the notification shade, checked every few hours</string>
+    <string name="mobile_settings_new_uploads_summary">New videos from your subscriptions show up in the notification shade</string>
+    <!-- MEETUBE(issue #239): Settings > Notifications -->
+    <string name="mobile_settings_notifications">Notifications</string>
+    <string name="mobile_settings_notify_on">New uploads, checked every %1$s</string>
+    <string name="mobile_settings_notify_off">Off</string>
+    <string name="mobile_settings_notify_every">Check for new videos every</string>
+    <plurals name="mobile_settings_notify_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="mobile_settings_notify_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <string name="mobile_settings_notify_channels">Channels</string>
+    <string name="mobile_settings_notify_channels_all">Every subscribed channel</string>
+    <plurals name="mobile_settings_notify_channels_muted">
+        <item quantity="one">Every subscribed channel but %d</item>
+        <item quantity="other">Every subscribed channel but %d</item>
+    </plurals>
+    <string name="mobile_settings_notify_no_channels">Sign in or subscribe to a channel first</string>
+    <string name="mobile_settings_notify_reliable">With MeeTube closed</string>
+    <string name="mobile_settings_notify_background">Run in the background</string>
+    <string name="mobile_settings_notify_background_on">Allowed: checks keep running with MeeTube closed</string>
+    <string name="mobile_settings_notify_background_off">Not allowed: your phone may stop the checks while MeeTube is closed. Tap to allow</string>
+    <string name="mobile_settings_notify_system">Sound and style</string>
+    <string name="mobile_settings_notify_system_summary">Notification settings for MeeTube on this phone</string>
+    <string name="mobile_settings_notify_note">New videos are checked on a schedule, not pushed: Android lets an app check every 15 minutes at most. Some phones (Infinix, Xiaomi, Oppo, Vivo and others) also stop background checks unless MeeTube may run in the background, so allow it above.</string>
     <string name="mobile_settings_24_hour">Use 24-hour time</string>
     <string name="mobile_settings_24_hour_summary">For the start times of premieres and live streams</string>
     <string name="mobile_settings_liquid_glass">Liquid glass</string>
