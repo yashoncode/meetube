@@ -320,10 +320,21 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
                 || getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
             return;
         }
-        int gap = Math.round(MobileSheets.LANDSCAPE_TOP_GAP_DP * getResources().getDisplayMetrics().density);
-        mRecyclerView.setMaxHeight(MobileSheets.peekingListHeight(mContent, mRecyclerView,
-                liveWindowBounds().height() - gap));
+        // MEETUBE(issue #258): fitted from where the rows sit, so a refit while the list scrolls
+        // gave another height each layout and the sheet jumped under the finger. Like PeekFit, the
+        // sheet keeps its height once the list is dragged.
+        if (!mListDragged || mFittedListHeight <= 0) {
+            int gap = Math.round(MobileSheets.LANDSCAPE_TOP_GAP_DP * getResources().getDisplayMetrics().density);
+            mFittedListHeight = MobileSheets.peekingListHeight(mContent, mRecyclerView,
+                    liveWindowBounds().height() - gap);
+        }
+        mRecyclerView.setMaxHeight(mFittedListHeight);
     }
+
+    /** The list height {@link #fitOverFullscreenPlayer} last worked out. */
+    private int mFittedListHeight;
+    /** The list was dragged since its level opened: its fitted height stays (issue #258). */
+    private boolean mListDragged;
 
     /**
      * The cap is a fraction of the space the sheet can actually occupy, not of the raw display:
@@ -352,6 +363,7 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        mListDragged = false; // a new window: fit again
         if (mOverPlayer) {
             // Turned with the picker open: the player goes fullscreen with the phone sideways and
             // back to its watch page, which has its bars, when it is upright again.
@@ -370,6 +382,14 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
         mAdapter = new DialogRowAdapter(this, mRowListener);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView list, int state) {
+                if (state == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    mListDragged = true;
+                }
+            }
+        });
     }
 
     /**
@@ -404,6 +424,9 @@ public class MobileAppDialogActivity extends MobileActivity implements AppDialog
                 getResources().getDimensionPixelSize(showBack
                         ? R.dimen.mobile_dialog_title_inset_with_back : R.dimen.mobile_dialog_title_inset),
                 mTitleView.getPaddingTop(), mTitleView.getPaddingEnd(), mTitleView.getPaddingBottom());
+        if (scroll != SCROLL_KEEP) {
+            mListDragged = false; // other rows: fit again
+        }
         mAdapter.submit(level.categories, mRadioOverrides, level.title);
         RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
         if (scroll == SCROLL_RESTORE && level.listState != null && layoutManager != null) {
