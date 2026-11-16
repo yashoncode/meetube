@@ -85,6 +85,7 @@ public final class MeeTune {
     /** MeeTube to MeeTune: MeeTube blurs and dims away, MeeTune comes in out of the blur. */
     public static void open(Activity from) {
         sHome = null; // a new Home each time MeeTune opens, never the last one again
+        closeHomeHint(from); // switched once: the "tap the icon" hint has done its job
         prefetch(from); // Home loads while MeeTube blurs away
         pausePlaying(false); // a MeeTube video doesn't play on into MeeTune
         blurAway(from, () -> {
@@ -96,6 +97,7 @@ public final class MeeTune {
     /** MeeTune back to MeeTube, the same way round: MeeTune blurs away, MeeTube comes back into focus. */
     static void leave(Activity meetune) {
         pausePlaying(true); // a MeeTune song doesn't play on into MeeTube
+        closeMeeTubeHint(meetune); // switched back once: its hint has done its job
         blurAway(meetune, () -> {
             // Like issue #171's way back to Browse: the player MeeTune expanded sits between Browse and
             // MeeTune, and a bare finish() put the song's full player on screen over MeeTube.
@@ -694,13 +696,74 @@ public final class MeeTune {
         return true;
     }
 
-    /** Home's "tap here for MeeTune" hint shows each time until its X closes it for good. */
+    /**
+     * Home's "tap the icon to switch to MeeTune" hint, and MeeTune Home's twin back to MeeTube: each
+     * shows until its X closes it or the user first switches that way ({@link #open} / {@link #leave}).
+     */
     public static boolean homeHint(Context context) {
         return !prefs(context).getBoolean("home_hint_closed", false);
     }
 
     public static void closeHomeHint(Context context) {
         prefs(context).edit().putBoolean("home_hint_closed", true).apply();
+    }
+
+    static boolean meeTubeHint(Context context) {
+        return !prefs(context).getBoolean("meetube_hint_closed", false);
+    }
+
+    static void closeMeeTubeHint(Context context) {
+        prefs(context).edit().putBoolean("meetube_hint_closed", true).apply();
+    }
+
+    /**
+     * Pops a switch hint in under its brand pill and keeps it riding there (the pill moves with its
+     * bar). A tap on the hint switches ({@code onTap}); its X closes it for good ({@code onClose}).
+     */
+    public static void showSwitchHint(Activity activity, android.view.View hint, android.view.View brand,
+                                      android.view.View blurSource, int closeId, Runnable onTap, Runnable onClose) {
+        if (hint.getVisibility() == android.view.View.VISIBLE) return;
+        hint.setOnClickListener(v -> {
+            hint.setVisibility(android.view.View.GONE);
+            onTap.run();
+        });
+        hint.findViewById(closeId).setOnClickListener(v -> {
+            com.newtube.mobile.ui.common.Haptics.click(v);
+            onClose.run();
+            hint.animate().alpha(0f).scaleX(0.9f).scaleY(0.9f).setDuration(150)
+                    .setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD)
+                    .withEndAction(() -> hint.setVisibility(android.view.View.GONE)).start();
+        });
+        com.newtube.mobile.ui.common.Glass.blur(hint, blurSource);
+        float gap = 8 * activity.getResources().getDisplayMetrics().density;
+        int[] at = new int[2];
+        int[] home = new int[2];
+        hint.getViewTreeObserver().addOnPreDrawListener(new android.view.ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (hint.getVisibility() != android.view.View.VISIBLE) {
+                    hint.getViewTreeObserver().removeOnPreDrawListener(this);
+                    return true;
+                }
+                brand.getLocationInWindow(at);
+                ((android.view.View) hint.getParent()).getLocationInWindow(home);
+                float x = at[0] - home[0] - hint.getLeft();
+                float y = at[1] - home[1] + brand.getHeight() * brand.getScaleY() + gap - hint.getTop();
+                if (hint.getTranslationX() != x || hint.getTranslationY() != y) {
+                    hint.setTranslationX(x);
+                    hint.setTranslationY(y);
+                }
+                return true;
+            }
+        });
+        hint.setPivotX(0);
+        hint.setPivotY(0);
+        hint.setAlpha(0f);
+        hint.setScaleX(0.8f);
+        hint.setScaleY(0.8f);
+        hint.setVisibility(android.view.View.VISIBLE);
+        hint.animate().alpha(1f).scaleX(1f).scaleY(1f).setStartDelay(400).setDuration(260)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(1.5f)).start();
     }
 
     /**

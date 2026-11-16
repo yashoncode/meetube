@@ -2340,8 +2340,8 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     /**
-     * MEETUNE: "Tap here to switch to MeeTune" under the brand pill, on Home's own screen only, each
-     * time until its X closes it for good. It rides with the pill (the bar hides on scroll).
+     * MEETUNE: "Tap the icon to switch to MeeTune" under the brand pill, on Home's own screen only,
+     * until its X closes it or the user first switches to MeeTune. It rides with the pill.
      */
     private void syncMeeTuneHint() {
         View hint = findViewById(R.id.mobile_meetune_hint);
@@ -2354,47 +2354,9 @@ public class MobileBrowseActivity extends MobileActivity
             hint.setVisibility(View.GONE);
             return;
         }
-        if (hint.getVisibility() == View.VISIBLE) return;
-        hint.setOnClickListener(v -> {
-            hint.setVisibility(View.GONE);
-            com.newtube.mobile.ui.meetune.MeeTune.open(this);
-        });
-        hint.findViewById(R.id.mobile_meetune_hint_close).setOnClickListener(v -> {
-            com.newtube.mobile.ui.common.Haptics.click(v);
-            com.newtube.mobile.ui.meetune.MeeTune.closeHomeHint(this);
-            hint.animate().alpha(0f).scaleX(0.9f).scaleY(0.9f).setDuration(150).setInterpolator(Motion.STANDARD)
-                    .withEndAction(() -> hint.setVisibility(View.GONE)).start();
-        });
-        com.newtube.mobile.ui.common.Glass.blur(hint, findViewById(R.id.mobile_blur_target));
-        float gap = 8 * getResources().getDisplayMetrics().density;
-        int[] at = new int[2];
-        int[] home = new int[2];
-        hint.getViewTreeObserver().addOnPreDrawListener(new android.view.ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                if (hint.getVisibility() != View.VISIBLE) {
-                    hint.getViewTreeObserver().removeOnPreDrawListener(this);
-                    return true;
-                }
-                brand.getLocationInWindow(at);
-                ((View) hint.getParent()).getLocationInWindow(home);
-                float x = at[0] - home[0] - hint.getLeft();
-                float y = at[1] - home[1] + brand.getHeight() * brand.getScaleY() + gap - hint.getTop();
-                if (hint.getTranslationX() != x || hint.getTranslationY() != y) {
-                    hint.setTranslationX(x);
-                    hint.setTranslationY(y);
-                }
-                return true;
-            }
-        });
-        hint.setPivotX(0);
-        hint.setPivotY(0);
-        hint.setAlpha(0f);
-        hint.setScaleX(0.8f);
-        hint.setScaleY(0.8f);
-        hint.setVisibility(View.VISIBLE);
-        hint.animate().alpha(1f).scaleX(1f).scaleY(1f).setStartDelay(400).setDuration(260)
-                .setInterpolator(new android.view.animation.OvershootInterpolator(1.5f)).start();
+        com.newtube.mobile.ui.meetune.MeeTune.showSwitchHint(this, hint, brand, findViewById(R.id.mobile_blur_target),
+                R.id.mobile_meetune_hint_close, () -> com.newtube.mobile.ui.meetune.MeeTune.open(this),
+                () -> com.newtube.mobile.ui.meetune.MeeTune.closeHomeHint(this));
     }
 
     /** MEETUBE(you page): Subscriptions and Downloads stay in Library while on the bottom bar too. */

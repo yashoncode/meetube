@@ -411,6 +411,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         boolean brand = !pushed && page.tab == HOME;
         findViewById(R.id.meetune_brand).setVisibility(brand ? View.VISIBLE : View.GONE);
         if (brand) showBrand();
+        syncMeeTubeHint(brand);
         mTitle.setVisibility(search || brand ? View.GONE : View.VISIBLE);
         mTitleSpace.setVisibility(search ? View.GONE : View.VISIBLE);
         mTitle.setText(pushed ? (page.title != null ? page.title : "") : getString(tabTitle(page.tab)));
@@ -983,6 +984,17 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     private final MeeTuneSettings.Host mSettingsHost = which -> push(settingsPage(which));
 
+    /** "Tap the icon to switch to MeeTube" under Home's brand pill, until its X or the first switch back. */
+    private void syncMeeTubeHint(boolean home) {
+        View hint = findViewById(R.id.meetune_meetube_hint);
+        if (!home || !MeeTune.meeTubeHint(this)) {
+            hint.setVisibility(View.GONE);
+            return;
+        }
+        MeeTune.showSwitchHint(this, hint, findViewById(R.id.meetune_brand), findViewById(R.id.meetune_blur),
+                R.id.meetune_meetube_hint_close, () -> MeeTune.leave(this), () -> MeeTune.closeMeeTubeHint(this));
+    }
+
     /** Home's brand pill: the heart and "MeeTune", or the heart alone on a round glass (Customization). */
     private void showBrand() {
         boolean name = MeeTune.brandName(this);
@@ -990,7 +1002,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         label.setVisibility(name ? View.VISIBLE : View.GONE);
         android.widget.LinearLayout row = (android.widget.LinearLayout) label.getParent();
         View heart = row.getChildAt(0);
-        ((ViewGroup.MarginLayoutParams) heart.getLayoutParams()).setMarginEnd(name ? MeeTuneAdapter.dp(this, 8) : 0);
+        ViewGroup.MarginLayoutParams heartLp = (ViewGroup.MarginLayoutParams) heart.getLayoutParams();
+        heartLp.setMarginEnd(name ? MeeTuneAdapter.dp(this, 8) : 0);
+        heart.setLayoutParams(heartLp); // a start/end margin only re-resolves on setLayoutParams: the old 8dp stayed, heart off-centre
         row.setGravity(name ? android.view.Gravity.CENTER_VERTICAL : android.view.Gravity.CENTER);
         row.setPaddingRelative(name ? MeeTuneAdapter.dp(this, 14) : 0, 0, name ? MeeTuneAdapter.dp(this, 16) : 0, 0);
         row.getLayoutParams().width = name ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;

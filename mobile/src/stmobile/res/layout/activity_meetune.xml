@@ -296,6 +296,57 @@
 
     </LinearLayout>
 
+    <!-- "Tap the icon to switch to MeeTube" under Home's brand pill, MeeTube Home's twin
+         (mobile_meetune_hint); placed by MeeTune.showSwitchHint. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/meetune_meetube_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:elevation="8dp"
+        android:focusable="true"
+        android:visibility="gone"
+        app:glassCornerRadius="22dp"
+        app:glassTint="@color/meetube_glass_tint">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="44dp"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="4dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_meetube_mark_default" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:maxLines="1"
+                android:text="@string/meetune_meetube_hint"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textSize="15sp" />
+
+            <ImageView
+                android:id="@+id/meetune_meetube_hint_close"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@android:string/cancel"
+                android:padding="11dp"
+                android:src="@drawable/ic_sheet_close" />
+
+        </LinearLayout>
+
+    </com.newtube.mobile.ui.common.GlassView>
+
     <com.newtube.mobile.ui.common.GlassView
         android:id="@+id/meetune_nav_glass"
         android:layout_width="match_parent"

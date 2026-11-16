@@ -44,7 +44,8 @@
     <string name="meetune_set_brand_name_summary">Off, Home\'s corner shows the heart alone</string>
     <string name="meetune_link_meetube">MeeTube →</string>
     <string name="meetune_link_meetune">MeeTune →</string>
-    <string name="meetune_home_hint">Tap here to switch to MeeTune</string>
+    <string name="meetune_home_hint">Tap the icon to switch to MeeTune</string>
+    <string name="meetune_meetube_hint">Tap the icon to switch to MeeTube</string>
     <string name="meetune_cached">Cached songs</string>
     <string name="meetune_cached_summary">Play with no network</string>
     <string name="meetune_storage_songs">MeeTune songs (in cache)</string>
