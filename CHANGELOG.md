@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.5.0** Drago](#350-drago) | 2026-11-16 | MeeTune |
 | [**3.4.2** Severus](#342-severus) | 2026-11-15 | Stable |
 | [**3.4.0** Bleach](#340-bleach) | 2026-11-12 | YouTube mode |
 | [**3.3.7** Melmo](#337-melmo) | 2026-11-12 | Connected |
@@ -46,6 +47,57 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.5.0 Drago
+
+> **MeeTune**<br>
+> 📅 2026-11-16 · closes #239, #247 and #250
+
+### ✨ Highlights
+
+- **MeeTune, a big update (beta, still in development):** MeeTube now has a music side of its own. Tap the logo on Home to switch: YouTube Music's Home, Explore, Library and Search, with albums, artists, playlists and moods, a full player with synced lyrics, and settings of its own.
+- **Smoother all round:** the mini player folds without a stutter, switching the equalizer on or off no longer drops the sound, glass frosts whatever scrolls under it, and picture-in-picture from the mini player works again on Android 17.
+- **A bell on every channel:** turn new-upload notifications on or off per channel, right beside Subscribed. It rings with a little swing and chime, quiet on silent (#239).
+- **Bars that stay put:** Fixed Top Bar and Fixed Nav Bar in Customization > Bars keep the bars on screen while you scroll, off by default.
+
+### 🎵 MeeTune (beta)
+
+- Plays like a music app: the next song and Up next come from the YouTube Music radio, your Play next and queue come first, and the radio never bounces back to a song it just played.
+- Skips are instant: the next song is saved to your phone while the current one plays, and Library > Cached songs plays every cached song with no network.
+- Downloaded songs and their lyrics play offline, from MeeTune's own Downloads page in Library.
+- A History of its own, kept on your phone, and your songs no longer fill MeeTube's watch history.
+- One frosted song menu everywhere: Like, Dislike, Share, Start radio, Play next, Add to queue, Download, Open album or artist, Song info and more.
+- The player: a heart that likes the song on YouTube Music, big glowing controls, a cover that melts into the background, moving covers for some songs, and a pill with the format and your headset's name.
+- Search looks like YouTube Music's, with Songs, Videos, Albums, Artists and Playlists chips, a Top result and the E badge.
+- The MeeTune Equalizer shapes only your songs: a Dynamic tone pad or Manual bands, balance, and the phone's system equalizer.
+- MeeTube and MeeTune keep separate players: switching pauses the other side, and each one waits where you left it.
+- It's a beta, so some things may still change or break. Tell me in Issues and I'll fix them fast.
+
+### 📣 A note from me
+
+- **If MeeTune made your playlist sing, maybe treat me to a coffee? ☕** Totally optional and always appreciated: sudo brew coffee in About, [Buy me a coffee](https://buymeacoffee.com/yashwynth), or UPI `yashwynth@slc` in India. Every star, issue and kind word keeps the late nights going. Thank you for being here. ❤️
+
+### New
+
+- Settings > Notifications: how often to check (15 min to 6 h, now hourly by default), every channel's bell in one list, and Run in the background for phones that stop apps (Infinix, Xiaomi and others).
+- Auto download's Channels picker lists your subscriptions when signed in (#247).
+- Separate download folders for Video and Music.
+- Equalizer presets are glass pills, and a rotate button stands the bands upright side by side.
+
+### Changed
+
+- YouTube mode is now called OG Mode.
+- The equalizer, quality, speed and headphone correction sheets, text-entry dialogs and the see-through settings sheets are frosted glass like the rest.
+- On the dark theme, dialogs and every sheet are dark tinted glass instead of milky grey.
+- Home's chips fold arrow sits plain on the top bar.
+- Russian refreshed from top to bottom by @MAKAKAIglitch (#255).
+
+### Fixed
+
+- The search bar and the page's glass pills no longer show sharp text through them while you scroll (#250).
+- The mini card comes back where you dragged it after picture-in-picture or audio-only.
+- Saving a playlist or Mix card to a playlist saves all its videos, not only the first.
+- The fullscreen button no longer shows an octagon through its glass.
 
 ## 3.4.2 Severus
 
