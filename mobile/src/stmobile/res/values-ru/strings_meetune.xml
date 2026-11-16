@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MeeTune interface: Russian translation. Brand names remain unchanged. -->
+    <string name="meetune_try">Попробовать MeeTune</string>
+    <string name="meetune_home">Главная</string>
+    <string name="meetune_explore">Обзор</string>
+    <string name="meetune_library">Библиотека</string>
+    <string name="meetune_search">Поиск</string>
+    <string name="meetune_search_hint">Песни, альбомы, исполнители</string>
+    <string name="meetune_back">Назад</string>
+    <string name="meetune_settings">Настройки MeeTune</string>
+    <string name="meetune_account">Аккаунт и настройки</string>
+    <string name="meetune_add_account">Добавить аккаунт</string>
+    <string name="meetune_to_meetube">Вернуться в MeeTube</string>
+    <string name="meetune_show_all">Показать все</string>
+    <string name="meetune_more">Ещё</string>
+    <string name="meetune_play">Воспроизвести</string>
+    <string name="meetune_play_pause">Воспроизвести или приостановить</string>
+    <string name="meetune_next">Следующий трек</string>
+    <string name="meetune_lyrics_finding">Поиск текста песни…</string>
+    <string name="meetune_lyrics_none">Для этой песни нет текста</string>
+    <string name="meetune_share">Поделиться</string>
+    <string name="meetune_shuffle">Перемешать</string>
+    <string name="meetune_mood">Найти музыку под настроение</string>
+    <string name="meetune_error">Не удалось подключиться к YouTube Music.</string>
+    <string name="meetune_retry">Повторить</string>
+    <string name="meetune_empty">Пока здесь ничего нет.</string>
+    <string name="meetune_search_empty">Найдите песни, альбомы и исполнителей.</string>
+    <string name="meetune_library_signed_out">Войдите в YouTube, чтобы увидеть свои плейлисты, альбомы и понравившиеся песни.</string>
+    <string name="meetune_sign_in">Войти</string>
+    <string name="meetune_liked">Понравившаяся музыка</string>
+    <string name="meetune_playlist">Плейлист</string>
+    <string name="meetune_explicit">Ненормативная лексика</string>
+    <string name="meetune_clear">Очистить</string>
+    <string name="meetune_filter_all">Все</string>
+    <string name="meetune_filter_songs">Песни</string>
+    <string name="meetune_filter_videos">Видео</string>
+    <string name="meetune_filter_albums">Альбомы</string>
+    <string name="meetune_filter_artists">Исполнители</string>
+    <string name="meetune_filter_playlists">Плейлисты</string>
+    <string name="meetune_set_customize">Персонализация</string>
+    <string name="meetune_set_customize_summary">Значок-сердце на странице «Вы», название рядом с логотипом и свечение поиска</string>
+    <string name="meetune_set_brand_name">Название MeeTune рядом с логотипом</string>
+    <string name="meetune_set_brand_name_summary">Без подписи в углу главной останется только сердце.</string>
+    <string name="meetune_set_you">MeeTune на странице «Вы»</string>
+    <string name="meetune_set_you_summary">Нажатие на сердце рядом с вашим именем открывает MeeTune</string>
+    <string name="meetune_queue">Далее</string>
+    <string name="meetune_lyrics">Текст песни</string>
+    <string name="meetune_cast">Трансляция</string>
+    <string name="meetune_minimize">Свернуть</string>
+    <string name="meetune_like">Нравится</string>
+    <string name="meetune_this_phone">Этот телефон</string>
+    <string name="meetune_sort">Сортировка</string>
+    <string name="meetune_sort_added">По дате добавления</string>
+    <string name="meetune_sort_default">По умолчанию</string>
+    <string name="meetune_sort_az">По алфавиту (А–Я)</string>
+    <string name="meetune_sort_za">По алфавиту (Я–А)</string>
+    <string name="meetune_find">Искать в песнях</string>
+    <string name="meetune_save">Добавить в библиотеку</string>
+    <string name="meetune_unsave">Удалить из библиотеки</string>
+    <string name="meetune_save_sign_in">Войдите, чтобы сохранять музыку в библиотеку</string>
+    <string name="meetune_save_failed">Не удалось изменить библиотеку</string>
+    <!-- MeeTune's Equalizer -->
+    <string name="meetune_eq">Эквалайзер MeeTune</string>
+    <string name="meetune_eq_sound">Звук</string>
+    <string name="meetune_eq_off">Выкл.</string>
+    <string name="meetune_eq_note">Для музыки MeeTune; на видео MeeTube не влияет.</string>
+    <string name="meetune_eq_dynamic">Динамический</string>
+    <string name="meetune_eq_manual">Вручную</string>
+    <string name="meetune_eq_tone">Тембр</string>
+    <string name="meetune_eq_tone_readout">Наклон АЧХ %1$s  ·  Средние частоты %2$s</string>
+    <string name="meetune_eq_tone_desc">Настройка тембра: наклон АЧХ %1$s, середина %2$s. Перетащите для изменения.</string>
+    <string name="meetune_eq_broad">Широкий диапазон</string>
+    <string name="meetune_eq_focused">Узкий диапазон</string>
+    <string name="meetune_eq_tone_note_broad">Влево — теплее, вправо — ярче; вниз ослабляет середину, вверх усиливает. Широкий режим меняет большую часть спектра.</string>
+    <string name="meetune_eq_tone_note_focused">Влево — теплее, вправо — ярче; вниз ослабляет середину, вверх усиливает. Узкий режим меняет края спектра и узкую область середины.</string>
+    <string name="meetune_eq_preset">Предустановка</string>
+    <string name="meetune_eq_custom">Пользовательская</string>
+    <string-array name="meetune_eq_presets">
+        <item>Ровный</item>
+        <item>Усиление басов</item>
+        <item>Ослабление басов</item>
+        <item>Усиление высоких частот</item>
+        <item>Вокал</item>
+        <item>Рок</item>
+        <item>Поп</item>
+        <item>Джаз</item>
+        <item>Классика</item>
+        <item>Электронная музыка</item>
+        <item>Хип-хоп</item>
+        <item>Акустика</item>
+        <item>Тонкомпенсация</item>
+    </string-array>
+    <string name="meetune_eq_bands">Полосы эквалайзера</string>
+    <string name="meetune_eq_reset">Сбросить все полосы</string>
+    <string name="meetune_eq_bands_note">Изменение полосы отключает пресет — вы создаёте свою кривую эквалайзера.</string>
+    <string name="meetune_eq_balance">Баланс</string>
+    <string name="meetune_eq_balance_note">Перемещает звук влево или вправо, приглушая другой канал.</string>
+    <string name="meetune_eq_left">Л</string>
+    <string name="meetune_eq_right">П</string>
+    <string name="meetune_eq_system">Системный эквалайзер</string>
+    <string name="meetune_eq_system_summary">Системная панель эквалайзера телефона</string>
+    <string name="meetune_eq_system_none">На этом телефоне нет панели эквалайзера</string>
+    <string name="meetune_eq_system_note">Обрабатывает звук после эквалайзера MeeTune, на уровне телефона. При включении обоих применяются обе настройки.</string>
+</resources>

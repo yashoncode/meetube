@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MEETUBE(playlist page): Russian labels for the phone playlist header. -->
+    <string name="mobile_playlist_by_owner">от %1$s</string>
+    <string name="mobile_playlist_type">Плейлист</string>
+    <string name="mobile_playlist_download_all">Скачать всё</string>
+    <string name="mobile_playlist_download_confirm">Скачать %1$d видео?</string>
+    <string name="mobile_playlist_download_quality">Качество загрузки для всех видео</string>
+    <string name="mobile_playlist_download_best">Наилучшее доступное</string>
+    <string name="mobile_playlist_download_queued">Добавлено в очередь: %1$d видео</string>
+    <string name="mobile_playlist_download_skipped">Добавлено в очередь: %1$d видео. Недоступно: %2$d.</string>
+    <string name="mobile_playlist_load_failed">Не удалось загрузить весь плейлист. Попробуйте ещё раз.</string>
+    <string name="mobile_playlist_sort">Сортировать по</string>
+    <string name="mobile_playlist_sort_manual">Вручную</string>
+    <string name="mobile_playlist_sort_newest">По дате публикации (сначала новые)</string>
+    <string name="mobile_playlist_sort_oldest">По дате публикации (сначала старые)</string>
+    <string name="mobile_playlist_sort_popular">Популярности</string>
+    <string name="mobile_playlist_filter_all">Все</string>
+    <string name="mobile_playlist_filter_videos">Видео</string>
+    <string name="mobile_playlist_filter_shorts">Shorts</string>
+    <string name="mobile_playlist_download_select">Выбрать видео</string>
+    <string name="mobile_playlist_select_all">Выбрать все</string>
+    <string name="mobile_playlist_selected">Выбрано: %1$d</string>
+    <string name="mobile_playlist_download_selected">Скачать</string>
+    <string name="mobile_playlist_add_videos">Добавить видео</string>
+    <string name="mobile_playlist_add_hint">Найдите видео, чтобы добавить их в %1$s</string>
+    <string name="mobile_playlist_loading">Загрузка плейлиста…</string>
+    <plurals name="mobile_playlist_video_count">
+        <item quantity="one">%d видео</item>
+        <item quantity="few">%d видео</item>
+        <item quantity="many">%d видео</item>
+        <item quantity="other">%d видео</item>
+    </plurals>
+</resources>

@@ -33,8 +33,8 @@
     <string name="mobile_settings_search_kw_dearrow">clickbait titles thumbnails кликбейт заголовки миниатюры обложки</string>
     <string name="mobile_settings_search_kw_backup">export import save settings резервное копирование экспорт импорт сохранить настройки восстановить</string>
     <string name="mobile_settings_search_kw_buffer">buffering cache memory буфер буферизация кэш память</string>
-    <string name="mobile_settings_search_kw_dns">dns ipv4 ipv6 servers днс серверы</string>
-    <string name="mobile_settings_search_kw_conscrypt">ssl tls certificates security censorship blocked byebyedpi сертификаты безопасность блокировка заблокировано</string>
+    <string name="mobile_settings_search_kw_dns">dns ipv4 ipv6 servers днс серверы сервер адреса домены интернет сеть подключение ютуб youtube</string>
+    <string name="mobile_settings_search_kw_conscrypt">ssl tls certificates security censorship blocked byebyedpi vpn https сертификаты безопасность блокировка заблокировано блокировки ютуб youtube обход доступ соединение подключение сетевые инструменты</string>
     <string name="mobile_settings_search_kw_multi_profiles">profiles per account own different профили для каждого аккаунта отдельные разные</string>
     <string name="mobile_settings_search_kw_updates">update version new release обновление версия новый релиз уведомление уведомления</string>
     <string name="mobile_settings_search_kw_diagnostic_log">bug report logs debug ошибка отчёт журнал логи диагностика отладка</string>
@@ -53,5 +53,5 @@
     <string name="mobile_settings_search_kw_haptics">haptics vibration vibrate buzz tick feedback touch off tactile response haptic feedback вибрация вибрацию вибрации виброотклик тактильный тактильная отклик отдача обратная связь касание касания нажатие нажатия удержание перетаскивание отключить выключить</string>
     <string name="mobile_settings_search_kw_badge_icons">mix music note icon symbol pill badge duration time микс музыка нота значок иконка плашка длительность время</string>
     <string name="mobile_settings_search_kw_seek_pill">double tap skip seek forward rewind 10 seconds animation ripple pill двойное касание перемотка вперёд назад 10 секунд анимация волна плашка</string>
-    <string name="mobile_settings_search_web_signin">chat google login cookies account session send message чат вход аккаунт google сессия отправить сообщение веб</string>
+    <string name="mobile_settings_search_web_signin">chat google login cookies account session send message sign in web youtube browser Вход через сайт YouTube авторизация вход браузер браузере сайт аккаунт аккаунты чат писать отправлять сообщения</string>
 </resources>
