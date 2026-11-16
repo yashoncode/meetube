@@ -142,6 +142,11 @@
     <string name="meetune_spatial_light_summary">A wider stage on headphones, close to the original</string>
     <string name="meetune_spatial_strong">Strong</string>
     <string name="meetune_spatial_strong_summary">Wide and roomy, like speakers in front of you</string>
+    <string name="meetune_spatial_cinema">Cinema</string>
+    <string name="meetune_spatial_cinema_summary">The widest and roomiest, with a deeper bass</string>
+    <string name="meetune_head_tracking">Head tracking</string>
+    <string name="meetune_head_tracking_summary">The sound stays in place as you turn your head, on earbuds that track it. Starts with the next song</string>
+    <string name="meetune_head_tracking_summary_none">Needs the Spatial audio of this phone: put on earbuds that support it and turn it on in their Bluetooth settings</string>
     <string name="meetune_crossfade">Crossfade</string>
     <string name="meetune_crossfade_off">Off</string>
     <string name="meetune_crossfade_seconds">%1$d s</string>

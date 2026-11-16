@@ -53,6 +53,9 @@ separately from their code, and MeeTube uses it under those terms:
   **Apache-2.0**. The rounded-rect refraction-with-dispersion and highlight AGSL
   shaders in `mobile/src/stmobile/java/com/newtube/mobile/ui/common/GlassView.java`
   are ported from it (as vendored by BitChord, github.com/kushagrasinghx/BitChord).
+- **MIT KEMAR HRTF measurements** (compact set): © 1994 MIT Media Laboratory,
+  Bill Gardner and Keith Martin; free to use with credit. MeeTune's Spatial sound
+  head model (`MeeTuneHrtf.java`, made by `tools/kemar_hrtf.py`) is derived from it.
 
 ## Upstream
 

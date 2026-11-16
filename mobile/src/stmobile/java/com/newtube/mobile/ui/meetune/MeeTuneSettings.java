@@ -125,14 +125,23 @@ final class MeeTuneSettings {
                 getString(R.string.meetune_stream_normal_summary), getString(R.string.meetune_stream_low_summary)};
         // MEETUNE(issue #262): Spatial sound, for headphones.
         String[] spatial = {getString(R.string.mobile_menu_off), getString(R.string.meetune_spatial_light),
-                getString(R.string.meetune_spatial_strong)};
+                getString(R.string.meetune_spatial_strong), getString(R.string.meetune_spatial_cinema)};
         String[] spatialNotes = {getString(R.string.meetune_spatial_off_summary), getString(R.string.meetune_spatial_light_summary),
-                getString(R.string.meetune_spatial_strong_summary)};
+                getString(R.string.meetune_spatial_strong_summary), getString(R.string.meetune_spatial_cinema_summary)};
         int spatialLevel = MeeTuneSpatial.level(mActivity);
         card.addView(divider());
         row(card, R.drawable.ic_player_volume_up, getString(R.string.meetune_spatial), spatial[spatialLevel], null, true,
                 v -> choose(getString(R.string.meetune_spatial), spatial, spatialNotes, spatialLevel,
                         picked -> MeeTuneSpatial.setLevel(mActivity, picked)));
+        // MEETUNE(issue #262): Head tracking, by the phone's own spatial audio (Android 13+).
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            card.addView(divider());
+            row(card, R.drawable.ic_player_headphones, getString(R.string.meetune_head_tracking),
+                    getString(MeeTuneSpatial.systemSpatializes(mActivity, 48_000)
+                            ? R.string.meetune_head_tracking_summary : R.string.meetune_head_tracking_summary_none),
+                    MeeTuneSpatial.headTracking(mActivity), false,
+                    v -> MeeTuneSpatial.setHeadTracking(mActivity, !MeeTuneSpatial.headTracking(mActivity)));
+        }
         // MeeTube's headphone correction (AutoEq): one pick for both, it already runs on songs.
         card.addView(divider());
         String headphone = com.newtube.mobile.player.HeadphoneEq.name(mActivity);

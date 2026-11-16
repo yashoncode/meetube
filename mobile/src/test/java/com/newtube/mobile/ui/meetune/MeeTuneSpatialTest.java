@@ -18,7 +18,43 @@ public class MeeTuneSpatialTest {
     @After
     public void tearDown() {
         MeeTuneSpatial.setAmount(0f);
+        MeeTuneSpatial.setBass(0f);
         MeeTuneEq.setPlaying(false);
+    }
+
+    @Test
+    public void cinemaOnFullScaleSoundNeverClips() throws Exception {
+        MeeTuneEq.setPlaying(true);
+        MeeTuneSpatial.setAmount(1.3f);
+        MeeTuneSpatial.setBass(1f);
+        float[] out = run(loudStereo());
+        for (int i = 0; i < out.length; i++) {
+            assertTrue("sample " + i + " = " + out[i], Math.abs(out[i]) < 1f);
+        }
+    }
+
+    @Test
+    public void theHeadModelKeepsACentredSongCentredAndAsLoud() throws Exception {
+        MeeTuneEq.setPlaying(true);
+        MeeTuneSpatial.setAmount(1f);
+        float[] in = new float[FRAMES * 2];
+        for (int f = 0; f < FRAMES; f++) {
+            in[f * 2] = in[f * 2 + 1] = 0.3f * (float) Math.sin(2 * Math.PI * 1_000 * f / 48_000.0);
+        }
+        float[] out = run(in);
+        double inPower = 0;
+        double leftPower = 0;
+        double rightPower = 0;
+        for (int i = FRAMES; i < out.length; i += 2) { // the second half: the glide is done
+            inPower += in[i] * in[i];
+            leftPower += out[i] * out[i];
+            rightPower += out[i + 1] * out[i + 1];
+        }
+        // The room differs per ear by design, so centred means equally loud, not identical.
+        double balance = 10 * Math.log10(leftPower / rightPower);
+        double db = 10 * Math.log10(leftPower / inPower);
+        assertTrue("balance " + balance + " dB", Math.abs(balance) < 1);
+        assertTrue("level " + db + " dB", db > -6 && db < 1);
     }
 
     @Test
