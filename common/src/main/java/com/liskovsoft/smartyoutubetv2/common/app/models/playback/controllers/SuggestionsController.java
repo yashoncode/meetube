@@ -724,6 +724,14 @@ public class SuggestionsController extends BasePlayerController {
         mActions.add(metadataAction);
     }
 
+    /**
+     * MEETUNE: (playing, the usual next) -> the next. After a song MeeTune plays it is the next song
+     * of its YouTube Music radio (songs, not YouTube's video suggestions), and whatever is picked
+     * stays a song; a MeeTube video gets the usual next back unchanged.
+     */
+    @androidx.annotation.Nullable
+    public static java.util.function.BiFunction<Video, Video, Video> sMusicNext;
+
     public Video getNext() {
         if (getPlayer() == null || getVideo() == null) {
             return null;
@@ -745,6 +753,11 @@ public class SuggestionsController extends BasePlayerController {
             result = mNextSectionVideo;
         } else if (getVideo().nextMediaItem != null) {
             result = Video.from(getVideo().nextMediaItem);
+        }
+
+        // MEETUNE: after a MeeTune song, MeeTune picks (its radio's next) and keeps the pick a song.
+        if (sMusicNext != null) {
+            result = sMusicNext.apply(getVideo(), result);
         }
 
         return result;

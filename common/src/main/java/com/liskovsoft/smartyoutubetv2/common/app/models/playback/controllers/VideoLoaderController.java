@@ -1185,7 +1185,9 @@ public class VideoLoaderController extends BasePlayerController {
                 }
                 PlaybackView player = getPlayer();
                 if (player != null && formatInfo != null && wouldOpenPlainDash(formatInfo)) {
-                    player.prebuildNextSource(formatInfo, shortsSwipe);
+                    // MEETUNE: a MeeTune song (sOwnHistory) also loads the next song's opening, so it starts at once.
+                    player.prebuildNextSource(formatInfo, shortsSwipe || (VideoStateController.sOwnHistory != null
+                            && VideoStateController.sOwnHistory.test(currentVideo)));
                 }
                 if (currentVideo.belongsToShorts()) {
                     prefetchShortAfterNext();

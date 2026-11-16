@@ -4137,14 +4137,16 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** MEETUNE: Up next as a list of songs; a pick stays in the music look. */
     private void showMeeTuneQueue() {
-        if (mRelatedVideos.isEmpty() || isFinishing()) {
+        // The YouTube Music radio's songs; YouTube's suggestions only until the radio is in.
+        List<Video> radio = com.newtube.mobile.ui.meetune.MeeTune.upNext(PlaybackPresenter.instance(this).getVideo());
+        if ((radio.isEmpty() && mRelatedVideos.isEmpty()) || isFinishing()) {
             return;
         }
         com.google.android.material.bottomsheet.BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(
                 new com.google.android.material.bottomsheet.BottomSheetDialog(this));
         androidx.recyclerview.widget.RecyclerView list = new androidx.recyclerview.widget.RecyclerView(this);
         list.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
-        List<Video> videos = new ArrayList<>(mRelatedVideos);
+        List<Video> videos = radio.isEmpty() ? new ArrayList<>(mRelatedVideos) : radio;
         list.setAdapter(new androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
             @Override public int getItemCount() {
                 return videos.size();

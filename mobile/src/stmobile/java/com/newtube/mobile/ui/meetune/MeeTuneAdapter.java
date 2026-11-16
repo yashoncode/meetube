@@ -484,6 +484,7 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 cover = layers;
             }
             Glide.with(art).load(item.art).placeholder(cover).into(art); // no art: its own cover
+            art.setForeground(MeeTunePlaying.on(art.getContext(), item.videoId)); // bars while it plays
         }
     }
 

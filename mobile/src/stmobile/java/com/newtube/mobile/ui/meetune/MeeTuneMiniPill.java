@@ -252,6 +252,7 @@ final class MeeTuneMiniPill {
         }
         ExoPlayer player = MiniPlayerBridge.getPlayer();
         fill(video, player != null && player.getPlayWhenReady());
+        MeeTune.remember(mActivity, video); // History, even when the song changed with the player minimized
         if (mPill.getVisibility() != View.VISIBLE) {
             mPill.setTranslationX(0f);
             mPill.setVisibility(View.VISIBLE); // no fade: the player's cover has just landed right here

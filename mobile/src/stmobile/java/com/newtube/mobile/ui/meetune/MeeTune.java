@@ -40,9 +40,21 @@ import java.util.concurrent.Executors;
  */
 public final class MeeTune {
     private static final ExecutorService WORKER = Executors.newFixedThreadPool(3);
+    /** Songs MeeTune handed the player as its radio's next: music, even with no playlist in common. */
+    private static final java.util.Set<String> RADIO_NEXT = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
 
     static { // a song never lands in MeeTube's (YouTube's) History, only in MeeTune's own
         com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoStateController.sOwnHistory = MeeTune::isMusic;
+        com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController.sMusicNext = (playing, usual) -> {
+            if (!isMusic(playing)) return usual; // a MeeTube video: nothing changes
+            Video next = usual;
+            if (usual == null || !usual.fromQueue) { // the listener's own queue first, then the radio
+                List<Video> radio = upNext(playing);
+                if (!radio.isEmpty()) next = radio.get(0);
+            }
+            if (next != null && next.videoId != null) RADIO_NEXT.add(next.videoId); // it plays as a song too
+            return next;
+        };
     }
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     /** Square art of the songs MeeTune showed, by video id; the player's cover. */
@@ -286,16 +298,70 @@ public final class MeeTune {
         video.localUri = com.newtube.mobile.downloads.DownloadsBridge.instance(context).localSongUri(video.videoId);
     }
 
+    /** Songs already met in a YouTube Music queue fetched for the player (their art and links are known). */
+    private static final java.util.Set<String> RADIO = new java.util.HashSet<>();
+    /** The last queue fetched, in order. */
+    private static final List<String> sBatch = new java.util.ArrayList<>();
+
     /**
-     * The playing song's album and artist, when it came without them (a radio's next song, a video's
-     * song): asked of YouTube Music once, so the player's menu has Open album and Open artist.
+     * The YouTube Music radio's songs after {@code current} (its Up next, and what plays next), the
+     * video twin of a song left out; empty for a MeeTube video or before the radio is in.
+     */
+    public static List<Video> upNext(@Nullable Video current) {
+        List<Video> out = new java.util.ArrayList<>();
+        if (!isMusic(current)) return out;
+        int at = sBatch.indexOf(current.videoId);
+        if (at < 0) return out;
+        MusicApi.Item playing = ITEMS.get(current.videoId);
+        String last = playing != null ? playing.title : current.title;
+        for (int i = at + 1; i < sBatch.size(); i++) {
+            MusicApi.Item item = ITEMS.get(sBatch.get(i));
+            if (item == null || item.videoId == null || (last != null && last.equals(item.title))) continue;
+            last = item.title;
+            out.add(video(item));
+        }
+        return out;
+    }
+
+    /** Not in the last queue, or among its last three: time to ask for the songs after it. */
+    private static boolean lastOfBatch(String id) {
+        int at = sBatch.indexOf(id);
+        return at < 0 || at >= sBatch.size() - 3;
+    }
+
+    /**
+     * The playing song's album and artist (the player's menu's Open album and Open artist), and the
+     * queue YouTube Music builds around it: each song's square art, title and links, so a radio's
+     * next songs show their album covers, not their videos' stills, as soon as they play. Asked once
+     * per batch: a song from the last queue fetched asks nothing more until the queue runs past it.
      */
     public static void learn(Activity activity, Video video) {
         if (video == null || video.videoId == null) return;
-        MusicApi.Item known = ITEMS.get(video.videoId);
-        if (known != null && known.albumId != null && known.artistId != null) return;
         String id = video.videoId;
-        run(activity, () -> MusicApi.song(activity, id), (found, error) -> {
+        MusicApi.Item known = ITEMS.get(id);
+        boolean knowsSong = known != null && known.albumId != null && known.artistId != null;
+        if (knowsSong && RADIO.contains(id) && !lastOfBatch(id)) return;
+        String playlistId = video.playlistId;
+        run(activity, () -> MusicApi.radio(activity, id, playlistId), (queue, error) -> {
+            if (queue == null || queue.isEmpty()) return;
+            MusicApi.Item found = null;
+            sBatch.clear();
+            for (MusicApi.Item song : queue) {
+                RADIO.add(song.videoId);
+                sBatch.add(song.videoId);
+                if (song.videoId.equals(id)) {
+                    if (found == null) found = song;
+                    continue;
+                }
+                if (!ITEMS.containsKey(song.videoId)) ITEMS.put(song.videoId, song);
+                if (song.art != null && !ART.containsKey(song.videoId)) ART.put(song.videoId, song.art);
+            }
+            // The next songs' covers onto the phone now: a skip, however quick, finds its cover there.
+            int ahead = 0;
+            for (Video next : upNext(video)) {
+                if (ahead++ == 6) break;
+                com.bumptech.glide.Glide.with(activity.getApplicationContext()).downloadOnly().load(art(next)).preload();
+            }
             if (found == null) return;
             MusicApi.Item item = ITEMS.get(id);
             if (item == null) {
@@ -315,6 +381,7 @@ public final class MeeTune {
     static void watch(Context context, MusicApi.Item item) {
         if (item.videoId == null) return;
         QUEUED.remove(item.videoId);
+        RADIO_NEXT.remove(item.videoId);
         if (item.videoId.equals(sVideoId)) sVideoId = null;
         Video video = Video.from(item.videoId);
         video.title = item.title;
@@ -397,8 +464,15 @@ public final class MeeTune {
     private static final int HISTORY_MAX = 200;
 
     /** The music player opened {@code video}: it goes to the top of MeeTune's History. */
+    /** MeeTune's screen, told when a song lands in History (its History page reloads). */
+    @Nullable
+    static Runnable sHistoryChanged;
+    @Nullable
+    private static String sLastRemembered;
+
     public static void remember(Context context, Video video) {
-        if (video == null || video.videoId == null) return;
+        if (video == null || video.videoId == null || video.videoId.equals(sLastRemembered)) return;
+        sLastRemembered = video.videoId;
         MusicApi.Item item = item(video);
         try {
             org.json.JSONArray old = new org.json.JSONArray(prefs(context).getString("history", "[]"));
@@ -410,6 +484,8 @@ public final class MeeTune {
                 if (o != null && !video.videoId.equals(o.optString("v"))) now.put(o);
             }
             prefs(context).edit().putString("history", now.toString()).apply();
+            Runnable changed = sHistoryChanged;
+            if (changed != null) MAIN.post(changed);
         } catch (org.json.JSONException ignored) {
         }
     }
@@ -508,7 +584,8 @@ public final class MeeTune {
     /** True while {@code video} is a song MeeTune started (or its radio's next one). */
     public static boolean isMusic(@Nullable Video video) {
         if (video == null) return false;
-        return QUEUED.contains(video.videoId) || (sVideoId != null && sVideoId.equals(video.videoId))
+        return QUEUED.contains(video.videoId) || RADIO_NEXT.contains(video.videoId)
+                || (sVideoId != null && sVideoId.equals(video.videoId))
                 || (sPlaylistId != null && sPlaylistId.equals(video.playlistId));
     }
 

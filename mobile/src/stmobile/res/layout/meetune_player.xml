@@ -43,6 +43,27 @@
 
     </com.newtube.mobile.ui.common.GlassSource>
 
+    <!-- The song's moving cover (MeeTuneCanvas), muted and looping over the still one; the skin
+         keeps it on the cover's place, size and motion every frame. -->
+    <view
+        class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$FadeFrame"
+        android:id="@+id/meetune_player_canvas"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:alpha="0"
+        android:visibility="gone">
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/meetune_player_canvas_video"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:resize_mode="zoom"
+            app:shutter_background_color="@android:color/transparent"
+            app:surface_type="texture_view"
+            app:use_controller="false" />
+
+    </view>
+
     <View
         android:id="@+id/meetune_player_handle"
         android:layout_width="40dp"
@@ -182,10 +203,12 @@
         android:layout_gravity="bottom"
         android:orientation="vertical"
         android:paddingHorizontal="28dp"
-        android:paddingBottom="18dp">
+        android:paddingBottom="10dp">
 
         <TextView
-            android:id="@+id/meetune_player_format"
+            android:id="@+id/meetune_player_format_space"
+            android:visibility="invisible"
+            android:text=" "
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="18dp"
@@ -310,7 +333,7 @@
             android:id="@+id/meetune_player_seek"
             android:layout_width="match_parent"
             android:layout_height="28dp"
-            android:layout_marginTop="26dp"
+            android:layout_marginTop="24dp"
             android:paddingStart="0dp"
             android:paddingEnd="0dp"
             android:progressDrawable="@drawable/meetune_seek"
@@ -346,7 +369,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="6dp"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -472,10 +495,99 @@
 
         </LinearLayout>
 
+        <!-- The song's pill: glowing bars that move while it plays, its format (OPUS • 144K over
+             48 kHz • STEREO • YOUTUBE) and a headset when one is connected. A tap shows where it
+             plays (the speaker's or headset's name) for 10 s; another tap, the format again. -->
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/meetune_player_info"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            app:glassCornerRadius="999dp"
+            app:glassTint="@color/meetune_player_glass">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:duplicateParentState="true"
+                android:minWidth="200dp"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="20dp">
+
+                <view
+                    class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$EqBars"
+                    android:id="@+id/meetune_player_eq"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp" />
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:id="@+id/meetune_player_format_block"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/meetune_player_format"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-medium"
+                            android:maxLines="1"
+                            android:textColor="#F2FFFFFF"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/meetune_player_format_sub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:textColor="#8CFFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/meetune_player_device"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:textColor="#F2FFFFFF"
+                        android:textSize="14sp"
+                        android:visibility="invisible" />
+
+                </FrameLayout>
+
+                <ImageView
+                    android:id="@+id/meetune_player_headset"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_player_headphones"
+                    android:tint="#E6FFFFFF"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </com.newtube.mobile.ui.common.GlassView>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="16dp"
             android:orientation="horizontal">
 
             <FrameLayout
@@ -558,16 +670,6 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/meetune_player_device"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:gravity="center"
-            android:maxLines="1"
-            android:alpha="0.7"
-            android:textColor="#B3FFFFFF"
-            android:textSize="11sp" />
 
     </LinearLayout>
 

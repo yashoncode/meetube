@@ -133,6 +133,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 R.id.meetune_mini_search}) {
             Glass.blur(findViewById(id), source);
         }
+        com.newtube.mobile.ui.common.GlassView topFrost = findViewById(R.id.meetune_top_frost);
+        topFrost.setBlur(24f);
+        Glass.blur(topFrost, source);
 
         mAdapter = new MeeTuneAdapter(this);
         mList.setLayoutManager(new LinearLayoutManager(this));
@@ -142,6 +145,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             @Override
             public void onScrolled(RecyclerView view, int dx, int dy) {
                 followBackdrop();
+                // The top bar frosts in over the first 48dp of scroll; at the top of a page it's clear.
+                topFrost.setAlpha(Math.min(1f, view.computeVerticalScrollOffset() / (float) MeeTuneAdapter.dp(MeeTuneActivity.this, 48)));
             }
         });
         if (android.os.Build.VERSION.SDK_INT >= 31) {
@@ -246,6 +251,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         nav.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> placeMiniCard());
 
         show(current(), false);
+        MeeTune.sHistoryChanged = mHistoryChanged;
     }
 
     private void placeMiniCard() {
@@ -260,6 +266,18 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     }
 
     /** A song's download was deleted: the Downloads page, when it shows, lists the rest. */
+    /** A song just went into History: an open History page shows it, the Library's card counts it. */
+    private final Runnable mHistoryChanged = () -> {
+        Page page = current();
+        if (page == null || isFinishing()) return;
+        if (MeeTune.HISTORY.equals(page.browseId)) {
+            load(page, true);
+        } else if (page.tab == LIBRARY && mStack.isEmpty() && page.rows != null) {
+            countLocalCards(page);
+            mAdapter.notifyDataSetChanged();
+        }
+    };
+
     void downloadsChanged() {
         Page page = current();
         if (page != null && MeeTune.DOWNLOADS.equals(page.browseId)) load(page, true);
@@ -552,8 +570,20 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                     getString(R.string.meetune_filter_albums), getString(R.string.meetune_filter_artists),
                     getString(R.string.meetune_filter_playlists)));
             mFilters.setSelected(mFilter);
+            // Each search re-lists the results, taking this row off screen for a moment: the track stops
+            // its pill wherever it was. Back on screen, the pill runs on to the picked chip.
+            mFilters.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    mFilters.setSelected(-1);
+                    mFilters.setSelected(mFilter);
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                }
+            });
             mFilters.setOnPicked(index -> {
-                android.util.Log.d("MeeTune", "filter picked=" + index + " was=" + mFilter + " query=" + (mQuery != null));
                 if (index == mFilter || mQuery == null) return;
                 Haptics.click(mFilters);
                 mFilter = index;
@@ -577,8 +607,6 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mProgress.setVisibility(View.VISIBLE);
         String filter = MusicApi.FILTERS[mFilter];
         MeeTune.run(this, () -> MeeTuneAdapter.searchRows(MusicApi.search(this, query, filter)), (rows, error) -> {
-            android.util.Log.d("MeeTune", "search filter=" + mFilter + " rows=" + (rows != null ? rows.size() : -1)
-                    + " stale=" + (generation != mGeneration) + " shown=" + (current() == page) + " error=" + error);
             if (generation != mGeneration) return;
             mProgress.setVisibility(View.GONE);
             if (rows == null) {
@@ -1015,6 +1043,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     @Override
     protected void onDestroy() {
         MiniPlayerBridge.unregisterMiniHost(this);
+        if (MeeTune.sHistoryChanged == mHistoryChanged) MeeTune.sHistoryChanged = null;
         mPill.release();
         super.onDestroy();
     }

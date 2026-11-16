@@ -120,6 +120,27 @@ public final class MeeTunePlayerSkin {
     private long mTouchedAt = -HANDS_OFF_MS;
     @Nullable
     private String mVideoId;
+    private boolean mNextArtFetched;
+    /** The play state the last update saw (null before the first): a change pops the title. */
+    @Nullable private Boolean mWasPlaying;
+
+    /**
+     * Play: the title swells a little and springs back with a soft bounce. Pause: it dips a little and
+     * settles the same way. Scaled from its left edge, where the text starts, so it never shifts.
+     */
+    private void popTitle(boolean playing) {
+        mTitle.setPivotX(0);
+        mTitle.setPivotY(mTitle.getHeight() / 2f);
+        float to = playing ? 1.08f : 0.94f;
+        mTitle.animate().cancel();
+        mTitle.animate().scaleX(to).scaleY(to).setDuration(140)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .withEndAction(() -> mTitle.animate().scaleX(1f).scaleY(1f).setDuration(420)
+                        .setInterpolator(new android.view.animation.OvershootInterpolator(2.6f)).start())
+                .start();
+    }
+    /** Songs whose maxresdefault the next-song fetch found missing (a failed load isn't cached). */
+    private static final java.util.Set<String> NO_MAXRES = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
 
     private final Runnable mTick = new Runnable() {
         @Override
@@ -174,14 +195,9 @@ public final class MeeTunePlayerSkin {
         });
         mArt.setClipToOutline(true);
         ((FadeImage) mArt).setFeather(true);
-        // A square art at the top.
-        mArt.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
-            ViewGroup.LayoutParams params = mArt.getLayoutParams();
-            if (params.height != r - l) {
-                params.height = r - l;
-                mArt.setLayoutParams(params);
-            }
-        });
+        // The art at the top, full width, as tall as its own shape: a square cover square, a wide
+        // video still whole (never cropped to its middle).
+        mArt.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> fitArt());
         frostButtons(mRoot.findViewById(R.id.meetune_player_controls), mRoot.findViewById(R.id.meetune_player_source));
         frostButtons(mRoot.findViewById(R.id.meetune_player_head), mRoot.findViewById(R.id.meetune_player_source));
         View handle = mRoot.findViewById(R.id.meetune_player_handle);
@@ -216,7 +232,11 @@ public final class MeeTunePlayerSkin {
             mControls.playPause();
             mPlay.postDelayed(this::update, 100);
         });
-        bounce(mRoot.findViewById(R.id.meetune_player_previous), mControls::previous);
+        bounce(mRoot.findViewById(R.id.meetune_player_previous), () -> {
+            mDir = -1; // the songs move back (Previous only restarting the song: forward again soon)
+            mRoot.postDelayed(() -> mDir = 1, 3000);
+            mControls.previous();
+        });
         bounce(mRoot.findViewById(R.id.meetune_player_next), mControls::next);
         for (View transport : new View[] {mPlay, mRoot.findViewById(R.id.meetune_player_previous),
                 mRoot.findViewById(R.id.meetune_player_next)}) {
@@ -276,9 +296,319 @@ public final class MeeTunePlayerSkin {
                 @Override public void onStopTrackingTouch(SeekBar bar) { }
             });
         }
-        String device = Settings.Global.getString(context.getContentResolver(), "device_name");
+        initCanvas();
+        showOutput();
+        mRoot.findViewById(R.id.meetune_player_info).setOnClickListener(v ->
+                showDevice(mRoot.findViewById(R.id.meetune_player_device).getVisibility() != View.VISIBLE));
+        if (mAudio != null) { // a speaker or headset connecting or leaving renames the line at once
+            android.media.AudioDeviceCallback devices = new android.media.AudioDeviceCallback() {
+                @Override
+                public void onAudioDevicesAdded(android.media.AudioDeviceInfo[] added) {
+                    showOutput();
+                }
+
+                @Override
+                public void onAudioDevicesRemoved(android.media.AudioDeviceInfo[] removed) {
+                    showOutput();
+                }
+            };
+            mRoot.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    mAudio.registerAudioDeviceCallback(devices, new android.os.Handler(android.os.Looper.getMainLooper()));
+                    showOutput();
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                    mAudio.unregisterAudioDeviceCallback(devices);
+                }
+            });
+            if (mRoot.isAttachedToWindow()) {
+                mAudio.registerAudioDeviceCallback(devices, new android.os.Handler(android.os.Looper.getMainLooper()));
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------------- moving cover
+
+    private View mCanvas;
+    private androidx.media3.ui.PlayerView mCanvasVideo;
+    @Nullable private androidx.media3.exoplayer.ExoPlayer mCanvasPlayer;
+    /** The song's clip, kept while the player is hidden so it plays again when shown. */
+    @Nullable private String mCanvasUrl;
+    /** 0: hidden, 1: shown (times the still cover's own alpha, which it follows). */
+    private float mCanvasLevel;
+
+    private void initCanvas() {
+        mCanvas = mRoot.findViewById(R.id.meetune_player_canvas);
+        mCanvasVideo = mRoot.findViewById(R.id.meetune_player_canvas_video);
+        mCanvas.setOutlineProvider(mArt.getOutlineProvider());
+        mCanvas.setClipToOutline(true);
+        // The clip rides on the still cover: its place, size, swing and fade, every frame.
+        mArt.getViewTreeObserver().addOnPreDrawListener(() -> {
+            followArt();
+            return true;
+        });
+        mCanvas.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                if (mCanvasPlayer != null) {
+                    mCanvasVideo.setPlayer(null);
+                    mCanvasPlayer.release();
+                    mCanvasPlayer = null;
+                }
+            }
+        });
+    }
+
+    private void followArt() {
+        if (mCanvas.getVisibility() != View.VISIBLE) return;
+        View source = (View) mArt.getParent();
+        ViewGroup.LayoutParams params = mCanvas.getLayoutParams();
+        if (params.width != mArt.getWidth() || params.height != mArt.getHeight()) {
+            params.width = mArt.getWidth();
+            params.height = mArt.getHeight();
+            mCanvas.setLayoutParams(params);
+        }
+        mCanvas.setTranslationX(source.getLeft() + source.getTranslationX() + mArt.getLeft() + mArt.getTranslationX());
+        mCanvas.setTranslationY(source.getTop() + source.getTranslationY() + mArt.getTop() + mArt.getTranslationY());
+        mCanvas.setPivotX(mArt.getPivotX());
+        mCanvas.setPivotY(mArt.getPivotY());
+        mCanvas.setScaleX(mArt.getScaleX());
+        mCanvas.setScaleY(mArt.getScaleY());
+        mCanvas.setRotation(mArt.getRotation());
+        mCanvas.setRotationY(mArt.getRotationY());
+        mCanvas.setCameraDistance(mArt.getCameraDistance());
+        // Landing on the pill (its corners rounding) the still cover goes alone, as a tile.
+        boolean resting = mArtCorner == 0f && mArt.getVisibility() == View.VISIBLE;
+        mCanvas.setAlpha(resting ? mArt.getAlpha() * mCanvasLevel : 0f);
+    }
+
+    /** Play {@code url} muted and looping over the cover; it fades in with its first frame. */
+    private void startCanvas(String url) {
+        mCanvasUrl = url;
+        if (mCanvasPlayer == null) {
+            Context context = mRoot.getContext().getApplicationContext();
+            // A plain HTTP stack (not the InnerTube client), the clip kept in the media cache so a loop or replay is free.
+            androidx.media3.datasource.DataSource.Factory http = new androidx.media3.datasource.DefaultHttpDataSource.Factory();
+            androidx.media3.datasource.cache.Cache cache = com.newtube.mobile.player.Media3PlayerCache.get(context);
+            androidx.media3.datasource.DataSource.Factory data = cache == null ? http
+                    : new androidx.media3.datasource.cache.CacheDataSource.Factory().setCache(cache)
+                    .setUpstreamDataSourceFactory(http)
+                    .setFlags(androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
+            mCanvasPlayer = new androidx.media3.exoplayer.ExoPlayer.Builder(context)
+                    .setMediaSourceFactory(new androidx.media3.exoplayer.source.DefaultMediaSourceFactory(data))
+                    .build();
+            mCanvasPlayer.setVolume(0f);
+            mCanvasPlayer.setTrackSelectionParameters(mCanvasPlayer.getTrackSelectionParameters().buildUpon()
+                    .setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_AUDIO, true).build());
+            mCanvasPlayer.setRepeatMode(androidx.media3.common.Player.REPEAT_MODE_ONE);
+            mCanvasPlayer.addListener(new androidx.media3.common.Player.Listener() {
+                @Override
+                public void onRenderedFirstFrame() {
+                    fadeCanvas(1f, 500);
+                }
+
+                @Override
+                public void onPlayerError(@androidx.annotation.NonNull androidx.media3.common.PlaybackException error) {
+                    stopCanvas(); // no clip: the still cover, as for most songs
+                }
+            });
+            mCanvasVideo.setPlayer(mCanvasPlayer);
+        }
+        mCanvasPlayer.setMediaItem(androidx.media3.common.MediaItem.fromUri(url));
+        mCanvasPlayer.prepare();
+        mCanvasPlayer.setPlayWhenReady(mControls.playing());
+        mCanvas.setVisibility(View.VISIBLE);
+        followArt();
+    }
+
+    /** Back to the still cover (a new song, or a clip that would not play). */
+    private void stopCanvas() {
+        mCanvasUrl = null;
+        if (mCanvasPlayer != null) mCanvasPlayer.stop();
+        mCanvasLevel = 0f;
+        mCanvas.setAlpha(0f);
+        mCanvas.setVisibility(View.GONE);
+    }
+
+    private void fadeCanvas(float to, long ms) {
+        android.animation.ValueAnimator fade = android.animation.ValueAnimator.ofFloat(mCanvasLevel, to).setDuration(ms);
+        fade.addUpdateListener(a -> {
+            mCanvasLevel = (float) a.getAnimatedValue();
+            followArt();
+        });
+        fade.start();
+    }
+
+    /** Where the song plays: the Bluetooth speaker's or headset's own name, else the phone's. */
+    private void showOutput() {
+        Context context = mRoot.getContext();
+        android.media.AudioDeviceInfo out = output();
+        CharSequence name = out != null ? out.getProductName() : null;
+        if (name == null || name.length() == 0) {
+            name = Settings.Global.getString(context.getContentResolver(), "device_name");
+        }
         ((TextView) mRoot.findViewById(R.id.meetune_player_device)).setText(
-                device != null && !device.isEmpty() ? device : context.getString(R.string.meetune_this_phone));
+                name != null && name.length() > 0 ? name : context.getString(R.string.meetune_this_phone));
+        mRoot.findViewById(R.id.meetune_player_headset).setVisibility(out != null ? View.VISIBLE : View.GONE);
+    }
+
+    private final Runnable mShowFormat = () -> showDevice(false);
+
+    /** The pill's tap: where the song plays, for 10 s; a second tap (or the 10 s) brings the format back. */
+    private void showDevice(boolean device) {
+        View format = mRoot.findViewById(R.id.meetune_player_format_block);
+        View name = mRoot.findViewById(R.id.meetune_player_device);
+        mRoot.removeCallbacks(mShowFormat);
+        View in = device ? name : format, out = device ? format : name;
+        out.animate().cancel();
+        out.animate().alpha(0f).translationY(-6 * out.getResources().getDisplayMetrics().density).setDuration(160)
+                .withEndAction(() -> out.setVisibility(View.INVISIBLE)).start();
+        in.animate().cancel();
+        in.setVisibility(View.VISIBLE);
+        in.setAlpha(0f);
+        in.setTranslationY(6 * in.getResources().getDisplayMetrics().density);
+        in.animate().alpha(1f).translationY(0f).setDuration(220).setStartDelay(80).start();
+        if (device) mRoot.postDelayed(mShowFormat, 10_000);
+    }
+
+    /** "OPUS • 144K" over "48 kHz • STEREO • YOUTUBE" (ON PHONE for a downloaded song). */
+    private void showFormat(@Nullable Format format) {
+        TextView sub = mRoot.findViewById(R.id.meetune_player_format_sub);
+        if (format == null) {
+            mFormat.setText(null);
+            sub.setText(null);
+            return;
+        }
+        String mime = format.sampleMimeType != null ? format.sampleMimeType : format.codecs;
+        String codec = MimeTypes.AUDIO_OPUS.equals(mime) ? "OPUS"
+                : MimeTypes.AUDIO_AAC.equals(mime) || (mime != null && mime.startsWith("mp4a")) ? "AAC"
+                : mime != null ? mime.replace("audio/", "").toUpperCase(Locale.US) : "AUDIO";
+        mFormat.setText(format.bitrate > 0 ? codec + " • " + Math.round(format.bitrate / 1000f) + "K" : codec);
+        StringBuilder line = new StringBuilder();
+        if (format.sampleRate > 0) {
+            float khz = format.sampleRate / 1000f;
+            line.append(khz == Math.round(khz) ? String.valueOf(Math.round(khz)) : String.format(Locale.US, "%.1f", khz)).append(" kHz • ");
+        }
+        if (format.channelCount == 2) line.append("STEREO • ");
+        else if (format.channelCount > 2) line.append(format.channelCount).append(" CH • ");
+        line.append(mVideo != null && mVideo.localUri != null ? "ON PHONE" : "YOUTUBE");
+        sub.setText(line);
+    }
+
+    /**
+     * The cover's own colour for the pill's bars: its most vivid pixel (saturation weighted by
+     * brightness, over a 24x24 copy), lifted bright enough to glow on the dark glass. A grey
+     * cover keeps the bars a soft white.
+     */
+    static int accent(android.graphics.drawable.Drawable art) {
+        android.graphics.Bitmap small = android.graphics.Bitmap.createBitmap(24, 24, android.graphics.Bitmap.Config.ARGB_8888);
+        android.graphics.Canvas canvas = new android.graphics.Canvas(small);
+        android.graphics.Rect bounds = art.copyBounds();
+        art.setBounds(0, 0, 24, 24);
+        art.draw(canvas);
+        art.setBounds(bounds);
+        float[] hsv = new float[3], best = null;
+        float bestScore = 0.12f; // below this the cover is grey: white bars
+        for (int y = 0; y < 24; y++) {
+            for (int x = 0; x < 24; x++) {
+                android.graphics.Color.colorToHSV(small.getPixel(x, y), hsv);
+                float score = hsv[1] * (0.3f + hsv[2]);
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = hsv.clone();
+                }
+            }
+        }
+        small.recycle();
+        if (best == null) return 0xFFF2F2F2;
+        best[1] = Math.min(best[1], 0.75f); // vivid, never neon
+        best[2] = Math.max(best[2], 0.95f); // bright enough to glow
+        return android.graphics.Color.HSVToColor(best);
+    }
+
+    /** Five bars glowing in the cover's colour, dancing while the song plays, resting low while it is paused. */
+    public static final class EqBars extends View {
+        private static final float[] SPEED = {6.3f, 8.9f, 7.4f, 9.7f, 5.8f};
+        private static final float[] PHASE = {0.4f, 1.9f, 0f, 2.7f, 1.2f};
+        private static final float[] REST = {0.3f, 0.55f, 0.8f, 0.55f, 0.3f};
+        private final Paint mBar = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final android.graphics.RectF mRect = new android.graphics.RectF();
+        private boolean mPlaying;
+        private float mMotion; // 0 resting .. 1 dancing, eased between
+
+        public EqBars(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            mBar.setColor(0xFF5BE38A);
+            mBar.setShadowLayer(6 * getResources().getDisplayMetrics().density, 0, 0, 0xCC5BE38A); // the glow
+            setLayerType(LAYER_TYPE_SOFTWARE, null); // a shadow on shapes needs it before Android 9
+        }
+
+        /** The bars and their glow take {@code color}, easing over from the old one. */
+        void setColor(int color) {
+            int from = mBar.getColor();
+            if (from == color) return;
+            android.animation.ValueAnimator shift = android.animation.ValueAnimator.ofArgb(from, color).setDuration(600);
+            shift.addUpdateListener(a -> {
+                int c = (int) a.getAnimatedValue();
+                mBar.setColor(c);
+                mBar.setShadowLayer(6 * getResources().getDisplayMetrics().density, 0, 0, (c & 0x00FFFFFF) | 0xCC000000);
+                invalidate();
+            });
+            shift.start();
+        }
+
+        void setPlaying(boolean playing) {
+            if (playing == mPlaying) return;
+            mPlaying = playing;
+            invalidate();
+        }
+
+        @Override
+        protected void onDraw(android.graphics.Canvas canvas) {
+            mMotion = Math.max(0f, Math.min(1f, mMotion + (mPlaying ? 0.08f : -0.06f)));
+            float w = getWidth(), h = getHeight(), bar = w / 9f, gap = (w - 5 * bar) / 4f;
+            float t = android.os.SystemClock.uptimeMillis() / 1000f;
+            for (int i = 0; i < 5; i++) {
+                float dance = 0.2f + 0.8f * Math.abs((float) Math.sin(t * SPEED[i] / 2 + PHASE[i]));
+                float level = REST[i] + (dance - REST[i]) * mMotion;
+                float tall = Math.max(bar, h * 0.8f * level);
+                float left = i * (bar + gap);
+                mRect.set(left, (h - tall) / 2, left + bar, (h + tall) / 2);
+                canvas.drawRoundRect(mRect, bar / 2, bar / 2, mBar);
+            }
+            if (mPlaying || mMotion > 0f) postInvalidateOnAnimation();
+        }
+    }
+
+    /** The output media plays on, if it is not the phone's own speaker; null for the phone. */
+    @Nullable
+    private android.media.AudioDeviceInfo output() {
+        if (mAudio == null) return null;
+        java.util.List<android.media.AudioDeviceInfo> routed = null;
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            routed = mAudio.getAudioDevicesForAttributes(new android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC).build());
+        }
+        if (routed == null || routed.isEmpty()) { // older Android: the likeliest route, as it picks
+            routed = java.util.Arrays.asList(mAudio.getDevices(AudioManager.GET_DEVICES_OUTPUTS));
+        }
+        int[] order = {android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP, 26 /* BLE_HEADSET */, 27 /* BLE_SPEAKER */,
+                android.media.AudioDeviceInfo.TYPE_USB_HEADSET, android.media.AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+                android.media.AudioDeviceInfo.TYPE_WIRED_HEADSET, android.media.AudioDeviceInfo.TYPE_USB_DEVICE};
+        for (int type : order) {
+            for (android.media.AudioDeviceInfo device : routed) {
+                if (device.getType() == type) return device;
+            }
+        }
+        return null;
     }
 
     /** The volume's last level; -1 until the bar first shows it, so opening the player shows no bubble. */
@@ -336,38 +666,215 @@ public final class MeeTunePlayerSkin {
     @Nullable
     private Video mVideo;
 
+    /** Each swinging view's running animator and where it is (0 at rest, -1 / 1 off to a side). */
+    private static final java.util.Map<Object, android.animation.ValueAnimator> SWINGS = new java.util.WeakHashMap<>();
+    private static final java.util.Map<Object, Float> SWUNG = new java.util.WeakHashMap<>();
+    /** Which way the songs move: 1 forward (next, or the next song by itself), -1 back (previous). */
+    private int mDir = 1;
+    @Nullable
+    private android.graphics.drawable.Drawable mPendingArt;
+    private boolean mArtLeaving;
+
+    /** Puts {@code view} at {@code p} at once (see {@link #swing}). */
+    private static void place(View view, float p, float dist, float turn) {
+        SWUNG.put(view, p);
+        float a = Math.min(1f, Math.abs(p));
+        view.setTranslationX(p * dist);
+        view.setRotationY(-p * turn);
+        view.setScaleX(1f - 0.16f * a);
+        view.setScaleY(1f - 0.16f * a);
+        view.setAlpha(1f - a);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            float blur = 32 * view.getResources().getDisplayMetrics().density * a;
+            view.setRenderEffect(blur < 0.5f ? null : RenderEffect.createBlurEffect(blur, blur, Shader.TileMode.CLAMP));
+        }
+    }
+
+    /**
+     * The song change as a card swipe: {@code view} slides {@code dist} to a side, turning
+     * {@code turn} degrees away, shrinking, fading and blurring out ({@code to} -1 or 1), or comes
+     * back to rest from where it is ({@code to} 0, on a spring that settles just past it).
+     */
+    private static void swing(View view, float to, long ms, float dist, float turn, @Nullable Runnable end) {
+        android.animation.ValueAnimator running = SWINGS.remove(view);
+        if (running != null) running.cancel();
+        Float now = SWUNG.get(view);
+        float from = now != null ? now : 0f;
+        android.animation.ValueAnimator swing = android.animation.ValueAnimator.ofFloat(from, to);
+        swing.setDuration(ms);
+        swing.setInterpolator(to == 0f ? new android.view.animation.OvershootInterpolator(1.1f)
+                : new android.view.animation.AccelerateInterpolator(1.4f));
+        swing.addUpdateListener(a -> place(view, (float) a.getAnimatedValue(), dist, turn));
+        swing.addListener(new android.animation.AnimatorListenerAdapter() {
+            private boolean mCancelled;
+
+            @Override
+            public void onAnimationCancel(android.animation.Animator animation) {
+                mCancelled = true;
+            }
+
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                if (SWINGS.get(view) == animation) SWINGS.remove(view);
+                if (!mCancelled && to == 0f) {
+                    place(view, 0f, dist, turn);
+                    SWUNG.remove(view);
+                }
+                if (!mCancelled && end != null) end.run();
+            }
+        });
+        SWINGS.put(view, swing);
+        swing.start();
+    }
+
+    private float artDist() {
+        return mArt.getWidth() * 0.62f;
+    }
+
+    /** The view's picture drawn into a bitmap Glide doesn't own (at most 512px a side), or null. */
+    @Nullable
+    private static android.graphics.drawable.Drawable ownCopy(ImageView view) {
+        android.graphics.drawable.Drawable d = view.getDrawable();
+        int w = d == null ? 0 : d.getIntrinsicWidth(), h = d == null ? 0 : d.getIntrinsicHeight();
+        if (w <= 0 || h <= 0) return d; // no bitmap behind it (a colour, a drawn cover): nothing to lose
+        float s = Math.min(1f, 512f / Math.max(w, h));
+        android.graphics.Bitmap copy = android.graphics.Bitmap.createBitmap(
+                Math.max(1, Math.round(w * s)), Math.max(1, Math.round(h * s)), android.graphics.Bitmap.Config.ARGB_8888);
+        android.graphics.Canvas canvas = new android.graphics.Canvas(copy);
+        android.graphics.Rect bounds = d.copyBounds();
+        d.setBounds(0, 0, copy.getWidth(), copy.getHeight());
+        d.draw(canvas);
+        d.setBounds(bounds);
+        return new android.graphics.drawable.BitmapDrawable(view.getResources(), copy);
+    }
+
+    /** The showing art's height over its width (1: square). */
+    private float mArtShape = 1f;
+
+    private void fitArt() {
+        int width = mArt.getWidth();
+        if (width == 0) return;
+        ViewGroup.LayoutParams params = mArt.getLayoutParams();
+        int height = Math.round(width * mArtShape);
+        if (params.height != height) {
+            params.height = height;
+            mArt.setLayoutParams(params);
+        }
+    }
+
+    /** The new cover is here: in from the side the songs move from, unless it is the first one. */
+    private void showArt(@Nullable android.graphics.drawable.Drawable art) {
+        if (art == null) return;
+        int w = art.getIntrinsicWidth(), h = art.getIntrinsicHeight();
+        mArtShape = w > 0 && h > 0 ? Math.min(1f, h / (float) w) : 1f; // taller than square: a square, cropped a little
+        mArt.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        mArt.setImageDrawable(art);
+        fitArt();
+        ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setColor(accent(art));
+        Float at = SWUNG.get(mArt);
+        if (at != null && Math.abs(at) >= 0.99f) { // it left: come in from the other side
+            place(mArt, mDir, artDist(), 24f);
+            swing(mArt, 0f, 440, artDist(), 24f, null);
+        }
+    }
+
+    /**
+     * The app's image loader, not the player activity's: the activity holds its images while a song
+     * opens until the first video frame, and a song shows none, so the cover waited for the hold's
+     * 6 s timeout on every switch.
+     */
+    private com.bumptech.glide.RequestManager images() {
+        return Glide.with(mArt.getContext().getApplicationContext());
+    }
+
     void bind(@Nullable Video video) {
         if (video == null) return;
         mVideo = video;
-        mTitle.setText(video.getTitle());
-        mTitle.setSelected(true); // marquee
-        mArtist.setText(video.getAuthor());
-        ((TextView) mRoot.findViewById(R.id.meetune_player_head_title)).setText(video.getTitle());
-        ((TextView) mRoot.findViewById(R.id.meetune_player_head_artist)).setText(video.getAuthor());
+        boolean switching = mVideoId != null && video.videoId != null && !video.videoId.equals(mVideoId);
+        Runnable names = () -> {
+            mTitle.setText(video.getTitle());
+            mTitle.setSelected(true); // marquee
+            mArtist.setText(video.getAuthor());
+            ((TextView) mRoot.findViewById(R.id.meetune_player_head_title)).setText(video.getTitle());
+            ((TextView) mRoot.findViewById(R.id.meetune_player_head_artist)).setText(video.getAuthor());
+        };
+        View nameBlock = (View) mTitle.getParent();
+        if (switching) { // the old song swipes away, the new one comes in behind it
+            int dir = mDir;
+            mDir = 1;
+            float nameDist = mRoot.getWidth() * 0.3f;
+            swing(nameBlock, -dir, 200, nameDist, 0f, () -> {
+                names.run();
+                place(nameBlock, dir, nameDist, 0f);
+                swing(nameBlock, 0f, 560, nameDist, 0f, null);
+            });
+            mArt.setCameraDistance(9000 * mArt.getResources().getDisplayMetrics().density);
+            mArtLeaving = true;
+            mPendingArt = null;
+            mDir = dir; // showArt reads it until the cover is in
+            swing(mArt, -dir, 240, artDist(), 24f, () -> {
+                mArtLeaving = false;
+                android.graphics.drawable.Drawable art = mPendingArt;
+                mPendingArt = null;
+                showArt(art);
+                mDir = 1;
+            });
+        } else if (!SWINGS.containsKey(nameBlock)) {
+            names.run();
+        }
         if (video.videoId != null && !video.videoId.equals(mVideoId)) {
             mVideoId = video.videoId;
-            Glide.with(mArt).load(MeeTune.art(video)).into((ImageView) mRoot.findViewById(R.id.meetune_player_head_art));
+            mNextArtFetched = false;
+            images().load(MeeTune.art(video)).into((ImageView) mRoot.findViewById(R.id.meetune_player_head_art));
             fetchLyrics(video);
+            stopCanvas();
+            String canvasFor = video.videoId;
+            com.newtube.mobile.ui.meetune.MeeTuneCanvas.find(video, url -> {
+                if (url != null && canvasFor.equals(mVideoId)) startCanvas(url);
+            });
             if (mRoot.getContext() instanceof android.app.Activity) {
                 MeeTune.learn((android.app.Activity) mRoot.getContext(), video); // the menu's Open album, Open artist
                 MeeTune.checkLike((android.app.Activity) mRoot.getContext(), video.videoId, this::update); // the heart
                 MeeTune.remember(mRoot.getContext(), video); // MeeTune's own History
             }
-            mFormat.setText(null);
+            showFormat(null);
+            // A new load hands the old song's bitmaps back to Glide, which may recycle them while the
+            // old cover still swings out and the backdrop still fades from it: keep our own copies.
+            mArt.setImageDrawable(ownCopy(mArt));
+            mBg.setImageDrawable(ownCopy(mBg));
+            String art = NO_MAXRES.contains(video.videoId) // known missing: straight to the fallback
+                    ? "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg" : MeeTune.art(video);
             String fallback = "https://i.ytimg.com/vi/" + video.videoId + "/hqdefault.jpg";
-            // A square cover fills the square; a wide thumbnail (a song with no album art) shows whole
-            // over the blurred backdrop instead of being cropped to its middle.
-            Glide.with(mArt).load(MeeTune.art(video)).error(Glide.with(mArt).load(fallback))
-                    .into(new com.bumptech.glide.request.target.DrawableImageViewTarget(mArt) {
-                        @Override
-                        protected void setResource(@Nullable android.graphics.drawable.Drawable art) {
-                            boolean wide = art != null && art.getIntrinsicHeight() > 0
-                                    && art.getIntrinsicWidth() > art.getIntrinsicHeight() * 1.15f;
-                            mArt.setScaleType(wide ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP);
-                            super.setResource(art);
-                        }
-                    });
-            Glide.with(mBg).load(MeeTune.art(video)).error(Glide.with(mBg).load(fallback)).into(mBg);
+            com.bumptech.glide.RequestManager images = images();
+            com.bumptech.glide.RequestBuilder<android.graphics.drawable.Drawable> cover = images.load(art)
+                    .error(images.load(fallback));
+            if (art.startsWith("https://i.ytimg.com/")) { // a video's big thumbnail: its small one first, quick
+                cover = cover.thumbnail(images.load("https://i.ytimg.com/vi/" + video.videoId + "/mqdefault.jpg"));
+            }
+            // The cover fills the square at the top; a wide thumbnail (a song with no album art) is cropped
+            // to its middle, where a Topic song keeps its album art.
+            cover.into(new com.bumptech.glide.request.target.CustomViewTarget<ImageView, android.graphics.drawable.Drawable>(mArt) {
+                @Override
+                protected void onResourceCleared(@Nullable android.graphics.drawable.Drawable placeholder) {
+                }
+
+                @Override
+                public void onLoadFailed(@Nullable android.graphics.drawable.Drawable error) {
+                    if (mArtLeaving) mPendingArt = mArt.getDrawable(); // nothing new: the old cover comes back
+                    else showArt(mArt.getDrawable());
+                }
+
+                @Override
+                public void onResourceReady(@androidx.annotation.NonNull android.graphics.drawable.Drawable art,
+                                            @Nullable com.bumptech.glide.request.transition.Transition<? super android.graphics.drawable.Drawable> t) {
+                    if (mArtLeaving) mPendingArt = art; // in once the old one is out
+                    else showArt(art);
+                }
+            });
+            // The ambient behind it melts from the old song's colours to the new one's.
+            images.load(art).error(images.load(fallback)).placeholder(mBg.getDrawable())
+                    .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(700))
+                    .into(mBg);
         }
     }
 
@@ -481,8 +988,13 @@ public final class MeeTunePlayerSkin {
             source.setPadding(0, Math.round(12 * density), 0, 0);
             mLyricLines.addView(source);
         }
-        mLineRow.setVisibility(mMode == NORMAL && timed() ? View.VISIBLE : View.GONE);
+        mLineRow.setVisibility(lineRowVisibility(mMode));
         followLyrics(mControls.position());
+    }
+
+    /** The sung line's row keeps its room on the normal page, lyrics or not, so the title and bar never move. */
+    private int lineRowVisibility(int mode) {
+        return mode != NORMAL ? View.GONE : timed() ? View.VISIBLE : View.INVISIBLE;
     }
 
     private TextView lyricLine(CharSequence text, int sp, int color) {
@@ -573,13 +1085,13 @@ public final class MeeTunePlayerSkin {
             fade(mArt, !lyrics);
             fade(mPage, lyrics);
             mTitleRow.setVisibility(lyrics ? View.GONE : View.VISIBLE);
-            mFormat.setVisibility(lyrics ? View.GONE : View.VISIBLE);
+            mRoot.findViewById(R.id.meetune_player_format_space).setVisibility(lyrics ? View.GONE : View.INVISIBLE); // the title row's spacer
             mLyricsButton.setBackground(lyrics
                     ? androidx.core.content.ContextCompat.getDrawable(mRoot.getContext(), R.drawable.meetune_lyrics_on)
                     : mLyricsButtonBg);
             if (lyrics) com.newtube.mobile.ui.common.Motion.frostIn(mLyricsScroll);
         }
-        mLineRow.setVisibility(mode == NORMAL && timed() ? View.VISIBLE : View.GONE);
+        mLineRow.setVisibility(lineRowVisibility(mode));
         boolean full = mode == FULL;
         mHeadMore.setImageResource(full ? R.drawable.ic_watch_share : R.drawable.ic_meetune_more);
         mHeadMore.setContentDescription(mRoot.getContext().getString(full ? R.string.meetune_share : R.string.meetune_more));
@@ -817,10 +1329,18 @@ public final class MeeTunePlayerSkin {
         com.newtube.mobile.ui.common.Motion.frostIn(mRoot); // out of blur, as MeeTube's pages come in
         mRoot.removeCallbacks(mTick);
         mRoot.post(mTick);
+        if (mCanvasUrl != null) startCanvas(mCanvasUrl);
     }
 
     void hide() {
         mRoot.removeCallbacks(mTick);
+        // Unseen: the clip lets its video decoder go (phones have few; MeeTube's player may need one).
+        if (mCanvasPlayer != null && mCanvas.getVisibility() == View.VISIBLE) {
+            String clip = mCanvasUrl;
+            stopCanvas();
+            mCanvasUrl = clip; // back on screen: it plays again
+        }
+        mWasPlaying = null; // shown again: no title pop for the state it comes back in
         mRoot.setVisibility(View.GONE);
     }
 
@@ -849,7 +1369,13 @@ public final class MeeTunePlayerSkin {
             mSeek.setProgress(duration > 0 ? (int) (position * 1000 / duration) : 0);
             showTimes(position, duration);
         }
-        mPlay.setImageResource(mControls.playing() ? R.drawable.ic_meetune_pause : R.drawable.ic_meetune_play);
+        boolean playing = mControls.playing();
+        mPlay.setImageResource(playing ? R.drawable.ic_meetune_pause : R.drawable.ic_meetune_play);
+        if (mWasPlaying != null && mWasPlaying != playing) popTitle(playing);
+        mWasPlaying = playing;
+        if (mCanvasPlayer != null && mCanvasPlayer.getPlayWhenReady() != playing) {
+            mCanvasPlayer.setPlayWhenReady(playing); // the moving cover rests while the song does
+        }
         int star = liked() ? R.drawable.ic_meetune_heart_filled : R.drawable.ic_meetune_heart;
         mLike.setImageResource(star);
         mHeadLike.setImageResource(star);
@@ -857,7 +1383,55 @@ public final class MeeTunePlayerSkin {
         if (mAudio != null && !mVolume.isPressed()) {
             mVolume.setProgress(mAudio.getStreamVolume(AudioManager.STREAM_MUSIC));
         }
-        if (mFormat.length() == 0) mFormat.setText(format(mControls.audioFormat()));
+        if (mFormat.length() == 0) showFormat(mControls.audioFormat());
+        ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setPlaying(playing);
+        if (!mNextArtFetched && position > 3000) { // the next song is known by now (queue or suggestions)
+            mNextArtFetched = true;
+            fetchNextArt();
+        }
+        if (position > 8000 && mControls.playing()) { // the next song, whole, into the disk cache (once per song)
+            com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController suggestions =
+                    com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter.instance(mRoot.getContext())
+                            .getController(com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController.class);
+            Video next = suggestions != null ? suggestions.getNext() : null;
+            androidx.media3.common.Format format = mControls.audioFormat();
+            if (next != null && next.videoId != null && !next.videoId.equals(mVideoId)) {
+                com.newtube.mobile.ui.meetune.MeeTuneSongCache.fetch(mRoot.getContext(), next.videoId, format != null ? format.id : null);
+            }
+        }
+    }
+
+    /** The next song's cover goes to Glide's disk cache now, so it shows at once when that song starts. */
+    private void fetchNextArt() {
+        android.content.Context context = mRoot.getContext().getApplicationContext();
+        com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController suggestions =
+                com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter.instance(context).getController(
+                        com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController.class);
+        Video next = suggestions != null ? suggestions.getNext() : null;
+        if (next == null || next.videoId == null) return;
+        String art = MeeTune.art(next);
+        String id = next.videoId;
+        Glide.with(context).downloadOnly().load(art).listener(new com.bumptech.glide.request.RequestListener<java.io.File>() {
+            @Override
+            public boolean onLoadFailed(@Nullable com.bumptech.glide.load.engine.GlideException e, Object model,
+                                        @androidx.annotation.NonNull com.bumptech.glide.request.target.Target<java.io.File> target, boolean first) {
+                if (art.endsWith("/maxresdefault.jpg")) NO_MAXRES.add(id);
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(@androidx.annotation.NonNull java.io.File file, @androidx.annotation.NonNull Object model,
+                                           com.bumptech.glide.request.target.Target<java.io.File> target,
+                                           @androidx.annotation.NonNull com.bumptech.glide.load.DataSource source, boolean first) {
+                return false;
+            }
+        }).preload();
+        // The fallback too: many songs have no maxresdefault, and a failed load isn't cached, so
+        // without it every switch to such a song waited for the 404 and then for hqdefault.
+        Glide.with(context).downloadOnly().load("https://i.ytimg.com/vi/" + next.videoId + "/hqdefault.jpg").preload();
+        if (art.startsWith("https://i.ytimg.com/")) { // the quick small one the cover shows first
+            Glide.with(context).downloadOnly().load("https://i.ytimg.com/vi/" + next.videoId + "/mqdefault.jpg").preload();
+        }
     }
 
     private void showTimes(long position, long duration) {
@@ -873,6 +1447,32 @@ public final class MeeTunePlayerSkin {
     }
 
     /** The art with its lower 45% fading to transparent (an alpha mask, not a dark overlay). */
+    /** The moving cover's frame: its foot fades out like {@link FadeImage}'s, into the blur under the controls. */
+    public static final class FadeFrame extends android.widget.FrameLayout {
+        private final Paint mMask = new Paint();
+
+        public FadeFrame(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            mMask.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+        }
+
+        @Override
+        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+            super.onSizeChanged(w, h, oldw, oldh);
+            if (h == 0) return;
+            mMask.setShader(new LinearGradient(0, h * 0.55f, 0, h, new int[] {0xFF000000, 0xB3000000, 0x40000000, 0},
+                    new float[] {0f, 0.35f, 0.75f, 1f}, Shader.TileMode.CLAMP));
+        }
+
+        @Override
+        protected void dispatchDraw(android.graphics.Canvas canvas) {
+            int save = canvas.saveLayer(0, 0, getWidth(), getHeight(), null);
+            super.dispatchDraw(canvas);
+            canvas.drawRect(0, 0, getWidth(), getHeight(), mMask);
+            canvas.restoreToCount(save);
+        }
+    }
+
     public static final class FadeImage extends ImageView {
         private final Paint mMask = new Paint();
 
@@ -1021,30 +1621,5 @@ public final class MeeTunePlayerSkin {
             canvas.restoreToCount(save);
             super.onDraw(canvas);
         }
-    }
-
-    /** "Opus · 48.0 kHz · 151 kbps · Stereo", from the playing audio track. */
-    @Nullable
-    static String format(@Nullable Format format) {
-        if (format == null) return null;
-        StringBuilder text = new StringBuilder();
-        String mime = format.sampleMimeType != null ? format.sampleMimeType : format.codecs;
-        if (MimeTypes.AUDIO_OPUS.equals(mime)) {
-            text.append("Opus");
-        } else if (MimeTypes.AUDIO_AAC.equals(mime) || (mime != null && mime.startsWith("mp4a"))) {
-            text.append("AAC");
-        } else if (mime != null) {
-            text.append(mime.replace("audio/", "").toUpperCase(Locale.US));
-        }
-        if (format.sampleRate > 0) {
-            text.append(" · ").append(String.format(Locale.US, "%.1f kHz", format.sampleRate / 1000f));
-        }
-        if (format.bitrate > 0) text.append(" · ").append(format.bitrate / 1000).append(" kbps");
-        if (format.channelCount == 2) {
-            text.append(" · Stereo");
-        } else if (format.channelCount > 2) {
-            text.append(" · ").append(format.channelCount).append(" ch");
-        }
-        return text.length() > 0 ? text.toString() : null;
     }
 }

@@ -92,6 +92,17 @@
 
     </com.newtube.mobile.ui.common.GlassSource>
 
+    <!-- The top row's frost: comes in as the page scrolls under it, thinning out to nothing at its
+         bottom edge, as MeeTube's Settings bar. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/meetune_top_frost"
+        android:layout_width="match_parent"
+        android:layout_height="84dp"
+        android:alpha="0"
+        app:glassCornerRadius="0dp"
+        app:glassFadeBottom="20dp"
+        app:glassLiquid="false"
+        app:glassTint="@color/meetube_glass_tint" />
     <!-- The top row: Back on a pushed page, the search field on Search, Settings and MeeTube on Home. -->
     <LinearLayout
         android:id="@+id/meetune_top"

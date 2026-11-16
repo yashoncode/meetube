@@ -112,10 +112,28 @@ final class MusicApi {
     private MusicApi() {
     }
 
+    /** Pages fetched in the last few minutes (albums, artists, playlists, Explore), opened again at once. */
+    private static final java.util.Map<String, Object[]> PAGES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final long PAGE_TTL_MS = 10 * 60_000;
+
+    /** The account's own pages change with every like or save: never from memory. */
+    private static boolean keep(String browseId) {
+        return !browseId.startsWith("FEmusic_library") && !browseId.startsWith("FEmusic_liked")
+                && !browseId.startsWith("FEmusic_history") && !"VLLM".equals(browseId) && !"FEmusic_home".equals(browseId);
+    }
+
     static List<Shelf> browse(Context context, String browseId, @Nullable String params) throws Exception {
         JSONObject body = new JSONObject().put("browseId", browseId);
         if (params != null) body.put("params", params);
-        JSONObject response = post(context, "browse", body);
+        String key = browseId + "|" + params + "|" + signedIn(context);
+        Object[] kept = keep(browseId) ? PAGES.get(key) : null;
+        JSONObject response;
+        if (kept != null && System.currentTimeMillis() - (Long) kept[0] < PAGE_TTL_MS) {
+            response = (JSONObject) kept[1];
+        } else {
+            response = post(context, "browse", body);
+            if (keep(browseId)) PAGES.put(key, new Object[] {System.currentTimeMillis(), response});
+        }
         List<Shelf> shelves = new ArrayList<>();
         Shelf header = header(response);
         if (header != null) {
@@ -173,16 +191,28 @@ final class MusicApi {
         return save;
     }
 
-    /** A song's album and artist links, from the queue YouTube Music builds around it; null when it has none. */
-    @Nullable
-    static Item song(Context context, String videoId) throws Exception {
-        JSONObject response = post(context, "next", new JSONObject().put("videoId", videoId).put("isAudioOnly", true));
-        JSONObject renderer = findPanelVideo(response, videoId, 0);
-        if (renderer == null) return null;
-        Item item = new Item();
-        links(item, renderer.opt("longBylineText"));
-        if (item.artistId != null) item.artist = artists(renderer.opt("longBylineText"));
-        return item.albumId != null || item.artistId != null ? item : null;
+    /**
+     * The queue YouTube Music builds around a song, the song first: each with its square art, title,
+     * artist and album links. {@code playlistId} (a radio's RDAMVM..., an album's) gives that queue.
+     */
+    static List<Item> radio(Context context, String videoId, @Nullable String playlistId) throws Exception {
+        JSONObject body = new JSONObject().put("videoId", videoId).put("isAudioOnly", true);
+        if (playlistId != null) body.put("playlistId", playlistId);
+        List<JSONObject> panels = new java.util.ArrayList<>();
+        panels(post(context, "next", body), panels, 0);
+        List<Item> out = new java.util.ArrayList<>();
+        for (JSONObject renderer : panels) {
+            Item item = new Item();
+            item.videoId = renderer.optString("videoId", null);
+            item.title = text(renderer.opt("title"));
+            item.subtitle = text(renderer.opt("longBylineText"));
+            item.art = thumb(renderer);
+            item.playlistId = playlistId;
+            links(item, renderer.opt("longBylineText"));
+            if (item.artistId != null) item.artist = artists(renderer.opt("longBylineText"));
+            if (item.videoId != null && item.title != null) out.add(item);
+        }
+        return out;
     }
 
     /** Whether the signed-in account likes the song: its like button in YouTube Music's player page. */
@@ -196,25 +226,46 @@ final class MusicApi {
         return false;
     }
 
-    @Nullable
-    private static JSONObject findPanelVideo(@Nullable Object node, String videoId, int depth) {
-        if (depth > 40) return null;
+    /**
+     * Every song in a queue panel, in order. A song with a music video comes as twins (the song and its
+     * video, two ids); the video's twin is added as a copy of the song under the video's id, so it
+     * shows the song's square art whichever of the two plays.
+     */
+    private static void panels(@Nullable Object node, List<JSONObject> out, int depth) {
+        if (depth > 40) return;
         if (node instanceof JSONObject) {
             JSONObject o = (JSONObject) node;
             JSONObject panel = o.optJSONObject("playlistPanelVideoRenderer");
-            if (panel != null && videoId.equals(panel.optString("videoId"))) return panel;
+            if (panel != null) {
+                out.add(panel);
+                return;
+            }
+            JSONObject twins = o.optJSONObject("playlistPanelVideoWrapperRenderer");
+            if (twins != null) {
+                JSONObject song = obj(twins, "primaryRenderer", "playlistPanelVideoRenderer");
+                if (song == null) return;
+                out.add(song);
+                JSONArray counterparts = twins.optJSONArray("counterpart");
+                for (int i = 0; counterparts != null && i < counterparts.length(); i++) {
+                    JSONObject twin = obj(counterparts.optJSONObject(i), "counterpartRenderer", "playlistPanelVideoRenderer");
+                    String id = twin != null ? twin.optString("videoId", null) : null;
+                    if (id == null) continue;
+                    try {
+                        out.add(new JSONObject(song.toString()).put("videoId", id));
+                    } catch (org.json.JSONException ignored) {
+                    }
+                }
+                return;
+            }
             for (java.util.Iterator<String> keys = o.keys(); keys.hasNext(); ) {
-                JSONObject found = findPanelVideo(o.opt(keys.next()), videoId, depth + 1);
-                if (found != null) return found;
+                panels(o.opt(keys.next()), out, depth + 1);
             }
         } else if (node instanceof JSONArray) {
             JSONArray a = (JSONArray) node;
             for (int i = 0; i < a.length(); i++) {
-                JSONObject found = findPanelVideo(a.opt(i), videoId, depth + 1);
-                if (found != null) return found;
+                panels(a.opt(i), out, depth + 1);
             }
         }
-        return null;
     }
 
     /** A song's thumbs: {@code like/like}, {@code like/dislike} or {@code like/removelike}. */
