@@ -30,8 +30,8 @@
 
 <table>
 <tr>
-<td width="25%"><img src=".github/assets/meetube/screens/meetune.jpg" alt="MeeTune, MeeTube's music side"></td>
-<td width="25%"><img src=".github/assets/meetube/screens/meetune_player.jpg" alt="MeeTune's player with synced lyrics"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/meetune_home.jpg" alt="MeeTune, MeeTube's music side"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/meetune_now_playing.jpg" alt="MeeTune's player with synced lyrics"></td>
 <td width="50%">
 
 ### MeeTune, your music side (beta)
@@ -39,6 +39,8 @@ One app for YouTube videos **and** YouTube Music. Tap the logo on Home and MeeTu
 
 - **Your music:** YouTube Music's Home, Explore, Library and Search, with albums, artists, playlists, moods and your liked songs.
 - **A real music player:** synced lyrics, a moving cover, the song's format on a glass pill, and a radio that keeps the songs coming.
+- **Sound that surrounds you:** Spatial sound with a real head model (MIT KEMAR) and a Cinema level with deeper bass, Head tracking on Android 13+ through your phone's own spatial audio, Dolby, headphone correction, and crossfade between songs.
+- **Quality your way:** pick the audio quality for Wi-Fi and for mobile data, and a speed for your songs (0.25x to 4x, in 0.01 steps) that a video's speed never changes.
 - **Plays anywhere:** downloads with lyrics play offline, and cached songs play with no network at all.
 - **Its own space:** a History, Downloads and an equalizer just for your songs, and a player kept apart from your videos.
 
