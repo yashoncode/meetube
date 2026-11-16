@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -143,9 +145,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mList.addItemDecoration(mAdapter.dividers(this));
         // Home's pull to refresh: a new Home from YouTube Music, spinner under the search bar.
         mSwipe = findViewById(R.id.meetune_swipe);
-        int spinner = MeeTuneAdapter.dp(this, 40);
-        int top = MeeTuneAdapter.dp(this, 64);
-        mSwipe.setProgressViewOffset(false, top - spinner, top + spinner / 2);
+        blendIntoStatusBar(topFrost);
         mSwipe.setOnRefreshListener(() -> {
             com.newtube.mobile.ui.common.RefreshFeedback.play(mSwipe);
             if (current() == mTabs[HOME]) show(mTabs[HOME], true);
@@ -1077,6 +1077,35 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent event) {
         return (mNavBar != null && mNavBar.onTouch(event)) || super.dispatchTouchEvent(event);
+    }
+
+    /** MEETUNE(status bar): the page runs up under the status bar, frosted there as MeeTube's Settings. */
+    @Override
+    protected androidx.core.graphics.Insets contentInsets(androidx.core.view.WindowInsetsCompat windowInsets) {
+        androidx.core.graphics.Insets bars = super.contentInsets(windowInsets);
+        return androidx.core.graphics.Insets.of(bars.left, 0, bars.right, bars.bottom);
+    }
+
+    /** The top row, its frost, the lists and the refresh spinner move down by the status bar themselves. */
+    private void blendIntoStatusBar(View topFrost) {
+        View row = findViewById(R.id.meetune_top);
+        View suggestions = findViewById(R.id.meetune_suggestions);
+        int frostBase = topFrost.getLayoutParams().height;
+        int listBase = mList.getPaddingTop();
+        int spinner = MeeTuneAdapter.dp(this, 40);
+        ViewCompat.setOnApplyWindowInsetsListener(row, (v, insets) -> {
+            int top = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()).top;
+            ((ViewGroup.MarginLayoutParams) row.getLayoutParams()).topMargin = top;
+            row.requestLayout();
+            topFrost.getLayoutParams().height = frostBase + top;
+            topFrost.requestLayout();
+            mList.setPadding(mList.getPaddingLeft(), listBase + top, mList.getPaddingRight(), mList.getPaddingBottom());
+            suggestions.setPadding(suggestions.getPaddingLeft(), listBase + top, suggestions.getPaddingRight(),
+                    suggestions.getPaddingBottom());
+            mSwipe.setProgressViewOffset(false, listBase + top - spinner, listBase + top + spinner / 2);
+            return insets;
+        });
+        ViewCompat.requestApplyInsets(row);
     }
 
     @Override

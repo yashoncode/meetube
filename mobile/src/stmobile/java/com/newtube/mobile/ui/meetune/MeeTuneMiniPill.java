@@ -51,6 +51,9 @@ final class MeeTuneMiniPill {
     private final int mListPad;
     private final int mDp;
     private final ProgressRing mRing;
+    private Boolean mShownPlaying;
+    @Nullable
+    private android.animation.ValueAnimator mMorph;
     /** The ring follows the song four times a second while the pill shows. */
     private final Runnable mTick = new Runnable() {
         @Override
@@ -104,12 +107,9 @@ final class MeeTuneMiniPill {
         mListPad = list.getPaddingBottom();
         mDp = MeeTuneAdapter.dp(activity, 1);
         mRing = new ProgressRing(mDp, androidx.core.content.ContextCompat.getColor(activity, R.color.mobile_color_on_surface));
-        // The ring is the background (a foreground is cut to the padding and clipped the glow); the press
-        // ripple moves to the foreground, as a borderless ripple in a layer made the whole layer draw on
-        // the parent, ring and all, and it vanished.
-        android.graphics.drawable.Drawable ripple = mPlay.getBackground();
+        // The ring is the background (a foreground is cut to the padding and clipped the glow). No press
+        // ripple: as a foreground it was a grey box; a tap blooms the ring's glow instead (pulse()).
         mPlay.setBackground(mRing);
-        mPlay.setForeground(ripple);
         mArt.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
@@ -130,9 +130,8 @@ final class MeeTuneMiniPill {
             ExoPlayer player = MiniPlayerBridge.getPlayer();
             if (player == null) return;
             Haptics.click(v);
-            Motion.pop(v);
             player.setPlayWhenReady(!player.getPlayWhenReady());
-            refresh();
+            refresh(); // the icon morphs and the glow blooms (fill)
         });
         mTab.setOnClickListener(v -> {
             Haptics.click(v);
@@ -257,7 +256,12 @@ final class MeeTuneMiniPill {
             mArtUrl = art;
             Glide.with(mArt).load(art).into(mArt);
         }
-        mPlay.setImageResource(playing ? R.drawable.ic_meetune_pause : R.drawable.ic_meetune_play);
+        if (mShownPlaying == null || mShownPlaying == playing || !mPill.isShown()) {
+            if (mShownPlaying == null || mShownPlaying != playing) setIcon(playing);
+        } else {
+            morph(playing);
+        }
+        mShownPlaying = playing;
         android.graphics.drawable.Drawable cover = mArt.getDrawable();
         if (cover != null && cover != mRingArt && cover.getIntrinsicWidth() > 0) { // the ring glows in the cover's colour
             mRingArt = cover;
@@ -272,6 +276,53 @@ final class MeeTuneMiniPill {
      * The song's progress as a glowing arc around pause: a faint full track, the played part over it
      * (a soft wide stroke under a thin bright one) and a small lit head where the song is.
      */
+    /** The play/pause icon on a ScaleDrawable, so a morph can shrink the icon and leave the ring be. */
+    private void setIcon(boolean playing) {
+        mPlay.setImageDrawable(new android.graphics.drawable.ScaleDrawable(
+                androidx.core.content.ContextCompat.getDrawable(mActivity,
+                        playing ? R.drawable.ic_meetune_pause : R.drawable.ic_meetune_play),
+                android.view.Gravity.CENTER, 1f, 1f));
+        mPlay.setImageLevel(10000);
+        mPlay.setImageAlpha(255);
+    }
+
+    /** Play/pause: the icon fades down small, swaps, and grows back while the ring's glow blooms. */
+    private void morph(boolean playing) {
+        if (mMorph != null) mMorph.cancel();
+        mRing.pulse(playing);
+        boolean[] swapped = {false};
+        mMorph = android.animation.ValueAnimator.ofFloat(0f, 1f);
+        mMorph.setDuration(380);
+        mMorph.addUpdateListener(a -> {
+            float t = (float) a.getAnimatedValue();
+            float size;
+            float alpha;
+            if (t < 0.3f) {
+                float d = t / 0.3f;
+                size = 1f - 0.45f * d;
+                alpha = 1f - d;
+            } else {
+                if (!swapped[0]) {
+                    swapped[0] = true;
+                    setIcon(playing);
+                }
+                float u = (t - 0.3f) / 0.7f;
+                u = 1f - (1f - u) * (1f - u) * (1f - u); // ease out
+                size = 0.55f + 0.45f * u;
+                alpha = u;
+            }
+            mPlay.setImageLevel(Math.round(10000 * size));
+            mPlay.setImageAlpha(Math.round(255 * alpha));
+        });
+        mMorph.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationCancel(android.animation.Animator animation) {
+                setIcon(playing);
+            }
+        });
+        mMorph.start();
+    }
+
     private static final class ProgressRing extends android.graphics.drawable.Drawable {
         private final android.graphics.Paint mPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
         private final android.graphics.RectF mOval = new android.graphics.RectF();
@@ -280,6 +331,11 @@ final class MeeTuneMiniPill {
         private int mColor;
         private float mLevel;
         private boolean mPlaying;
+        /** Paused dims the glow; it eases between the two on a tap. */
+        private float mGlow = 1f;
+        /** A tap's bloom, 0..1 while it runs. */
+        private float mPulse;
+        private android.animation.ValueAnimator mPulseAnim;
 
         ProgressRing(int dp, int ink) {
             mDp = dp;
@@ -299,7 +355,31 @@ final class MeeTuneMiniPill {
             if (Math.abs(level - mLevel) < 0.0005f && playing == mPlaying) return;
             mLevel = level;
             mPlaying = playing;
+            if (mPulseAnim == null || !mPulseAnim.isRunning()) mGlow = playing ? 1f : 0.55f;
             invalidateSelf();
+        }
+
+        /** A soft glow in the cover's colour swells out of the ring and fades, with a ring of light. */
+        void pulse(boolean playing) {
+            if (mPulseAnim != null) mPulseAnim.cancel();
+            float from = mGlow;
+            float to = playing ? 1f : 0.55f;
+            mPulseAnim = android.animation.ValueAnimator.ofFloat(0f, 1f);
+            mPulseAnim.setDuration(560);
+            mPulseAnim.setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f));
+            mPulseAnim.addUpdateListener(a -> {
+                mPulse = (float) a.getAnimatedValue();
+                mGlow = from + (to - from) * mPulse;
+                invalidateSelf();
+            });
+            mPulseAnim.addListener(new android.animation.AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(android.animation.Animator animation) {
+                    mPulse = 0f;
+                    invalidateSelf();
+                }
+            });
+            mPulseAnim.start();
         }
 
         @Override
@@ -309,13 +389,30 @@ final class MeeTuneMiniPill {
             float cx = b.exactCenterX(), cy = b.exactCenterY();
             mOval.set(cx - r, cy - r, cx + r, cy + r);
             int rgb = mColor & 0x00FFFFFF;
+            if (mPulse > 0f && mPulse < 1f) {
+                float fade = (1f - mPulse) * (1f - mPulse);
+                float edge = Math.min(b.width(), b.height()) / 2f;
+                float bloom = Math.min(edge, r * (0.55f + 0.75f * mPulse));
+                int core = Math.round(0x80 * fade);
+                mPaint.setStyle(android.graphics.Paint.Style.FILL);
+                mPaint.setShader(new android.graphics.RadialGradient(cx, cy, bloom,
+                        new int[] {rgb | (core << 24), rgb | ((core * 2 / 5) << 24), rgb},
+                        new float[] {0f, 0.55f, 1f}, android.graphics.Shader.TileMode.CLAMP));
+                mPaint.setColor(0xFFFFFFFF);
+                canvas.drawCircle(cx, cy, bloom, mPaint);
+                mPaint.setShader(null);
+                mPaint.setStyle(android.graphics.Paint.Style.STROKE);
+                mPaint.setStrokeWidth(3f * mDp * (1f - mPulse));
+                mPaint.setColor(rgb | (Math.round(0xCC * (1f - mPulse)) << 24));
+                canvas.drawCircle(cx, cy, Math.min(edge - 2f * mDp, r * (1f + 0.22f * mPulse)), mPaint);
+            }
             mPaint.setStyle(android.graphics.Paint.Style.STROKE);
             mPaint.setStrokeWidth(2f * mDp);
             mPaint.setColor((mInk & 0x00FFFFFF) | 0x1F000000);
             canvas.drawOval(mOval, mPaint);
             if (mLevel <= 0f) return;
             float sweep = 360f * mLevel;
-            float glow = mPlaying ? 1f : 0.55f; // paused: the glow dims, the progress stays
+            float glow = mGlow; // paused: the glow dims, the progress stays
             mPaint.setStrokeWidth(6f * mDp);
             mPaint.setColor(rgb | (Math.round(0x38 * glow) << 24));
             canvas.drawArc(mOval, -90f, sweep, false, mPaint);

@@ -3291,9 +3291,12 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     @Override
     protected Insets contentInsets(WindowInsetsCompat insets) {
-        return Build.VERSION.SDK_INT >= 30 ? insets.getInsetsIgnoringVisibility(
+        Insets bars = Build.VERSION.SDK_INT >= 30 ? insets.getInsetsIgnoringVisibility(
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout())
                 : super.contentInsets(insets);
+        // MEETUNE(status bar): the song's blurred cover runs up under the status bar (the skin keeps
+        // its handle clear of it); the watch page under the skin is hidden meanwhile.
+        return mMeeTune != null && mMeeTune.isShown() ? Insets.of(bars.left, 0, bars.right, bars.bottom) : bars;
     }
 
     /**
@@ -4072,6 +4075,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (!music) {
             if (mMeeTune != null) {
                 mMeeTune.hide();
+                ViewCompat.requestApplyInsets(findViewById(android.R.id.content));
             }
             if (item != null && mMeeTuneAudioOnly && mAudioOnly) {
                 setAudioOnly(false, false); // MeeTune turned it on; the video gets its picture back
@@ -4083,6 +4087,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mMeeTune.bind(item);
         mMeeTune.show();
+        ViewCompat.requestApplyInsets(findViewById(android.R.id.content));
         if (com.newtube.mobile.ui.meetune.MeeTune.audioOnly(this) && !mAudioOnly) {
             setAudioOnly(true, false);
             mMeeTuneAudioOnly = true;
