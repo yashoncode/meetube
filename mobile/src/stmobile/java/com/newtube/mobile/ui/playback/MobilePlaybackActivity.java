@@ -6530,7 +6530,7 @@ public class MobilePlaybackActivity extends MobileActivity
             // MEETUBE(issue #13): the new video's shape before its first frame, so the box is
             // ready when the picture arrives instead of jumping under it.
             setInlineAspect(tracksAspect(tracks));
-            mHdrTrack = isHdrSelected(tracks);
+            mHdrTrack = isSurfaceViewTrack(tracks);
             updateHdrOutput();
         }
 
@@ -6715,7 +6715,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Nullable
     private android.view.SurfaceView mHdrSurface;
-    /** The selected video track is HDR (only in the manifest with the HDR setting on). */
+    /** The selected video track wants the SurfaceView: HDR, or above 30 fps (issue #259). */
     private boolean mHdrTrack;
     /** The codec draws into {@link #mHdrSurface}. */
     private boolean mHdrOutput;
@@ -6795,15 +6795,22 @@ public class MobilePlaybackActivity extends MobileActivity
         return result[0] == android.view.PixelCopy.SUCCESS ? frame : null;
     }
 
-    private static boolean isHdrSelected(androidx.media3.common.Tracks tracks) {
+    /**
+     * HDR (only in the manifest with the HDR setting on) or high frame rate. MEETUBE(issue #259):
+     * 60 fps on the texture stuttered on a realme P3 Pro although its decoder rendered a clean
+     * 60/s: texture frames wait on the UI thread's composition, and only a SurfaceView gets
+     * media3's Surface#setFrameRate hint, which locks a 120 Hz panel to an even cadence.
+     */
+    private static boolean isSurfaceViewTrack(androidx.media3.common.Tracks tracks) {
         for (androidx.media3.common.Tracks.Group group : tracks.getGroups()) {
             if (group.getType() != androidx.media3.common.C.TRACK_TYPE_VIDEO) {
                 continue;
             }
             for (int i = 0; i < group.length; i++) {
                 androidx.media3.common.Format format = group.getTrackFormat(i);
-                if (group.isTrackSelected(i) && com.liskovsoft.smartyoutubetv2.common.exoplayer.selector
-                        .TrackSelectorUtil.isHdrFormat(format.id, format.codecs)) {
+                if (group.isTrackSelected(i) && (format.frameRate > 30.5f
+                        || com.liskovsoft.smartyoutubetv2.common.exoplayer.selector
+                        .TrackSelectorUtil.isHdrFormat(format.id, format.codecs))) {
                     return true;
                 }
             }
