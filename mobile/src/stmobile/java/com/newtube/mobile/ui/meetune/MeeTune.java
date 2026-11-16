@@ -686,6 +686,16 @@ public final class MeeTune {
         return context.getApplicationContext().getSharedPreferences("meetune", Context.MODE_PRIVATE);
     }
 
+    /** MEETUBE(issue #265): songs' own playback speed, 1x unless picked; a video's speed never touches it. */
+    public static float speed(Context context) {
+        float speed = prefs(context).getFloat("speed", 1f);
+        return speed > 0f ? speed : 1f;
+    }
+
+    public static void setSpeed(Context context, float speed) {
+        prefs(context).edit().putFloat("speed", speed).apply();
+    }
+
     /** Songs play as sound only (the video track off), as YouTube Music does. Always, since its switch went. */
     public static boolean audioOnly(Context context) {
         return true;

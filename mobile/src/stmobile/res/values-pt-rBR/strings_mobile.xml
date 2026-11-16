@@ -423,6 +423,7 @@
     <string name="mobile_download_state_queued">Aguardando download</string>
     <string name="mobile_download_state_downloading">Baixando · %1$d%% · %2$s de %3$s</string>
     <string name="mobile_download_state_downloading_bytes">Baixando · %1$s</string>
+    <string name="mobile_download_time_left">faltam %1$s</string>
     <string name="mobile_download_state_processing">Finalizando…</string>
     <string name="mobile_download_error_generic">Falha no download. Toque para tentar de novo.</string>
     <string name="mobile_download_error_link">O link do download expirou. Toque para tentar de novo.</string>

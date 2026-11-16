@@ -1339,6 +1339,14 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     public void setSpeed(float speed) {
+        setSpeed(speed, true);
+    }
+
+    /**
+     * {@code remember} false: no speed-changed event, so the speed memory (global, per channel, per
+     * video) keeps the video speed while a MeeTune song plays at its own (issue #265).
+     */
+    public void setSpeed(float speed, boolean remember) {
         if (mPlayer != null && speed > 0) {
             if (mHoldBase != null) {
                 mHoldBase = withSpeed(mHoldBase, speed); // chosen mid-hold: the hold ends on it
@@ -1346,7 +1354,9 @@ public class Media3PlayerController implements Player.Listener {
                 mPlayer.setPlaybackParameters(withSpeed(mPlayer.getPlaybackParameters(), speed));
             }
 
-            mEventListener.onSpeedChanged(speed);
+            if (remember) {
+                mEventListener.onSpeedChanged(speed);
+            }
         }
     }
 

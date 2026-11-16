@@ -143,7 +143,7 @@
         android:alpha="0"
         android:importantForAccessibility="no"
         android:src="@drawable/ic_watch_thumb_up"
-        android:tint="@color/mobile_color_primary" />
+        android:tint="@android:color/white" />
 
     <LinearLayout
         android:id="@+id/mobile_shorts_info"

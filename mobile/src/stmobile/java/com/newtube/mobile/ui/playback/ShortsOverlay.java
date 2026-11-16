@@ -126,6 +126,9 @@ final class ShortsOverlay {
     private final ImageView mAvatar;
     private final ImageView mFlash;
     private final ImageView mHeart;
+    /** Behind the double tap's thumb: a soft glow that blooms and a ring of light that ripples out. */
+    private final View mHeartGlow;
+    private final View mHeartRing;
     private final ImageView mPeek;
     /** MEETUBE(shorts peek): the next short's real first frame, over its thumbnail (ShortsPeekPlayer). */
     private final TextureView mPeekFrame;
@@ -185,6 +188,9 @@ final class ShortsOverlay {
         mAvatar = root.findViewById(R.id.mobile_shorts_avatar);
         mFlash = root.findViewById(R.id.mobile_shorts_flash);
         mHeart = root.findViewById(R.id.mobile_shorts_heart);
+        mHeartGlow = new View(root.getContext());
+        mHeartRing = new View(root.getContext());
+        addBehindHeart(root.getContext());
         mPeek = root.findViewById(R.id.mobile_shorts_peek);
         mPeekFrame = root.findViewById(R.id.mobile_shorts_peek_video);
         mPeekFrame.setTranslationY(PARKED);
@@ -228,6 +234,7 @@ final class ShortsOverlay {
                 new int[] {0xFFFFFFFF, 0xE6FFFFFF, 0x80FFFFFF}, new float[] {0f, 0.45f, 1f},
                 android.graphics.Shader.TileMode.CLAMP));
         header.setShadowLayer(6 * root.getResources().getDisplayMetrics().density, 0, 1, 0x66000000);
+        fitActionsBelowTopRow(root.getResources().getDisplayMetrics().density);
         // MEETUBE(shorts description, issue #33): the title opens the Description panel, as YouTube's.
         mTitle.setOnClickListener(v -> mHost.openShortsDescription());
 
@@ -485,16 +492,70 @@ final class ShortsOverlay {
                 mFlash.animate().alpha(0f).setStartDelay(220).setDuration(140).start()).start();
     }
 
-    /** Double tap: a big heart springs in and floats off. */
+    private void addBehindHeart(Context context) {
+        float dp = context.getResources().getDisplayMetrics().density;
+        int accent = androidx.core.content.ContextCompat.getColor(context, R.color.mobile_color_primary) & 0xFFFFFF;
+        android.graphics.drawable.GradientDrawable glow = new android.graphics.drawable.GradientDrawable();
+        glow.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        glow.setGradientType(android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT);
+        glow.setGradientRadius(110 * dp);
+        glow.setColors(new int[] {accent | 0x8C000000, accent | 0x33000000, accent});
+        mHeartGlow.setBackground(glow);
+        android.graphics.drawable.GradientDrawable ring = new android.graphics.drawable.GradientDrawable();
+        ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        ring.setStroke(Math.round(3 * dp), 0xE6FFFFFF);
+        mHeartRing.setBackground(ring);
+        android.view.ViewGroup parent = (android.view.ViewGroup) mHeart.getParent();
+        int at = parent.indexOfChild(mHeart);
+        int glowSize = Math.round(220 * dp);
+        int ringSize = Math.round(120 * dp);
+        parent.addView(mHeartGlow, at, new FrameLayout.LayoutParams(glowSize, glowSize, android.view.Gravity.CENTER));
+        parent.addView(mHeartRing, at + 1, new FrameLayout.LayoutParams(ringSize, ringSize, android.view.Gravity.CENTER));
+        for (View v : new View[] {mHeartGlow, mHeartRing}) {
+            v.setAlpha(0f);
+            v.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        }
+    }
+
+    /**
+     * Double tap (issue #265): a glow blooms behind the thumb and a ring of light ripples out while
+     * the thumb springs in, holds, then floats up as it fades. Every step sets its own delay and
+     * curve: a chained animate() keeps the last ones, and the old 250 ms delay stuck to the next tap.
+     */
     void popHeart() {
+        float dp = mHeart.getResources().getDisplayMetrics().density;
+        android.view.animation.Interpolator spring = new OvershootInterpolator(1.4f);
+        android.view.animation.Interpolator ease = new DecelerateInterpolator(1.8f);
+        android.view.animation.Interpolator leave = new android.view.animation.AccelerateInterpolator(1.4f);
+
         mHeart.animate().cancel();
-        mHeart.setAlpha(1f);
-        mHeart.setScaleX(0.4f);
-        mHeart.setScaleY(0.4f);
-        mHeart.setRotation((float) (Math.random() * 24 - 12));
-        mHeart.animate().scaleX(1f).scaleY(1f).setInterpolator(new OvershootInterpolator(2.5f)).setDuration(260)
-                .withEndAction(() -> mHeart.animate().scaleX(1.4f).scaleY(1.4f).alpha(0f).setStartDelay(250)
-                        .setInterpolator(new DecelerateInterpolator()).setDuration(400).start()).start();
+        mHeart.setAlpha(0f);
+        mHeart.setScaleX(0.3f);
+        mHeart.setScaleY(0.3f);
+        mHeart.setRotation(-14f);
+        mHeart.setTranslationY(0f);
+        mHeart.animate().alpha(1f).scaleX(1f).scaleY(1f).rotation(0f)
+                .setStartDelay(0).setDuration(340).setInterpolator(spring)
+                .withEndAction(() -> mHeart.animate().alpha(0f).translationY(-56 * dp).scaleX(0.85f).scaleY(0.85f)
+                        .setStartDelay(260).setDuration(320).setInterpolator(leave).start())
+                .start();
+
+        mHeartGlow.animate().cancel();
+        mHeartGlow.setAlpha(0f);
+        mHeartGlow.setScaleX(0.4f);
+        mHeartGlow.setScaleY(0.4f);
+        mHeartGlow.animate().alpha(1f).scaleX(1f).scaleY(1f)
+                .setStartDelay(0).setDuration(260).setInterpolator(ease)
+                .withEndAction(() -> mHeartGlow.animate().alpha(0f).scaleX(1.3f).scaleY(1.3f)
+                        .setStartDelay(120).setDuration(520).setInterpolator(ease).start())
+                .start();
+
+        mHeartRing.animate().cancel();
+        mHeartRing.setAlpha(0.9f);
+        mHeartRing.setScaleX(0.5f);
+        mHeartRing.setScaleY(0.5f);
+        mHeartRing.animate().alpha(0f).scaleX(1.9f).scaleY(1.9f)
+                .setStartDelay(60).setDuration(560).setInterpolator(ease).start();
     }
 
     /** The short follows the finger; the neighbour's thumbnail comes in behind it. */
@@ -609,6 +670,28 @@ final class ShortsOverlay {
             // Its still (or already its video) has been under the frozen frame since the open.
             hidePeek();
         }
+    }
+
+    /**
+     * MEETUBE(issue #265): sideways the window is too short for the like column, which grew up over
+     * the download / mute / search row. It shrinks from its bottom-right corner just enough to stay
+     * below that row; upright it fits and stays full size.
+     */
+    private void fitActionsBelowTopRow(float density) {
+        View actions = mOverlay.findViewById(R.id.mobile_shorts_actions);
+        View topRow = (View) mOverlay.findViewById(R.id.mobile_shorts_download).getParent();
+        actions.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            int height = b - t;
+            if (height <= 0) {
+                return;
+            }
+            float room = b - topRow.getBottom() - 8 * density;
+            float scale = Math.max(0.5f, Math.min(1f, room / height));
+            v.setPivotX(r - l);
+            v.setPivotY(height);
+            v.setScaleX(scale);
+            v.setScaleY(scale);
+        });
     }
 
     /** MEETUBE(shorts): a held short shows only itself - every button and line fades until the finger lifts. */

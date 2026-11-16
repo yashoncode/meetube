@@ -227,6 +227,7 @@ final class DownloadJob {
     private boolean report(long bytesDone) {
         mItem.bytesDone = bytesDone;
         long now = System.currentTimeMillis();
+        mItem.sampleSpeed(now);
         if (now - mLastNotifyMs >= 500) {
             mLastNotifyMs = now;
             mRegistry.notifyChanged();

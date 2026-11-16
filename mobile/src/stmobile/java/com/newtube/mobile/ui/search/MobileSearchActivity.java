@@ -962,7 +962,45 @@ public class MobileSearchActivity extends MobileActivity
         if (mLayoutManager != null) {
             mLayoutManager.setSpanCount(
                     2 * com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig));
+            if (mAdapter != null && !mVideos.isEmpty()) {
+                mAdapter.submitList(gridItems()); // one column: two-up blocks; wider: Shorts rows
+            }
         }
+    }
+
+    /**
+     * MEETUBE(issue #265): what the grid shows. In one column a block of shorts sits two to a row;
+     * in a wider grid (sideways, tablets) the half-column tiles fell in beside videos, one video and
+     * two shorts to a row, so there each run of shorts becomes one full-width Shorts row (Home's
+     * shelf). With the Shorts filter on, everything is a short: the plain grid stays.
+     */
+    private List<Video> gridItems() {
+        List<Video> items = new ArrayList<>(mVideos);
+        boolean shortsOnly = mPresenter != null
+                && (mPresenter.getSearchOptions() & SearchOptions.TYPE_SHORTS) != 0;
+        if (mLayoutManager == null || mLayoutManager.getSpanCount() <= 2 || shortsOnly) {
+            return items;
+        }
+        List<Video> result = new ArrayList<>(items.size());
+        List<Video> run = new ArrayList<>();
+        for (int i = 0; i <= items.size(); i++) {
+            Video video = i < items.size() ? items.get(i) : null;
+            if (video != null && video.belongsToShorts() && video.shortsShelf == null) {
+                run.add(video);
+                continue;
+            }
+            if (!run.isEmpty()) {
+                Video shelf = run.get(0).copy(); // equal to its first short, so a new page keeps the row
+                shelf.isShorts = true;
+                shelf.shortsShelf = new ArrayList<>(run);
+                result.add(shelf);
+                run.clear();
+            }
+            if (video != null) {
+                result.add(video);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -1034,7 +1072,7 @@ public class MobileSearchActivity extends MobileActivity
             }
 
             mLastPaginationTriggerCount = -1; // allow pagination to fire again at the new size
-            mAdapter.submitList(new ArrayList<>(mVideos));
+            mAdapter.submitList(gridItems());
             NetPath.log("search-results sid=" + mSubmitSequence
                     + " action=" + group.getAction() + " incoming=" + incoming
                     + " shortsHidden=" + shortsHidden + " total=" + mVideos.size());

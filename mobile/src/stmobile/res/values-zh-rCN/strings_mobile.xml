@@ -328,6 +328,7 @@
     <string name="mobile_download_state_queued">等待下载</string>
     <string name="mobile_download_state_downloading">正在下载 · %1$d%%（%2$s/%3$s）</string>
     <string name="mobile_download_state_downloading_bytes">正在下载 · %1$s</string>
+    <string name="mobile_download_time_left">剩余 %1$s</string>
     <string name="mobile_download_state_processing">正在完成…</string>
     <string name="mobile_download_error_generic">下载失败。点按重试。</string>
     <string name="mobile_download_error_link">下载链接已过期。点按重试。</string>

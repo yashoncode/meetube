@@ -9,6 +9,22 @@ final class DownloadProgressText {
     private DownloadProgressText() {
     }
 
+    /** MEETUBE(issue #265): " · 2.4 MB/s · 1:23 left" once the rate is known, else nothing. */
+    static String speed(Context context, DownloadItem item) {
+        float rate = item.bytesPerSec;
+        if (rate < 1f) return "";
+        String text = " · " + DownloadOptions.formatBytes(Math.round(rate)) + "/s";
+        long left = item.secondsLeft();
+        return left < 0 ? text : text + " · " + context.getString(R.string.mobile_download_time_left, clock(left));
+    }
+
+    /** 1:23, or 1:02:03 from an hour. */
+    static String clock(long seconds) {
+        long h = seconds / 3600, m = seconds / 60 % 60, s = seconds % 60;
+        return h > 0 ? String.format(java.util.Locale.ROOT, "%d:%02d:%02d", h, m, s)
+                : String.format(java.util.Locale.ROOT, "%d:%02d", m, s);
+    }
+
     static String of(Context context, DownloadItem item) {
         switch (item.state) {
             case DownloadItem.STATE_QUEUED:
@@ -20,7 +36,7 @@ final class DownloadProgressText {
                     return context.getString(R.string.mobile_download_state_downloading_bytes, done);
                 }
                 return context.getString(R.string.mobile_download_state_downloading, percent,
-                        done, DownloadOptions.formatBytes(item.bytesTotal));
+                        done, DownloadOptions.formatBytes(item.bytesTotal)) + speed(context, item);
             }
             case DownloadItem.STATE_PAUSED: {
                 int percent = item.progressPercent();

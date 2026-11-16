@@ -1203,7 +1203,8 @@ public class MobilePlaybackActivity extends MobileActivity
             if (mShorts != null) {
                 mShorts.alignPeek(bars.top, bars.bottom);
             }
-            mVideoArea.setEdgeFade(isShortsMode() ? glass : null,
+            // MEETUBE(issue #265): sideways the whole short has crisp left and right edges on the blur.
+            mVideoArea.setEdgeFade(isShortsMode() && !isLandscape() ? glass : null,
                     mPlayerView != null ? mPlayerView.getContentFrame() : null,
                     dp(24));
             return insets;
@@ -2201,6 +2202,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // still forever. The still + black video area do its job now.
         mPlayerView.setShutterBackgroundColor(Color.TRANSPARENT);
 
+        showSeekTime(false); // MEETUBE(issue #265): a new player never inherits a burst's pill
         // Wire the YouTube-style double-tap seek overlay to the live player.
         // NOTE: PerformListener.shouldForward() compiles to an abstract method (the Kotlin default
         // body lives in DefaultImpls, invisible to Java), so it must be implemented here. We use the
@@ -2222,8 +2224,17 @@ public class MobilePlaybackActivity extends MobileActivity
                             mVideoArea.pop(forward);
                         }
                         // The overlay seeks right after this call: read the position once it has.
+                        // MEETUBE(issue #265): only while the burst still runs (a show landing after
+                        // onAnimationEnd left the pill up for good), and it goes by itself a moment
+                        // after the last tap whatever happens to the overlay.
                         if (mSeekTime != null) {
-                            mSeekTime.post(() -> showSeekTime(true));
+                            mSeekTime.post(() -> {
+                                if (mYouTubeOverlay.getVisibility() == View.VISIBLE) {
+                                    showSeekTime(true);
+                                }
+                            });
+                            mSeekTime.removeCallbacks(mSeekTimeTapHide);
+                            mSeekTime.postDelayed(mSeekTimeTapHide, SEEK_TIME_TAP_HIDE_MS);
                         }
                     }
 
@@ -4177,6 +4188,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 () -> getOnBackPressedDispatcher().onBackPressed(), upgrade,
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_sleep_timer,
                         R.string.mobile_player_sleep_timer, this::showSleepTimerSheet),
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_speed,
+                        R.string.mobile_player_speed, this::showSpeedSheet),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_mobile_tune, R.string.meetune_lyrics_offset,
                         () -> com.newtube.mobile.ui.meetune.MeeTuneSongMenu.lyricsOffset(this,
                                 mMeeTune::lyricsOffset, mMeeTune::setLyricsOffset)),
@@ -6805,6 +6818,19 @@ public class MobilePlaybackActivity extends MobileActivity
             setVideoGlassSampling(false);
             mPlayer.setVideoSurfaceView(mHdrSurface);
         } else if (mPlayer != null && mSessionSurface != null) {
+            // A morph (the swipe down) moves the box from its first pixel, and the texture holds an
+            // old frame until the codec's next one: freeze the SurfaceView's frame over the box and
+            // retire the SurfaceView now, or its unclipped layer jerks with the drag (#259).
+            if (mMorphFraction > 0f && mVideoTexture != null) {
+                Bitmap frame = copyHdrFrame(Math.max(1, mVideoTexture.getWidth() / 2),
+                        Math.max(1, mVideoTexture.getHeight() / 2));
+                if (frame != null) {
+                    showHandoffStill(frame);
+                }
+                mPlayer.setVideoSurface(mSessionSurface);
+                finishHdrSwap();
+                return;
+            }
             mPlayer.setVideoSurface(mSessionSurface);
         } else {
             finishHdrSwap(); // no player to draw a frame: just put the texture back
@@ -7584,10 +7610,13 @@ public class MobilePlaybackActivity extends MobileActivity
     };
 
     private void likeShort() {
-        if (getButtonState(R.id.action_thumbs_up) != BUTTON_ON && mWatchLike != null) {
-            mWatchLike.performClick();
+        boolean liked = getButtonState(R.id.action_thumbs_up) == BUTTON_ON;
+        if (mWatchLike != null) {
+            mWatchLike.performClick(); // MEETUBE(issue #265): a double tap on a liked short unlikes it
         }
-        mShorts.popHeart();
+        if (!liked) {
+            mShorts.popHeart();
+        }
     }
 
     /** Shorts filling the portrait screen (not while its comments are open, nor in landscape). */
@@ -9313,6 +9342,13 @@ public class MobilePlaybackActivity extends MobileActivity
     /** MEETUBE(seek pill): the center label a double-tap burst shows instead of the spinner. */
     private TextView mSeekTime;
     private boolean mSeekTimeShown;
+    /** MEETUBE(issue #265): a double tap's pill leaves this long after the last tap at the latest. */
+    private static final long SEEK_TIME_TAP_HIDE_MS = 1500;
+    private final Runnable mSeekTimeTapHide = () -> {
+        if (!mScrubbing) {
+            showSeekTime(false);
+        }
+    };
 
     private void showSeekTime(boolean show) {
         showSeekTime(show, null);
@@ -10929,6 +10965,10 @@ public class MobilePlaybackActivity extends MobileActivity
                 dialog.dismiss();
             });
         }
+        addFineSpeed(list, current);
+        if (meeTuneSong()) { // the TV list sets the videos' speed memory; a song keeps its own
+            content.findViewById(R.id.speed_sheet_more).setVisibility(View.GONE);
+        }
 
         // Full TV speed dialog: extended 0.25-4x list (long-click path always opens the list).
         content.findViewById(R.id.speed_sheet_more).setOnClickListener(v -> {
@@ -10947,6 +10987,18 @@ public class MobilePlaybackActivity extends MobileActivity
      * dialog's close hook - needs mirroring here. Confirms via snackbar, same as captions.
      */
     private void applySpeed(float speed) {
+        applySpeed(speed, true);
+    }
+
+    private void applySpeed(float speed, boolean confirm) {
+        if (meeTuneSong()) { // MEETUBE(issue #265): songs' own speed; the videos' stays as it was
+            com.newtube.mobile.ui.meetune.MeeTune.setSpeed(this, speed);
+            setSpeed(speed);
+            if (confirm) {
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_speed_toast, speedLabel(speed)));
+            }
+            return;
+        }
         setSpeed(speed);
 
         Video video = getVideo();
@@ -10958,7 +11010,71 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
 
-        com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_speed_toast, speedLabel(speed)));
+        if (confirm) {
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.mobile_speed_toast, speedLabel(speed)));
+        }
+    }
+
+    /**
+     * MEETUBE(issue #265): any speed from 0.25x to 4x in 0.01 steps, over the presets: the speed in
+     * large type, a slider, and - / + for one hundredth at a time. Each change applies at once.
+     */
+    private void addFineSpeed(LinearLayout list, float current) {
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(dp(16), dp(4), dp(16), dp(8));
+        TextView value = new TextView(this);
+        value.setGravity(android.view.Gravity.CENTER);
+        value.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 26);
+        value.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        value.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_on_surface));
+        box.addView(value);
+        LinearLayout row = new LinearLayout(this);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        com.google.android.material.slider.Slider slider = new com.google.android.material.slider.Slider(this);
+        slider.setValueFrom(25);
+        slider.setValueTo(400);
+        slider.setStepSize(1);
+        slider.setValue(Math.max(25, Math.min(400, Math.round(current * 100))));
+        slider.setLabelBehavior(com.google.android.material.slider.LabelFormatter.LABEL_GONE);
+        Runnable show = () -> value.setText(String.format(java.util.Locale.ROOT, "%.2fx", slider.getValue() / 100f));
+        show.run();
+        slider.addOnChangeListener((s, v, fromUser) -> show.run());
+        slider.addOnSliderTouchListener(new com.google.android.material.slider.Slider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull com.google.android.material.slider.Slider s) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull com.google.android.material.slider.Slider s) {
+                applySpeed(s.getValue() / 100f, false);
+            }
+        });
+        row.addView(fineStep(slider, -1), new LinearLayout.LayoutParams(dp(48), dp(48)));
+        row.addView(slider, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        row.addView(fineStep(slider, 1), new LinearLayout.LayoutParams(dp(48), dp(48)));
+        box.addView(row);
+        list.addView(box, 0);
+    }
+
+    private TextView fineStep(com.google.android.material.slider.Slider slider, int step) {
+        TextView button = new TextView(this);
+        button.setText(step < 0 ? "\u2212" : "+");
+        button.setGravity(android.view.Gravity.CENTER);
+        button.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 24);
+        button.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_on_surface));
+        android.util.TypedValue ripple = new android.util.TypedValue();
+        getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true);
+        button.setBackgroundResource(ripple.resourceId);
+        button.setContentDescription(step < 0 ? "-0.01x" : "+0.01x");
+        button.setOnClickListener(v -> {
+            float next = Math.max(25, Math.min(400, slider.getValue() + step));
+            if (next == slider.getValue()) return;
+            Haptics.click(v);
+            slider.setValue(next);
+            applySpeed(next / 100f, false);
+        });
+        return button;
     }
 
     /**
@@ -13076,6 +13192,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void setSpeed(float speed) {
+        if (meeTuneSong()) { // MEETUBE(issue #265): a song keeps its own speed, and the video speed stays saved
+            mExoPlayerController.setSpeed(com.newtube.mobile.ui.meetune.MeeTune.speed(this), false);
+            return;
+        }
         mExoPlayerController.setSpeed(speed);
     }
 
@@ -13117,6 +13237,10 @@ public class MobilePlaybackActivity extends MobileActivity
             } else if (ShortsOverlay.fillsScreen(this)) {
                 // A square or wide "short" zoomed to the screen kept a strip of its middle: whole,
                 // like YouTube, with the ambient glow in the bands.
+                mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
+            } else if (isLandscape()) {
+                // MEETUBE(issue #265): sideways the zoom setting cropped a short to a band of its
+                // middle; it shows whole, 9:16 in the centre, the ambient glow blurred in the sides.
                 mode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT;
             }
         } else if (mPortraitFull && !isLandscape() || mCommentsSide || mChatSide

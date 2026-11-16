@@ -134,6 +134,36 @@ public final class DownloadItem {
         return state == STATE_PAUSED;
     }
 
+    /** MEETUBE(issue #265): bytes a second while downloading, smoothed; 0 until known. Not saved. */
+    public transient volatile float bytesPerSec;
+    private transient long mSpeedAtMs;
+    private transient long mSpeedBytes;
+
+    /** Called with each progress report; a new rate every second, eased so the text doesn't jump. */
+    void sampleSpeed(long nowMs) {
+        long done = bytesDone;
+        long elapsed = nowMs - mSpeedAtMs;
+        if (mSpeedAtMs == 0 || elapsed > 5000 || done < mSpeedBytes) { // first, after a pause, a new part
+            mSpeedAtMs = nowMs;
+            mSpeedBytes = done;
+            if (elapsed > 5000) bytesPerSec = 0f;
+            return;
+        }
+        if (elapsed < 1000) return;
+        float now = (done - mSpeedBytes) * 1000f / elapsed;
+        bytesPerSec = bytesPerSec == 0f ? now : bytesPerSec * 0.7f + now * 0.3f;
+        mSpeedAtMs = nowMs;
+        mSpeedBytes = done;
+    }
+
+    /** Seconds left at the current rate, or -1 while it isn't known. */
+    public long secondsLeft() {
+        long total = bytesTotal;
+        float rate = bytesPerSec;
+        if (total <= 0 || rate < 1f || bytesDone >= total) return -1;
+        return (long) Math.ceil((total - bytesDone) / rate);
+    }
+
     /** 0..100, or -1 while the total is unknown. */
     public int progressPercent() {
         long total = bytesTotal;
