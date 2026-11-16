@@ -42,8 +42,16 @@
     <string name="meetune_set_customize_summary">The You page heart, the name beside the logo and Search\'s glow</string>
     <string name="meetune_set_brand_name">MeeTune name beside the logo</string>
     <string name="meetune_set_brand_name_summary">Off, Home\'s corner shows the heart alone</string>
-    <string name="meetune_set_you">MeeTune on the You page</string>
-    <string name="meetune_set_you_summary">The heart beside your name opens MeeTune</string>
+    <string name="meetune_link_meetube">MeeTube →</string>
+    <string name="meetune_link_meetune">MeeTune →</string>
+    <string name="meetune_home_hint">Tap here to switch to MeeTune</string>
+    <string name="meetune_cached">Cached songs</string>
+    <string name="meetune_cached_summary">Play with no network</string>
+    <string name="meetune_storage_songs">MeeTune songs (in cache)</string>
+    <plurals name="meetune_storage_songs_value">
+        <item quantity="one">%1$s · %2$d song</item>
+        <item quantity="other">%1$s · %2$d songs</item>
+    </plurals>
     <string name="meetune_queue">Up next</string>
     <string name="meetune_lyrics">Lyrics</string>
     <string name="meetune_cast">Cast</string>

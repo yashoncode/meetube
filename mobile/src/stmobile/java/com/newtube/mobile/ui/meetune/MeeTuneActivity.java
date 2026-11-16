@@ -141,6 +141,16 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mList.setLayoutManager(new LinearLayoutManager(this));
         mList.setAdapter(mAdapter);
         mList.addItemDecoration(mAdapter.dividers(this));
+        // Home's pull to refresh: a new Home from YouTube Music, spinner under the search bar.
+        mSwipe = findViewById(R.id.meetune_swipe);
+        int spinner = MeeTuneAdapter.dp(this, 40);
+        int top = MeeTuneAdapter.dp(this, 64);
+        mSwipe.setProgressViewOffset(false, top - spinner, top + spinner / 2);
+        mSwipe.setOnRefreshListener(() -> {
+            com.newtube.mobile.ui.common.RefreshFeedback.play(mSwipe);
+            if (current() == mTabs[HOME]) show(mTabs[HOME], true);
+            else mSwipe.setRefreshing(false);
+        });
         mList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView view, int dx, int dy) {
@@ -207,8 +217,10 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 clear.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
                 // One suggest call per burst of keys; an emptied field shows recent searches at once.
                 mSearchField.removeCallbacks(mSuggestReload);
-                if (s.length() == 0) loadSuggestions();
-                else mSearchField.postDelayed(mSuggestReload, 200);
+                if (s.length() == 0) {
+                    clearResults();
+                    loadSuggestions();
+                } else mSearchField.postDelayed(mSuggestReload, 200);
             }
         });
         mSearchField.setOnEditorActionListener((v, actionId, event) -> {
@@ -252,6 +264,21 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
         show(current(), false);
         MeeTune.sHistoryChanged = mHistoryChanged;
+        sOpen = new java.lang.ref.WeakReference<>(this);
+    }
+
+    /** MeeTune's screen while it is open, so Convert to video can close it (Back then lands in MeeTube). */
+    @Nullable
+    private static java.lang.ref.WeakReference<MeeTuneActivity> sOpen;
+
+    /** Closes MeeTune's screen under the player: the video converted to is MeeTube's now, and so is Back. */
+    static void closeUnderPlayer() {
+        MeeTuneActivity open = sOpen != null ? sOpen.get() : null;
+        if (open == null || open.isFinishing() || open.isDestroyed()) return;
+        // After the player is up, so MeeTube never flashes between them.
+        open.getWindow().getDecorView().postDelayed(() -> {
+            if (!open.isFinishing()) open.finish();
+        }, 700);
     }
 
     private void placeMiniCard() {
@@ -308,6 +335,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         });
     }
 
+    private com.newtube.mobile.ui.common.HapticSwipeRefreshLayout mSwipe;
     private RecyclerView mSuggestions;
     private com.newtube.mobile.ui.search.SearchTagAdapter mTagAdapter;
     private MeeTuneAdapter mSuggestSongs;
@@ -375,6 +403,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     private void show(Page page, boolean reload) {
         if (mPill != null) mPill.unfold(); // a new page: the bar comes back
         boolean pushed = !mStack.isEmpty();
+        mSwipe.setEnabled(!pushed && page.tab == HOME); // only Home pulls to refresh
+        if (!reload) mSwipe.setRefreshing(false);
         boolean search = !pushed && page.tab == SEARCH;
         mBack.setVisibility(pushed ? View.VISIBLE : View.GONE);
         mSearchGlass.setVisibility(search ? View.VISIBLE : View.GONE);
@@ -440,6 +470,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         MeeTune.Result<List<MeeTuneAdapter.Row>> done = (rows, error) -> {
             if (generation != mGeneration) return; // the page was left before it loaded
             mProgress.setVisibility(View.GONE);
+            mSwipe.setRefreshing(false);
             if (rows == null) {
                 message(getString(R.string.meetune_error), getString(R.string.meetune_retry), () -> show(page, true));
                 return;
@@ -453,7 +484,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 landed[0] = true;
                 done.done(rows, null);
             });
-            if (!landed[0]) mProgress.setVisibility(View.VISIBLE);
+            if (!landed[0] && !mSwipe.isRefreshing()) mProgress.setVisibility(View.VISIBLE);
             return;
         }
         mProgress.setVisibility(View.VISIBLE);
@@ -463,6 +494,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             }
             if (pushed && MeeTune.DOWNLOADS.equals(page.browseId)) {
                 return MeeTuneAdapter.rows(MeeTune.downloads(this), true, false);
+            }
+            if (pushed && MeeTune.CACHED.equals(page.browseId)) {
+                return MeeTuneAdapter.rows(MeeTuneSongCache.songs(this), true, false);
             }
             if (pushed) {
                 return MeeTuneAdapter.rows(MusicApi.browse(this, page.browseId, page.params), true, false);
@@ -493,13 +527,20 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                     List<MusicApi.Shelf> saved = MeeTune.downloads(this);
                     int n = saved.isEmpty() ? 0 : saved.get(0).items.size();
                     item.subtitle = getResources().getQuantityString(R.plurals.meetune_download_count, n, n);
+                } else if (MeeTune.CACHED.equals(item.browseId)) {
+                    item.subtitle = getString(R.string.meetune_cached_summary);
                 }
             }
         }
     }
 
     private List<MusicApi.Shelf> library() throws Exception {
-        List<MusicApi.Shelf> shelves = MusicApi.browse(this, "FEmusic_library_landing", null);
+        List<MusicApi.Shelf> shelves;
+        try {
+            shelves = MusicApi.browse(this, "FEmusic_library_landing", null);
+        } catch (Exception e) { // a weak spot: the cards on this phone still show, Cached songs among them
+            shelves = new ArrayList<>();
+        }
         MusicApi.Shelf top = new MusicApi.Shelf();
         MusicApi.Item downloads = new MusicApi.Item(); // the songs downloaded from MeeTune, on this phone
         downloads.kind = MusicApi.CARD;
@@ -517,17 +558,25 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         List<MusicApi.Shelf> played = MeeTune.history(this);
         int plays = played.isEmpty() ? 0 : played.get(0).items.size();
         history.subtitle = getResources().getQuantityString(R.plurals.meetune_history_count, plays, plays);
+        MusicApi.Item cached = new MusicApi.Item(); // the songs whole in the cache: they play with no network
+        cached.kind = MusicApi.CARD;
+        cached.title = getString(R.string.meetune_cached);
+        cached.browseId = MeeTune.CACHED;
+        cached.icon = R.drawable.ic_settings_storage;
+        cached.subtitle = getString(R.string.meetune_cached_summary);
         MusicApi.Shelf liked = null; // YouTube Music lists its own Liked Music now: no second one
         for (MusicApi.Shelf shelf : shelves) {
             for (MusicApi.Item item : shelf.items) if ("VLLM".equals(item.browseId)) liked = shelf;
         }
         if (liked != null) { // Downloads and History first in Liked Music's row, cards like it
+            liked.items.add(0, cached);
             liked.items.add(0, history);
             liked.items.add(0, downloads);
             return shelves;
         }
         top.items.add(downloads);
         top.items.add(history);
+        top.items.add(cached);
         {
             MusicApi.Item item = new MusicApi.Item();
             item.kind = MusicApi.CARD;
@@ -545,6 +594,20 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mFilter = 0;
         if (mFilters != null) mFilters.setSelected(0);
         runSearch(query);
+    }
+
+    /** An emptied field: the old results go (and a search on its way with them), Search is blank again. */
+    private void clearResults() {
+        if (mQuery == null) return;
+        mQuery = null;
+        mGeneration++;
+        Page page = mTabs[SEARCH];
+        page.rows = null;
+        page.scroll = null;
+        if (current() == page) {
+            mProgress.setVisibility(View.GONE);
+            show(page, false);
+        }
     }
 
     @Nullable
@@ -944,6 +1007,17 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         if (mSuggestions.getVisibility() == View.VISIBLE) closeSuggestions(); // a suggested song or artist picked
         if (item.playable()) {
             MeeTune.play(this, item);
+            Page here = current();
+            if (MeeTune.CACHED.equals(here.browseId) && here.rows != null) { // the cached songs after it play on
+                boolean after = false;
+                for (MeeTuneAdapter.Row row : here.rows) {
+                    if (row.shelf == null) continue;
+                    for (MusicApi.Item song : row.shelf.items) {
+                        if (after && song.playable()) MeeTune.queue(this, song, false);
+                        if (song == item) after = true;
+                    }
+                }
+            }
             return;
         }
         if (item.browseId == null) return;
@@ -951,6 +1025,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         page.browseId = item.browseId;
         page.params = item.params;
         page.title = item.kind == MusicApi.MOOD || MeeTune.DOWNLOADS.equals(item.browseId)
+                || MeeTune.CACHED.equals(item.browseId)
                 || MeeTune.HISTORY.equals(item.browseId) ? item.title : null;
         page.art = item.kind == MusicApi.MOOD ? null : item.art;
         push(page);

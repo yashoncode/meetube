@@ -1389,6 +1389,10 @@ public final class MeeTunePlayerSkin {
             mNextArtFetched = true;
             fetchNextArt();
         }
+        if (position > 3000 && mControls.playing() && mVideo != null && mVideo.localUri == null) {
+            androidx.media3.common.Format heard = mControls.audioFormat(); // Library's Cached songs lists it once whole
+            com.newtube.mobile.ui.meetune.MeeTuneSongCache.remember(mRoot.getContext(), mVideoId, heard != null ? heard.id : null);
+        }
         if (position > 8000 && mControls.playing()) { // the next song, whole, into the disk cache (once per song)
             com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController suggestions =
                     com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter.instance(mRoot.getContext())

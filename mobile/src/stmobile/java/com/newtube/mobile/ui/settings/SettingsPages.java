@@ -191,10 +191,17 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_advanced_summary), ADVANCED));
         rows.add(SettingsRow.page(R.drawable.ic_settings_about, context.getString(R.string.mobile_settings_about),
                 versionLine(context), ABOUT));
-        if (Build.VERSION.SDK_INT >= 26) {
-            rows.add(SettingsRow.page(R.drawable.ic_settings_tv, context.getString(R.string.mobile_settings_tv_title),
-                    context.getString(R.string.mobile_settings_tv_summary), TV_INSTALL));
-        }
+        // Install on TV lives in About. MEETUNE: the foot of the page switches to MeeTune.
+        rows.add(SettingsRow.custom(context.getString(R.string.meetune_link_meetune), (parent, page) -> {
+            Context c = parent.getContext();
+            while (!(c instanceof android.app.Activity) && c instanceof android.content.ContextWrapper) {
+                c = ((android.content.ContextWrapper) c).getBaseContext();
+            }
+            android.app.Activity activity = (android.app.Activity) c;
+            return com.newtube.mobile.ui.meetune.MeeTune.switchLink(activity,
+                    activity.getString(R.string.meetune_link_meetune),
+                    v -> com.newtube.mobile.ui.meetune.MeeTune.open(activity));
+        }));
 
         return new Page(context.getString(R.string.header_settings), rows);
     }

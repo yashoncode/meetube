@@ -144,6 +144,9 @@ final class MeeTuneSettings {
                 getString(R.string.meetune_download_lyrics_summary), MeeTune.downloadLyrics(mActivity), false,
                 v -> MeeTune.setDownloadLyrics(mActivity, !MeeTune.downloadLyrics(mActivity)));
         note(R.string.meetune_downloads_note);
+        // The way back to MeeTube, as MeeTube's settings end with "MeeTune →".
+        mRoot.addView(MeeTune.switchLink(mActivity, getString(R.string.meetune_link_meetube),
+                v -> MeeTune.leave(mActivity)));
     }
 
     /** MeeTube's choice sheet (its settings' radio list in the frosted bottom sheet); a pick rebuilds the page. */
@@ -180,8 +183,6 @@ final class MeeTuneSettings {
 
     private void customize() {
         LinearLayout card = card();
-        row(card, 0, getString(R.string.meetune_set_you), getString(R.string.meetune_set_you_summary),
-                MeeTune.youButton(mActivity), false, v -> MeeTune.setYouButton(mActivity, !MeeTune.youButton(mActivity)));
         row(card, 0, getString(R.string.meetune_set_brand_name), getString(R.string.meetune_set_brand_name_summary),
                 MeeTune.brandName(mActivity), false, v -> MeeTune.setBrandName(mActivity, !MeeTune.brandName(mActivity)));
         // MeeTube's own Search glow and Typing glow (Settings > Effects there): the same switches.

@@ -179,6 +179,50 @@ public final class Media3PlayerCache {
         return removed;
     }
 
+    /** YouTube's sound-only itags (AAC, Opus, the DRC and spatial ones). */
+    private static final java.util.Set<String> AUDIO_ITAGS = new java.util.HashSet<>(java.util.Arrays.asList(
+            "139", "140", "141", "171", "172", "249", "250", "251", "256", "258", "325", "327", "328", "338",
+            "380", "599", "600", "773", "774"));
+
+    /**
+     * MEETUNE: songs in the cache, as {bytes, songs}: streams cached as sound alone, no picture beside
+     * them (MeeTune plays songs sound only; a MeeTube video caches its picture too). A MeeTube video
+     * watched in Audio only counts here as well. Slow: off the main thread.
+     */
+    public static long[] songs(Context context) {
+        Cache cache = get(context);
+        if (cache == null) {
+            return new long[] {0, 0};
+        }
+        java.util.Map<String, Long> audio = new java.util.HashMap<>();
+        java.util.Set<String> pictured = new java.util.HashSet<>();
+        for (String key : cache.getKeys()) {
+            String[] parts = key.split("\\.");
+            if (parts.length < 3 || !"yt".equals(parts[0])) {
+                continue;
+            }
+            if (!AUDIO_ITAGS.contains(parts[2])) {
+                pictured.add(parts[1]);
+                continue;
+            }
+            long bytes = 0;
+            for (androidx.media3.datasource.cache.CacheSpan span : cache.getCachedSpans(key)) {
+                bytes += span.length;
+            }
+            Long had = audio.get(parts[1]);
+            audio.put(parts[1], (had != null ? had : 0) + bytes);
+        }
+        long bytes = 0;
+        long songs = 0;
+        for (java.util.Map.Entry<String, Long> entry : audio.entrySet()) {
+            if (!pictured.contains(entry.getKey()) && entry.getValue() > 0) {
+                bytes += entry.getValue();
+                songs++;
+            }
+        }
+        return new long[] {bytes, songs};
+    }
+
     /** The cache's folder, for the Storage page to size. */
     public static File dir(Context context) {
         return new File(context.getApplicationContext().getCacheDir(), CACHE_DIR_NAME);

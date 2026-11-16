@@ -2178,13 +2178,6 @@ public class MobileBrowseActivity extends MobileActivity
         findViewById(R.id.mobile_you_actions).setBackground(new com.newtube.mobile.ui.common.AccentCard(this,
                 com.newtube.mobile.ui.common.AccentCard.YOU_GLASS));
         com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_you_avatar_glass), findViewById(R.id.mobile_you_glow_source));
-        // MEETUBE: the heart beside the name opens MeeTune.
-        View meetune = findViewById(R.id.mobile_you_meetune);
-        com.newtube.mobile.ui.common.Glass.blur(meetune, findViewById(R.id.mobile_you_glow_source));
-        meetune.setOnClickListener(v -> {
-            com.newtube.mobile.ui.common.Haptics.click(v);
-            com.newtube.mobile.ui.meetune.MeeTune.open(this);
-        });
         findViewById(R.id.mobile_you_history_title).setOnClickListener(v -> openFromYou(MediaGroup.TYPE_HISTORY));
         // MEETUBE(you page): the avatar leans with the phone, as the About photo does.
         com.newtube.mobile.ui.settings.TiltParallax.attach((ViewGroup) findViewById(R.id.mobile_you_avatar_glass), 0.4f,
@@ -2343,6 +2336,65 @@ public class MobileBrowseActivity extends MobileActivity
                 && mBottomNav.getMenu().findItem(toMenuItemId(mCurrentSectionId)) == null;
         mTopBar.show(subScreen, mYouShowing ? getString(R.string.mobile_nav_you) : getCurrentSectionTitle());
         updateChipRow();
+        syncMeeTuneHint();
+    }
+
+    /**
+     * MEETUNE: "Tap here to switch to MeeTune" under the brand pill, on Home's own screen only, each
+     * time until its X closes it for good. It rides with the pill (the bar hides on scroll).
+     */
+    private void syncMeeTuneHint() {
+        View hint = findViewById(R.id.mobile_meetune_hint);
+        View brand = findViewById(R.id.mobile_brand_glass);
+        boolean show = hint != null && brand != null && com.newtube.mobile.ui.meetune.MeeTune.homeHint(this)
+                && !mYouShowing && mCurrentSectionId == MediaGroup.TYPE_HOME
+                && findViewById(R.id.mobile_title_back).getVisibility() != View.VISIBLE;
+        if (hint == null) return;
+        if (!show) {
+            hint.setVisibility(View.GONE);
+            return;
+        }
+        if (hint.getVisibility() == View.VISIBLE) return;
+        hint.setOnClickListener(v -> {
+            hint.setVisibility(View.GONE);
+            com.newtube.mobile.ui.meetune.MeeTune.open(this);
+        });
+        hint.findViewById(R.id.mobile_meetune_hint_close).setOnClickListener(v -> {
+            com.newtube.mobile.ui.common.Haptics.click(v);
+            com.newtube.mobile.ui.meetune.MeeTune.closeHomeHint(this);
+            hint.animate().alpha(0f).scaleX(0.9f).scaleY(0.9f).setDuration(150).setInterpolator(Motion.STANDARD)
+                    .withEndAction(() -> hint.setVisibility(View.GONE)).start();
+        });
+        com.newtube.mobile.ui.common.Glass.blur(hint, findViewById(R.id.mobile_blur_target));
+        float gap = 8 * getResources().getDisplayMetrics().density;
+        int[] at = new int[2];
+        int[] home = new int[2];
+        hint.getViewTreeObserver().addOnPreDrawListener(new android.view.ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (hint.getVisibility() != View.VISIBLE) {
+                    hint.getViewTreeObserver().removeOnPreDrawListener(this);
+                    return true;
+                }
+                brand.getLocationInWindow(at);
+                ((View) hint.getParent()).getLocationInWindow(home);
+                float x = at[0] - home[0] - hint.getLeft();
+                float y = at[1] - home[1] + brand.getHeight() * brand.getScaleY() + gap - hint.getTop();
+                if (hint.getTranslationX() != x || hint.getTranslationY() != y) {
+                    hint.setTranslationX(x);
+                    hint.setTranslationY(y);
+                }
+                return true;
+            }
+        });
+        hint.setPivotX(0);
+        hint.setPivotY(0);
+        hint.setAlpha(0f);
+        hint.setScaleX(0.8f);
+        hint.setScaleY(0.8f);
+        hint.setVisibility(View.VISIBLE);
+        hint.animate().alpha(1f).scaleX(1f).scaleY(1f).setStartDelay(400).setDuration(260)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(1.5f)).start();
     }
 
     /** MEETUBE(you page): Subscriptions and Downloads stay in Library while on the bottom bar too. */
@@ -2739,6 +2791,7 @@ public class MobileBrowseActivity extends MobileActivity
         mCurrentSectionId = sectionId;
         showNav();
         updateStrip();
+        syncMeeTuneHint();
         applyVideoLayout();
         paintCachedSnapshot(sectionId, switched);
         syncNavHighlight(sectionId);
@@ -3874,9 +3927,8 @@ public class MobileBrowseActivity extends MobileActivity
     protected void onResume() {
         super.onResume();
         mPreview.schedule();
-        findViewById(R.id.mobile_you_meetune).setVisibility( // MEETUNE: MeeTune's settings can hide it
-                com.newtube.mobile.ui.meetune.MeeTune.youButton(this) ? View.VISIBLE : View.GONE);
         mTopBar.syncMark(this);
+        syncMeeTuneHint(); // MEETUNE
         mBottomNav.setLabelVisibilityMode(NavTabs.showLabels(this) // MEETUBE(nav labels)
                 ? BottomNavigationView.LABEL_VISIBILITY_LABELED : BottomNavigationView.LABEL_VISIBILITY_UNLABELED);
         // MEETUBE(search place): Search in the top bar or the bottom one, as Settings > Tabs says.
@@ -4432,6 +4484,7 @@ public class MobileBrowseActivity extends MobileActivity
             }
             mCurrentSectionId = section.getId();
             updateStrip();
+            syncMeeTuneHint();
             applyVideoLayout();
             paintCachedSnapshot(section.getId(), switched);
 

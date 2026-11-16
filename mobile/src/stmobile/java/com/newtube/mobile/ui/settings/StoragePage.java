@@ -159,9 +159,14 @@ final class StoragePage {
         int[] labels = {R.string.mobile_settings_storage_app_size, R.string.mobile_settings_storage_cache,
                 R.string.header_downloads, R.string.mobile_settings_storage_data};
         TextView[] values = new TextView[labels.length];
+        TextView songs = null;
         for (int i = 0; i < labels.length; i++) {
             values[i] = line(root, context.getString(labels[i]), i == 0 ? 12 : 8)[1];
+            if (i == 1) { // MEETUNE: the songs MeeTune cached, part of the cache above
+                songs = line(root, context.getString(R.string.meetune_storage_songs), 8)[1];
+            }
         }
+        TextView songLine = songs;
 
         TextView clear = new TextView(context);
         clear.setText(R.string.mobile_settings_storage_clear);
@@ -188,7 +193,7 @@ final class StoragePage {
         note.setPadding(0, dp(context, 8), 0, 0);
         root.addView(note);
 
-        Runnable refresh = () -> fill(context, root, totalLine, values, clear, note);
+        Runnable refresh = () -> fill(context, root, totalLine, values, songLine, clear, note);
         clear.setOnClickListener(v -> {
             clear.setEnabled(false);
             Context app = context.getApplicationContext();
@@ -207,10 +212,12 @@ final class StoragePage {
         return root;
     }
 
-    private static void fill(Context context, View root, TextView totalLine, TextView[] values, TextView clear, TextView note) {
+    private static void fill(Context context, View root, TextView totalLine, TextView[] values, TextView songLine,
+                             TextView clear, TextView note) {
         Context app = context.getApplicationContext();
         new Thread(() -> {
             long[] sizes = measure(app);
+            long[] songs = Media3PlayerCache.songs(app);
             boolean empty = clearable(app) < EMPTY_BYTES;
             root.post(() -> {
                 // MEETUBE(storage): nothing left to clear - say so with a joke, and the button rests
@@ -218,13 +225,25 @@ final class StoragePage {
                 clear.setAlpha(empty ? 0.5f : 1f);
                 clear.setText(empty ? R.string.mobile_settings_storage_clear_empty : R.string.mobile_settings_storage_clear);
                 note.setText(empty ? R.string.mobile_settings_storage_clear_empty_note : R.string.mobile_settings_storage_clear_note);
-                long sum = 0;
-                for (int i = 0; i < sizes.length; i++) {
-                    values[i].setText(size(context, sizes[i]));
-                    sum += sizes[i];
-                }
-                totalLine.setText(context.getString(R.string.mobile_settings_storage_total, size(context, sum)));
+                long total = 0;
+                for (long bytes : sizes) total += bytes;
+                long sum = total;
                 totalLine.setVisibility(View.VISIBLE);
+                // MEETUBE(storage): every number counts up from zero to its size, fast then easing to a stop.
+                android.animation.ValueAnimator count = android.animation.ValueAnimator.ofFloat(0f, 1f);
+                count.setDuration(1100);
+                count.setInterpolator(new android.view.animation.DecelerateInterpolator(2.2f));
+                count.addUpdateListener(a -> {
+                    float f = (float) a.getAnimatedValue();
+                    for (int i = 0; i < sizes.length; i++) {
+                        values[i].setText(size(context, (long) (sizes[i] * f)));
+                    }
+                    totalLine.setText(context.getString(R.string.mobile_settings_storage_total, size(context, (long) (sum * f))));
+                    int n = Math.round(songs[1] * f);
+                    songLine.setText(context.getResources().getQuantityString(R.plurals.meetune_storage_songs_value,
+                            n, size(context, (long) (songs[0] * f)), n));
+                });
+                count.start();
             });
         }, "StorageSize").start();
     }

@@ -218,28 +218,6 @@
 
                     </LinearLayout>
 
-                    <!-- MEETUNE: the heart with a note invites to MeeTune, the music side (MeeTune settings hide it). -->
-                    <com.newtube.mobile.ui.common.GlassView
-                        android:id="@+id/mobile_you_meetune"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="8dp"
-                        android:clickable="true"
-                        android:contentDescription="@string/meetune_try"
-                        android:focusable="true"
-                        android:tooltipText="@string/meetune_try"
-                        app:glassCornerRadius="24dp"
-                        app:glassTint="@color/meetube_glass_button">
-
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:layout_gravity="center"
-                            android:contentDescription="@null"
-                            android:src="@drawable/ic_meetune" />
-
-                    </com.newtube.mobile.ui.common.GlassView>
-
                 </LinearLayout>
 
                 <!-- MEETUBE(you page): Accounts / Settings as two tiles on an accent glass card, like Library's
@@ -812,6 +790,59 @@
                 android:text="@string/mobile_nav_hint_change"
                 android:textColor="@color/mobile_color_on_surface_secondary"
                 android:textSize="13sp" />
+
+        </LinearLayout>
+
+    </com.newtube.mobile.ui.common.GlassView>
+
+    <!-- MEETUNE: "Tap here to switch to MeeTune" under the brand pill on Home, each time until its X
+         closes it (MobileBrowseActivity.showMeeTuneHint). Placed in code. -->
+    <com.newtube.mobile.ui.common.GlassView
+        android:id="@+id/mobile_meetune_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:elevation="8dp"
+        android:focusable="true"
+        android:visibility="gone"
+        app:glassCornerRadius="22dp"
+        app:glassTint="@color/meetube_glass_tint"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="44dp"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="4dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_meetune" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:maxLines="1"
+                android:text="@string/meetune_home_hint"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textSize="15sp" />
+
+            <ImageView
+                android:id="@+id/mobile_meetune_hint_close"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@android:string/cancel"
+                android:padding="11dp"
+                android:src="@drawable/ic_sheet_close" />
 
         </LinearLayout>
 

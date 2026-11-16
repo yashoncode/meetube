@@ -34,13 +34,21 @@
 
         </com.newtube.mobile.ui.common.GlassSource>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/meetune_list"
+        <!-- Home's pull to refresh: a new Home from YouTube Music (MeeTube's own refresh, its haptics). -->
+        <com.newtube.mobile.ui.common.HapticSwipeRefreshLayout
+            android:id="@+id/meetune_swipe"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingTop="64dp"
-            android:paddingBottom="@dimen/meetune_bottom_clearance" />
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/meetune_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="64dp"
+                android:paddingBottom="@dimen/meetune_bottom_clearance" />
+
+        </com.newtube.mobile.ui.common.HapticSwipeRefreshLayout>
 
         <ProgressBar
             android:id="@+id/meetune_progress"

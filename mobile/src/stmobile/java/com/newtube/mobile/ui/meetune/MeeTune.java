@@ -84,6 +84,7 @@ public final class MeeTune {
 
     /** MeeTube to MeeTune: MeeTube blurs and dims away, MeeTune comes in out of the blur. */
     public static void open(Activity from) {
+        sHome = null; // a new Home each time MeeTune opens, never the last one again
         prefetch(from); // Home loads while MeeTube blurs away
         pausePlaying(false); // a MeeTube video doesn't play on into MeeTune
         blurAway(from, () -> {
@@ -248,6 +249,11 @@ public final class MeeTune {
         } catch (Exception ignored) {
             // Home stands without its moods row.
         }
+        // YouTube Music answers much the same Home each time: each row's picks come in a new order,
+        // so every visit and every refresh looks new.
+        for (MusicApi.Shelf shelf : shelves) {
+            if (shelf.items != null && shelf.items.size() > 2) java.util.Collections.shuffle(shelf.items);
+        }
         return shelves;
     }
 
@@ -296,12 +302,36 @@ public final class MeeTune {
     /** A song downloaded on this phone plays from its file: offline too, and with no data used. */
     private static void offline(Context context, Video video) {
         video.localUri = com.newtube.mobile.downloads.DownloadsBridge.instance(context).localSongUri(video.videoId);
+        // Else a song whole in the cache (Library's Cached songs) plays from it: no network needed.
+        if (video.localUri == null) video.localUri = MeeTuneSongCache.cachedUri(context, video.videoId);
+    }
+
+    /** What MeeTune knows of a song (title, artist, cover), or null. */
+    @Nullable
+    static MusicApi.Item known(String videoId) {
+        return ITEMS.get(videoId);
     }
 
     /** Songs already met in a YouTube Music queue fetched for the player (their art and links are known). */
     private static final java.util.Set<String> RADIO = new java.util.HashSet<>();
     /** The last queue fetched, in order. */
     private static final List<String> sBatch = new java.util.ArrayList<>();
+    /** Songs played lately (newest last): never picked as next again, so a radio can't bounce A, B, A, B. */
+    private static final java.util.LinkedHashSet<String> PLAYED = new java.util.LinkedHashSet<>();
+
+    private static void played(String id) {
+        synchronized (PLAYED) {
+            PLAYED.remove(id);
+            PLAYED.add(id);
+            if (PLAYED.size() > 200) PLAYED.remove(PLAYED.iterator().next());
+        }
+    }
+
+    private static boolean wasPlayed(String id) {
+        synchronized (PLAYED) {
+            return PLAYED.contains(id);
+        }
+    }
 
     /**
      * The YouTube Music radio's songs after {@code current} (its Up next, and what plays next), the
@@ -316,7 +346,8 @@ public final class MeeTune {
         String last = playing != null ? playing.title : current.title;
         for (int i = at + 1; i < sBatch.size(); i++) {
             MusicApi.Item item = ITEMS.get(sBatch.get(i));
-            if (item == null || item.videoId == null || (last != null && last.equals(item.title))) continue;
+            if (item == null || item.videoId == null || (last != null && last.equals(item.title))
+                    || wasPlayed(item.videoId)) continue;
             last = item.title;
             out.add(video(item));
         }
@@ -338,17 +369,21 @@ public final class MeeTune {
     public static void learn(Activity activity, Video video) {
         if (video == null || video.videoId == null) return;
         String id = video.videoId;
+        played(id);
         MusicApi.Item known = ITEMS.get(id);
         boolean knowsSong = known != null && known.albumId != null && known.artistId != null;
-        if (knowsSong && RADIO.contains(id) && !lastOfBatch(id)) return;
+        // A new queue only when this one runs out: another fetched mid-queue (for a song's album) is
+        // that song's own radio, which leads back to the song before it.
+        boolean refill = lastOfBatch(id) || upNext(video).isEmpty(); // or all that is left has played
+        if (knowsSong && RADIO.contains(id) && !refill) return;
         String playlistId = video.playlistId;
         run(activity, () -> MusicApi.radio(activity, id, playlistId), (queue, error) -> {
             if (queue == null || queue.isEmpty()) return;
             MusicApi.Item found = null;
-            sBatch.clear();
+            if (refill) sBatch.clear();
             for (MusicApi.Item song : queue) {
                 RADIO.add(song.videoId);
-                sBatch.add(song.videoId);
+                if (refill) sBatch.add(song.videoId);
                 if (song.videoId.equals(id)) {
                     if (found == null) found = song;
                     continue;
@@ -387,6 +422,7 @@ public final class MeeTune {
         video.title = item.title;
         video.author = artist(item.subtitle);
         PlaybackPresenter.instance(context).openVideo(video);
+        MeeTuneActivity.closeUnderPlayer(); // Back from the video goes to MeeTube, not MeeTune
     }
 
     /** Remove from cache: the song's streams the player kept on disk; how many it found (0: none cached). */
@@ -419,6 +455,8 @@ public final class MeeTune {
 
     /** The Library's Downloads card and page: not a YouTube Music page, read off this phone's downloads. */
     static final String DOWNLOADS = "meetune:downloads";
+    /** The Library's Cached songs card and page: the songs whole in the player's cache (MeeTuneSongCache). */
+    static final String CACHED = "meetune:cached";
 
     /** The song's MeeTune download (done, coming or failed), or null when it has none. */
     @androidx.annotation.Nullable
@@ -656,13 +694,40 @@ public final class MeeTune {
         return true;
     }
 
-    /** The heart beside the name on MeeTube's You page. */
-    public static boolean youButton(Context context) {
-        return prefs(context).getBoolean("you_button", true);
+    /** Home's "tap here for MeeTune" hint shows each time until its X closes it for good. */
+    public static boolean homeHint(Context context) {
+        return !prefs(context).getBoolean("home_hint_closed", false);
     }
 
-    public static void setYouButton(Context context, boolean on) {
-        prefs(context).edit().putBoolean("you_button", on).apply();
+    public static void closeHomeHint(Context context) {
+        prefs(context).edit().putBoolean("home_hint_closed", true).apply();
+    }
+
+    /**
+     * The glowing "MeeTune →" / "MeeTube →" link at the foot of either side's settings: centred bold
+     * text with a soft halo.
+     */
+    public static android.widget.TextView switchLink(Context context, CharSequence text,
+                                                     View.OnClickListener onClick) {
+        android.widget.TextView link = new android.widget.TextView(context);
+        float dp = context.getResources().getDisplayMetrics().density;
+        // White on the dark theme (black on the light one, where white would vanish), glowing its own colour.
+        int color = androidx.core.content.ContextCompat.getColor(context, R.color.mobile_color_on_surface);
+        link.setText(text);
+        link.setTextSize(14);
+        link.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        link.setLetterSpacing(0.04f);
+        link.setTextColor(color);
+        link.setShadowLayer(8 * dp, 0, 0, (color & 0x00FFFFFF) | 0xCC000000);
+        link.setGravity(android.view.Gravity.CENTER);
+        int pad = Math.round(14 * dp);
+        link.setPadding(pad, pad, pad, pad);
+        link.setOnClickListener(v -> {
+            com.newtube.mobile.ui.common.Haptics.click(v);
+            Motion.nudge(v);
+            onClick.onClick(v);
+        });
+        return link;
     }
 
     /** "MeeTune" beside the heart on Home's brand pill; off, the heart alone. */
