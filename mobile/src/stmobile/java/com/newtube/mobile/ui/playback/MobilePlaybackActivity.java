@@ -5894,7 +5894,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 stateLabel(shuffleOn), false, this::toggleShuffleMode);
         // Video zoom: how the picture fills the player (PlayerUIController.onVideoZoom).
         addMenuRow(content, sheet, R.drawable.ic_player_zoom, R.string.mobile_menu_zoom,
-                null, true, () -> openPlayerOption(R.id.action_video_zoom, false));
+                zoomLabel(), true, () -> openPlayerOption(R.id.action_video_zoom, false));
         // (No screen-off/dimming row: the TV screensaver doesn't exist on mobile - power button +
         // background playback cover that use case.)
         // Add to playlist.
@@ -10811,6 +10811,17 @@ public class MobilePlaybackActivity extends MobileActivity
         return picked == SleepTimer.END_OF_VIDEO ? getString(meeTuneSong() ? R.string.meetune_sleep_end_of_song : R.string.mobile_sleep_end_of_video)
                 : picked == SleepTimer.OFF ? getString(R.string.mobile_menu_off)
                 : getString(R.string.mobile_sleep_left, SleepTimer.minutesLeft());
+    }
+
+    /** The saved zoom pick (Stretch included), as the Zoom dialog checks it. */
+    private String zoomLabel() {
+        switch (PlayerData.instance(this).getResizeMode()) {
+            case PlayerConstants.RESIZE_MODE_FIT_WIDTH: return getString(R.string.video_zoom_fit_width);
+            case PlayerConstants.RESIZE_MODE_FIT_HEIGHT: return getString(R.string.video_zoom_fit_height);
+            case PlayerConstants.RESIZE_MODE_FIT_BOTH: return getString(R.string.video_zoom_fit_both);
+            case PlayerConstants.RESIZE_MODE_STRETCH: return getString(R.string.video_zoom_stretch);
+            default: return getString(R.string.video_zoom_default);
+        }
     }
 
     private String sleepPresetLabel(int minutes) {
