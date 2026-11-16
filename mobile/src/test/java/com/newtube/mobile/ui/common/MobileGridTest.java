@@ -16,8 +16,18 @@ public class MobileGridTest {
     }
 
     @Test
-    public void wideTabletUsesThreeCards() {
-        assertEquals(3, MobileGrid.computeSpanCountForWidthDp(1280));
+    public void widePhoneLandscapeStaysAtTwoCards() {
+        assertEquals(2, MobileGrid.computeSpanCountForWidthDp(1035));
+    }
+
+    @Test
+    public void tabletPortraitUsesTwoCards() {
+        assertEquals(2, MobileGrid.computeSpanCountForWidthDp(800));
+    }
+
+    @Test
+    public void tabletLandscapeUsesFourCards() {
+        assertEquals(4, MobileGrid.computeSpanCountForWidthDp(1280));
     }
 
     @Test

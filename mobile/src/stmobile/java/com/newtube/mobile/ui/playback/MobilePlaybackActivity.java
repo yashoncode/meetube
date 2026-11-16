@@ -5459,7 +5459,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mContainer != null) {
             mContainer.removeCallbacks(mRotationFallback);
         }
-        if (target == windowOrientation) {
+        if (target == naturalLayout(windowOrientation)) {
             // The window already has that shape: only a layout override kept the other layout
             // (fullscreen/inline without a rotation), so dropping it is the whole toggle - and
             // the request that toggle may have left (a rotation slower than the fallback, a
@@ -5567,12 +5567,23 @@ public class MobilePlaybackActivity extends MobileActivity
             mLayoutOverride = Configuration.ORIENTATION_UNDEFINED; // the window rotated
             mLayoutOverrideBase = Configuration.ORIENTATION_UNDEFINED;
         }
-        return windowOrientation;
+        return naturalLayout(windowOrientation);
+    }
+
+    /**
+     * MEETUBE(issue #254): the layout a window shows without a fullscreen override. A phone turned
+     * sideways goes fullscreen; a tablet turned sideways keeps the page, with Up next in its own
+     * column beside the video (applyWatchSide), as YouTube's tablet app does. Fullscreen there is
+     * the button's override.
+     */
+    private int naturalLayout(int windowOrientation) {
+        return windowOrientation == Configuration.ORIENTATION_LANDSCAPE && isTablet()
+                ? Configuration.ORIENTATION_PORTRAIT : windowOrientation;
     }
 
     private void setLayoutOverride(int orientation) {
         int window = getResources().getConfiguration().orientation;
-        if (orientation == window) {
+        if (orientation == naturalLayout(window)) {
             orientation = Configuration.ORIENTATION_UNDEFINED;
         }
         mLayoutOverride = orientation;

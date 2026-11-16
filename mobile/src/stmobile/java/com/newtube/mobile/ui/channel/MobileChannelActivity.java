@@ -1013,15 +1013,24 @@ public class MobileChannelActivity extends MobileActivity
         }
     }
 
-    /** MEETUBE(shorts): every column is three spans wide, so the Shorts tab's tiles sit three to a column. */
-    private static final int SHORTS_PER_COLUMN = 3;
+    /**
+     * MEETUBE(shorts): every video column is this many spans wide, so the Shorts tab's tiles sit
+     * that many to a column: three, or two from four columns on (issue #254: three per column
+     * made a sideways tablet's row twelve tiny tiles).
+     */
+    private int mShortsPerColumn = 3;
 
-    private static int cardSpan(VideoCardAdapter adapter, int position) {
-        return adapter.isShort(position) ? 1 : SHORTS_PER_COLUMN;
+    private int cardSpan(VideoCardAdapter adapter, int position) {
+        return adapter.isShort(position) ? 1 : mShortsPerColumn;
     }
 
     private int computeSpanCount() {
-        return SHORTS_PER_COLUMN * com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this);
+        return spansFor(com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(this));
+    }
+
+    private int spansFor(int columns) {
+        mShortsPerColumn = columns >= 4 ? 2 : 3;
+        return mShortsPerColumn * columns;
     }
 
     /** Sync the TabLayout with the current sections (delivery order), keeping the selection. */
@@ -1190,7 +1199,7 @@ public class MobileChannelActivity extends MobileActivity
         super.onConfigurationChanged(newConfig);
 
         if (mLayoutManager != null) {
-            int spans = SHORTS_PER_COLUMN * com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig);
+            int spans = spansFor(com.newtube.mobile.ui.common.MobileGrid.computeSpanCount(newConfig));
             mLayoutManager.setSpanCount(spans);
             ((GridLayoutManager) mPeek.getLayoutManager()).setSpanCount(spans);
         }
