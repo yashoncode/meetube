@@ -815,9 +815,47 @@ public final class MeeTune {
         prefs(context).edit().putInt("stream_quality", quality).apply();
     }
 
-    /** The most a song's sound may take, in bits a second: Normal stops at AAC's 128k, Low at Opus' 70k. */
+    /** Crossfade between songs, 0 (off: gapless, each song to its end) to 12 seconds. */
+    public static int crossfadeSeconds(Context context) {
+        return Math.max(0, Math.min(12, prefs(context).getInt("crossfade_s", 0)));
+    }
+
+    static void setCrossfadeSeconds(Context context, int seconds) {
+        prefs(context).edit().putInt("crossfade_s", Math.max(0, Math.min(12, seconds))).apply();
+    }
+
+    /** Home's "Listen again" as Speed dial, pages of 3x3 square tiles as YT Music has it (issue #264). Off: Home as it was. */
+    static boolean speedDial(Context context) {
+        return prefs(context).getBoolean("speed_dial", false);
+    }
+
+    static void setSpeedDial(Context context, boolean on) {
+        prefs(context).edit().putBoolean("speed_dial", on).apply();
+    }
+
+    /** Streaming quality on mobile data; until picked, the same as on Wi-Fi (what one setting did). */
+    static int mobileStreamQuality(Context context) {
+        return prefs(context).getInt("stream_quality_mobile", streamQuality(context));
+    }
+
+    static void setMobileStreamQuality(Context context, int quality) {
+        prefs(context).edit().putInt("stream_quality_mobile", quality).apply();
+    }
+
+    /** The phone is on mobile data (or any network it counts by the byte, such as a hotspot). */
+    static boolean onMeteredNetwork(Context context) {
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm != null && cm.isActiveNetworkMetered();
+    }
+
+    /**
+     * The most a song's sound may take, in bits a second, for the network it streams on now (read at
+     * each song's start): Normal stops at AAC's 128k, Low at Opus' 70k.
+     */
     public static int maxAudioBitrate(Context context) {
-        switch (streamQuality(context)) {
+        int quality = onMeteredNetwork(context) ? mobileStreamQuality(context) : streamQuality(context);
+        switch (quality) {
             case STREAM_NORMAL: return 135_000;
             case STREAM_LOW: return 72_000;
             default: return Integer.MAX_VALUE;

@@ -101,9 +101,20 @@ final class MeeTuneSettings {
 
     private void settings() {
         // Accounts live in Home's corner menu.
+        header(R.string.meetune_set_look);
         LinearLayout card = card();
         row(card, R.drawable.ic_settings_customize, getString(R.string.meetune_set_customize),
                 getString(R.string.meetune_set_customize_summary), null, true, v -> mHost.open(CUSTOMIZE));
+        // MeeTube's High performance mode (one setting for both): the display's top refresh rate.
+        card.addView(divider());
+        row(card, R.drawable.ic_player_speed, getString(R.string.mobile_settings_high_refresh),
+                mActivity.getString(R.string.mobile_settings_high_refresh_summary,
+                        com.newtube.mobile.ui.common.HighRefresh.topRate(mActivity)),
+                com.newtube.mobile.ui.common.HighRefresh.isEnabled(mActivity), false, v -> {
+                    com.newtube.mobile.ui.common.HighRefresh.setEnabled(mActivity,
+                            !com.newtube.mobile.ui.common.HighRefresh.isEnabled(mActivity));
+                    com.newtube.mobile.ui.common.HighRefresh.apply(mActivity);
+                });
         header(R.string.meetune_eq_sound);
         card = card();
         row(card, R.drawable.ic_player_equalizer, getString(R.string.meetune_eq), summary(), null, true,
@@ -112,13 +123,50 @@ final class MeeTuneSettings {
                 getString(R.string.meetune_stream_low)};
         String[] streamNotes = {getString(R.string.meetune_stream_high_summary),
                 getString(R.string.meetune_stream_normal_summary), getString(R.string.meetune_stream_low_summary)};
-        int stream = MeeTune.streamQuality(mActivity);
+        // MEETUNE(issue #262): Spatial sound, for headphones.
+        String[] spatial = {getString(R.string.mobile_menu_off), getString(R.string.meetune_spatial_light),
+                getString(R.string.meetune_spatial_strong)};
+        String[] spatialNotes = {getString(R.string.meetune_spatial_off_summary), getString(R.string.meetune_spatial_light_summary),
+                getString(R.string.meetune_spatial_strong_summary)};
+        int spatialLevel = MeeTuneSpatial.level(mActivity);
         card.addView(divider());
-        row(card, R.drawable.ic_mobile_tune, getString(R.string.meetune_set_stream), streams[stream], null, true,
-                v -> choose(getString(R.string.meetune_set_stream), streams, streamNotes, stream, picked -> {
+        row(card, R.drawable.ic_player_volume_up, getString(R.string.meetune_spatial), spatial[spatialLevel], null, true,
+                v -> choose(getString(R.string.meetune_spatial), spatial, spatialNotes, spatialLevel,
+                        picked -> MeeTuneSpatial.setLevel(mActivity, picked)));
+        // MeeTube's headphone correction (AutoEq): one pick for both, it already runs on songs.
+        card.addView(divider());
+        String headphone = com.newtube.mobile.player.HeadphoneEq.name(mActivity);
+        row(card, R.drawable.ic_player_headphones, getString(R.string.mobile_settings_autoeq),
+                headphone.isEmpty() ? getString(R.string.mobile_settings_autoeq_summary) : headphone, null, true,
+                v -> com.newtube.mobile.ui.settings.HeadphonePicker.show(mActivity, this::rebuild));
+        // MEETUNE(issue #262): MeeTube's Dolby Atmos switch (one setting for both): a song's Dolby track
+        // when YouTube has one and this phone decodes it.
+        card.addView(divider());
+        boolean decodes = com.newtube.mobile.player.AudioPreferences.decodesDolby();
+        row(card, R.drawable.ic_player_audio_track, getString(R.string.mobile_settings_dolby),
+                getString(decodes ? R.string.meetune_dolby_summary : R.string.meetune_dolby_summary_none),
+                com.newtube.mobile.player.AudioPreferences.isDolbyEnabled(mActivity), false,
+                v -> com.newtube.mobile.player.AudioPreferences.setDolbyEnabled(mActivity,
+                        !com.newtube.mobile.player.AudioPreferences.isDolbyEnabled(mActivity)));
+        crossfade();
+
+        // A ceiling per network: Wi-Fi, and mobile data (any metered network, a hotspot too).
+        header(R.string.meetune_set_stream);
+        card = card();
+        int stream = MeeTune.streamQuality(mActivity);
+        row(card, R.drawable.ic_mobile_tune, getString(R.string.meetune_stream_wifi), streams[stream], null, true,
+                v -> choose(getString(R.string.meetune_set_stream_wifi), streams, streamNotes, stream, picked -> {
                     MeeTune.setStreamQuality(mActivity, picked);
                     com.newtube.mobile.ui.playback.MiniPlayerBridge.applyMusicQuality(); // the playing song too
                 }));
+        int mobileStream = MeeTune.mobileStreamQuality(mActivity);
+        card.addView(divider());
+        row(card, R.drawable.ic_mobile_tune, getString(R.string.meetune_stream_mobile), streams[mobileStream], null, true,
+                v -> choose(getString(R.string.meetune_set_stream_mobile), streams, streamNotes, mobileStream, picked -> {
+                    MeeTune.setMobileStreamQuality(mActivity, picked);
+                    com.newtube.mobile.ui.playback.MiniPlayerBridge.applyMusicQuality();
+                }));
+        note(R.string.meetune_stream_note);
 
         // MeeTube's download folder for music and its download qualities; a song's own default.
         header(R.string.header_downloads);
@@ -194,6 +242,9 @@ final class MeeTuneSettings {
                 com.newtube.mobile.ui.search.GlowEditText.enabled(mActivity), false,
                 v -> com.newtube.mobile.ui.search.GlowEditText.setEnabled(mActivity,
                         !com.newtube.mobile.ui.search.GlowEditText.enabled(mActivity)));
+        // MEETUNE(issue #264): Home's "Listen again" as Speed dial; off keeps Home as it was.
+        row(card, 0, getString(R.string.meetune_speed_dial), getString(R.string.meetune_speed_dial_summary),
+                MeeTune.speedDial(mActivity), false, v -> MeeTune.setSpeedDial(mActivity, !MeeTune.speedDial(mActivity)));
     }
 
     /** "Off", "Dynamic", or the Manual preset's name. */
@@ -388,6 +439,50 @@ final class MeeTuneSettings {
         });
         card.addView(reset);
         return sliders;
+    }
+
+    /** MEETUNE: Crossfade, Off (gapless: each song plays to its end) to 12 s, on a slider. */
+    private void crossfade() {
+        header(R.string.meetune_set_playback);
+        LinearLayout card = card();
+        card.setPadding(dp(16), dp(16), dp(16), dp(16));
+        LinearLayout top = new LinearLayout(mActivity);
+        top.setPadding(dp(8), 0, dp(8), 0);
+        TextView title = text(17, R.color.mobile_color_on_surface);
+        title.setText(R.string.meetune_crossfade);
+        top.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        TextView value = text(17, R.color.mobile_color_on_surface_secondary);
+        top.addView(value);
+        card.addView(top);
+        GlassSlider slider = new GlassSlider(mActivity);
+        slider.setMax(12);
+        slider.setProgress(MeeTune.crossfadeSeconds(mActivity));
+        slider.setContentDescription(getString(R.string.meetune_crossfade));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = dp(6);
+        card.addView(slider, params);
+        Runnable show = () -> value.setText(slider.getProgress() == 0 ? getString(R.string.meetune_crossfade_off)
+                : mActivity.getString(R.string.meetune_crossfade_seconds, slider.getProgress()));
+        show.run();
+        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar s, int progress, boolean fromUser) {
+                if (!fromUser) return;
+                Haptics.tick(s);
+                show.run();
+                MeeTune.setCrossfadeSeconds(mActivity, progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar s) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar s) {
+            }
+        });
+        note(R.string.meetune_crossfade_note);
     }
 
     private void balance() {

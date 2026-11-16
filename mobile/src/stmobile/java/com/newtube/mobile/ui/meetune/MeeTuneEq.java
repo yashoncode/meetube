@@ -76,6 +76,11 @@ public final class MeeTuneEq {
         sPlaying = playing;
     }
 
+    /** A MeeTune song is playing now (MeeTuneSpatial follows it too). */
+    static boolean isPlaying() {
+        return sPlaying;
+    }
+
     private static SharedPreferences prefs(Context context) {
         return context.getApplicationContext().getSharedPreferences("meetune", Context.MODE_PRIVATE);
     }

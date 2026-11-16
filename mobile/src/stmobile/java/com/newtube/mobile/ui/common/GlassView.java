@@ -301,6 +301,16 @@ public class GlassView extends FrameLayout {
      * MEETUBE(youtube mode): no glass of its own - its content alone, on whatever is under it (the
      * top bar's brand and buttons sit straight on the bar's frost). Call before {@link #setSource}.
      */
+    /** The colour laid over the frost (its alpha is how strong), e.g. a song cover's accent. */
+    public void setTint(int tint) {
+        mTint = tint;
+        invalidate();
+    }
+
+    public int getTint() {
+        return mTint;
+    }
+
     public void setPlain() {
         mTint = 0;
         mLiquid = false;

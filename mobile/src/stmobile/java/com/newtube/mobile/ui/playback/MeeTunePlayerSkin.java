@@ -198,6 +198,8 @@ public final class MeeTunePlayerSkin {
         // The art at the top, full width, as tall as its own shape: a square cover square, a wide
         // video still whole (never cropped to its middle).
         mArt.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> fitArt());
+        mRoot.findViewById(R.id.meetune_player_controls).addOnLayoutChangeListener(
+                (v, l, t, r, b, ol, ot, or, ob) -> { if (t != ot) mArt.post(this::fitArt); }); // a wide cover's middle
         frostButtons(mRoot.findViewById(R.id.meetune_player_controls), mRoot.findViewById(R.id.meetune_player_source));
         frostButtons(mRoot.findViewById(R.id.meetune_player_head), mRoot.findViewById(R.id.meetune_player_source));
         View handle = mRoot.findViewById(R.id.meetune_player_handle);
@@ -478,7 +480,60 @@ public final class MeeTunePlayerSkin {
         if (device) mRoot.postDelayed(mShowFormat, 10_000);
     }
 
-    /** "OPUS • 144K" over "48 kHz • STEREO • YOUTUBE" (ON PHONE for a downloaded song). */
+    private boolean mFormatPending;
+    @Nullable
+    private Format mShownFormat;
+    private boolean mFormatLeaving;
+
+    /** A new song: the pill's content blurs and fades off, keeping its size until the new format lands. */
+    private void swapFormat() {
+        mFormatPending = true;
+        if (mFormat.length() == 0) { // the first song: a blurred stand-in (its size) until the format lands
+            mFormat.setText("AUDIO");
+            ((TextView) mRoot.findViewById(R.id.meetune_player_format_sub)).setText("160 kbps  ·  48 kHz  ·  Stereo");
+            mShownFormat = null;
+            blurPill(true, 0);
+            return;
+        }
+        mFormatLeaving = true;
+        blurPill(true, 220);
+    }
+
+    /** Blur off (out) or on (in): the pill's content through a 0 to 14 px blur, fading and settling. */
+    private void blurPill(boolean out) {
+        blurPill(out, out ? 220 : 380);
+    }
+
+    private void blurPill(boolean out, long ms) {
+        View content = ((ViewGroup) mRoot.findViewById(R.id.meetune_player_info)).getChildAt(0);
+        float dp = content.getResources().getDisplayMetrics().density;
+        android.animation.ValueAnimator blur = android.animation.ValueAnimator.ofFloat(out ? 0f : 1f, out ? 1f : 0f);
+        blur.setDuration(ms);
+        blur.setInterpolator(out ? new android.view.animation.AccelerateInterpolator()
+                : new android.view.animation.DecelerateInterpolator(1.6f));
+        blur.addUpdateListener(a -> {
+            float v = (float) a.getAnimatedValue();
+            content.setAlpha(1f - 0.85f * v);
+            content.setScaleX(1f - 0.06f * v);
+            content.setScaleY(1f - 0.06f * v);
+            if (android.os.Build.VERSION.SDK_INT >= 31) {
+                float r = 14 * dp * v;
+                content.setRenderEffect(r < 0.5f ? null : android.graphics.RenderEffect.createBlurEffect(r, r,
+                        android.graphics.Shader.TileMode.DECAL));
+            }
+        });
+        if (out) {
+            blur.addListener(new android.animation.AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(android.animation.Animator animation) {
+                    mFormatLeaving = false;
+                }
+            });
+        }
+        blur.start();
+    }
+
+    /** An "OPUS" badge, then "147 kbps · 48 kHz · Stereo" (and "On phone" for a downloaded song). */
     private void showFormat(@Nullable Format format) {
         TextView sub = mRoot.findViewById(R.id.meetune_player_format_sub);
         if (format == null) {
@@ -490,48 +545,69 @@ public final class MeeTunePlayerSkin {
         String codec = MimeTypes.AUDIO_OPUS.equals(mime) ? "OPUS"
                 : MimeTypes.AUDIO_AAC.equals(mime) || (mime != null && mime.startsWith("mp4a")) ? "AAC"
                 : mime != null ? mime.replace("audio/", "").toUpperCase(Locale.US) : "AUDIO";
-        mFormat.setText(format.bitrate > 0 ? codec + " • " + Math.round(format.bitrate / 1000f) + "K" : codec);
-        StringBuilder line = new StringBuilder();
+        mFormat.setText(codec);
+        mShownFormat = format;
+        java.util.List<String> specs = new java.util.ArrayList<>();
+        if (format.bitrate > 0) specs.add(Math.round(format.bitrate / 1000f) + " kbps");
         if (format.sampleRate > 0) {
             float khz = format.sampleRate / 1000f;
-            line.append(khz == Math.round(khz) ? String.valueOf(Math.round(khz)) : String.format(Locale.US, "%.1f", khz)).append(" kHz • ");
+            specs.add((khz == Math.round(khz) ? String.valueOf(Math.round(khz)) : String.format(Locale.US, "%.1f", khz)) + " kHz");
         }
-        if (format.channelCount == 2) line.append("STEREO • ");
-        else if (format.channelCount > 2) line.append(format.channelCount).append(" CH • ");
-        line.append(mVideo != null && mVideo.localUri != null ? "ON PHONE" : "YOUTUBE");
-        sub.setText(line);
+        if (format.channelCount == 1) specs.add("Mono");
+        else if (format.channelCount == 2) specs.add("Stereo");
+        else if (format.channelCount > 2) specs.add(format.channelCount == 6 ? "5.1" : format.channelCount == 8 ? "7.1" : format.channelCount + " ch");
+        if (mVideo != null && mVideo.localUri != null) specs.add("On phone");
+        sub.setText(android.text.TextUtils.join("  ·  ", specs));
     }
 
     /**
-     * The cover's own colour for the pill's bars: its most vivid pixel (saturation weighted by
-     * brightness, over a 24x24 copy), lifted bright enough to glow on the dark glass. A grey
-     * cover keeps the bars a soft white.
+     * The cover's own colour for the pill's bars and glass: the hue that covers the most of it (each
+     * coloured pixel of a 24x24 copy votes for one of 12 hues, by saturation weighted by brightness),
+     * averaged and lifted bright enough to glow on the dark glass. A small vivid detail on a grey
+     * cover (red lettering on a black poster) no longer wins: a cover with little colour gets soft
+     * white bars.
      */
-    static int accent(android.graphics.drawable.Drawable art) {
+    public static int accent(android.graphics.drawable.Drawable art) {
         android.graphics.Bitmap small = android.graphics.Bitmap.createBitmap(24, 24, android.graphics.Bitmap.Config.ARGB_8888);
         android.graphics.Canvas canvas = new android.graphics.Canvas(small);
         android.graphics.Rect bounds = art.copyBounds();
         art.setBounds(0, 0, 24, 24);
         art.draw(canvas);
         art.setBounds(bounds);
-        float[] hsv = new float[3], best = null;
-        float bestScore = 0.12f; // below this the cover is grey: white bars
-        for (int y = 0; y < 24; y++) {
-            for (int x = 0; x < 24; x++) {
-                android.graphics.Color.colorToHSV(small.getPixel(x, y), hsv);
-                float score = hsv[1] * (0.3f + hsv[2]);
-                if (score > bestScore) {
-                    bestScore = score;
-                    best = hsv.clone();
-                }
-            }
-        }
+        int[] pixels = new int[24 * 24];
+        small.getPixels(pixels, 0, 24, 0, 0, 24, 24);
         small.recycle();
-        if (best == null) return 0xFFF2F2F2;
-        best[1] = Math.min(best[1], 0.75f); // vivid, never neon
-        best[2] = Math.max(best[2], 0.95f); // bright enough to glow
-        return android.graphics.Color.HSVToColor(best);
+        return accent(pixels);
     }
+
+    /** {@link #accent(android.graphics.drawable.Drawable)} on a cover's pixels. */
+    static int accent(int[] pixels) {
+        float[] weight = new float[12], sat = new float[12], val = new float[12];
+        float[] x = new float[12], y = new float[12]; // hue as a vector, so 355 and 5 average to 0
+        float[] hsv = new float[3];
+        for (int pixel : pixels) {
+            android.graphics.Color.colorToHSV(pixel, hsv);
+            float score = hsv[1] * (0.3f + hsv[2]);
+            if (score < 0.12f) continue; // grey, black or white: no vote
+            int b = Math.min(11, (int) (hsv[0] / 30f));
+            weight[b] += score;
+            sat[b] += hsv[1] * score;
+            val[b] += hsv[2] * score;
+            x[b] += (float) Math.cos(Math.toRadians(hsv[0])) * score;
+            y[b] += (float) Math.sin(Math.toRadians(hsv[0])) * score;
+        }
+        int best = 0;
+        for (int b = 1; b < 12; b++) if (weight[b] > weight[best]) best = b;
+        if (weight[best] < pixels.length * MIN_COLOUR_SHARE) return 0xFFF2F2F2;
+        float hue = (float) Math.toDegrees(Math.atan2(y[best], x[best]));
+        float[] out = {hue < 0 ? hue + 360 : hue,
+                Math.min(sat[best] / weight[best], 0.75f), // vivid, never neon
+                Math.max(val[best] / weight[best], 0.95f)}; // bright enough to glow
+        return android.graphics.Color.HSVToColor(out);
+    }
+
+    /** How much of a cover one hue must colour (in votes per pixel) to be its accent. */
+    static final float MIN_COLOUR_SHARE = 0.06f;
 
     /** Five bars glowing in the cover's colour, dancing while the song plays, resting low while it is paused. */
     public static final class EqBars extends View {
@@ -754,12 +830,37 @@ public final class MeeTunePlayerSkin {
     private void fitArt() {
         int width = mArt.getWidth();
         if (width == 0) return;
-        ViewGroup.LayoutParams params = mArt.getLayoutParams();
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mArt.getLayoutParams();
         int height = Math.round(width * mArtShape);
-        if (params.height != height) {
+        // A wide cover (a video's 16:9 frame) no longer hugs the top under the status bar: it sits in
+        // the middle of the space above the song's name. A square one still fills it from the top.
+        View controls = mRoot.findViewById(R.id.meetune_player_controls);
+        int top = height < width && controls.getTop() > height ? (controls.getTop() - height) / 2 : 0;
+        if (params.height != height || params.topMargin != top) {
             params.height = height;
+            params.topMargin = top;
             mArt.setLayoutParams(params);
         }
+    }
+
+    /**
+     * The song's pill is glass in its cover's colour: the accent over the frost, light enough that the
+     * white text stays clear, easing over from the last song's like the bars.
+     */
+    private void tintInfoPill(int accent) {
+        com.newtube.mobile.ui.common.GlassView pill = mRoot.findViewById(R.id.meetune_player_info);
+        int to = accent == 0xFFF2F2F2 ? 0x17FFFFFF : (accent & 0x00FFFFFF) | 0x26000000; // faint: the pill stays in the background
+        float dp = mRoot.getResources().getDisplayMetrics().density;
+        android.graphics.drawable.GradientDrawable badge = new android.graphics.drawable.GradientDrawable();
+        badge.setCornerRadius(8 * dp);
+        badge.setColor((accent & 0x00FFFFFF) | 0x2E000000);
+        badge.setStroke(Math.max(1, Math.round(0.75f * dp)), (accent & 0x00FFFFFF) | 0x80000000);
+        mFormat.setBackground(badge);
+        int from = pill.getTint();
+        if (from == to) return;
+        android.animation.ValueAnimator shift = android.animation.ValueAnimator.ofArgb(from, to).setDuration(600);
+        shift.addUpdateListener(a -> pill.setTint((int) a.getAnimatedValue()));
+        shift.start();
     }
 
     /** The new cover is here: in from the side the songs move from, unless it is the first one. */
@@ -770,7 +871,9 @@ public final class MeeTunePlayerSkin {
         mArt.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mArt.setImageDrawable(art);
         fitArt();
-        ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setColor(accent(art));
+        int accent = accent(art);
+        ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setColor(accent);
+        tintInfoPill(accent);
         Float at = SWUNG.get(mArt);
         if (at != null && Math.abs(at) >= 0.99f) { // it left: come in from the other side
             place(mArt, mDir, artDist(), 24f);
@@ -837,7 +940,7 @@ public final class MeeTunePlayerSkin {
                 MeeTune.checkLike((android.app.Activity) mRoot.getContext(), video.videoId, this::update); // the heart
                 MeeTune.remember(mRoot.getContext(), video); // MeeTune's own History
             }
-            showFormat(null);
+            swapFormat(); // the old song's format blurs away; the new one blurs in once it plays
             // A new load hands the old song's bitmaps back to Glide, which may recycle them while the
             // old cover still swings out and the backdrop still fades from it: keep our own copies.
             mArt.setImageDrawable(ownCopy(mArt));
@@ -1383,7 +1486,14 @@ public final class MeeTunePlayerSkin {
         if (mAudio != null && !mVolume.isPressed()) {
             mVolume.setProgress(mAudio.getStreamVolume(AudioManager.STREAM_MUSIC));
         }
-        if (mFormat.length() == 0) showFormat(mControls.audioFormat());
+        if ((mFormat.length() == 0 || mFormatPending) && !mFormatLeaving) {
+            Format format = mControls.audioFormat();
+            if (format != null && !(mFormatPending && format == mShownFormat)) { // the same object: still the old song's track
+                mFormatPending = false;
+                showFormat(format);
+                blurPill(false); // from blurred (pending) or empty: either way it blurs in
+            }
+        }
         ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setPlaying(playing);
         if (!mNextArtFetched && position > 3000) { // the next song is known by now (queue or suggestions)
             mNextArtFetched = true;

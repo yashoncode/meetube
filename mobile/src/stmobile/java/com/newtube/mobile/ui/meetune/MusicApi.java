@@ -93,6 +93,8 @@ final class MusicApi {
         boolean header;
         /** Search's top result: its first item big, with Play and Playlist. */
         boolean top;
+        /** Home's "Listen again" (its header carries the listener's name above the title). */
+        boolean dial;
 
         boolean allSongs() {
             for (Item item : items) {
@@ -339,6 +341,8 @@ final class MusicApi {
             Shelf shelf = new Shelf();
             if (header != null) {
                 shelf.title = text(header.opt("title"));
+                shelf.dial = header.has("strapline") && header.has("thumbnail")
+                        || "listen again".equalsIgnoreCase(shelf.title) || "speed dial".equalsIgnoreCase(shelf.title);
                 JSONObject more = obj(header, "moreContentButton", "buttonRenderer", "navigationEndpoint", "browseEndpoint");
                 if (more != null) {
                     shelf.moreBrowseId = more.optString("browseId", null);

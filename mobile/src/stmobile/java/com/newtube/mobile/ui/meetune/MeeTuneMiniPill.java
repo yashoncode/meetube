@@ -50,6 +50,20 @@ final class MeeTuneMiniPill {
     private final View mSearchIcon;
     private final int mListPad;
     private final int mDp;
+    private final ProgressRing mRing;
+    /** The ring follows the song four times a second while the pill shows. */
+    private final Runnable mTick = new Runnable() {
+        @Override
+        public void run() {
+            ExoPlayer player = MiniPlayerBridge.getPlayer();
+            if (player == null || mPill.getVisibility() != View.VISIBLE || !mPill.isAttachedToWindow()) return;
+            long duration = player.getDuration();
+            mRing.setLevel(duration > 0 ? player.getCurrentPosition() / (float) duration : 0f, player.isPlaying());
+            mPill.postDelayed(this, 250);
+        }
+    };
+    @Nullable
+    private android.graphics.drawable.Drawable mRingArt;
     private final Player.Listener mListener = new Player.Listener() {
         @Override
         public void onEvents(Player player, Player.Events events) {
@@ -89,6 +103,13 @@ final class MeeTuneMiniPill {
         });
         mListPad = list.getPaddingBottom();
         mDp = MeeTuneAdapter.dp(activity, 1);
+        mRing = new ProgressRing(mDp, androidx.core.content.ContextCompat.getColor(activity, R.color.mobile_color_on_surface));
+        // The ring is the background (a foreground is cut to the padding and clipped the glow); the press
+        // ripple moves to the foreground, as a borderless ripple in a layer made the whole layer draw on
+        // the parent, ring and all, and it vanished.
+        android.graphics.drawable.Drawable ripple = mPlay.getBackground();
+        mPlay.setBackground(mRing);
+        mPlay.setForeground(ripple);
         mArt.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
@@ -151,6 +172,7 @@ final class MeeTuneMiniPill {
     }
 
     void release() {
+        mPill.removeCallbacks(mTick);
         MeeTune.setPill(null, null, null);
         if (mPlayer != null) mPlayer.removeListener(mListener);
         mPlayer = null;
@@ -236,6 +258,91 @@ final class MeeTuneMiniPill {
             Glide.with(mArt).load(art).into(mArt);
         }
         mPlay.setImageResource(playing ? R.drawable.ic_meetune_pause : R.drawable.ic_meetune_play);
+        android.graphics.drawable.Drawable cover = mArt.getDrawable();
+        if (cover != null && cover != mRingArt && cover.getIntrinsicWidth() > 0) { // the ring glows in the cover's colour
+            mRingArt = cover;
+            int accent = com.newtube.mobile.ui.playback.MeeTunePlayerSkin.accent(cover);
+            mRing.setColor(accent == 0xFFF2F2F2 ? 0 : accent); // a grey cover: the theme's own ink
+        }
+        mPill.removeCallbacks(mTick);
+        mPill.post(mTick);
+    }
+
+    /**
+     * The song's progress as a glowing arc around pause: a faint full track, the played part over it
+     * (a soft wide stroke under a thin bright one) and a small lit head where the song is.
+     */
+    private static final class ProgressRing extends android.graphics.drawable.Drawable {
+        private final android.graphics.Paint mPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+        private final android.graphics.RectF mOval = new android.graphics.RectF();
+        private final int mDp;
+        private final int mInk;
+        private int mColor;
+        private float mLevel;
+        private boolean mPlaying;
+
+        ProgressRing(int dp, int ink) {
+            mDp = dp;
+            mInk = ink;
+            mColor = ink;
+            mPaint.setStyle(android.graphics.Paint.Style.STROKE);
+            mPaint.setStrokeCap(android.graphics.Paint.Cap.ROUND);
+        }
+
+        void setColor(int accent) {
+            mColor = accent == 0 ? mInk : accent;
+            invalidateSelf();
+        }
+
+        void setLevel(float level, boolean playing) {
+            level = Math.max(0f, Math.min(1f, level));
+            if (Math.abs(level - mLevel) < 0.0005f && playing == mPlaying) return;
+            mLevel = level;
+            mPlaying = playing;
+            invalidateSelf();
+        }
+
+        @Override
+        public void draw(@androidx.annotation.NonNull android.graphics.Canvas canvas) {
+            android.graphics.Rect b = getBounds();
+            float r = Math.min(b.width(), b.height()) / 2f - 5.5f * mDp; // the glow and the head's halo stay inside
+            float cx = b.exactCenterX(), cy = b.exactCenterY();
+            mOval.set(cx - r, cy - r, cx + r, cy + r);
+            int rgb = mColor & 0x00FFFFFF;
+            mPaint.setStyle(android.graphics.Paint.Style.STROKE);
+            mPaint.setStrokeWidth(2f * mDp);
+            mPaint.setColor((mInk & 0x00FFFFFF) | 0x1F000000);
+            canvas.drawOval(mOval, mPaint);
+            if (mLevel <= 0f) return;
+            float sweep = 360f * mLevel;
+            float glow = mPlaying ? 1f : 0.55f; // paused: the glow dims, the progress stays
+            mPaint.setStrokeWidth(6f * mDp);
+            mPaint.setColor(rgb | (Math.round(0x38 * glow) << 24));
+            canvas.drawArc(mOval, -90f, sweep, false, mPaint);
+            mPaint.setStrokeWidth(2f * mDp);
+            mPaint.setColor(rgb | (Math.round(0xF2 * glow) << 24));
+            canvas.drawArc(mOval, -90f, sweep, false, mPaint);
+            double a = Math.toRadians(sweep - 90f);
+            float hx = cx + (float) (r * Math.cos(a)), hy = cy + (float) (r * Math.sin(a));
+            mPaint.setStyle(android.graphics.Paint.Style.FILL);
+            mPaint.setColor(rgb | (Math.round(0x40 * glow) << 24));
+            canvas.drawCircle(hx, hy, 4.5f * mDp, mPaint);
+            mPaint.setColor(rgb | (Math.round(0xFF * glow) << 24));
+            canvas.drawCircle(hx, hy, 2.2f * mDp, mPaint);
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+        }
+
+        @Override
+        public void setColorFilter(@Nullable android.graphics.ColorFilter filter) {
+        }
+
+        @Override
+        public int getOpacity() {
+            return android.graphics.PixelFormat.TRANSLUCENT;
+        }
     }
 
     private boolean refresh() {
@@ -286,7 +393,7 @@ final class MeeTuneMiniPill {
             mTab.setContentDescription(open != null ? open.getTitle() : null);
         }
         mFolding = ValueAnimator.ofFloat(mFold, to);
-        mFolding.setDuration(320);
+        mFolding.setDuration(380);
         mFolding.setInterpolator(Motion.STANDARD);
         mFolding.addUpdateListener(a -> {
             mFold = (float) a.getAnimatedValue();
@@ -316,7 +423,7 @@ final class MeeTuneMiniPill {
         int pillLeft = at[0] + pillMarginLeft;
         int pillTop = at[1] + parent.getHeight() - Math.round(openBottom + (rowBottom - openBottom) * f) - size;
         int pillWidth = parent.getWidth() - pillMarginLeft - pillMarginRight;
-        int textRight = pillLeft + pillWidth - (6 + 44 + (f >= 1f ? 0 : 44)) * mDp;
+        int textRight = pillLeft + pillWidth - Math.round((6 + 44 + 44 * (1f - f)) * mDp);
         MeeTune.setPill(this,
                 new android.graphics.Rect(pillLeft + 8 * mDp, pillTop + 8 * mDp, pillLeft + 48 * mDp, pillTop + 48 * mDp),
                 new android.graphics.Rect(pillLeft + 58 * mDp, pillTop, Math.max(pillLeft + 58 * mDp, textRight), pillTop + size));
@@ -343,9 +450,24 @@ final class MeeTuneMiniPill {
         }
         mTabIcon.setAlpha(icon);
         mSearchIcon.setAlpha(icon);
-        // Next only on the open bar's wide pill; folded between the circles it's pause alone.
-        mNext.setAlpha(1f - f);
-        mNext.setVisibility(f >= 1f ? View.GONE : View.VISIBLE);
+        // Next only on the open bar's wide pill; folded between the circles it's pause alone. It blurs
+        // and fades out in the fold's first half while giving up its room, so pause glides to the end.
+        float gone = Math.min(1f, f / 0.55f);
+        mNext.setAlpha(1f - gone);
+        mNext.setScaleX(1f - 0.3f * gone);
+        mNext.setScaleY(1f - 0.3f * gone);
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+            float blur = 10 * mDp * gone;
+            mNext.setRenderEffect(blur < 0.5f ? null
+                    : android.graphics.RenderEffect.createBlurEffect(blur, blur, android.graphics.Shader.TileMode.DECAL));
+        }
+        android.view.ViewGroup.MarginLayoutParams next = (android.view.ViewGroup.MarginLayoutParams) mNext.getLayoutParams();
+        int room = -Math.round(44 * mDp * f);
+        if (next.getMarginStart() != room) {
+            next.setMarginStart(room);
+            mNext.setLayoutParams(next);
+        }
+        mNext.setVisibility(gone >= 1f ? View.INVISIBLE : View.VISIBLE); // its taps stop once it has faded
     }
 
     /**

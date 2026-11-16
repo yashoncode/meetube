@@ -135,8 +135,30 @@
     <string name="meetune_info_artist">Artist</string>
     <string name="meetune_info_album">Album</string>
     <string name="meetune_info_length">Length</string>
+    <!-- Settings: Spatial sound (issue #262) -->
+    <string name="meetune_spatial">Spatial sound</string>
+    <string name="meetune_spatial_off_summary">Songs as they were recorded</string>
+    <string name="meetune_spatial_light">Light</string>
+    <string name="meetune_spatial_light_summary">A wider stage on headphones, close to the original</string>
+    <string name="meetune_spatial_strong">Strong</string>
+    <string name="meetune_spatial_strong_summary">Wide and roomy, like speakers in front of you</string>
+    <string name="meetune_crossfade">Crossfade</string>
+    <string name="meetune_crossfade_off">Off</string>
+    <string name="meetune_crossfade_seconds">%1$d s</string>
+    <string name="meetune_crossfade_note">The end of a song fades into the next one. Songs from Autoplay, a queue or Repeat; not when playback stops after the song</string>
+    <string name="meetune_dolby_summary">Play a song\'s Dolby Atmos or 5.1 track when YouTube has one</string>
+    <string name="meetune_dolby_summary_none">This phone has no Dolby decoder, so songs keep their stereo track</string>
     <!-- Settings: Streaming quality and Downloads -->
     <string name="meetune_set_stream">Streaming quality</string>
+    <string name="meetune_set_stream_wifi">Streaming quality on Wi-Fi</string>
+    <string name="meetune_set_stream_mobile">Streaming quality on mobile data</string>
+    <string name="meetune_stream_wifi">On Wi-Fi</string>
+    <string name="meetune_stream_mobile">On mobile data</string>
+    <string name="meetune_stream_note">Mobile data also covers hotspots and other metered networks</string>
+    <string name="meetune_set_look">Look</string>
+    <string name="meetune_speed_dial">Speed dial</string>
+    <string name="meetune_speed_dial_summary">Home\'s Listen again as pages of square tiles, nine at a glance</string>
+    <string name="meetune_set_playback">Playback</string>
     <string name="meetune_stream_high">High</string>
     <string name="meetune_stream_high_summary">The best sound a song has, up to about 160 kbps</string>
     <string name="meetune_stream_normal">Normal</string>

@@ -150,6 +150,8 @@ public class Media3PlayerController implements Player.Listener {
      */
     private float mUserVolume = 1f;
     private float mLoudnessGain = 1f;
+    /** MEETUNE(crossfade): 0..1 over the user's volume while a song fades in; 1 otherwise. */
+    private float mFadeGain = 1f;
     @Nullable private AudioEffects mAudioEffects;
     /**
      * NEWTUBE(loudness): follows the format the audio renderer is actually fed. Not
@@ -1407,11 +1409,25 @@ public class Media3PlayerController implements Player.Listener {
         if (mPlayer != null && volume >= 0 && !Float.isInfinite(volume)) {
             mUserVolume = volume;
             // MEETUBE(issue #177): media3 stays at <= 1; the session effect supplies the boost.
-            mPlayer.setVolume(Math.min(volume, 1f) * mLoudnessGain);
+            mPlayer.setVolume(Math.min(volume, 1f) * mLoudnessGain * mFadeGain);
             if (mAudioEffects != null) {
                 mAudioEffects.setVolume(volume);
             }
         }
+    }
+
+    /** MEETUNE(crossfade): a fade over the user's volume, which stays as set ({@link #getVolume}). */
+    public void setFadeGain(float gain) {
+        mFadeGain = Math.max(0f, Math.min(1f, gain));
+        if (mPlayer != null) {
+            mPlayer.setVolume(Math.min(mUserVolume, 1f) * mLoudnessGain * mFadeGain);
+        }
+    }
+
+    /** MEETUNE(crossfade): the player itself, for the position and speed a crossfade follows. */
+    @Nullable
+    public ExoPlayer getExoPlayer() {
+        return mPlayer;
     }
 
     public float getVolume() {
@@ -1437,7 +1453,7 @@ public class Media3PlayerController implements Player.Listener {
         }
         if (gain != mLoudnessGain) {
             mLoudnessGain = gain;
-            mPlayer.setVolume(Math.min(mUserVolume, 1f) * mLoudnessGain);
+            mPlayer.setVolume(Math.min(mUserVolume, 1f) * mLoudnessGain * mFadeGain);
             NetPath.log("loudness video=" + getVideoId() + " format=" + audio.id + " db=" + db
                     + " gain=" + gain);
         }

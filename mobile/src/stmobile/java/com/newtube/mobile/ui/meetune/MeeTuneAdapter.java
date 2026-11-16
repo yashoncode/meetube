@@ -85,6 +85,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView list) {
         mList = list;
+        CoverGlow.attach(list);
+        list.setClipChildren(false); // a shelf's covers glow past its own top and bottom
     }
 
     /** New rows under the same head: the head stays bound (its find box keeps focus and keyboard). */
@@ -265,6 +267,10 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         switch (type) {
             case TITLE:
                 view = inflater.inflate(R.layout.meetune_shelf_title, parent, false);
+                TextView title = view.findViewById(R.id.meetune_shelf_title);
+                ((TextView) view.findViewById(R.id.meetune_shelf_more)).setTextColor(title.getCurrentTextColor()); // white too
+                glow(title, 10);
+                glow(view.findViewById(R.id.meetune_shelf_more), 8);
                 break;
             case SONG:
                 view = inflater.inflate(R.layout.meetune_song_row, parent, false);
@@ -363,9 +369,11 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     int side = dp(view.getContext(), grid ? 15 : 20); // a grid cell's 5dp margins make it 20
                     list.setPadding(side, 0, side, 0);
                 }
-                list.setAdapter(new Carousel(row));
+                boolean dial = row.shelf.dial && MeeTune.speedDial(view.getContext());
+                CoverGlow.attach(list);
+                list.setAdapter(new Carousel(row, dial));
                 list.setOnFlingListener(null);
-                if (row.style == COLUMNS) new PagerSnapHelper().attachToRecyclerView(list);
+                if (row.style == COLUMNS || dial) new PagerSnapHelper().attachToRecyclerView(list);
         }
     }
 
@@ -453,6 +461,28 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     /** Title, subtitle and art into a view that has them (any of the item layouts). */
+    /**
+     * A shelf's title and Show all glow softly, a little see-through: the text's own colour (white in
+     * dark, ink in light) haloed in itself.
+     */
+    private static void glow(TextView text, int radiusDp) {
+        int color = text.getCurrentTextColor();
+        int radius = dp(text.getContext(), radiusDp);
+        text.setTextColor((color & 0x00FFFFFF) | 0xF5000000); // bright, the glow carries the softness
+        text.setShadowLayer(radius, 0, 0, (color & 0x00FFFFFF) | 0x59000000);
+        // The halo needs room to fade to nothing: a text's shadow is cut at its own edges, which drew
+        // a hard block. Padding as wide as the halo, given back by negative margins (layout unchanged).
+        int room = radius + dp(text.getContext(), 2);
+        text.setPadding(text.getPaddingLeft() + room, text.getPaddingTop() + room,
+                text.getPaddingRight() + room, text.getPaddingBottom() + room);
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) text.getLayoutParams();
+        lp.setMargins(lp.leftMargin - room, lp.topMargin - room, lp.rightMargin - room, lp.bottomMargin - room);
+        text.setLayoutParams(lp);
+        ViewGroup row = (ViewGroup) text.getParent();
+        row.setClipChildren(false);
+        row.setClipToPadding(false);
+    }
+
     static void bindItem(View view, MusicApi.Item item) {
         TextView title = view.findViewById(R.id.meetune_title);
         TextView subtitle = view.findViewById(R.id.meetune_subtitle);
@@ -483,7 +513,31 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 layers.setLayerGravity(1, android.view.Gravity.CENTER);
                 cover = layers;
             }
-            Glide.with(art).load(item.art).placeholder(cover).into(art); // no art: its own cover
+            Glide.with(art).load(item.art).placeholder(cover) // no art: its own cover
+                    .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@androidx.annotation.Nullable com.bumptech.glide.load.engine.GlideException e,
+                                Object model, @NonNull com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
+                                boolean first) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(@NonNull android.graphics.drawable.Drawable resource, @NonNull Object model,
+                                com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
+                                @NonNull com.bumptech.glide.load.DataSource source, boolean first) {
+                            art.post(() -> { // the list redraws its glow in the new cover's colour
+                                for (android.view.ViewParent p = art.getParent(); p != null; p = p.getParent()) {
+                                    if (p instanceof RecyclerView) {
+                                        ((RecyclerView) p).invalidate();
+                                        break;
+                                    }
+                                }
+                            });
+                            return false;
+                        }
+                    })
+                    .into(art);
             art.setForeground(MeeTunePlaying.on(art.getContext(), item.videoId)); // bars while it plays
         }
     }
@@ -492,14 +546,68 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         private final Row mRow;
         private final List<MusicApi.Item> mItems;
 
-        Carousel(Row row) {
+        /** Speed dial: pages of 3x3 square tiles, the name over each. */
+        private final boolean mDial;
+
+        Carousel(Row row, boolean dial) {
             mRow = row;
             mItems = row.shelf.items;
+            mDial = dial;
         }
 
         @Override
         public int getItemCount() {
-            return mRow.style == COLUMNS ? (mItems.size() + 3) / 4 : mItems.size();
+            return mDial ? (mItems.size() + 8) / 9 : mRow.style == COLUMNS ? (mItems.size() + 3) / 4 : mItems.size();
+        }
+
+        private View dialPage(ViewGroup parent) {
+            Context context = parent.getContext();
+            int gap = dp(context, 8);
+            int width = parent.getResources().getDisplayMetrics().widthPixels - dp(context, 68);
+            int size = (width - 2 * gap) / 3;
+            LinearLayout page = new LinearLayout(context);
+            page.setOrientation(LinearLayout.VERTICAL);
+            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMarginEnd(dp(context, 12));
+            page.setLayoutParams(lp);
+            for (int r = 0; r < 3; r++) {
+                LinearLayout line = new LinearLayout(context);
+                for (int c = 0; c < 3; c++) {
+                    MaterialCardView card = new MaterialCardView(context);
+                    card.setId(R.id.meetune_art_card);
+                    card.setRadius(dp(context, 12));
+                    card.setCardElevation(0);
+                    card.setStrokeWidth(0);
+                    card.setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(context, R.color.mobile_color_card));
+                    ImageView art = new ImageView(context);
+                    art.setId(R.id.meetune_art);
+                    art.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    card.addView(art, new android.widget.FrameLayout.LayoutParams(-1, -1));
+                    View scrim = new View(context); // the name stays clear on any cover
+                    scrim.setBackground(new android.graphics.drawable.GradientDrawable(
+                            android.graphics.drawable.GradientDrawable.Orientation.BOTTOM_TOP,
+                            new int[] {0xB3000000, 0x00000000}));
+                    card.addView(scrim, new android.widget.FrameLayout.LayoutParams(-1, size / 2, android.view.Gravity.BOTTOM));
+                    TextView title = new TextView(context);
+                    title.setId(R.id.meetune_title);
+                    title.setTextColor(0xFFFFFFFF);
+                    title.setTextSize(12);
+                    title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+                    title.setMaxLines(2);
+                    title.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                    title.setShadowLayer(dp(context, 3), 0, 0, 0x66000000);
+                    int pad = dp(context, 8);
+                    title.setPadding(pad, pad, pad, pad);
+                    card.addView(title, new android.widget.FrameLayout.LayoutParams(-1, -2, android.view.Gravity.BOTTOM));
+                    LinearLayout.LayoutParams cell = new LinearLayout.LayoutParams(size, size);
+                    if (c > 0) cell.setMarginStart(gap);
+                    line.addView(card, cell);
+                }
+                LinearLayout.LayoutParams row = new LinearLayout.LayoutParams(-1, -2);
+                if (r > 0) row.topMargin = gap;
+                page.addView(line, row);
+            }
+            return page;
         }
 
         @NonNull
@@ -507,7 +615,9 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             View view;
-            if (mRow.style == COLUMNS) {
+            if (mDial) {
+                view = dialPage(parent);
+            } else if (mRow.style == COLUMNS) {
                 LinearLayout column = new LinearLayout(parent.getContext());
                 column.setOrientation(LinearLayout.VERTICAL);
                 int width = parent.getResources().getDisplayMetrics().widthPixels - dp(parent.getContext(), 56);
@@ -542,6 +652,33 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             View view = holder.itemView;
+            if (mDial) {
+                ViewGroup page = (ViewGroup) view;
+                for (int i = 0; i < 9; i++) {
+                    View tile = ((ViewGroup) page.getChildAt(i / 3)).getChildAt(i % 3);
+                    int index = position * 9 + i;
+                    if (index >= mItems.size()) {
+                        tile.setVisibility(View.INVISIBLE);
+                        continue;
+                    }
+                    MusicApi.Item item = mItems.get(index);
+                    tile.setVisibility(View.VISIBLE);
+                    bindItem(tile, item);
+                    tile.setOnClickListener(v -> {
+                        Motion.pop(v);
+                        mHost.open(item, mItems);
+                    });
+                    if (item.playable()) {
+                        tile.setOnLongClickListener(v -> {
+                            mHost.songMenu(v, item);
+                            return true;
+                        });
+                    } else {
+                        tile.setOnLongClickListener(null);
+                    }
+                }
+                return;
+            }
             if (mRow.style == COLUMNS) {
                 LinearLayout column = (LinearLayout) view;
                 for (int i = 0; i < 4; i++) {

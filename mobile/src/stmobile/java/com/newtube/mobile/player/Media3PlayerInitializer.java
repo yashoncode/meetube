@@ -526,7 +526,9 @@ public class Media3PlayerInitializer {
                     .setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[] {
                             HeadphoneEq.processor(context),
                             // MEETUNE: its own equalizer, only on MeeTune songs (untouched copy otherwise)
-                            com.newtube.mobile.ui.meetune.MeeTuneEq.processor(context)})
+                            com.newtube.mobile.ui.meetune.MeeTuneEq.processor(context),
+                            // MEETUNE(issue #262): Spatial sound, after the equalizer, MeeTune songs only
+                            com.newtube.mobile.ui.meetune.MeeTuneSpatial.processor(context)})
                     .build();
         }
 
@@ -560,6 +562,27 @@ public class Media3PlayerInitializer {
                 }
             }
         }
+    }
+
+    /**
+     * MEETUNE(crossfade): a second, sound-only player for a song's last seconds while the next one
+     * starts. The same audio chain as the main player (headphone correction, MeeTune's equalizer and
+     * Spatial sound), no video or text, never takes audio focus, and the same bitrate ceiling.
+     */
+    public static ExoPlayer createTailPlayer(Context context, int maxAudioBitrate) {
+        DefaultTrackSelector selector = new DefaultTrackSelector(context);
+        selector.setParameters(selector.buildUponParameters()
+                .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true)
+                .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+                .setMaxAudioBitrate(maxAudioBitrate));
+        ExoPlayer player = new ExoPlayer.Builder(context, new PrerollRenderersFactory(context, false))
+                .setTrackSelector(selector)
+                .build();
+        player.setAudioAttributes(new AudioAttributes.Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                .build(), /* handleAudioFocus= */ false);
+        return player;
     }
 
     /** Valid after createPlayer; the controller owns and releases the built manager. */

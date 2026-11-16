@@ -511,6 +511,48 @@ public class MobilePlaybackActivity extends MobileActivity
     private PlaybackPresenter mPresenter;
     private Media3PlayerInitializer mPlayerInitializer;
     private Media3PlayerController mExoPlayerController;
+    /** MEETUNE: the crossfade between MeeTune songs (Settings > Crossfade; off at 0 s). */
+    private final MeeTuneCrossfade mCrossfade = new MeeTuneCrossfade(this, new MeeTuneCrossfade.Host() {
+        @Override
+        public Media3PlayerController controller() {
+            return mExoPlayerController;
+        }
+
+        @Override
+        public MediaItemFormatInfo formatInfo() {
+            return mCaptionInfo;
+        }
+
+        @Override
+        public String videoId() {
+            Video video = getVideo();
+            return video != null ? video.videoId : null;
+        }
+
+        @Override
+        public boolean crossfades() {
+            Video video = getVideo();
+            if (video == null || video.finishOnEnded || mPresenter == null
+                    || !com.newtube.mobile.ui.meetune.MeeTune.isMusic(video)
+                    || !com.newtube.mobile.ui.meetune.MeeTune.musicPlayer(MobilePlaybackActivity.this)) {
+                return false;
+            }
+            int mode = com.liskovsoft.smartyoutubetv2.common.app.models.playback.QueuePlaybackMode.apply(
+                    video, PlayerData.instance(MobilePlaybackActivity.this).getPlaybackMode());
+            return mode == PlayerConstants.PLAYBACK_MODE_ALL || mode == PlayerConstants.PLAYBACK_MODE_SHUFFLE
+                    || mode == PlayerConstants.PLAYBACK_MODE_ONE;
+        }
+
+        @Override
+        public void playEnd() {
+            mPresenter.onPlayEnd();
+        }
+
+        @Override
+        public int maxAudioBitrate() {
+            return com.newtube.mobile.ui.meetune.MeeTune.maxAudioBitrate(MobilePlaybackActivity.this);
+        }
+    });
     private ExoPlayer mPlayer;
     // NEWTUBE(bench): position/seek evidence for the in-app source benchmark; null unless
     // debug.arc.bench=1 on a debug or benchmark build (see BenchTicker).
@@ -688,6 +730,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mPresenter.onViewInitialized();
 
         createPlayerObjects();
+        mCrossfade.start(); // MEETUNE(crossfade)
 
         registerPipReceiver();
 
@@ -2600,6 +2643,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     protected void onDestroy() {
+        mCrossfade.stop();
         if (mShorts != null) {
             mShorts.releasePeek();
         }
