@@ -31,7 +31,8 @@
 <table>
 <tr>
 <td width="25%"><img src=".github/assets/meetube/screens/meetune.jpg" alt="MeeTune, MeeTube's music side"></td>
-<td colspan="2">
+<td width="25%"><img src=".github/assets/meetube/screens/meetune_player.jpg" alt="MeeTune's player with synced lyrics"></td>
+<td width="50%">
 
 ### MeeTune, your music side (beta)
 Tap the logo on Home and MeeTube turns into a music app: YouTube Music's Home, Explore, Library and Search, a full player with synced lyrics, a radio that keeps the songs coming, offline downloads with lyrics, cached songs that play with no network, and an equalizer just for your songs.
