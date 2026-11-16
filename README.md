@@ -8,7 +8,7 @@
 <a href="https://github.com/yashoncode/meetube/releases"><img src="https://img.shields.io/github/downloads/yashoncode/meetube/total?style=for-the-badge&label=Downloads&color=4c1" alt="Downloads"></a>
 </p>
 
-**YouTube, reimagined. Different by design. Smooth by nature.** <br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
+**YouTube, reimagined. Different by design. Smooth by nature.** <br><br> **A YouTube video and music client, all in one app:** MeeTube for videos, and MeeTune, its music side, one tap away.<br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
 
 <p align="center"><img src=".github/assets/meetube/showcase.webp" width="100%" alt="MeeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Home (videos play as you scroll), Channels (posts, Shorts and live chat), YouTube mode (the look you know), Equalizer (tune how it sounds) and Offline (4K, smart and auto downloads)"></p>
 
@@ -35,7 +35,14 @@
 <td width="50%">
 
 ### MeeTune, your music side (beta)
-Tap the logo on Home and MeeTube turns into a music app: YouTube Music's Home, Explore, Library and Search, a full player with synced lyrics, a radio that keeps the songs coming, offline downloads with lyrics, cached songs that play with no network, and an equalizer just for your songs.
+One app for YouTube videos **and** YouTube Music. Tap the logo on Home and MeeTube turns into a music app; tap it again to go back.
+
+- **Your music:** YouTube Music's Home, Explore, Library and Search, with albums, artists, playlists, moods and your liked songs.
+- **A real music player:** synced lyrics, a moving cover, the song's format on a glass pill, and a radio that keeps the songs coming.
+- **Plays anywhere:** downloads with lyrics play offline, and cached songs play with no network at all.
+- **Its own space:** a History, Downloads and an equalizer just for your songs, and a player kept apart from your videos.
+
+MeeTune is in beta and growing with every release.
 
 </td>
 </tr>
