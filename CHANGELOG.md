@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.5.2** Slash](#352-slash) | 2026-11-17 | Spatial |
 | [**3.5.0** Drago](#350-drago) | 2026-11-16 | MeeTune |
 | [**3.4.2** Severus](#342-severus) | 2026-11-15 | Stable |
 | [**3.4.0** Bleach](#340-bleach) | 2026-11-12 | YouTube mode |
@@ -47,6 +48,41 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.5.2 Slash
+
+> **Spatial**<br>
+> 📅 2026-11-17 · closes #254, #258, #259, #262 and #264
+
+### ✨ Highlights
+
+- **MeeTune sounds bigger:** Spatial sound with a real head model (MIT KEMAR), a Cinema level with deeper bass, and Head tracking on Android 13+ through your phone's own spatial audio.
+- **More from MeeTune's sound:** Dolby, headphone correction, crossfade between songs, quality per Wi-Fi and mobile data, and covers that glow (#262, #264).
+- **Speed to the hundredth:** Playback speed has a slider and - / + for any speed from 0.25x to 4x in 0.01 steps, and songs keep their own speed (1x unless you pick one), whatever a video plays at.
+- **Smoother 60 fps:** 60 fps videos no longer stutter in the watch page and fullscreen (#259).
+
+### New
+
+- Downloads show their speed and time left, like 2.4 MB/s · 1:23 left.
+- A Short turned sideways shows whole at 9:16, with sharp edges over the blurred sides.
+- Double tap a Short to like it with a white thumb that springs in over a glow, and double tap again to unlike it.
+- On a tablet, Home and the other feeds show 4 videos a row sideways, and the watch page keeps Up next beside the video instead of going fullscreen (#254).
+- MeeTune's player menu has Playback speed.
+
+### Changed
+
+- Every back button in MeeTube and MeeTune is a thin chevron.
+- MeeTune pages and its player run up under the status bar, frosted there like MeeTube's.
+- The mini player's play and pause bloom a glow in the cover's colour.
+- More > Zoom shows the zoom mode in use (Stretch, Fit width and others).
+- In a grid of 3 or more columns, search shows Shorts as one row of tall cards.
+
+### Fixed
+
+- The double tap's time pill no longer stays stuck on the video.
+- A picker over the fullscreen video keeps its height once its list is scrolled, instead of jumping under the finger (#258).
+- The Shorts like and comment column stays below the top buttons on short screens.
+- The swipe down from a 60 fps or HDR video no longer jerks on its first move.
 
 ## 3.5.0 Drago
 
