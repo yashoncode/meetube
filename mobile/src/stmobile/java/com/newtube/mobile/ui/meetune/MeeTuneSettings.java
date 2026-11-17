@@ -11,6 +11,7 @@ import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.media.audiofx.AudioEffect;
+import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -28,6 +29,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.dynamicanimation.animation.FloatValueHolder;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.AccentCard;
@@ -36,6 +40,7 @@ import com.newtube.mobile.ui.common.GlassSlider;
 import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 import com.newtube.mobile.ui.common.Motion;
+import com.newtube.mobile.ui.common.NavLens;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -152,11 +157,30 @@ final class MeeTuneSettings {
         // when YouTube has one and this phone decodes it.
         card.addView(divider());
         boolean decodes = com.newtube.mobile.player.AudioPreferences.decodesDolby();
-        row(card, R.drawable.ic_player_audio_track, getString(R.string.mobile_settings_dolby),
+        View dolby = row(card, R.drawable.ic_player_audio_track, getString(R.string.mobile_settings_dolby),
                 getString(decodes ? R.string.meetune_dolby_summary : R.string.meetune_dolby_summary_none),
-                com.newtube.mobile.player.AudioPreferences.isDolbyEnabled(mActivity), false,
+                decodes && com.newtube.mobile.player.AudioPreferences.isDolbyEnabled(mActivity), false,
                 v -> com.newtube.mobile.player.AudioPreferences.setDolbyEnabled(mActivity,
                         !com.newtube.mobile.player.AudioPreferences.isDolbyEnabled(mActivity)));
+        if (!decodes) { // greyed out: this phone has no Dolby decoder
+            dolby.setEnabled(false);
+            dolby.setClickable(false);
+            dolby.setAlpha(0.38f);
+            dolby.findViewById(R.id.settings_row_switch).setEnabled(false);
+        }
+        // Bit-perfect USB DAC output: Android 14+ only, greyed out below.
+        card.addView(divider());
+        boolean bitPerfect = MeeTuneBitPerfect.supported();
+        View usb = row(card, R.drawable.ic_player_headphones, getString(R.string.meetune_bit_perfect),
+                getString(bitPerfect ? R.string.meetune_bit_perfect_summary : R.string.meetune_bit_perfect_summary_none),
+                MeeTuneBitPerfect.isEnabled(mActivity), false,
+                v -> MeeTuneBitPerfect.setEnabled(mActivity, !MeeTuneBitPerfect.isEnabled(mActivity)));
+        if (!bitPerfect) {
+            usb.setEnabled(false);
+            usb.setClickable(false);
+            usb.setAlpha(0.38f);
+            usb.findViewById(R.id.settings_row_switch).setEnabled(false);
+        }
         crossfade();
 
         // A ceiling per network: Wi-Fi, and mobile data (any metered network, a hotspot too).
@@ -463,6 +487,11 @@ final class MeeTuneSettings {
         TextView value = text(17, R.color.mobile_color_on_surface_secondary);
         top.addView(value);
         card.addView(top);
+        CrossfadeFace face = new CrossfadeFace(mActivity);
+        LinearLayout.LayoutParams faceParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        faceParams.setMargins(dp(8), dp(12), dp(8), 0);
+        card.addView(face, faceParams);
         GlassSlider slider = new GlassSlider(mActivity);
         slider.setMax(12);
         slider.setProgress(MeeTune.crossfadeSeconds(mActivity));
@@ -474,12 +503,14 @@ final class MeeTuneSettings {
         Runnable show = () -> value.setText(slider.getProgress() == 0 ? getString(R.string.meetune_crossfade_off)
                 : mActivity.getString(R.string.meetune_crossfade_seconds, slider.getProgress()));
         show.run();
+        face.set(slider.getProgress(), false);
         slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar s, int progress, boolean fromUser) {
                 if (!fromUser) return;
                 Haptics.tick(s);
                 show.run();
+                face.set(progress, true);
                 MeeTune.setCrossfadeSeconds(mActivity, progress);
             }
 
@@ -489,9 +520,63 @@ final class MeeTuneSettings {
 
             @Override
             public void onStopTrackingTouch(SeekBar s) {
+                face.release();
             }
         });
         note(R.string.meetune_crossfade_note);
+        volume();
+    }
+
+    /** MEETUNE(issue #272): songs' own volume, 10% to 200%; over 100% the volume boost. */
+    private void volume() {
+        LinearLayout card = card();
+        card.setPadding(dp(16), dp(16), dp(16), dp(16));
+        LinearLayout top = new LinearLayout(mActivity);
+        top.setPadding(dp(8), 0, dp(8), 0);
+        TextView title = text(17, R.color.mobile_color_on_surface);
+        title.setText(R.string.meetune_volume);
+        top.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        com.newtube.mobile.ui.common.VolumeFace face = com.newtube.mobile.ui.common.VolumeFace.create(mActivity);
+        top.addView(face);
+        TextView value = text(17, R.color.mobile_color_on_surface_secondary);
+        top.addView(value);
+        top.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        card.addView(top);
+        GlassSlider slider = new GlassSlider(mActivity);
+        slider.setMax(38); // (p + 2) * 5 percent: 10..200
+        slider.setProgress(Math.max(0, Math.min(38, Math.round(MeeTune.volume(mActivity) * 20) - 2)));
+        slider.setContentDescription(getString(R.string.meetune_volume));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = dp(6);
+        card.addView(slider, params);
+        Runnable show = () -> value.setText((slider.getProgress() + 2) * 5 + "%");
+        show.run();
+        face.set((slider.getProgress() + 2) * 5, false);
+        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar s, int progress, boolean fromUser) {
+                if (!fromUser) return;
+                Haptics.tick(s);
+                show.run();
+                face.set((progress + 2) * 5, true);
+                float volume = (progress + 2) * 0.05f;
+                MeeTune.setVolume(mActivity, volume);
+                if (MeeTune.isMusic(com.newtube.mobile.ui.playback.MiniPlayerBridge.getVideo())) {
+                    com.newtube.mobile.player.AudioEffects.applyPlayerVolume(volume); // live, to judge by ear
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar s) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar s) {
+                face.release();
+            }
+        });
+        note(R.string.meetune_volume_note);
     }
 
     private void balance() {
@@ -567,7 +652,7 @@ final class MeeTuneSettings {
     }
 
     /** A settings row: icon, title, summary, then a switch ({@code checked} not null) or a chevron. */
-    private void row(LinearLayout card, int icon, String title, @Nullable String summary, @Nullable Boolean checked,
+    private View row(LinearLayout card, int icon, String title, @Nullable String summary, @Nullable Boolean checked,
                      boolean chevron, View.OnClickListener onClick) {
         View row = mInflater.inflate(R.layout.item_mobile_settings_row, card, false);
         ImageView iconView = row.findViewById(R.id.settings_row_icon);
@@ -593,6 +678,7 @@ final class MeeTuneSettings {
             onClick.onClick(v);
         });
         card.addView(row);
+        return row;
     }
 
     private void header(int text) {
@@ -979,6 +1065,128 @@ final class MeeTuneSettings {
                 text.append(MeeTuneEq.LABELS[i]).append(": ").append(signed(mGains[i])).append(" dB. ");
             }
             setContentDescription(text);
+        }
+    }
+
+    /**
+     * MEETUNE: the crossfade, drawn. Two songs as waveforms, the one ending in the theme's ink and
+     * the next in the accent; over the crossfade the first fades out as the second fades in (equal
+     * power, as the player blends them), a stretch that springs wider with the seconds (12 s: half
+     * the width). Off, they meet edge to edge at a seam. While the slider is dragged both play.
+     */
+    private static final class CrossfadeFace extends View {
+        private static final float MAX_SHARE = 0.5f;
+        private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final int mInk;
+        private final int mAccent;
+        private final float mDp;
+        private final boolean mMotion;
+        private final FloatValueHolder mShare = new FloatValueHolder(0f);
+        private final SpringAnimation mSpring;
+        /** How much the bars play, 0..1, eased toward 1 while dragged and back to 0 after. */
+        private float mEnergy;
+        private boolean mPlaying;
+        private boolean mRunning;
+        private boolean mPlaced;
+
+        CrossfadeFace(Context context) {
+            super(context);
+            mDp = context.getResources().getDisplayMetrics().density;
+            mInk = ContextCompat.getColor(context, R.color.mobile_color_on_surface);
+            TypedValue accent = new TypedValue();
+            mAccent = context.getTheme().resolveAttribute(R.attr.meetubeAccent, accent, true) ? accent.data : mInk;
+            mMotion = ValueAnimator.areAnimatorsEnabled() && !NavLens.lowEnd(context);
+            mPaint.setStrokeCap(Paint.Cap.ROUND);
+            mSpring = new SpringAnimation(mShare);
+            mSpring.setSpring(new SpringForce(0f).setStiffness(SpringForce.STIFFNESS_LOW).setDampingRatio(0.55f));
+            mSpring.setMinimumVisibleChange(0.001f);
+            mSpring.addUpdateListener((a, value, velocity) -> invalidate());
+            setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO); // the slider speaks the seconds
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            setMeasuredDimension(getDefaultSize(0, widthMeasureSpec), Math.round(56 * mDp));
+        }
+
+        /** The crossfade now, 0..12 s; {@code fromUser} springs there and plays, otherwise set at once. */
+        void set(int seconds, boolean fromUser) {
+            float share = seconds / 12f;
+            if (!fromUser || !mPlaced || !mMotion) {
+                mPlaced = true;
+                mSpring.cancel();
+                mShare.setValue(share);
+                invalidate();
+                return;
+            }
+            mSpring.animateToFinalPosition(share);
+            mPlaying = true;
+            if (!mRunning) {
+                mRunning = true;
+                postOnAnimation(mFrame);
+            }
+        }
+
+        void release() {
+            mPlaying = false;
+        }
+
+        private final Runnable mFrame = new Runnable() {
+            @Override
+            public void run() {
+                mEnergy += ((mPlaying ? 1f : 0f) - mEnergy) * 0.12f;
+                invalidate();
+                if ((mPlaying || mEnergy > 0.01f) && isAttachedToWindow()) {
+                    postOnAnimation(this);
+                } else {
+                    mEnergy = 0f;
+                    mRunning = false;
+                }
+            }
+        };
+
+        @Override
+        protected void onDetachedFromWindow() {
+            super.onDetachedFromWindow();
+            removeCallbacks(mFrame);
+            mSpring.cancel();
+            mRunning = false;
+        }
+
+        @Override
+        protected void onDraw(@NonNull Canvas canvas) {
+            float w = getWidth();
+            float cy = getHeight() / 2f;
+            float half = cy - 2 * mDp;
+            float step = 5 * mDp;
+            float overlap = w * MAX_SHARE * Math.max(0f, mShare.getValue());
+            float start = (w - overlap) / 2f;
+            float time = SystemClock.uptimeMillis() / 1000f;
+            mPaint.setStrokeWidth(2.6f * mDp);
+            int bars = (int) (w / step);
+            for (int i = 0; i < bars; i++) {
+                for (int song = 0; song < 2; song++) {
+                    float x = (i + 0.25f + 0.5f * song) * step; // the two songs' bars interleave
+                    float f = overlap < 1f ? (x < w / 2f ? 0f : 1f) : Math.max(0f, Math.min(1f, (x - start) / overlap));
+                    float gain = (float) (song == 0 ? Math.cos(f * Math.PI / 2) : Math.sin(f * Math.PI / 2));
+                    if (gain < 0.03f) continue;
+                    // A music-like waveform: a slow phrase plus a fixed per-bar grain; dancing while dragged.
+                    double grain = Math.abs(Math.sin(i * 12.9898 + song * 78.233) * 43758.5453) % 1;
+                    float amp = (float) (0.42 + 0.3 * Math.sin(i * 0.33 + song * 2.1) + 0.28 * grain);
+                    amp *= 1f - 0.4f * mEnergy + 0.4f * mEnergy * (float) (0.5 + 0.5 * Math.sin(time * 11 + i * 0.9 + song * 3));
+                    float h = Math.max(1.3f * mDp, half * gain * amp);
+                    mPaint.setColor(song == 0 ? mInk : mAccent);
+                    mPaint.setAlpha(Math.round(255 * (0.3f + 0.7f * gain)));
+                    canvas.drawLine(x, cy - h, x, cy + h, mPaint);
+                }
+            }
+            float seam = 1f - Math.min(1f, overlap / (8 * mDp)); // Off: a seam where the songs meet
+            if (seam > 0f) {
+                mPaint.setStrokeWidth(1.2f * mDp);
+                mPaint.setColor(mInk);
+                mPaint.setAlpha(Math.round(120 * seam));
+                canvas.drawLine(w / 2f, 0, w / 2f, getHeight(), mPaint);
+            }
         }
     }
 }

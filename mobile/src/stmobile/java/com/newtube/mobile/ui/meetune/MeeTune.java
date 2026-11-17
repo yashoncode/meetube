@@ -45,6 +45,8 @@ public final class MeeTune {
 
     static { // a song never lands in MeeTube's (YouTube's) History, only in MeeTune's own
         com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoStateController.sOwnHistory = MeeTune::isMusic;
+        com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoStateController.sOwnVolume =
+                (context, video) -> isMusic(video) ? volume(context) : null; // issue #272
         com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController.sMusicNext = (playing, usual) -> {
             if (!isMusic(playing)) return usual; // a MeeTube video: nothing changes
             Video next = usual;
@@ -699,7 +701,7 @@ public final class MeeTune {
 
     // ----------------------------------------------------------------------------- settings
 
-    private static SharedPreferences prefs(Context context) {
+    static SharedPreferences prefs(Context context) {
         return context.getApplicationContext().getSharedPreferences("meetune", Context.MODE_PRIVATE);
     }
 
@@ -843,6 +845,15 @@ public final class MeeTune {
     }
 
     /** Crossfade between songs, 0 (off: gapless, each song to its end) to 12 seconds. */
+    /** MEETUNE(issue #272): songs' own player volume, 0.1 to 2.0 (200%: the volume boost). */
+    static float volume(Context context) {
+        return Math.max(0.1f, Math.min(2f, prefs(context).getFloat("volume", 1f)));
+    }
+
+    static void setVolume(Context context, float volume) {
+        prefs(context).edit().putFloat("volume", Math.max(0.1f, Math.min(2f, volume))).apply();
+    }
+
     public static int crossfadeSeconds(Context context) {
         return Math.max(0, Math.min(12, prefs(context).getInt("crossfade_s", 0)));
     }

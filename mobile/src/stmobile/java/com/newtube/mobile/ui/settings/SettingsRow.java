@@ -42,6 +42,8 @@ public final class SettingsRow {
     public static final int KIND_DIVIDER = 5;
     /** MEETUBE(bar editor): a row that is its own view (the Tabs page's drag-to-order bar). */
     public static final int KIND_CUSTOM = 7;
+    /** A {@link #KIND_CUSTOM} row's view type when it sits on its run's card ({@link #carded}). */
+    public static final int KIND_CUSTOM_CARDED = 8;
 
     /** What a toggle or a choice does after it has been applied. */
     public interface Toggle {
@@ -93,6 +95,8 @@ public final class SettingsRow {
     boolean restart;
     /** Red title: an action that deletes something. */
     boolean destructive;
+    /** A custom row on the card with the rows around it, not loose between cards. */
+    boolean carded;
 
     private SettingsRow(int kind) {
         this.kind = kind;
@@ -222,6 +226,12 @@ public final class SettingsRow {
 
     public SettingsRow enabledWhen(@NonNull BooleanSupplier enabled) {
         this.enabled = enabled;
+        return this;
+    }
+
+    /** This custom row sits on the card with its neighbours (SettingsCards). */
+    SettingsRow carded() {
+        this.carded = true;
         return this;
     }
 

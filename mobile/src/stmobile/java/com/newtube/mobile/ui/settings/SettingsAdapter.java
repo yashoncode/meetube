@@ -68,7 +68,8 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public int getItemViewType(int position) {
-        return mRows.get(position).kind;
+        SettingsRow row = mRows.get(position);
+        return row.kind == SettingsRow.KIND_CUSTOM && row.carded ? SettingsRow.KIND_CUSTOM_CARDED : row.kind;
     }
 
     @Override
@@ -86,6 +87,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             case SettingsRow.KIND_NOTE:
                 return new TextHolder(inflater.inflate(R.layout.item_mobile_settings_note, parent, false));
             case SettingsRow.KIND_CUSTOM:
+            case SettingsRow.KIND_CUSTOM_CARDED:
                 return new RecyclerView.ViewHolder(new android.widget.FrameLayout(parent.getContext())) {};
             case SettingsRow.KIND_DIVIDER:
                 return new RecyclerView.ViewHolder(inflater.inflate(R.layout.item_mobile_settings_divider, parent, false)) {};

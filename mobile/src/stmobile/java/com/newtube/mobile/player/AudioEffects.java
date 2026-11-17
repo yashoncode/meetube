@@ -56,7 +56,9 @@ public final class AudioEffects {
         mVolume = volume;
         if (mEnhancer != null) {
             try {
-                mEnhancer.setTargetGain(volume > 1f ? (int) Math.round(2000 * Math.log10(volume)) : 0);
+                // MEETUBE(issue #272): +10 dB per doubling (200% = +10 dB), what the ear hears as twice as loud;
+                // the amplitude's +6 dB was hardly heard once the effect's limiter met loud music.
+                mEnhancer.setTargetGain(volume > 1f ? (int) Math.round(1000 * Math.log(volume) / Math.log(2)) : 0);
                 mEnhancer.setEnabled(volume > 1f);
             } catch (RuntimeException e) {
                 Log.w(TAG, "Can't apply volume boost: " + e);

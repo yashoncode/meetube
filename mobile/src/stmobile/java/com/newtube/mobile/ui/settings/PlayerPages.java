@@ -313,9 +313,10 @@ final class PlayerPages {
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_dolby),
                 context.getString(AudioPreferences.decodesDolby() ? R.string.mobile_settings_dolby_summary
                         : R.string.mobile_settings_dolby_summary_none),
-                () -> AudioPreferences.isDolbyEnabled(context),
-                enabled -> AudioPreferences.setDolbyEnabled(context, enabled)));
-        rows.add(playerVolume(context, PlayerData.instance(context)));
+                () -> AudioPreferences.decodesDolby() && AudioPreferences.isDolbyEnabled(context),
+                enabled -> AudioPreferences.setDolbyEnabled(context, enabled))
+                .enabledWhen(AudioPreferences::decodesDolby)); // greyed out: this phone has no Dolby decoder
+        rows.add(playerVolume(context, PlayerData.instance(context)).carded()); // on the card, as a row
         rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_equalizer),
                 () -> EqualizerSheet.summary(context), EqualizerSheet::show));
 
@@ -482,6 +483,16 @@ final class PlayerPages {
             android.widget.LinearLayout root = Tiles.column(parent.getContext());
             android.widget.TextView summary = Tiles.heading(root, context.getString(R.string.mobile_settings_player_volume));
             summary.setVisibility(android.view.View.VISIBLE);
+            // MEETUBE(issue #272): a speaker beside the value, its waves following the level.
+            int at = root.indexOfChild(summary);
+            root.removeView(summary);
+            android.widget.LinearLayout line = new android.widget.LinearLayout(parent.getContext());
+            line.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            line.addView(summary, new android.widget.LinearLayout.LayoutParams(0,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+            com.newtube.mobile.ui.common.VolumeFace face = com.newtube.mobile.ui.common.VolumeFace.create(parent.getContext());
+            line.addView(face);
+            root.addView(line, at);
             // Glass spring slider (as the equalizer's): progress p is (p + 2) * 5 percent, 10..200.
             com.newtube.mobile.ui.common.GlassSlider slider = new com.newtube.mobile.ui.common.GlassSlider(parent.getContext());
             slider.setMax(38);
@@ -489,17 +500,32 @@ final class PlayerPages {
             slider.setContentDescription(context.getString(R.string.mobile_settings_player_volume));
             root.addView(slider, new android.widget.LinearLayout.LayoutParams(
                     android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+            // MEETUBE(issue #272): the warning keeps its room under the slider and only fades, so
+            // crossing 100% no longer pushes the slider down.
+            android.widget.TextView warning = new android.widget.TextView(parent.getContext());
+            warning.setText(R.string.volume_boost_warning);
+            warning.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.mobile_color_on_surface_secondary));
+            warning.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,
+                    context.getResources().getDimension(R.dimen.mobile_settings_row_summary_size));
+            root.addView(warning);
             Runnable show = () -> {
                 int percent = (slider.getProgress() + 2) * 5;
-                String label = String.format(Locale.US, "%d%%", percent);
-                summary.setText(percent > 100 ? label + "\n" + context.getString(R.string.volume_boost_warning) : label);
+                summary.setText(String.format(Locale.US, "%d%%", percent));
+                float alpha = percent > 100 ? 1f : 0f;
+                if (warning.getAlpha() != alpha) {
+                    warning.animate().alpha(alpha).setDuration(180).start();
+                }
             };
+            warning.setAlpha((slider.getProgress() + 2) * 5 > 100 ? 1f : 0f);
             show.run();
+            face.set((slider.getProgress() + 2) * 5, false);
             slider.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(android.widget.SeekBar s, int progress, boolean fromUser) {
                     if (fromUser) {
+                        com.newtube.mobile.ui.common.Haptics.tick(s);
                         show.run();
+                        face.set((progress + 2) * 5, true);
                         AudioEffects.applyPlayerVolume((progress + 2) * 0.05f); // live, to judge by ear
                     }
                 }
@@ -510,6 +536,7 @@ final class PlayerPages {
 
                 @Override
                 public void onStopTrackingTouch(android.widget.SeekBar s) {
+                    face.release();
                     playerData.setPlayerVolume((s.getProgress() + 2) * 0.05f);
                 }
             });

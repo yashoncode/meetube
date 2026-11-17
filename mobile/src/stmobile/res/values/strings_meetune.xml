@@ -148,10 +148,15 @@
     <string name="meetune_head_tracking_summary">The sound stays in place as you turn your head, on earbuds that track it. Starts with the next song</string>
     <string name="meetune_head_tracking_summary_none">Needs the Spatial audio of this phone: put on earbuds that support it and turn it on in their Bluetooth settings</string>
     <string name="meetune_crossfade">Crossfade</string>
+    <string name="meetune_volume">Volume</string>
+    <string name="meetune_volume_note">Songs only; MeeTube keeps its own Player volume. Over 100% boosts quiet songs and quiet phones. Very high levels can distort the sound or damage speakers</string>
     <string name="meetune_crossfade_off">Off</string>
     <string name="meetune_crossfade_seconds">%1$d s</string>
     <string name="meetune_crossfade_note">The end of a song fades into the next one. Songs from Autoplay, a queue or Repeat; not when playback stops after the song</string>
     <string name="meetune_dolby_summary">Play a song\'s Dolby Atmos or 5.1 track when YouTube has one</string>
+    <string name="meetune_bit_perfect">Bit-perfect USB DAC</string>
+    <string name="meetune_bit_perfect_summary">With a USB DAC plugged in, songs reach it untouched at their own sample rate, past Android\'s mixer. Starts with the next song. For a pure signal keep the equalizer flat, Spatial sound off and Volume at 100%</string>
+    <string name="meetune_bit_perfect_summary_none">Needs Android 14 or later</string>
     <string name="meetune_dolby_summary_none">This phone has no Dolby decoder, so songs keep their stereo track</string>
     <!-- Settings: Streaming quality and Downloads -->
     <string name="meetune_set_stream">Streaming quality</string>

@@ -520,7 +520,9 @@ public class Media3PlayerInitializer {
         @Override
         protected androidx.media3.exoplayer.audio.AudioSink buildAudioSink(Context context,
                 boolean enableFloatOutput, boolean enableAudioOutputPlaybackParams) {
-            return new androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
+            // MEETUNE: wrapped to ask a USB DAC for bit-perfect output of each song's format
+            return com.newtube.mobile.ui.meetune.MeeTuneBitPerfect.wrap(context,
+                    new androidx.media3.exoplayer.audio.DefaultAudioSink.Builder(context)
                     .setEnableFloatOutput(enableFloatOutput)
                     .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParams)
                     .setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[] {
@@ -529,7 +531,7 @@ public class Media3PlayerInitializer {
                             com.newtube.mobile.ui.meetune.MeeTuneEq.processor(context),
                             // MEETUNE(issue #262): Spatial sound, after the equalizer, MeeTune songs only
                             com.newtube.mobile.ui.meetune.MeeTuneSpatial.processor(context)})
-                    .build();
+                    .build());
         }
 
         @Override

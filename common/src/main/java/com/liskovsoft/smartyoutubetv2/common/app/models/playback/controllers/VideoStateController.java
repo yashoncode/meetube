@@ -696,8 +696,13 @@ public class VideoStateController extends BasePlayerController {
         // switches (Media3PlayerController). The inherited formula halved every track, and the
         // Shorts halving on top had no YouTube counterpart (issue #15).
         // MEETUBE(issue #177): the phone player applies values above 1 through its audio effect.
-        getPlayer().setVolume(getPlayerData().getPlayerVolume());
+        Float own = sOwnVolume != null ? sOwnVolume.apply(getContext(), getVideo()) : null;
+        getPlayer().setVolume(own != null ? own : getPlayerData().getPlayerVolume());
     }
+
+    /** MEETUNE: a MeeTune song plays at MeeTune's own volume (null: MeeTube's Player volume). */
+    @androidx.annotation.Nullable
+    public static java.util.function.BiFunction<android.content.Context, Video, Float> sOwnVolume;
 
     private void restorePitch() {
         if (getPlayer() == null) {
