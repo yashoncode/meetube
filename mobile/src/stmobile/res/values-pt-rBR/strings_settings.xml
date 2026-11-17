@@ -57,7 +57,7 @@
     <string name="mobile_settings_playback">Reprodução</string>
     <string name="mobile_settings_playback_summary">Reprodução automática, segundo plano, velocidade</string>
     <string name="mobile_settings_quality">Qualidade do vídeo</string>
-    <string name="mobile_settings_audio_quality">Qualidade do áudio</string>
+    <string name="mobile_settings_audio_quality">Preferências de áudio</string>
     <string name="mobile_settings_audio_quality_summary">Volume estável, reforço de volume e equalizador</string>
     <string name="mobile_settings_captions">Legendas</string>
     <string name="mobile_settings_captions_summary">Estilo, tamanho e posição</string>
@@ -490,6 +490,15 @@
     <string name="mobile_settings_transfer_not_settings">Este não é um arquivo de configurações do MeeTube</string>
     <string name="mobile_settings_stable_volume">Volume estável</string>
     <string name="mobile_settings_stable_volume_summary">Permite que o áudio comprimido do YouTube suavize as partes altas e baixas. Vale para o próximo vídeo que você abrir</string>
+    <string name="mobile_settings_audio_language">Idioma do áudio</string>
+    <string name="mobile_settings_audio_language_original">Original</string>
+    <string name="mobile_settings_audio_language_original_desc">O idioma do próprio vídeo</string>
+    <string name="mobile_settings_audio_language_app">Idioma do app</string>
+    <string name="mobile_settings_audio_language_app_desc">A configuração Idioma do MeeTube, ou os idiomas do Android quando ela segue o sistema</string>
+    <string name="mobile_settings_audio_language_system">Idiomas do sistema</string>
+    <string name="mobile_settings_audio_language_system_desc">Os idiomas preferidos do Android, na ordem deles</string>
+    <string name="mobile_settings_auto_dubs">Áudio dublado automaticamente</string>
+    <string name="mobile_settings_auto_dubs_summary">Também escolhe as dublagens por IA do YouTube no seu idioma. Sem isso, só dublagens com vozes de pessoas são escolhidas</string>
     <string name="mobile_settings_dolby">Dolby Atmos</string>
     <string name="mobile_settings_dolby_summary">Reproduz a faixa Dolby Atmos ou surround 5.1 quando o vídeo tem uma. Vale para o próximo vídeo que você abrir</string>
     <string name="mobile_settings_dolby_summary_none">Este celular não tem decodificador Dolby, então os vídeos mantêm a faixa estéreo</string>

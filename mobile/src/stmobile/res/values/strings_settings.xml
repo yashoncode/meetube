@@ -59,7 +59,7 @@
     <string name="mobile_settings_playback">Playback</string>
     <string name="mobile_settings_playback_summary">Autoplay, background play, speed</string>
     <string name="mobile_settings_quality">Video quality</string>
-    <string name="mobile_settings_audio_quality">Audio quality</string>
+    <string name="mobile_settings_audio_quality">Audio preferences</string>
     <string name="mobile_settings_audio_quality_summary">Stable volume, volume boost and equalizer</string>
     <string name="mobile_settings_captions">Captions</string>
     <string name="mobile_settings_captions_summary">Style, size and position</string>
@@ -573,6 +573,15 @@
     <!-- MEETUBE(issue #177): phone player audio. -->
     <string name="mobile_settings_stable_volume">Stable volume</string>
     <string name="mobile_settings_stable_volume_summary">Allow YouTube\'s compressed audio to soften loud and quiet parts. Applies to the next video you open</string>
+    <string name="mobile_settings_audio_language">Audio language</string>
+    <string name="mobile_settings_audio_language_original">Original</string>
+    <string name="mobile_settings_audio_language_original_desc">The video\'s own language</string>
+    <string name="mobile_settings_audio_language_app">App language</string>
+    <string name="mobile_settings_audio_language_app_desc">MeeTube\'s Language setting, or Android\'s languages when it follows the system</string>
+    <string name="mobile_settings_audio_language_system">System languages</string>
+    <string name="mobile_settings_audio_language_system_desc">Android\'s preferred languages, in their order</string>
+    <string name="mobile_settings_auto_dubs">Auto-dubbed audio</string>
+    <string name="mobile_settings_auto_dubs_summary">Also pick YouTube\'s AI dubs in your language. Without this, only dubs voiced by people are picked</string>
     <string name="mobile_settings_dolby">Dolby Atmos</string>
     <string name="mobile_settings_dolby_summary">Play the Dolby Atmos or 5.1 surround track when a video has one. Applies to the next video you open</string>
     <string name="mobile_settings_dolby_summary_none">This phone has no Dolby decoder, so videos keep their stereo track</string>

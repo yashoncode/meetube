@@ -60,7 +60,7 @@
     <string name="mobile_settings_playback">Reproducción</string>
     <string name="mobile_settings_playback_summary">Reproducción automática, en segundo plano, velocidad</string>
     <string name="mobile_settings_quality">Calidad de vídeo</string>
-    <string name="mobile_settings_audio_quality">Calidad de audio</string>
+    <string name="mobile_settings_audio_quality">Preferencias de audio</string>
     <string name="mobile_settings_audio_quality_summary">Volumen estable, amplificación y ecualizador</string>
     <string name="mobile_settings_captions">Subtítulos</string>
     <string name="mobile_settings_captions_summary">Estilo, tamaño y posición</string>
@@ -363,6 +363,15 @@
     <!-- MEETUBE(issue #177): phone player audio. -->
     <string name="mobile_settings_stable_volume">Volumen estable</string>
     <string name="mobile_settings_stable_volume_summary">Permite el audio comprimido de YouTube para suavizar las partes fuertes y suaves. Se aplica al próximo vídeo que abras</string>
+    <string name="mobile_settings_audio_language">Idioma del audio</string>
+    <string name="mobile_settings_audio_language_original">Original</string>
+    <string name="mobile_settings_audio_language_original_desc">El idioma propio del vídeo</string>
+    <string name="mobile_settings_audio_language_app">Idioma de la app</string>
+    <string name="mobile_settings_audio_language_app_desc">El ajuste Idioma de MeeTube, o los idiomas de Android si sigue al sistema</string>
+    <string name="mobile_settings_audio_language_system">Idiomas del sistema</string>
+    <string name="mobile_settings_audio_language_system_desc">Los idiomas preferidos de Android, en su orden</string>
+    <string name="mobile_settings_auto_dubs">Audio doblado automáticamente</string>
+    <string name="mobile_settings_auto_dubs_summary">Elige también los doblajes con IA de YouTube en tu idioma. Sin esto, solo se eligen doblajes con voces de personas</string>
     <string name="mobile_settings_equalizer">Ecualizador</string>
     <string name="mobile_settings_equalizer_enable">Usar ecualizador</string>
     <string name="mobile_settings_equalizer_custom">Personalizado</string>

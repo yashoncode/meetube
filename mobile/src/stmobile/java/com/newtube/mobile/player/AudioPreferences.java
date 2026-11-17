@@ -25,6 +25,54 @@ public final class AudioPreferences {
         prefs(context).edit().putBoolean("stable_volume", enabled).apply();
     }
 
+    /** MEETUBE(issue #256): a dubbed video starts on its original track (the default). */
+    public static final int LANGUAGE_ORIGINAL = 0;
+    /** ... on a dub in the app's language (MeeTube's Language setting, else Android's list). */
+    public static final int LANGUAGE_APP = 1;
+    /** ... on a dub in the first of Android's preferred languages it has. */
+    public static final int LANGUAGE_SYSTEM = 2;
+
+    public static int getAudioLanguageMode(Context context) {
+        return prefs(context).getInt("audio_language", LANGUAGE_ORIGINAL);
+    }
+
+    public static void setAudioLanguageMode(Context context, int mode) {
+        prefs(context).edit().putInt("audio_language", mode).apply();
+    }
+
+    /** MEETUBE(issue #256): YouTube's AI dubs ("dubbed-auto") count as a language's track. Off by default. */
+    public static boolean isAutoDubAllowed(Context context) {
+        return prefs(context).getBoolean("audio_auto_dubs", false);
+    }
+
+    public static void setAutoDubAllowed(Context context, boolean allowed) {
+        prefs(context).edit().putBoolean("audio_auto_dubs", allowed).apply();
+    }
+
+    /**
+     * MEETUBE(issue #256): the languages a dubbed video should start in, most wanted first, as
+     * language tags ("pt-BR"); empty for {@link #LANGUAGE_ORIGINAL}.
+     */
+    public static java.util.List<String> preferredAudioLanguages(Context context) {
+        java.util.List<String> languages = new java.util.ArrayList<>();
+        int mode = getAudioLanguageMode(context);
+        if (mode == LANGUAGE_ORIGINAL) {
+            return languages;
+        }
+        if (mode == LANGUAGE_APP) {
+            String app = com.liskovsoft.sharedutils.prefs.GlobalPreferences.instance(context).getPreferredLanguage();
+            if (app != null && !app.isEmpty()) { // "ru", "pt_BR"; empty: the app follows the system
+                languages.add(java.util.Locale.forLanguageTag(app.replace('_', '-')).toLanguageTag());
+                return languages;
+            }
+        }
+        android.os.LocaleList system = android.content.res.Resources.getSystem().getConfiguration().getLocales();
+        for (int i = 0; i < system.size(); i++) {
+            languages.add(system.get(i).toLanguageTag());
+        }
+        return languages;
+    }
+
     /**
      * MEETUBE(dolby): prefer YouTube's Dolby track (E-AC-3 / AC-3, itags 328 and 380, 5.1, Atmos
      * when JOC) where a video has one. On by default; only takes effect where this phone has a

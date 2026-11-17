@@ -46,7 +46,7 @@
     <string name="mobile_settings_playback">التشغيل</string>
     <string name="mobile_settings_playback_summary">التشغيل التلقائي والتشغيل في الخلفية والسرعة</string>
     <string name="mobile_settings_quality">جودة الفيديو</string>
-    <string name="mobile_settings_audio_quality">جودة الصوت</string>
+    <string name="mobile_settings_audio_quality">تفضيلات الصوت</string>
     <string name="mobile_settings_audio_quality_summary">ثبات مستوى الصوت وتعزيزه ومعادل الصوت</string>
     <string name="mobile_settings_captions">الترجمة</string>
     <string name="mobile_settings_captions_summary">النمط والحجم والموضع</string>
@@ -410,6 +410,15 @@
     <string name="mobile_settings_transfer_not_settings">هذا ليس ملف إعدادات MeeTube</string>
     <string name="mobile_settings_stable_volume">مستوى صوت ثابت</string>
     <string name="mobile_settings_stable_volume_summary">السماح باستخدام الصوت المضغوط من YouTube لتقليل الفارق بين الأجزاء المرتفعة والمنخفضة الصوت. يسري على الفيديو التالي الذي تفتحه</string>
+    <string name="mobile_settings_audio_language">لغة الصوت</string>
+    <string name="mobile_settings_audio_language_original">الأصلية</string>
+    <string name="mobile_settings_audio_language_original_desc">لغة الفيديو الأصلية</string>
+    <string name="mobile_settings_audio_language_app">لغة التطبيق</string>
+    <string name="mobile_settings_audio_language_app_desc">إعداد اللغة في MeeTube، أو لغات Android إذا كان يتبع النظام</string>
+    <string name="mobile_settings_audio_language_system">لغات النظام</string>
+    <string name="mobile_settings_audio_language_system_desc">اللغات المفضلة في Android، بترتيبها</string>
+    <string name="mobile_settings_auto_dubs">الدبلجة التلقائية</string>
+    <string name="mobile_settings_auto_dubs_summary">اختيار دبلجة YouTube بالذكاء الاصطناعي بلغتك أيضًا. بدون ذلك، تُختار الدبلجة بأصوات بشرية فقط</string>
     <string name="mobile_settings_equalizer">معادل الصوت</string>
     <string name="mobile_settings_equalizer_enable">استخدام معادل الصوت</string>
     <string name="mobile_settings_equalizer_custom">مخصّص</string>

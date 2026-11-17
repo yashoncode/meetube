@@ -116,7 +116,7 @@ Phone wiring these verdicts rely on:
 
 ### Audio (issue #177)
 
-These rows, with Loudness normalization, sit on their own Settings > Audio quality page (`PlayerPages.audio`), next to Video quality.
+These rows, with Loudness normalization, sit on their own Settings > Audio preferences page (`PlayerPages.audio`), next to Video quality.
 
 | Row | Getter/Setter | Default | Phone reader (file:line) | Verdict | What it does | Side effects / notes |
 |---|---|---|---|---|---|---|

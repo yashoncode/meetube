@@ -48,6 +48,8 @@ class Media3TrackAdapter {
     private Tracks mTracks = Tracks.EMPTY;
     /** NEWTUBE(mobile): default multi-audio videos to the untranslated ("original") track. */
     private boolean mPreferOriginalAudio;
+    private List<String> mPreferredLanguages = new ArrayList<>();
+    private boolean mAutoDubs;
     /**
      * MEETUBE(issue #85): the quality sheet's pick of a rung this phone's decoder reports it can't
      * play ({@link #getVideoFormatsBeyondDecoder}); only this exact item may pin such a track, so
@@ -63,6 +65,16 @@ class Media3TrackAdapter {
 
     void setPreferOriginalAudio(boolean prefer) {
         mPreferOriginalAudio = prefer;
+    }
+
+    /**
+     * MEETUBE(issue #256): with no pick, a dubbed video starts on the first of these languages
+     * ("pt-BR", most wanted first) it has, before falling back to the original. AI dubs
+     * ("dubbed-auto") count only with {@code autoDubs}. Empty: always the original.
+     */
+    void setPreferredAudioLanguages(List<String> languages, boolean autoDubs) {
+        mPreferredLanguages = languages;
+        mAutoDubs = autoDubs;
     }
 
     /** New source opened: stale (group-bound) overrides can't apply to the next video. */
@@ -335,7 +347,10 @@ class Media3TrackAdapter {
         mTrackSelector.setParameters(builder);
     }
 
-    /** No pick at all: default the audio to YouTube's untranslated ("original") variant. */
+    /**
+     * No pick at all: default the audio to a preferred language's variant (issue #256), else to
+     * YouTube's untranslated ("original") one.
+     */
     private void applyOriginalAudioDefault() {
         TrackLocation best = null;
         int bestBitrate = -1;
@@ -371,11 +386,119 @@ class Media3TrackAdapter {
         }
 
         // Single-language videos: media3's own default is already right; don't pin anything.
+        if (multipleLanguages) {
+            TrackLocation preferred = preferredLanguageTrack();
+            if (preferred != null) {
+                best = preferred;
+            }
+        }
         if (best != null && multipleLanguages) {
             mTrackSelector.setParameters(mTrackSelector.buildUponParameters()
                     .setOverrideForType(
                             new TrackSelectionOverride(best.group.getMediaTrackGroup(), best.trackIndex)));
         }
+    }
+
+    /**
+     * MEETUBE(issue #256): the track in the most wanted preferred language the video has: same
+     * region first ("pt-BR" plays "pt-br" over "pt-pt"; a track or preference without a region
+     * matches any), then the language in another region, then the next language. Within one,
+     * the original beats a human dub beats an AI dub, then the highest bitrate. Audio description
+     * and "secondary" tracks never count. Null: none of the languages, play the original.
+     */
+    @Nullable
+    private TrackLocation preferredLanguageTrack() {
+        if (mPreferredLanguages.isEmpty()) {
+            return null;
+        }
+        TrackLocation best = null;
+        int bestRank = Integer.MAX_VALUE;
+        int bestKind = Integer.MAX_VALUE;
+        int bestBitrate = Integer.MIN_VALUE;
+        for (Tracks.Group group : mTracks.getGroups()) {
+            if (group.getType() != C.TRACK_TYPE_AUDIO) {
+                continue;
+            }
+            for (int i = 0; i < group.length; i++) {
+                if (!group.isTrackSupported(i)) {
+                    continue;
+                }
+                androidx.media3.common.Format format = group.getTrackFormat(i);
+                String label = Media3FormatConverter.pickLanguage(format);
+                int kind = audioKind(label, format);
+                if (label == null || kind < 0 || (kind == KIND_AUTO_DUB && !mAutoDubs)) {
+                    continue;
+                }
+                int rank = languageRank(mPreferredLanguages, label);
+                if (rank < 0) {
+                    continue;
+                }
+                if (rank < bestRank || (rank == bestRank && (kind < bestKind
+                        || (kind == bestKind && format.bitrate > bestBitrate)))) {
+                    best = new TrackLocation(group, i);
+                    bestRank = rank;
+                    bestKind = kind;
+                    bestBitrate = format.bitrate;
+                }
+            }
+        }
+        return best;
+    }
+
+    private static final int KIND_ORIGINAL = 0;
+    private static final int KIND_DUB = 1;
+    private static final int KIND_AUTO_DUB = 2;
+
+    /** "en (original)" -> original, "es (dubbed)" -> dub, "fr (dubbed-auto)" -> AI dub; -1: never auto-picked. */
+    static int audioKind(@Nullable String label, androidx.media3.common.Format format) {
+        if (isOriginalAudio(format)) {
+            return KIND_ORIGINAL;
+        }
+        int open = label != null ? label.indexOf('(') : -1;
+        int close = label != null ? label.lastIndexOf(')') : -1;
+        String kind = open >= 0 && close > open ? label.substring(open + 1, close).trim() : "";
+        switch (kind) {
+            case "":
+            case "dubbed":
+                return KIND_DUB;
+            case "dubbed-auto":
+                return KIND_AUTO_DUB;
+            default: // descriptive, secondary
+                return -1;
+        }
+    }
+
+    /**
+     * Where {@code label} ("pt‐br (dubbed)") sits in {@code preferred} ("pt-BR", "en"): 2 * the
+     * index, + 1 when only the language matches, not the region; -1 when no language matches.
+     */
+    static int languageRank(List<String> preferred, String label) {
+        String[] track = languageAndRegion(label);
+        if (track[0].isEmpty()) {
+            return -1;
+        }
+        for (int i = 0; i < preferred.size(); i++) {
+            String[] wanted = languageAndRegion(preferred.get(i));
+            if (wanted[0].equals(track[0])) {
+                boolean sameRegion = wanted[1].isEmpty() || track[1].isEmpty() || wanted[1].equals(track[1]);
+                return 2 * i + (sameRegion ? 0 : 1);
+            }
+        }
+        return -1;
+    }
+
+    /** "pt‐br (dubbed)" or "pt-BR" -> {"pt", "br"}; "en (original)" -> {"en", ""}. Any hyphen. */
+    static String[] languageAndRegion(String tag) {
+        String head = tag.trim();
+        int space = head.indexOf(' ');
+        if (space >= 0) {
+            head = head.substring(0, space);
+        }
+        String[] parts = head.toLowerCase(java.util.Locale.ROOT).split("[^a-z0-9]+");
+        String language = parts.length > 0 ? parts[0] : "";
+        // Java's old codes for Hebrew, Indonesian and Yiddish; YouTube tags the new ones.
+        language = language.equals("iw") ? "he" : language.equals("in") ? "id" : language.equals("ji") ? "yi" : language;
+        return new String[]{language, parts.length > 1 ? parts[1] : ""};
     }
 
     /**

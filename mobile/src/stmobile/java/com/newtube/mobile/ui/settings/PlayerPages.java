@@ -316,6 +316,24 @@ final class PlayerPages {
                 () -> AudioPreferences.decodesDolby() && AudioPreferences.isDolbyEnabled(context),
                 enabled -> AudioPreferences.setDolbyEnabled(context, enabled))
                 .enabledWhen(AudioPreferences::decodesDolby)); // greyed out: this phone has no Dolby decoder
+        // MEETUBE(issue #256): which track a dubbed video starts on; a pick in the player still wins.
+        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_audio_language))
+                .option(context.getString(R.string.mobile_settings_audio_language_original),
+                        context.getString(R.string.mobile_settings_audio_language_original_desc),
+                        AudioPreferences.LANGUAGE_ORIGINAL)
+                .option(context.getString(R.string.mobile_settings_audio_language_app),
+                        context.getString(R.string.mobile_settings_audio_language_app_desc),
+                        AudioPreferences.LANGUAGE_APP)
+                .option(context.getString(R.string.mobile_settings_audio_language_system),
+                        context.getString(R.string.mobile_settings_audio_language_system_desc),
+                        AudioPreferences.LANGUAGE_SYSTEM)
+                .bind(() -> AudioPreferences.getAudioLanguageMode(context),
+                        mode -> AudioPreferences.setAudioLanguageMode(context, mode)));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_auto_dubs),
+                context.getString(R.string.mobile_settings_auto_dubs_summary),
+                () -> AudioPreferences.isAutoDubAllowed(context),
+                allowed -> AudioPreferences.setAutoDubAllowed(context, allowed))
+                .enabledWhen(() -> AudioPreferences.getAudioLanguageMode(context) != AudioPreferences.LANGUAGE_ORIGINAL));
         rows.add(playerVolume(context, PlayerData.instance(context)).carded()); // on the card, as a row
         rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_equalizer),
                 () -> EqualizerSheet.summary(context), EqualizerSheet::show));

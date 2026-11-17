@@ -58,7 +58,7 @@
     <string name="mobile_settings_playback">Odtwarzanie</string>
     <string name="mobile_settings_playback_summary">Autoodtwarzanie, odtwarzanie w tle, prędkość</string>
     <string name="mobile_settings_quality">Jakość wideo</string>
-    <string name="mobile_settings_audio_quality">Jakość dźwięku</string>
+    <string name="mobile_settings_audio_quality">Preferencje dźwięku</string>
     <string name="mobile_settings_audio_quality_summary">Stabilna głośność, wzmocnienie głośności i korektor</string>
     <string name="mobile_settings_captions">Napisy</string>
     <string name="mobile_settings_captions_summary">Styl, rozmiar i położenie</string>
@@ -492,6 +492,15 @@
     <string name="mobile_settings_transfer_not_settings">To nie jest plik ustawień MeeTube</string>
     <string name="mobile_settings_stable_volume">Stabilna głośność</string>
     <string name="mobile_settings_stable_volume_summary">Pozwól, by skompresowany dźwięk YouTube łagodził głośne i ciche fragmenty. Dotyczy następnego otwartego filmu</string>
+    <string name="mobile_settings_audio_language">Język dźwięku</string>
+    <string name="mobile_settings_audio_language_original">Oryginalny</string>
+    <string name="mobile_settings_audio_language_original_desc">Własny język filmu</string>
+    <string name="mobile_settings_audio_language_app">Język aplikacji</string>
+    <string name="mobile_settings_audio_language_app_desc">Ustawienie Język w MeeTube lub języki Androida, gdy jest ustawiony systemowy</string>
+    <string name="mobile_settings_audio_language_system">Języki systemu</string>
+    <string name="mobile_settings_audio_language_system_desc">Preferowane języki Androida, w ich kolejności</string>
+    <string name="mobile_settings_auto_dubs">Dubbing automatyczny</string>
+    <string name="mobile_settings_auto_dubs_summary">Wybieraj też dubbing AI z YouTube w Twoim języku. Bez tego wybierany jest tylko dubbing nagrany przez ludzi</string>
     <string name="mobile_settings_dolby">Dolby Atmos</string>
     <string name="mobile_settings_dolby_summary">Odtwarzaj ścieżkę Dolby Atmos lub 5.1, gdy film ją ma. Dotyczy następnego otwartego filmu</string>
     <string name="mobile_settings_dolby_summary_none">Ten telefon nie ma dekodera Dolby, więc filmy zachowują ścieżkę stereo</string>

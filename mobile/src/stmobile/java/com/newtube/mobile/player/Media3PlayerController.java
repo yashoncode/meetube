@@ -613,6 +613,9 @@ public class Media3PlayerController implements Player.Listener {
 
         if (mTrackAdapter != null) {
             mTrackAdapter.onSourceChanged();
+            // MEETUBE(issue #256): read per video, so a Settings change applies to the next one.
+            mTrackAdapter.setPreferredAudioLanguages(AudioPreferences.preferredAudioLanguages(mContext),
+                    AudioPreferences.isAutoDubAllowed(mContext));
         }
         mOnSourceChanged = true;
         mEventListener.onSourceChanged(getVideo());

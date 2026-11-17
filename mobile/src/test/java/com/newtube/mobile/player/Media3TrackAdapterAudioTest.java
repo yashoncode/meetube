@@ -349,4 +349,69 @@ public class Media3TrackAdapterAudioTest {
         assertEquals("es (original)", playing[0]);
         assertEquals("251", playing[1]);
     }
+
+    // MEETUBE(issue #256): a preferred language's dub before the original.
+
+    @Test
+    public void aPreferredLanguagesHumanDubPlaysOverTheOriginal() {
+        adapter.setPreferredAudioLanguages(Arrays.asList("es-ES", "en-US"), false);
+        adapter.onTracksChanged(dubbedVideo());
+
+        String[] playing = audioOverride();
+        assertEquals("es (dubbed)", playing[0]);
+        assertEquals("251", playing[1]);
+    }
+
+    @Test
+    public void anAutoDubCountsOnlyWhenAllowed() {
+        adapter.setPreferredAudioLanguages(Arrays.asList("fr-FR", "es"), false);
+        adapter.onTracksChanged(dubbedVideo());
+        assertEquals("es (dubbed)", audioOverride()[0]); // French is only an AI dub: next language
+
+        adapter.setPreferredAudioLanguages(Arrays.asList("fr-FR", "es"), true);
+        adapter.onTracksChanged(dubbedVideo());
+        assertEquals("fr (dubbed-auto)", audioOverride()[0]);
+    }
+
+    @Test
+    public void noPreferredLanguageOnTheVideoPlaysTheOriginal() {
+        adapter.setPreferredAudioLanguages(Arrays.asList("ru-RU", "de"), true);
+        adapter.onTracksChanged(dubbedVideo());
+
+        assertEquals("en (original)", audioOverride()[0]);
+    }
+
+    @Test
+    public void theSameRegionBeatsAnotherRegionOfTheLanguage() {
+        Tracks portuguese = tracks(Arrays.asList(
+                variant("pt‐pt (dubbed)", C.ROLE_FLAG_DUB),
+                variant("pt‐br (dubbed)", C.ROLE_FLAG_DUB),
+                variant("en (original)", C.ROLE_FLAG_MAIN)));
+        adapter.setPreferredAudioLanguages(Arrays.asList("pt-BR"), false);
+        adapter.onTracksChanged(portuguese);
+        assertEquals("pt‐br (dubbed)", audioOverride()[0]);
+
+        adapter.setPreferredAudioLanguages(Arrays.asList("pt-AO"), false);
+        adapter.onTracksChanged(portuguese);
+        assertTrue(audioOverride()[0].startsWith("pt")); // another region still beats the original
+    }
+
+    @Test
+    public void aPickInThePlayerStillWins() {
+        adapter.setPreferredAudioLanguages(Arrays.asList("es"), false);
+        adapter.onTracksChanged(dubbedVideo());
+        adapter.selectFormat(offered("en (original)", "140"));
+
+        assertEquals("en (original)", audioOverride()[0]);
+    }
+
+    @Test
+    public void audioDescriptionIsNeverPicked() {
+        adapter.setPreferredAudioLanguages(Arrays.asList("de"), true);
+        adapter.onTracksChanged(tracks(Arrays.asList(
+                variant("de (descriptive)", C.ROLE_FLAG_DESCRIBES_VIDEO),
+                variant("en (original)", C.ROLE_FLAG_MAIN))));
+
+        assertEquals("en (original)", audioOverride()[0]);
+    }
 }

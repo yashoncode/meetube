@@ -47,7 +47,7 @@
     <string name="mobile_settings_playback">Воспроизведение</string>
     <string name="mobile_settings_playback_summary">Автовоспроизведение, фоновое воспроизведение и скорость</string>
     <string name="mobile_settings_quality">Качество видео</string>
-    <string name="mobile_settings_audio_quality">Качество звука</string>
+    <string name="mobile_settings_audio_quality">Настройки звука</string>
     <string name="mobile_settings_audio_quality_summary">Стабильная громкость, усиление звука и эквалайзер</string>
     <string name="mobile_settings_captions">Субтитры</string>
     <string name="mobile_settings_captions_summary">Стиль, размер и положение</string>
@@ -444,6 +444,15 @@
     <!-- MEETUBE(issue #177): phone player audio. -->
     <string name="mobile_settings_stable_volume">Стабильная громкость</string>
     <string name="mobile_settings_stable_volume_summary">Позволяет смягчать перепады громкости в сжатом аудио YouTube. Применяется к следующему открытому видео</string>
+    <string name="mobile_settings_audio_language">Язык аудио</string>
+    <string name="mobile_settings_audio_language_original">Оригинал</string>
+    <string name="mobile_settings_audio_language_original_desc">Собственный язык видео</string>
+    <string name="mobile_settings_audio_language_app">Язык приложения</string>
+    <string name="mobile_settings_audio_language_app_desc">Настройка «Язык» в MeeTube или языки Android, если она следует системе</string>
+    <string name="mobile_settings_audio_language_system">Языки системы</string>
+    <string name="mobile_settings_audio_language_system_desc">Предпочитаемые языки Android, по порядку</string>
+    <string name="mobile_settings_auto_dubs">Автодубляж</string>
+    <string name="mobile_settings_auto_dubs_summary">Также выбирать ИИ-дубляж YouTube на вашем языке. Без этого выбирается только дубляж, озвученный людьми</string>
     <string name="mobile_settings_equalizer">Эквалайзер</string>
     <string name="mobile_settings_equalizer_enable">Использовать эквалайзер</string>
     <string name="mobile_settings_equalizer_custom">Пользовательский</string>
