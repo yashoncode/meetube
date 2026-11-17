@@ -3737,6 +3737,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mVideoArea == null || width <= 0) {
             return;
         }
+        if (mPortraitExitOwnsBox) {
+            return; // the swipe out of the vertical fullscreen sizes it
+        }
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
         int height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : inlineBoxHeight(width);
         if (lp.height != height || lp.weight != 0) {
@@ -7508,6 +7511,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private static final int SWIPE_SHORTS = 7;
     /** MEETUBE(more videos, issue #24): the landscape panel of Up next cards, under the finger. */
     private static final int SWIPE_MORE_VIDEOS = 8;
+    /** MEETUBE(fullscreen): up out of the vertical fullscreen, the box shrinking under the finger. */
+    private static final int SWIPE_PORTRAIT_EXIT = 9;
 
     @Nullable
     private MoreVideosPanel mMoreVideos;
@@ -7699,6 +7704,11 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         mPortraitFull = on;
+        mPortraitExitOwnsBox = false;
+        if (mPortraitExitSettle != null) {
+            mPortraitExitSettle.cancel();
+            mPortraitExitSettle = null;
+        }
         if (mWatchRoot != null) {
             android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mWatchRoot,
                     new android.transition.ChangeBounds().setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED));
@@ -7725,7 +7735,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     mWatchScroll.setTranslationY(0f);
                 }
             }, PORTRAIT_FULL_MS);
-        } else if (!on && mWatchScroll != null) {
+        } else if (!on && mWatchScroll != null && !mPortraitExitDragged) {
             // Coming back, the page rises in under the shrinking box instead of popping in.
             mWatchScroll.animate().cancel();
             mWatchScroll.setAlpha(0f);
@@ -7733,6 +7743,16 @@ public class MobilePlaybackActivity extends MobileActivity
             mWatchScroll.animate().alpha(1f).translationY(0f).setStartDelay(PORTRAIT_FULL_MS / 4)
                     .setDuration(PORTRAIT_FULL_MS).setInterpolator(Motion.EMPHASIZED_DECELERATE)
                     .withEndAction(() -> mWatchScroll.animate().setStartDelay(0)).start();
+            // A cancelled fade left the page drawn at alpha 0: a blank page under the video. Whatever
+            // stops it, the page is whole once the move is over.
+            mWatchScroll.postDelayed(() -> {
+                if (!mPortraitFull && mWatchScroll.getAlpha() < 1f) {
+                    mWatchScroll.animate().cancel();
+                    mWatchScroll.animate().setStartDelay(0);
+                    mWatchScroll.setAlpha(1f);
+                    mWatchScroll.setTranslationY(0f);
+                }
+            }, PORTRAIT_FULL_MS * 2);
         }
         setResizeMode(PlayerData.instance(this).getResizeMode()); // fit while upright-full; also re-lays the controls
         if (mAmbient != null) {
@@ -8099,6 +8119,9 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         if (!isLandscape()) {
             if (mPortraitFull) {
+                if (direction == PlayerContainerLayout.UP && beginPortraitExitDrag(dy)) {
+                    return SWIPE_PORTRAIT_EXIT;
+                }
                 // MEETUBE(fullscreen): up or down, a swipe on the vertical fullscreen goes back to the page.
                 int swipe = beginFullscreenSwipe(SWIPE_EXIT_FULLSCREEN);
                 mFullscreenSwipeUp = direction == PlayerContainerLayout.UP;
@@ -8140,6 +8163,9 @@ public class MobilePlaybackActivity extends MobileActivity
             case SWIPE_MINIMIZE:
                 onDismissDrag(Math.max(0f, dy));
                 break;
+            case SWIPE_PORTRAIT_EXIT:
+                movePortraitExitDrag(dy);
+                break;
             case SWIPE_ENTER_FULLSCREEN:
             case SWIPE_EXIT_FULLSCREEN:
                 if (mFullscreenSwipe == swipe) { // else a configuration change ended it under the finger
@@ -8169,6 +8195,10 @@ public class MobilePlaybackActivity extends MobileActivity
                 break;
             case SWIPE_MINIMIZE:
                 onDismissDragReleased(Math.max(0f, dy), yVelocity);
+                break;
+            case SWIPE_PORTRAIT_EXIT:
+                movePortraitExitDrag(dy);
+                endPortraitExitDrag(yVelocity);
                 break;
             case SWIPE_ENTER_FULLSCREEN:
             case SWIPE_EXIT_FULLSCREEN:
@@ -8203,6 +8233,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 break;
             case SWIPE_MINIMIZE:
                 onDismissDragCancelled();
+                break;
+            case SWIPE_PORTRAIT_EXIT:
+                endPortraitExitDrag(Float.MAX_VALUE); // back into the fullscreen
                 break;
             case SWIPE_ENTER_FULLSCREEN:
             case SWIPE_EXIT_FULLSCREEN:
@@ -8267,6 +8300,124 @@ public class MobilePlaybackActivity extends MobileActivity
         mTimeBar.setDuration(duration);
         mTimeBar.setPosition(Math.max(mExoPlayerController.getPositionMs(), 0));
         return mTimeBar.startSwipeScrub(rawX) ? SWIPE_SEEK : PlayerContainerLayout.SWIPE_NONE;
+    }
+
+    /** MEETUBE(fullscreen): the up swipe out of the vertical fullscreen - the box's full height, the finger's start. */
+    private int mPortraitExitFrom;
+    private float mPortraitExitStartDy;
+    /** setPortraitFull(false) at the end of that swipe: the page is already up, no fade in. */
+    private boolean mPortraitExitDragged;
+    @Nullable
+    private ValueAnimator mPortraitExitSettle;
+    /**
+     * The swipe (or its spring back) sets the box's height: the column's layout listener, which
+     * puts the box back to full height on every layout pass, stays off it meanwhile.
+     */
+    private boolean mPortraitExitOwnsBox;
+    /** The seek bar back once the box is at rest. */
+    private final Runnable mShowTimeBarAfterExit = () -> {
+        if (mTimeBar != null && !mIsInPip && !mPipEnterPending) {
+            mTimeBar.setVisibility(View.VISIBLE);
+        }
+    };
+
+    /**
+     * Up out of the vertical fullscreen, YouTube's way: the box's bottom edge follows the finger and
+     * the page (title, buttons, comments) rises with it into the room it leaves.
+     */
+    private boolean beginPortraitExitDrag(float dy) {
+        if (mPlayer == null || mWatchScroll == null || mWatchRoot == null || mMorphAnimator != null
+                || mMorphFraction != 0f) {
+            return false;
+        }
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
+        if (mPortraitExitSettle != null) { // caught while springing back: on from where it is
+            mPortraitExitSettle.cancel();
+            mPortraitExitSettle = null;
+        } else {
+            mPortraitExitFrom = mVideoArea.getHeight();
+        }
+        if (mPortraitExitFrom <= inlineBoxHeight(mWatchRoot.getWidth())) {
+            return false;
+        }
+        mPortraitExitOwnsBox = true;
+        mTimeBar.removeCallbacks(mShowTimeBarAfterExit);
+        mTimeBar.setVisibility(View.INVISIBLE); // the bar (or its line) stays out of the swipe
+        int now = lp.height > 0 ? lp.height : mPortraitExitFrom;
+        mPortraitExitStartDy = dy - (now - mPortraitExitFrom);
+        hideControls();
+        mWatchScroll.animate().cancel();
+        mWatchScroll.setAlpha(1f);
+        mWatchScroll.setTranslationY(0f);
+        mWatchScroll.setVisibility(View.VISIBLE);
+        return true;
+    }
+
+    private void movePortraitExitDrag(float dy) {
+        if (!mPortraitFull || isLandscape()) {
+            return; // a rotation ended it under the finger
+        }
+        float height = mPortraitExitFrom + dy - mPortraitExitStartDy;
+        setVideoBoxHeight(Math.round(Math.max(inlineBoxHeight(mWatchRoot.getWidth()), Math.min(mPortraitExitFrom, height))));
+    }
+
+    private void setVideoBoxHeight(int height) {
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
+        if (lp.height != height) {
+            lp.height = height;
+            mVideoArea.setLayoutParams(lp);
+        }
+    }
+
+    /** {@code velocity}: px/s, up is negative. A third of the way, or a flick up, goes to the page; else back. */
+    private void endPortraitExitDrag(float velocity) {
+        if (!mPortraitFull || isLandscape()) {
+            mPortraitExitOwnsBox = false; // a rotation took over
+            mShowTimeBarAfterExit.run();
+            return;
+        }
+        int inline = inlineBoxHeight(mWatchRoot.getWidth());
+        int lpHeight = mVideoArea.getLayoutParams().height;
+        int now = lpHeight > 0 ? lpHeight : mPortraitExitFrom;
+        float flick = FULLSCREEN_FLICK_DP * getResources().getDisplayMetrics().density;
+        boolean go = velocity < -flick || (velocity < flick && mPortraitExitFrom - now > (mPortraitExitFrom - inline) / 3f);
+        if (go) {
+            mPortraitExitOwnsBox = false;
+            mPortraitExitDragged = true;
+            setPortraitFull(false); // the box goes on from here to its place, the bars come back
+            mPortraitExitDragged = false;
+            mTimeBar.postDelayed(mShowTimeBarAfterExit, PORTRAIT_FULL_MS);
+            return;
+        }
+        ValueAnimator settle = ValueAnimator.ofInt(now, mPortraitExitFrom);
+        settle.setDuration(240);
+        settle.setInterpolator(Motion.EMPHASIZED_DECELERATE);
+        settle.addUpdateListener(a -> setVideoBoxHeight((int) a.getAnimatedValue()));
+        settle.addListener(new AnimatorListenerAdapter() {
+            private boolean mCancelled;
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                mCancelled = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mPortraitExitSettle == animation) {
+                    mPortraitExitSettle = null;
+                }
+                if (!mCancelled) {
+                    mPortraitExitOwnsBox = false;
+                    mShowTimeBarAfterExit.run();
+                }
+                if (!mCancelled && mPortraitFull) {
+                    setVideoBoxHeight(LinearLayout.LayoutParams.MATCH_PARENT);
+                    mWatchScroll.setVisibility(View.GONE);
+                }
+            }
+        });
+        mPortraitExitSettle = settle;
+        settle.start();
     }
 
     /**
