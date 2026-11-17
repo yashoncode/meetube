@@ -620,8 +620,16 @@ public class MobilePlaybackService extends Service {
         mArtTarget = new CustomTarget<Bitmap>(ART_SIZE_PX, ART_SIZE_PX) {
             @Override
             public void onResourceReady(Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                // MEETUBE(issue #275): our own copy. Glide recycles `resource` once this target is
+                // cleared (the next video's load), while the notification and session still hold it:
+                // "Can't copy a recycled bitmap" in NotificationCompat.build, on every video.
+                Bitmap own = resource.copy(Bitmap.Config.ARGB_8888, false);
+                if (own == null) {
+                    mArtwork.fail(request);
+                    return;
+                }
                 Video selectedVideo = mPresenter != null ? mPresenter.getVideo() : null;
-                if (mArtwork.complete(request, artworkUrl(selectedVideo), resource)) {
+                if (mArtwork.complete(request, artworkUrl(selectedVideo), own)) {
                     // Artwork can arrive after the last player event. Publish it to the lock screen
                     // now, with the same video identity check used by the notification cache.
                     if (mMediaSession != null) {

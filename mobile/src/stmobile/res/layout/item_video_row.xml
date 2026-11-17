@@ -75,6 +75,29 @@
                 android:visibility="gone"
                 tools:text="1" />
 
+            <!-- MEETUBE(downloads): a download still coming: how far and how fast, frosted over its blurred thumbnail. -->
+
+            <TextView
+
+                android:id="@+id/video_download_progress"
+
+                android:layout_width="match_parent"
+
+                android:layout_height="match_parent"
+
+                android:background="#59000000"
+
+                android:gravity="center"
+
+                android:textColor="@android:color/white"
+
+                android:textSize="14sp"
+
+                android:textStyle="bold"
+
+                android:visibility="gone" />
+
+
             <TextView
                 android:id="@+id/video_badge"
                 android:layout_width="wrap_content"

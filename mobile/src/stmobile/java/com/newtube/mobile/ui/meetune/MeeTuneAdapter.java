@@ -302,6 +302,20 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads.contains(PROGRESS)) { // MeeTune's Downloads ticking: no cover reload, no flicker
+            Row row = mRows.get(position);
+            if (row.type == SONG && row.item != null) {
+                TextView subtitle = holder.itemView.findViewById(R.id.meetune_subtitle);
+                if (subtitle != null) subtitle.setText(row.item.subtitle);
+                bindDownload(holder.itemView, row.item);
+            }
+            return;
+        }
+        super.onBindViewHolder(holder, position, payloads);
+    }
+
+    @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Row row = mRows.get(position);
         View view = holder.itemView;
@@ -540,6 +554,36 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     .into(art);
             art.setForeground(MeeTunePlaying.on(art.getContext(), item.videoId)); // bars while it plays
         }
+        bindDownload(view, item);
+    }
+
+    /** Rebinds only a row's download progress (its subtitle and cover), not its cover image. */
+    static final Object PROGRESS = new Object();
+
+    /** A download still coming: its cover frosted (blurred) with how far and how fast over it. */
+    private static void bindDownload(View view, MusicApi.Item item) {
+        TextView progress = view.findViewById(R.id.meetune_art_progress);
+        View bar = view.findViewById(R.id.meetune_art_bar);
+        ImageView art = view.findViewById(R.id.meetune_art);
+        if (progress == null || bar == null || art == null) return;
+        boolean on = item.downloadPercent >= 0;
+        progress.setVisibility(on ? View.VISIBLE : View.GONE);
+        bar.setVisibility(on ? View.VISIBLE : View.GONE);
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+            float r = dp(art.getContext(), 6);
+            art.setRenderEffect(on ? android.graphics.RenderEffect.createBlurEffect(r, r,
+                    android.graphics.Shader.TileMode.CLAMP) : null);
+        }
+        if (!on) return;
+        String percent = item.downloadPercent + "%";
+        android.text.SpannableString text = new android.text.SpannableString(
+                item.downloadSpeed == null ? percent : percent + "\n" + item.downloadSpeed);
+        if (item.downloadSpeed != null) {
+            text.setSpan(new android.text.style.RelativeSizeSpan(0.62f), percent.length(), text.length(), 0);
+        }
+        progress.setText(text);
+        bar.setPivotX(0);
+        bar.setScaleX(Math.max(0.02f, item.downloadPercent / 100f));
     }
 
     private final class Carousel extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

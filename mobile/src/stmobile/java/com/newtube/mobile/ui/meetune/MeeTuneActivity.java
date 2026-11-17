@@ -305,6 +305,18 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         }
     };
 
+    /** A download moved on: an open Downloads page shows each song's progress and speed as it comes. */
+    private final com.newtube.mobile.downloads.DownloadRegistry.Listener mDownloadProgress = () -> {
+        Page page = current();
+        if (page == null || page.rows == null || isFinishing() || !MeeTune.DOWNLOADS.equals(page.browseId)) return;
+        for (MeeTuneAdapter.Row row : page.rows) {
+            if (row.item == null || row.item.videoId == null) continue;
+            com.newtube.mobile.downloads.DownloadItem download = MeeTune.songDownload(this, row.item.videoId);
+            if (download != null) MeeTune.fillDownload(this, row.item, download);
+        }
+        mAdapter.notifyItemRangeChanged(0, mAdapter.getItemCount(), MeeTuneAdapter.PROGRESS);
+    };
+
     void downloadsChanged() {
         Page page = current();
         if (page != null && MeeTune.DOWNLOADS.equals(page.browseId)) load(page, true);
@@ -1153,7 +1165,14 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        com.newtube.mobile.downloads.DownloadRegistry.instance(this).addListener(mDownloadProgress);
+    }
+
+    @Override
     protected void onStop() {
+        com.newtube.mobile.downloads.DownloadRegistry.instance(this).removeListener(mDownloadProgress);
         super.onStop();
         if (mMiniPlayer != null) mMiniPlayer.onHostStop();
     }

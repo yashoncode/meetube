@@ -78,6 +78,9 @@ final class MusicApi {
         String album;
         String albumId;
         String artistId;
+        /** A download still coming (MeeTune's Downloads): how far, 0..100, and how fast; -1 for none. */
+        int downloadPercent = -1;
+        String downloadSpeed;
 
         boolean playable() {
             return videoId != null;

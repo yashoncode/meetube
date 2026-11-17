@@ -427,6 +427,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         private final View mThumbnailFrame;
         private final TextView mBadge;
         @Nullable private final TextView mRank;
+        @Nullable private final TextView mDownloadProgress;
         private final android.graphics.drawable.Drawable mBadgeGlass;
         private final ProgressBar mWatchProgress;
         private final TextView mTitle;
@@ -452,6 +453,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mThumbnailFrame = itemView.findViewById(R.id.video_thumbnail_frame);
             mBadge = itemView.findViewById(R.id.video_badge);
             mRank = itemView.findViewById(R.id.video_rank);
+            mDownloadProgress = itemView.findViewById(R.id.video_download_progress);
             // MEETUBE(glass): the duration pill frosts the thumbnail, as the Home chips frost the feed.
             com.newtube.mobile.ui.common.GlassDrawable.apply(mBadge, itemView.findViewById(R.id.video_thumbnail_glass), 0);
             mBadgeGlass = mBadge.getBackground();
@@ -790,7 +792,33 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
          * the meta line say what it is doing.
          */
         private void bindReadiness(Video video) {
-            mThumbnail.setAlpha(video.isPendingDownload() ? 0.4f : 1f);
+            // MEETUBE(downloads): one coming shows how far and how fast on its frosted (blurred)
+            // thumbnail; the meta line's speed was cut off on most cards.
+            com.newtube.mobile.downloads.DownloadItem item = video.isPendingDownload() && mDownloadProgress != null
+                    ? com.newtube.mobile.downloads.DownloadRegistry.instance(itemView.getContext()).find(video.downloadId) : null;
+            boolean coming = item != null && !item.isFailed() && !item.isDone();
+            boolean frost = coming && android.os.Build.VERSION.SDK_INT >= 31;
+            mThumbnail.setAlpha(video.isPendingDownload() && !frost ? 0.4f : 1f);
+            if (android.os.Build.VERSION.SDK_INT >= 31) {
+                float r = 12 * itemView.getResources().getDisplayMetrics().density;
+                mThumbnail.setRenderEffect(frost ? android.graphics.RenderEffect.createBlurEffect(r, r,
+                        android.graphics.Shader.TileMode.CLAMP) : null);
+            }
+            if (mDownloadProgress == null) return;
+            mDownloadProgress.setVisibility(coming ? View.VISIBLE : View.GONE);
+            if (!coming) return;
+            mBadge.setVisibility(View.GONE); // its % is the big one now
+            int percent = Math.max(0, item.progressPercent());
+            String head = item.isPaused() ? itemView.getContext().getString(R.string.mobile_download_badge_paused)
+                    : percent + "%";
+            float rate = item.bytesPerSec;
+            String speed = item.state == com.newtube.mobile.downloads.DownloadItem.STATE_DOWNLOADING && rate >= 1f
+                    ? com.newtube.mobile.downloads.DownloadOptions.formatBytes(Math.round(rate)) + "/s" : null;
+            android.text.SpannableString text = new android.text.SpannableString(speed == null ? head : head + "\n" + speed);
+            if (speed != null) {
+                text.setSpan(new android.text.style.RelativeSizeSpan(0.6f), head.length(), text.length(), 0);
+            }
+            mDownloadProgress.setText(text);
         }
 
         private void bindProgress(Video video) {

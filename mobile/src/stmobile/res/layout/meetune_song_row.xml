@@ -33,6 +33,27 @@
             android:contentDescription="@null"
             android:scaleType="centerCrop" />
 
+        <!-- A download still coming: how far and how fast, frosted over its blurred cover. -->
+        <TextView
+            android:id="@+id/meetune_art_progress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#59000000"
+            android:gravity="center"
+            android:lineSpacingMultiplier="0.9"
+            android:textColor="#FFFFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/meetune_art_bar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_gravity="bottom"
+            android:background="#E6FFFFFF"
+            android:visibility="gone" />
+
     </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout

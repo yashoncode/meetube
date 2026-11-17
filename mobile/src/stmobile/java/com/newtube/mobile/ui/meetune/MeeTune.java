@@ -470,6 +470,27 @@ public final class MeeTune {
         return null;
     }
 
+    /** A download's state on its song: the subtitle, and for the cover how far it is and how fast. */
+    static void fillDownload(Context context, MusicApi.Item item, com.newtube.mobile.downloads.DownloadItem download) {
+        boolean coming = !download.isDone() && !download.isFailed();
+        int percent = Math.max(0, download.progressPercent());
+        boolean moving = download.state == com.newtube.mobile.downloads.DownloadItem.STATE_DOWNLOADING
+                && download.bytesPerSec >= 1f;
+        String state = download.isFailed() ? context.getString(R.string.meetune_download_failed)
+                : !coming ? null : context.getString(R.string.meetune_downloading, percent);
+        long left = moving ? download.secondsLeft() : -1;
+        if (left >= 0) {
+            state += " • " + context.getString(R.string.mobile_download_time_left,
+                    left >= 3600 ? left / 3600 + ":" + String.format(java.util.Locale.ROOT, "%02d:%02d", left / 60 % 60, left % 60)
+                            : left / 60 + ":" + String.format(java.util.Locale.ROOT, "%02d", left % 60));
+        }
+        item.subtitle = state == null ? download.author
+                : download.author != null ? download.author + " • " + state : state;
+        item.downloadPercent = coming ? percent : -1;
+        item.downloadSpeed = moving
+                ? com.newtube.mobile.downloads.DownloadOptions.formatBytes(Math.round(download.bytesPerSec)) + "/s" : null;
+    }
+
     /** The songs downloaded from MeeTune, newest first, one shelf; a song still coming says how far it is. */
     static List<MusicApi.Shelf> downloads(Context context) {
         MusicApi.Shelf shelf = new MusicApi.Shelf();
@@ -481,11 +502,7 @@ public final class MeeTune {
             item.videoId = download.videoId;
             item.title = download.title;
             item.artist = download.author;
-            String state = download.isFailed() ? context.getString(R.string.meetune_download_failed)
-                    : download.isDone() ? null
-                    : context.getString(R.string.meetune_downloading, download.progressPercent());
-            item.subtitle = state == null ? download.author
-                    : download.author != null ? download.author + " • " + state : state;
+            fillDownload(context, item, download);
             item.art = download.thumbPath != null && new java.io.File(download.thumbPath).exists()
                     ? download.thumbPath : download.thumbUrl;
             if (download.durationMs > 0) {
