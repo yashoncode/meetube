@@ -83,6 +83,6 @@
         android:id="@+id/mobile_next_bar"
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:background="@color/mobile_color_primary" />
+        android:background="?attr/meetubeAccent" /> <!-- a color selector is no drawable before Android 10 (#270) -->
 
 </LinearLayout>
