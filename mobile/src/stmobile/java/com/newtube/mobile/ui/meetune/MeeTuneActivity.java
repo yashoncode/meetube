@@ -401,7 +401,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             mNavBar.select(HOME);
             switchTab(HOME);
         } else {
-            MeeTune.leave(this);
+            // Back out of Home leaves the app with the song playing; only the brand pill goes to MeeTube.
+            moveTaskToBack(true);
         }
     }
 

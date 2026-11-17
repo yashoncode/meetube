@@ -348,6 +348,11 @@ final class ShortsOverlay {
         mPeekPlayer.release();
     }
 
+    /** A swipe's slide is still running (the paged-to short may already be opening under it). */
+    boolean isPaging() {
+        return mPaging;
+    }
+
     boolean isActive() {
         return mActive;
     }

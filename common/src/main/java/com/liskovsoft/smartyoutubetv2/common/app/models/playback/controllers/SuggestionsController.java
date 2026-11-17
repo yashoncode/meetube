@@ -791,6 +791,13 @@ public class SuggestionsController extends BasePlayerController {
             }
         }
 
+        // MEETUNE: Previous from a song stays a song - the shared queue's MeeTube video before it
+        // opened MeeTube's player over MeeTune.
+        java.util.function.Predicate<Video> music = VideoStateController.sOwnHistory;
+        if (result != null && music != null && music.test(getVideo()) && !music.test(result)) {
+            return null;
+        }
+
         return result;
     }
 
@@ -835,7 +842,7 @@ public class SuggestionsController extends BasePlayerController {
             return false;
         }
 
-        return getPreviousFromGroup(getVideo()) != null || Playlist.instance().getPrevious() != null;
+        return getPrevious() != null; // MEETUNE: same rule, so a first song's Previous restarts it
     }
 
     private Video getPreviousFromGroup(Video current) {

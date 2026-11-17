@@ -1533,6 +1533,11 @@ public class Media3PlayerController implements Player.Listener {
         if (mNextPreloader != null) {
             mNextPreloader.update();
         }
+        if (!playWhenReady) {
+            // MEETUBE(issue #278): every pause names its reason and, for a call from the app, its caller,
+            // so a diagnostics log tells a tap from the focus, a headset or a setting.
+            NetPath.log("pause reason=" + reason + " by=" + pauseCaller());
+        }
         // NEWTUBE(focus-grace): see FOCUS_GRACE_MS. One retry per prepare.
         if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS
                 && !mFocusGraceUsed
@@ -1550,6 +1555,17 @@ public class Media3PlayerController implements Player.Listener {
         if (mPlayer != null) {
             dispatchStateChange(playWhenReady, mPlayer.getPlaybackState());
         }
+    }
+
+    /** The first app frame above the player that asked for a pause, or "-" (the player itself: focus, noisy, end). */
+    private static String pauseCaller() {
+        for (StackTraceElement e : new Throwable().getStackTrace()) {
+            String c = e.getClassName();
+            if ((c.startsWith("com.newtube") || c.startsWith("com.liskovsoft")) && !c.startsWith(Media3PlayerController.class.getName())) {
+                return c.substring(c.lastIndexOf('.') + 1) + "." + e.getMethodName() + ":" + e.getLineNumber();
+            }
+        }
+        return "-";
     }
 
     /** Reconstructs the legacy (playWhenReady, state) callback semantics the presenter expects. */

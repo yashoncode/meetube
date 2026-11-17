@@ -1410,6 +1410,12 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayerView.setOnClickListener(v -> {
             if (isShortsMode()) {
                 mVideoArea.removeCallbacks(mShortsSingleTap);
+                // MEETUBE(issue #278): a touch during the slide, or just after the next short opens, is
+                // the next flick starting, not a tap - it paused the short just swiped to.
+                if (mShorts.isPaging() || android.os.SystemClock.uptimeMillis() - mShortOpenedAt < 300) {
+                    com.liskovsoft.smartyoutubetv2.common.misc.NetPath.log("shorts-tap ignored paging=" + mShorts.isPaging());
+                    return;
+                }
                 // MEETUBE(issue #216): from the release, about the rest of the system's 300 ms
                 // double-tap window (counted from the touch down), so a pause follows the finger.
                 mVideoArea.postDelayed(mShortsSingleTap, 200);
@@ -7827,6 +7833,8 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** MEETUBE(issue #173): Shorts without their buttons, toggled by a long press, kept across swipes. */
     private boolean mShortsClean;
+    /** MEETUBE(issue #278): uptime when the playing video last changed. */
+    private long mShortOpenedAt;
 
     /** True while the gesture is the pull that entered the vertical fullscreen (it is swallowed). */
     private boolean pullToPortraitFull(android.view.MotionEvent event) {
@@ -13351,6 +13359,7 @@ public class MobilePlaybackActivity extends MobileActivity
             cancelHoldSpeed();
             if (mVideoArea != null) {
                 mVideoArea.removeCallbacks(mShortsSingleTap); // MEETUBE(issue #172): taps stay with their video.
+                mShortOpenedAt = android.os.SystemClock.uptimeMillis();
                 mVideoArea.resetZoom(); // MEETUBE(issue #55): each video starts whole
             }
             // NEWTUBE(gestures): a drag held across an autoplay would have seeked the new video to
