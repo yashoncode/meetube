@@ -70,6 +70,12 @@ public final class MeeTune {
     private static String sPlaylistId;
     /** Songs put in the queue from MeeTune's menu (Play next, Add to queue): they play as MeeTune's too. */
     private static final java.util.Set<String> QUEUED = new java.util.HashSet<>();
+    /**
+     * Every song MeeTune played this run. sVideoId alone forgot the last song the moment the next
+     * one started, so the last song was saved to MeeTube's History and set aside as MeeTube's video
+     * in the mini player.
+     */
+    private static final java.util.Set<String> SONGS = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
     @Nullable
     private static String sVideoId;
 
@@ -286,6 +292,7 @@ public final class MeeTune {
         offline(context, video);
         sPlaylistId = video.playlistId;
         sVideoId = item.videoId;
+        SONGS.add(item.videoId);
         PlaybackPresenter.instance(context).openVideo(video);
     }
 
@@ -421,6 +428,7 @@ public final class MeeTune {
         if (item.videoId == null) return;
         QUEUED.remove(item.videoId);
         RADIO_NEXT.remove(item.videoId);
+        SONGS.remove(item.videoId);
         if (item.videoId.equals(sVideoId)) sVideoId = null;
         Video video = Video.from(item.videoId);
         video.title = item.title;
@@ -637,13 +645,16 @@ public final class MeeTune {
 
     /** A song picked from the music player's Up next stays in the music look. */
     public static void keep(Video video) {
-        if (video != null) sVideoId = video.videoId;
+        if (video != null) {
+            sVideoId = video.videoId;
+            SONGS.add(video.videoId);
+        }
     }
 
     /** True while {@code video} is a song MeeTune started (or its radio's next one). */
     public static boolean isMusic(@Nullable Video video) {
         if (video == null) return false;
-        return QUEUED.contains(video.videoId) || RADIO_NEXT.contains(video.videoId)
+        return SONGS.contains(video.videoId) || QUEUED.contains(video.videoId) || RADIO_NEXT.contains(video.videoId)
                 || (sVideoId != null && sVideoId.equals(video.videoId))
                 || (sPlaylistId != null && sPlaylistId.equals(video.playlistId));
     }
