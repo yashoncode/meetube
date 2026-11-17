@@ -40,7 +40,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
-                    android:fontFamily="sans-serif"
+                    android:fontFamily="?attr/appFontRegular"
                     android:text="@string/mobile_cast_smarttube_title"
                     android:textColor="@color/mobile_color_on_surface"
                     android:textSize="14sp" />
@@ -50,7 +50,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
-                    android:fontFamily="sans-serif"
+                    android:fontFamily="?attr/appFontRegular"
                     android:text="@string/mobile_cast_youtube_title"
                     android:textColor="@color/mobile_color_on_surface"
                     android:textSize="14sp" />
@@ -70,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="?attr/appFontMedium"
             android:textColor="@color/mobile_color_on_surface"
             android:textSize="14sp"
             android:visibility="gone" />
@@ -92,7 +92,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="56dp"
-                android:fontFamily="sans-serif"
+                android:fontFamily="?attr/appFontRegular"
                 android:imeOptions="actionDone"
                 android:inputType="number"
                 android:maxLines="1"

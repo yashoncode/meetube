@@ -350,7 +350,7 @@ final class CommunityPostAdapter extends ListAdapter<CommunityPost, CommunityPos
             TextView label = new TextView(attachment.getContext());
             label.setText(value);
             label.setTextSize(secondary ? 12 : 14);
-            label.setTypeface(null, Typeface.NORMAL);
+            label.setTypeface(com.newtube.mobile.ui.common.AppFont.regular(label.getContext()));
             label.setTextColor(ContextCompat.getColor(label.getContext(), secondary
                     ? R.color.mobile_color_on_surface_secondary : R.color.mobile_color_on_surface));
             label.setPadding(0, dp(6), 0, dp(2));

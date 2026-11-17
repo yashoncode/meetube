@@ -145,7 +145,7 @@ final class StoragePage {
         root.addView(bar, barParams);
         TextView[] device = line(root, context.getString(R.string.mobile_settings_storage_used,
                 size(context, total - available), size(context, total)), 8);
-        device[0].setTypeface(Typeface.DEFAULT_BOLD);
+        device[0].setTypeface(com.newtube.mobile.ui.common.AppFont.bold(device[0].getContext()));
         device[1].setText(context.getString(R.string.mobile_settings_storage_free, size(context, available)));
 
         View divider = new View(context);
@@ -173,7 +173,7 @@ final class StoragePage {
         int onSurface = ContextCompat.getColor(context, R.color.mobile_color_on_surface);
         clear.setTextColor(onSurface);
         clear.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        clear.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        clear.setTypeface(com.newtube.mobile.ui.common.AppFont.medium(clear.getContext()));
         clear.setGravity(Gravity.CENTER);
         clear.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_menu_delete, 0, 0, 0);
         clear.setCompoundDrawableTintList(android.content.res.ColorStateList.valueOf(onSurface));

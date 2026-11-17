@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:accessibilityHeading="true"
-    android:fontFamily="sans-serif-medium"
+    android:fontFamily="?attr/appFontMedium"
     android:letterSpacing="0.02"
     android:paddingStart="20dp"
     android:paddingTop="16dp"

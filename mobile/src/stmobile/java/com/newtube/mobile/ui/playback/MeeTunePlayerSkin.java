@@ -1087,7 +1087,7 @@ public final class MeeTunePlayerSkin {
         }
         if (mLyrics != null && mLyrics.source != null && !mLyrics.source.isEmpty()) {
             TextView source = lyricLine(context.getString(R.string.mobile_lyrics_source, mLyrics.source), 14, 0x99FFFFFF);
-            source.setTypeface(android.graphics.Typeface.DEFAULT);
+            source.setTypeface(com.newtube.mobile.ui.common.AppFont.regular(source.getContext()));
             source.setPadding(0, Math.round(12 * density), 0, 0);
             mLyricLines.addView(source);
         }
@@ -1105,7 +1105,7 @@ public final class MeeTunePlayerSkin {
         line.setText(text);
         line.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, sp);
         line.setTextColor(color);
-        line.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        line.setTypeface(com.newtube.mobile.ui.common.AppFont.bold(line.getContext()));
         return line;
     }
 

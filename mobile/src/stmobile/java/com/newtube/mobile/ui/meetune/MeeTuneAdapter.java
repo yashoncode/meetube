@@ -636,7 +636,7 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     title.setId(R.id.meetune_title);
                     title.setTextColor(0xFFFFFFFF);
                     title.setTextSize(12);
-                    title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+                    title.setTypeface(com.newtube.mobile.ui.common.AppFont.medium(title.getContext()));
                     title.setMaxLines(2);
                     title.setEllipsize(android.text.TextUtils.TruncateAt.END);
                     title.setShadowLayer(dp(context, 3), 0, 0, 0x66000000);

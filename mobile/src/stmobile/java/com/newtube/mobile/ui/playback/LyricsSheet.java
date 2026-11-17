@@ -246,7 +246,7 @@ final class LyricsSheet {
         }
         for (String words : lyrics.lines) {
             TextView line = line(lines, words, 22, R.color.mobile_color_on_surface_secondary);
-            line.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+            line.setTypeface(com.newtube.mobile.ui.common.AppFont.bold(line.getContext()));
             line.setPadding(0, 0, 0, Math.round(14 * content.getResources().getDisplayMetrics().density));
             lines.addView(line);
         }

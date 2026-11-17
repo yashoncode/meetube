@@ -229,7 +229,7 @@
                     android:id="@+id/comment_replies_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="?attr/appFontMedium"
                     android:maxLines="1"
                     android:textColor="@color/mobile_color_on_surface"
                     android:textSize="12sp"

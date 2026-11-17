@@ -119,7 +119,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:backgroundTint="@android:color/white"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="?attr/appFontMedium"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:minHeight="48dp"

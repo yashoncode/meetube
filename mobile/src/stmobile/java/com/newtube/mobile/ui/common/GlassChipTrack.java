@@ -231,7 +231,7 @@ public class GlassChipTrack extends HorizontalScrollView {
             TextView chip = new TextView(getContext());
             chip.setText(mLabels.get(i));
             chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            chip.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            chip.setTypeface(com.newtube.mobile.ui.common.AppFont.medium(chip.getContext()));
             chip.setGravity(Gravity.CENTER);
             chip.setSingleLine();
             int pad = Math.round(CHIP_PAD * mDp);
@@ -319,7 +319,7 @@ public class GlassChipTrack extends HorizontalScrollView {
             TextView chip = (TextView) mRow.getChildAt(i);
             if (mTabs) { // all in the page's ink, the pick bold over its line
                 chip.setTextColor(mLightTheme ? Color.BLACK : Color.WHITE);
-                chip.setTypeface(android.graphics.Typeface.create("sans-serif-medium",
+                chip.setTypeface(android.graphics.Typeface.create(com.newtube.mobile.ui.common.AppFont.medium(chip.getContext()),
                         i == on ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL));
                 continue;
             }

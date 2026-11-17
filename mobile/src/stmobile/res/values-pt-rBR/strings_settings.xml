@@ -232,6 +232,7 @@
     <string name="mobile_app_icon_starry_night">Noite estrelada</string>
     <string name="mobile_app_icon_gta_vi">GTA VI</string>
     <string name="mobile_settings_loader">Indicador de carregamento</string>
+    <string name="mobile_settings_font">Fonte</string>
     <string name="mobile_loader_neon">Anel neon</string>
     <string name="mobile_loader_frosted">Vidro fosco</string>
     <string name="mobile_loader_cookie">Biscoito</string>

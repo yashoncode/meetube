@@ -40,7 +40,7 @@
                     android:id="@+id/mobile_post_author"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="?attr/appFontMedium"
                     android:textColor="@color/mobile_color_on_surface"
                     android:textSize="14sp" />
 
@@ -70,7 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackground"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="?attr/appFontMedium"
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:text="@string/mobile_comments_read_more"
@@ -105,7 +105,7 @@
                 android:drawableStart="@drawable/ic_watch_thumb_up_outline"
                 android:drawablePadding="8dp"
                 android:drawableTint="@color/mobile_color_on_surface"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="?attr/appFontMedium"
                 android:textColor="@color/mobile_color_on_surface"
                 android:textSize="14sp" />
 
@@ -123,7 +123,7 @@
                 android:drawableStart="@drawable/ic_watch_comment"
                 android:drawablePadding="8dp"
                 android:drawableTint="@color/mobile_color_on_surface"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="?attr/appFontMedium"
                 android:textColor="@color/mobile_color_on_surface"
                 android:textSize="14sp" />
         </LinearLayout>

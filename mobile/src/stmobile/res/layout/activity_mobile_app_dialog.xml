@@ -74,7 +74,7 @@
                 android:maxLines="2"
                 android:paddingStart="4dp"
                 android:paddingEnd="20dp"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="?attr/appFontMedium"
                 android:lineSpacingMultiplier="1.1"
                 android:textColor="@color/mobile_color_on_surface"
                 android:textSize="17sp"

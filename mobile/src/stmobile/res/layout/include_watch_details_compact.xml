@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="@null"
             android:ellipsize="end"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="?attr/appFontMedium"
             android:letterSpacing="-0.01"
             android:maxLines="2"
             android:textColor="@color/mobile_color_on_surface"
@@ -48,7 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="?attr/appFontMedium"
                 android:maxWidth="140dp"
                 android:maxLines="1"
                 android:textColor="@color/mobile_color_on_surface"
@@ -147,7 +147,7 @@
                 android:background="@drawable/bg_watch_subscribe"
                 android:clickable="true"
                 android:focusable="true"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="?attr/appFontMedium"
                 android:gravity="center"
                 android:maxLines="1"
                 android:minHeight="44dp"
@@ -376,7 +376,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="?attr/appFontMedium"
                 android:text="@string/mobile_comments_entry"
                 android:textColor="@color/mobile_color_on_surface"
                 android:textSize="14sp" />
@@ -451,7 +451,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="?attr/appFontMedium"
             android:text="@string/mobile_hype_title"
             android:textColor="@color/mobile_color_on_surface"
             android:textSize="14sp" />
@@ -480,7 +480,7 @@
                     android:id="@+id/mobile_watch_hype_points"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="?attr/appFontMedium"
                     android:fontFeatureSettings="tnum"
                     android:textColor="@color/mobile_color_on_surface"
                     android:textSize="17sp"

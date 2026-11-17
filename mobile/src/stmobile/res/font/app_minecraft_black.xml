@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(font): Minecraft where the app asks for black text (ui.common.AppFont). -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <font android:fontStyle="normal" android:fontWeight="400" android:font="@font/minecraft_bold"
+        app:fontStyle="normal" app:fontWeight="400" app:font="@font/minecraft_bold" />
+    <font android:fontStyle="normal" android:fontWeight="700" android:font="@font/minecraft_bold"
+        app:fontStyle="normal" app:fontWeight="700" app:font="@font/minecraft_bold" />
+</font-family>

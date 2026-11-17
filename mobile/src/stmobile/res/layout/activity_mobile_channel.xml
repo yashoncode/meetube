@@ -158,7 +158,7 @@
             android:background="@drawable/mobile_watch_pill_bg_touch"
             android:clickable="true"
             android:focusable="true"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="?attr/appFontMedium"
             android:gravity="center"
             android:paddingHorizontal="14dp"
             android:text="@string/mobile_channel_posts"

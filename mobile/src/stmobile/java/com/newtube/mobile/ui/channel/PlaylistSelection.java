@@ -85,7 +85,7 @@ final class PlaylistSelection extends RecyclerView.ItemDecoration {
         mCount = new TextView(context);
         mCount.setTextColor(ContextCompat.getColor(context, R.color.mobile_color_on_surface));
         mCount.setTextSize(15);
-        mCount.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        mCount.setTypeface(com.newtube.mobile.ui.common.AppFont.medium(mCount.getContext()));
         mCount.setPadding(Math.round(12 * mDp), 0, Math.round(8 * mDp), 0);
         row.addView(mCount, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 

@@ -184,6 +184,18 @@ final class AppPages {
                 80, Tiles.LOADER, Tiles.LOADER, Tiles.LOADER, Tiles.LOADER,
                 Tiles.LOADER, Tiles.LOADER, Tiles.LOADER, Tiles.LOADER));
 
+        // MEETUBE(font): every screen's text, MeeTube's and MeeTune's (AppFont; Android 8+).
+        if (com.newtube.mobile.ui.common.AppFont.isSupported()) {
+            rows.add(SettingsRow.<String>choice(context.getString(R.string.mobile_settings_font))
+                    .option(context.getString(R.string.mobile_theme_system), com.newtube.mobile.ui.common.AppFont.SYSTEM)
+                    .option("Google Sans", com.newtube.mobile.ui.common.AppFont.GOOGLE_SANS)
+                    .option("Minecraft", com.newtube.mobile.ui.common.AppFont.MINECRAFT)
+                    .option("Vazirmatn", com.newtube.mobile.ui.common.AppFont.VAZIRMATN)
+                    .bind(() -> com.newtube.mobile.ui.common.AppFont.current(context),
+                            font -> com.newtube.mobile.ui.common.AppFont.set(context, font))
+                    .needsRestart());
+        }
+
         rows.add(Tiles.slider(interfaceSize(context, mainUIData), mainUIData));
 
         // MEETUBE(card style): the glass cards Settings' groups and the You page's tiles sit on.

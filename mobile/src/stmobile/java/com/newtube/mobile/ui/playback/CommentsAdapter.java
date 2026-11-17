@@ -1116,7 +1116,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private final float mHeight;
         private final int mFill;
         private final int mTextColor;
-        private final Typeface mTypeface = Typeface.create("sans-serif-medium", Typeface.NORMAL);
+        private final Typeface mTypeface;
         private final RectF mRect = new RectF();
 
         CreatorPillSpan(Context context, int fill) {
@@ -1127,6 +1127,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             mHeight = 14 * density;
             mFill = fill;
             mTextColor = ContextCompat.getColor(context, R.color.mobile_color_on_surface);
+            mTypeface = com.newtube.mobile.ui.common.AppFont.medium(context);
         }
 
         private TextPaint pillPaint(Paint base) {

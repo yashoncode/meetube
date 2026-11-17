@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- MEETUBE(font): the picked font (ui.common.AppFont) for regular, medium and black text; the
+     system's sans-serif families in Theme.NewTube, a font resource in ThemeOverlay.MeeTube.Font.*. -->
+    <attr name="appFontRegular" format="reference|string" />
+    <attr name="appFontMedium" format="reference|string" />
+    <attr name="appFontBlack" format="reference|string" />
     <!-- MEETUBE(loader): the picked loader drawable (Widget.MeeTube.GlassSpinner, Widget.MeeTube.Loader). -->
     <attr name="meetubeLoader" format="reference" />
     <!-- MEETUBE(accent): the picked accent (ui.common.Accent), bright and a deeper one for a light page. -->

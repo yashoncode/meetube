@@ -6,7 +6,7 @@
     android:layout_height="36dp"
     android:layout_marginEnd="8dp"
     android:elevation="4dp"
-    android:fontFamily="sans-serif-medium"
+    android:fontFamily="?attr/appFontMedium"
     android:gravity="center"
     android:minHeight="34dp"
     android:paddingHorizontal="14dp"

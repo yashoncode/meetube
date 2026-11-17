@@ -123,7 +123,7 @@
                         android:id="@+id/comments_sort_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
+                        android:fontFamily="?attr/appFontMedium"
                         android:text="@string/mobile_comments_sort_top"
                         android:textColor="@color/mobile_color_on_surface_secondary"
                         android:textSize="14sp" />

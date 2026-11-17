@@ -807,7 +807,7 @@ public final class MeeTune {
         int color = androidx.core.content.ContextCompat.getColor(context, R.color.mobile_color_on_surface);
         link.setText(text);
         link.setTextSize(14);
-        link.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        link.setTypeface(com.newtube.mobile.ui.common.AppFont.bold(link.getContext()));
         link.setLetterSpacing(0.04f);
         link.setTextColor(color);
         link.setShadowLayer(8 * dp, 0, 0, (color & 0x00FFFFFF) | 0xCC000000);

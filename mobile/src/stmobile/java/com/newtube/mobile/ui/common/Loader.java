@@ -65,6 +65,7 @@ public final class Loader {
         }
         Accent.applyTo(context, theme); // MEETUBE(accent): the same two call sites
         YouTubeMode.applyTo(context, theme); // MEETUBE(youtube mode): and here
+        AppFont.applyTo(context, theme); // MEETUBE(font): and here
     }
 
     private static SharedPreferences prefs(Context context) {

@@ -278,6 +278,38 @@ final class MeeTuneSettings {
         // MEETUNE(issue #264): Home's "Listen again" as Speed dial; off keeps Home as it was.
         row(card, 0, getString(R.string.meetune_speed_dial), getString(R.string.meetune_speed_dial_summary),
                 MeeTune.speedDial(mActivity), false, v -> MeeTune.setSpeedDial(mActivity, !MeeTune.speedDial(mActivity)));
+        if (com.newtube.mobile.ui.common.AppFont.isSupported()) {
+            header(R.string.mobile_settings_font);
+            fonts();
+        }
+    }
+
+    /** MEETUBE(font): the app's font, MeeTube's setting too (AppFont); it lands after a restart. */
+    private void fonts() {
+        String[] fonts = {com.newtube.mobile.ui.common.AppFont.SYSTEM,
+                com.newtube.mobile.ui.common.AppFont.GOOGLE_SANS, com.newtube.mobile.ui.common.AppFont.MINECRAFT,
+                com.newtube.mobile.ui.common.AppFont.VAZIRMATN};
+        FrameLayout frame = new FrameLayout(mActivity);
+        frame.setPadding(dp(14), dp(4), dp(14), dp(8));
+        frame.setClipToPadding(false);
+        GlassChipTrack track = new GlassChipTrack(mActivity);
+        track.setGlassSource(null);
+        track.setChips(Arrays.asList(getString(R.string.mobile_theme_system), "Google Sans",
+                "Minecraft", "Vazirmatn"));
+        track.setSelected(Math.max(0, Arrays.asList(fonts).indexOf(com.newtube.mobile.ui.common.AppFont.current(mActivity))));
+        track.setOnPicked(index -> {
+            if (fonts[index].equals(com.newtube.mobile.ui.common.AppFont.current(mActivity))) {
+                return;
+            }
+            Haptics.click(track);
+            com.newtube.mobile.ui.common.AppFont.set(mActivity, fonts[index]);
+            android.content.Context app = mActivity.getApplicationContext();
+            MobileSnackbar.show(mActivity, getString(R.string.mobile_settings_restart_needed),
+                    getString(R.string.mobile_settings_restart),
+                    () -> com.liskovsoft.smartyoutubetv2.common.utils.Utils.restartTheApp(app));
+        });
+        frame.addView(track, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(44)));
+        mRoot.addView(frame);
     }
 
     /** "Off", "Dynamic", or the Manual preset's name. */
@@ -1005,10 +1037,10 @@ final class MeeTuneSettings {
                 glassKnob(canvas, mKnob, mShadow, mOval, x, knob, (12 + 4 * lift) * mDp, lift, mDp);
                 boolean set = mGains[i] != 0;
                 mText.setColor(set ? mPrimary : mSecondary);
-                mText.setTypeface(set ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+                mText.setTypeface(set ? com.newtube.mobile.ui.common.AppFont.bold(getContext()) : com.newtube.mobile.ui.common.AppFont.regular(getContext()));
                 canvas.drawText(signed(mGains[i]), x, top() - 18 * mDp, mText);
                 mText.setColor(mSecondary);
-                mText.setTypeface(Typeface.DEFAULT);
+                mText.setTypeface(com.newtube.mobile.ui.common.AppFont.regular(getContext()));
                 canvas.drawText(MeeTuneEq.LABELS[i], x, bottom() + 30 * mDp, mText);
             }
         }

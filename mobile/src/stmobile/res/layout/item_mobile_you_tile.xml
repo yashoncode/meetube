@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:ellipsize="end"
-            android:fontFamily="sans-serif"
+            android:fontFamily="?attr/appFontRegular"
             android:maxLines="1"
             android:textColor="@color/mobile_color_on_surface"
             android:textSize="11sp" />

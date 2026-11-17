@@ -302,7 +302,7 @@ final class Tiles {
             more.setText(R.string.mobile_settings_more);
             more.setTextColor(ContextCompat.getColor(context, R.color.mobile_color_primary));
             more.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            more.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+            more.setTypeface(com.newtube.mobile.ui.common.AppFont.medium(more.getContext()));
             more.setGravity(Gravity.CENTER);
             more.setMinHeight(dp(context, 44));
             more.setPadding(dp(context, 16), 0, dp(context, 16), 0);
@@ -341,7 +341,7 @@ final class Tiles {
             frame.setBackground(background);
             label.setTextColor(ContextCompat.getColor(context,
                     on ? R.color.mobile_color_primary : R.color.mobile_color_on_surface_secondary));
-            label.setTypeface(android.graphics.Typeface.create("sans-serif-medium",
+            label.setTypeface(android.graphics.Typeface.create(com.newtube.mobile.ui.common.AppFont.medium(label.getContext()),
                     on ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL));
             tile.setSelected(on);
             check.animate().cancel();

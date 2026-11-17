@@ -37,6 +37,10 @@
         <!-- MEETUBE(loader): every circular spinner is the loader picked in Settings > Customization
              (meetubeLoader; Loader applies the pick's overlay to each screen's theme). -->
         <item name="meetubeLoader">@drawable/avd_neon_ring</item>
+        <!-- MEETUBE(font): Settings > Customization > Font swaps these (AppFont). -->
+        <item name="appFontRegular">sans-serif</item>
+        <item name="appFontMedium">sans-serif-medium</item>
+        <item name="appFontBlack">sans-serif-black</item>
         <item name="android:progressBarStyle">@style/Widget.MeeTube.Loader</item>
         <item name="android:progressBarStyleLarge">@style/Widget.MeeTube.Loader.Large</item>
         <item name="android:progressBarStyleSmall">@style/Widget.MeeTube.Loader.Small</item>
@@ -147,7 +151,7 @@
 
     <style name="Widget.NewTube.Snackbar.Action" parent="Widget.MaterialComponents.Button.TextButton.Snackbar">
         <item name="android:textColor">@color/mobile_color_background</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">?attr/appFontMedium</item>
     </style>
 
     <style name="TextAppearance.NewTube.Button" parent="TextAppearance.MaterialComponents.Button">
@@ -167,7 +171,7 @@
         <item name="android:textColor">@color/mobile_color_on_inverse_surface</item>
         <item name="backgroundTint">@color/mobile_color_inverse_surface</item>
         <item name="rippleColor">@color/mobile_color_inverse_ripple</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">?attr/appFontMedium</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0</item>
@@ -389,14 +393,14 @@
     </style>
 
     <style name="MobileCastCodeDialogTitle" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">?attr/appFontMedium</item>
         <item name="android:textColor">@color/mobile_color_on_surface</item>
         <item name="android:textSize">20sp</item>
         <item name="android:letterSpacing">0</item>
     </style>
 
     <style name="MobileCastCodeDialogSecondaryButton" parent="MobileAlertDialogButton">
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">?attr/appFontMedium</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">normal</item>
         <item name="android:letterSpacing">0</item>
@@ -404,7 +408,7 @@
     </style>
 
     <style name="MobileCastCodeDialogPrimaryButton" parent="Widget.MaterialComponents.Button">
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">?attr/appFontMedium</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textAllCaps">false</item>
@@ -425,7 +429,7 @@
          "Listas de reproducción" label from the bar). -->
     <style name="MobileBottomNavText" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">10sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">?attr/appFontMedium</item>
     </style>
 
     <!-- Watch-page loading skeleton (alpha-pulsed from code while related videos load). -->
@@ -636,7 +640,7 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">2dp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">?attr/appFontMedium</item>
         <item name="android:maxLines">1</item>
         <item name="android:shadowColor">#B3000000</item>
         <item name="android:shadowRadius">4</item>
@@ -723,7 +727,7 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">32dp</item>
         <item name="android:drawablePadding">4dp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">?attr/appFontMedium</item>
         <item name="android:gravity">center</item>
         <item name="android:paddingHorizontal">12dp</item>
         <item name="android:textColor">@android:color/white</item>
@@ -745,4 +749,37 @@
         <item name="meetubeNavLiquid">false</item>
     </style>
 
+
+    <!-- MEETUBE(font): the picked font, over every screen's theme (ui.common.AppFont): text with no
+         family of its own takes android:fontFamily; styles and layouts that want medium or black
+         text name ?attr/appFontMedium / ?attr/appFontBlack instead of the system families. No font
+         padding: Android pads a line to the font's bounding box, and a font's own can be far taller than its line
+         made every text view half again taller with its text sitting low. -->
+    <style name="ThemeOverlay.MeeTube.Font.GoogleSans" parent="">
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:useLocalePreferredLineHeightForMinimum" tools:targetApi="35">false</item>
+        <item name="android:fontFamily">@font/app_google_sans</item>
+        <item name="fontFamily">@font/app_google_sans</item>
+        <item name="appFontRegular">@font/app_google_sans</item>
+        <item name="appFontMedium">@font/app_google_sans_medium</item>
+        <item name="appFontBlack">@font/app_google_sans_black</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Font.Minecraft" parent="">
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:useLocalePreferredLineHeightForMinimum" tools:targetApi="35">false</item>
+        <item name="android:fontFamily">@font/app_minecraft</item>
+        <item name="fontFamily">@font/app_minecraft</item>
+        <item name="appFontRegular">@font/app_minecraft</item>
+        <item name="appFontMedium">@font/app_minecraft</item>
+        <item name="appFontBlack">@font/app_minecraft_black</item>
+    </style>
+    <style name="ThemeOverlay.MeeTube.Font.Vazirmatn" parent="">
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:useLocalePreferredLineHeightForMinimum" tools:targetApi="35">false</item>
+        <item name="android:fontFamily">@font/app_vazirmatn</item>
+        <item name="fontFamily">@font/app_vazirmatn</item>
+        <item name="appFontRegular">@font/app_vazirmatn</item>
+        <item name="appFontMedium">@font/app_vazirmatn</item>
+        <item name="appFontBlack">@font/app_vazirmatn</item>
+    </style>
 </resources>

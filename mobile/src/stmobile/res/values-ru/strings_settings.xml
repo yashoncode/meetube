@@ -202,6 +202,7 @@
     <string name="mobile_app_icon_play_dark">Оригинальный неон</string>
     <string name="mobile_app_icon_blaze">Пламенный</string>
     <string name="mobile_settings_loader">Индикатор загрузки</string>
+    <string name="mobile_settings_font">Шрифт</string>
     <string name="mobile_loader_neon">Неоновое кольцо</string>
     <string name="mobile_loader_frosted">Матированное стекло</string>
     <string name="mobile_loader_cookie">Печенье</string>

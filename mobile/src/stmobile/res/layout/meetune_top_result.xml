@@ -56,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="?attr/appFontMedium"
                     android:maxLines="2"
                     android:textColor="@color/mobile_color_on_surface"
                     android:textSize="22sp" />

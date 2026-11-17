@@ -273,6 +273,7 @@ public class MobileMainApplication extends MainApplication {
         // migrations file BEFORE the one-shot migrations below write to it: every version since
         // 2026-07 leaves an entry on its first launch (ThemeMode.isExistingInstall).
         ThemeMode.init(this, ThemeMode.isExistingInstall(this, migrations));
+        com.newtube.mobile.ui.common.AppFont.applyTo(this, getTheme()); // MEETUBE(font): views built on the app context
         com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.MainUISettingsPresenter.setPhoneTopRows(
                 (context, presenter) -> {
                     java.util.List<com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionItem> options =

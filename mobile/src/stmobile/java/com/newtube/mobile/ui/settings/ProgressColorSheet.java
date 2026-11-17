@@ -210,7 +210,7 @@ final class ProgressColorSheet {
         view.setTextSize(sp);
         view.setTextColor(ContextCompat.getColor(c, R.color.mobile_color_on_surface));
         if (bold) {
-            view.setTypeface(Typeface.DEFAULT_BOLD);
+            view.setTypeface(com.newtube.mobile.ui.common.AppFont.bold(view.getContext()));
         }
         return view;
     }

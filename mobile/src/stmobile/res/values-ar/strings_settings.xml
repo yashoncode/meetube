@@ -193,6 +193,7 @@
     <string name="mobile_app_icon_play_dark">OG Neon</string>
     <string name="mobile_app_icon_blaze">لهب متوهّج</string>
     <string name="mobile_settings_loader">مؤشّر التحميل</string>
+    <string name="mobile_settings_font">الخط</string>
     <string name="mobile_loader_neon">حلقة نيون</string>
     <string name="mobile_loader_frosted">زجاج مصنفر</string>
     <string name="mobile_loader_cookie">بسكويت</string>

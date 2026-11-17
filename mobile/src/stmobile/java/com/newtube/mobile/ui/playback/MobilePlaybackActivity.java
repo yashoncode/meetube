@@ -11053,7 +11053,7 @@ public class MobilePlaybackActivity extends MobileActivity
         TextView value = new TextView(this);
         value.setGravity(android.view.Gravity.CENTER);
         value.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 26);
-        value.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        value.setTypeface(com.newtube.mobile.ui.common.AppFont.bold(value.getContext()));
         value.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_on_surface));
         box.addView(value);
         LinearLayout row = new LinearLayout(this);

@@ -241,6 +241,7 @@
     <string name="mobile_app_icon_starry_night">Gwiaździsta noc</string>
     <string name="mobile_app_icon_gta_vi">GTA VI</string>
     <string name="mobile_settings_loader">Wskaźnik ładowania</string>
+    <string name="mobile_settings_font">Czcionka</string>
     <string name="mobile_loader_neon">Neonowy pierścień</string>
     <string name="mobile_loader_frosted">Matowe szkło</string>
     <string name="mobile_loader_cookie">Ciastko</string>

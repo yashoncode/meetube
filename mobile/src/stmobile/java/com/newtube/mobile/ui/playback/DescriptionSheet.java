@@ -348,7 +348,7 @@ final class DescriptionSheet {
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         view.setTextColor(ContextCompat.getColor(row.getContext(), color));
         if (bold) {
-            view.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+            view.setTypeface(com.newtube.mobile.ui.common.AppFont.bold(view.getContext()));
         }
         return view;
     }

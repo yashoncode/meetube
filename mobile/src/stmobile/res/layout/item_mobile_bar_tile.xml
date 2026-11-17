@@ -32,7 +32,7 @@
             android:id="@+id/bar_tile_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="?attr/appFontMedium"
             android:textColor="@color/mobile_color_on_surface"
             android:textSize="16sp"
             tools:text="Shorts" />
