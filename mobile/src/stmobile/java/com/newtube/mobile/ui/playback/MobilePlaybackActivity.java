@@ -4119,6 +4119,9 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override public long duration() {
                 return mExoPlayerController != null ? mExoPlayerController.getDurationMs() : 0;
             }
+            @Override public boolean live() {
+                return mPlayer != null && mPlayer.isCurrentMediaItemLive();
+            }
             @Override public boolean playing() {
                 return mExoPlayerController != null && mExoPlayerController.getPlayWhenReady();
             }
@@ -9178,10 +9181,12 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mPresenter != null) {
             mPresenter.onFinish();
         }
-        // finishReally() (not finish()): Browse is already in the foreground; finish()'s root-screen
-        // branch would send the whole app to the background when the player was deep-linked (no
-        // parent view), yanking Browse away mid-scroll.
-        finishReally();
+        // finishReally(false) (not finish()): the card's host (Browse or MeeTune) is already in the
+        // foreground; finish()'s root-screen branch would send the whole app to the background when
+        // the player was deep-linked (no parent view), yanking Browse away mid-scroll. And no parent
+        // launch either: with the player at the task's root it relaunched MeeTube's Home over
+        // MeeTune when a song's card was swiped away.
+        finishReally(false);
     }
 
     /** Live player accessor for the mini bar (package-private, see MiniPlayerBridge). */

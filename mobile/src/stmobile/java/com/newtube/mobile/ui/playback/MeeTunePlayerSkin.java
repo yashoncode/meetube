@@ -53,6 +53,9 @@ public final class MeeTunePlayerSkin {
 
         boolean playing();
 
+        /** A live stream (a 24/7 station): its seekable window grows while it plays, so no fixed length. */
+        boolean live();
+
         void playPause();
 
         void seek(long positionMs);
@@ -264,6 +267,11 @@ public final class MeeTunePlayerSkin {
         bounce(mRoot.findViewById(R.id.meetune_player_cast), mControls::cast);
         bounce(mRoot.findViewById(R.id.meetune_player_queue), mControls::queue);
 
+        mRemaining.setOnClickListener(v -> { // the song's whole length for 10 s; a tap while it shows: the countdown
+            long now = android.os.SystemClock.uptimeMillis();
+            mShowTotalUntil = now < mShowTotalUntil ? 0 : now + 10_000;
+            showTimes(mControls.position(), mControls.duration());
+        });
         mSeek.setMax(1000);
         mSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -985,6 +993,14 @@ public final class MeeTunePlayerSkin {
 
     private void fetchLyrics(Video video) {
         String id = video.videoId;
+        // The song before's line leaves with it, and none is picked until the player is on this song:
+        // its position is still the old song's for a moment, which lit a line from this song's middle.
+        mLine.animate().cancel();
+        mLine.setText(null);
+        mLine.setAlpha(0f);
+        ((ViewGroup) mLineRow).getChildAt(1).setAlpha(0f);
+        mLyricsHeld = true;
+        mLyricsHeldAt = android.os.SystemClock.uptimeMillis();
         mLyrics = null;
         mLyricsAsked = false;
         mLyricsOffset = 0;
@@ -1122,8 +1138,15 @@ public final class MeeTunePlayerSkin {
     }
 
     /** Lights the sung line, keeps it a third of the way down, and puts it over the bar. */
+    private boolean mLyricsHeld;
+    private long mLyricsHeldAt;
+
     private void followLyrics(long position) {
         if (!timed()) return;
+        if (mLyricsHeld) { // the new song's start (or 4 s, for a song resumed midway) lets them follow
+            if (position >= 1500 && android.os.SystemClock.uptimeMillis() - mLyricsHeldAt < 4000) return;
+            mLyricsHeld = false;
+        }
         long[] times = mLyrics.times;
         long at = position + LEAD_MS + mLyricsOffset;
         int sung = -1;
@@ -1468,7 +1491,13 @@ public final class MeeTunePlayerSkin {
     private void update() {
         long duration = mControls.duration();
         long position = mControls.position();
-        if (!mSeeking) {
+        boolean live = mControls.live();
+        mSeek.setEnabled(!live);
+        if (live) { // its window grows 5 s at a time: a bar against it would keep jumping back
+            mSeek.setProgress(1000);
+            mElapsed.setText(R.string.mobile_player_live);
+            mRemaining.setText("");
+        } else if (!mSeeking) {
             mSeek.setProgress(duration > 0 ? (int) (position * 1000 / duration) : 0);
             showTimes(position, duration);
         }
@@ -1548,9 +1577,31 @@ public final class MeeTunePlayerSkin {
         }
     }
 
+    private long mShowTotalUntil;
+    private boolean mTotalShown;
+    private boolean mTotalSwapping;
+
     private void showTimes(long position, long duration) {
         mElapsed.setText(time(Math.max(0, position)));
-        mRemaining.setText(duration > 0 ? "-" + time(Math.max(0, duration - position)) : "");
+        boolean total = android.os.SystemClock.uptimeMillis() < mShowTotalUntil;
+        String text = duration <= 0 ? "" : total ? time(duration) : "-" + time(Math.max(0, duration - position));
+        if (total != mTotalShown) { // countdown <-> whole length: the old one rolls up and out, the new one in
+            mTotalShown = total;
+            mTotalSwapping = true;
+            float rise = 8 * mRemaining.getResources().getDisplayMetrics().density;
+            mRemaining.animate().cancel();
+            mRemaining.animate().alpha(0f).translationY(-rise).setDuration(110)
+                    .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                    .withEndAction(() -> {
+                        mTotalSwapping = false;
+                        showTimes(mControls.position(), mControls.duration());
+                        mRemaining.setTranslationY(rise);
+                        mRemaining.animate().alpha(1f).translationY(0f).setDuration(200)
+                                .setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+                    }).start();
+            return;
+        }
+        if (!mTotalSwapping) mRemaining.setText(text);
     }
 
     private static String time(long ms) {
