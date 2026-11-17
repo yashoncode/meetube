@@ -5,7 +5,7 @@
 <p align="center">
 <a href="https://github.com/yashoncode/meetube/releases/latest"><img src="https://img.shields.io/github/v/release/yashoncode/meetube?style=for-the-badge&label=Release&color=0e75b6" alt="Release"></a>
 <a href="LICENSE"><img src="https://img.shields.io/github/license/yashoncode/meetube?style=for-the-badge&label=License&color=e8743b" alt="License"></a>
-<a href="https://github.com/yashoncode/meetube/releases"><img src="https://img.shields.io/github/downloads/yashoncode/meetube/total?style=for-the-badge&label=Downloads&color=4c1" alt="Downloads"></a>
+<a href="#support-meetube"><img src="https://img.shields.io/badge/Support-MeeTube-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Support MeeTube"></a>
 </p>
 
 **YouTube, reimagined. Different by design. Smooth by nature.** <br><br> **A YouTube video and music client, all in one app:** MeeTube for videos, and MeeTune, its music side, one tap away.<br><br> No ads. No interruptions. Just a gorgeous liquid glass interface, synced lyrics, background playback, and one-tap downloads.<br><br> **A fresh way to experience YouTube.**<br><br>
