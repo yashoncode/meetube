@@ -13,6 +13,9 @@
             <path
                 android:name="glyph"
                 android:fillColor="#FFFFFFFF"
+                android:strokeColor="#FFFFFFFF"
+                android:strokeWidth="1.5"
+                android:strokeLineJoin="round"
                 android:pathData="@string/path_player_play" />
         </vector>
     </aapt:attr>

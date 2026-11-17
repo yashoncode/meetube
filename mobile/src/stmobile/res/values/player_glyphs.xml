@@ -2,8 +2,9 @@
 <resources>
     <!-- NEWTUBE(motion): the play and pause glyphs as morphable paths (avd_player_*): the same
          shapes as ic_player_play / ic_player_pause, each as two four-point quads - the play
-         triangle split down x=13.5 - so every point has a partner in the other glyph. -->
-    <string name="path_player_play" translatable="false">M8,5 L13.5,8.5 L13.5,15.5 L8,19 Z M13.5,8.5 L19,12 L19,12 L13.5,15.5 Z</string>
-    <string name="path_player_pause" translatable="false">M6,5 L10,5 L10,19 L6,19 Z M14,5 L18,5 L18,19 L14,19 Z</string>
+         triangle split down its middle - so every point has a partner in the other glyph. Each is
+         inset by half the 1.5 round-joined stroke that softens its corners, like MeeTune's buttons. -->
+    <string name="path_player_play" translatable="false">M8.75,6.37 L13.18,9.18 L13.18,14.82 L8.75,17.63 Z M13.18,9.18 L17.6,12 L17.6,12 L13.18,14.82 Z</string>
+    <string name="path_player_pause" translatable="false">M6.75,5.75 L9.25,5.75 L9.25,18.25 L6.75,18.25 Z M14.75,5.75 L17.25,5.75 L17.25,18.25 L14.75,18.25 Z</string>
     <integer name="mobile_player_glyph_morph_ms">200</integer>
 </resources>
