@@ -24,7 +24,7 @@ import java.util.WeakHashMap;
 /**
  * MEETUNE: a soft glow in each cover's own colour behind it (the hue covering most of the cover, as
  * the player's pill uses). Drawn by the list under its items, so no layout changes: every cover of the
- * list's items (big cards, tiles, song rows, Speed dial) found by its art id. A grey cover gets none.
+ * list's items (big cards, tiles, song rows, Speed dial) found by its art id. A grey cover glows white.
  * Android 9+ (a blurred paint needs it); older phones keep plain covers.
  */
 final class CoverGlow extends RecyclerView.ItemDecoration {
@@ -76,7 +76,7 @@ final class CoverGlow extends RecyclerView.ItemDecoration {
             accent = MeeTunePlayerSkin.accent(cover);
             ACCENTS.put(cover, accent);
         }
-        if (accent == 0xFFF2F2F2) return; // a grey cover: no colour to glow
+        boolean grey = accent == 0xFFF2F2F2; // black and white or grey: a softer white glow
         View frame = art.getParent() instanceof MaterialCardView ? (View) art.getParent() : art;
         if (frame.getVisibility() != View.VISIBLE) return;
         mRect.set(0, 0, frame.getWidth(), frame.getHeight());
@@ -88,8 +88,9 @@ final class CoverGlow extends RecyclerView.ItemDecoration {
         float inset = Math.min(mRect.width(), mRect.height()) * 0.06f; // it peeks out, it doesn't box
         mGlow.set(mRect.left + inset, mRect.top + inset * 1.6f, mRect.right - inset, mRect.bottom);
         float radius = frame instanceof MaterialCardView ? ((MaterialCardView) frame).getRadius() : 8 * mDp;
-        mPaint.setColor((accent & 0x00FFFFFF) | 0x8C000000);
-        mPaint.setAlpha(Math.round(0x8C * frame.getAlpha()));
+        int alpha = grey ? 0x5C : 0x8C;
+        mPaint.setColor(accent);
+        mPaint.setAlpha(Math.round(alpha * frame.getAlpha()));
         canvas.drawRoundRect(mGlow, radius, radius, mPaint);
     }
 }
