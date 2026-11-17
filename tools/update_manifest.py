@@ -29,6 +29,9 @@ ABIS = ["arm64-v8a", "armeabi-v7a", "x86"]
 SKIP_SECTIONS = re.compile(r"still limited|behind the scenes|todav[ií]a limitad|sigue limitad|entre bastidores",
                            re.IGNORECASE)
 MAX_LINES_PER_VERSION = 6
+# The last line of the newest version's notes in the update sheet and "What's new".
+SUPPORT_LINE = ("Like my work? Support MeeTube for longer and faster updates: sudo brew coffee in About. "
+                "Never forced, always appreciated ❤️")
 
 
 def version_code(name):
@@ -124,6 +127,7 @@ def main():
         if spanish.get(version):
             entry["changelog_es"] = spanish[version][:MAX_LINES_PER_VERSION]
         manifest[version] = entry
+    manifest[name]["changelog"].append(SUPPORT_LINE)
 
     pathlib.Path(args.out).write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

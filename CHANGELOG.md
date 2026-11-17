@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.5.5** Hyper](#355-hyper) | 2026-11-17 | Automix |
 | [**3.5.2** Slash](#352-slash) | 2026-11-17 | Spatial |
 | [**3.5.0** Drago](#350-drago) | 2026-11-16 | MeeTune |
 | [**3.4.2** Severus](#342-severus) | 2026-11-15 | Stable |
@@ -48,6 +49,56 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.5.5 Hyper
+
+> **Automix**<br>
+> 📅 2026-11-17 · closes #256, #270, #271, #272, #273, #275, #278 and #279
+
+### ✨ Highlights
+
+- **Automix (beta) in MeeTune:** songs mix like a DJ. The next one comes in on the beat with its tempo matched, past its silent intro, and the two swap bass on a bar line. Turn it on under Crossfade in MeeTune settings (#279).
+- **Speed and quality in fullscreen:** two buttons beside the fullscreen button show the speed and the quality playing and open their menus on tap. Turn them off in Customize > Player buttons (#271).
+- **Dubs in your language:** Settings > Audio preferences > Audio language plays a video's dub in MeeTube's or Android's language, and the original when there is none (#256).
+- **Volume boost you can hear:** each doubling of Player volume adds +10 dB, with a speaker icon whose waves light up as you slide (#272).
+- **Pick a font:** Customization > Font sets Google Sans, Minecraft or Vazirmatn across the whole app (Android 8 and up).
+
+### 🎵 MeeTune
+
+- Its own Volume, a crossfade slider that shows the two songs' waves overlapping, and a Bit-perfect USB DAC switch (Android 14 and up).
+- The next song starts the moment a song ends, so crossfade blends the two songs again instead of fading into a gap.
+- Downloads show their percent, speed and time left on a frosted cover, live.
+- Black and white covers get a soft white glow.
+- Tap the countdown to see the song's full length for 10 seconds.
+- Live stations show LIVE with a full bar.
+- Back on Home leaves the app with the song playing, and Previous only goes back to a song.
+
+### New
+
+- Swiping up out of the upright fullscreen follows your finger: the video shrinks and the title and comments come up under it.
+- Video downloads show their progress and speed on the thumbnail.
+
+### Changed
+
+- Play, pause, next and previous have rounded corners like MeeTune's controls.
+- Player volume has its own card in Settings, and Audio quality is now Audio preferences.
+- The mini player's buttons fade in out of a light blur once it lands.
+- A short with its comments open loops instead of scrolling away, and a tap shows only play, the time and the seek bar.
+
+### Fixed
+
+- Opening any video no longer crashes on Android 8 and 9 (#270).
+- Playing a video no longer crashes on some phones (#275).
+- Shorts no longer pause on their own while scrolling fast (#278).
+- Minimizing lands the mini player exactly in its corner, and a card dragged to another corner stays there after picture-in-picture (#273).
+- MeeTune songs no longer show up in MeeTube's History and mini player.
+- The page under the video no longer stays blank after leaving fullscreen.
+- Swiping away a song's mini player just closes it instead of opening MeeTube Home.
+- The lyric line above the bar no longer flashes when switching songs.
+
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @y4hya3, @MuntasirTonmoy, @MAKAKAIglitch, @sahidur2007, @dhanunjay333i-cyber, @fcaballeros1303-netizen and @pambat.
 
 ## 3.5.2 Slash
 
