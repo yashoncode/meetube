@@ -9259,6 +9259,11 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mNextCountdown == null || !watched) {
             return false;
         }
+        // MEETUNE: a music app plays the next song at once; the countdown held it ~5 s and broke the crossfade.
+        if (com.newtube.mobile.ui.meetune.MeeTune.isMusic(getVideo())
+                && com.newtube.mobile.ui.meetune.MeeTune.musicPlayer(this)) {
+            return false;
+        }
         showControls(false);
         mNextCountdown.show(next != null ? next.getTitle() : null, playNext);
         return true;
