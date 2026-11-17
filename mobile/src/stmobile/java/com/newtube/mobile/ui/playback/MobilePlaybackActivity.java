@@ -215,6 +215,9 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     @Nullable private View mActionsRow;
     @Nullable private ImageButton mActionsToggle;
+    /** MEETUBE(issue #271): fullscreen's speed and quality pills, beside the chevron. */
+    private TextView mSpeedPill;
+    private TextView mQualityPill;
     @Nullable private ImageButton mPlayerLike;
     @Nullable private ImageButton mPlayerDislike;
     @Nullable private ImageButton mPlayerDownload;
@@ -946,6 +949,10 @@ public class MobilePlaybackActivity extends MobileActivity
         mBottomRow = findViewById(R.id.mobile_player_bottom_row);
         mActionsRow = findViewById(R.id.mobile_player_actions);
         mActionsToggle = findViewById(R.id.mobile_player_actions_toggle);
+        mSpeedPill = findViewById(R.id.mobile_player_speed_pill);
+        mQualityPill = findViewById(R.id.mobile_player_quality_pill);
+        mSpeedPill.setOnClickListener(v -> showSpeedSheet());
+        mQualityPill.setOnClickListener(v -> showQualitySheet());
         mPlayerLike = findViewById(R.id.mobile_player_like);
         mPlayerDislike = findViewById(R.id.mobile_player_dislike);
         mPlayerDownload = findViewById(R.id.mobile_player_download);
@@ -1033,12 +1040,14 @@ public class MobilePlaybackActivity extends MobileActivity
         for (View control : new View[] {mPlayPauseButton, mActionsRow, mPlayerLock, mPlayerUnlock}) {
             com.newtube.mobile.ui.common.GlassDrawable.applyButton(control, videoGlass, 0, true);
         }
-        // the time keeps its see-through pill in every style, Minimal too
-        com.newtube.mobile.ui.common.GlassDrawable.apply(time, videoGlass, 0);
+        // the time keeps its see-through pill in every style, Minimal too, and so do speed and quality
+        for (View pill : new View[] {time, mSpeedPill, mQualityPill}) {
+            com.newtube.mobile.ui.common.GlassDrawable.apply(pill, videoGlass, 0);
+        }
         if (videoGlass != null) {
             mGlassControls = new View[] {mBackButton, mAudioButton, mCastButton, mSubtitlesButton, mMoreButton,
                     mPrevButton, mNextButton, mFullscreenButton, mActionsToggle, mPlayPauseButton, time, mActionsRow,
-                    mPlayerLock, mPlayerUnlock};
+                    mPlayerLock, mPlayerUnlock, mSpeedPill, mQualityPill};
         }
         mDebugViewGroup = findViewById(R.id.mobile_player_debug);
 
@@ -3434,6 +3443,18 @@ public class MobilePlaybackActivity extends MobileActivity
             mActionsToggle.setContentDescription(getString(actions
                     ? R.string.mobile_player_hide_actions : R.string.mobile_player_show_actions));
         }
+        // MEETUBE(issue #271): MeeTube's fullscreen only (not songs, Shorts or a locked player).
+        boolean pills = !inline && !mLockedChrome && !meeTuneSong() && !isShortsMode();
+        mSpeedPill.setVisibility(pills && WatchLook.isShown(this, "mobile_player_speed_pill") ? View.VISIBLE : View.GONE);
+        mQualityPill.setVisibility(pills && WatchLook.isShown(this, "mobile_player_quality_pill") ? View.VISIBLE : View.GONE);
+        updateFullscreenPills();
+        int pillsWidth = 0; // the skip pill keeps clear of them
+        for (View pill : new View[] {mSpeedPill, mQualityPill}) {
+            if (pill.getVisibility() == View.VISIBLE) {
+                pill.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                pillsWidth += pill.getMeasuredWidth() + dp(6);
+            }
+        }
         updateMoreVideosHint();
         if (actions) {
             lift += dp(44);
@@ -3453,7 +3474,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // Sized to its text like the other pills (issue #237), kept off the screen edges.
         setMargins(mNoticeView, left + dp(16), 0, right + dp(16), dp(60) + bottom + lift);
         // The skip pill: left of fullscreen (and its chevron outside portrait), centered on the row.
-        setMargins(mSkipSegmentPill, 0, 0, right + dp(inline ? 56 : 96), bottom + lift
+        setMargins(mSkipSegmentPill, 0, 0, right + dp(inline ? 56 : 96) + pillsWidth, bottom + lift
                 + getResources().getDimensionPixelSize(R.dimen.mobile_player_bottom_row_margin) + dp(8));
     }
 
@@ -3520,7 +3541,8 @@ public class MobilePlaybackActivity extends MobileActivity
             float windowX = down.getX() + mRootAt[0];
             float windowY = down.getY() + mRootAt[1];
             return !isOn(mFullscreenButton, windowX, windowY) && !isOn(mChapterButton, windowX, windowY)
-                    && !isOn(mLiveChip, windowX, windowY) && !isOn(mActionsToggle, windowX, windowY);
+                    && !isOn(mLiveChip, windowX, windowY) && !isOn(mActionsToggle, windowX, windowY)
+                    && !isOn(mSpeedPill, windowX, windowY) && !isOn(mQualityPill, windowX, windowY);
         }
 
         @Override
@@ -6070,6 +6092,19 @@ public class MobilePlaybackActivity extends MobileActivity
                 : getString(R.string.mobile_quality_auto_short);
     }
 
+    /** MEETUBE(issue #271): the fullscreen pills' text, "1x" / "1.5x" and the playing rung ("Auto" before one plays). */
+    private void updateFullscreenPills() {
+        if (mSpeedPill.getVisibility() == View.VISIBLE) {
+            float speed = mExoPlayerController != null ? mExoPlayerController.getSpeed() : -1;
+            setTextIfChanged(mSpeedPill, speed <= 0 || Helpers.floatEquals(speed, 1f) ? "1x" : speedLabel(speed));
+        }
+        if (mQualityPill.getVisibility() == View.VISIBLE) {
+            FormatItem playing = mExoPlayerController != null ? mExoPlayerController.getPlayingVideoFormat() : null;
+            setTextIfChanged(mQualityPill, playing != null && playing.getHeight() > 0
+                    ? qualityLabel(playing) : getString(R.string.mobile_quality_auto_short));
+        }
+    }
+
     /** Trailing value for the Speed row: "Normal", "1.5x", ... */
     private String currentSpeedLabel() {
         float speed = mExoPlayerController != null ? mExoPlayerController.getSpeed() : -1;
@@ -6538,6 +6573,7 @@ public class MobilePlaybackActivity extends MobileActivity
             updateChapterButton(position);
         }
 
+        updateFullscreenPills();
         updatePlayPauseIcon();
 
         // Pixel-paced like the line: the bar now spans the whole width, and a short video's dot

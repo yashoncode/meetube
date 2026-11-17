@@ -392,6 +392,42 @@
 
                     </FrameLayout>
 
+                    <!-- MEETUBE(issue #271): fullscreen only - the speed and the playing quality on
+                         glass pills the time pill's size; a tap opens their sheets. Each can be switched off in Customize >
+                         Player buttons (applySeekBarLayout). -->
+                    <TextView
+                        android:id="@+id/mobile_player_speed_pill"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:contentDescription="@string/mobile_player_speed"
+                        android:fontFeatureSettings="tnum"
+                        android:gravity="center"
+                        android:paddingHorizontal="9dp"
+                        android:paddingVertical="4dp"
+                        android:shadowColor="#80000000"
+                        android:shadowRadius="3"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:visibility="gone"
+                        tools:text="1x" />
+
+                    <TextView
+                        android:id="@+id/mobile_player_quality_pill"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:contentDescription="@string/mobile_player_quality"
+                        android:gravity="center"
+                        android:paddingHorizontal="9dp"
+                        android:paddingVertical="4dp"
+                        android:shadowColor="#80000000"
+                        android:shadowRadius="3"
+                        android:textColor="@android:color/white"
+                        android:textSize="12sp"
+                        android:visibility="gone"
+                        tools:text="1080p" />
+
                     <!-- MEETUBE(fullscreen-actions): fullscreen only - hides (chevron down) or brings
                          back (chevron up) the row of actions under the seek bar. -->
                     <ImageButton

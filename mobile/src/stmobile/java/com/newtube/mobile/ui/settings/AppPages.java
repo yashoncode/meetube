@@ -538,6 +538,8 @@ final class AppPages {
         playerButton(context, rows, R.string.dialog_download, "mobile_player_download");
         playerButton(context, rows, R.string.mobile_watch_share, "mobile_player_share");
         playerButton(context, rows, R.string.mobile_player_lock, "mobile_player_lock"); // issue #98
+        playerButton(context, rows, R.string.mobile_player_speed, "mobile_player_speed_pill"); // issue #271
+        playerButton(context, rows, R.string.mobile_player_quality, "mobile_player_quality_pill");
 
         return new SettingsPages.Page(context.getString(R.string.mobile_settings_player_buttons), rows);
     }
