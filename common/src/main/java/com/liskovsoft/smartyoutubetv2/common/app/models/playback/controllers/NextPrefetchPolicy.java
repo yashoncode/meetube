@@ -39,18 +39,27 @@ final class NextPrefetchPolicy {
      * @param playedWallMs wall time this open has actually been playing (not paused/buffering)
      */
     static long delayUntilDueMs(long durationMs, long positionMs, float speed, long playedWallMs) {
+        return delayUntilDueMs(durationMs, positionMs, speed, playedWallMs, LEAD_WALL_MS);
+    }
+
+    /** As above with its own lead ({@code leadWallMs} of wall time before the end). */
+    static long delayUntilDueMs(long durationMs, long positionMs, float speed, long playedWallMs, long leadWallMs) {
         if (durationMs <= 0 || positionMs < 0) {
             return NEVER;
         }
         float rate = speed > 0 ? speed : 1f;
         long remainingContentMs = Math.max(0, durationMs - positionMs);
-        long untilLeadMs = (long) (remainingContentMs / rate) - LEAD_WALL_MS;
+        long untilLeadMs = (long) (remainingContentMs / rate) - leadWallMs;
         long requiredPlayedMs = Math.min(MIN_PLAYED_MS, (long) (durationMs / rate) / 2);
         long untilPlayedMs = requiredPlayedMs - Math.max(0, playedWallMs);
         return Math.max(0, Math.max(untilLeadMs, untilPlayedMs));
     }
 
     static boolean isDue(long durationMs, long positionMs, float speed, long playedWallMs) {
-        return delayUntilDueMs(durationMs, positionMs, speed, playedWallMs) == 0;
+        return isDue(durationMs, positionMs, speed, playedWallMs, LEAD_WALL_MS);
+    }
+
+    static boolean isDue(long durationMs, long positionMs, float speed, long playedWallMs, long leadWallMs) {
+        return delayUntilDueMs(durationMs, positionMs, speed, playedWallMs, leadWallMs) == 0;
     }
 }

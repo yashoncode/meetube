@@ -555,6 +555,11 @@ public class MobilePlaybackActivity extends MobileActivity
         public int maxAudioBitrate() {
             return com.newtube.mobile.ui.meetune.MeeTune.maxAudioBitrate(MobilePlaybackActivity.this);
         }
+
+        @Override
+        public com.newtube.mobile.player.BassSwap mainBass() {
+            return mPlayerInitializer != null ? mPlayerInitializer.getBassSwap() : null;
+        }
     });
     private ExoPlayer mPlayer;
     // NEWTUBE(bench): position/seek evidence for the in-app source benchmark; null unless
@@ -13171,6 +13176,9 @@ public class MobilePlaybackActivity extends MobileActivity
     @Override
     public void prebuildNextSource(MediaItemFormatInfo formatInfo, boolean preloadMedia) {
         mExoPlayerController.prebuildNextSource(formatInfo, preloadMedia);
+        if (preloadMedia) {
+            mCrossfade.analyzeNext(formatInfo); // MEETUNE(automix): the next song is known; find both beats
+        }
         if (preloadMedia && mShorts != null && !mBackgroundAudioMode) {
             mShorts.preparePeek(formatInfo, mExoPlayerController); // MEETUBE(shorts peek)
         }

@@ -556,6 +556,9 @@ final class MeeTuneSettings {
             }
         });
         note(R.string.meetune_crossfade_note);
+        LinearLayout mix = card();
+        row(mix, R.drawable.ic_badge_mix, getString(R.string.meetune_automix), getString(R.string.meetune_automix_summary),
+                MeeTune.automix(mActivity), false, v -> MeeTune.setAutomix(mActivity, !MeeTune.automix(mActivity)));
         volume();
     }
 

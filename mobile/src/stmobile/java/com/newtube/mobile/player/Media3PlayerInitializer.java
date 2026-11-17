@@ -106,6 +106,8 @@ public class Media3PlayerInitializer {
     private final int mMaxBufferBytes;
     @Nullable private DefaultPreloadManager.Builder mPreloadManagerBuilder;
     @Nullable private DefaultTrackSelector mPreloadTrackSelector;
+    /** MEETUNE(automix): the main player's bass knob. */
+    private final BassSwap mBassSwap = new BassSwap();
 
     public Media3PlayerInitializer(Context context) {
         mContext = context.getApplicationContext();
@@ -366,7 +368,7 @@ public class Media3PlayerInitializer {
         mPreloadTrackSelector = null;
 
         DefaultRenderersFactory renderersFactory = new PrerollRenderersFactory(mContext,
-                opusPrerollSkipEnabled())
+                opusPrerollSkipEnabled(), mBassSwap)
                 // A blacklisted/failed primary decoder falls back to another instead of erroring
                 // (replaces the legacy BlacklistMediaCodecSelector's job for the common cases).
                 .setEnableDecoderFallback(true);
@@ -481,10 +483,12 @@ public class Media3PlayerInitializer {
      */
     static final class PrerollRenderersFactory extends DefaultRenderersFactory {
         private final boolean mSkipOpusPreroll;
+        private final BassSwap mBassSwap;
 
-        PrerollRenderersFactory(Context context, boolean skipOpusPreroll) {
+        PrerollRenderersFactory(Context context, boolean skipOpusPreroll, BassSwap bassSwap) {
             super(context);
             mSkipOpusPreroll = skipOpusPreroll;
+            mBassSwap = bassSwap;
         }
 
         /**
@@ -530,7 +534,8 @@ public class Media3PlayerInitializer {
                             // MEETUNE: its own equalizer, only on MeeTune songs (untouched copy otherwise)
                             com.newtube.mobile.ui.meetune.MeeTuneEq.processor(context),
                             // MEETUNE(issue #262): Spatial sound, after the equalizer, MeeTune songs only
-                            com.newtube.mobile.ui.meetune.MeeTuneSpatial.processor(context)})
+                            com.newtube.mobile.ui.meetune.MeeTuneSpatial.processor(context),
+                            mBassSwap.processor()}) // MEETUNE(automix)
                     .build());
         }
 
@@ -571,13 +576,13 @@ public class Media3PlayerInitializer {
      * starts. The same audio chain as the main player (headphone correction, MeeTune's equalizer and
      * Spatial sound), no video or text, never takes audio focus, and the same bitrate ceiling.
      */
-    public static ExoPlayer createTailPlayer(Context context, int maxAudioBitrate) {
+    public static ExoPlayer createTailPlayer(Context context, int maxAudioBitrate, BassSwap bassSwap) {
         DefaultTrackSelector selector = new DefaultTrackSelector(context);
         selector.setParameters(selector.buildUponParameters()
                 .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true)
                 .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
                 .setMaxAudioBitrate(maxAudioBitrate));
-        ExoPlayer player = new ExoPlayer.Builder(context, new PrerollRenderersFactory(context, false))
+        ExoPlayer player = new ExoPlayer.Builder(context, new PrerollRenderersFactory(context, false, bassSwap))
                 .setTrackSelector(selector)
                 .build();
         player.setAudioAttributes(new AudioAttributes.Builder()
@@ -585,6 +590,11 @@ public class Media3PlayerInitializer {
                 .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                 .build(), /* handleAudioFocus= */ false);
         return player;
+    }
+
+    /** MEETUNE(automix): the main player's bass knob. */
+    public BassSwap getBassSwap() {
+        return mBassSwap;
     }
 
     /** Valid after createPlayer; the controller owns and releases the built manager. */

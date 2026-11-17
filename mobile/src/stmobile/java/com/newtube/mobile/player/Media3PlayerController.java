@@ -1101,6 +1101,7 @@ public class Media3PlayerController implements Player.Listener {
             mPlayer = null;
         }
         mHoldBase = null;
+        mTempoTrim = 1f;
     }
 
     /**
@@ -1323,13 +1324,35 @@ public class Media3PlayerController implements Player.Listener {
      */
     @Nullable
     private PlaybackParameters mHoldBase;
+    /** MEETUNE(automix): {@link #setTempoTrim}, 1 when off. */
+    private float mTempoTrim = 1f;
 
     /** The chosen speed - during a press-and-hold boost, the speed it returns to. */
     public float getSpeed() {
         if (mHoldBase != null) {
             return mHoldBase.speed;
         }
-        return mPlayer != null ? mPlayer.getPlaybackParameters().speed : -1;
+        return mPlayer != null ? mPlayer.getPlaybackParameters().speed / mTempoTrim : -1;
+    }
+
+    /**
+     * MEETUNE(automix): plays at the chosen speed times {@code trim}, pitch kept, to lock an incoming song's beat
+     * to the outgoing one's. Like a press-and-hold boost nothing saves or shows it ({@link #getSpeed} keeps the
+     * chosen speed); 1 ends it.
+     */
+    public void setTempoTrim(float trim) {
+        if (mPlayer == null || trim <= 0) {
+            return;
+        }
+        if (mHoldBase != null) { // mid-hold: the hold ends on the trimmed speed
+            mHoldBase = new PlaybackParameters(mHoldBase.speed / mTempoTrim * trim, mHoldBase.pitch);
+            mTempoTrim = trim;
+            return;
+        }
+        PlaybackParameters now = mPlayer.getPlaybackParameters();
+        float speed = now.speed / mTempoTrim * trim;
+        mTempoTrim = trim;
+        mPlayer.setPlaybackParameters(new PlaybackParameters(speed, now.pitch));
     }
 
     /**
@@ -1354,7 +1377,7 @@ public class Media3PlayerController implements Player.Listener {
             if (mHoldBase != null) {
                 mHoldBase = withSpeed(mHoldBase, speed); // chosen mid-hold: the hold ends on it
             } else {
-                mPlayer.setPlaybackParameters(withSpeed(mPlayer.getPlaybackParameters(), speed));
+                mPlayer.setPlaybackParameters(withSpeed(mPlayer.getPlaybackParameters(), speed * mTempoTrim));
             }
 
             if (remember) {

@@ -152,6 +152,8 @@
     <string name="meetune_volume_note">Songs only; MeeTube keeps its own Player volume. Over 100% boosts quiet songs and quiet phones. Very high levels can distort the sound or damage speakers</string>
     <string name="meetune_crossfade_off">Off</string>
     <string name="meetune_crossfade_seconds">%1$d s</string>
+    <string name="meetune_automix">Automix (Beta)</string>
+    <string name="meetune_automix_summary">Crossfades like a DJ: the next song comes in on the beat, its tempo matched to the playing one, then eases back to its own. Uses the Crossfade length, or 8 s when that is Off</string>
     <string name="meetune_crossfade_note">The end of a song fades into the next one. Songs from Autoplay, a queue or Repeat; not when playback stops after the song</string>
     <string name="meetune_dolby_summary">Play a song\'s Dolby Atmos or 5.1 track when YouTube has one</string>
     <string name="meetune_bit_perfect">Bit-perfect USB DAC</string>

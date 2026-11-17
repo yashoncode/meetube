@@ -47,6 +47,9 @@ public final class MeeTune {
         com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoStateController.sOwnHistory = MeeTune::isMusic;
         com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoStateController.sOwnVolume =
                 (context, video) -> isMusic(video) ? volume(context) : null; // issue #272
+        // Automix analyzes the next song's opening before the blend: fetch it a minute ahead, not 20 s.
+        com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoLoaderController.sPrefetchLeadMs =
+                (context, video) -> context != null && isMusic(video) && automix(context) ? 60_000 : 0;
         com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController.sMusicNext = (playing, usual) -> {
             if (!isMusic(playing)) return usual; // a MeeTube video: nothing changes
             Video next = usual;
@@ -871,6 +874,15 @@ public final class MeeTune {
 
     static void setCrossfadeSeconds(Context context, int seconds) {
         prefs(context).edit().putInt("crossfade_s", Math.max(0, Math.min(12, seconds))).apply();
+    }
+
+    /** Automix (Beta): crossfades on the beat, the next song's tempo matched to the playing one's. */
+    public static boolean automix(Context context) {
+        return prefs(context).getBoolean("automix", false);
+    }
+
+    static void setAutomix(Context context, boolean on) {
+        prefs(context).edit().putBoolean("automix", on).apply();
     }
 
     /** Home's "Listen again" as Speed dial, pages of 3x3 square tiles as YT Music has it (issue #264). Off: Home as it was. */

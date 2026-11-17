@@ -30,10 +30,10 @@ public class OpusPrerollRenderersFactoryTest {
     @Test
     public void audioRendererIsReplacedInPlace() {
         List<Class<?>> types = rendererTypes(new Media3PlayerInitializer.PrerollRenderersFactory(
-                RuntimeEnvironment.getApplication(), true));
+                RuntimeEnvironment.getApplication(), true, new BassSwap()));
         assertEquals(1, types.stream().filter(t -> MediaCodecAudioRenderer.class.isAssignableFrom(t)).count());
         List<Class<?>> stock = rendererTypes(new Media3PlayerInitializer.PrerollRenderersFactory(
-                RuntimeEnvironment.getApplication(), false));
+                RuntimeEnvironment.getApplication(), false, new BassSwap()));
         assertEquals(stock.size(), types.size());
         int audioIndex = stock.indexOf(MediaCodecAudioRenderer.class);
         assertSame(OpusPrerollAudioRenderer.class, types.get(audioIndex));
@@ -42,7 +42,7 @@ public class OpusPrerollRenderersFactoryTest {
     @Test
     public void switchedOffKeepsTheStockRenderer() {
         List<Class<?>> stock = rendererTypes(new Media3PlayerInitializer.PrerollRenderersFactory(
-                RuntimeEnvironment.getApplication(), false));
+                RuntimeEnvironment.getApplication(), false, new BassSwap()));
         assertEquals(true, stock.contains(MediaCodecAudioRenderer.class));
         assertEquals(false, stock.contains(OpusPrerollAudioRenderer.class));
     }

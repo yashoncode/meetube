@@ -380,6 +380,18 @@ public class VideoLoaderController extends BasePlayerController {
         scheduleNextPrefetch();
     }
 
+    /**
+     * MEETUNE(automix): a longer prefetch lead for this video, or 0 for the usual one. Automix analyzes the
+     * next song's opening before the crossfade, which the usual 20 s leaves no time for.
+     */
+    public static java.util.function.ToLongBiFunction<android.content.Context, Video> sPrefetchLeadMs;
+
+    private long prefetchLeadMs() {
+        java.util.function.ToLongBiFunction<android.content.Context, Video> lead = sPrefetchLeadMs;
+        long ms = lead != null && getVideo() != null ? lead.applyAsLong(getContext(), getVideo()) : 0;
+        return ms > 0 ? ms : NextPrefetchPolicy.LEAD_WALL_MS;
+    }
+
     private void scheduleNextPrefetch() {
         Utils.removeCallbacks(mNextPrefetchDue);
         PlaybackView player = getPlayer();
@@ -390,7 +402,7 @@ public class VideoLoaderController extends BasePlayerController {
         // one is playing (its own first media is in by then), not five seconds in.
         long delayMs = isShortsSwipe() ? Math.max(0, SHORTS_PREFETCH_AFTER_MS - playedWallMs())
                 : NextPrefetchPolicy.delayUntilDueMs(player.getDurationMs(),
-                player.getPositionMs(), player.getSpeed(), playedWallMs());
+                player.getPositionMs(), player.getSpeed(), playedWallMs(), prefetchLeadMs());
         if (delayMs == NextPrefetchPolicy.NEVER) {
             return;
         }
@@ -408,7 +420,7 @@ public class VideoLoaderController extends BasePlayerController {
         }
         // A rebuffer or a slow playhead makes the timer early; re-arm from the real position.
         if (isShortsSwipe() || NextPrefetchPolicy.isDue(player.getDurationMs(), player.getPositionMs(),
-                player.getSpeed(), playedWallMs())) {
+                player.getSpeed(), playedWallMs(), prefetchLeadMs())) {
             preloadNextVideoIfNeeded();
         } else {
             scheduleNextPrefetch();
@@ -1160,7 +1172,7 @@ public class VideoLoaderController extends BasePlayerController {
         }
 
         if ((shortsSwipe && playedWallMs() >= SHORTS_PREFETCH_AFTER_MS) || NextPrefetchPolicy.isDue(getPlayer().getDurationMs(),
-                getPlayer().getPositionMs(), getPlayer().getSpeed(), playedWallMs())) {
+                getPlayer().getPositionMs(), getPlayer().getSpeed(), playedWallMs(), prefetchLeadMs())) {
             // NEWTUBE(prepare-stash): once the next video's info lands, also pre-build its
             // MediaSource (the MPD XML gen+parse the open path would otherwise pay) - but ONLY
             // when the open dispatch below (processFormatInfo) would take the plain
