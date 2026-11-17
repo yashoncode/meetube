@@ -370,6 +370,8 @@ final class ShortsOverlay {
     /** The comments sheet takes the lower part of the screen; the short shrinks above it. */
     void setCommentsOpen(boolean open) {
         mCommentsOpen = open;
+        com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoLoaderController
+                .setShortsCommentsOpen(mActive && open); // auto-scroll waits while they're read
         mOverlay.setVisibility(mActive && !open && !mInPip ? View.VISIBLE : View.GONE);
     }
 
@@ -429,6 +431,8 @@ final class ShortsOverlay {
             mActive = on;
             mShortsSince = android.os.SystemClock.elapsedRealtime();
             mCommentsOpen = false;
+            com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoLoaderController
+                    .setShortsCommentsOpen(false);
             mOverlay.setVisibility(on && !mInPip ? View.VISIBLE : View.GONE);
             if (!on) {
                 mCurrent = null;

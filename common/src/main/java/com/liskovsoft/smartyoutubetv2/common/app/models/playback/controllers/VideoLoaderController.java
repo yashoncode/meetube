@@ -1077,10 +1077,19 @@ public class VideoLoaderController extends BasePlayerController {
         } else if (video != null && video.belongsToShortsGroup()) {
             // MEETUBE(issue #134): a short loops, or with Loop shorts off scrolls on to the next one -
             // whatever the long-video autoplay mode says.
-            playbackMode = getPlayerTweaksData().isLoopShortsEnabled()
+            // With its comments open a short loops too (YouTube's way): scrolling on would pull the
+            // sheet away mid-read.
+            playbackMode = getPlayerTweaksData().isLoopShortsEnabled() || sShortsCommentsOpen
                     ? PlayerConstants.PLAYBACK_MODE_ONE : PlayerConstants.PLAYBACK_MODE_ALL;
         }
         return playbackMode;
+    }
+
+    private static boolean sShortsCommentsOpen;
+
+    /** MEETUBE(shorts): set by the phone's Shorts overlay as a short's comments open and close. */
+    public static void setShortsCommentsOpen(boolean open) {
+        sShortsCommentsOpen = open;
     }
 
     /**
