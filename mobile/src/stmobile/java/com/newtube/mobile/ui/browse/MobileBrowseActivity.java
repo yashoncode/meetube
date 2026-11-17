@@ -734,7 +734,8 @@ public class MobileBrowseActivity extends MobileActivity
                 new com.newtube.mobile.ui.playback.MiniCardSwipe.Callback() {
                     @Override
                     public boolean canSwipe() {
-                        return !mMiniClosing && MiniPlayerBridge.isActive();
+                        // MEETUBE(mini-pip): a floating card fills its window; nothing moves it there
+                        return !mMiniClosing && MiniPlayerBridge.isActive() && (mMiniPip == null || !mMiniPip.isPinned());
                     }
 
                     @Override
@@ -1152,22 +1153,24 @@ public class MobileBrowseActivity extends MobileActivity
 
     private void setMiniButtonsAlpha(float alpha) {
         View close = findViewById(R.id.mobile_mini_close);
-        for (View view : new View[] {mMiniPlayPause, close, mMiniProgress}) {
+        for (View view : new View[] {mMiniPlayPause, close, findViewById(R.id.mobile_mini_audio), mMiniProgress}) {
             if (view != null) {
                 view.animate().cancel();
+                Motion.stopFrost(view);
                 view.setAlpha(alpha);
             }
         }
     }
 
+    /** MEETUBE(issue #273): the landed card's buttons clear out of frosted glass, not a quick blink. */
     private void fadeInMiniButtons() {
-        View close = findViewById(R.id.mobile_mini_close);
-        for (View view : new View[] {mMiniPlayPause, close, mMiniProgress}) {
+        java.util.List<View> buttons = new java.util.ArrayList<>();
+        for (View view : new View[] {mMiniPlayPause, findViewById(R.id.mobile_mini_close), findViewById(R.id.mobile_mini_audio), mMiniProgress}) {
             if (view != null) {
-                view.animate().alpha(1f).setDuration(Motion.FADE_IN_MS)
-                        .setInterpolator(Motion.STANDARD).start();
+                buttons.add(view);
             }
         }
+        Motion.frostInTogether(buttons.toArray(new View[0]));
     }
 
     private void onMiniPlayerTick() {
@@ -4106,6 +4109,16 @@ public class MobileBrowseActivity extends MobileActivity
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode,
             android.content.res.Configuration newConfig) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+        if (isInPictureInPictureMode && mMiniPlace == null && mMiniSwipe != null
+                && mMiniPlayerBar.getVisibility() == View.VISIBLE) {
+            // MEETUBE(mini-float): the corner it was dragged to, before the card fills the window;
+            // expanded back, onResume's syncMiniPlayer re-shows the card there, not at home.
+            mMiniPlace = mMiniSwipe.place();
+            mMiniPlaceSession = MiniPlayerBridge.session();
+        }
+        if (isInPictureInPictureMode) {
+            stopMiniSwipe(); // a spring still settling would pull the filled card off the window's top
+        }
         if (mMiniPip != null) {
             mMiniPip.onModeChanged(isInPictureInPictureMode);
         }

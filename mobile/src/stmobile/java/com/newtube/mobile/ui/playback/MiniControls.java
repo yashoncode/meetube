@@ -35,6 +35,7 @@ public final class MiniControls {
             }
             if (button.getAlpha() < 1f) { // faded, or fading out (a hide's end action is cancelled)
                 button.animate().cancel();
+                Motion.stopFrost(button); // a touch while the landed card's buttons clear
                 button.animate().alpha(1f).setDuration(Motion.FADE_IN_MS).setInterpolator(Motion.STANDARD).start();
             }
         }
@@ -57,6 +58,7 @@ public final class MiniControls {
         mButtons[0].removeCallbacks(mHide);
         for (View button : mButtons) {
             button.animate().cancel();
+            Motion.stopFrost(button);
             button.setAlpha(1f);
             button.setVisibility(View.VISIBLE);
         }

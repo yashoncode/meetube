@@ -62,10 +62,7 @@ public final class Motion {
         if (android.os.Build.VERSION.SDK_INT < 31) {
             return;
         }
-        Object running = view.getTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator);
-        if (running instanceof android.animation.Animator) {
-            ((android.animation.Animator) running).cancel();
-        }
+        stopFrost(view);
         float radius = FROST_BLUR_DP * view.getResources().getDisplayMetrics().density;
         android.animation.ValueAnimator frost = android.animation.ValueAnimator.ofFloat(radius, 0f);
         frost.setDuration(FROST_MS);
@@ -86,6 +83,70 @@ public final class Motion {
         });
         view.setTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator, frost);
         frost.start();
+    }
+
+    /**
+     * MEETUBE(issue #273): a few small views (the mini card's buttons) clear together on ONE
+     * animator, started after the next frame so it does not share its first frames with the screen
+     * coming back to front (that made the per-view version stutter). The blur is lighter than a
+     * page's: an icon sharpens instead of smearing across its own bounds.
+     */
+    public static void frostInTogether(android.view.View... views) {
+        if (views.length == 0) {
+            return;
+        }
+        for (android.view.View view : views) {
+            view.animate().cancel();
+            stopFrost(view);
+            view.setAlpha(0f);
+        }
+        float radius = 6f * views[0].getResources().getDisplayMetrics().density;
+        boolean blur = android.os.Build.VERSION.SDK_INT >= 31;
+        android.animation.ValueAnimator frost = android.animation.ValueAnimator.ofFloat(0f, 1f);
+        frost.setDuration(FROST_MS);
+        frost.setInterpolator(STANDARD);
+        frost.addUpdateListener(a -> {
+            float f = (float) a.getAnimatedValue();
+            float r = (1f - f) * radius;
+            android.graphics.RenderEffect effect = !blur || r < 0.5f ? null
+                    : android.graphics.RenderEffect.createBlurEffect(r, r, android.graphics.Shader.TileMode.DECAL);
+            for (android.view.View view : views) {
+                view.setAlpha(f);
+                if (blur) {
+                    view.setRenderEffect(effect);
+                }
+            }
+        });
+        frost.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) { // also after cancel()
+                for (android.view.View view : views) {
+                    if (blur) {
+                        view.setRenderEffect(null);
+                    }
+                    if (view.getTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator) == animation) {
+                        view.setTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator, null);
+                    }
+                }
+            }
+        });
+        for (android.view.View view : views) {
+            view.setTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator, frost);
+        }
+        FrameGate.afterNextFrame(views[0], 120, () -> {
+            if (views[0].getTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator) == frost) {
+                frost.start(); // not taken over (a touch's fade, the card folding) while it waited
+            }
+        });
+    }
+
+    /** MEETUBE(frost): stop a running frost on {@code view}; its blur clears, its alpha stays. */
+    public static void stopFrost(android.view.View view) {
+        Object running = view.getTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator);
+        view.setTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_frost_animator, null);
+        if (running instanceof android.animation.Animator) {
+            ((android.animation.Animator) running).cancel();
+        }
     }
 
     /** MEETUBE(motion): the same pop, barely there - for a whole bar acknowledging a change. */

@@ -5281,6 +5281,14 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
         mControlsVisible = true;
+        // MEETUBE(shorts): a short above its comments keeps only play / pause, the time and the bar;
+        // minimize, audio, cast, captions, settings, previous / next and fullscreen are a video's.
+        int videoOnly = mShorts != null && mShorts.isCommentsOpen() ? View.INVISIBLE : View.VISIBLE;
+        for (View control : new View[] {mBackButton, mAudioButton, mOptionsRow, mPrevButton, mNextButton, mFullscreenButton}) {
+            if (control != null) {
+                control.setVisibility(videoOnly);
+            }
+        }
         mControlsRoot.setVisibility(View.VISIBLE);
         mControlsRoot.animate().cancel();
         if (animate) {
@@ -7985,6 +7993,11 @@ public class MobilePlaybackActivity extends MobileActivity
             mAmbient.setFill(isTallMode() || isLandscape() ? mVideoArea : null); // the bands around a short glow
         }
         updateSeekBarLine();
+        if (isShortsMode()) {
+            // MEETUBE(shorts): the controls a tap showed on the short above its comments (paused, they
+            // never auto-hide) stayed over the full-screen short once the comments closed.
+            hideControls();
+        }
         if (!mControlsVisible) {
             startProgressUpdates(); // the Shorts line is fed by the line loop
         }
@@ -8501,7 +8514,8 @@ public class MobilePlaybackActivity extends MobileActivity
         float cardH = MiniSize.height(this);
         float scale = video.width() > 0 && video.height() > 0
                 ? Math.min(picW / video.width(), cardH / video.height()) : 0.44f;
-        float targetX = mContainer.getWidth() - margin - cardW + picLeft + (picW - video.width() * scale) / 2f;
+        // MEETUBE(issue #273): the card's own end margin (8dp for Default); 12dp landed it 4dp short and it jumped right.
+        float targetX = mContainer.getWidth() - MiniSize.endMargin(this) - cardW + picLeft + (picW - video.width() * scale) / 2f;
         float targetY = mContainer.getHeight() - bottomNav - margin - (cardH + video.height() * scale) / 2f;
 
         mMorphScaleX = scale;

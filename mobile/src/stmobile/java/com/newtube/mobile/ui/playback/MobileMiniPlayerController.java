@@ -387,10 +387,14 @@ public final class MobileMiniPlayerController {
         setKeepScreenOn(false); // no card, no video on this screen
     }
 
+    /** MEETUBE(issue #273): the landed card's buttons clear out of frosted glass, not a quick blink. */
     private void fadeInControls() {
-        for (View view : new View[] {mPlayPause, mClose, mProgress}) {
-            view.animate().alpha(1f).setDuration(Motion.FADE_IN_MS).setInterpolator(Motion.STANDARD).start();
-        }
+        Motion.frostInTogether(controls());
+    }
+
+    private View[] controls() {
+        View audio = mActivity.findViewById(R.id.mobile_mini_audio);
+        return audio != null ? new View[] {mPlayPause, mClose, audio, mProgress} : new View[] {mPlayPause, mClose, mProgress};
     }
 
     private void attachTexture() {
@@ -476,9 +480,7 @@ public final class MobileMiniPlayerController {
                     resetTransform();
                     mEntryAnimating = false;
                     hideFreezeWhenReady();
-                    mPlayPause.animate().alpha(1f).setDuration(90).start();
-                    mClose.animate().alpha(1f).setDuration(90).start();
-                    mProgress.animate().alpha(1f).setDuration(90).start();
+                    fadeInControls(); // resetTransform's alpha 1 is undone before the frame draws
                     publishBounds();
                 })
                 .start();
@@ -501,12 +503,11 @@ public final class MobileMiniPlayerController {
     }
 
     private void setControlsAlpha(float alpha) {
-        mPlayPause.animate().cancel();
-        mClose.animate().cancel();
-        mProgress.animate().cancel();
-        mPlayPause.setAlpha(alpha);
-        mClose.setAlpha(alpha);
-        mProgress.setAlpha(alpha);
+        for (View view : controls()) {
+            view.animate().cancel();
+            Motion.stopFrost(view);
+            view.setAlpha(alpha);
+        }
     }
 
     private void publishBounds() {

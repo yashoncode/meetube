@@ -130,6 +130,11 @@ public final class MiniSize {
         card.setLayoutParams(params);
     }
 
+    /** The card's gap from the screen's end edge; the minimize morph lands on it too (issue #273). */
+    static int endMargin(Context context) {
+        return Math.round((isBar(context) ? 12 : 8) * dp(context));
+    }
+
     /** Sizes and styles the card and its buttons; call where the card's buttons are styled. */
     public static void apply(Activity activity) {
         float dp = dp(activity);
@@ -139,7 +144,7 @@ public final class MiniSize {
             ViewGroup.LayoutParams params = card.getLayoutParams();
             params.width = bar ? cardWidth(activity) : Math.round(Math.min(width(activity), maxWidth(card)));
             params.height = bar ? height(activity) : Math.round(params.width * 9f / 16f);
-            ((ViewGroup.MarginLayoutParams) params).setMarginEnd(Math.round((bar ? 12 : 8) * dp));
+            ((ViewGroup.MarginLayoutParams) params).setMarginEnd(endMargin(activity));
             card.setLayoutParams(params);
             boolean frosted = type(activity) == MINIMAL2;
             card.setCardBackgroundColor(frosted ? Color.TRANSPARENT : Color.BLACK);

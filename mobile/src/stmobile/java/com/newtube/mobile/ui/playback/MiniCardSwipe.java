@@ -471,7 +471,8 @@ public final class MiniCardSwipe implements View.OnTouchListener {
     private void followTop() {
         View parent = (View) mCard.getParent();
         if (mDragging || mResizing || mResizeCommit != null || parent == null
-                || mCard.getVisibility() != View.VISIBLE || Float.isNaN(mRestY)) {
+                || mCard.getVisibility() != View.VISIBLE || Float.isNaN(mRestY)
+                || !mCallback.canSwipe()) { // MEETUBE(mini-pip): floating, it pushed the card 22px down (black band)
             return;
         }
         float top = topClearance(parent) - mCard.getTop();
