@@ -550,7 +550,10 @@ public final class MeeTunePlayerSkin {
             return;
         }
         String mime = format.sampleMimeType != null ? format.sampleMimeType : format.codecs;
+        // Issue #284: Atmos is the decoder's own verdict (the track's dec3 box says JOC), not the setting.
         String codec = MimeTypes.AUDIO_OPUS.equals(mime) ? "OPUS"
+                : MimeTypes.AUDIO_E_AC3_JOC.equals(mime) ? "DOLBY ATMOS"
+                : MimeTypes.AUDIO_E_AC3.equals(mime) || MimeTypes.AUDIO_AC3.equals(mime) ? "DOLBY"
                 : MimeTypes.AUDIO_AAC.equals(mime) || (mime != null && mime.startsWith("mp4a")) ? "AAC"
                 : mime != null ? mime.replace("audio/", "").toUpperCase(Locale.US) : "AUDIO";
         mFormat.setText(codec);

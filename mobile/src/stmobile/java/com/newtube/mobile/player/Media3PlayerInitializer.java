@@ -479,7 +479,8 @@ public class Media3PlayerInitializer {
      * NEWTUBE(opus-preroll): the stock factory, with the stock MediaCodec audio renderer swapped for
      * {@link OpusPrerollAudioRenderer} (same constructor arguments, same position in the list), so a
      * seek/resume into an Opus segment stops decoding every packet up to the target. Extension
-     * renderers (none are bundled) keep their stock placement.
+     * renderers keep their stock placement: FFmpeg's audio renderer (Dolby where the phone has no
+     * decoder, {@link AudioPreferences#decodesDolby}) after the MediaCodec one.
      */
     static final class PrerollRenderersFactory extends DefaultRenderersFactory {
         private final boolean mSkipOpusPreroll;
@@ -489,6 +490,7 @@ public class Media3PlayerInitializer {
             super(context);
             mSkipOpusPreroll = skipOpusPreroll;
             mBassSwap = bassSwap;
+            setExtensionRendererMode(EXTENSION_RENDERER_MODE_ON);
         }
 
         /**

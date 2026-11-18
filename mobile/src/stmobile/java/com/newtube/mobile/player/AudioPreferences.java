@@ -89,10 +89,14 @@ public final class AudioPreferences {
     /** ponytail: asked once per process; a decoder can't appear while the app runs. */
     private static Boolean sDecodesDolby;
 
-    /** Whether the platform has an E-AC-3 decoder (licensed, so many phones have none). */
+    /**
+     * Whether E-AC-3 can be decoded here: the platform's decoder (licensed, so many phones have
+     * none), else the bundled FFmpeg one (5.1, without Atmos's height objects).
+     */
     public static boolean decodesDolby() {
         if (sDecodesDolby == null) {
-            boolean found = false;
+            boolean found = androidx.media3.decoder.ffmpeg.FfmpegLibrary.supportsFormat(
+                    androidx.media3.common.MimeTypes.AUDIO_E_AC3);
             for (MediaCodecInfo info : new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos()) {
                 if (info.isEncoder()) {
                     continue;
