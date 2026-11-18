@@ -1460,6 +1460,11 @@ public class Media3PlayerController implements Player.Listener {
         }
     }
 
+    /** MEETUNE(crossfade): the volume before any fade (the user's, times loudness), for the tail to match. */
+    public float getBaseVolume() {
+        return Math.min(mUserVolume, 1f) * mLoudnessGain;
+    }
+
     /** MEETUNE(crossfade): the player itself, for the position and speed a crossfade follows. */
     @Nullable
     public ExoPlayer getExoPlayer() {

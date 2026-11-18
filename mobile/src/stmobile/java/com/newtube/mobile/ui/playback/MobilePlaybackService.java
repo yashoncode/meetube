@@ -89,6 +89,12 @@ public class MobilePlaybackService extends Service {
     private Player mNotificationPlayer;
     private Player.Listener mSessionSyncListener;
     private boolean mIsForeground;
+    private static final long DEMOTE_GRACE_MS = 10_000;
+    private final android.os.Handler mDemoteHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable mDemote = () -> {
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH);
+        mIsForeground = false;
+    };
     /** MEETUBE(issue #235): the last pause came from a media key and nothing has played since. */
     private boolean mKeyPaused;
     private long mPauseKeyAtMs = -10_000;
@@ -418,6 +424,7 @@ public class MobilePlaybackService extends Service {
                 .setNotificationListener(new PlayerNotificationManager.NotificationListener() {
                     @Override
                     public void onNotificationPosted(int notificationId, Notification notification, boolean ongoing) {
+                        mDemoteHandler.removeCallbacks(mDemote);
                         if (ongoing) {
                             // Promote to foreground so audio keeps playing when backgrounded / screen off.
                             try {
@@ -433,10 +440,12 @@ public class MobilePlaybackService extends Service {
                                 Log.e(TAG, "startForeground rejected, continuing un-promoted: " + e);
                                 mIsForeground = false;
                             }
-                        } else {
-                            // Paused: keep the notification but drop foreground state (dismissible).
-                            ServiceCompat.stopForeground(MobilePlaybackService.this, ServiceCompat.STOP_FOREGROUND_DETACH);
-                            mIsForeground = false;
+                        } else if (mIsForeground) {
+                            // Paused: keep the notification but drop foreground state (dismissible), after a
+                            // grace. MEETUBE(issue #285): a song change stops the player for a moment, and a
+                            // service promoted again from the background has no while-in-use grant, so
+                            // Android 17 silenced the next song until the app was opened.
+                            mDemoteHandler.postDelayed(mDemote, DEMOTE_GRACE_MS);
                         }
                     }
 

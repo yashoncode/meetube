@@ -101,6 +101,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     private final ActivityResultLauncher<Intent> mSignIn = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) MeeTune.setNoAccount(this, false); // signed in: speaks as it
+                showAvatar();
                 for (Page page : mTabs) page.rows = null;
                 show(current(), true);
             });
@@ -926,8 +928,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     private void showAvatar() {
         com.newtube.mobile.ui.signin.WebSignInSheet.loadAvatar(this, findViewById(R.id.meetune_account_avatar),
-                com.newtube.mobile.ui.signin.WebSignInState.isSignedIn(this)
-                        ? com.newtube.mobile.ui.signin.WebSignInState.accountPhoto(this) : null);
+                MeeTune.signedIn(this) ? com.newtube.mobile.ui.signin.WebSignInState.accountPhoto(this) : null);
     }
 
     /** The avatar's popup: the web accounts (a tap switches), Add account (or Sign in), then Settings. */
@@ -935,7 +936,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         android.widget.LinearLayout content = new android.widget.LinearLayout(this);
         android.widget.PopupWindow popup = glassPopup(content, 280);
         int pad = MeeTuneAdapter.dp(this, 6);
-        int selected = com.newtube.mobile.ui.signin.WebSignInState.selectedSlot(this);
+        // A tap on the ticked account takes the tick off: MeeTune then runs without an account.
+        int selected = MeeTune.signedIn(this) ? com.newtube.mobile.ui.signin.WebSignInState.selectedSlot(this) : -1;
         for (com.newtube.mobile.ui.signin.WebSignInState.Account account
                 : com.newtube.mobile.ui.signin.WebSignInState.accounts(this)) {
             View row = getLayoutInflater().inflate(R.layout.item_mobile_account_row, content, false);
@@ -947,8 +949,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                     row.findViewById(R.id.mobile_account_row_avatar), account.photo);
             row.setOnClickListener(v -> {
                 popup.dismiss();
-                if (account.slot == com.newtube.mobile.ui.signin.WebSignInState.selectedSlot(this)) return;
-                com.newtube.mobile.ui.signin.WebSignInState.select(this, account.slot);
+                boolean off = account.slot == selected;
+                MeeTune.setNoAccount(this, off);
+                if (!off) com.newtube.mobile.ui.signin.WebSignInState.select(this, account.slot);
                 showAvatar();
                 for (Page page : mTabs) page.rows = null; // the music is the new account's
                 show(current(), true);
@@ -1155,8 +1158,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     private String mAccount;
 
     private String accountKey() {
-        return com.newtube.mobile.ui.signin.WebSignInState.isSignedIn(this)
-                ? String.valueOf(com.newtube.mobile.ui.signin.WebSignInState.selectedSlot(this)) : "";
+        return MeeTune.account(this);
     }
 
     @Override

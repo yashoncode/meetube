@@ -26,28 +26,37 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
- * MEETUNE(automix): a song's beat grid (its tempo, and where its beats fall) from a stretch of its audio,
- * for Automix's beat-matched crossfade. A {@link Probe} decodes the stretch with a silent player that runs
- * as fast as the network and decoder allow; an {@link Onsets} meter turns the sound into an onset curve
- * (how sharply the loudness, overall and in the bass, rises every 10 ms) and {@link #analyze} finds the
- * beat in it: the tempo from the curve's autocorrelation, the phase from where the beats land, both
- * refined by a fit through the beats' peaks. Too weak a beat (speech, ambient, rubato) gives no grid.
+ * MEETUNE(automix): a song's beat grid (its tempo, where its bars start, how loud each beat is) from a
+ * stretch of its audio, for Automix's beat-matched crossfade. A {@link Probe} decodes the stretch with a
+ * silent player that runs as fast as the network and decoder allow; {@link BeatThis} finds its beats and
+ * downbeats, and {@link #grid} fits a straight grid through them. Too few beats, or beats that don't hold
+ * to one tempo (speech, ambient, rubato, a tempo change), give no grid worth mixing on.
  */
 final class MeeTuneBeats {
     private static final String TAG = "MeeTuneBeats";
     static final int HOP_MS = 10;
-    private static final double MIN_BPM = 70;
-    private static final double MAX_BPM = 180;
-    /** Onset on the beats over onset at any phase, below which the beat is too weak to mix on. */
+    /** The share of the grid's beats the model heard, below which it is not steady enough to mix on. */
     // ponytail: one fixed threshold; tune per genre from the "grid" log lines if it lets bad grids through.
-    static final double MIN_STRENGTH = 1.8;
+    static final double MIN_STRENGTH = 0.75;
+    private static final int MIN_BEATS = 16;
+    /** The model runs here, one stretch at a time, below the song being heard. */
+    private static final java.util.concurrent.Executor ANALYSIS =
+            java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+                Thread thread = new Thread(() -> {
+                    android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                    r.run();
+                }, "MeeTuneBeats");
+                thread.setDaemon(true);
+                return thread;
+            });
 
     private MeeTuneBeats() {
     }
 
     /**
      * Beats every {@link #periodMs}, one of them at {@link #firstMs} (both in the song's own time), the first
-     * of a bar as far as the kick tells (a bar is 4 beats from it), with each analyzed beat's loudness.
+     * of a bar (a bar is 4 beats from it), with each analyzed beat's loudness. The grid holds from firstMs to
+     * {@link #untilMs}: the steady stretch it was fitted on.
      */
     static final class Grid {
         /** Under the stretch's median beat by this much (ln of power): quiet; by the second: near silent. */
@@ -59,18 +68,35 @@ final class MeeTuneBeats {
         final double strength;
         /** Mean ln power of beat {@code k} from {@link #firstMs}; null on a {@link #scaled} grid. */
         @Nullable final double[] levels;
+        final double untilMs;
 
-        Grid(double periodMs, double firstMs, double strength, @Nullable double[] levels) {
+        Grid(double periodMs, double firstMs, double strength, @Nullable double[] levels, double untilMs) {
             this.periodMs = periodMs;
             this.firstMs = firstMs;
             this.strength = strength;
             this.levels = levels;
+            this.untilMs = untilMs;
+        }
+
+        /** Bars (of 4 beats from firstMs) whose end the steady stretch reaches. */
+        private int steadyBeats() {
+            int beats = (int) Math.floor((untilMs - firstMs) / periodMs + 0.5);
+            return levels == null ? 0 : Math.min(levels.length, beats) / 4 * 4;
+        }
+
+        /** The first bar line from which a whole bar plays at full level (a drop, past a quiet intro), or NaN. */
+        double energyMs() {
+            double floor = median() - QUIET;
+            for (int k = 0; k + 4 <= steadyBeats(); k += 4) {
+                if (barLevel(k) >= floor) return firstMs + k * periodMs;
+            }
+            return Double.NaN;
         }
 
         /** The first bar line from which a whole bar plays above near silence (past a silent intro), or NaN. */
         double mixInMs() {
             double floor = median() - SILENT;
-            for (int k = 0; levels != null && k + 4 <= levels.length; k += 4) {
+            for (int k = 0; k + 4 <= steadyBeats(); k += 4) {
                 if (barLevel(k) >= floor) return firstMs + k * periodMs;
             }
             return Double.NaN;
@@ -79,7 +105,7 @@ final class MeeTuneBeats {
         /** The bar line ending the last bar at full level (before a fade-out, a quiet outro or silence), or NaN. */
         double musicEndMs() {
             double floor = median() - QUIET;
-            for (int k = levels != null ? (levels.length / 4 - 1) * 4 : -1; k >= 0; k -= 4) {
+            for (int k = steadyBeats() - 4; k >= 0; k -= 4) {
                 if (barLevel(k) >= floor) return firstMs + (k + 4) * periodMs;
             }
             return Double.NaN;
@@ -113,7 +139,7 @@ final class MeeTuneBeats {
 
         /** The same beat counted every {@code times} its period (2: every other beat; 0.5: on the half beats). */
         Grid scaled(double times) {
-            return new Grid(periodMs * times, firstMs, strength, null);
+            return new Grid(periodMs * times, firstMs, strength, null, untilMs);
         }
 
         @Override
@@ -122,180 +148,116 @@ final class MeeTuneBeats {
         }
     }
 
-    /** Mono samples in, one onset value per {@link #HOP_MS} out. */
-    static final class Onsets {
+    /** Mono samples in: kept for the model, and their loudness every {@link #HOP_MS}. */
+    static final class Audio {
+        final int rate;
         private final int mHop;
-        private final float mLowAlpha;
-        private float mLowPass;
         private double mSum;
-        private double mLowSum;
         private int mCount;
-        private double mPrev = Double.NaN;
-        private double mPrevLow;
-        private float[] mValues = new float[4096];
-        private float[] mLow = new float[4096];
+        float[] samples = new float[1 << 20];
+        int size;
         private float[] mLevel = new float[4096];
-        private int mSize;
+        private int mLevels;
+        /** The song time of the first sample. */
         double firstMs = Double.NaN;
 
-        Onsets(int sampleRate) {
+        Audio(int sampleRate) {
+            rate = sampleRate;
             mHop = Math.max(1, sampleRate * HOP_MS / 1000);
-            mLowAlpha = (float) (1 - Math.exp(-2 * Math.PI * 150 / sampleRate)); // bass and kick, under ~150 Hz
         }
 
         void add(float sample) {
-            mLowPass += mLowAlpha * (sample - mLowPass);
+            if (size == samples.length) samples = Arrays.copyOf(samples, size * 2);
+            samples[size++] = sample;
             mSum += sample * sample;
-            mLowSum += mLowPass * mLowPass;
             if (++mCount < mHop) return;
-            double level = Math.log(mSum / mCount + 1e-7);
-            double low = Math.log(mLowSum / mCount + 1e-7);
-            if (!Double.isNaN(mPrev)) {
-                if (mSize == mValues.length) {
-                    mValues = Arrays.copyOf(mValues, mSize * 2);
-                    mLow = Arrays.copyOf(mLow, mSize * 2);
-                    mLevel = Arrays.copyOf(mLevel, mSize * 2);
-                }
-                mLow[mSize] = (float) Math.max(0, low - mPrevLow);
-                mLevel[mSize] = (float) level;
-                mValues[mSize] = (float) Math.max(0, level - mPrev) + mLow[mSize];
-                mSize++;
-            }
-            mPrev = level;
-            mPrevLow = low;
-            mSum = mLowSum = 0;
+            if (mLevels == mLevel.length) mLevel = Arrays.copyOf(mLevel, mLevels * 2);
+            mLevel[mLevels++] = (float) Math.log(mSum / mCount + 1e-7);
+            mSum = 0;
             mCount = 0;
         }
-
-        int size() {
-            return mSize;
-        }
-
-        float[] values() {
-            return mValues;
-        }
     }
 
-    /** The beat grid of what {@code onsets} measured (see {@link Grid#strong}), or null when shorter than 10 s or silent. */
+    /**
+     * The grid through {@code beats} and {@code downs} (song ms, ascending), with each beat's loudness from
+     * {@code audio}; null under {@link #MIN_BEATS}.
+     */
     @Nullable
-    static Grid analyze(Onsets onsets) {
-        return analyze(onsets.mValues, onsets.mLow, onsets.mLevel, onsets.size(), onsets.firstMs);
-    }
-
-    /** Onset curves whose value {@code i} is at {@code firstMs + (i + 1) * HOP_MS}: all, bass, and loudness. */
-    @Nullable
-    private static Grid analyze(float[] raw, float[] low, float[] level, int n, double firstMs) {
-        if (n < 1000) return null;
-        // Onsets over their local average (half a second each side): steady loudness is not a beat.
-        float[] o = new float[n];
-        int w = 50;
-        double run = 0;
-        for (int i = 0; i < Math.min(n, w); i++) run += raw[i];
+    static Grid grid(double[] beats, double[] downs, Audio audio) {
+        int n = beats.length;
+        if (n < MIN_BEATS) return null;
+        double[] gaps = new double[n - 1];
+        for (int i = 1; i < n; i++) gaps[i - 1] = beats[i] - beats[i - 1];
+        double[] sorted = gaps.clone();
+        Arrays.sort(sorted);
+        double gap = sorted[sorted.length / 2];
+        // The steady stretch: the longest run of beats a gap apart (or two, a missed one), within 8%. An intro
+        // without drums, a breakdown or a tempo change is left out rather than bending the line.
+        int runFrom = 0;
+        int bestFrom = 0;
+        int bestTo = 0;
+        for (int i = 1; i <= n; i++) {
+            double r = i < n ? gaps[i - 1] / gap : 0;
+            if (i < n && (Math.abs(r - 1) < 0.08 || Math.abs(r - 2) < 0.16)) continue;
+            if (i - 1 - runFrom > bestTo - bestFrom) {
+                bestFrom = runFrom;
+                bestTo = i - 1;
+            }
+            runFrom = i;
+        }
+        beats = Arrays.copyOfRange(beats, bestFrom, bestTo + 1);
+        n = beats.length;
+        if (n < MIN_BEATS) return null;
+        // Each beat's number on the grid (a missed beat skips one), then a line through them all.
+        long[] k = new long[n];
+        for (int i = 1; i < n; i++) k[i] = k[i - 1] + Math.max(1, Math.round((beats[i] - beats[i - 1]) / gap));
+        double mk = 0;
+        double mb = 0;
         for (int i = 0; i < n; i++) {
-            if (i + w < n) run += raw[i + w];
-            if (i - w - 1 >= 0) run -= raw[i - w - 1];
-            int count = Math.min(n - 1, i + w) - Math.max(0, i - w) + 1;
-            o[i] = (float) Math.max(0, raw[i] - run / count);
+            mk += k[i];
+            mb += beats[i];
         }
-        double total = 0;
-        for (float v : o) total += v;
-        if (total <= 0) return null;
-
-        // Tempo: the lag whose autocorrelation, with its double's, is strongest, leaning toward ~120 BPM
-        // where most songs' beat (not their bar or eighth notes) lies.
-        int minLag = (int) Math.floor(60_000 / MAX_BPM / HOP_MS);
-        int maxLag = (int) Math.ceil(60_000 / MIN_BPM / HOP_MS);
-        double[] ac = new double[2 * maxLag + 3];
-        for (int lag = minLag - 1; lag < ac.length; lag++) {
-            double s = 0;
-            for (int i = lag; i < n; i++) s += o[i] * o[i - lag];
-            ac[lag] = s / (n - lag);
+        mk /= n;
+        mb /= n;
+        double skk = 0;
+        double skb = 0;
+        for (int i = 0; i < n; i++) {
+            skk += (k[i] - mk) * (k[i] - mk);
+            skb += (k[i] - mk) * (beats[i] - mb);
         }
-        double[] score = new double[maxLag + 2];
-        int best = -1;
-        for (int lag = minLag - 1; lag <= maxLag + 1; lag++) {
-            double octaves = Math.log(60_000.0 / (lag * HOP_MS) / 120) / Math.log(2);
-            score[lag] = (ac[lag] + 0.5 * ac[2 * lag]) * Math.exp(-0.5 * octaves * octaves);
-            if (lag >= minLag && lag <= maxLag && (best < 0 || score[lag] > score[best])) best = lag;
+        double period = skb / skk;
+        double origin = mb - period * mk; // where beat 0 falls
+        // Strength: the share of the grid's beats the model heard within a twelfth of a beat of it.
+        int on = 0;
+        for (int i = 0; i < n; i++) {
+            if (Math.abs(beats[i] - origin - k[i] * period) < period / 12) on++;
         }
-        double period = best + parabola(score[best - 1], score[best], score[best + 1]);
-
-        // Phase: the offset whose beats land on the most onset.
-        // Strength: that sum over the average phase's (a steady beat stands out; noise or rubato is flat).
-        double bestPhase = 0;
-        double bestSum = -1;
-        double allSums = 0;
-        int phases = (int) Math.ceil(period);
-        for (int phase = 0; phase < phases; phase++) {
-            double s = 0;
-            for (double t = phase; t < n; t += period) s += o[Math.min(n - 1, (int) Math.round(t))];
-            allSums += s;
-            if (s > bestSum) {
-                bestSum = s;
-                bestPhase = phase;
-            }
-        }
-        double strength = bestSum / (allSums / phases);
-
-        // Refine: a line through each beat's own peak (near where the grid puts it), weighted by its onset.
-        double sw = 0, sk = 0, sj = 0, skk = 0, skj = 0;
-        for (int k = 0; bestPhase + k * period < n; k++) {
-            double center = bestPhase + k * period;
-            int from = Math.max(1, (int) Math.round(center - period / 6));
-            int to = Math.min(n - 2, (int) Math.round(center + period / 6));
-            int peak = -1;
-            for (int j = from; j <= to; j++) {
-                if (peak < 0 || o[j] > o[peak]) peak = j;
-            }
-            if (peak < 0 || o[peak] <= 0) continue;
-            double j = peak + parabola(o[peak - 1], o[peak], o[peak + 1]);
-            double wk = o[peak];
-            sw += wk;
-            sk += wk * k;
-            sj += wk * j;
-            skk += wk * k * k;
-            skj += wk * k * j;
-        }
-        double denominator = sw * skk - sk * sk;
-        if (denominator > 0) {
-            double slope = (sw * skj - sk * sj) / denominator;
-            if (Math.abs(slope / period - 1) < 0.03) {
-                period = slope;
-                bestPhase = (sj - slope * sk) / sw;
-            }
-        }
-
-        // Bar: the beat of four the kick (bass onsets) hits hardest is taken as the first.
-        double[] bar = new double[4];
-        for (int k = 0; bestPhase + k * period < n; k++) {
-            int at = (int) Math.round(bestPhase + k * period);
-            float peak = 0;
-            for (int j = Math.max(0, at - 2); j <= Math.min(n - 1, at + 2); j++) peak = Math.max(peak, low[j]);
-            bar[k % 4] += peak;
+        // Strength: that share, scaled down for a stretch under 16 s (too short to blend over and trust).
+        double until = beats[n - 1] + period;
+        double strength = (double) on / (k[n - 1] + 1) * Math.min(1, (until - beats[0]) / 16_000);
+        // The bar: the beat of four the downbeats land on most.
+        int[] votes = new int[4];
+        for (double d : downs) {
+            if (d >= beats[0] - period / 2 && d < until) votes[(int) Math.floorMod(Math.round((d - origin) / period), 4L)]++;
         }
         int down = 0;
         for (int r = 1; r < 4; r++) {
-            if (bar[r] > bar[down]) down = r;
+            if (votes[r] > votes[down]) down = r;
         }
-        double first = bestPhase + down * period;
-
-        // Each beat's loudness, from that bar line on.
-        int beats = Math.max(0, (int) Math.floor((n - first) / period));
-        double[] levels = new double[beats];
-        for (int k = 0; k < beats; k++) {
-            int from = Math.max(0, (int) Math.round(first + k * period));
-            int to = Math.min(n, (int) Math.round(first + (k + 1) * period));
+        double first = origin + down * period;
+        // Each beat's loudness from that bar line on (level j is the 10 ms ending at firstMs + (j + 1) * 10).
+        double hop0 = (first - audio.firstMs) / HOP_MS - 1;
+        double hops = period / HOP_MS;
+        int count = Math.max(0, (int) Math.floor((audio.mLevels - hop0) / hops));
+        double[] levels = new double[count];
+        for (int b = 0; b < count; b++) {
+            int from = Math.max(0, (int) Math.round(hop0 + b * hops));
+            int to = Math.min(audio.mLevels, (int) Math.round(hop0 + (b + 1) * hops));
             double power = 0; // the beat's mean power, not its mean log: a hit is most of a beat's sound
-            for (int j = from; j < to; j++) power += Math.exp(level[j]);
-            levels[k] = to > from ? Math.log(power / (to - from)) : -16;
+            for (int j = from; j < to; j++) power += Math.exp(audio.mLevel[j]);
+            levels[b] = to > from ? Math.log(power / (to - from)) : -16;
         }
-        return new Grid(period * HOP_MS, firstMs + (first + 1) * HOP_MS, strength, levels);
-    }
-
-    /** The peak's offset (-0.5..0.5) from the middle of three samples. */
-    private static double parabola(double left, double mid, double right) {
-        double d = left - 2 * mid + right;
-        return d < 0 ? Math.max(-0.5, Math.min(0.5, 0.5 * (left - right) / d)) : 0;
+        return new Grid(period, first, strength, levels, until);
     }
 
     /**
@@ -310,9 +272,18 @@ final class MeeTuneBeats {
         private final long mStartedAt = android.os.SystemClock.uptimeMillis();
         @Nullable private ExoPlayer mPlayer;
         @Nullable private TapSink mSink;
+        private final Context mContext;
+        private boolean mDropped;
+        /**
+         * Its own low priority thread: ExoPlayer's playback thread runs at audio priority, and this one decoding
+         * flat out took the CPU from the song being heard (jitters as each song started).
+         */
+        private final android.os.HandlerThread mThread =
+                new android.os.HandlerThread("MeeTuneProbe", android.os.Process.THREAD_PRIORITY_BACKGROUND);
 
         Probe(Context context, MediaSource source, long fromMs, long lengthMs, String label, Consumer<Grid> done) {
             mDone = done;
+            mContext = context.getApplicationContext();
             mLabel = label;
             mFromMs = fromMs;
             TapSink sink = new TapSink(fromMs + lengthMs, () -> mMain.post(this::finish));
@@ -328,6 +299,7 @@ final class MeeTuneBeats {
                     return sink;
                 }
             }).setTrackSelector(selector)
+                    .setPlaybackLooper(startThread())
                     // It always plays up to what is loaded: start again at once, not after 5 s more.
                     .setLoadControl(new androidx.media3.exoplayer.DefaultLoadControl.Builder()
                             .setBufferDurationsMs(30_000, 60_000, 500, 500).build())
@@ -352,23 +324,47 @@ final class MeeTuneBeats {
         private void finish() {
             if (mPlayer == null) return;
             TapSink sink = mSink;
-            release();
-            Onsets onsets = sink.mOnsets;
-            // A first sample far from where the probe started means the timestamps are not the song's own.
-            Grid grid = onsets != null && Math.abs(onsets.firstMs - mFromMs) < 3000
-                    ? analyze(onsets) : null;
-            Log.d(TAG, mLabel + " grid=" + grid + " frames=" + (onsets != null ? onsets.size() : 0)
-                    + " from=" + (onsets != null ? Math.round(onsets.firstMs) : -1)
-                    + " took=" + (android.os.SystemClock.uptimeMillis() - mStartedAt) + "ms"
-                    + (grid != null ? " in=" + Math.round(grid.mixInMs()) + " end=" + Math.round(grid.musicEndMs()) : ""));
-            mDone.accept(grid);
+            stopPlayer();
+            Audio audio = sink.mAudio;
+            ANALYSIS.execute(() -> {
+                // A first sample far from where the probe started means the timestamps are not the song's own.
+                double[][] beats = audio != null && Math.abs(audio.firstMs - mFromMs) < 3000
+                        ? BeatThis.track(mContext, audio.samples, audio.size, audio.rate) : null;
+                if (beats != null) {
+                    for (double[] times : beats) {
+                        for (int i = 0; i < times.length; i++) times[i] += audio.firstMs;
+                    }
+                }
+                Grid grid = beats != null ? grid(beats[0], beats[1], audio) : null;
+                String line = mLabel + " grid=" + grid + " beats=" + (beats != null ? beats[0].length : -1)
+                        + " downbeats=" + (beats != null ? beats[1].length : -1)
+                        + " from=" + (audio != null ? Math.round(audio.firstMs) : -1)
+                        + " took=" + (android.os.SystemClock.uptimeMillis() - mStartedAt) + "ms"
+                        + (grid != null ? " in=" + Math.round(grid.mixInMs()) + " end=" + Math.round(grid.musicEndMs()) : "");
+                mMain.post(() -> {
+                    Log.d(TAG, line);
+                    if (!mDropped) mDone.accept(grid);
+                });
+            });
         }
 
+        private Looper startThread() {
+            mThread.start();
+            return mThread.getLooper();
+        }
+
+        /** Drops it unanswered, even one whose analysis is already running. */
         void release() {
+            mDropped = true;
+            stopPlayer();
+        }
+
+        private void stopPlayer() {
             if (mPlayer != null) {
                 mPlayer.release();
                 mPlayer = null;
                 mSink = null;
+                mThread.quitSafely();
             }
         }
     }
@@ -381,7 +377,7 @@ final class MeeTuneBeats {
     private static final class TapSink implements AudioSink {
         private final long mEndUs;
         private final Runnable mOnFull;
-        @Nullable volatile Onsets mOnsets;
+        @Nullable volatile Audio mAudio;
         private int mChannels = 2;
         private int mSampleRate = 48_000;
         private long mOffsetUs;
@@ -418,18 +414,18 @@ final class MeeTuneBeats {
         public boolean handleBuffer(ByteBuffer buffer, long presentationTimeUs, int count) {
             int frames = buffer.remaining() / (2 * mChannels);
             if (!mFull && frames > 0) {
-                Onsets onsets = mOnsets;
-                if (onsets == null) {
-                    onsets = new Onsets(mSampleRate);
-                    onsets.firstMs = (presentationTimeUs - mOffsetUs) / 1000.0;
-                    mOnsets = onsets;
+                Audio audio = mAudio;
+                if (audio == null) {
+                    audio = new Audio(mSampleRate);
+                    audio.firstMs = (presentationTimeUs - mOffsetUs) / 1000.0;
+                    mAudio = audio;
                 }
                 ByteBuffer pcm = buffer.duplicate().order(ByteOrder.LITTLE_ENDIAN);
                 int base = pcm.position();
                 for (int f = 0; f < frames; f++) {
                     int sum = 0;
                     for (int c = 0; c < mChannels; c++) sum += pcm.getShort(base + (f * mChannels + c) * 2);
-                    onsets.add(sum / (32768f * mChannels));
+                    audio.add(sum / (32768f * mChannels));
                 }
                 if (presentationTimeUs - mOffsetUs >= mEndUs) {
                     mFull = true;
@@ -454,6 +450,12 @@ final class MeeTuneBeats {
         @Override
         public void playToEndOfStream() {
             mEnded = true;
+            // The song ended inside the stretch (its audio often stops short of the listed length): done
+            // now. Waiting for the player's own end took as long as the stretch lasts, in real time.
+            if (!mFull) {
+                mFull = true;
+                mOnFull.run();
+            }
         }
 
         @Override

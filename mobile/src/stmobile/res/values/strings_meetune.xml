@@ -55,6 +55,7 @@
     </plurals>
     <string name="meetune_queue">Up next</string>
     <string name="meetune_lyrics">Lyrics</string>
+    <string name="meetune_focus">Focus on the lyrics</string>
     <string name="meetune_cast">Cast</string>
     <string name="meetune_minimize">Minimize</string>
     <string name="meetune_like">Like</string>
@@ -205,4 +206,9 @@
     <string name="meetune_download_already_here">Already downloaded. Find it in Library &gt; Downloads</string>
     <string name="meetune_downloading">Downloading %1$d%%</string>
     <string name="meetune_download_failed">Download failed</string>
+    <!-- MEETUNE(play mode): the player's mode button, shown as the tap's message too. -->
+    <string name="meetune_mode_autoplay">Autoplay on</string>
+    <string name="meetune_mode_shuffle">Shuffle on</string>
+    <string name="meetune_mode_repeat_one">Repeat this song</string>
+    <string name="meetune_mode_off">Autoplay off</string>
 </resources>

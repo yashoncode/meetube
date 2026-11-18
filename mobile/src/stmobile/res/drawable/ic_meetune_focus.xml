@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUNE: the wide, flat chevron under the transport that toggles focus on the sung line.
+     a thin see-through stroke. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="10dp"
+    android:viewportWidth="40"
+    android:viewportHeight="10">
+    <path
+        android:pathData="M2,2L20,8L38,2"
+        android:strokeColor="#59FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

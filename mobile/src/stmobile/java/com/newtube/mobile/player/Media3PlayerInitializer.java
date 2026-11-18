@@ -594,6 +594,8 @@ public class Media3PlayerInitializer {
         int session = AudioEffects.tailSessionId(context); // MEETUBE(dolby-session)
         if (session > 0) {
             player.setAudioSessionId(session);
+        } else {
+            AudioEffects.attachTail(context, player); // its own session: the same equalizer and boost
         }
         return player;
     }

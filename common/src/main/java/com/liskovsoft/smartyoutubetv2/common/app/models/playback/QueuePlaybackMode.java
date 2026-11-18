@@ -73,6 +73,22 @@ public final class QueuePlaybackMode {
      * @param storedMode {@code PlayerData.getPlaybackMode()}
      */
     public static int apply(Video video, int storedMode) {
-        return coversQueueOf(video) ? PlayerConstants.PLAYBACK_MODE_SHUFFLE : storedMode;
+        if (coversQueueOf(video)) {
+            return PlayerConstants.PLAYBACK_MODE_SHUFFLE;
+        }
+        int own = sOwnMode != null ? sOwnMode.modeFor(video) : -1;
+        return own >= 0 ? own : storedMode;
+    }
+
+    /** MEETUNE(play mode): a mode of its own for some videos (a song: MeeTune's), or -1 for the stored one. */
+    public interface OwnMode {
+        int modeFor(Video video);
+    }
+
+    private static OwnMode sOwnMode;
+
+    /** Songs follow MeeTune's own mode, so MeeTube's Autoplay switch never stops them. */
+    public static void setOwnMode(OwnMode ownMode) {
+        sOwnMode = ownMode;
     }
 }

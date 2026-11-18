@@ -62,12 +62,63 @@ public final class AudioEffects {
             try {
                 // MEETUBE(issue #272): +10 dB per doubling (200% = +10 dB), what the ear hears as twice as loud;
                 // the amplitude's +6 dB was hardly heard once the effect's limiter met loud music.
-                mEnhancer.setTargetGain(volume > 1f ? (int) Math.round(1000 * Math.log(volume) / Math.log(2)) : 0);
+                mEnhancer.setTargetGain(boostMb(volume));
                 mEnhancer.setEnabled(volume > 1f);
             } catch (RuntimeException e) {
                 Log.w(TAG, "Can't apply volume boost: " + e);
             }
         }
+    }
+
+    private static int boostMb(float volume) {
+        return volume > 1f ? (int) Math.round(1000 * Math.log(volume) / Math.log(2)) : 0;
+    }
+
+    /**
+     * MEETUNE(crossfade): the main player's equalizer and volume boost on the crossfade tail's own
+     * session (see {@link #tailSessionId}), released with it. Without them the outgoing song lost
+     * the curve at the handoff, a jump in loudness and tone right where the blend starts.
+     */
+    static void attachTail(Context context, androidx.media3.exoplayer.ExoPlayer tail) {
+        AudioEffects current = sCurrent;
+        int sessionId = tail.getAudioSessionId();
+        if (current == null || sessionId <= 0) {
+            return;
+        }
+        Equalizer equalizer = null;
+        LoudnessEnhancer enhancer = null;
+        if (AudioPreferences.isEqualizerEnabled(context)) {
+            try {
+                equalizer = new Equalizer(0, sessionId);
+                applyEqualizer(context, equalizer, true);
+            } catch (RuntimeException e) {
+                Log.w(TAG, "Tail equalizer unavailable: " + e);
+            }
+        }
+        if (current.mVolume > 1f) {
+            try {
+                enhancer = new LoudnessEnhancer(sessionId);
+                enhancer.setTargetGain(boostMb(current.mVolume));
+                enhancer.setEnabled(true);
+            } catch (RuntimeException e) {
+                Log.w(TAG, "Tail volume boost unavailable: " + e);
+            }
+        }
+        Equalizer eq = equalizer;
+        LoudnessEnhancer boost = enhancer;
+        tail.addAnalyticsListener(new androidx.media3.exoplayer.analytics.AnalyticsListener() {
+            @Override
+            public void onPlayerReleased(@androidx.annotation.NonNull EventTime eventTime) {
+                releaseEqualizer(eq);
+                if (boost != null) {
+                    try {
+                        boost.release();
+                    } catch (RuntimeException e) {
+                        Log.w(TAG, "Can't release tail volume boost: " + e);
+                    }
+                }
+            }
+        });
     }
 
     /** The volume row also updates media3's base volume, including values below 100%. */

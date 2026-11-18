@@ -429,10 +429,25 @@
 
         </LinearLayout>
 
+        <!-- Focus: a tap hides the volume and the song's pill, the controls settle lower and the
+             sung line grows; another tap brings them back. -->
+        <ImageView
+            android:id="@+id/meetune_player_focus"
+            android:layout_width="72dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/meetune_focus"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            android:src="@drawable/ic_meetune_focus"
+            />
+
         <LinearLayout
+            android:id="@+id/meetune_player_volume_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="12dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -599,6 +614,33 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <!-- MEETUNE(play mode): Autoplay, Shuffle, Repeat this song or stop after it, a tap each. -->
+                <com.newtube.mobile.ui.common.GlassView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    app:glassCornerRadius="999dp"
+                    app:glassTint="@color/meetune_player_glass">
+
+                    <ImageView
+                        android:id="@+id/meetune_player_mode"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/meetune_mode_autoplay"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_meetune_autoplay"
+                        android:tint="#D9FFFFFF" />
+
+                </com.newtube.mobile.ui.common.GlassView>
+
+            </FrameLayout>
 
             <FrameLayout
                 android:layout_width="0dp"

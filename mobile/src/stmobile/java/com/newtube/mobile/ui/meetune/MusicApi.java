@@ -186,7 +186,7 @@ final class MusicApi {
     }
 
     static boolean signedIn(Context context) {
-        return WebSignInState.isSignedIn(context) && WebSession.getCookieStore() != null;
+        return MeeTune.signedIn(context) && WebSession.getCookieStore() != null;
     }
 
     /** Saves a playlist or album to the library (a like), or takes it out. */

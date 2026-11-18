@@ -156,6 +156,10 @@ public class MobileMainApplication extends MainApplication {
         if (isPhoenixProcess()) {
             return;
         }
+        // MEETUNE(play mode): songs play by MeeTune's own mode; MeeTube's Autoplay is for videos.
+        com.liskovsoft.smartyoutubetv2.common.app.models.playback.QueuePlaybackMode.setOwnMode(video ->
+                com.newtube.mobile.ui.meetune.MeeTune.isMusic(video)
+                        ? com.newtube.mobile.ui.meetune.MeeTune.playMode(this) : -1);
         // MEETUBE(glass): the text dialogs (Create playlist, Rename...) as the app's frosted, rounded card.
         com.liskovsoft.smartyoutubetv2.common.utils.SimpleEditDialog.sStyle =
                 new com.liskovsoft.smartyoutubetv2.common.utils.SimpleEditDialog.Style() {

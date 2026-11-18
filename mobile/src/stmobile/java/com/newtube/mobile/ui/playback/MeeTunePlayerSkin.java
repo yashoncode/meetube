@@ -259,6 +259,7 @@ public final class MeeTunePlayerSkin {
             }
         });
         mLineRow.setOnClickListener(v -> setMode(LYRICS));
+        mRoot.findViewById(R.id.meetune_player_focus).setOnClickListener(v -> setFocus(!mFocus));
         mLyricLines.setOnClickListener(v -> setMode(mMode == FULL ? LYRICS : FULL)); // a tap: the whole page, and back
         mLyricsScroll.setOnTouchListener((v, event) -> {
             mTouchedAt = android.os.SystemClock.uptimeMillis(); // reading ahead: the sung line waits
@@ -266,6 +267,23 @@ public final class MeeTunePlayerSkin {
         });
         bounce(mRoot.findViewById(R.id.meetune_player_cast), mControls::cast);
         bounce(mRoot.findViewById(R.id.meetune_player_queue), mControls::queue);
+        android.widget.ImageView mode = mRoot.findViewById(R.id.meetune_player_mode);
+        showPlayMode(mode, com.newtube.mobile.ui.meetune.MeeTune.playMode(mRoot.getContext()));
+        bounce(mode, () -> {
+            int next = com.newtube.mobile.ui.meetune.MeeTune.nextPlayMode(mode.getContext());
+            // No message: the old icon spins away and the new one springs in, turning on the way.
+            mode.animate().cancel();
+            mode.animate().scaleX(0f).scaleY(0f).rotation(-120f).setDuration(140)
+                    .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                    .withEndAction(() -> {
+                        showPlayMode(mode, next);
+                        mode.announceForAccessibility(mode.getContentDescription());
+                        mode.setRotation(120f);
+                        mode.animate().scaleX(1f).scaleY(1f).rotation(0f).setDuration(420)
+                                .setInterpolator(new android.view.animation.OvershootInterpolator(2.5f))
+                                .withEndAction(null).start();
+                    }).start();
+        });
 
         mRemaining.setOnClickListener(v -> { // the song's whole length for 10 s; a tap while it shows: the countdown
             long now = android.os.SystemClock.uptimeMillis();
@@ -1221,6 +1239,8 @@ public final class MeeTunePlayerSkin {
             if (lyrics) com.newtube.mobile.ui.common.Motion.frostIn(mLyricsScroll);
         }
         mLineRow.setVisibility(lineRowVisibility(mode));
+        if (lyrics) setFocus(false); // the lyrics page shows all lines: focus ends with it
+        mRoot.findViewById(R.id.meetune_player_focus).setVisibility(lyrics ? View.GONE : View.VISIBLE);
         boolean full = mode == FULL;
         mHeadMore.setImageResource(full ? R.drawable.ic_watch_share : R.drawable.ic_meetune_more);
         mHeadMore.setContentDescription(mRoot.getContext().getString(full ? R.string.meetune_share : R.string.meetune_more));
@@ -1238,6 +1258,46 @@ public final class MeeTunePlayerSkin {
         mSung = -2; // scroll to the sung line in the new room
         mTouchedAt = -HANDS_OFF_MS;
         mRoot.post(() -> followLyrics(mControls.position()));
+    }
+
+    private boolean mFocus;
+
+    /**
+     * Focus: the volume and the song's pill go, the controls settle lower, and the sung line over
+     * the bar grows big, as on the lyrics page but one line at a time.
+     */
+    private void setFocus(boolean on) {
+        if (on == mFocus) return;
+        mFocus = on;
+        if (mMode == NORMAL) {
+            android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mRoot,
+                    new android.transition.AutoTransition().setOrdering(android.transition.TransitionSet.ORDERING_TOGETHER)
+                            .setDuration(360).setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD));
+        }
+        // The column keeps its height, so the title stays put; the sung line's row takes the room
+        // the volume and the pill leave, and the controls settle to the foot.
+        ViewGroup.LayoutParams column = mControlsColumn.getLayoutParams();
+        column.height = on ? mControlsColumn.getHeight() : ViewGroup.LayoutParams.WRAP_CONTENT;
+        mControlsColumn.setLayoutParams(column);
+        android.widget.LinearLayout.LayoutParams row = (android.widget.LinearLayout.LayoutParams) mLineRow.getLayoutParams();
+        row.height = on ? 0 : ViewGroup.LayoutParams.WRAP_CONTENT;
+        row.weight = on ? 1 : 0;
+        mLineRow.setLayoutParams(row);
+        mRoot.findViewById(R.id.meetune_player_volume_row).setVisibility(on ? View.GONE : View.VISIBLE);
+        mRoot.findViewById(R.id.meetune_player_info).setVisibility(on ? View.GONE : View.VISIBLE);
+        float from = mLine.getTextSize();
+        mLine.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, on ? 26 : 14);
+        mLine.setMaxLines(on ? 3 : 2);
+        // The new size lays out at once; the words grow (or shrink) into it.
+        float scale = from / mLine.getTextSize();
+        mLine.setPivotX(mLine.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL ? mLine.getWidth() : 0);
+        mLine.setPivotY(0);
+        android.animation.ObjectAnimator.ofPropertyValuesHolder(mLine,
+                android.animation.PropertyValuesHolder.ofFloat(View.SCALE_X, scale, 1f),
+                android.animation.PropertyValuesHolder.ofFloat(View.SCALE_Y, scale, 1f))
+                .setDuration(360).start();
+        mRoot.findViewById(R.id.meetune_player_focus).animate().rotation(on ? 180f : 0f).setDuration(360)
+                .setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD).start();
     }
 
     /** The lines end above the controls, or at the page's foot when they fill it. */
@@ -1308,6 +1368,24 @@ public final class MeeTunePlayerSkin {
             }
             return false; // the click still happens
         });
+    }
+
+    /** MEETUNE(play mode): the button's icon for {@code mode}; stopping after the song dims Autoplay's. */
+    private static void showPlayMode(android.widget.ImageView button, int mode) {
+        int icon = R.drawable.ic_meetune_autoplay;
+        int label = R.string.meetune_mode_autoplay;
+        if (mode == com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants.PLAYBACK_MODE_SHUFFLE) {
+            icon = R.drawable.ic_meetune_shuffle;
+            label = R.string.meetune_mode_shuffle;
+        } else if (mode == com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants.PLAYBACK_MODE_ONE) {
+            icon = R.drawable.ic_meetune_repeat_one;
+            label = R.string.meetune_mode_repeat_one;
+        } else if (mode == com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants.PLAYBACK_MODE_PAUSE) {
+            label = R.string.meetune_mode_off;
+        }
+        button.setImageResource(icon);
+        button.setImageAlpha(label == R.string.meetune_mode_off ? 0x66 : 0xFF);
+        button.setContentDescription(button.getContext().getString(label));
     }
 
     private static void bounce(View button, Runnable action) {

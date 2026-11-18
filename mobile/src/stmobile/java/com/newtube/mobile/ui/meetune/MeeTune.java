@@ -180,10 +180,24 @@ public final class MeeTune {
     private static boolean sHomeLoading;
     private static final List<Runnable> sHomeWaiting = new ArrayList<>();
 
-    /** The account Home is for: the web sign-in's slot, or "" signed out. */
+    /** The account Home is for: the web sign-in's slot, or "" signed out (or without an account). */
     static String account(Context context) {
-        return com.newtube.mobile.ui.signin.WebSignInState.isSignedIn(context)
+        return signedIn(context)
                 ? String.valueOf(com.newtube.mobile.ui.signin.WebSignInState.selectedSlot(context)) : "";
+    }
+
+    /** MeeTune speaks as the selected account, unless its tick was tapped off: then as no one. */
+    static boolean signedIn(Context context) {
+        return com.newtube.mobile.ui.signin.WebSignInState.isSignedIn(context) && !noAccount(context);
+    }
+
+    /** No account: MeeTune alone runs signed out, MeeTube keeps its account. */
+    static boolean noAccount(Context context) {
+        return prefs(context).getBoolean("no_account", false);
+    }
+
+    static void setNoAccount(Context context, boolean on) {
+        prefs(context).edit().putBoolean("no_account", on).apply();
     }
 
     /**
@@ -717,6 +731,28 @@ public final class MeeTune {
 
     static SharedPreferences prefs(Context context) {
         return context.getApplicationContext().getSharedPreferences("meetune", Context.MODE_PRIVATE);
+    }
+
+    /** MEETUNE(play mode): after a song, Autoplay (the default), Shuffle, Repeat this song or stop. */
+    public static final int[] PLAY_MODES = {
+            com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants.PLAYBACK_MODE_ALL,
+            com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants.PLAYBACK_MODE_SHUFFLE,
+            com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants.PLAYBACK_MODE_ONE,
+            com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants.PLAYBACK_MODE_PAUSE};
+
+    public static int playMode(Context context) {
+        return prefs(context).getInt("play_mode", PLAY_MODES[0]);
+    }
+
+    /** The next mode in {@link #PLAY_MODES}, saved; MeeTube's own Autoplay setting stays as it is. */
+    public static int nextPlayMode(Context context) {
+        int current = playMode(context);
+        int next = PLAY_MODES[0];
+        for (int i = 0; i < PLAY_MODES.length; i++) {
+            if (PLAY_MODES[i] == current) next = PLAY_MODES[(i + 1) % PLAY_MODES.length];
+        }
+        prefs(context).edit().putInt("play_mode", next).apply();
+        return next;
     }
 
     /** MEETUBE(issue #265): songs' own playback speed, 1x unless picked; a video's speed never touches it. */

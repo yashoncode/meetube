@@ -210,9 +210,16 @@ public final class MeeTuneSongMenu {
         content.setOrientation(LinearLayout.VERTICAL);
         int pad = MeeTuneAdapter.dp(a, 6);
         content.setPadding(0, pad, 0, pad);
-        android.widget.ScrollView glass = new android.widget.ScrollView(a);
-        glass.setVerticalScrollBarEnabled(false);
-        glass.addView(content);
+        android.widget.ScrollView scroll = new android.widget.ScrollView(a);
+        scroll.setVerticalScrollBarEnabled(false);
+        // More above or below: the items fade out at that edge instead of being cut by it.
+        scroll.setVerticalFadingEdgeEnabled(true);
+        scroll.setFadingEdgeLength(MeeTuneAdapter.dp(a, 40));
+        scroll.addView(content);
+        // The glass (its rim is an overlay) on a frame around the list: on the ScrollView itself the rim
+        // scrolled with the items, and a tall menu showed its rounded edge cutting through them.
+        android.widget.FrameLayout glass = new android.widget.FrameLayout(a);
+        glass.addView(scroll);
         float corner = MeeTuneAdapter.dp(a, cornerDp);
         glass.setOutlineProvider(new android.view.ViewOutlineProvider() {
             @Override

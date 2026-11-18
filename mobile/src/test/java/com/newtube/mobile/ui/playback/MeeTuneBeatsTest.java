@@ -1,86 +1,121 @@
 package com.newtube.mobile.ui.playback;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
-/** MEETUNE(automix): a beat grid from sound, as the probe hands it over (48 kHz mono, onsets, analysis). */
+/** MEETUNE(automix): the grid fitted through the model's beats and downbeats, and the front end's shape. */
 public class MeeTuneBeatsTest {
     private static final int RATE = 48_000;
 
     @Test
-    public void findsTempoPhaseAndBarOfADrumLoop() {
-        for (double bpm : new double[] {92, 124, 128, 140, 174}) {
+    public void fitsTempoAndBarThroughJitteredAndMissedBeats() {
+        Random random = new Random(3);
+        for (double bpm : new double[] {84, 124, 128, 174}) {
             double period = 60_000 / bpm;
-            double firstBeatMs = 317; // a bar's first beat (its kick is the loudest)
-            MeeTuneBeats.Grid grid = gridOf(drums(bpm, firstBeatMs, 0, 30_000, 30), 5_000);
+            double bar = 5_317; // a bar line
+            List<Double> beats = new ArrayList<>();
+            List<Double> downs = new ArrayList<>();
+            for (int k = -2; k < 70; k++) {
+                if (k % 13 == 5) continue; // the model missed it
+                double t = bar + k * period + random.nextGaussian() * 6;
+                beats.add(t);
+                if (Math.floorMod(k, 4) == 0 && k % 3 != 0) downs.add(t); // and some downbeats
+            }
+            MeeTuneBeats.Audio audio = new MeeTuneBeats.Audio(RATE);
+            audio.firstMs = 5_000;
+            for (int i = 0; i < RATE * 30; i++) audio.add(0.1f);
+            MeeTuneBeats.Grid grid = MeeTuneBeats.grid(array(beats), array(downs), audio);
             System.out.println(bpm + " -> " + grid);
             assertTrue(bpm + " bpm", grid != null && grid.strong());
-            boolean half = grid.bpm() < bpm * 0.75; // half tempo (fast songs): mixes the same
-            assertEquals(bpm + " bpm", bpm, half ? grid.bpm() * 2 : grid.bpm(), 0.3);
-            // A beat 20 s in (a crossfade extrapolates the grid that far) lands within 15 ms.
-            double beat = 5_000 + firstBeatMs + Math.round(20_000 / period) * period;
-            double off = grid.scaled(half ? 0.5 : 1).phase(beat);
-            assertTrue(bpm + " bpm off by " + off, Math.min(off, 1 - off) * period < 15);
-            if (!half) { // the grid starts on a bar's first beat
-                double bars = (grid.firstMs - 5_000 - firstBeatMs) / (4 * period);
-                assertEquals(bpm + " bpm bar", Math.round(bars), bars, 0.02);
-            }
+            assertEquals(bpm + " bpm", bpm, grid.bpm(), 0.1);
+            double bars = (grid.firstMs - bar) / (4 * period);
+            assertEquals(bpm + " bpm bar", Math.round(bars), bars, 0.01);
         }
+    }
+
+    @Test
+    public void aLooseIntroDoesNotBendTheGridOfTheSteadyPart() {
+        Random random = new Random(9);
+        List<Double> beats = new ArrayList<>();
+        double t = 0;
+        for (int i = 0; i < 14; i++) beats.add(t += 300 + random.nextDouble() * 500); // no drums yet
+        double drop = t + 700; // then 112 BPM, a bar line here
+        double period = 60_000 / 112.0;
+        List<Double> downs = new ArrayList<>();
+        for (int k = 0; k < 56; k++) {
+            beats.add(drop + k * period);
+            if (k % 4 == 0) downs.add(drop + k * period);
+        }
+        MeeTuneBeats.Audio audio = new MeeTuneBeats.Audio(RATE);
+        audio.firstMs = 0;
+        for (int i = 0; i < RATE * 40; i++) audio.add(0.1f);
+        MeeTuneBeats.Grid grid = MeeTuneBeats.grid(array(beats), array(downs), audio);
+        System.out.println("loose intro -> " + grid + " in=" + grid.mixInMs());
+        assertTrue(grid.strong());
+        assertEquals(112, grid.bpm(), 0.05);
+        assertEquals(drop, grid.mixInMs(), 2);
+    }
+
+    @Test
+    public void scatteredBeatsAreNotStrongAndFewAreNone() {
+        Random random = new Random(5);
+        double[] beats = new double[40];
+        double t = 0;
+        for (int i = 0; i < beats.length; i++) beats[i] = t += 300 + random.nextDouble() * 400;
+        MeeTuneBeats.Audio audio = new MeeTuneBeats.Audio(RATE);
+        audio.firstMs = 0;
+        MeeTuneBeats.Grid grid = MeeTuneBeats.grid(beats, new double[0], audio);
+        System.out.println("rubato -> " + grid);
+        assertTrue(grid == null || !grid.strong());
+        assertNull(MeeTuneBeats.grid(new double[] {0, 500, 1000}, new double[0], audio));
     }
 
     @Test
     public void mixesInPastASilentIntroAndOutBeforeTheMusicStops() {
-        double bpm = 120; // a bar is 2 s
-        MeeTuneBeats.Grid grid = gridOf(drums(bpm, 0, 6_000, 24_000, 32), 0);
+        double period = 500; // 120 BPM, a bar is 2 s
+        MeeTuneBeats.Audio audio = new MeeTuneBeats.Audio(RATE);
+        audio.firstMs = 0;
+        Random random = new Random(1);
+        for (int i = 0; i < RATE * 32; i++) {
+            double ms = i * 1000.0 / RATE;
+            audio.add((float) (random.nextGaussian() * (ms >= 6_000 && ms < 24_000 ? 0.3 : 0.002)));
+        }
+        double[] beats = new double[64];
+        for (int k = 0; k < beats.length; k++) beats[k] = k * period;
+        double[] downs = {0, 2_000, 4_000, 8_000};
+        MeeTuneBeats.Grid grid = MeeTuneBeats.grid(beats, downs, audio);
         System.out.println("intro/outro -> " + grid + " in=" + grid.mixInMs() + " end=" + grid.musicEndMs());
-        assertTrue(grid.strong());
-        assertEquals(6_000, grid.mixInMs(), 40);
-        assertEquals(24_000, grid.musicEndMs(), 40);
+        assertEquals(6_000, grid.mixInMs(), 1);
+        assertEquals(24_000, grid.musicEndMs(), 1);
     }
 
     @Test
-    public void noiseHasNoGrid() {
-        Random random = new Random(7);
-        float[] noise = new float[RATE * 30];
-        for (int i = 0; i < noise.length; i++) noise[i] = (float) (random.nextGaussian() * 0.1);
-        MeeTuneBeats.Grid grid = gridOf(noise, 0);
-        System.out.println("noise -> " + grid);
-        assertTrue(grid == null || !grid.strong());
+    public void frontEndGivesFiftyFramesOf128MelsASecond() {
+        float[] tone = new float[RATE * 2];
+        for (int i = 0; i < tone.length; i++) tone[i] = (float) (0.5 * Math.sin(2 * Math.PI * 440 * i / RATE));
+        float[] pcm = BeatThis.resample(tone, tone.length, RATE);
+        assertEquals(BeatThis.RATE * 2, pcm.length, 2);
+        float[] mel = BeatThis.mel(pcm);
+        assertEquals(2 * BeatThis.RATE / 441 + 1, mel.length / 128);
+        // 440 Hz lands in one low band, and the top bands (well above it) stay near silent.
+        int frame = 50 * 128;
+        int loudest = 0;
+        for (int m = 1; m < 128; m++) if (mel[frame + m] > mel[frame + loudest]) loudest = m;
+        System.out.println("440 Hz -> band " + loudest + " = " + mel[frame + loudest] + ", top " + mel[frame + 127]);
+        assertTrue(loudest > 10 && loudest < 40);
+        assertTrue(mel[frame + 127] < 0.01 * mel[frame + loudest]);
     }
 
-    private static MeeTuneBeats.Grid gridOf(float[] samples, double startMs) {
-        MeeTuneBeats.Onsets onsets = new MeeTuneBeats.Onsets(RATE);
-        onsets.firstMs = startMs;
-        for (float s : samples) onsets.add(s);
-        return MeeTuneBeats.analyze(onsets);
-    }
-
-    /**
-     * Kicks on the beat (the bar's first the loudest), hats on the off-beat, over a quiet hiss; the drums play
-     * from {@code fromMs} to {@code untilMs} on a grid with a bar line at {@code firstBeatMs}.
-     */
-    private static float[] drums(double bpm, double firstBeatMs, double fromMs, double untilMs, int seconds) {
-        Random random = new Random(1);
-        float[] out = new float[RATE * seconds];
-        for (int i = 0; i < out.length; i++) out[i] = (float) (random.nextGaussian() * 0.002);
-        double period = 60_000 / bpm;
-        int beat = 0;
-        for (double t = firstBeatMs; t < seconds * 1000; t += period, beat++) {
-            if (t < fromMs || t >= untilMs) continue;
-            double level = beat % 4 == 0 ? 0.9 : 0.5;
-            int at = (int) (t * RATE / 1000);
-            for (int i = 0; i < RATE / 5 && at + i < out.length; i++) { // kick: a falling 55 Hz thump
-                out[at + i] += (float) (level * Math.exp(-i / (RATE * 0.05)) * Math.sin(2 * Math.PI * 55 * i / RATE));
-            }
-            int hat = (int) ((t + period / 2) * RATE / 1000);
-            for (int i = 0; i < RATE / 50 && hat + i < out.length; i++) { // hat: a short noise burst
-                out[hat + i] += (float) (0.15 * Math.exp(-i / (RATE * 0.005)) * random.nextGaussian());
-            }
-        }
+    private static double[] array(List<Double> list) {
+        double[] out = new double[list.size()];
+        for (int i = 0; i < out.length; i++) out[i] = list.get(i);
         return out;
     }
 }
