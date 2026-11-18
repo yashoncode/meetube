@@ -591,6 +591,10 @@ public class Media3PlayerInitializer {
                 .setUsage(C.USAGE_MEDIA)
                 .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                 .build(), /* handleAudioFocus= */ false);
+        int session = AudioEffects.tailSessionId(context); // MEETUBE(dolby-session)
+        if (session > 0) {
+            player.setAudioSessionId(session);
+        }
         return player;
     }
 

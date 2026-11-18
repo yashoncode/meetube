@@ -1,7 +1,9 @@
 package com.newtube.mobile.player;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
+import android.media.audiofx.AudioEffect;
 import android.media.audiofx.Equalizer;
 import android.media.audiofx.LoudnessEnhancer;
 
@@ -34,10 +36,12 @@ public final class AudioEffects {
             return;
         }
         releaseEffects();
+        announce(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION, mSessionId);
         mSessionId = sessionId;
         if (sessionId <= 0) {
             return; // Never attach effects to the deprecated global output session (0).
         }
+        announce(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION, sessionId);
         try {
             mEqualizer = new Equalizer(0, sessionId);
         } catch (RuntimeException e) {
@@ -183,7 +187,41 @@ public final class AudioEffects {
             sCurrent = null;
         }
         releaseEffects();
+        announce(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION, mSessionId);
         mSessionId = 0;
+    }
+
+    /**
+     * MEETUBE(dolby-session): tells the phone's own effect engines (Dolby Atmos / Dolby Audio on the
+     * phones that ship it, Wavelet, OEM sound modes) about the main player's session, so the system's
+     * Dolby switch shapes MeeTube too, like it does Spotify and YT Music. Without it they never attach.
+     */
+    private void announce(String action, int sessionId) {
+        if (sessionId <= 0) {
+            return;
+        }
+        try {
+            mContext.sendBroadcast(new Intent(action)
+                    .putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+                    .putExtra(AudioEffect.EXTRA_PACKAGE_NAME, mContext.getPackageName())
+                    .putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC));
+        } catch (RuntimeException e) {
+            Log.w(TAG, "Can't announce audio session: " + e);
+        }
+    }
+
+    /**
+     * The session the crossfade's tail (the outgoing song's ending) plays on: the main one, so the
+     * phone's Dolby keeps shaping it through the blend; 0 (its own) while the equalizer or the volume
+     * boost is working, as two players on one session make the platform rebuild that chain as the
+     * tail comes and goes (Prism measured it with its equalizer).
+     */
+    static int tailSessionId(Context context) {
+        AudioEffects current = sCurrent;
+        if (current == null || AudioPreferences.isEqualizerEnabled(context) || current.mVolume > 1f) {
+            return 0;
+        }
+        return current.mSessionId;
     }
 
     private void releaseEffects() {

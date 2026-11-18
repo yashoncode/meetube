@@ -155,11 +155,9 @@
     <string name="meetune_automix">Automix (Beta)</string>
     <string name="meetune_automix_summary">Crossfades like a DJ: the next song comes in on the beat, its tempo matched to the playing one, then eases back to its own. Uses the Crossfade length, or 8 s when that is Off</string>
     <string name="meetune_crossfade_note">The end of a song fades into the next one. Songs from Autoplay, a queue or Repeat; not when playback stops after the song</string>
-    <string name="meetune_dolby_summary">Play a song\'s Dolby Atmos or 5.1 track when YouTube has one</string>
     <string name="meetune_bit_perfect">Bit-perfect USB DAC</string>
     <string name="meetune_bit_perfect_summary">With a USB DAC plugged in, songs reach it untouched at their own sample rate, past Android\'s mixer. Starts with the next song. For a pure signal keep the equalizer flat, Spatial sound off and Volume at 100%</string>
     <string name="meetune_bit_perfect_summary_none">Needs Android 14 or later</string>
-    <string name="meetune_dolby_summary_none">This phone has no Dolby decoder, so songs keep their stereo track</string>
     <!-- Settings: Streaming quality and Downloads -->
     <string name="meetune_set_stream">Streaming quality</string>
     <string name="meetune_set_stream_wifi">Streaming quality on Wi-Fi</string>

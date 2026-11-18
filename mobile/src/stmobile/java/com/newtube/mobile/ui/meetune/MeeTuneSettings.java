@@ -153,21 +153,8 @@ final class MeeTuneSettings {
         row(card, R.drawable.ic_player_headphones, getString(R.string.mobile_settings_autoeq),
                 headphone.isEmpty() ? getString(R.string.mobile_settings_autoeq_summary) : headphone, null, true,
                 v -> com.newtube.mobile.ui.settings.HeadphonePicker.show(mActivity, this::rebuild));
-        // MEETUNE(issue #262): MeeTube's Dolby Atmos switch (one setting for both): a song's Dolby track
-        // when YouTube has one and this phone decodes it.
-        card.addView(divider());
-        boolean decodes = com.newtube.mobile.player.AudioPreferences.decodesDolby();
-        View dolby = row(card, R.drawable.ic_player_audio_track, getString(R.string.mobile_settings_dolby),
-                getString(decodes ? R.string.meetune_dolby_summary : R.string.meetune_dolby_summary_none),
-                decodes && com.newtube.mobile.player.AudioPreferences.isDolbyEnabled(mActivity), false,
-                v -> com.newtube.mobile.player.AudioPreferences.setDolbyEnabled(mActivity,
-                        !com.newtube.mobile.player.AudioPreferences.isDolbyEnabled(mActivity)));
-        if (!decodes) { // greyed out: this phone has no Dolby decoder
-            dolby.setEnabled(false);
-            dolby.setClickable(false);
-            dolby.setAlpha(0.38f);
-            dolby.findViewById(R.id.settings_row_switch).setEnabled(false);
-        }
+        // No Dolby row (like Prism): YouTube Music songs are stereo only, so the phone's own Dolby engine
+        // does it, on the session AudioEffects announces. MeeTube's Dolby-track switch stays in its video settings.
         // Bit-perfect USB DAC output: Android 14+ only, greyed out below.
         card.addView(divider());
         boolean bitPerfect = MeeTuneBitPerfect.supported();
