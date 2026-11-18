@@ -32,16 +32,15 @@ import com.newtube.mobile.player.Media3PlayerInitializer;
  * Anything not ready in time (a slow build, a seek, a pause, a MeeTube video) drops the tail and the
  * song ends as it always did. Off at 0 s.
  *
- * <p>Automix (Beta) makes it a DJ's blend, after BitChord's (its behavior, not its code). {@link MeeTuneBeats}
- * finds the beat grid of this song's ending (10 s into it) and of the next one's opening (once it is known,
- * {@link #analyzeNext}). The blend is whole 4 bar phrases ending where this song's music does (before a
- * fade-out or silence). Only the next song moves (the audible outgoing one never does): stretched, pitch
- * kept, to the outgoing tempo; one seek while it is still near silent starts it so its first full bar (its
- * drop) lands as the blend ends; small tempo nudges keep the beats together. Both cross at equal power over
- * the whole blend, the treble crossing with them; the next song comes in with its bass down ({@link BassSwap},
- * -12 dB, -6 on a short blend), and on the bar line midway the two swap bass over one bar. After the blend
- * the next song glides back to its own tempo over 24 s. Grids too weak or tempos too far apart: a short
- * filter mix at the very end (the outgoing song's bass and treble sweep away).
+ * <p>Automix (Beta) makes it a DJ's blend. {@link MeeTuneBeats} finds the beat grid of this song's ending
+ * (as soon as it plays) and of the next one's opening (once it is known, {@link #analyzeNext}, a minute
+ * before the end). The blend then ends where this song's music does (before a fade-out or silence) on a bar
+ * line. Only the next song moves (the audible outgoing one never does): stretched, pitch kept, to the outgoing
+ * tempo; one seek while it is still near silent starts it at its first full bar (past a silent intro), as far
+ * into the bar as the outgoing song is; small tempo nudges keep the beats together. It comes up without its
+ * bass ({@link BassSwap}); on the bar line midway the two swap bass over one beat, and only then does the
+ * outgoing song fade. After the blend the next song eases back to its own tempo. Grids too weak or tempos
+ * too far apart: the plain crossfade.
  */
 final class MeeTuneCrossfade {
     interface Host {
@@ -74,26 +73,12 @@ final class MeeTuneCrossfade {
     private static final int AUTOMIX_DEFAULT_S = 8;
     /** How much of each song Automix analyzes besides the blend itself. */
     private static final long ANALYZE_EXTRA_MS = 30_000;
-    /**
-     * The most of a song's ending Automix leaves out: its trailing silence. Skipping a whole quiet outro
-     * (it was 25 s) switched songs while the first one was still clearly playing.
-     */
-    private static final long MAX_SKIPPED_OUTRO_MS = 3_000;
-    /** The ending is analyzed once the song has played this long, not while its own start still loads. */
-    private static final long PROBE_AFTER_MS = 10_000;
+    /** The most of a song's ending (fade-out, quiet outro, silence) Automix leaves out. */
+    private static final long MAX_SKIPPED_OUTRO_MS = 25_000;
     /** Silent intros past this are left alone (taken for a misreading). */
     private static final long MAX_SKIPPED_INTRO_MS = 20_000;
-    /**
-     * How far the next song is stretched to the outgoing tempo: slowed at most 10%, sped up at most 25%
-     * (BitChord's limits; a bad stretch was a bad grid, which Beat This! no longer gives).
-     */
-    private static final double MIN_MATCH = 0.90;
-    private static final double MAX_MATCH = 1.25;
-    /**
-     * Automix's blend when the beats can't be matched: short and at the very end, the outgoing song at
-     * full volume until then. A long one there sounded like the song dimming under a clashing beat.
-     */
-    private static final long QUICK_MS = 3000;
+    /** The most the next song is stretched to match tempos. */
+    private static final double MAX_STRETCH = 0.08;
     /** The most a phase nudge adds to that, and how long it takes to close a gap. */
     private static final double MAX_NUDGE = 0.04;
     private static final double CATCH_UP_MS = 1500;
@@ -101,7 +86,7 @@ final class MeeTuneCrossfade {
     private static final double LOCKED = 0.03;
     /** Tempo changes at most this often, and after the blend goes back to the song's own over this long. */
     private static final long TRIM_EVERY_MS = 200;
-    private static final long RESTORE_MS = 24_000;
+    private static final long RESTORE_MS = 4000;
 
     private static final int IDLE = 0;
     private static final int ARMING = 1;
@@ -113,7 +98,6 @@ final class MeeTuneCrossfade {
     private final Runnable mTick = this::tick;
     private int mState = IDLE;
     @Nullable private ExoPlayer mTail;
-    private float mTailBase = 1f;
     @Nullable private String mSongId;
     /** The song a fade already ran for (its muted end must not start another). */
     @Nullable private String mDoneId;
@@ -205,11 +189,10 @@ final class MeeTuneCrossfade {
         }
     }
 
-    /** Automix: finds the beat of the playing song's ending, once per song, after its first seconds. */
+    /** Automix: finds the beat of the playing song's ending, once per song, as soon as it plays. */
     private void probeEnding(Media3PlayerController controller, ExoPlayer main, @Nullable String id) {
         if (id == null || id.equals(mOutGridId) || !com.newtube.mobile.ui.meetune.MeeTune.automix(mContext)
-                || !main.isPlaying() || main.getCurrentPosition() < PROBE_AFTER_MS || fadeMs() <= 0
-                || !mHost.crossfades()) {
+                || !main.isPlaying() || fadeMs() <= 0 || !mHost.crossfades()) {
             return;
         }
         MediaItemFormatInfo current = mHost.formatInfo();
@@ -226,18 +209,20 @@ final class MeeTuneCrossfade {
     }
 
     /**
-     * Automix: where song {@code id}'s blend starts and how long it is (whole 4 bar phrases, at least
-     * {@code fade}; whole bars when a phrase is too long for that),
+     * Automix: where song {@code id}'s blend starts and how long it is (whole bars, at least {@code fade}),
      * ending where its music does; null until its ending's beat is known, or when it holds no plan.
      */
     @Nullable
     private long[] planBlend(String id, long duration, long fade) {
         MeeTuneBeats.Grid out = id.equals(mOutGridId) ? mOutGrid : null;
-        if (out == null || !out.strong()) return null;
-        double end = Math.max(Math.min(duration, out.musicEndMs()), duration - MAX_SKIPPED_OUTRO_MS);
+        if (out == null) return null;
+        double end = Math.min(duration, out.musicEndMs());
+        if (!out.strong()) { // no beat to trust, but where the music ends still holds: fade out by then
+            long start = Math.round(end - fade);
+            return Double.isNaN(end) || start < duration - fade - MAX_SKIPPED_OUTRO_MS ? null : new long[] {start, fade};
+        }
         double bar = 4 * out.periodMs;
-        double unit = 4 * bar <= 2 * fade ? 4 * bar : bar;
-        long blend = Math.round(Math.ceil(fade / unit) * unit);
+        long blend = Math.round(Math.ceil(fade / bar) * bar);
         long start = Math.round(end - blend);
         if (Double.isNaN(end) || start < duration - fade - MAX_SKIPPED_OUTRO_MS || blend > 2 * fade) return null;
         return new long[] {start, blend};
@@ -246,16 +231,6 @@ final class MeeTuneCrossfade {
     private void bass(float gain, long rampMs) {
         BassSwap bass = mHost.mainBass();
         if (bass != null) bass.setLowGain(gain, rampMs);
-    }
-
-    private void treble(float gain, long rampMs) {
-        BassSwap bass = mHost.mainBass();
-        if (bass != null) bass.setHighGain(gain, rampMs);
-    }
-
-    /** The bass both songs keep below full while sharing it: -12 dB on a long blend, -6 dB on a short one. */
-    private float swapLow() {
-        return mFadeMs >= 8000 ? 0.25f : 0.5f;
     }
 
     private void probe(Media3PlayerController controller, MediaItemFormatInfo info, long fromMs, long lengthMs,
@@ -322,7 +297,14 @@ final class MeeTuneCrossfade {
                 }
                 if (!id.equals(mPlanId)) { // planned once, while there is still time to arm for it
                     long[] plan = planBlend(id, duration, fade);
-                    if (plan != null && pos < plan[0] - LEAD_MS - IDLE_TICK_MS) {
+                    if (plan != null && pos >= plan[0] - LEAD_MS - IDLE_TICK_MS
+                            && pos + LEAD_MS + 2000 < plan[0] + plan[1]) {
+                        // Seeked past the blend's start: blend from here to where the music ends, not
+                        // through the silent outro.
+                        long from = pos + LEAD_MS + IDLE_TICK_MS;
+                        plan = new long[] {from, plan[0] + plan[1] - from};
+                    }
+                    if (plan != null && pos < plan[0] - LEAD_MS) {
                         mPlanId = id;
                         mPlanHandoff = plan[0];
                         mPlanBlend = plan[1];
@@ -330,17 +312,8 @@ final class MeeTuneCrossfade {
                                 + " (outro left out " + (duration - plan[0] - plan[1]) + "ms)");
                     }
                 }
-                long handoff;
-                if (id.equals(mPlanId) && willMix(id)) {
-                    handoff = mPlanHandoff;
-                    fade = mPlanBlend;
-                } else if (com.newtube.mobile.ui.meetune.MeeTune.automix(mContext)) {
-                    long end = id.equals(mPlanId) ? mPlanHandoff + mPlanBlend : duration;
-                    fade = Math.min(fade, QUICK_MS);
-                    handoff = end - fade;
-                } else {
-                    handoff = duration - fade;
-                }
+                long handoff = id.equals(mPlanId) ? mPlanHandoff : duration - fade;
+                fade = id.equals(mPlanId) ? mPlanBlend : fade;
                 if (pos < handoff - LEAD_MS - IDLE_TICK_MS) {
                     return Math.min(IDLE_TICK_MS, Math.max(TICK_MS, handoff - LEAD_MS - pos));
                 }
@@ -366,6 +339,14 @@ final class MeeTuneCrossfade {
             }
             case FADING: {
                 long now = SystemClock.uptimeMillis();
+                if (mOverlapAt != 0) {
+                    float t = Math.min(1f, (now - mOverlapAt) / (float) OVERLAP_MS);
+                    controller.setFadeGain((float) Math.cos(Math.PI / 2 * t));
+                    if (t < 1f) return TICK_MS;
+                    mOverlapAt = 0;
+                    mHost.playEnd(); // now the next song
+                    return TICK_MS;
+                }
                 if (mTail != null && !mTail.getPlayWhenReady()) {
                     finish(controller); // the tail was stopped (paused below)
                     return TICK_MS;
@@ -381,18 +362,17 @@ final class MeeTuneCrossfade {
                     lockBeat(controller, main, id);
                 }
                 if (mTail != null) {
-                    // Equal power over the whole blend, from when the next song plays.
-                    long from = mMainStartAt;
-                    float out = from == 0 ? 1f
-                            : 1f - Math.min(1f, (now - from) / (float) Math.max(1, mFadeEndAt - from));
-                    mTail.setVolume(mTailBase * (float) Math.cos(Math.PI / 2 * (1 - out)));
+                    // The outgoing song holds for the blend's first half, then fades out smoothly by its end.
+                    float p = Math.min(1f, (now - mFadeStartAt) / (float) Math.max(1, mFadeEndAt - mFadeStartAt));
+                    float fall = Math.max(0f, (p - 0.5f) / 0.5f);
+                    mTail.setVolume(mTailBase * (float) Math.cos(Math.PI / 2 * fall));
                     if (now >= mFadeEndAt || mTail.getPlaybackState() == Player.STATE_ENDED) {
                         releaseTail();
                     }
                 }
                 if (mMainStartAt != 0) {
                     float in = Math.min(1f, (now - mMainStartAt) / mMainFadeMs);
-                    controller.setFadeGain((float) Math.sin(Math.PI / 2 * in));
+                    controller.setFadeGain((float) (1 - Math.cos(Math.PI * in)) / 2); // an S-curve: gentle in, gentle on
                     if (in >= 1f && mTail == null) {
                         finish(controller);
                     }
@@ -433,32 +413,34 @@ final class MeeTuneCrossfade {
         });
     }
 
+    private float mTailBase = 1f;
+    private long mFadeStartAt;
+    private long mOverlapAt;
+    private static final long OVERLAP_MS = 300;
+
     private void handoff(Media3PlayerController controller, ExoPlayer main) {
         mState = FADING;
         mDoneId = mSongId;
         mTail.setPlaybackParameters(main.getPlaybackParameters());
-        // The outgoing song as loud as it was: the user's volume and its loudness level, not full.
+        // The outgoing song as loud as it was (the user's volume times its loudness level), not full:
+        // at 1.0 it jumped up as the blend began.
         mTailBase = controller.getBaseVolume();
         mTail.setVolume(mTailBase);
         mTail.play();
-        controller.setFadeGain(0f);
-        mFadeEndAt = SystemClock.uptimeMillis() + Math.round(mFadeMs / Math.max(0.25f, main.getPlaybackParameters().speed));
+        // The main keeps the song a moment longer, fading under the tail as its sound comes up; muted
+        // at once, the blend began with a ~0.75 s hole (the tail's output takes that long to start).
+        mOverlapAt = SystemClock.uptimeMillis();
+        mFadeStartAt = SystemClock.uptimeMillis();
+        mFadeEndAt = mFadeStartAt + Math.round(mFadeMs / Math.max(0.25f, main.getPlaybackParameters().speed));
         mMainStartAt = 0;
         mMixOut = mSongId.equals(mOutGridId) && mOutGrid != null && mOutGrid.strong() ? mOutGrid : null;
         mMixIn = null;
-        if (mMixOut != null && mInGrid != null && mInGrid.strong()) {
-            // The next song comes in with its bass and treble down (silent until it starts anyway).
-            bass(swapLow(), 0);
-            treble(0.25f, 0);
-        }
-        mHost.playEnd();
     }
 
     private void finish(Media3PlayerController controller) {
         releaseTail();
         controller.setFadeGain(1f);
         bass(1f, 1000); // no-op after a swap
-        treble(1f, 1000);
         mState = IDLE;
         if (mMixIn != null && mTrim != 1f) { // the blend is over: back to the song's own tempo
             mRestoreAt = SystemClock.uptimeMillis();
@@ -475,7 +457,6 @@ final class MeeTuneCrossfade {
             endTrim(controller);
         }
         bass(1f, 0);
-        treble(1f, 0);
         mState = IDLE;
         mMixIn = null;
     }
@@ -484,22 +465,24 @@ final class MeeTuneCrossfade {
     private void startMix(@Nullable String inId) {
         MeeTuneBeats.Grid out = mMixOut;
         MeeTuneBeats.Grid in = inId != null && inId.equals(mInGridId) ? mInGrid : null;
-        double times = out != null && in != null && in.strong() ? octave(out, in) : 0;
-        if (times == 0 || mTail == null) {
-            bass(1f, 0);
-            treble(1f, 0);
-            if (com.newtube.mobile.ui.meetune.MeeTune.automix(mContext) && mTail != null) {
-                // The filter mix: the outgoing song's bass and treble sweep away under the plain cross.
-                long left = Math.max(1, mFadeEndAt - SystemClock.uptimeMillis());
-                if (mTailBass != null) {
-                    mTailBass.setLowGain(0f, left);
-                    mTailBass.setHighGain(0.25f, left);
-                }
-                Log.d(TAG, "automix filter mix: out=" + out + " in=" + in);
+        if (out == null || in == null || !in.strong() || mTail == null) {
+            if (com.newtube.mobile.ui.meetune.MeeTune.automix(mContext)) {
+                Log.d(TAG, "automix off: out=" + out + " in=" + in);
             }
+            bass(1f, 0);
             return;
         }
-        double match = in.periodMs * times / out.periodMs;
+        // The next song's beat counted at the octave nearest the outgoing one (170 BPM over 85: every other beat).
+        double ratio = in.periodMs / out.periodMs;
+        double times = 1;
+        while (ratio * times < 0.707) times *= 2;
+        while (ratio * times > 1.414) times /= 2;
+        double match = ratio * times;
+        if (Math.abs(match - 1) > MAX_STRETCH) {
+            Log.d(TAG, "automix off: tempos too far apart out=" + out + " in=" + in);
+            bass(1f, 0);
+            return;
+        }
         mMixIn = in.scaled(times);
         mMixInId = inId;
         mMatch = match;
@@ -508,47 +491,19 @@ final class MeeTuneCrossfade {
         mCheckAt = 0;
         mRestoreAt = 0;
         mSwapAt = 0;
+        double cue = in.mixInMs();
+        mCueMs = Double.isNaN(cue) || cue > MAX_SKIPPED_INTRO_MS ? in.firstMs : cue;
+        // The bass swap: on the outgoing song's bar line nearest the blend's middle (else just the middle).
         long now = SystemClock.uptimeMillis();
         float speed = Math.max(0.25f, mTail.getPlaybackParameters().speed);
         double tailPos = mTail.getCurrentPosition();
         double left = (mFadeEndAt - now) * speed;
-        // The cue: so the next song's first full bar (its drop) lands as the blend ends, on a bar line; at
-        // least its first audible bar (past a silent intro).
-        double first = in.mixInMs();
-        if (Double.isNaN(first) || first > MAX_SKIPPED_INTRO_MS) first = in.firstMs;
-        double blendBeats = 4 * Math.round(left / out.periodMs / 4);
-        double cue = in.energyMs() - blendBeats * mMixIn.periodMs;
-        mCueMs = Double.isNaN(cue) || cue < first ? first : cue;
-        // The bass swap: on the outgoing song's bar line nearest the blend's middle (else just the middle).
         double bar = 4 * out.periodMs;
         double mid = tailPos + left / 2;
         double swap = out.firstMs + Math.round((mid - out.firstMs) / bar) * bar;
         mSwapOutMs = swap > tailPos + 2 * out.periodMs && swap < tailPos + left - 2 * out.periodMs ? swap : mid;
-        // The treble crosses over the whole blend.
-        long blendLeft = Math.max(1, mFadeEndAt - now);
-        treble(1f, blendLeft);
-        if (mTailBass != null) mTailBass.setHighGain(0.25f, blendLeft);
         Log.d(TAG, "automix out=" + out + " in=" + in + " stretch=" + String.format(java.util.Locale.US, "%.4f", match)
                 + " cue=" + Math.round(mCueMs) + " swapIn=" + Math.round((mSwapOutMs - tailPos) / speed) + "ms");
-    }
-
-    /**
-     * The next song's beat counted at the octave nearest the outgoing one (170 BPM over 85: every other
-     * beat, 2), or 0 when even then the tempos are too far apart to stretch.
-     */
-    private static double octave(MeeTuneBeats.Grid out, MeeTuneBeats.Grid in) {
-        double ratio = in.periodMs / out.periodMs;
-        double times = 1;
-        while (ratio * times < 0.707) times *= 2;
-        while (ratio * times > 1.414) times /= 2;
-        double match = ratio * times; // the next song's speed while mixing
-        return match >= MIN_MATCH && match <= MAX_MATCH ? times : 0;
-    }
-
-    /** Automix: song {@code id} and the next one both have a steady beat close enough in tempo to mix. */
-    private boolean willMix(String id) {
-        return id.equals(mOutGridId) && mOutGrid != null && mOutGrid.strong()
-                && mInGrid != null && mInGrid.strong() && octave(mOutGrid, mInGrid) != 0;
     }
 
     /** Keeps the next song's beats on the outgoing one's while both play. */
@@ -562,10 +517,12 @@ final class MeeTuneCrossfade {
         long tailPos = mTail.getCurrentPosition();
         long now = SystemClock.uptimeMillis();
         if (mSwapAt == 0 && tailPos >= mSwapOutMs) {
-            // The bass swap, over one bar: the next song's bass up, the outgoing one's down as far.
-            long bar = Math.round(4 * mMixOut.periodMs / Math.max(0.25f, mTail.getPlaybackParameters().speed));
-            bass(1f, bar);
-            if (mTailBass != null) mTailBass.setLowGain(swapLow(), bar);
+            // The bass swap, over one beat: the next song's bass in, the outgoing one's out.
+            long beat = Math.round(mMixOut.periodMs / Math.max(0.25f, mTail.getPlaybackParameters().speed));
+            bass(1f, beat);
+            // The outgoing song's bass eases out over the rest of the blend: cut in one beat, it sounded
+            // like the song suddenly falling away (most of its weight is bass with a boosted equalizer).
+            if (mTailBass != null) mTailBass.setLowGain(0f, Math.max(beat, mFadeEndAt - now));
             mSwapAt = now;
             Log.d(TAG, "automix bass swap at=" + tailPos);
         }
@@ -596,7 +553,7 @@ final class MeeTuneCrossfade {
         if (mCheckAt != 0 && now >= mCheckAt) {
             mCheckAt = 0;
             Log.d(TAG, "automix lock off by " + Math.round(behind * mMixOut.periodMs) + "ms");
-            if (Math.abs(behind) > 0.15 && mSeeks < 2 && now - mMainStartAt < mMainFadeMs / 2) {
+            if (Math.abs(behind) > 0.15 && mSeeks < 1 && now - mMainStartAt < mMainFadeMs / 2) {
                 mAligned = false; // still quiet: jump again rather than nudge for seconds
                 return;
             }
@@ -621,6 +578,7 @@ final class MeeTuneCrossfade {
     }
 
     private void releaseTail() {
+        mOverlapAt = 0;
         if (mTail != null) {
             mTail.release();
             mTail = null;

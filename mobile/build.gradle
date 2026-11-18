@@ -421,9 +421,6 @@ dependencies {
     // (EXTENSION_RENDERER_MODE_ON), so it only plays what the phone can't. Built against media3
     // 1.9.0; its renderer implements every abstract method 1.10.1 has. Bump with media3.
     stmobileImplementation 'org.jellyfin.media3:media3-ffmpeg-decoder:1.9.0+1'
-    // MEETUNE(automix): runs the Beat This! beat and downbeat model (assets/beat_this_final0_q8.onnx).
-    // The full runtime, not onnxruntime-mobile, which only loads .ort files.
-    stmobileImplementation 'com.microsoft.onnxruntime:onnxruntime-android:1.28.0'
     // Cronet leaf transport for the media path (H2/QUIC, like the legacy engine had): our copy of
     // media3's CronetDataSource (player/cronet) on the embedded Cronet engine that :sharedutils
     // ships (CronetManager). The media3-datasource-cronet artifact is not used: F-Droid rejects the

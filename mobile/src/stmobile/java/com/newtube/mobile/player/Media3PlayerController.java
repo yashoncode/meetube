@@ -1453,16 +1453,16 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     /** MEETUNE(crossfade): a fade over the user's volume, which stays as set ({@link #getVolume}). */
+    /** MEETUNE(crossfade): the volume before any fade (the user's, times loudness), for the tail to match. */
+    public float getBaseVolume() {
+        return Math.min(mUserVolume, 1f) * mLoudnessGain;
+    }
+
     public void setFadeGain(float gain) {
         mFadeGain = Math.max(0f, Math.min(1f, gain));
         if (mPlayer != null) {
             mPlayer.setVolume(Math.min(mUserVolume, 1f) * mLoudnessGain * mFadeGain);
         }
-    }
-
-    /** MEETUNE(crossfade): the volume before any fade (the user's, times loudness), for the tail to match. */
-    public float getBaseVolume() {
-        return Math.min(mUserVolume, 1f) * mLoudnessGain;
     }
 
     /** MEETUNE(crossfade): the player itself, for the position and speed a crossfade follows. */

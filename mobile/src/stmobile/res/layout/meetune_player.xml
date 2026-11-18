@@ -235,6 +235,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="marquee"
+                    android:fadingEdgeLength="20dp"
+                    android:requiresFadingEdge="horizontal"
                     android:fontFamily="?attr/appFontMedium"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:singleLine="true"
@@ -479,7 +481,7 @@
                 <!-- The volume's level as it changes: a glass pill gliding over the bar's end. -->
                 <com.newtube.mobile.ui.common.GlassView
                     android:id="@+id/meetune_player_volume_bubble"
-                    android:layout_width="wrap_content"
+                    android:layout_width="58dp"
                     android:layout_height="30dp"
                     android:alpha="0"
                     android:translationY="-36dp"
@@ -488,11 +490,11 @@
 
                     <TextView
                         android:id="@+id/meetune_player_volume_level"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:fontFeatureSettings="tnum"
                         android:gravity="center"
-                        android:paddingHorizontal="12dp"
+                        android:maxLines="1"
                         android:textColor="@android:color/white"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -576,7 +578,7 @@
                             android:fontFamily="?attr/appFontRegular"
                             android:fontFeatureSettings="tnum"
                             android:letterSpacing="0.02"
-                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="#99FFFFFF"
                             android:textSize="11sp" />
 

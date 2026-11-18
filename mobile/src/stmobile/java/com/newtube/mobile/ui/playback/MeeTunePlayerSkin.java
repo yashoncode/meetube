@@ -205,6 +205,8 @@ public final class MeeTunePlayerSkin {
                 (v, l, t, r, b, ol, ot, or, ob) -> { if (t != ot) mArt.post(this::fitArt); }); // a wide cover's middle
         frostButtons(mRoot.findViewById(R.id.meetune_player_controls), mRoot.findViewById(R.id.meetune_player_source));
         frostButtons(mRoot.findViewById(R.id.meetune_player_head), mRoot.findViewById(R.id.meetune_player_source));
+        // The name's box clips again: unclipped, the scrolling title ran out past its left edge.
+        ((ViewGroup) mTitle.getParent()).setClipChildren(true);
         View handle = mRoot.findViewById(R.id.meetune_player_handle);
         View controlsColumn = mRoot.findViewById(R.id.meetune_player_controls);
         int pad = controlsColumn.getPaddingBottom();
@@ -310,11 +312,15 @@ public final class MeeTunePlayerSkin {
             }
         });
         if (mAudio != null) {
-            mVolume.setMax(mAudio.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+            // Fine-grained under the finger; the phone's volume only moves when a whole step is crossed.
+            mVolume.setMax(mAudio.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * VOLUME_FINE);
             mVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
-                    if (fromUser) mAudio.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+                    int step = Math.round((float) progress / VOLUME_FINE);
+                    if (fromUser && step != mAudio.getStreamVolume(AudioManager.STREAM_MUSIC)) {
+                        mAudio.setStreamVolume(AudioManager.STREAM_MUSIC, step, 0);
+                    }
                     if (mShownVolume >= 0 && progress != mShownVolume) showVolumeLevel(bar, progress);
                     mShownVolume = progress;
                 }
@@ -716,6 +722,9 @@ public final class MeeTunePlayerSkin {
         return null;
     }
 
+    /** The volume bar's positions per volume step, so a drag glides instead of jumping step to step. */
+    private static final int VOLUME_FINE = 100;
+
     /** The volume's last level; -1 until the bar first shows it, so opening the player shows no bubble. */
     private int mShownVolume = -1;
     private final Runnable mHideVolumeLevel = this::hideVolumeLevel;
@@ -730,16 +739,13 @@ public final class MeeTunePlayerSkin {
         TextView text = mRoot.findViewById(R.id.meetune_player_volume_level);
         text.setText(String.format(Locale.getDefault(), "%d%%", Math.round(100f * level / Math.max(1, bar.getMax()))));
         bubble.removeCallbacks(mHideVolumeLevel);
-        bubble.post(() -> { // its width follows the text
-            int left = bar.getPaddingLeft();
-            float x = left + (bar.getWidth() - left - bar.getPaddingRight()) * (float) level / Math.max(1, bar.getMax())
-                    - bubble.getWidth() / 2f;
-            x = Math.max(0f, Math.min(x, bar.getWidth() - bubble.getWidth()));
-            if (bubble.getAlpha() == 0f) bubble.setTranslationX(x);
-            bubble.animate().alpha(1f).translationX(x).setDuration(180)
-                    .setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD).start();
-            bubble.postDelayed(mHideVolumeLevel, 1100);
-        });
+        // Sticks to the finger: placed at once each move (an animation per move trailed behind the drag).
+        int left = bar.getPaddingLeft();
+        float x = left + (bar.getWidth() - left - bar.getPaddingRight()) * (float) level / Math.max(1, bar.getMax())
+                - bubble.getWidth() / 2f;
+        bubble.setTranslationX(Math.max(0f, Math.min(x, bar.getWidth() - bubble.getWidth())));
+        if (bubble.getAlpha() < 1f) bubble.animate().alpha(1f).setDuration(120).start();
+        bubble.postDelayed(mHideVolumeLevel, 1100);
     }
 
     /**
@@ -1129,12 +1135,19 @@ public final class MeeTunePlayerSkin {
             mLyricLines.addView(source);
         }
         mLineRow.setVisibility(lineRowVisibility(mMode));
+        // While they load, the line over the bar says so; then the sung line takes over (or it goes).
+        if (lyricsLoading()) showLine(context.getString(R.string.meetune_lyrics_coming));
+        else showLine(""); // the sung line (if timed) comes in on the next follow
         followLyrics(mControls.position());
+    }
+
+    private boolean lyricsLoading() {
+        return !mLyricsAsked && mLyrics == null;
     }
 
     /** The sung line's row keeps its room on the normal page, lyrics or not, so the title and bar never move. */
     private int lineRowVisibility(int mode) {
-        return mode != NORMAL ? View.GONE : timed() ? View.VISIBLE : View.INVISIBLE;
+        return mode != NORMAL ? View.GONE : timed() || lyricsLoading() ? View.VISIBLE : View.INVISIBLE;
     }
 
     private TextView lyricLine(CharSequence text, int sp, int color) {
@@ -1593,8 +1606,9 @@ public final class MeeTunePlayerSkin {
         mLike.setImageResource(star);
         mHeadLike.setImageResource(star);
         followLyrics(position);
-        if (mAudio != null && !mVolume.isPressed()) {
-            mVolume.setProgress(mAudio.getStreamVolume(AudioManager.STREAM_MUSIC));
+        if (mAudio != null && !mVolume.isPressed()) { // the keys moved it, or the drag ended between steps
+            int step = mAudio.getStreamVolume(AudioManager.STREAM_MUSIC);
+            if (Math.round((float) mVolume.getProgress() / VOLUME_FINE) != step) mVolume.setProgress(step * VOLUME_FINE);
         }
         if ((mFormat.length() == 0 || mFormatPending) && !mFormatLeaving) {
             Format format = mControls.audioFormat();
@@ -1821,27 +1835,53 @@ public final class MeeTunePlayerSkin {
             mHalo.setMaskFilter(new BlurMaskFilter(7 * mDensity, BlurMaskFilter.Blur.NORMAL));
         }
 
+        /** 0 at rest, 1 held: the played part swells and its glow grows under the finger, springing in. */
+        private float mPop;
+        @Nullable private android.animation.ValueAnimator mPopAnim;
+
+        @Override
+        public boolean onTouchEvent(android.view.MotionEvent event) {
+            int action = event.getActionMasked();
+            if (action == android.view.MotionEvent.ACTION_DOWN) {
+                pop(1f, 420, new android.view.animation.OvershootInterpolator(3f));
+                performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK);
+            } else if (action == android.view.MotionEvent.ACTION_UP || action == android.view.MotionEvent.ACTION_CANCEL) {
+                pop(0f, 320, com.newtube.mobile.ui.common.Motion.STANDARD);
+            }
+            return super.onTouchEvent(event);
+        }
+
+        private void pop(float to, long ms, android.animation.TimeInterpolator interpolator) {
+            if (mPopAnim != null) mPopAnim.cancel();
+            mPopAnim = android.animation.ValueAnimator.ofFloat(mPop, to).setDuration(ms);
+            mPopAnim.setInterpolator(interpolator);
+            mPopAnim.addUpdateListener(a -> {
+                mPop = (float) a.getAnimatedValue();
+                invalidate();
+            });
+            mPopAnim.start();
+        }
+
         @Override
         protected synchronized void onDraw(Canvas canvas) {
             int range = getMax();
             int progress = getProgress();
+            float half = 4 * mDensity * (1f + 0.6f * mPop); // the 8dp line (meetune_seek), fatter while held
             if (range > 0 && progress > 0 && GlowProgressBar.enabled(getContext())) {
                 int left = getPaddingLeft();
                 float x = left + (getWidth() - left - getPaddingRight()) * (float) progress / range;
                 float cy = getHeight() / 2f;
-                float half = 4 * mDensity; // the 8dp line (meetune_seek)
                 if (Build.VERSION.SDK_INT >= 28) {
                     canvas.drawRoundRect(left, cy - half, x, cy + half, half, half, mHalo);
                 }
                 if (progress < range) {
-                    mHead.draw(getContext(), canvas, x, cy, 20 * mDensity, 0xFFFFFFFF);
+                    mHead.draw(getContext(), canvas, x, cy, 20 * mDensity * (1f + 0.5f * mPop), 0xFFFFFFFF);
                 }
             }
             super.onDraw(canvas);
             if (range > 0 && progress > 0) {
                 // The played part as a pill, round from the first second (meetune_seek leaves it clear).
                 int left = getPaddingLeft();
-                float half = 4 * mDensity;
                 float x = left + (getWidth() - left - getPaddingRight()) * (float) progress / range;
                 float cy = getHeight() / 2f;
                 canvas.drawRoundRect(left, cy - half, Math.max(x, left + 2 * half), cy + half, half, half, mFill);
