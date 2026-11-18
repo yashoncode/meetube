@@ -121,6 +121,37 @@ class Media3TrackAdapter {
         if (mPreferOriginalAudio && mTargets[FormatItem.TYPE_AUDIO] == null) {
             applyOriginalAudioDefault();
         }
+        preferPremiumAac(tracks);
+    }
+
+    /**
+     * MEETUBE(aac-256): Premium accounts can get itag 141 (AAC 256 kbps). media3 ranks audio by
+     * sample rate before bitrate, so Opus 251 (48 kHz, ~160 kbps) beat it every time. When 141 is
+     * here, add AAC to the preferred types (after Dolby's, which still win). A preference, not an
+     * override: the AAC set still adapts down to 140 on a weak signal.
+     */
+    private void preferPremiumAac(Tracks tracks) {
+        boolean premiumAac = false;
+        for (Tracks.Group group : tracks.getGroups()) {
+            if (group.getType() != C.TRACK_TYPE_AUDIO) {
+                continue;
+            }
+            for (int i = 0; i < group.length; i++) {
+                String id = group.getTrackFormat(i).id;
+                premiumAac |= group.isTrackSupported(i) && id != null && (id.equals("141") || id.startsWith("141-"));
+            }
+        }
+        List<String> mimes = new ArrayList<>(mTrackSelector.getParameters().preferredAudioMimeTypes);
+        boolean had = mimes.remove(androidx.media3.common.MimeTypes.AUDIO_AAC);
+        if (premiumAac == had) {
+            return; // already right; also keeps the reselection this triggers from looping
+        }
+        if (premiumAac) {
+            mimes.add(androidx.media3.common.MimeTypes.AUDIO_AAC);
+        }
+        Log.d(TAG, "aac-256 prefer=%s", premiumAac);
+        mTrackSelector.setParameters(mTrackSelector.buildUponParameters()
+                .setPreferredAudioMimeTypes(mimes.toArray(new String[0])));
     }
 
     void selectFormat(FormatItem formatItem) {
