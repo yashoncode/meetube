@@ -65,8 +65,8 @@ public final class MeeTuneSongMenu {
         return rows;
     }
 
-    static void show(Activity activity, View anchor, MusicApi.Item item, Consumer<String> openBrowse) {
-        place(activity, build(activity, item, openBrowse, null), anchor, false);
+    static void show(Activity activity, View anchor, MusicApi.Item item, Consumer<String> openBrowse, Row... tail) {
+        place(activity, build(activity, item, openBrowse, null, tail), anchor, false);
     }
 
     private static PopupWindow build(Activity a, MusicApi.Item item, Consumer<String> openBrowse,
@@ -103,7 +103,7 @@ public final class MeeTuneSongMenu {
         content.addView(divider(a));
         row(content, R.drawable.ic_player_playlist_add, a.getString(R.string.dialog_add_to_playlist), null, () -> {
             popup.dismiss();
-            com.liskovsoft.smartyoutubetv2.common.utils.AppDialogUtil.showAddToPlaylistDialog(a, MeeTune.video(item), null);
+            MeeTuneLibrary.addSheet(a, item); // a phone playlist, no account needed; a YouTube one when signed in
         });
         content.addView(divider(a));
         row(content, R.drawable.ic_meetune_radio, a.getString(R.string.meetune_start_radio), null, () -> {
@@ -202,6 +202,41 @@ public final class MeeTuneSongMenu {
             set.accept(get.getAsLong() + 500);
             show.run();
         });
+        place(a, popup, null, true);
+    }
+
+    /**
+     * The playing song's canvas: on or off for this song, and with a music-video loop, another part of
+     * it or not this video. {@code loop}: a music-video loop is what shows now. {@code reload} asks for
+     * the song's canvas again after a pick.
+     */
+    public static void canvas(Activity a, Video video, boolean loop, Runnable reload) {
+        String id = video.videoId;
+        if (id == null) return;
+        LinearLayout content = new LinearLayout(a);
+        PopupWindow popup = glassPopup(a, content, 264, 28);
+        boolean off = MeeTuneCanvas.isOff(a, id);
+        row(content, R.drawable.ic_meetune_video, a.getString(off ? R.string.meetune_canvas_song_on : R.string.meetune_canvas_song_off), null, () -> {
+            popup.dismiss();
+            MeeTuneCanvas.setOff(a, id, !off);
+            reload.run();
+        });
+        if (!off && MeeTuneCanvas.videoLoops(a) && MeeTuneCanvas.hasVideo(id)) {
+            boolean notVideo = MeeTuneCanvas.isNotVideo(a, id);
+            if (loop && !notVideo) {
+                row(content, R.drawable.ic_meetune_forward, a.getString(R.string.meetune_canvas_next_part), null, () -> {
+                    popup.dismiss();
+                    MeeTuneCanvas.nextPart(a, id);
+                    reload.run();
+                });
+            }
+            if (loop || notVideo) row(content, R.drawable.ic_meetune_video, a.getString(notVideo ? R.string.meetune_canvas_use_video
+                    : R.string.meetune_canvas_not_video), null, () -> {
+                popup.dismiss();
+                MeeTuneCanvas.setNotVideo(a, id, !notVideo);
+                reload.run();
+            });
+        }
         place(a, popup, null, true);
     }
 
@@ -382,7 +417,7 @@ public final class MeeTuneSongMenu {
     }
 
     /** A menu row with its icon, and a second line under the name when there is one (the album, the artist). */
-    private static void row(ViewGroup parent, int icon, String label, @Nullable String detail, Runnable onClick) {
+    static void row(ViewGroup parent, int icon, String label, @Nullable String detail, Runnable onClick) {
         android.content.Context c = parent.getContext();
         TextView row = new TextView(c);
         android.text.SpannableStringBuilder text = new android.text.SpannableStringBuilder(label);
@@ -416,7 +451,7 @@ public final class MeeTuneSongMenu {
         parent.addView(row, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
-    private static View divider(Activity a) {
+    static View divider(Activity a) {
         View line = new View(a);
         line.setBackgroundColor(a.getColor(R.color.mobile_color_divider));
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(

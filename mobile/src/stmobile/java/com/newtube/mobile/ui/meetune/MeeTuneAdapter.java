@@ -46,6 +46,9 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         /** Search's top result's Playlist: MeeTube's Add to playlist. */
         void addToPlaylist(MusicApi.Item item);
+
+        /** A phone card's long press (a playlist made here, a page saved here): pin, rename, delete. */
+        void cardMenu(View anchor, MusicApi.Item card);
     }
 
     static final int TITLE = 0;
@@ -715,6 +718,12 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     if (item.playable()) {
                         tile.setOnLongClickListener(v -> {
                             mHost.songMenu(v, item);
+                            return true;
+                        });
+                    } else if (MeeTuneLibrary.isPlaylist(item.browseId)
+                            || MeeTuneLibrary.isSaved(tile.getContext(), item.browseId)) {
+                        tile.setOnLongClickListener(v -> {
+                            mHost.cardMenu(v, item);
                             return true;
                         });
                     } else {

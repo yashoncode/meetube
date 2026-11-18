@@ -266,6 +266,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
         show(current(), false);
         MeeTune.sHistoryChanged = mHistoryChanged;
+        MeeTuneLibrary.sChanged = mLibraryChanged;
         sOpen = new java.lang.ref.WeakReference<>(this);
     }
 
@@ -305,6 +306,14 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             countLocalCards(page);
             mAdapter.notifyDataSetChanged();
         }
+    };
+
+    /** The phone library changed: an open phone playlist shows it, and the Library's row when it is on screen. */
+    private final Runnable mLibraryChanged = () -> {
+        Page page = current();
+        if (page == null || isFinishing()) return;
+        if (MeeTuneLibrary.isPlaylist(page.browseId) || (page.tab == LIBRARY && mStack.isEmpty())) load(page, true);
+        else mTabs[LIBRARY].rows = null; // shown fresh next time
     };
 
     /** A download moved on: an open Downloads page shows each song's progress and speed as it comes. */
@@ -458,12 +467,6 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             }
             return;
         }
-        if (!pushed && page.tab == LIBRARY && !MusicApi.signedIn(this)) {
-            mAdapter.setRows(new ArrayList<>());
-            message(getString(R.string.meetune_library_signed_out), getString(R.string.meetune_sign_in),
-                    () -> mSignIn.launch(new Intent(this, MobileWebSignInActivity.class)));
-            return;
-        }
         load(page, reload);
     }
 
@@ -492,6 +495,10 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 return;
             }
             page.rows = rows;
+            MeeTuneAdapter.Row head = head(rows);
+            if (head != null && head.item != null && !MusicApi.signedIn(this)) {
+                head.item.saved = MeeTuneLibrary.isSaved(this, page.browseId); // its Add is the phone's
+            }
             render(page);
         };
         if (!pushed && tab == HOME) { // usually loaded before MeeTune opened: no spinner at all
@@ -510,6 +517,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             }
             if (pushed && MeeTune.DOWNLOADS.equals(page.browseId)) {
                 return MeeTuneAdapter.rows(MeeTune.downloads(this), true, false);
+            }
+            if (pushed && MeeTuneLibrary.isPlaylist(page.browseId)) {
+                return MeeTuneAdapter.rows(MeeTuneLibrary.songs(this, page.browseId), true, false);
             }
             if (pushed && MeeTune.CACHED.equals(page.browseId)) {
                 return MeeTuneAdapter.rows(MeeTuneSongCache.songs(this), true, false);
@@ -551,12 +561,14 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     }
 
     private List<MusicApi.Shelf> library() throws Exception {
-        List<MusicApi.Shelf> shelves;
+        List<MusicApi.Shelf> shelves = new ArrayList<>();
+        boolean account = MusicApi.signedIn(this);
         try {
-            shelves = MusicApi.browse(this, "FEmusic_library_landing", null);
+            if (account) shelves = MusicApi.browse(this, "FEmusic_library_landing", null);
         } catch (Exception e) { // a weak spot: the cards on this phone still show, Cached songs among them
             shelves = new ArrayList<>();
         }
+        MusicApi.Shelf phone = MeeTuneLibrary.shelf(this); // no account needed
         MusicApi.Shelf top = new MusicApi.Shelf();
         MusicApi.Item downloads = new MusicApi.Item(); // the songs downloaded from MeeTune, on this phone
         downloads.kind = MusicApi.CARD;
@@ -588,18 +600,20 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             liked.items.add(0, cached);
             liked.items.add(0, history);
             liked.items.add(0, downloads);
+            shelves.add(shelves.indexOf(liked) + 1, phone);
             return shelves;
         }
         top.items.add(downloads);
         top.items.add(history);
         top.items.add(cached);
-        {
+        if (account) {
             MusicApi.Item item = new MusicApi.Item();
             item.kind = MusicApi.CARD;
             item.title = getString(R.string.meetune_liked);
             item.browseId = "VLLM";
             top.items.add(item);
         }
+        shelves.add(0, phone);
         shelves.add(0, top);
         return shelves;
     }
@@ -842,8 +856,13 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     @Override
     public void save(MusicApi.Item head, ImageView icon) {
         if (head.saveId == null) return;
-        if (!MusicApi.signedIn(this)) {
-            android.widget.Toast.makeText(this, R.string.meetune_save_sign_in, android.widget.Toast.LENGTH_SHORT).show();
+        if (!MusicApi.signedIn(this)) { // no account: the page is saved on the phone instead
+            String browseId = current().browseId;
+            head.saved = !MeeTuneLibrary.isSaved(this, browseId);
+            MeeTuneLibrary.setSaved(this, browseId, head, head.saved);
+            icon.setImageResource(head.saved ? R.drawable.ic_mobile_check : R.drawable.ic_mobile_add);
+            android.widget.Toast.makeText(this, head.saved ? R.string.meetune_saved_phone : R.string.meetune_unsaved_phone,
+                    android.widget.Toast.LENGTH_SHORT).show();
             return;
         }
         boolean save = !head.saved;
@@ -878,7 +897,47 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 if (icon != null) save(head, icon);
             });
         }
+        if (page.browseId != null && !MeeTuneLibrary.isPlaylist(page.browseId) && MusicApi.signedIn(this)) {
+            boolean kept = MeeTuneLibrary.isSaved(this, page.browseId); // signed out, Save above already is the phone's
+            popupRow(content, getString(kept ? R.string.meetune_unsave_phone : R.string.meetune_save_phone), false, () -> {
+                popup.dismiss();
+                MeeTuneLibrary.setSaved(this, page.browseId, head, !kept);
+                android.widget.Toast.makeText(this, kept ? R.string.meetune_unsaved_phone : R.string.meetune_saved_phone,
+                        android.widget.Toast.LENGTH_SHORT).show();
+            });
+        }
         popup.showAsDropDown(anchor, 0, MeeTuneAdapter.dp(this, 8), android.view.Gravity.END);
+    }
+
+    private final ActivityResultLauncher<Intent> mExport = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                Uri file = result.getData() != null ? result.getData().getData() : null;
+                if (result.getResultCode() != RESULT_OK || file == null) return;
+                MeeTune.run(this, () -> {
+                    MeeTuneLibrary.export(this, file);
+                    return true;
+                }, (done, error) -> android.widget.Toast.makeText(this, done != null ? R.string.meetune_exported
+                        : R.string.meetune_export_failed, android.widget.Toast.LENGTH_SHORT).show());
+            });
+
+    private final ActivityResultLauncher<Intent> mImport = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                Uri file = result.getData() != null ? result.getData().getData() : null;
+                if (result.getResultCode() != RESULT_OK || file == null) return;
+                MeeTune.run(this, () -> MeeTuneLibrary.importFile(this, file), (counts, error) ->
+                        android.widget.Toast.makeText(this, counts != null ? getString(R.string.meetune_imported, counts[0], counts[1])
+                                : getString(R.string.meetune_import_failed), android.widget.Toast.LENGTH_LONG).show());
+            });
+
+    /** Settings' Export library: a JSON file where the listener picks. */
+    void exportLibrary() {
+        mExport.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("application/json").putExtra(Intent.EXTRA_TITLE, "MeeTune library.json"));
+    }
+
+    /** Settings' Import library: a file exported before, merged in. */
+    void importLibrary() {
+        mImport.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*"));
     }
 
     /** A frosted popup like MeeTube's: the page copied as it opens, blurred inside 18dp corners. */
@@ -1051,11 +1110,15 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             return;
         }
         if (item.browseId == null) return;
+        if (MeeTuneLibrary.NEW.equals(item.browseId)) {
+            MeeTuneLibrary.askName(this, null, name -> MeeTuneLibrary.create(this, name));
+            return;
+        }
         Page page = new Page(mTab);
         page.browseId = item.browseId;
         page.params = item.params;
         page.title = item.kind == MusicApi.MOOD || MeeTune.DOWNLOADS.equals(item.browseId)
-                || MeeTune.CACHED.equals(item.browseId)
+                || MeeTune.CACHED.equals(item.browseId) || MeeTuneLibrary.isPlaylist(item.browseId)
                 || MeeTune.HISTORY.equals(item.browseId) ? item.title : null;
         page.art = item.kind == MusicApi.MOOD ? null : item.art;
         push(page);
@@ -1063,7 +1126,12 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     @Override
     public void addToPlaylist(MusicApi.Item item) {
-        com.liskovsoft.smartyoutubetv2.common.utils.AppDialogUtil.showAddToPlaylistDialog(this, MeeTune.video(item), null);
+        MeeTuneLibrary.addSheet(this, item);
+    }
+
+    @Override
+    public void cardMenu(View anchor, MusicApi.Item card) {
+        MeeTuneLibrary.cardMenu(this, anchor, card);
     }
 
     @Override
@@ -1077,7 +1145,14 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     @Override
     public void songMenu(View anchor, MusicApi.Item item) {
-        MeeTuneSongMenu.show(this, anchor, item, this::openBrowse);
+        Page page = current();
+        if (page != null && MeeTuneLibrary.isPlaylist(page.browseId) && item.videoId != null) {
+            String list = page.browseId;
+            MeeTuneSongMenu.show(this, anchor, item, this::openBrowse, new MeeTuneSongMenu.Row(R.drawable.ic_meetune_delete,
+                    R.string.meetune_remove_from_playlist, () -> MeeTuneLibrary.remove(this, list, item.videoId)));
+        } else {
+            MeeTuneSongMenu.show(this, anchor, item, this::openBrowse);
+        }
     }
 
     /** Open album, Open artist: their page, pushed as a card's is. */
@@ -1184,6 +1259,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     protected void onDestroy() {
         MiniPlayerBridge.unregisterMiniHost(this);
         if (MeeTune.sHistoryChanged == mHistoryChanged) MeeTune.sHistoryChanged = null;
+        if (MeeTuneLibrary.sChanged == mLibraryChanged) MeeTuneLibrary.sChanged = null;
         mPill.release();
         super.onDestroy();
     }

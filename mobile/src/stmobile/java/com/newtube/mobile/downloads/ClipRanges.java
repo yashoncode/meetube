@@ -15,20 +15,29 @@ import androidx.annotation.Nullable;
  * <p>ponytail: MP4 only. WebM (VP9 + Opus, 1440p and up) keeps its index in Cues; those parts still
  * download whole and are cut afterwards.
  */
-final class ClipRanges {
+public final class ClipRanges {
     /** The header bytes to write first, then the stream's bytes {@code from..to} to append. */
-    static final class Plan {
-        final byte[] header;
-        final long from;
-        final long to;
+    public static final class Plan {
+        public final byte[] header;
+        public final long from;
+        public final long to;
         /** The stream time the first fetched fragment starts at. */
-        final long startMs;
+        public final long startMs;
+        /** The stream time the last fetched fragment ends at. */
+        public final long endMs;
+        /**
+         * A sidx for just the fetched fragments, to write between the header and them: a file that
+         * keeps it stays seekable (MeeTune's canvas loops play such a file clipped, round and round).
+         */
+        public final byte[] sidx;
 
-        Plan(byte[] header, long from, long to, long startMs) {
+        Plan(byte[] header, long from, long to, long startMs, long endMs, byte[] sidx) {
             this.header = header;
             this.from = from;
             this.to = to;
             this.startMs = startMs;
+            this.endMs = endMs;
+            this.sidx = sidx;
         }
 
         long fileLength() {
@@ -41,7 +50,7 @@ final class ClipRanges {
 
     /** "0-740" -> {0, 740}; null when absent or not a range. */
     @Nullable
-    static long[] range(@Nullable String text) {
+    public static long[] range(@Nullable String text) {
         if (text == null) {
             return null;
         }
@@ -64,7 +73,7 @@ final class ClipRanges {
      * @return null when the bytes hold no usable sidx (the part then downloads whole)
      */
     @Nullable
-    static Plan plan(byte[] headerAndIndex, int initEnd, int indexStart, long startMs, long endMs) {
+    public static Plan plan(byte[] headerAndIndex, int initEnd, int indexStart, long startMs, long endMs) {
         if (indexStart < 0 || indexStart + 32 > headerAndIndex.length || initEnd >= indexStart) {
             return null;
         }
@@ -100,6 +109,11 @@ final class ClipRanges {
         long from = -1;
         long to = -1;
         long firstMs = 0;
+        long lastMs = 0;
+        long firstTime = 0;
+        int firstEntry = -1;
+        int entries = 0;
+        int referenceId = (int) u32(headerAndIndex, indexStart + 12);
         for (int i = 0; i < count; i++, p += 12) {
             long size = u32(headerAndIndex, p) & 0x7FFFFFFFL;
             long duration = u32(headerAndIndex, p + 4);
@@ -112,8 +126,12 @@ final class ClipRanges {
                 if (from < 0) {
                     from = offset;
                     firstMs = segStartMs;
+                    firstTime = time;
+                    firstEntry = p;
                 }
                 to = offset + size - 1;
+                lastMs = segEndMs;
+                entries++;
             }
             offset += size;
             time += duration;
@@ -123,7 +141,13 @@ final class ClipRanges {
         }
         byte[] header = new byte[initEnd + 1];
         System.arraycopy(headerAndIndex, 0, header, 0, header.length);
-        return new Plan(header, from, to, firstMs);
+        // version 1: size, 'sidx', version + flags, reference_ID, timescale, 64-bit earliest time
+        // and first offset (0: the fragments follow it), reserved, count, then the kept entries as they were.
+        java.nio.ByteBuffer sidx = java.nio.ByteBuffer.allocate(44 + 12 * entries);
+        sidx.putInt(44 + 12 * entries).put(new byte[] {'s', 'i', 'd', 'x'}).putInt(1 << 24)
+                .putInt(referenceId).putInt((int) timescale).putLong(firstTime).putLong(0)
+                .putShort((short) 0).putShort((short) entries).put(headerAndIndex, firstEntry, 12 * entries);
+        return new Plan(header, from, to, firstMs, lastMs, sidx.array());
     }
 
     private static long u32(byte[] b, int p) {

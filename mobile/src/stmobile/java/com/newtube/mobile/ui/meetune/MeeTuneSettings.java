@@ -105,14 +105,14 @@ final class MeeTuneSettings {
     // ------------------------------------------------------------------------------ pages
 
     private void settings() {
-        // Accounts live in Home's corner menu.
+        // Accounts live in Home's corner menu. What a setting does is behind its own i.
         header(R.string.meetune_set_look);
         LinearLayout card = card();
-        row(card, R.drawable.ic_settings_customize, getString(R.string.meetune_set_customize),
+        tip(card, R.drawable.ic_settings_customize, getString(R.string.meetune_set_customize),
                 getString(R.string.meetune_set_customize_summary), null, true, v -> mHost.open(CUSTOMIZE));
         // MeeTube's High performance mode (one setting for both): the display's top refresh rate.
         card.addView(divider());
-        row(card, R.drawable.ic_player_speed, getString(R.string.mobile_settings_high_refresh),
+        tip(card, R.drawable.ic_player_speed, getString(R.string.mobile_settings_high_refresh),
                 mActivity.getString(R.string.mobile_settings_high_refresh_summary,
                         com.newtube.mobile.ui.common.HighRefresh.topRate(mActivity)),
                 com.newtube.mobile.ui.common.HighRefresh.isEnabled(mActivity), false, v -> {
@@ -120,14 +120,11 @@ final class MeeTuneSettings {
                             !com.newtube.mobile.ui.common.HighRefresh.isEnabled(mActivity));
                     com.newtube.mobile.ui.common.HighRefresh.apply(mActivity);
                 });
+
         header(R.string.meetune_eq_sound);
         card = card();
         row(card, R.drawable.ic_player_equalizer, getString(R.string.meetune_eq), summary(), null, true,
                 v -> mHost.open(EQUALIZER));
-        String[] streams = {getString(R.string.meetune_stream_high), getString(R.string.meetune_stream_normal),
-                getString(R.string.meetune_stream_low)};
-        String[] streamNotes = {getString(R.string.meetune_stream_high_summary),
-                getString(R.string.meetune_stream_normal_summary), getString(R.string.meetune_stream_low_summary)};
         // MEETUNE(issue #262): Spatial sound, for headphones.
         String[] spatial = {getString(R.string.mobile_menu_off), getString(R.string.meetune_spatial_light),
                 getString(R.string.meetune_spatial_strong), getString(R.string.meetune_spatial_cinema)};
@@ -141,7 +138,7 @@ final class MeeTuneSettings {
         // MEETUNE(issue #262): Head tracking, by the phone's own spatial audio (Android 13+).
         if (android.os.Build.VERSION.SDK_INT >= 33) {
             card.addView(divider());
-            row(card, R.drawable.ic_player_headphones, getString(R.string.meetune_head_tracking),
+            tip(card, R.drawable.ic_player_headphones, getString(R.string.meetune_head_tracking),
                     getString(MeeTuneSpatial.systemSpatializes(mActivity, 48_000)
                             ? R.string.meetune_head_tracking_summary : R.string.meetune_head_tracking_summary_none),
                     MeeTuneSpatial.headTracking(mActivity), false,
@@ -150,15 +147,20 @@ final class MeeTuneSettings {
         // MeeTube's headphone correction (AutoEq): one pick for both, it already runs on songs.
         card.addView(divider());
         String headphone = com.newtube.mobile.player.HeadphoneEq.name(mActivity);
-        row(card, R.drawable.ic_player_headphones, getString(R.string.mobile_settings_autoeq),
-                headphone.isEmpty() ? getString(R.string.mobile_settings_autoeq_summary) : headphone, null, true,
-                v -> com.newtube.mobile.ui.settings.HeadphonePicker.show(mActivity, this::rebuild));
+        if (headphone.isEmpty()) {
+            tip(card, R.drawable.ic_player_headphones, getString(R.string.mobile_settings_autoeq),
+                    getString(R.string.mobile_settings_autoeq_summary), null, true,
+                    v -> com.newtube.mobile.ui.settings.HeadphonePicker.show(mActivity, this::rebuild));
+        } else {
+            row(card, R.drawable.ic_player_headphones, getString(R.string.mobile_settings_autoeq), headphone, null, true,
+                    v -> com.newtube.mobile.ui.settings.HeadphonePicker.show(mActivity, this::rebuild));
+        }
         // No Dolby row (like Prism): YouTube Music songs are stereo only, so the phone's own Dolby engine
         // does it, on the session AudioEffects announces. MeeTube's Dolby-track switch stays in its video settings.
         // Bit-perfect USB DAC output: Android 14+ only, greyed out below.
         card.addView(divider());
         boolean bitPerfect = MeeTuneBitPerfect.supported();
-        View usb = row(card, R.drawable.ic_player_headphones, getString(R.string.meetune_bit_perfect),
+        View usb = tip(card, R.drawable.ic_player_headphones, getString(R.string.meetune_bit_perfect),
                 getString(bitPerfect ? R.string.meetune_bit_perfect_summary : R.string.meetune_bit_perfect_summary_none),
                 MeeTuneBitPerfect.isEnabled(mActivity), false,
                 v -> MeeTuneBitPerfect.setEnabled(mActivity, !MeeTuneBitPerfect.isEnabled(mActivity)));
@@ -168,9 +170,13 @@ final class MeeTuneSettings {
             usb.setAlpha(0.38f);
             usb.findViewById(R.id.settings_row_switch).setEnabled(false);
         }
-        crossfade();
+        crossfade(); // Playback: crossfade and Automix
 
         // A ceiling per network: Wi-Fi, and mobile data (any metered network, a hotspot too).
+        String[] streams = {getString(R.string.meetune_stream_high), getString(R.string.meetune_stream_normal),
+                getString(R.string.meetune_stream_low)};
+        String[] streamNotes = {getString(R.string.meetune_stream_high_summary),
+                getString(R.string.meetune_stream_normal_summary), getString(R.string.meetune_stream_low_summary)};
         header(R.string.meetune_set_stream);
         card = card();
         int stream = MeeTune.streamQuality(mActivity);
@@ -187,6 +193,21 @@ final class MeeTuneSettings {
                     com.newtube.mobile.ui.playback.MiniPlayerBridge.applyMusicQuality();
                 }));
         note(R.string.meetune_stream_note);
+
+        canvas();
+
+        // The library on this phone (no account): out to a file and back.
+        if (mActivity instanceof MeeTuneActivity) {
+            MeeTuneActivity screen = (MeeTuneActivity) mActivity;
+            header(R.string.meetune_set_library);
+            card = card();
+            tip(card, R.drawable.ic_meetune_share, getString(R.string.meetune_export),
+                    getString(R.string.meetune_export_summary), null, true, v -> screen.exportLibrary());
+            card.addView(divider());
+            tip(card, R.drawable.ic_meetune_download, getString(R.string.meetune_import),
+                    getString(R.string.meetune_import_summary), null, true, v -> screen.importLibrary());
+            note(R.string.meetune_library_note);
+        }
 
         // MeeTube's download folder for music and its download qualities; a song's own default.
         header(R.string.header_downloads);
@@ -208,13 +229,173 @@ final class MeeTuneSettings {
                 null, true, v -> choose(getString(R.string.mobile_settings_download_quality), qualityLabels, qualityNotes,
                         quality, picked -> MeeTune.setDownloadQuality(mActivity, values[picked])));
         card.addView(divider());
-        row(card, R.drawable.ic_watch_lyrics, getString(R.string.meetune_download_lyrics),
+        tip(card, R.drawable.ic_watch_lyrics, getString(R.string.meetune_download_lyrics),
                 getString(R.string.meetune_download_lyrics_summary), MeeTune.downloadLyrics(mActivity), false,
                 v -> MeeTune.setDownloadLyrics(mActivity, !MeeTune.downloadLyrics(mActivity)));
         note(R.string.meetune_downloads_note);
+
+        addOns();
+
         // The way back to MeeTube, as MeeTube's settings end with "MeeTune →".
         mRoot.addView(MeeTune.switchLink(mActivity, getString(R.string.meetune_link_meetube),
                 v -> MeeTune.leave(mActivity)));
+    }
+
+    /** The player's canvas: its sources, and when music-video loops may be fetched (Spotify's is an add-on). */
+    private void canvas() {
+        header(R.string.meetune_set_canvas);
+        LinearLayout card = card();
+        tip(card, R.drawable.ic_meetune_album, getString(R.string.meetune_canvas_covers),
+                getString(R.string.meetune_canvas_covers_summary), MeeTuneCanvas.covers(mActivity), false,
+                v -> MeeTuneCanvas.setCovers(mActivity, !MeeTuneCanvas.covers(mActivity)));
+        card.addView(divider());
+        boolean loops = MeeTuneCanvas.videoLoops(mActivity);
+        tip(card, R.drawable.ic_meetune_video, getString(R.string.meetune_canvas_video),
+                getString(R.string.meetune_canvas_video_summary), loops, false, v -> {
+                    MeeTuneCanvas.setVideoLoops(mActivity, !loops);
+                    rebuild(); // its two rows below come and go with it
+                });
+        if (loops) {
+            card.addView(divider());
+            tip(card, R.drawable.ic_mobile_tune, getString(R.string.meetune_canvas_mobile),
+                    getString(R.string.meetune_canvas_mobile_summary), MeeTuneCanvas.loopsOnMobile(mActivity), false,
+                    v -> MeeTuneCanvas.setLoopsOnMobile(mActivity, !MeeTuneCanvas.loopsOnMobile(mActivity)));
+            card.addView(divider());
+            tip(card, R.drawable.ic_mobile_tune, getString(R.string.meetune_canvas_light),
+                    getString(R.string.meetune_canvas_light_summary), MeeTuneCanvas.lighter(mActivity), false,
+                    v -> MeeTuneCanvas.setLighter(mActivity, !MeeTuneCanvas.lighter(mActivity)));
+        }
+        note(R.string.meetune_canvas_note);
+    }
+
+    /** Add-ons: other services MeeTune can link to. Spotify: its account, its canvas, its playlists. */
+    private void addOns() {
+        header(R.string.meetune_set_addons);
+        LinearLayout card = card();
+        boolean signedIn = MeeTuneSpotify.signedIn();
+        row(card, R.drawable.ic_meetune_addon, getString(R.string.meetune_spotify),
+                getString(signedIn ? R.string.meetune_spotify_linked : R.string.meetune_spotify_not_linked), null, !signedIn, v -> {
+                    if (signedIn) {
+                        MeeTuneSpotify.signOut();
+                        MeeTuneCanvas.setSpotifyFirst(mActivity, false);
+                        rebuild();
+                    } else {
+                        MeeTuneSpotify.signIn(mActivity, this::rebuild);
+                    }
+                });
+        card.addView(divider());
+        boolean spotifyOn = MeeTuneCanvas.spotifyFirst(mActivity) && signedIn;
+        tip(card, R.drawable.ic_meetune_video, getString(R.string.meetune_canvas_spotify),
+                getString(R.string.meetune_canvas_spotify_summary), spotifyOn, false, v -> {
+                    if (spotifyOn) {
+                        MeeTuneCanvas.setSpotifyFirst(mActivity, false);
+                    } else if (signedIn) {
+                        MeeTuneCanvas.setSpotifyFirst(mActivity, true);
+                    } else { // on once signed in; backed out of, the switch goes back off
+                        MeeTuneSpotify.signIn(mActivity, () -> {
+                            MeeTuneCanvas.setSpotifyFirst(mActivity, MeeTuneSpotify.signedIn());
+                            rebuild();
+                        });
+                    }
+                });
+        card.addView(divider());
+        tip(card, R.drawable.ic_player_queue, getString(R.string.meetune_spotify_import),
+                getString(R.string.meetune_spotify_import_summary), null, true, v -> MeeTuneLibrary.importSpotify(mActivity));
+        note(R.string.meetune_addons_note);
+    }
+
+    // ------------------------------------------------------------------------------ hints
+
+    /** The last group header added: a note under its group puts its i there. */
+    @Nullable
+    private TextView mLastHeader;
+
+    /** A row whose summary explains it (not a value): the explanation waits behind a small i after its name. */
+    private View tip(LinearLayout card, int icon, String title, String hint, @Nullable Boolean checked,
+                     boolean chevron, View.OnClickListener onClick) {
+        View row = row(card, icon, title, hint, checked, chevron, onClick);
+        View summary = row.findViewById(R.id.settings_row_summary);
+        summary.setVisibility(View.GONE);
+        TextView name = row.findViewById(R.id.settings_row_title);
+        name.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        withInfo(name, summary, Gravity.CENTER_VERTICAL, 0);
+        return row;
+    }
+
+    /**
+     * Puts {@code label} in a line with a small i after it; the i opens and closes {@code hint}. The label
+     * keeps its place in its parent.
+     */
+    private void withInfo(TextView label, View hint, int gravity, int bottomMargin) {
+        ViewGroup parent = (ViewGroup) label.getParent();
+        int index = parent.indexOfChild(label);
+        ViewGroup.LayoutParams old = label.getLayoutParams();
+        parent.removeView(label);
+        LinearLayout line = new LinearLayout(mActivity);
+        line.setOrientation(LinearLayout.HORIZONTAL);
+        line.setGravity(gravity);
+        // Weighted in a line that wraps its content: the label only ever shrinks (wrapping to two lines) when
+        // the name is too long, so the i keeps its whole size right after the text.
+        LinearLayout.LayoutParams labelLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        line.addView(label, labelLp);
+        ImageView info = new ImageView(mActivity);
+        info.setImageResource(R.drawable.ic_meetune_info);
+        info.setContentDescription(getString(R.string.meetune_hints));
+        info.setPadding(dp(5), dp(5), dp(5), dp(5));
+        info.setMinimumWidth(dp(26));
+        TypedValue ripple = new TypedValue();
+        mActivity.getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true);
+        info.setBackgroundResource(ripple.resourceId);
+        tintInfo(mActivity, info, false);
+        LinearLayout.LayoutParams infoLp = new LinearLayout.LayoutParams(dp(26), dp(26));
+        infoLp.setMarginStart(dp(4));
+        infoLp.bottomMargin = bottomMargin;
+        line.addView(info, infoLp);
+        info.setOnClickListener(v -> toggleHint(info, hint));
+        parent.addView(line, index, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        if (old instanceof LinearLayout.LayoutParams && ((LinearLayout.LayoutParams) old).weight > 0) {
+            // the label filled its row (Volume: the face and the % at the end): a spacer keeps them there
+            parent.addView(new View(mActivity), index + 1, new LinearLayout.LayoutParams(0, 1, ((LinearLayout.LayoutParams) old).weight));
+        }
+    }
+
+    /** The i in the accent while its hint shows, plain otherwise. */
+    static void tintInfo(Activity a, ImageView info, boolean on) {
+        TypedValue accent = new TypedValue();
+        a.getTheme().resolveAttribute(android.R.attr.colorAccent, accent, true);
+        info.setImageTintList(android.content.res.ColorStateList.valueOf(on ? accent.data
+                : ContextCompat.getColor(a, R.color.mobile_color_on_surface_secondary)));
+    }
+
+    /**
+     * One hint in or out: the i spins over and takes the accent, its card makes room smoothly and the
+     * hint drops in from just above (out: it fades up, then the card closes).
+     */
+    private void toggleHint(ImageView info, View hint) {
+        boolean on = hint.getVisibility() != View.VISIBLE;
+        Haptics.click(info);
+        info.animate().rotationBy(on ? 360f : -360f).scaleX(on ? 1.15f : 1f).scaleY(on ? 1.15f : 1f).setDuration(480)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f)).start();
+        tintInfo(mActivity, info, on);
+        android.transition.ChangeBounds bounds = new android.transition.ChangeBounds();
+        bounds.setDuration(300);
+        bounds.setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f));
+        if (on) {
+            android.transition.TransitionManager.beginDelayedTransition(mRoot, bounds);
+            hint.setVisibility(View.VISIBLE);
+            hint.setAlpha(0f);
+            hint.setTranslationY(-dp(10));
+            hint.animate().alpha(1f).translationY(0f).setStartDelay(90).setDuration(300)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+        } else {
+            hint.animate().alpha(0f).translationY(-dp(6)).setStartDelay(0).setDuration(140).withEndAction(() -> {
+                android.transition.TransitionManager.beginDelayedTransition(mRoot, bounds);
+                hint.setVisibility(View.GONE);
+                hint.setTranslationY(0f);
+            }).start();
+        }
     }
 
     /** MeeTube's choice sheet (its settings' radio list in the frosted bottom sheet); a pick rebuilds the page. */
@@ -544,7 +725,7 @@ final class MeeTuneSettings {
         });
         note(R.string.meetune_crossfade_note);
         LinearLayout mix = card();
-        row(mix, R.drawable.ic_badge_mix, getString(R.string.meetune_automix), getString(R.string.meetune_automix_summary),
+        tip(mix, R.drawable.ic_badge_mix, getString(R.string.meetune_automix), getString(R.string.meetune_automix_summary),
                 MeeTune.automix(mActivity), false, v -> MeeTune.setAutomix(mActivity, !MeeTune.automix(mActivity)));
         volume();
     }
@@ -557,6 +738,7 @@ final class MeeTuneSettings {
         top.setPadding(dp(8), 0, dp(8), 0);
         TextView title = text(17, R.color.mobile_color_on_surface);
         title.setText(R.string.meetune_volume);
+        mLastHeader = title; // its note goes behind an i beside it, not on the Playback header
         top.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         com.newtube.mobile.ui.common.VolumeFace face = com.newtube.mobile.ui.common.VolumeFace.create(mActivity);
         top.addView(face);
@@ -707,12 +889,19 @@ final class MeeTuneSettings {
         TextView header = (TextView) mInflater.inflate(R.layout.item_mobile_settings_header, mRoot, false);
         header.setText(text);
         mRoot.addView(header);
+        mLastHeader = header;
     }
 
     private void note(int text) {
         TextView note = (TextView) mInflater.inflate(R.layout.item_mobile_settings_note, mRoot, false);
         note.setText(text);
         mRoot.addView(note);
+        if (mWhich == SETTINGS && mLastHeader != null) { // the group's note: behind an i on its header
+            note.setVisibility(View.GONE);
+            boolean groupHeader = mLastHeader.getId() == R.id.settings_header_title;
+            withInfo(mLastHeader, note, groupHeader ? Gravity.BOTTOM : Gravity.CENTER_VERTICAL, groupHeader ? dp(4) : 0);
+            mLastHeader = null; // one note per header
+        }
     }
 
     private View divider() {

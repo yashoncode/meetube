@@ -31,7 +31,7 @@ import okhttp3.ResponseBody;
  * the InnerTube interceptors (authorization, visitor headers) that googlevideo answers with
  * 403, plus a 45 s call timeout that would cut a large chunk on a slow link.
  */
-final class StreamFetcher {
+public final class StreamFetcher {
     private static final String TAG = StreamFetcher.class.getSimpleName();
     static final long CHUNK_BYTES = 10L * 1024 * 1024;
     private static final int MAX_ATTEMPTS = 8;
@@ -42,7 +42,7 @@ final class StreamFetcher {
     }
 
     /** Thrown when the server refuses the URL (403/410): the link expired or the network changed. */
-    static final class UrlRefusedException extends IOException {
+    public static final class UrlRefusedException extends IOException {
         UrlRefusedException(int code) {
             super("stream refused: HTTP " + code);
         }
@@ -57,7 +57,7 @@ final class StreamFetcher {
     private final OkHttpClient mClient;
     private final String mUserAgent;
 
-    StreamFetcher(String userAgent) {
+    public StreamFetcher(String userAgent) {
         mClient = MediaHttpClient.create(OkHttpManager.instance().getClient());
         mUserAgent = userAgent;
     }
@@ -186,7 +186,7 @@ final class StreamFetcher {
     }
 
     /** Bytes {@code from..to} (inclusive) of a stream, in one request: a part download's header. */
-    byte[] fetchBytes(String url, long from, long to) throws IOException {
+    public byte[] fetchBytes(String url, long from, long to) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
                 .header("User-Agent", mUserAgent)

@@ -51,6 +51,22 @@ public class ClipRangesTest {
     }
 
     @Test
+    public void keepsAnIndexOfJustTheFetchedFragments() throws IOException {
+        ClipRanges.Plan plan = ClipRanges.plan(stream(), 9, 10, 2500, 4500);
+        assertEquals(2000, plan.startMs);
+        assertEquals(6000, plan.endMs);
+        // header + the new sidx + the fragments is a stream again: its index finds the same fragments.
+        byte[] file = new byte[10 + plan.sidx.length];
+        System.arraycopy(plan.header, 0, file, 0, 10);
+        System.arraycopy(plan.sidx, 0, file, 10, plan.sidx.length);
+        ClipRanges.Plan again = ClipRanges.plan(file, 9, 10, 0, 99_000);
+        assertEquals(file.length, again.from);
+        assertEquals(file.length + 499, again.to); // 200 + 300 bytes
+        assertEquals(2000, again.startMs);
+        assertEquals(6000, again.endMs);
+    }
+
+    @Test
     public void noPlanPastTheEndOrWithoutAnIndex() throws IOException {
         assertNull(ClipRanges.plan(stream(), 9, 10, 7000, 9000));
         assertNull(ClipRanges.plan(new byte[64], 9, 10, 0, 1000));

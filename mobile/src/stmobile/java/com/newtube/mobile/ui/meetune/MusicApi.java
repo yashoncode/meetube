@@ -232,6 +232,94 @@ final class MusicApi {
     }
 
     /**
+     * The song's official music video (itself when it is one), from its twins in YouTube Music's player
+     * page; null when it has none. Only what YouTube Music calls official (MUSIC_VIDEO_TYPE_OMV): a
+     * user upload or a live stage take paired with the song is no canvas.
+     */
+    @Nullable
+    static String musicVideo(Context context, String videoId) throws Exception {
+        JSONObject next = post(context, "next", new JSONObject().put("videoId", videoId).put("isAudioOnly", true));
+        List<JSONObject> found = new ArrayList<>();
+        collect(next, "playlistPanelVideoWrapperRenderer", found, 0);
+        for (JSONObject twins : found) {
+            List<JSONObject> both = new ArrayList<>();
+            JSONObject song = obj(twins, "primaryRenderer", "playlistPanelVideoRenderer");
+            if (song != null) both.add(song);
+            JSONArray counterparts = twins.optJSONArray("counterpart");
+            for (int i = 0; counterparts != null && i < counterparts.length(); i++) {
+                JSONObject twin = obj(counterparts.optJSONObject(i), "counterpartRenderer", "playlistPanelVideoRenderer");
+                if (twin != null) both.add(twin);
+            }
+            boolean ours = false;
+            for (JSONObject r : both) ours |= videoId.equals(r.optString("videoId"));
+            if (!ours) continue;
+            for (JSONObject r : both) if (official(r)) return r.optString("videoId", null);
+            return null;
+        }
+        found.clear();
+        collect(next, "playlistPanelVideoRenderer", found, 0); // no twin: the song itself may be the video
+        for (JSONObject r : found) if (videoId.equals(r.optString("videoId")) && official(r)) return videoId;
+        return null;
+    }
+
+    /**
+     * The YouTube Music song that is this track (an import's): the same title, one of its artists, and
+     * within 5 s of its length when both are known; null when no result is sure. Spotify's "Song - Remastered
+     * 2011" is matched as "Song".
+     */
+    @Nullable
+    static Item findSong(Context context, String title, List<String> artists, long durationMs) throws Exception {
+        String plain = title.replaceFirst("\\s+-\\s+.*$", "");
+        String wantTitle = MeeTuneCanvas.normal(plain);
+        for (Shelf shelf : search(context, plain + " " + (artists.isEmpty() ? "" : artists.get(0)), FILTERS[1])) {
+            for (Item item : shelf.items) {
+                if (item.kind != SONG || item.videoId == null) continue;
+                if (!MeeTuneCanvas.sameTitle(wantTitle, MeeTuneCanvas.normal(item.title))) continue;
+                String by = MeeTuneCanvas.normal(item.artist != null ? item.artist : item.subtitle);
+                boolean artistOk = artists.isEmpty();
+                for (String a : artists) {
+                    String name = MeeTuneCanvas.normal(a);
+                    artistOk |= !name.isEmpty() && MeeTuneCanvas.words(by, name);
+                }
+                if (!artistOk) continue;
+                long ms = MeeTuneCanvas.durationMs(item.duration != null ? item.duration : lastTime(item.subtitle));
+                if (durationMs > 0 && ms > 0 && Math.abs(ms - durationMs) > 5000) continue;
+                return item;
+            }
+        }
+        return null;
+    }
+
+    /** "Artist • Album • 3:45" -> "3:45". */
+    @Nullable
+    private static String lastTime(@Nullable String subtitle) {
+        if (subtitle == null) return null;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+(:\\d{2}){1,2})\\s*$").matcher(subtitle);
+        return m.find() ? m.group(1) : null;
+    }
+
+    private static boolean official(JSONObject renderer) {
+        return "MUSIC_VIDEO_TYPE_OMV".equals(path(renderer, "navigationEndpoint", "watchEndpoint",
+                "watchEndpointMusicSupportedConfigs", "watchEndpointMusicConfig", "musicVideoType"));
+    }
+
+    private static void collect(@Nullable Object node, String key, List<JSONObject> out, int depth) {
+        if (depth > 40) return;
+        if (node instanceof JSONObject) {
+            JSONObject o = (JSONObject) node;
+            JSONObject hit = o.optJSONObject(key);
+            if (hit != null) {
+                out.add(hit);
+                return;
+            }
+            for (java.util.Iterator<String> keys = o.keys(); keys.hasNext(); ) collect(o.opt(keys.next()), key, out, depth + 1);
+        } else if (node instanceof JSONArray) {
+            JSONArray a = (JSONArray) node;
+            for (int i = 0; i < a.length(); i++) collect(a.opt(i), key, out, depth + 1);
+        }
+    }
+
+    /**
      * Every song in a queue panel, in order. A song with a music video comes as twins (the song and its
      * video, two ids); the video's twin is added as a copy of the song under the video's id, so it
      * shows the song's square art whichever of the two plays.

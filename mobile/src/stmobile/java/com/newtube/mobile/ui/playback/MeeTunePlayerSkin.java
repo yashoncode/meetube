@@ -370,7 +370,7 @@ public final class MeeTunePlayerSkin {
     private androidx.media3.ui.PlayerView mCanvasVideo;
     @Nullable private androidx.media3.exoplayer.ExoPlayer mCanvasPlayer;
     /** The song's clip, kept while the player is hidden so it plays again when shown. */
-    @Nullable private String mCanvasUrl;
+    @Nullable private com.newtube.mobile.ui.meetune.MeeTuneCanvas.Clip mCanvasClip;
     /** 0: hidden, 1: shown (times the still cover's own alpha, which it follows). */
     private float mCanvasLevel;
 
@@ -423,18 +423,21 @@ public final class MeeTunePlayerSkin {
         mCanvas.setAlpha(resting ? mArt.getAlpha() * mCanvasLevel : 0f);
     }
 
-    /** Play {@code url} muted and looping over the cover; it fades in with its first frame. */
-    private void startCanvas(String url) {
-        mCanvasUrl = url;
+    /** Play {@code clip} muted and looping over the cover; it fades in with its first frame. */
+    private void startCanvas(com.newtube.mobile.ui.meetune.MeeTuneCanvas.Clip clip) {
+        mCanvasClip = clip;
+        // Battery saver, a hot phone or Reduce motion: the still cover (asked again with the next song or show).
+        if (!com.newtube.mobile.ui.meetune.MeeTuneCanvas.mayMove(mRoot.getContext())) return;
         if (mCanvasPlayer == null) {
             Context context = mRoot.getContext().getApplicationContext();
-            // A plain HTTP stack (not the InnerTube client), the clip kept in the media cache so a loop or replay is free.
+            // A plain HTTP stack (not the InnerTube client), the clip kept in the media cache so a loop or replay is free;
+            // a music-video loop is a file already on the phone.
             androidx.media3.datasource.DataSource.Factory http = new androidx.media3.datasource.DefaultHttpDataSource.Factory();
             androidx.media3.datasource.cache.Cache cache = com.newtube.mobile.player.Media3PlayerCache.get(context);
-            androidx.media3.datasource.DataSource.Factory data = cache == null ? http
-                    : new androidx.media3.datasource.cache.CacheDataSource.Factory().setCache(cache)
+            androidx.media3.datasource.DataSource.Factory data = new androidx.media3.datasource.DefaultDataSource.Factory(context,
+                    cache == null ? http : new androidx.media3.datasource.cache.CacheDataSource.Factory().setCache(cache)
                     .setUpstreamDataSourceFactory(http)
-                    .setFlags(androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
+                    .setFlags(androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR));
             mCanvasPlayer = new androidx.media3.exoplayer.ExoPlayer.Builder(context)
                     .setMediaSourceFactory(new androidx.media3.exoplayer.source.DefaultMediaSourceFactory(data))
                     .build();
@@ -455,16 +458,35 @@ public final class MeeTunePlayerSkin {
             });
             mCanvasVideo.setPlayer(mCanvasPlayer);
         }
-        mCanvasPlayer.setMediaItem(androidx.media3.common.MediaItem.fromUri(url));
+        androidx.media3.common.MediaItem.Builder item = new androidx.media3.common.MediaItem.Builder().setUri(clip.uri);
+        if (clip.endMs > 0) { // a loop cut from a music video: just its seconds, round and round
+            item.setClippingConfiguration(new androidx.media3.common.MediaItem.ClippingConfiguration.Builder()
+                    .setStartPositionMs(clip.startMs).setEndPositionMs(clip.endMs).build());
+        }
+        mCanvasPlayer.setMediaItem(item.build());
         mCanvasPlayer.prepare();
         mCanvasPlayer.setPlayWhenReady(mControls.playing());
         mCanvas.setVisibility(View.VISIBLE);
         followArt();
     }
 
+    /** A music-video loop shows now (not a cover, not Spotify's canvas). */
+    boolean canvasIsLoop() {
+        return mCanvasClip != null && mCanvasClip.endMs > 0;
+    }
+
+    /** The song's canvas asked for again (a new song, or the menu's Canvas changed what it shows). */
+    void reloadCanvas(Video video) {
+        stopCanvas();
+        String canvasFor = video.videoId;
+        com.newtube.mobile.ui.meetune.MeeTuneCanvas.find(mRoot.getContext(), video, clip -> {
+            if (clip != null && canvasFor.equals(mVideoId)) startCanvas(clip);
+        });
+    }
+
     /** Back to the still cover (a new song, or a clip that would not play). */
     private void stopCanvas() {
-        mCanvasUrl = null;
+        mCanvasClip = null;
         if (mCanvasPlayer != null) mCanvasPlayer.stop();
         mCanvasLevel = 0f;
         mCanvas.setAlpha(0f);
@@ -965,11 +987,7 @@ public final class MeeTunePlayerSkin {
             mNextArtFetched = false;
             images().load(MeeTune.art(video)).into((ImageView) mRoot.findViewById(R.id.meetune_player_head_art));
             fetchLyrics(video);
-            stopCanvas();
-            String canvasFor = video.videoId;
-            com.newtube.mobile.ui.meetune.MeeTuneCanvas.find(video, url -> {
-                if (url != null && canvasFor.equals(mVideoId)) startCanvas(url);
-            });
+            reloadCanvas(video);
             if (mRoot.getContext() instanceof android.app.Activity) {
                 MeeTune.learn((android.app.Activity) mRoot.getContext(), video); // the menu's Open album, Open artist
                 MeeTune.checkLike((android.app.Activity) mRoot.getContext(), video.videoId, this::update); // the heart
@@ -1549,16 +1567,16 @@ public final class MeeTunePlayerSkin {
         com.newtube.mobile.ui.common.Motion.frostIn(mRoot); // out of blur, as MeeTube's pages come in
         mRoot.removeCallbacks(mTick);
         mRoot.post(mTick);
-        if (mCanvasUrl != null) startCanvas(mCanvasUrl);
+        if (mCanvasClip != null) startCanvas(mCanvasClip);
     }
 
     void hide() {
         mRoot.removeCallbacks(mTick);
         // Unseen: the clip lets its video decoder go (phones have few; MeeTube's player may need one).
         if (mCanvasPlayer != null && mCanvas.getVisibility() == View.VISIBLE) {
-            String clip = mCanvasUrl;
+            com.newtube.mobile.ui.meetune.MeeTuneCanvas.Clip clip = mCanvasClip;
             stopCanvas();
-            mCanvasUrl = clip; // back on screen: it plays again
+            mCanvasClip = clip; // back on screen: it plays again
         }
         mWasPlaying = null; // shown again: no title pop for the state it comes back in
         mRoot.setVisibility(View.GONE);
