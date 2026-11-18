@@ -82,13 +82,14 @@ public final class NavBloom extends Drawable {
 
     /** Until the user picks one: the accent (red) in the light theme, the plain white in the dark. */
     public static int mode(Context context) {
-        if (com.newtube.mobile.ui.common.YouTubeMode.isOn(context)) {
-            return MODE_OFF; // MEETUBE(youtube mode): a plain bar, the filled icon marks the tab
-        }
         if (sMode == -1) {
             sMode = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getInt(KEY_MODE, UNSET);
         }
         if (sMode == UNSET) {
+            // MEETUBE(youtube mode): a plain bar, the filled icon marks the tab; a pick still wins (issue #287)
+            if (com.newtube.mobile.ui.common.YouTubeMode.isOn(context)) {
+                return MODE_OFF;
+            }
             return com.newtube.mobile.ui.common.ThemeMode.isLight(context) ? MODE_ACCENT : MODE_WHITE;
         }
         return sMode;

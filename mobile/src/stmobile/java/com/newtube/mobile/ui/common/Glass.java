@@ -46,9 +46,8 @@ public final class Glass {
     public static final int CHIPS_SEGMENT = 1;
 
     public static int chipStyle(android.content.Context context) {
-        if (YouTubeMode.isOn(context)) {
-            return CHIPS_SEGMENT; // MEETUBE(youtube mode): the track, drawn as YouTube's text tabs
-        }
+        // MEETUBE(youtube mode): the track, drawn as YouTube's text tabs, until the user picks a style
+        // (issue #287: the pick used to snap back to Segment bubble while YouTube mode was on).
         return context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).getInt("chip_style", CHIPS_SEGMENT);
     }
 
