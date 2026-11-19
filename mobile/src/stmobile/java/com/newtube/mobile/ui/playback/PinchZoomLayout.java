@@ -53,7 +53,7 @@ public class PinchZoomLayout extends FrameLayout {
         void onZoomChanged(float zoom);
     }
 
-    private static final float MAX_ZOOM = 5f;
+    private static final float MAX_ZOOM = 8f; // MEETUBE(issue #296): 8x like the official app
 
     /** Span change (vs the reference watermark) that triggers a zoom event. */
     private static final float PINCH_TRIGGER_RATIO = 1.15f;
