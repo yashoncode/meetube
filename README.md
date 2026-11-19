@@ -12,12 +12,6 @@
 
 <p align="center"><img src=".github/assets/meetube/showcase.webp" width="100%" alt="MeeTube in seven cards: Watch (no ads, real dislikes), Synced lyrics (every line, right on time), Home (videos play as you scroll), Channels (posts, Shorts and live chat), YouTube mode (the look you know), Equalizer (tune how it sounds) and Offline (4K, smart and auto downloads)"></p>
 
-<p align="center">
-<img src=".github/assets/meetube/screens/home.jpg" width="24%" alt="Home, the top video playing as you scroll">
-<img src=".github/assets/meetube/screens/compact_player.jpg" width="24%" alt="The compact watch page">
-<img src=".github/assets/meetube/lyrics.jpg" width="24%" alt="Synced lyrics under the video">
-<img src=".github/assets/meetube/screens/youtube_mode.jpg" width="24%" alt="YouTube mode: a flat bottom bar and text tabs">
-</p>
 
 <p align="center"><a href="https://github.com/yashoncode/meetube/releases/latest"><b>⬇ Download the latest MeeTube</b></a></p>
 
