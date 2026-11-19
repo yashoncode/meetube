@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(up-next): Cancel / Replay - a glass pill with press feedback. -->
-<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#33FFFFFF">
+<!-- MEETUBE(glass press): the Up next glass button, lit on a press. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#24FFFFFF" />
-            <stroke android:width="0.5dp" android:color="#2EFFFFFF" />
-            <corners android:radius="16dp" />
+            <solid android:color="#24FFFFFF"/>
+            <stroke android:width="0.5dp" android:color="#2EFFFFFF"/>
+            <corners android:radius="16dp"/>
         </shape>
     </item>
-</ripple>
+    <item>
+        <selector android:enterFadeDuration="90" android:exitFadeDuration="380">
+            <item android:state_pressed="true">
+                <shape android:shape="rectangle">
+                    <corners android:radius="16dp"/>
+                    <gradient android:angle="270" android:startColor="#38FFFFFF" android:endColor="#12FFFFFF"/>
+                    <stroke android:width="0.5dp" android:color="#40FFFFFF"/>
+                </shape>
+            </item>
+            <item android:drawable="@android:color/transparent"/>
+        </selector>
+    </item>
+</layer-list>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(glass press): an icon button's press, a lit glass disc (selectableItemBackgroundBorderless). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android" android:enterFadeDuration="90" android:exitFadeDuration="380">
+    <item android:state_pressed="true">
+        <inset android:inset="2dp">
+            <shape android:shape="oval">
+                <gradient android:type="radial" android:gradientRadius="50%" android:startColor="@color/glass_press_core" android:endColor="@color/glass_press_bottom"/>
+                <stroke android:width="0.5dp" android:color="@color/glass_press_rim"/>
+            </shape>
+        </inset>
+    </item>
+    <item android:drawable="@android:color/transparent"/>
+</selector>

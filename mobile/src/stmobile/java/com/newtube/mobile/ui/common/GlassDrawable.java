@@ -1,6 +1,5 @@
 package com.newtube.mobile.ui.common;
 
-import android.content.res.ColorStateList;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -18,7 +17,9 @@ import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
-import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.view.View;
 
@@ -75,9 +76,9 @@ public final class GlassDrawable extends Drawable {
      */
     public static void setLive(@NonNull View host, boolean live) {
         Drawable background = host.getBackground();
-        if (background instanceof RippleDrawable
-                && ((RippleDrawable) background).getDrawable(0) instanceof GlassDrawable) {
-            GlassDrawable glass = (GlassDrawable) ((RippleDrawable) background).getDrawable(0);
+        if (background instanceof LayerDrawable
+                && ((LayerDrawable) background).getDrawable(0) instanceof GlassDrawable) {
+            GlassDrawable glass = (GlassDrawable) ((LayerDrawable) background).getDrawable(0);
             if (glass.mPaused == live) {
                 glass.mPaused = !live;
                 glass.invalidateSelf();
@@ -101,14 +102,11 @@ public final class GlassDrawable extends Drawable {
             apply(host, source, insetPx);
             return;
         }
-        GradientDrawable mask = new GradientDrawable();
-        mask.setCornerRadius(Float.MAX_VALUE / 2);
-        mask.setColor(0xFFFFFFFF);
         int start = host.getPaddingStart();
         int top = host.getPaddingTop();
         int end = host.getPaddingEnd();
         int bottom = host.getPaddingBottom();
-        host.setBackground(new RippleDrawable(ColorStateList.valueOf(0x33FFFFFF), null, new InsetDrawable(mask, insetPx)));
+        host.setBackground(press(host, insetPx));
         host.setPaddingRelative(start, top, end, bottom);
         if (shadow && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             float blur = 3 * host.getResources().getDisplayMetrics().density;
@@ -119,6 +117,24 @@ public final class GlassDrawable extends Drawable {
             host.setRenderEffect(RenderEffect.createBlendModeEffect(halo, RenderEffect.createOffsetEffect(0f, 0f),
                     android.graphics.BlendMode.SRC_OVER));
         }
+    }
+
+    /**
+     * MEETUBE(glass press): a disc or pill, whatever the bounds, lit like glass under a press (a white
+     * sheen from the top and a light rim) that fades in fast and out slowly, in place of a ripple.
+     */
+    private static Drawable press(@NonNull View host, int insetPx) {
+        float density = host.getResources().getDisplayMetrics().density;
+        GradientDrawable lit = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[] {0x3DFFFFFF, 0x14FFFFFF});
+        lit.setCornerRadius(Float.MAX_VALUE / 2);
+        lit.setStroke(Math.max(1, Math.round(0.5f * density)), 0x47FFFFFF);
+        StateListDrawable states = new StateListDrawable();
+        states.setEnterFadeDuration(90);
+        states.setExitFadeDuration(380);
+        states.addState(new int[] {android.R.attr.state_pressed}, new InsetDrawable(lit, insetPx));
+        states.addState(new int[0], new ColorDrawable(0));
+        return states;
     }
 
     /** MEETUBE(light mode): a page's milky light glass, its hairline dark; the video's glass stays dark. */
@@ -152,15 +168,12 @@ public final class GlassDrawable extends Drawable {
     }
 
     private static void apply(@NonNull View host, @Nullable GlassSource source, int insetPx, int tint, boolean page) {
-        GradientDrawable mask = new GradientDrawable();
-        mask.setCornerRadius(Float.MAX_VALUE / 2); // a disc or a pill, whatever the bounds
-        mask.setColor(0xFFFFFFFF);
         int start = host.getPaddingStart();
         int top = host.getPaddingTop();
         int end = host.getPaddingEnd();
         int bottom = host.getPaddingBottom();
-        host.setBackground(new RippleDrawable(ColorStateList.valueOf(0x33FFFFFF),
-                new GlassDrawable(host, source, insetPx, tint, page), new InsetDrawable(mask, insetPx)));
+        host.setBackground(new LayerDrawable(new Drawable[] {
+                new GlassDrawable(host, source, insetPx, tint, page), press(host, insetPx)}));
         host.setPaddingRelative(start, top, end, bottom); // the inset is not padding: the icon stays its size
     }
 

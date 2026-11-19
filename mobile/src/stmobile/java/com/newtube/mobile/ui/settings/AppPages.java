@@ -269,7 +269,6 @@ final class AppPages {
 
         // MEETUBE(list layout, issue #82): feeds, channels, playlists and search as cards or as rows;
         // issue #92: then a page at a time, each following this one until set.
-        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_video_layout)));
         rows.add(Tiles.of(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_video_layout_all))
                 .option(context.getString(R.string.mobile_settings_video_layout_cards),
                         context.getString(R.string.mobile_settings_video_layout_cards_desc), false)
@@ -637,7 +636,7 @@ final class AppPages {
         MainUIData mainUIData = MainUIData.instance(context);
 
         rows.add(SettingsRow.page(context.getString(R.string.mobile_settings_hidden),
-                () -> hiddenSummary(context), SettingsPages.FEEDS_HIDDEN));
+                () -> hiddenSummary(context), SettingsPages.FEEDS_HIDDEN).summary(() -> hiddenSummary(context))); // a count: stays in sight
 
         rows.add(SettingsRow.divider());
 

@@ -501,8 +501,8 @@
     <string name="mobile_settings_customize_player_summary">Watch page style, player buttons, seek bar, mini player</string>
     <string name="mobile_settings_customize_bars">Tabs and bars</string>
     <string name="mobile_settings_customize_bars_summary">Bottom tabs, top bar, Search button, video menu</string>
-    <string name="mobile_settings_video_layout_all">All pages</string>
-    <string name="mobile_settings_video_layout_follow">Same as All pages</string>
+    <string name="mobile_settings_video_layout_all">Video layout on all pages</string>
+    <string name="mobile_settings_video_layout_follow">Same as all pages</string>
     <string name="mobile_settings_video_layout_home">Home</string>
     <string name="mobile_settings_video_layout_subscriptions">Subscriptions</string>
     <string name="mobile_settings_video_layout_library">History, Downloads and other tabs</string>
@@ -699,4 +699,5 @@
     <string name="mobile_settings_fixed_nav_summary">The bottom bar stays on screen while you scroll</string>
     <string name="mobile_settings_youtube_mode">OG Mode</string>
     <string name="mobile_settings_youtube_mode_summary">Square video cards everywhere and the bottom bar docked to the bottom edge, frosted glass, like YouTube</string>
+    <string name="settings_what_this_does">What this does</string>
 </resources>

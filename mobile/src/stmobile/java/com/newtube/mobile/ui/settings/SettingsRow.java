@@ -97,6 +97,8 @@ public final class SettingsRow {
     boolean destructive;
     /** A custom row on the card with the rows around it, not loose between cards. */
     boolean carded;
+    /** The summary explains the row (not a value): it waits behind a small i after the title. */
+    boolean hint;
 
     private SettingsRow(int kind) {
         this.kind = kind;
@@ -132,6 +134,7 @@ public final class SettingsRow {
         row.icon = icon;
         row.title = title;
         row.summary = summary != null ? () -> summary : null;
+        row.hint = summary != null;
         row.page = pageId;
         return row;
     }
@@ -140,13 +143,16 @@ public final class SettingsRow {
         SettingsRow row = new SettingsRow(KIND_LINK);
         row.title = title;
         row.summary = summary;
+        row.hint = summary != null;
         row.page = pageId;
         return row;
     }
 
     /** A row that does something: opens a sheet, a link, a confirmation. */
     public static SettingsRow action(CharSequence title, @Nullable CharSequence summary, @NonNull Action action) {
-        return action(0, title, summary != null ? () -> summary : null, action);
+        SettingsRow row = action(0, title, summary != null ? () -> summary : null, action);
+        row.hint = summary != null;
+        return row;
     }
 
     public static SettingsRow action(@DrawableRes int icon, CharSequence title, @Nullable Supplier<CharSequence> summary,
@@ -164,6 +170,7 @@ public final class SettingsRow {
         SettingsRow row = new SettingsRow(KIND_SWITCH);
         row.title = title;
         row.summary = summary != null ? () -> summary : null;
+        row.hint = summary != null;
         row.checked = checked;
         row.toggle = toggle;
         return row;
@@ -221,6 +228,7 @@ public final class SettingsRow {
         row.checked = checked;
         row.toggle = toggle;
         row.restart = restart;
+        row.hint = hint;
         return row;
     }
 
@@ -247,6 +255,7 @@ public final class SettingsRow {
 
     public SettingsRow summary(@Nullable Supplier<CharSequence> summary) {
         this.summary = summary;
+        this.hint = false; // a live value stays in sight
         return this;
     }
 
@@ -319,6 +328,7 @@ public final class SettingsRow {
         /** A fixed summary (an explanation) instead of the current option's label. */
         public Choice<T> summary(CharSequence summary) {
             mRow.summary = () -> summary;
+            mRow.hint = true;
             return this;
         }
 

@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(up-next): Play now - the white main-action pill. -->
-<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#33000000">
+<!-- MEETUBE(glass press): the Up next light button, a dark glass sheen on a press. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#F5F5F7" />
-            <corners android:radius="16dp" />
+            <solid android:color="#F5F5F7"/>
+            <corners android:radius="16dp"/>
         </shape>
     </item>
-</ripple>
+    <item>
+        <selector android:enterFadeDuration="90" android:exitFadeDuration="380">
+            <item android:state_pressed="true">
+                <shape android:shape="rectangle">
+                    <corners android:radius="16dp"/>
+                    <gradient android:angle="270" android:startColor="#24000000" android:endColor="#0D000000"/>
+                    <stroke android:width="0.5dp" android:color="#1F000000"/>
+                </shape>
+            </item>
+            <item android:drawable="@android:color/transparent"/>
+        </selector>
+    </item>
+</layer-list>

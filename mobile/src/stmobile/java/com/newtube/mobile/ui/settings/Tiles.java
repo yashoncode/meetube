@@ -147,8 +147,7 @@ final class Tiles {
 
             title.setText(row.title);
             CharSequence text = row.summaryText();
-            summary.setText(text);
-            summary.setVisibility(text != null ? View.VISIBLE : View.GONE);
+            SettingsHint.bind(SettingsHint.attach(title), summary, text, row.hint, String.valueOf(row.title));
             view.setContentDescription(row.title + (text != null ? ", " + text : ""));
             view.setAccessibilityDelegate(SettingsAdapter.SwitchRole.INSTANCE);
 
@@ -202,6 +201,7 @@ final class Tiles {
         Context context = parent.getContext();
         LinearLayout root = column(context);
         TextView summary = heading(root, row.title);
+        summary.setTag(SettingsHint.attach((TextView) root.getChildAt(root.indexOfChild(summary) - 1)));
 
         // Four tiles a row at most: the loader picker has eight.
         int count = row.options.size();
@@ -357,8 +357,7 @@ final class Tiles {
             }
         }
         CharSequence description = index >= 0 ? row.options.get(index).description : null;
-        summary.setText(description);
-        summary.setVisibility(description != null ? View.VISIBLE : View.GONE);
+        SettingsHint.bind((ImageView) summary.getTag(), summary, description, true, String.valueOf(row.title));
     }
 
     /** MEETUBE(press): the row tracks touch for its picture; tiles scale around their own pop. */

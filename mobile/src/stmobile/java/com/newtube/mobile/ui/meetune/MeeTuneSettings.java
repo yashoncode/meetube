@@ -344,10 +344,8 @@ final class MeeTuneSettings {
         info.setContentDescription(getString(R.string.meetune_hints));
         info.setPadding(dp(5), dp(5), dp(5), dp(5));
         info.setMinimumWidth(dp(26));
-        TypedValue ripple = new TypedValue();
-        mActivity.getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true);
-        info.setBackgroundResource(ripple.resourceId);
         tintInfo(mActivity, info, false);
+        glow(info, false, false);
         LinearLayout.LayoutParams infoLp = new LinearLayout.LayoutParams(dp(26), dp(26));
         infoLp.setMarginStart(dp(4));
         infoLp.bottomMargin = bottomMargin;
@@ -370,6 +368,45 @@ final class MeeTuneSettings {
     }
 
     /**
+     * The i's glass glow: a soft accent light inside a faint glass ring, in place of a press ripple.
+     * {@code pulse} (a tap) flares it and lets it fade out.
+     */
+    static void glow(ImageView info, boolean on, boolean pulse) {
+        android.content.Context c = info.getContext();
+        android.graphics.drawable.GradientDrawable glow;
+        if (info.getBackground() instanceof android.graphics.drawable.GradientDrawable) {
+            glow = (android.graphics.drawable.GradientDrawable) info.getBackground();
+        } else {
+            TypedValue accent = new TypedValue();
+            c.getTheme().resolveAttribute(android.R.attr.colorAccent, accent, true);
+            int a = accent.data & 0xFFFFFF;
+            float density = c.getResources().getDisplayMetrics().density;
+            glow = new android.graphics.drawable.GradientDrawable();
+            glow.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            glow.setGradientType(android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT);
+            glow.setGradientRadius(13 * density);
+            glow.setColors(new int[] {0x66000000 | a, 0x2E000000 | a, 0x00000000 | a}); // fades to nothing: no edge to cut
+            glow.setAlpha(0);
+            info.setBackground(glow);
+        }
+        Object old = info.getTag(R.id.settings_row_icon);
+        if (old instanceof android.animation.ValueAnimator) {
+            ((android.animation.ValueAnimator) old).cancel();
+        }
+        int rest = 0; // a flash on tap only: the open i shows by its colour
+        if (!pulse) {
+            glow.setAlpha(rest);
+            return;
+        }
+        android.animation.ValueAnimator anim = android.animation.ValueAnimator.ofInt(glow.getAlpha(), 255, rest);
+        anim.setDuration(620);
+        anim.setInterpolator(new android.view.animation.DecelerateInterpolator());
+        anim.addUpdateListener(v -> glow.setAlpha((int) v.getAnimatedValue()));
+        info.setTag(R.id.settings_row_icon, anim);
+        anim.start();
+    }
+
+    /**
      * One hint in or out: the i spins over and takes the accent, its card makes room smoothly and the
      * hint drops in from just above (out: it fades up, then the card closes).
      */
@@ -379,6 +416,7 @@ final class MeeTuneSettings {
         info.animate().rotationBy(on ? 360f : -360f).scaleX(on ? 1.15f : 1f).scaleY(on ? 1.15f : 1f).setDuration(480)
                 .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f)).start();
         tintInfo(mActivity, info, on);
+        glow(info, on, true);
         android.transition.ChangeBounds bounds = new android.transition.ChangeBounds();
         bounds.setDuration(300);
         bounds.setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f));

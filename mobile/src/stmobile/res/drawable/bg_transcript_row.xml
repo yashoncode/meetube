@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(transcript): a transcript line - the rounded glass highlight while it is being said
-     (selected), the press ripple always. -->
-<ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="?android:attr/colorControlHighlight">
-    <item android:id="@android:id/mask">
-        <shape android:shape="rectangle">
-            <solid android:color="#FFFFFFFF" />
-            <corners android:radius="14dp" />
-        </shape>
-    </item>
+<!-- MEETUBE(glass press): a transcript line: the glass pill when it is the spoken one (selected), lit on a press always. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <selector>
             <item android:state_selected="true">
                 <shape android:shape="rectangle">
-                    <solid android:color="@color/meetube_glass_fill" />
-                    <stroke android:width="0.5dp" android:color="@color/meetube_glass_stroke" />
-                    <corners android:radius="14dp" />
+                    <solid android:color="@color/meetube_glass_fill"/>
+                    <stroke android:width="0.5dp" android:color="@color/meetube_glass_stroke"/>
+                    <corners android:radius="14dp"/>
                 </shape>
             </item>
-            <item>
-                <color android:color="@android:color/transparent" />
-            </item>
+            <item android:drawable="@android:color/transparent"/>
         </selector>
     </item>
-</ripple>
+    <item>
+        <selector android:enterFadeDuration="90" android:exitFadeDuration="380">
+            <item android:state_pressed="true">
+                <shape android:shape="rectangle">
+                    <corners android:radius="14dp"/>
+                    <gradient android:angle="270" android:startColor="@color/glass_press_top" android:endColor="@color/glass_press_bottom"/>
+                    <stroke android:width="0.5dp" android:color="@color/glass_press_rim"/>
+                </shape>
+            </item>
+            <item android:drawable="@android:color/transparent"/>
+        </selector>
+    </item>
+</layer-list>

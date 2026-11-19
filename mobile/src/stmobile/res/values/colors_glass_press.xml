@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(glass press): the glow a press lights, see drawable/glass_press. -->
+<resources>
+    <color name="glass_press_top">#14000000</color>
+    <color name="glass_press_fill">#0F000000</color>
+    <color name="glass_press_bottom">#06000000</color>
+    <color name="glass_press_core">#1A000000</color>
+    <color name="glass_press_rim">#1A000000</color>
+    <color name="glass_press_inverse_top">#38FFFFFF</color>
+    <color name="glass_press_inverse_bottom">#12FFFFFF</color>
+    <color name="glass_press_inverse_rim">#40FFFFFF</color>
+</resources>

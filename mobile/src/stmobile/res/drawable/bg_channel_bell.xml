@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(issue #239): the bell beside Subscribed: the subscribed pill's glass, round. -->
-<inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:inset="4dp">
-    <ripple android:color="?android:attr/colorControlHighlight">
+<!-- MEETUBE(glass press): the bell's glass disc, lit on a press. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="4dp">
+    <layer-list>
         <item>
             <shape android:shape="oval">
-                <solid android:color="@color/meetube_glass_fill" />
-                <stroke android:width="0.5dp" android:color="@color/meetube_glass_stroke" />
+                <solid android:color="@color/meetube_glass_fill"/>
+                <stroke android:width="0.5dp" android:color="@color/meetube_glass_stroke"/>
             </shape>
         </item>
-    </ripple>
+        <item>
+            <selector android:enterFadeDuration="90" android:exitFadeDuration="380">
+                <item android:state_pressed="true">
+                    <shape android:shape="oval">
+                        <gradient android:angle="270" android:startColor="@color/glass_press_top" android:endColor="@color/glass_press_bottom"/>
+                        <stroke android:width="0.5dp" android:color="@color/glass_press_rim"/>
+                    </shape>
+                </item>
+                <item android:drawable="@android:color/transparent"/>
+            </selector>
+        </item>
+    </layer-list>
 </inset>

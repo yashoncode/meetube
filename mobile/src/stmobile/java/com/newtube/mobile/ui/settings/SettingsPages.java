@@ -192,6 +192,9 @@ public final class SettingsPages {
         rows.add(SettingsRow.page(R.drawable.ic_settings_about, context.getString(R.string.mobile_settings_about),
                 versionLine(context), ABOUT));
         // Install on TV lives in About. MEETUNE: the foot of the page switches to MeeTune.
+        for (SettingsRow row : rows) { // the top list stays minimal: names only, what is inside shows on the page
+            row.summary = null;
+        }
         rows.add(SettingsRow.custom(context.getString(R.string.meetune_link_meetune), (parent, page) -> {
             Context c = parent.getContext();
             while (!(c instanceof android.app.Activity) && c instanceof android.content.ContextWrapper) {

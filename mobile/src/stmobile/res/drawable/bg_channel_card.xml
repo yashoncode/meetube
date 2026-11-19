@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(channels): a channel row's card - a soft glass-toned plate with a hairline edge. -->
-<ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="?attr/colorControlHighlight">
+<!-- MEETUBE(glass press): a channel card's glass, lit on a press. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/meetube_glass_fill" />
-            <stroke android:width="1dp" android:color="@color/meetube_glass_stroke" />
-            <corners android:radius="20dp" />
+            <solid android:color="@color/meetube_glass_fill"/>
+            <stroke android:width="1dp" android:color="@color/meetube_glass_stroke"/>
+            <corners android:radius="20dp"/>
         </shape>
     </item>
-</ripple>
+    <item>
+        <selector android:enterFadeDuration="90" android:exitFadeDuration="380">
+            <item android:state_pressed="true">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp"/>
+                    <gradient android:angle="270" android:startColor="@color/glass_press_top" android:endColor="@color/glass_press_bottom"/>
+                    <stroke android:width="0.5dp" android:color="@color/glass_press_rim"/>
+                </shape>
+            </item>
+            <item android:drawable="@android:color/transparent"/>
+        </selector>
+    </item>
+</layer-list>

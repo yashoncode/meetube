@@ -37,6 +37,13 @@
         <!-- MEETUBE(loader): every circular spinner is the loader picked in Settings > Customization
              (meetubeLoader; Loader applies the pick's overlay to each screen's theme). -->
         <item name="meetubeLoader">@drawable/avd_neon_ring</item>
+        <!-- MEETUBE(glass press): a press lights like glass everywhere, no system ripple. -->
+        <item name="android:selectableItemBackground">@drawable/glass_press</item>
+        <item name="selectableItemBackground">@drawable/glass_press</item>
+        <item name="android:selectableItemBackgroundBorderless">@drawable/glass_press_round</item>
+        <item name="selectableItemBackgroundBorderless">@drawable/glass_press_round</item>
+        <item name="colorControlHighlight">@color/glass_press_core</item>
+        <item name="android:colorControlHighlight">@color/glass_press_core</item>
         <!-- MEETUBE(font): Settings > Customization > Font swaps these (AppFont). -->
         <item name="appFontRegular">sans-serif</item>
         <item name="appFontMedium">sans-serif-medium</item>

@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- NEWTUBE(touch): the watch-page pill drawn 36dp tall inside a 48dp touch target. The chips
-     were exactly as tall as they looked (34-36dp); the extra 6dp above and below is touchable
-     but invisible. NEWTUBE(motion): with a ripple inside the pill - Share, Download and Save had
-     no press feedback at all (the Like / Dislike halves have their own, and their container is
-     not clickable, so this one never shows there). -->
-<inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:insetTop="6dp"
-    android:insetBottom="6dp">
-    <ripple android:color="?android:attr/colorControlHighlight">
-        <item android:drawable="@drawable/mobile_watch_pill_bg" />
-    </ripple>
+<!-- MEETUBE(glass press): the watch page action pills (Share, Download, Save) as tall as they look (34-36dp), touchable 6dp above and below, lit like glass on a press. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:insetTop="6dp" android:insetBottom="6dp">
+    <layer-list>
+        <item android:drawable="@drawable/mobile_watch_pill_bg"/>
+        <item>
+            <selector android:enterFadeDuration="90" android:exitFadeDuration="380">
+                <item android:state_pressed="true">
+                    <shape android:shape="rectangle">
+                        <corners android:radius="18dp"/>
+                        <gradient android:angle="270" android:startColor="@color/glass_press_top" android:endColor="@color/glass_press_bottom"/>
+                        <stroke android:width="0.5dp" android:color="@color/glass_press_rim"/>
+                    </shape>
+                </item>
+                <item android:drawable="@android:color/transparent"/>
+            </selector>
+        </item>
+    </layer-list>
 </inset>

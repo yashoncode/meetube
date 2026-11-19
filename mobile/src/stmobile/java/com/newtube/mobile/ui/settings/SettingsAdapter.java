@@ -85,7 +85,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             case SettingsRow.KIND_HEADER:
                 return new TextHolder(inflater.inflate(R.layout.item_mobile_settings_header, parent, false));
             case SettingsRow.KIND_NOTE:
-                return new TextHolder(inflater.inflate(R.layout.item_mobile_settings_note, parent, false));
+                return new NoteHolder(inflater.inflate(R.layout.item_mobile_settings_note, parent, false), parent);
             case SettingsRow.KIND_CUSTOM:
             case SettingsRow.KIND_CUSTOM_CARDED:
                 return new RecyclerView.ViewHolder(new android.widget.FrameLayout(parent.getContext())) {};
@@ -99,7 +99,10 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         SettingsRow row = mRows.get(position);
-        if (holder instanceof TextHolder) {
+        if (holder instanceof NoteHolder) {
+            NoteHolder note = (NoteHolder) holder;
+            SettingsHint.bind(note.info, note.text, row.title, true, String.valueOf(row.title));
+        } else if (holder instanceof TextHolder) {
             ((TextHolder) holder).text.setText(row.title);
         } else if (holder instanceof RowHolder) {
             ((RowHolder) holder).bind(row, mListener);
@@ -131,6 +134,28 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    /** A note: its paragraph waits behind a small i, like a setting's explanation. */
+    private static final class NoteHolder extends RecyclerView.ViewHolder {
+        final TextView text;
+        final ImageView info;
+
+        NoteHolder(@NonNull View note, @NonNull ViewGroup parent) {
+            super(new android.widget.LinearLayout(parent.getContext()));
+            android.widget.LinearLayout column = (android.widget.LinearLayout) itemView;
+            column.setOrientation(android.widget.LinearLayout.VERTICAL);
+            column.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            info = SettingsHint.icon(parent.getContext());
+            android.widget.LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) info.getLayoutParams();
+            lp.setMarginStart(note.getPaddingStart() - info.getPaddingStart());
+            lp.topMargin = lp.bottomMargin = Math.round(2 * parent.getResources().getDisplayMetrics().density);
+            column.addView(info);
+            text = (TextView) note;
+            column.addView(text, new android.widget.LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+        }
+    }
+
     private static final class RowHolder extends RecyclerView.ViewHolder {
         private final ImageView icon;
         private android.content.res.ColorStateList mIconTint;
@@ -138,6 +163,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private final TextView summary;
         private final SwitchMaterial toggle;
         private final View chevron;
+        private final ImageView info;
 
         RowHolder(@NonNull View itemView) {
             super(itemView);
@@ -146,6 +172,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             summary = itemView.findViewById(R.id.settings_row_summary);
             toggle = itemView.findViewById(R.id.settings_row_switch);
             chevron = itemView.findViewById(R.id.settings_row_chevron);
+            info = SettingsHint.attach(title);
         }
 
         void bind(SettingsRow row, Listener listener) {
@@ -166,12 +193,7 @@ final class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     row.destructive ? R.color.mobile_color_primary : R.color.mobile_color_on_surface));
 
             CharSequence text = row.summaryText();
-            if (text != null && text.length() > 0) {
-                summary.setText(text);
-                summary.setVisibility(View.VISIBLE);
-            } else {
-                summary.setVisibility(View.GONE);
-            }
+            SettingsHint.bind(info, summary, text, row.hint, String.valueOf(row.title));
 
             boolean isSwitch = row.kind == SettingsRow.KIND_SWITCH;
             toggle.setVisibility(isSwitch ? View.VISIBLE : View.GONE);
