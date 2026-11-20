@@ -383,15 +383,20 @@ public final class MeeTuneLibrary {
         LinearLayout box = new LinearLayout(a);
         box.setPadding(pad, MeeTuneAdapter.dp(a, 8), pad, 0);
         box.addView(field, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        new MaterialAlertDialogBuilder(a, R.style.MobileAlertDialog)
-                .setTitle(current == null ? R.string.meetune_new_playlist : R.string.meetune_rename)
-                .setView(box)
-                .setPositiveButton(current == null ? R.string.meetune_create : R.string.meetune_rename, (d, w) -> {
-                    String name = field.getText().toString().trim();
-                    if (!name.isEmpty()) done.accept(name);
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+        LinearLayout content = new LinearLayout(a);
+        PopupWindow popup = MeeTuneSongMenu.glassPrompt(a, content,
+                a.getString(current == null ? R.string.meetune_new_playlist : R.string.meetune_rename), null, android.R.string.cancel);
+        content.addView(box, 2); // under the title and the (hidden) message, above the buttons
+        android.widget.TextView create = content.findViewById(android.R.id.button1);
+        create.setText(current == null ? R.string.meetune_create : R.string.meetune_rename);
+        create.setVisibility(View.VISIBLE);
+        create.setOnClickListener(v -> {
+            String name = field.getText().toString().trim();
+            if (!name.isEmpty()) MeeTuneSongMenu.dismissPrompt(popup, () -> done.accept(name));
+        });
+        popup.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        MeeTuneSongMenu.place(a, popup, null, true);
+        field.requestFocus();
     }
 
     // ------------------------------------------------------------------------------ Spotify

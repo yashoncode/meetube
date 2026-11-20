@@ -280,21 +280,23 @@ public final class MeeTuneSongMenu {
         place(a, popup, null, true);
     }
 
-    private static PopupWindow glassPrompt(Activity a, LinearLayout content, @Nullable String title,
-                                           String message, int cancelLabel) {
+    static PopupWindow glassPrompt(Activity a, LinearLayout content, @Nullable String title,
+                                   @Nullable String message, int cancelLabel) {
         a.getLayoutInflater().inflate(R.layout.meetune_glass_prompt, content);
         PopupWindow popup = glassPopup(a, content, 320, 28);
         TextView heading = content.findViewById(android.R.id.title);
         heading.setText(title);
         heading.setVisibility(title == null ? View.GONE : View.VISIBLE);
-        ((TextView) content.findViewById(android.R.id.message)).setText(message);
+        TextView body = content.findViewById(android.R.id.message);
+        body.setText(message);
+        body.setVisibility(message == null ? View.GONE : View.VISIBLE);
         TextView cancel = content.findViewById(android.R.id.button2);
         cancel.setText(cancelLabel);
         cancel.setOnClickListener(v -> dismissPrompt(popup, null));
         return popup;
     }
 
-    private static void dismissPrompt(PopupWindow popup, @Nullable Runnable action) {
+    static void dismissPrompt(PopupWindow popup, @Nullable Runnable action) {
         // The glass remains visible during its closing animation. Accept only the first tap.
         if (!popup.isTouchable()) return;
         popup.setTouchable(false);
