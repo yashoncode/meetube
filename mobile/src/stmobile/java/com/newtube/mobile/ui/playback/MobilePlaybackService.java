@@ -457,6 +457,16 @@ public class MobilePlaybackService extends Service {
                             // foreground grant and the service alive (see attachPlayer).
                             return;
                         }
+                        if (!dismissedByUser && mPlayer != null && mPlayer.getPlayWhenReady()
+                                && mPlayer.getPlaybackState() == Player.STATE_IDLE) {
+                            // MEETUBE(issue #285): a song change empties the player for a moment and media3
+                            // cancels the notification. Dropping foreground here lost the while-in-use grant,
+                            // the next song's startForeground was refused, and Android 17 silenced it. Keep
+                            // the grant; the next song's notification arrives within the grace.
+                            mDemoteHandler.removeCallbacks(mDemote);
+                            mDemoteHandler.postDelayed(mDemote, DEMOTE_GRACE_MS);
+                            return;
+                        }
                         ServiceCompat.stopForeground(MobilePlaybackService.this, ServiceCompat.STOP_FOREGROUND_REMOVE);
                         mIsForeground = false;
                         stopSelf();
