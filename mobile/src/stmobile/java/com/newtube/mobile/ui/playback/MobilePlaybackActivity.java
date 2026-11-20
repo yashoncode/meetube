@@ -5933,6 +5933,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mAmbient = new AmbientGlow(mWatchContent, mVideoTexture,
                     androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background));
             mAmbient.setBar(findViewById(android.R.id.content)); // the status bar glows too
+            mAmbient.setSurface(mHdrOutput && !mHdrSwapPending ? mHdrSurface : null);
         } else if (!ambient && mAmbient != null) {
             mAmbient.stop();
             mAmbient.setFill(null);
@@ -6911,6 +6912,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (!mHdrOutput && mHdrSurface != null) {
             mHdrSurface.setVisibility(View.GONE);
             setVideoGlassSampling(true);
+        }
+        if (mAmbient != null) {
+            mAmbient.setSurface(mHdrOutput ? mHdrSurface : null); // MEETUBE(ambient): glow from where the frames are
         }
     }
 

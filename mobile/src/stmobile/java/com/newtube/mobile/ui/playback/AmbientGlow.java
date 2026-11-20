@@ -14,6 +14,10 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.PixelCopy;
+import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 
@@ -54,6 +58,10 @@ public final class AmbientGlow implements Runnable {
     @Nullable
     private View mFillHost;
     private boolean mRunning;
+    @Nullable
+    private SurfaceView mSurface;
+    private boolean mCopying;
+    private final Handler mMain = new Handler(Looper.getMainLooper());
 
     /** Until the user sets it: on in the dark theme, off in the light one (a glow on a white page). */
     public static boolean isOn(Context context) {
@@ -123,16 +131,50 @@ public final class AmbientGlow implements Runnable {
             return;
         }
         boolean fill = mFillHost != null && mFillHost.isShown();
-        if ((mHost.isShown() || fill) && mVideo.isAvailable()) {
-            Bitmap frame = mVideo.getBitmap(FRAME_W, FRAME_H);
-            if (frame != null) {
-                blur(frame);
-                mDrawable.push(frame);
-                mFill.push(frame);
-                mBar.push(frame);
+        if (mHost.isShown() || fill) {
+            if (mSurface != null) {
+                copySurface(mSurface);
+            } else if (mVideo.isAvailable()) {
+                show(mVideo.getBitmap(FRAME_W, FRAME_H));
             }
         }
         mHost.postDelayed(this, INTERVAL_MS);
+    }
+
+    /**
+     * The video draws into this SurfaceView instead of the texture (HDR or above 30 fps, issue
+     * #259; most live streams are 60 fps): the texture stops getting frames, so read this one.
+     * Null: back to the texture.
+     */
+    void setSurface(@Nullable SurfaceView surface) {
+        mSurface = surface;
+    }
+
+    private void copySurface(SurfaceView surface) {
+        if (mCopying || !surface.getHolder().getSurface().isValid()) {
+            return;
+        }
+        mCopying = true;
+        Bitmap frame = Bitmap.createBitmap(FRAME_W, FRAME_H, Bitmap.Config.ARGB_8888);
+        try {
+            PixelCopy.request(surface, frame, result -> {
+                mCopying = false;
+                if (mRunning && result == PixelCopy.SUCCESS) {
+                    show(frame);
+                }
+            }, mMain);
+        } catch (IllegalArgumentException e) { // the surface went away in between
+            mCopying = false;
+        }
+    }
+
+    private void show(@Nullable Bitmap frame) {
+        if (frame != null) {
+            blur(frame);
+            mDrawable.push(frame);
+            mFill.push(frame);
+            mBar.push(frame);
+        }
     }
 
     /** MEETUBE(playlist page): shared tiny-bitmap box blur for ambient video frames and playlist covers. */
