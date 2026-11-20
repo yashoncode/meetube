@@ -36,9 +36,10 @@ import java.util.Map;
  *     <li>{@code TYPE_RADIO_LIST} -> an optional header row + one radio row per option
  *     (single-select; unlike the TV {@code ListPreference} popup, selections render inline -
  *     no extra navigation level).</li>
- *     <li>{@code TYPE_CHECKBOX_LIST}/{@code TYPE_STRING_LIST} -> an optional header row + one
- *     checkbox row per option (multi-select; functionally identical on this data model -
- *     {@code AppPreferenceManager} backs both with the same {@code MultiSelectListPreference}).</li>
+ *     <li>{@code TYPE_CHECKBOX_LIST} -> an optional header row + one checkbox row per option
+ *     (multi-select).</li>
+ *     <li>{@code TYPE_STRING_LIST} -> an optional header row + one plain button row per option
+ *     (its callers list actions such as Cancel / Confirm, never a multi-select).</li>
  *     <li>{@code TYPE_LONG_TEXT}/{@code TYPE_CHAT}/{@code TYPE_COMMENTS} -> read-only text
  *     fallback row (chat/comments live-stream panels are deferred to a later wave per
  *     ROADMAP.md; this only guarantees we don't crash on them).</li>
@@ -259,13 +260,23 @@ class DialogRowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                     break;
                 }
-                case OptionCategory.TYPE_CHECKBOX_LIST:
-                case OptionCategory.TYPE_STRING_LIST: {
+                case OptionCategory.TYPE_CHECKBOX_LIST: {
                     if (category.title != null && !repeatsTitle(category.title, sheetTitle)) {
                         rows.add(Row.header(category.title));
                     }
                     for (OptionItem item : category.options) {
                         rows.add(Row.checkbox(category, item, item.isSelected()));
+                    }
+                    break;
+                }
+                case OptionCategory.TYPE_STRING_LIST: {
+                    // A strings list is plain actions (Cancel / Confirm, a changelog, Restore's backups),
+                    // never a multi-select: plain rows, no checkboxes.
+                    if (category.title != null && !repeatsTitle(category.title, sheetTitle)) {
+                        rows.add(Row.header(category.title));
+                    }
+                    for (OptionItem item : category.options) {
+                        rows.add(Row.button(item));
                     }
                     break;
                 }
