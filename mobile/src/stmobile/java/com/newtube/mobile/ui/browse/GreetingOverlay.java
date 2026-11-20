@@ -27,12 +27,14 @@ import java.util.Calendar;
  * for updates, under a card of time spent in MeeTube (UsageStats). A tap anywhere else, or Back, closes it.
  */
 final class GreetingOverlay {
-    private static final int[][] PERIODS = {
-            {R.string.mobile_greet_morning, R.string.mobile_greet_morning_line},
-            {R.string.mobile_greet_afternoon, R.string.mobile_greet_afternoon_line},
-            {R.string.mobile_greet_evening, R.string.mobile_greet_evening_line},
-            {R.string.mobile_greet_night, R.string.mobile_greet_night_line},
+    private static final int[] PERIODS = {
+            R.string.mobile_greet_morning,
+            R.string.mobile_greet_afternoon,
+            R.string.mobile_greet_evening,
+            R.string.mobile_greet_night,
     };
+    /** The last quote shown, so the next open never repeats it. */
+    private static int sLastQuote = -1;
 
     private final ComponentActivity mActivity;
     private final View mOverlay;
@@ -127,9 +129,10 @@ final class GreetingOverlay {
     }
 
     void show() {
-        int[] period = PERIODS[period(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))];
-        mTitle.setText(period[0]);
-        mLine.setText(period[1]);
+        mTitle.setText(PERIODS[period(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))]);
+        String[] quotes = mActivity.getResources().getStringArray(R.array.mobile_greet_quotes);
+        sLastQuote = nextQuote(quotes.length, sLastQuote, new java.util.Random());
+        mLine.setText(quotes[sLastQuote]);
         bindStats();
         bindFocus();
 
@@ -316,6 +319,15 @@ final class GreetingOverlay {
         column.addView(big);
         column.addView(small);
         row.addView(column, new android.widget.LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+    }
+
+    /** A random quote index other than {@code last} (when there is more than one). */
+    static int nextQuote(int count, int last, java.util.Random random) {
+        if (count < 2) {
+            return 0;
+        }
+        int next = random.nextInt(count - 1);
+        return next >= last && last >= 0 ? next + 1 : next;
     }
 
     /** Index into PERIODS: morning 5-11, afternoon 12-16, evening 17-20, night 21-4. */

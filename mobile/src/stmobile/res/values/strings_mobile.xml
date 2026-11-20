@@ -727,10 +727,37 @@
     <string name="mobile_greet_afternoon">Good afternoon</string>
     <string name="mobile_greet_evening">Good evening</string>
     <string name="mobile_greet_night">Good night</string>
-    <string name="mobile_greet_morning_line">Start the day with something good</string>
-    <string name="mobile_greet_afternoon_line">Time for a little break?</string>
-    <string name="mobile_greet_evening_line">Wind down with a video or two</string>
-    <string name="mobile_greet_night_line">One more video, then sleep</string>
+    <!-- MEETUBE(greeting): a classic quote under the greeting, a different one on every open. -->
+    <string-array name="mobile_greet_quotes">
+        <item>“The secret of getting ahead is getting started.”\nMark Twain</item>
+        <item>“Well done is better than well said.”\nBenjamin Franklin</item>
+        <item>“It does not matter how slowly you go as long as you do not stop.”\nConfucius</item>
+        <item>“The journey of a thousand miles begins with one step.”\nLao Tzu</item>
+        <item>“Simplicity is the ultimate sophistication.”\nLeonardo da Vinci</item>
+        <item>“Be yourself; everyone else is already taken.”\nOscar Wilde</item>
+        <item>“Whatever you are, be a good one.”\nAbraham Lincoln</item>
+        <item>“In the middle of difficulty lies opportunity.”\nAlbert Einstein</item>
+        <item>“Knowing yourself is the beginning of all wisdom.”\nAristotle</item>
+        <item>“Happiness depends upon ourselves.”\nAristotle</item>
+        <item>“The best way out is always through.”\nRobert Frost</item>
+        <item>“Nothing will work unless you do.”\nMaya Angelou</item>
+        <item>“Stay hungry, stay foolish.”\nSteve Jobs</item>
+        <item>“Life is what happens when you are busy making other plans.”\nJohn Lennon</item>
+        <item>“Act as if what you do makes a difference. It does.”\nWilliam James</item>
+        <item>“Dwell on the beauty of life.”\nMarcus Aurelius</item>
+        <item>“Waste no more time arguing what a good man should be. Be one.”\nMarcus Aurelius</item>
+        <item>“Luck is what happens when preparation meets opportunity.”\nSeneca</item>
+        <item>“While we wait for life, life passes.”\nSeneca</item>
+        <item>“You miss every shot you never take.”\nWayne Gretzky</item>
+        <item>“Turn your wounds into wisdom.”\nOprah Winfrey</item>
+        <item>“Not all those who wander are lost.”\nJ. R. R. Tolkien</item>
+        <item>“The only way to do great work is to love what you do.”\nSteve Jobs</item>
+        <item>“Little by little, one travels far.”\nJ. R. R. Tolkien</item>
+        <item>“If you are going through hell, keep going.”\nWinston Churchill</item>
+        <item>“Do what you can, with what you have, where you are.”\nTheodore Roosevelt</item>
+        <item>“What we think, we become.”\nBuddha</item>
+        <item>“Every moment is a fresh beginning.”\nT. S. Eliot</item>
+    </string-array>
     <string name="mobile_focus_idle">Timer · %d min</string>
     <string name="mobile_focus_running">Timer · %s</string>
     <string name="mobile_focus_start">Start timer</string>

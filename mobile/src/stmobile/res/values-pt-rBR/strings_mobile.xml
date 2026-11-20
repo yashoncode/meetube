@@ -549,10 +549,6 @@
     <string name="mobile_greet_afternoon">Boa tarde</string>
     <string name="mobile_greet_evening">Boa noite</string>
     <string name="mobile_greet_night">Boa noite</string>
-    <string name="mobile_greet_morning_line">Comece o dia com algo bom</string>
-    <string name="mobile_greet_afternoon_line">Hora de uma pausa?</string>
-    <string name="mobile_greet_evening_line">Relaxe com um ou dois vídeos</string>
-    <string name="mobile_greet_night_line">Mais um vídeo e depois dormir</string>
     <string name="mobile_shorts_clean_on">Botões ocultos. Pressione e segure para mostrá-los de novo</string>
     <string name="mobile_shorts_clean_off">Os botões voltaram. Pressione e segure para ocultá-los</string>
     <string name="mobile_shorts_clean_tip">Dica: pressione e segure um Short para ocultar os botões</string>
