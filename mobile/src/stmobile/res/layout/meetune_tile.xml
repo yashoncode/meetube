@@ -4,7 +4,7 @@
     android:layout_width="152dp"
     android:layout_height="wrap_content"
     android:layout_marginEnd="14dp"
-    android:background="?attr/selectableItemBackground"
+    android:foreground="@drawable/glass_press_card"
     android:orientation="vertical">
 
     <com.google.android.material.card.MaterialCardView

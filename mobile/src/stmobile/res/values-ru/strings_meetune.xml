@@ -54,6 +54,7 @@
     <string name="meetune_sort_az">По алфавиту (А–Я)</string>
     <string name="meetune_sort_za">По алфавиту (Я–А)</string>
     <string name="meetune_find">Искать в песнях</string>
+    <string name="meetune_library_search">Поиск в библиотеке</string>
     <string name="meetune_save">Добавить в библиотеку</string>
     <string name="meetune_unsave">Удалить из библиотеки</string>
     <string name="meetune_save_sign_in">Войдите, чтобы сохранять музыку в библиотеку</string>

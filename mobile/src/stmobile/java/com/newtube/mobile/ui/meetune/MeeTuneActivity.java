@@ -437,7 +437,11 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         if (brand) showBrand();
         syncMeeTubeHint(brand);
         mTitle.setVisibility(search || brand ? View.GONE : View.VISIBLE);
-        mTitleSpace.setVisibility(search ? View.GONE : View.VISIBLE);
+        boolean library = !pushed && page.tab == LIBRARY;
+        View librarySearch = librarySearch();
+        if (!library && librarySearch.hasFocus()) hideKeyboard(librarySearch);
+        librarySearch.setVisibility(library ? View.VISIBLE : View.GONE);
+        mTitleSpace.setVisibility(search || library ? View.GONE : View.VISIBLE);
         mTitle.setText(pushed ? (page.title != null ? page.title : "") : getString(tabTitle(page.tab)));
         boolean home = !pushed && page.tab == HOME;
         mSettings.setVisibility(home || search ? View.VISIBLE : View.GONE); // the avatar beside the search bar too
@@ -783,8 +787,68 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         return new int[] {start, end};
     }
 
+    private View mLibrarySearch;
+
+    /** The Library's search field, beside its heading in the top row: typing narrows the cards (find). */
+    private View librarySearch() {
+        if (mLibrarySearch == null) {
+            mLibrarySearch = findViewById(R.id.meetune_library_search);
+            android.widget.EditText field = mLibrarySearch.findViewById(R.id.meetune_library_search_field);
+            field.setOnEditorActionListener((v, action, event) -> {
+                hideKeyboard(v); // Search on the keyboard: the cards are already narrowed
+                return true;
+            });
+            field.addTextChangedListener(new android.text.TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(android.text.Editable s) {
+                    if (current() == mTabs[LIBRARY]) find(s.toString());
+                }
+            });
+        }
+        return mLibrarySearch;
+    }
+
+    /** The Library as shown: with words in its search, only the cards whose name has them, and their titles. */
+    private static List<MeeTuneAdapter.Row> libraryShown(Page page) {
+        String find = page.find.trim().toLowerCase(java.util.Locale.ROOT);
+        if (find.isEmpty()) return page.rows;
+        List<MeeTuneAdapter.Row> out = new ArrayList<>();
+        MeeTuneAdapter.Row title = null;
+        for (MeeTuneAdapter.Row row : page.rows) {
+            if (row.type == MeeTuneAdapter.TITLE) {
+                title = row; // shown only if its cards have a match
+            } else if (row.type == MeeTuneAdapter.CAROUSEL && row.shelf != null) {
+                MusicApi.Shelf hits = new MusicApi.Shelf();
+                hits.title = row.shelf.title;
+                for (MusicApi.Item item : row.shelf.items) {
+                    if (MeeTuneLibrary.NEW.equals(item.browseId) || !has(item.title, find)) continue;
+                    hits.items.add(item);
+                }
+                if (hits.items.isEmpty()) continue;
+                if (title != null && title.shelf == row.shelf) out.add(title);
+                MeeTuneAdapter.Row cards = new MeeTuneAdapter.Row(MeeTuneAdapter.CAROUSEL);
+                cards.shelf = hits;
+                cards.style = row.style;
+                cards.siblings = row.siblings;
+                out.add(cards);
+            } else {
+                out.add(row);
+            }
+        }
+        return out;
+    }
+
     /** The page as shown: its track list in the chosen order, cut to what the find box matches. */
     private static List<MeeTuneAdapter.Row> shown(Page page) {
+        if (page.tab == LIBRARY && page.browseId == null && page.settings == 0) return libraryShown(page);
         List<MeeTuneAdapter.Row> rows = page.rows;
         MeeTuneAdapter.Row head = head(rows);
         int[] run = trackRun(rows);
@@ -850,7 +914,18 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         Page page = current();
         if (page.rows == null || query.equals(page.find)) return;
         page.find = query;
-        mAdapter.setTail(shown(page));
+        if (page == mTabs[LIBRARY]) {
+            mAdapter.setRows(shown(page)); // its first row can go too: no head to keep
+        } else {
+            mAdapter.setTail(shown(page));
+        }
+    }
+
+    private void hideKeyboard(View view) {
+        view.clearFocus();
+        android.view.inputmethod.InputMethodManager input =
+                (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (input != null) input.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
@@ -1131,7 +1206,54 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     @Override
     public void cardMenu(View anchor, MusicApi.Item card) {
-        MeeTuneLibrary.cardMenu(this, anchor, card);
+        if (MeeTuneLibrary.isPlaylist(card.browseId) || MeeTuneLibrary.isSaved(this, card.browseId)) {
+            MeeTuneLibrary.cardMenu(this, anchor, card);
+        } else if (current() == mTabs[LIBRARY]) {
+            accountPlaylistMenu(anchor, card); // only in the Library: Home's playlists are not the account's
+        }
+    }
+
+    /** A YouTube Music playlist in the Library: Rename (one the account made) and Delete. */
+    private void accountPlaylistMenu(View anchor, MusicApi.Item card) {
+        String playlistId = card.browseId.substring(2); // VLPL... -> PL...
+        android.widget.LinearLayout content = new android.widget.LinearLayout(this);
+        android.widget.PopupWindow popup = MeeTuneSongMenu.glassPopup(this, content, 250, 28);
+        MeeTuneSongMenu.row(content, R.drawable.ic_menu_edit, getString(R.string.meetune_rename), null, () -> {
+            popup.dismiss();
+            MeeTuneLibrary.askName(this, card.title, name -> accountPlaylistAction(() -> {
+                MusicApi.renamePlaylist(this, playlistId, name);
+                return R.string.meetune_playlist_renamed;
+            }));
+        });
+        MeeTuneSongMenu.row(content, R.drawable.ic_meetune_delete, getString(R.string.meetune_delete_playlist), null, () -> {
+            popup.dismiss();
+            MeeTuneSongMenu.glassConfirm(this, getString(R.string.meetune_delete_playlist),
+                    getString(R.string.meetune_delete_playlist_ask, card.title), android.R.string.cancel,
+                    R.string.meetune_delete, () -> accountPlaylistAction(() -> {
+                        try {
+                            MusicApi.deletePlaylist(this, playlistId);
+                            return R.string.meetune_playlist_deleted;
+                        } catch (Exception notOwn) { // someone else's: it can only leave the library
+                            MusicApi.save(this, playlistId, false);
+                            return R.string.meetune_playlist_removed;
+                        }
+                    }));
+        });
+        MeeTuneSongMenu.place(this, popup, anchor, false);
+    }
+
+    /** Runs a playlist change off the main thread (it returns its done text), says how it went, and loads the Library again. */
+    private void accountPlaylistAction(MeeTune.Task<Integer> task) {
+        MeeTune.run(this, task, (doneText, error) -> {
+            if (error != null || doneText == null) {
+                com.newtube.mobile.ui.common.MobileSnackbar.show(this, R.string.meetune_playlist_refused);
+                return;
+            }
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, doneText);
+            Page library = mTabs[LIBRARY];
+            if (current() == library) load(library, true);
+            else library.rows = null; // shown fresh next time
+        });
     }
 
     @Override

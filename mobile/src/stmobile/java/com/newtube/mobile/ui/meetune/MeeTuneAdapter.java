@@ -716,20 +716,7 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                         Motion.pop(v);
                         mHost.open(item, mItems);
                     });
-                    if (item.playable()) {
-                        tile.setOnLongClickListener(v -> {
-                            mHost.songMenu(v, item);
-                            return true;
-                        });
-                    } else if (MeeTuneLibrary.isPlaylist(item.browseId)
-                            || MeeTuneLibrary.isSaved(tile.getContext(), item.browseId)) {
-                        tile.setOnLongClickListener(v -> {
-                            mHost.cardMenu(v, item);
-                            return true;
-                        });
-                    } else {
-                        tile.setOnLongClickListener(null);
-                    }
+                    bindLongPress(tile, item);
                 }
                 return;
             }
@@ -764,6 +751,26 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 Motion.pop(v);
                 mHost.open(item, mItems);
             });
+            bindLongPress(view, item); // the Library's grid cards: Pin, Rename, Delete
+        }
+
+        /** A song's long press opens its menu; a phone playlist or saved card's opens Pin, Rename, Delete. */
+        private void bindLongPress(View view, MusicApi.Item item) {
+            if (item.playable()) {
+                view.setOnLongClickListener(v -> {
+                    mHost.songMenu(v, item);
+                    return true;
+                });
+            } else if (MeeTuneLibrary.isPlaylist(item.browseId)
+                    || MeeTuneLibrary.isSaved(view.getContext(), item.browseId)
+                    || (item.browseId != null && item.browseId.startsWith("VLPL") && MusicApi.signedIn(view.getContext()))) {
+                view.setOnLongClickListener(v -> { // an account playlist: the host opens it in the Library only
+                    mHost.cardMenu(v, item);
+                    return true;
+                });
+            } else {
+                view.setOnLongClickListener(null);
+            }
         }
         /** An Explore card's front cover and the two behind it: its first three songs' covers. */
         private void bindStack(View view, MusicApi.Item item, int color) {

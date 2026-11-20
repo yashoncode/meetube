@@ -245,6 +245,39 @@
             android:textColor="@color/mobile_color_on_surface"
             android:textSize="22sp" />
 
+        <!-- The Library's search, beside its heading so it stays while the cards scroll: narrows
+             the cards to the ones whose name has the words. -->
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/meetune_library_search"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:visibility="gone"
+            app:glassCornerRadius="22dp"
+            app:glassTint="@color/meetube_glass_tint">
+
+            <EditText
+                android:id="@+id/meetune_library_search_field"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:drawableStart="@drawable/ic_mobile_search"
+                android:drawablePadding="8dp"
+                android:drawableTint="@color/mobile_color_on_surface_secondary"
+                android:hint="@string/meetune_library_search"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textColorHint="@color/mobile_color_on_surface_secondary"
+                android:textCursorDrawable="@drawable/meetube_search_cursor"
+                android:textSize="15sp" />
+
+        </com.newtube.mobile.ui.common.GlassView>
+
         <View
             android:id="@+id/meetune_title_space"
             android:layout_width="0dp"

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUNE(glass press): glass_press for a card, the cover and its title lit edge to edge (glass_press
+     pulls in 6dp for list rows, which left the pill narrower than the cover). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android" android:enterFadeDuration="90" android:exitFadeDuration="380">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp"/>
+            <solid android:color="@color/glass_press_fill"/>
+            <stroke android:width="0.5dp" android:color="@color/glass_press_rim"/>
+        </shape>
+    </item>
+    <item android:drawable="@android:color/transparent"/>
+</selector>

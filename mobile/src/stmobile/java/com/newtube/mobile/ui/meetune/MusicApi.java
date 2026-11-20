@@ -196,6 +196,22 @@ final class MusicApi {
         return save;
     }
 
+    /** Deletes a playlist the account made. Someone else's playlist is refused (an HTTP error throws). */
+    static void deletePlaylist(Context context, String playlistId) throws Exception {
+        post(context, "playlist/delete", new JSONObject().put("playlistId", playlistId));
+        PAGES.remove("VL" + playlistId);
+    }
+
+    /** Renames a playlist the account made; throws when YouTube Music refuses it. */
+    static void renamePlaylist(Context context, String playlistId, String name) throws Exception {
+        JSONObject result = post(context, "browse/edit_playlist", new JSONObject().put("playlistId", playlistId)
+                .put("actions", new JSONArray().put(new JSONObject()
+                        .put("action", "ACTION_SET_PLAYLIST_NAME").put("playlistName", name))));
+        String status = result.optString("status", "STATUS_SUCCEEDED");
+        if (!"STATUS_SUCCEEDED".equals(status)) throw new IOException("YouTube Music: " + status);
+        PAGES.remove("VL" + playlistId);
+    }
+
     /**
      * The queue YouTube Music builds around a song, the song first: each with its square art, title,
      * artist and album links. {@code playlistId} (a radio's RDAMVM..., an album's) gives that queue.

@@ -67,6 +67,7 @@
     <string name="meetune_sort_az">Alphabetical (A to Z)</string>
     <string name="meetune_sort_za">Alphabetical (Z to A)</string>
     <string name="meetune_find">Find in songs</string>
+    <string name="meetune_library_search">Search library</string>
     <string name="meetune_save">Add to library</string>
     <string name="meetune_unsave">Remove from library</string>
     <string name="meetune_save_sign_in">Sign in to save music to your library</string>
@@ -260,6 +261,12 @@
     <string name="meetune_pin">Pin</string>
     <string name="meetune_unpin">Unpin</string>
     <string name="meetune_delete_playlist">Delete playlist</string>
+    <string name="meetune_delete">Delete</string>
+    <string name="meetune_delete_playlist_ask">Delete %1$s from YouTube Music? This cannot be undone.</string>
+    <string name="meetune_playlist_deleted">Playlist deleted</string>
+    <string name="meetune_playlist_removed">Removed from your library</string>
+    <string name="meetune_playlist_renamed">Playlist renamed</string>
+    <string name="meetune_playlist_refused">YouTube Music did not allow that</string>
     <string name="meetune_remove_from_playlist">Remove from this playlist</string>
     <string name="meetune_save_phone">Save on this phone</string>
     <string name="meetune_unsave_phone">Remove from this phone</string>
