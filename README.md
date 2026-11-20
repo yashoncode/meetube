@@ -31,6 +31,8 @@
 ### MeeTune, your music side (beta)
 One app for YouTube videos **and** YouTube Music. Tap the logo on Home and MeeTube turns into a music app; tap it again to go back.
 
+- 🎤 **AI Karaoke (beta):** removes the vocals from any song right on your phone, so you can sing along. Nothing is uploaded.
+- 🎧 **MeeTuneMix:** songs flow into each other like a DJ set. The ending song fades out where its music ends and the next one fades in, with no volume jumps or cut vocals.
 - **Your music:** YouTube Music's Home, Explore, Library and Search, with albums, artists, playlists, moods and your liked songs.
 - **A real music player:** synced lyrics, a moving cover, the song's format on a glass pill, and a radio that keeps the songs coming.
 - **Sound that surrounds you:** Spatial sound with a real head model (MIT KEMAR) and a Cinema level with deeper bass, Head tracking on Android 13+ through your phone's own spatial audio, Dolby, headphone correction, and crossfade between songs.
