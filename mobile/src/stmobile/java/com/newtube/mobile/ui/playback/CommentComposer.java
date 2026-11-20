@@ -2,6 +2,7 @@ package com.newtube.mobile.ui.playback;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextUtils;
@@ -12,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.PathInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -83,6 +86,20 @@ final class CommentComposer {
         mSend = mRoot.findViewById(R.id.comment_composer_send);
         mProgress = mRoot.findViewById(R.id.comment_composer_progress);
         mBottomPadding = mRoot.getPaddingBottom();
+        // MEETUBE: the bar opens where the "Add a comment…" bar is; its surface fades in, and
+        // wherever the keyboard moves it (in one jump on some phones) it glides there.
+        Drawable surface = mRoot.getBackground().mutate();
+        android.animation.ValueAnimator fade = android.animation.ValueAnimator.ofInt(0, 255).setDuration(220);
+        fade.addUpdateListener(a -> surface.setAlpha((int) a.getAnimatedValue()));
+        surface.setAlpha(0);
+        fade.start();
+        mRoot.addOnLayoutChangeListener((v, l, t, r, bottom, ol, ot, or, oldBottom) -> {
+            if (oldBottom != 0 && bottom != oldBottom && !mImeAnimating) {
+                v.setTranslationY(v.getTranslationY() + oldBottom - bottom);
+                v.animate().translationY(0f).setDuration(300)
+                        .setInterpolator(new PathInterpolator(0.2f, 0f, 0f, 1f)).start();
+            }
+        });
 
         CommentsAdapter.loadAvatar(mRoot.findViewById(R.id.comment_composer_avatar), avatarUrl,
                 context.getResources().getDimensionPixelSize(R.dimen.mobile_comment_avatar));
@@ -125,7 +142,16 @@ final class CommentComposer {
         });
         mDialog.setContentView(screen, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        mDialog.setOnShowListener(d -> showKeyboard());
+        mDialog.setOnShowListener(d -> {
+            showKeyboard();
+            // MEETUBE(glass): frosted like the sheets, so the comments behind never show through.
+            com.newtube.mobile.ui.common.SheetGlass.frostDocked(mRoot, activity.getWindow());
+            // MEETUBE: the arrow pops in as the bar lifts off.
+            mSend.setScaleX(0.4f);
+            mSend.setScaleY(0.4f);
+            mSend.animate().scaleX(1f).scaleY(1f).setStartDelay(60).setDuration(320)
+                    .setInterpolator(new OvershootInterpolator(2.2f)).start();
+        });
         mDialog.setOnDismissListener(d -> reportClosed());
         Window window = mDialog.getWindow();
         if (window != null) {

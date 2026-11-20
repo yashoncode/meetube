@@ -70,8 +70,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void onRetry();
 
         // NEWTUBE(write-comments)
-        /** The "Add a comment…" row ({@code reply} = the replies page's "Add a reply…"). */
-        void onComposeClicked(boolean reply);
         void onReplyClicked(Entry entry);
         void onMoreClicked(Entry entry, View anchor);
         void onDeleteClicked(Entry entry);
@@ -152,7 +150,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private static final int TYPE_LABEL = 2;
     private static final int TYPE_SKELETON = 3;
     private static final int TYPE_RETRY = 4;
-    private static final int TYPE_COMPOSE = 5;
 
     static final Object PAYLOAD_LIKE = new Object();
     /** MEETUBE(issue #139): the text and its "Translate to …" line only. */
@@ -160,7 +157,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private static final int FOOTER_SKELETONS = 2;
     private static final long ID_LABEL = -2;
     private static final long ID_RETRY = -3;
-    private static final long ID_COMPOSE = -4;
     private static final long ID_SKELETON_BASE = -100;
 
     private final Listener mListener;
@@ -173,11 +169,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private int mFooter = FOOTER_NONE;
     @Nullable
     private String mCreatorHandle;
-    /** The "Add a comment…" row's text; 0 = no such row. */
-    private int mComposeHint;
-    @Nullable
-    private String mComposePhoto;
-    private boolean mComposeHidden;
 
     CommentsAdapter(Listener listener) {
         mListener = listener;
@@ -250,43 +241,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     int getFooter() {
         return mFooter;
-    }
-
-    /** NEWTUBE(write-comments): the page starts with an "Add a comment…" row reading {@code hint}. */
-    void setCompose(int hint) {
-        mComposeHint = hint;
-        notifyDataSetChanged();
-    }
-
-    /** The signed-in person's avatar on the "Add a comment…" row (null = the placeholder). */
-    void setComposePhoto(@Nullable String photo) {
-        if (!Objects.equals(mComposePhoto, photo)) {
-            mComposePhoto = photo;
-            if (hasComposeRow()) {
-                notifyItemChanged(headerCount() - 1);
-            }
-        }
-    }
-
-    /**
-     * MEETUBE: the "Add a comment…" row leaves while the composer is open (one bar on screen, no
-     * gap where it was) and comes back after.
-     */
-    void setComposeHidden(boolean hidden) {
-        if (mComposeHidden == hidden) {
-            return;
-        }
-        boolean had = hasComposeRow();
-        mComposeHidden = hidden;
-        if (had && !hasComposeRow()) {
-            notifyItemRemoved(headerCount());
-        } else if (!had && hasComposeRow()) {
-            notifyItemInserted(headerCount() - 1);
-        }
-    }
-
-    private boolean hasComposeRow() {
-        return mComposeHint != 0 && !mComposeHidden;
     }
 
     /** The replies page's "N replies" line (a reply posted to a comment that had none). */
@@ -365,7 +319,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     private int headerCount() {
-        return (mParent != null ? 2 : 0) + (hasComposeRow() ? 1 : 0);
+        return mParent != null ? 2 : 0;
     }
 
     private int footerCount() {
@@ -392,10 +346,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public int getItemViewType(int position) {
         int header = headerCount();
         if (position < header) {
-            if (mParent != null && position < 2) {
-                return position == 0 ? TYPE_PARENT : TYPE_LABEL;
-            }
-            return TYPE_COMPOSE;
+            return position == 0 ? TYPE_PARENT : TYPE_LABEL;
         }
         position -= header;
         if (position < mSkeletons) {
@@ -412,10 +363,7 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public long getItemId(int position) {
         int header = headerCount();
         if (position < header) {
-            if (mParent != null && position < 2) {
-                return position == 0 ? mParent.id : ID_LABEL;
-            }
-            return ID_COMPOSE;
+            return position == 0 ? mParent.id : ID_LABEL;
         }
         position -= header;
         if (position < mSkeletons) {
@@ -443,11 +391,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 holder.itemView.findViewById(R.id.comment_retry).setOnClickListener(v -> mListener.onRetry());
                 return holder;
             }
-            case TYPE_COMPOSE: {
-                ComposeVH holder = new ComposeVH(inflater.inflate(R.layout.item_mobile_comment_compose, parent, false));
-                holder.itemView.setOnClickListener(v -> mListener.onComposeClicked(mParent != null));
-                return holder;
-            }
             default:
                 return new CommentVH(inflater.inflate(R.layout.item_mobile_comment, parent, false),
                         viewType == TYPE_PARENT, mListener);
@@ -471,8 +414,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             } else {
                 comment.bind(entry, mCreatorHandle);
             }
-        } else if (holder instanceof ComposeVH) {
-            ((ComposeVH) holder).bind(mComposeHint, mComposePhoto);
         } else if (getItemViewType(position) == TYPE_LABEL) {
             ((TextView) holder.itemView).setText(mParentLabel);
         } else if (getItemViewType(position) == TYPE_RETRY) {
@@ -487,8 +428,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
         if (holder instanceof CommentVH) {
             ((CommentVH) holder).recycle();
-        } else if (holder instanceof ComposeVH) {
-            Glide.with(holder.itemView.getContext()).clear(((ComposeVH) holder).mAvatar);
         }
     }
 
@@ -499,27 +438,6 @@ final class CommentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private static final class SimpleVH extends RecyclerView.ViewHolder {
         SimpleVH(@NonNull View itemView) {
             super(itemView);
-        }
-    }
-
-    /** NEWTUBE(write-comments): "Add a comment…" with the signed-in person's avatar. */
-    private static final class ComposeVH extends RecyclerView.ViewHolder {
-        final ImageView mAvatar;
-        private final TextView mField;
-        private final int mAvatarPx;
-
-        ComposeVH(@NonNull View itemView) {
-            super(itemView);
-            mAvatar = itemView.findViewById(R.id.comment_compose_avatar);
-            mField = itemView.findViewById(R.id.comment_compose_field);
-            mAvatarPx = itemView.getResources().getDimensionPixelSize(R.dimen.mobile_comment_avatar);
-        }
-
-        void bind(int hint, @Nullable String photo) {
-            if (hint != 0) {
-                mField.setText(hint);
-            }
-            loadAvatar(mAvatar, photo, mAvatarPx);
         }
     }
 

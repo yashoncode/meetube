@@ -181,6 +181,10 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
     private final LinearProgressIndicator mProgress;
     private final RecyclerView mList;
     private final RecyclerView mReplies;
+    /** MEETUBE: "Add a comment…" / "Add a reply…", fixed under the lists. */
+    private final View mComposeBar;
+    private final TextView mComposeField;
+    private final ImageView mComposeAvatar;
     private final CommentsAdapter mListAdapter;
     private final CommentsAdapter mRepliesAdapter;
     private final View mLoadState;
@@ -336,8 +340,10 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
 
         mListAdapter = new CommentsAdapter(this);
         mRepliesAdapter = new CommentsAdapter(this);
-        mListAdapter.setCompose(R.string.mobile_comments_add_hint);
-        mRepliesAdapter.setCompose(R.string.mobile_comments_reply_hint);
+        mComposeBar = layout.findViewById(R.id.comments_compose_bar);
+        mComposeField = mComposeBar.findViewById(R.id.comment_compose_field);
+        mComposeAvatar = mComposeBar.findViewById(R.id.comment_compose_avatar);
+        mComposeBar.setOnClickListener(v -> onComposeClicked(mThreadParent != null));
         setUpList(mList, mListAdapter);
         setUpList(mReplies, mRepliesAdapter);
 
@@ -519,6 +525,7 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
         mNewest = null;
         mThread = null;
         mThreadParent = null;
+        updateComposeHint();
         mNewestSelected = false;
         mSortPending = false;
         mCreatorHandle = null;
@@ -675,7 +682,7 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
         if (!mLayout.isOpen()) {
             // MEETUBE(glass): the sheet is the frosted page under it, as the Description sheet is -
             // copied now, before the sheet comes up over it.
-            com.newtube.mobile.ui.common.SheetGlass.frost(mLayout.getSheet(), mActivity.getWindow());
+            com.newtube.mobile.ui.common.SheetGlass.frostDocked(mLayout.getSheet(), mActivity.getWindow());
         }
         mLayout.open();
         mLayout.getSheet().post(() -> maybeLoadMore(activePage()));
@@ -1336,6 +1343,7 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
         dismissCommentMenu();
         saveScroll();
         mThreadParent = entry;
+        updateComposeHint();
         mThread = new Feed(entry.item.getNestedCommentsKey(), true);
         replaceContent(mRepliesAdapter, entry, labelFor(entry), mThread.entries, REPLIES_SKELETONS,
                 CommentsAdapter.FOOTER_NONE);
@@ -1355,6 +1363,7 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
             mThread.cancel();
         }
         mThreadParent = null;
+        updateComposeHint();
         sharedAxis(false);
     }
 
@@ -1654,8 +1663,7 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
             mAccountKey = signedIn ? "web:" + com.newtube.mobile.ui.signin.WebSignInState.selectedSlot(mActivity) : null;
             if (!Helpers.equals(photo, mMyPhoto)) {
                 mMyPhoto = photo;
-                mListAdapter.setComposePhoto(photo);
-                mRepliesAdapter.setComposePhoto(photo);
+                loadComposeAvatar(photo);
             }
             return;
         }
@@ -1680,8 +1688,7 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
         mAccountKey = accountKey;
         if (!Helpers.equals(photo, mMyPhoto)) {
             mMyPhoto = photo;
-            mListAdapter.setComposePhoto(photo);
-            mRepliesAdapter.setComposePhoto(photo);
+            loadComposeAvatar(photo);
         }
         if (ownerChanged) {
             // Another account (or none): the ⋮ follows whose comments these are.
@@ -1725,8 +1732,17 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
         return mMyHandle != null && mMyHandle.equals(normalizeHandle(entry.item.getAuthorName()));
     }
 
-    @Override
-    public void onComposeClicked(boolean reply) {
+    private void loadComposeAvatar(@Nullable String photo) {
+        CommentsAdapter.loadAvatar(mComposeAvatar, photo,
+                mActivity.getResources().getDimensionPixelSize(R.dimen.mobile_comment_avatar));
+    }
+
+    private void updateComposeHint() {
+        mComposeField.setText(mThreadParent != null
+                ? R.string.mobile_comments_reply_hint : R.string.mobile_comments_add_hint);
+    }
+
+    private void onComposeClicked(boolean reply) {
         if (mPageTransition) {
             return;
         }
@@ -1789,8 +1805,7 @@ public final class CommentsPanel implements CommentsAdapter.Listener, CommentsPa
 
     /** MEETUBE: while the composer is open its bar is the only "Add a comment…" on screen. */
     private void setComposeRowsHidden(boolean hidden) {
-        mListAdapter.setComposeHidden(hidden);
-        mRepliesAdapter.setComposeHidden(hidden);
+        mComposeBar.setVisibility(hidden ? View.INVISIBLE : View.VISIBLE);
     }
 
     /** The open composer's target: one account, and the video or one thread answered with one mention. */

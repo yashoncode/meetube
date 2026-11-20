@@ -11434,6 +11434,7 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             // MEETUBE(shorts): as the comments slide the short grows or shrinks with them.
             followShortsComments(gone);
+            liftWatchFab(1f - gone);
         }
 
         @Override
@@ -11459,8 +11460,20 @@ public class MobilePlaybackActivity extends MobileActivity
             }
             // The page under the panel is covered: keep TalkBack off it (the video stays reachable).
             updateSidePanelsShown(shown);
+            liftWatchFab(shown ? 1f : 0f);
         }
     };
+
+    /**
+     * MEETUBE: the fullscreen button floats over the open comments panel; it rises with the panel
+     * so it sits above the "Add a comment…" bar fixed at the panel's bottom, not on it.
+     */
+    private void liftWatchFab(float shown) {
+        View bar = findViewById(R.id.comments_compose_bar);
+        if (mWatchFab != null && bar != null) {
+            mWatchFab.setTranslationY(-bar.getHeight() * shown);
+        }
+    }
 
     private void onChatEntryClicked() {
         // If the reused ChatController already pushed a receiver (live chat auto-enabled in settings),
@@ -12127,7 +12140,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mCommentsPanel.closeImmediately();
         }
         closeSidePanelsImmediately();
-        com.newtube.mobile.ui.common.SheetGlass.frost(panel.getSheet(), getWindow());
+        com.newtube.mobile.ui.common.SheetGlass.frostDocked(panel.getSheet(), getWindow());
         return true;
     }
 

@@ -8,7 +8,8 @@
     scrim   - dims the watch page while the sheet slides over it
     sheet   - header (title + count, Top / Newest, close; back + "Replies" on a replies page),
               a thin progress line for a sort switch, then the two pages: the comments list and
-              the replies page, which slide past each other on Material's shared X axis.
+              the replies page, which slide past each other on Material's shared X axis, and the
+              "Add a comment…" bar fixed under them.
 -->
 <com.newtube.mobile.ui.playback.CommentsPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -179,8 +180,8 @@
                 android:id="@+id/comments_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingBottom="16dp"
+                android:fadingEdgeLength="32dp"
+                android:requiresFadingEdge="vertical"
                 android:scrollbars="none"
                 tools:listitem="@layout/item_mobile_comment" />
 
@@ -188,8 +189,8 @@
                 android:id="@+id/comments_replies"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingBottom="16dp"
+                android:fadingEdgeLength="32dp"
+                android:requiresFadingEdge="vertical"
                 android:scrollbars="none"
                 android:visibility="invisible" />
 
@@ -207,6 +208,11 @@
                 app:trackThickness="2dp" />
 
         </FrameLayout>
+
+        <!-- MEETUBE: "Add a comment…" ("Add a reply…" on a replies page), fixed under the lists. -->
+        <include
+            android:id="@+id/comments_compose_bar"
+            layout="@layout/item_mobile_comment_compose" />
 
     </LinearLayout>
 

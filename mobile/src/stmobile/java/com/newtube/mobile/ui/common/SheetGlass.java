@@ -171,6 +171,21 @@ public final class SheetGlass {
         panel.post(() -> frost(panel, activity.getWindow(), panel, corner, false, 0));
     }
 
+    /**
+     * MEETUBE(glass): {@link #frost(View, Window)} for a sheet resting on the page's bottom edge (the
+     * player's comments and side panels, which stop above the navigation bar): rounded on top only.
+     * Its bottom corners and rim would otherwise show over the last row, the page peeking through.
+     */
+    public static void frostDocked(@NonNull View target, @Nullable Window page) {
+        target.setTag(R.id.mobile_sheet_docked, Boolean.TRUE);
+        frost(target, page);
+    }
+
+    /** A docked sheet's glass and rim run this far past its bottom, where the sheet's box clips them. */
+    private static float dockedOverhang(View cover, float cornerPx) {
+        return Boolean.TRUE.equals(cover.getTag(R.id.mobile_sheet_docked)) ? cornerPx : 0f;
+    }
+
     /** Paints {@code target}'s background with {@code page}, blurred, behind the sheet's tint. */
     public static void frost(@NonNull View target, @Nullable Window page) {
         frost(target, page, CORNER_DP * target.getResources().getDisplayMetrics().density);
@@ -244,11 +259,12 @@ public final class SheetGlass {
             rim.setLayerHeight(0, Math.round(72 * density));
             rim.setLayerGravity(0, android.view.Gravity.TOP | android.view.Gravity.FILL_HORIZONTAL);
         }
-        rim.setBounds(0, 0, cover.getWidth(), cover.getHeight());
+        int overhang = Math.round(dockedOverhang(cover, cornerPx));
+        rim.setBounds(0, 0, cover.getWidth(), cover.getHeight() + overhang);
         cover.getOverlay().add(rim);
         cover.setTag(R.id.mobile_sheet_rim, rim);
         cover.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
-                rim.setBounds(0, 0, right - left, bottom - top));
+                rim.setBounds(0, 0, right - left, bottom - top + overhang));
     }
 
     /**
@@ -475,6 +491,7 @@ public final class SheetGlass {
                 mRect.set(-mTarget.getLeft(), -mTarget.getTop(),
                         mCover.getWidth() - mTarget.getLeft(), mCover.getHeight() - mTarget.getTop());
             }
+            mRect.bottom += dockedOverhang(mCover, mCorner);
             if (mBlurNode != null && canvas.isHardwareAccelerated()) {
                 // The node holds the sheet's box unrounded, so the blur's edges clamp to the page
                 // instead of fading out; the rounding is a clip around the blurred result. It is

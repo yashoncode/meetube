@@ -6,6 +6,8 @@
     <item name="mobile_jiggle_animator" type="id" />
     <!-- MEETUBE(glass): the lit rim SheetGlass puts on a frosted sheet, so it is put on once. -->
     <item name="mobile_sheet_rim" type="id" />
+    <!-- MEETUBE(glass): a frosted sheet resting on the page's bottom edge (SheetGlass.frostDocked). -->
+    <item name="mobile_sheet_docked" type="id" />
     <!-- MEETUNE: set on a screen's content while it blurs away for MeeTube <-> MeeTune. -->
     <item name="meetune_switching" type="id" />
 </resources>
