@@ -26,6 +26,8 @@ import com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.FormatItem;
 import com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.TrackSelectorManager;
 import com.liskovsoft.smartyoutubetv2.common.misc.NetPath;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
+import com.newtube.mobile.ui.common.UsageStats;
+import com.newtube.mobile.ui.meetune.MeeTune;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -1085,6 +1087,9 @@ public class Media3PlayerController implements Player.Listener {
         }
 
         if (mPlayer != null) {
+            if (mPlayer.isPlaying()) {
+                UsageStats.playing(false, MeeTune.isMusic(getVideo())); // MEETUBE(stats): listener is removed before stop
+            }
             mPlayer.removeListener(this);
             mPlayer.removeAnalyticsListener(mOpenPhaseLog);
             mPlayer.removeAnalyticsListener(mResumeListener);
@@ -1168,6 +1173,7 @@ public class Media3PlayerController implements Player.Listener {
 
     public void setVideo(Video video) {
         mVideo = new WeakReference<>(video);
+        UsageStats.updateScreen(); // MEETUNE(stats): count the player on the new side even while it loads
     }
 
     public Video getVideo() {
@@ -1522,7 +1528,7 @@ public class Media3PlayerController implements Player.Listener {
             mOnSourceChanged = false;
 
             mEventListener.onVideoLoaded(getVideo());
-            com.newtube.mobile.ui.common.UsageStats.videoOpened(); // MEETUBE(stats)
+            UsageStats.videoOpened(MeeTune.isMusic(getVideo())); // MEETUBE(stats)
 
             if (mOnVideoLoaded != null) {
                 mOnVideoLoaded.run();
@@ -1556,7 +1562,7 @@ public class Media3PlayerController implements Player.Listener {
 
     @Override
     public void onIsPlayingChanged(boolean isPlaying) {
-        com.newtube.mobile.ui.common.UsageStats.playing(isPlaying); // MEETUBE(stats): watch time
+        UsageStats.playing(isPlaying, MeeTune.isMusic(getVideo())); // MEETUBE(stats): watch or listen time
     }
 
     @Override

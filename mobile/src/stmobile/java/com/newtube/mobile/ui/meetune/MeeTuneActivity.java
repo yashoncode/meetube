@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.liskovsoft.smartyoutubetv2.common.app.views.ViewManager;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.browse.GreetingOverlay;
 import com.newtube.mobile.ui.common.Glass;
 import com.newtube.mobile.ui.common.GlassNavBar;
 import com.newtube.mobile.ui.common.Haptics;
@@ -171,10 +172,18 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             com.newtube.mobile.ui.common.Motion.pop(v);
             back();
         });
-        findViewById(R.id.meetune_brand).setOnClickListener(v -> { // Home's brand pill: back to MeeTube
+        View brand = findViewById(R.id.meetune_brand);
+        brand.setOnClickListener(v -> { // Home's brand pill: back to MeeTube
             Haptics.click(v);
             com.newtube.mobile.ui.common.Motion.nudge(v);
             MeeTune.leave(this);
+        });
+        // MEETUNE(greeting): holding the brand opens the music greeting, as on MeeTube.
+        GreetingOverlay greeting = new GreetingOverlay(this, findViewById(R.id.mobile_greet_overlay),
+                source, true, this::showAccountMenu);
+        brand.setOnLongClickListener(v -> {
+            greeting.show();
+            return true;
         });
         mSort.setOnClickListener(v -> {
             Haptics.click(v);

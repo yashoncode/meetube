@@ -1,6 +1,5 @@
 package com.newtube.mobile.ui.browse;
 
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +13,11 @@ import androidx.annotation.StringRes;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AppUpdatePresenter;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.FocusTimer;
+import com.newtube.mobile.ui.common.Glass;
+import com.newtube.mobile.ui.common.MobileSnackbar;
 import com.newtube.mobile.ui.common.Motion;
 import com.newtube.mobile.ui.common.UsageStats;
+import com.newtube.mobile.ui.playback.SleepTimer;
 import com.newtube.mobile.ui.settings.MobileSettingsActivity;
 import com.newtube.mobile.ui.settings.SettingsPages;
 
@@ -23,10 +25,11 @@ import java.util.Calendar;
 
 /**
  * MEETUBE(greeting): a held brand pill frosts the whole screen (a full-screen glass over the page)
- * with a greeting for the time of day and three glass shortcuts: Settings, Customization and Check
- * for updates, under a card of time spent in MeeTube (UsageStats). A tap anywhere else, or Back, closes it.
+ * with a greeting for the time of day. MeeTube and MeeTune each show their own stats, timer and
+ * shortcuts. A tap anywhere else, or Back, closes it.
  */
-final class GreetingOverlay {
+public final class GreetingOverlay {
+    private static final int[] SLEEP_MINUTES = {15, 30, 45, 60, 90};
     private static final int[] PERIODS = {
             R.string.mobile_greet_morning,
             R.string.mobile_greet_afternoon,
@@ -37,13 +40,15 @@ final class GreetingOverlay {
     private static int sLastQuote = -1;
 
     private final ComponentActivity mActivity;
+    private final boolean mMeeTune;
     private final View mOverlay;
-    private final View mContent;
+    private final View mBlurTarget;
+    private final ViewGroup mContent;
     private final TextView mTitle;
     private final TextView mLine;
     private final View mStats;
-    private final View mFocus;
-    private final Runnable mFocusTick = this::bindFocus;
+    private final View mTimer;
+    private final Runnable mTimerTick = this::bindTimer;
     private final OnBackPressedCallback mBack = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
@@ -51,52 +56,47 @@ final class GreetingOverlay {
         }
     };
 
-    GreetingOverlay(ComponentActivity activity) {
+    public GreetingOverlay(ComponentActivity activity, View overlay, View blurTarget,
+                           boolean meeTune, Runnable meeTuneSettings) {
         mActivity = activity;
-        mOverlay = activity.findViewById(R.id.mobile_greet_overlay);
-        mContent = activity.findViewById(R.id.mobile_greet_content);
-        mTitle = activity.findViewById(R.id.mobile_greet_title);
-        mLine = activity.findViewById(R.id.mobile_greet_line);
+        mMeeTune = meeTune;
+        mOverlay = overlay;
+        mBlurTarget = blurTarget;
+        mContent = overlay.findViewById(R.id.mobile_greet_content);
+        mTitle = overlay.findViewById(R.id.mobile_greet_title);
+        mLine = overlay.findViewById(R.id.mobile_greet_line);
+        Glass.blur(mOverlay, mBlurTarget);
         mOverlay.setOnClickListener(v -> hide());
 
-        ViewGroup content = (ViewGroup) mContent;
-        mStats = LayoutInflater.from(activity).inflate(R.layout.item_mobile_greet_stats, content, false);
-        content.addView(mStats);
+        mStats = LayoutInflater.from(activity).inflate(R.layout.item_mobile_greet_stats, mContent, false);
+        mContent.addView(mStats);
         frost(mStats);
-        mFocus = LayoutInflater.from(activity).inflate(R.layout.item_mobile_greet_focus, content, false);
-        content.addView(mFocus);
-        frost(mFocus);
-        mFocus.findViewById(R.id.focus_label).setOnClickListener(v -> {
-            if (FocusTimer.remainingMs() < 0) { // running: the countdown is not a picker
-                com.newtube.mobile.ui.common.Haptics.tick(v);
-                FocusTimer.nextMinutes();
-                bindFocus();
-            }
-        });
-        mFocus.findViewById(R.id.focus_label).setOnLongClickListener(v -> {
+        ((TextView) mStats.findViewById(R.id.stats_hero_label)).setText(
+                meeTune ? R.string.meetune_stats_hero_label : R.string.mobile_stats_hero_label);
+        mTimer = LayoutInflater.from(activity).inflate(R.layout.item_mobile_greet_focus, mContent, false);
+        mContent.addView(mTimer);
+        frost(mTimer);
+        mTimer.findViewById(R.id.focus_label).setOnClickListener(this::pickMinutes);
+        mTimer.findViewById(R.id.focus_toggle).setOnClickListener(this::toggleTimer);
+        if (meeTune) {
+            // MEETUNE(greeting): give the longer Sleep timer label room beside the button.
+            mTimer.setMinimumWidth(mTimer.getLayoutParams().width);
+            mTimer.getLayoutParams().width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            addOption(mContent, R.drawable.ic_mobile_settings, R.string.meetune_settings, meeTuneSettings);
+            return;
+        }
+        mTimer.findViewById(R.id.focus_label).setOnLongClickListener(v -> {
             if (FocusTimer.remainingMs() >= 0) {
                 return false;
             }
             askMinutes();
             return true;
         });
-        mFocus.findViewById(R.id.focus_toggle).setOnClickListener(v -> {
-            Motion.nudge(v);
-            if (FocusTimer.remainingMs() < 0) {
-                FocusTimer.start();
-                hide();
-                com.newtube.mobile.ui.common.MobileSnackbar.show(mActivity,
-                        mActivity.getString(R.string.mobile_focus_started, FocusTimer.minutes()));
-            } else {
-                FocusTimer.stop();
-                bindFocus();
-            }
-        });
-        addOption(content, R.drawable.ic_mobile_settings, R.string.header_settings,
+        addOption(mContent, R.drawable.ic_mobile_settings, R.string.header_settings,
                 () -> open(null));
-        addOption(content, R.drawable.ic_settings_customize, R.string.mobile_settings_customize,
+        addOption(mContent, R.drawable.ic_settings_customize, R.string.mobile_settings_customize,
                 () -> open(SettingsPages.CUSTOMIZE));
-        addOption(content, R.drawable.ic_mobile_update, R.string.check_for_updates, () -> {
+        addOption(mContent, R.drawable.ic_mobile_update, R.string.check_for_updates, () -> {
             if (AppUpdatePresenter.isInAppUpdatesDisabled()) {
                 open(SettingsPages.ABOUT); // store build: no updater, the version lives in About
             } else {
@@ -121,20 +121,20 @@ final class GreetingOverlay {
     /** MEETUBE(stats): its own heavier frost of the page, so a card or button reads as frosted glass on the greeting's. */
     private void frost(View glass) {
         ((com.newtube.mobile.ui.common.GlassView) glass).setBlur(28f);
-        com.newtube.mobile.ui.common.Glass.blur(glass, mActivity.findViewById(R.id.mobile_blur_target));
+        Glass.blur(glass, mBlurTarget);
     }
 
     private void open(String pageId) {
         mActivity.startActivity(MobileSettingsActivity.intent(mActivity, pageId));
     }
 
-    void show() {
+    public void show() {
         mTitle.setText(PERIODS[period(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))]);
         String[] quotes = mActivity.getResources().getStringArray(R.array.mobile_greet_quotes);
         sLastQuote = nextQuote(quotes.length, sLastQuote, new java.util.Random());
         mLine.setText(quotes[sLastQuote]);
         bindStats();
-        bindFocus();
+        bindTimer();
 
         mBack.remove(); // re-added last, so it is the callback Back reaches first
         mActivity.getOnBackPressedDispatcher().addCallback(mBack);
@@ -153,7 +153,7 @@ final class GreetingOverlay {
 
     private void hide() {
         mBack.remove();
-        mFocus.removeCallbacks(mFocusTick);
+        mTimer.removeCallbacks(mTimerTick);
         if (mOverlay.getVisibility() != View.VISIBLE) {
             return;
         }
@@ -185,7 +185,7 @@ final class GreetingOverlay {
                     } catch (NumberFormatException ignored) {
                         return; // empty: keep the old length
                     }
-                    bindFocus();
+                    bindTimer();
                 })
                 .setNegativeButton(android.R.string.cancel, null));
         dialog.setOnShowListener(d -> {
@@ -195,27 +195,98 @@ final class GreetingOverlay {
         dialog.show();
     }
 
+    private int pickedMinutes() {
+        return mMeeTune ? SleepTimer.lastMinutes() : FocusTimer.minutes();
+    }
+
+    private boolean timerRunning() {
+        return mMeeTune ? SleepTimer.remainingMs() >= 0 || SleepTimer.isEndOfVideo() : FocusTimer.remainingMs() >= 0;
+    }
+
+    private void pickMinutes(View label) {
+        if (timerRunning()) {
+            return;
+        }
+        com.newtube.mobile.ui.common.Haptics.tick(label);
+        if (mMeeTune) {
+            int picked = pickedMinutes();
+            int next = SLEEP_MINUTES[0];
+            for (int minutes : SLEEP_MINUTES) {
+                if (minutes > picked) {
+                    next = minutes;
+                    break;
+                }
+            }
+            SleepTimer.setLastMinutes(next);
+        } else {
+            FocusTimer.nextMinutes();
+        }
+        bindTimer();
+    }
+
+    private void toggleTimer(View toggle) {
+        Motion.nudge(toggle);
+        if (timerRunning()) {
+            if (mMeeTune) {
+                SleepTimer.set(SleepTimer.OFF);
+                MobileSnackbar.show(mActivity, R.string.mobile_sleep_toast_off);
+            } else {
+                FocusTimer.stop();
+            }
+            bindTimer();
+            return;
+        }
+        int minutes = pickedMinutes();
+        String message;
+        if (mMeeTune) {
+            SleepTimer.set(minutes);
+            String duration = mActivity.getResources().getQuantityString(R.plurals.mobile_settings_minutes, minutes, minutes);
+            message = mActivity.getString(R.string.mobile_sleep_toast_minutes, duration);
+        } else {
+            FocusTimer.start();
+            message = mActivity.getString(R.string.mobile_focus_started, minutes);
+        }
+        hide();
+        MobileSnackbar.show(mActivity, message);
+    }
+
     /** MEETUBE(focus): the picked minutes, or the countdown (ticking each second while shown). */
-    private void bindFocus() {
-        mFocus.removeCallbacks(mFocusTick);
-        long left = FocusTimer.remainingMs();
-        TextView label = mFocus.findViewById(R.id.focus_label);
-        android.widget.ImageButton toggle = mFocus.findViewById(R.id.focus_toggle);
-        boolean running = left >= 0;
-        label.setText(running
-                ? mActivity.getString(R.string.mobile_focus_running,
-                        String.format(java.util.Locale.getDefault(), "%d:%02d", left / 60_000, left / 1000 % 60))
-                : mActivity.getString(R.string.mobile_focus_idle, FocusTimer.minutes()));
+    private void bindTimer() {
+        mTimer.removeCallbacks(mTimerTick);
+        long left = mMeeTune ? SleepTimer.remainingMs() : FocusTimer.remainingMs();
+        boolean endOfSong = mMeeTune && SleepTimer.isEndOfVideo();
+        boolean running = left >= 0 || endOfSong;
+        TextView label = mTimer.findViewById(R.id.focus_label);
+        android.widget.ImageButton toggle = mTimer.findViewById(R.id.focus_toggle);
+        if (running) {
+            String remaining = endOfSong ? mActivity.getString(R.string.meetune_sleep_end_of_song)
+                    : String.format(java.util.Locale.getDefault(), "%d:%02d", left / 60_000, left / 1000 % 60);
+            label.setText(mActivity.getString(
+                    mMeeTune ? R.string.meetune_sleep_running : R.string.mobile_focus_running, remaining));
+            mTimer.postDelayed(mTimerTick, left > 0 ? left % 1000 + 1 : 500);
+        } else {
+            label.setText(mActivity.getString(
+                    mMeeTune ? R.string.meetune_sleep_idle : R.string.mobile_focus_idle, pickedMinutes()));
+        }
         toggle.setImageResource(running ? R.drawable.ic_mobile_focus_stop : R.drawable.ic_player_play);
         toggle.setContentDescription(mActivity.getString(running ? R.string.mobile_focus_stop : R.string.mobile_focus_start));
-        if (running) {
-            mFocus.postDelayed(mFocusTick, left == 0 ? 500 : left % 1000 + 1);
-        }
+    }
+
+    private long screenMs(int daysAgo) {
+        return mMeeTune ? UsageStats.meeTuneMs(daysAgo) : UsageStats.appMs(daysAgo);
+    }
+
+    private long playbackMs(int daysAgo) {
+        return mMeeTune ? UsageStats.listenMs(daysAgo) : UsageStats.watchMs(daysAgo);
+    }
+
+    private long itemCount(int daysAgo) {
+        return mMeeTune ? UsageStats.songs(daysAgo) : UsageStats.videos(daysAgo);
     }
 
     /**
-     * MEETUBE(stats): today's time in MeeTube, big; today's watch time and videos and the 7-day daily
-     * average under it; the 7 days as bars under their total. A tapped bar lights up and its day is spelled out.
+     * MEETUBE(stats): today's on-screen time, playback, item count and daily average for this side.
+     * The last seven days appear below. Tapping a bar shows that day's totals.
      */
     private void bindStats() {
         android.content.Context context = mActivity;
@@ -224,7 +295,7 @@ final class GreetingOverlay {
         long max = 1;
         long[] days = new long[7];
         for (int i = 0; i < 7; i++) {
-            days[i] = UsageStats.appMs(i);
+            days[i] = screenMs(i);
             week += days[i];
             max = Math.max(max, days[i]);
         }
@@ -232,8 +303,10 @@ final class GreetingOverlay {
         ((TextView) mStats.findViewById(R.id.stats_hero)).setText(UsageStats.duration(days[0]));
         ViewGroup numbers = mStats.findViewById(R.id.stats_numbers);
         numbers.removeAllViews();
-        number(numbers, UsageStats.duration(UsageStats.watchMs(0)), R.string.mobile_stats_watched);
-        number(numbers, String.valueOf(UsageStats.videos(0)), R.string.mobile_stats_videos);
+        number(numbers, UsageStats.duration(playbackMs(0)),
+                mMeeTune ? R.string.meetune_stats_listened : R.string.mobile_stats_watched);
+        number(numbers, String.valueOf(itemCount(0)),
+                mMeeTune ? R.string.meetune_filter_songs : R.string.mobile_stats_videos);
         number(numbers, UsageStats.duration(week / 7), R.string.mobile_stats_avg);
         ((TextView) mStats.findViewById(R.id.stats_week_title)).setText(
                 context.getString(R.string.mobile_stats_week_title, UsageStats.duration(week)));
@@ -296,9 +369,9 @@ final class GreetingOverlay {
         day.add(java.util.Calendar.DAY_OF_YEAR, -daysAgo);
         String name = daysAgo == 0 ? context.getString(R.string.mobile_stats_today)
                 : new java.text.SimpleDateFormat("EEE d MMM", java.util.Locale.getDefault()).format(day.getTime());
-        footer.setText(context.getString(R.string.mobile_stats_day, name,
-                UsageStats.duration(UsageStats.appMs(daysAgo)), UsageStats.duration(UsageStats.watchMs(daysAgo)),
-                String.valueOf(UsageStats.videos(daysAgo))));
+        footer.setText(context.getString(mMeeTune ? R.string.meetune_stats_day : R.string.mobile_stats_day, name,
+                UsageStats.duration(screenMs(daysAgo)), UsageStats.duration(playbackMs(daysAgo)),
+                String.valueOf(itemCount(daysAgo))));
     }
 
     private void number(ViewGroup row, String value, @StringRes int label) {

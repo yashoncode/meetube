@@ -2190,9 +2190,8 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mPlayer.setPlayWhenReady(true);
         // MEETUBE(sleep-timer): "End of video" pauses where autoplay would open the next one.
-        mPlayer.setPauseAtEndOfMediaItems(SleepTimer.isEndOfVideo());
+        SleepTimer.attach(mPlayer, this::sleepNow);
         mPlayer.addListener(mSleepEndListener);
-        SleepTimer.attach(mSleepPause);
         mBenchTicker = com.newtube.mobile.player.BenchTicker.startIfEnabled(
                 BuildConfig.DEBUG || BuildConfig.BENCHMARK, mPlayer, () -> {
                     Video video = getVideo();
@@ -2315,6 +2314,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
 
+        SleepTimer.detach(mPlayer);
         stopProgressUpdates();
         mPlayer.removeListener(mUiPlayerListener);
 
@@ -2678,7 +2678,6 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mShorts != null) {
             mShorts.releasePeek();
         }
-        SleepTimer.detach(mSleepPause);
         DownloadRegistry.instance(this).removeListener(mDownloadsListener);
         MobileSheets.setPlayerShown(false, false);
         cancelAutoHide();
@@ -11099,8 +11098,6 @@ public class MobilePlaybackActivity extends MobileActivity
     // MEETUBE(sleep-timer): gear -> Sleep timer (SleepTimer holds the countdown).
     // ---------------------------------------------------------------------------------
 
-    private final Runnable mSleepPause = this::sleepNow;
-
     private final Player.Listener mSleepEndListener = new Player.Listener() {
         @Override
         public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
@@ -11112,9 +11109,6 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** The timer ran out (or the video ended under "End of video"): pause, like the pause button. */
     private void sleepNow() {
-        if (mPlayer != null) {
-            mPlayer.setPauseAtEndOfMediaItems(false);
-        }
         if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
             mExoPlayerController.setPlayWhenReady(false);
             if (mPresenter != null) {
@@ -11162,9 +11156,6 @@ public class MobilePlaybackActivity extends MobileActivity
         for (int minutes : SleepTimer.PRESETS) {
             addQualityRow(list, sleepPresetLabel(minutes), minutes == picked, () -> {
                 SleepTimer.set(minutes);
-                if (mPlayer != null) {
-                    mPlayer.setPauseAtEndOfMediaItems(SleepTimer.isEndOfVideo());
-                }
                 String toast = minutes == SleepTimer.END_OF_VIDEO ? getString(meeTuneSong() ? R.string.meetune_sleep_toast_end : R.string.mobile_sleep_toast_end)
                         : minutes == SleepTimer.OFF ? getString(R.string.mobile_sleep_toast_off)
                         : getString(R.string.mobile_sleep_toast_minutes, sleepPresetLabel(minutes));

@@ -564,4 +564,6 @@
 
     <include layout="@layout/mobile_mini_player_overlay" />
 
+    <include layout="@layout/mobile_greet_overlay" />
+
 </FrameLayout>

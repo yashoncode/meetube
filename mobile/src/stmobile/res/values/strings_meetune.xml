@@ -9,6 +9,11 @@
     <string name="meetune_search_hint">Songs, albums, artists</string>
     <string name="meetune_back">Back</string>
     <string name="meetune_settings">MeeTune settings</string>
+    <string name="meetune_stats_hero_label">in MeeTune today</string>
+    <string name="meetune_stats_listened">Listened</string>
+    <string name="meetune_stats_day">%1$s: %2$s in MeeTune, %3$s listened, %4$s songs</string>
+    <string name="meetune_sleep_idle">Sleep timer · %1$d min</string>
+    <string name="meetune_sleep_running">Sleep timer · %1$s</string>
     <string name="meetune_account">Account and settings</string>
     <string name="meetune_add_account">Add account</string>
     <string name="meetune_to_meetube">Back to MeeTube</string>

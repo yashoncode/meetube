@@ -10,27 +10,59 @@ import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.newtube.mobile.ui.meetune.MeeTune;
+import com.newtube.mobile.ui.meetune.MeeTuneActivity;
+import com.newtube.mobile.ui.playback.MobilePlaybackActivity;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * MEETUBE(stats): how long MeeTube is on screen, how long videos play and how many open, per day.
- * Kept on this phone only (prefs "meetube_usage", the last 60 days); the greeting shows it.
+ * MEETUBE(stats): daily on-screen time, playback time and opens for MeeTube and MeeTune.
+ * Kept on this phone only (prefs "meetube_usage", the last 60 days); each greeting shows its side.
  */
 public final class UsageStats {
     private static final String PREFS = "meetube_usage";
     private static final String APP = "a";
     private static final String WATCH = "w";
     private static final String VIDEOS = "v";
+    private static final String MEETUNE = "m";
+    private static final String LISTEN = "l";
+    private static final String SONGS = "s";
     private static final int KEEP_DAYS = 60;
 
     private static SharedPreferences sPrefs;
-    private static int sStarted;
-    private static long sAppSince;
-    private static long sWatchSince;
+    // Started activities only, most recently started or resumed last (including PiP transitions).
+    private static final List<Activity> sStarted = new ArrayList<>();
+    private static final Session sScreen = new Session();
+    private static final Session sPlayback = new Session();
+
+    private static final class Session {
+        private String kind;
+        private long since;
+
+        void setKind(@Nullable String next) {
+            if (Objects.equals(kind, next)) return;
+            checkpoint(SystemClock.elapsedRealtime());
+            kind = next;
+        }
+
+        void checkpoint(long now) {
+            if (kind != null) add(kind, now - since);
+            since = now;
+        }
+
+        long ms(String bucket, int daysAgo) {
+            long running = daysAgo == 0 && bucket.equals(kind) ? SystemClock.elapsedRealtime() - since : 0;
+            return get(bucket, daysAgo) + running;
+        }
+    }
 
     private UsageStats() {
     }
@@ -40,18 +72,21 @@ public final class UsageStats {
         prune();
         app.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             @Override public void onActivityStarted(@NonNull Activity activity) {
-                if (sStarted++ == 0) sAppSince = SystemClock.elapsedRealtime();
+                sStarted.add(activity);
+                updateScreen();
             }
 
             @Override public void onActivityStopped(@NonNull Activity activity) {
-                if (sStarted > 0 && --sStarted == 0) {
-                    add(APP, SystemClock.elapsedRealtime() - sAppSince);
-                    sAppSince = 0;
-                }
+                sStarted.remove(activity);
+                updateScreen();
             }
 
             @Override public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle state) { }
-            @Override public void onActivityResumed(@NonNull Activity activity) { }
+            @Override public void onActivityResumed(@NonNull Activity activity) {
+                sStarted.remove(activity);
+                sStarted.add(activity);
+                updateScreen();
+            }
             @Override public void onActivityPaused(@NonNull Activity activity) {
                 checkpoint();
             }
@@ -60,20 +95,29 @@ public final class UsageStats {
         });
     }
 
-    /** The player started or stopped playing (background and PiP included). */
-    public static void playing(boolean playing) {
-        long now = SystemClock.elapsedRealtime();
-        if (playing && sWatchSince == 0) {
-            sWatchSince = now;
-        } else if (!playing && sWatchSince != 0) {
-            add(WATCH, now - sWatchSince);
-            sWatchSince = 0;
+    /** MEETUNE(stats): the same player activity can switch sides without a lifecycle callback. */
+    public static void updateScreen() {
+        if (sStarted.isEmpty()) {
+            sScreen.setKind(null);
+            return;
         }
+        Activity activity = sStarted.get(sStarted.size() - 1);
+        boolean music = activity instanceof MeeTuneActivity || (activity instanceof MobilePlaybackActivity
+                && MeeTune.isMusic(((MobilePlaybackActivity) activity).getVideo()));
+        sScreen.setKind(music ? MEETUNE : APP);
     }
 
-    public static void videoOpened() {
-        add(VIDEOS, 1);
+    /** The player started or stopped playing (background and PiP included). */
+    public static void playing(boolean playing, boolean song) {
+        sPlayback.setKind(playing ? (song ? LISTEN : WATCH) : null);
+    }
+
+    public static void videoOpened(boolean song) {
+        updateScreen(); // The player may have learned this is a MeeTune song since setVideo.
         checkpoint();
+        // A source change can leave isPlaying true. The checkpoint booked the previous item.
+        if (sPlayback.kind != null) sPlayback.kind = song ? LISTEN : WATCH;
+        add(song ? SONGS : VIDEOS, 1);
     }
 
     /**
@@ -82,14 +126,8 @@ public final class UsageStats {
      */
     private static void checkpoint() {
         long now = SystemClock.elapsedRealtime();
-        if (sAppSince != 0) {
-            add(APP, now - sAppSince);
-            sAppSince = now;
-        }
-        if (sWatchSince != 0) {
-            add(WATCH, now - sWatchSince);
-            sWatchSince = now;
-        }
+        sScreen.checkpoint(now);
+        sPlayback.checkpoint(now);
     }
 
     // ponytail: a session is booked to the day it ends on; split at midnight if that ever matters.
@@ -101,15 +139,27 @@ public final class UsageStats {
 
     /** App time in ms, {@code daysAgo} days back (0 = today), the running session included. */
     public static long appMs(int daysAgo) {
-        return get(APP, daysAgo) + (daysAgo == 0 && sAppSince != 0 ? SystemClock.elapsedRealtime() - sAppSince : 0);
+        return sScreen.ms(APP, daysAgo);
+    }
+
+    public static long meeTuneMs(int daysAgo) {
+        return sScreen.ms(MEETUNE, daysAgo);
     }
 
     public static long watchMs(int daysAgo) {
-        return get(WATCH, daysAgo) + (daysAgo == 0 && sWatchSince != 0 ? SystemClock.elapsedRealtime() - sWatchSince : 0);
+        return sPlayback.ms(WATCH, daysAgo);
+    }
+
+    public static long listenMs(int daysAgo) {
+        return sPlayback.ms(LISTEN, daysAgo);
     }
 
     public static long videos(int daysAgo) {
         return get(VIDEOS, daysAgo);
+    }
+
+    public static long songs(int daysAgo) {
+        return get(SONGS, daysAgo);
     }
 
     private static long get(String kind, int daysAgo) {
@@ -149,8 +199,8 @@ public final class UsageStats {
         if (sPrefs == null) return;
         sPrefs.edit().clear().apply();
         long now = SystemClock.elapsedRealtime();
-        if (sAppSince != 0) sAppSince = now;
-        if (sWatchSince != 0) sWatchSince = now;
+        sScreen.since = now;
+        sPlayback.since = now;
     }
 
     private static void prune() {

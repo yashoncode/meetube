@@ -28,10 +28,10 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/stats_hero_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@string/mobile_stats_hero_label"
             android:textColor="@color/mobile_color_on_surface_secondary"
             android:textSize="13sp" />
 
