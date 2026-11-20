@@ -39,7 +39,7 @@ import dalvik.system.DexClassLoader;
 
 /**
  * MEETUBE(issue #281): Only people who turn on Karaoke download its runtime and model, so neither adds to the APK size.
- * The runtime and the MeeAI Model are each verified and published in private storage, and deleting the model removes both.
+ * The runtime and the YkAI Model are each verified and published in private storage, and deleting the model removes both.
  */
 public final class KaraokePack {
     public enum State { UNSUPPORTED, NOT_DOWNLOADED, DOWNLOADING, READY }

@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 
 /**
  * Starting a song, turning karaoke on, or seeking shows a loading indicator while the
- * MeeAI Model processes its first chunk. The song then plays with vocals removed while
+ * YkAI Model processes its first chunk. The song then plays with vocals removed while
  * the worker stays ahead of playback. If the phone falls behind, that part plays with vocals.
  */
 public final class MeeTuneKaraoke {
