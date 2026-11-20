@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.5.8** Amber](#358-amber) | 2026-11-21 | Karaoke |
 | [**3.5.5** Hyper](#355-hyper) | 2026-11-17 | Automix |
 | [**3.5.2** Slash](#352-slash) | 2026-11-17 | Spatial |
 | [**3.5.0** Drago](#350-drago) | 2026-11-16 | MeeTune |
@@ -49,6 +50,60 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.5.8 Amber
+
+> **Karaoke**<br>
+> 📅 2026-11-21 · closes #263, #280, #281, #284, #285, #287, #292, #295 and #296
+
+### ✨ Highlights
+
+- **MeeTune AI Karaoke (beta):** removes the vocals from the playing song right on your phone with the YkAI Model, a one time 39 MB download after asking, so the APK stays the same size. Turn it on in the MeeTune player menu and delete the model anytime in MeeTune settings (#281).
+- **MeeTuneMix:** Automix is now MeeTuneMix. The ending song fades out where its music ends and the next one fades in slowly, with no volume jumps, cut vocals or long wait before the switch. The Beat This model is gone, so the APK is back to its old size.
+- **Spotify in MeeTune:** sign in to Spotify for its Canvas loops behind the player and import your Spotify playlists. Spotify sits under Add-ons in MeeTune settings.
+- **A library with no account:** make playlists, save and pin albums and playlists, and export or import them as a file, so songs go into playlists without signing in (#280).
+- **Your phone's Dolby Atmos:** MeeTube hands its audio to the phone's own sound engine, so Dolby Atmos and sound effects from the phone's settings work on songs and videos, through crossfades too. Dolby tracks play on phones without a Dolby decoder, and MeeTune shows DOLBY or DOLBY ATMOS while one plays (#284).
+
+### 🎵 MeeTune
+
+- Canvas also plays animated covers from Apple Music and Tidal, and short silent loops from a song's official music video, fetched once and played from the phone.
+- A play mode button (Autoplay, Shuffle, Repeat one, Off) that songs follow instead of MeeTube's Autoplay.
+- The focus arrow under the controls hides the volume and song pill and makes the sung line big.
+- A search next to the Library heading finds playlists by name, and YouTube Music playlists in the Library can be renamed or deleted with a long press.
+- New playlist and Rename open on blur glass like the other MeeTune popups, and Create waits for a name.
+- Tapping the ticked account in MeeTune's menu unticks it, so MeeTune runs without an account.
+- Settings are regrouped, and every setting has a small i that explains what it does.
+- Smoother volume slider, sliders pop while you drag them, and Lyrics are coming shows while lyrics load.
+- The 256 kbps AAC track (Premium accounts) plays instead of Opus when YouTube sends it.
+
+### New
+
+- Pinch zoom on the player goes up to 8x like the YouTube app (#296).
+- Channel sort is a Sort pill next to Posts and shows the order you picked for each tab (#295).
+- The greeting shows a classic quote under it, a different one every time it opens.
+
+### Changed
+
+- Taps light up a soft glass pill instead of the old ripple on rows, glass buttons, cards and chips, and Settings explanations sit behind a small i after the title.
+- The Add a comment bar stays at the bottom of the comments while you scroll, and the comment box opens on frosted glass and glides up with the keyboard.
+- Shorts show whole by default instead of zoomed in, and pinch or the Zoom setting works on them.
+- Confirm and Cancel in popups like Remove playlist are plain rows again instead of checkboxes.
+- The Dolby switch is gone from MeeTune settings, since YouTube Music songs are stereo only.
+
+### Fixed
+
+- Live streams no longer freeze the app and load forever when the stream buffer setting is off (#292).
+- Songs no longer go silent in the background after a crossfade or MeeTuneMix switch on Android 17 (#285).
+- MeeTune no longer says Could not reach YouTube Music, or fails to sign in, when the phone's language is set to a region YouTube doesn't support, like English (Saudi Arabia) (#263).
+- Ambient mode works again on live streams and other 60 fps or HDR videos.
+- Chips style and Tab glow no longer snap back when OG Mode is on. OG Mode only sets them until you pick your own (#287).
+- Long press on phone playlists works again in the Library grid.
+- The Lyrics button no longer looks zoomed.
+- The comments panel no longer shows rounded corners and a line at the bottom.
+
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @mohamedalim26, @kadheerk49, @dhanunjay333i-cyber, @harshXigll, @SneednFeed88, @SpadezOfSpadez, @delgadoleonard555-jpg and @Rex000.
 
 ## 3.5.5 Hyper
 
