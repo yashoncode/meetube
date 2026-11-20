@@ -655,8 +655,10 @@ public class VideoStateController extends BasePlayerController {
 
         boolean liveEnd = isLiveEnd();
 
-        // Position
-        if (liveEnd) {
+        // Position. MEETUBE(issue #292): with no live buffer the jump lands on the end again, and a
+        // seek while buffering re-fires onBuffering (Media3PlayerController.onPositionDiscontinuity):
+        // an endless seek loop that froze the app. Jump only when it moves off the end.
+        if (liveEnd && getLiveBuffer() > 1_000) {
             getPlayer().setPositionMs(getPlayer().getDurationMs() - getLiveBuffer());
         }
 

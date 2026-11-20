@@ -151,6 +151,25 @@ public class VideoStateControllerPositionTest {
     }
 
     @Test
+    public void liveEdgeBufferingWithoutStreamBufferDoesNotSeekToItself() { // issue #292
+        PlayerTweaksData.instance(RuntimeEnvironment.getApplication()).setBufferOnStreamsDisabled(true);
+        video.isLive = true;
+        positionMs = durationMs;
+        controller.onBuffering();
+        controller.onBuffering();
+        assertTrue(seeks.isEmpty());
+        assertEquals(1.0f, restoredSpeed, 0.001f);
+    }
+
+    @Test
+    public void liveEdgeBufferingJumpsBackByTheStreamBuffer() {
+        video.isLive = true;
+        positionMs = durationMs;
+        controller.onBuffering();
+        assertEquals(List.of(durationMs - 15_000), seeks);
+    }
+
+    @Test
     public void explicitLiveTimestampAvoidsSupersededLiveEdgeSeek() {
         video.isLive = true;
         remember(durationMs - 1_000);
