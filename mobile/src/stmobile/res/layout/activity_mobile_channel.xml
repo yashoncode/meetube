@@ -165,16 +165,23 @@
             android:textColor="@color/mobile_color_on_surface"
             android:textSize="13sp" />
 
-        <!-- MEETUBE(channel sort, issue #5): Latest / Popular / Oldest for the open tab. -->
-        <ImageButton
+        <!-- MEETUBE(channel sort, issues #5, #295): Latest / Popular / Oldest for the open tab.
+             A labeled pill (the old tune icon went unnoticed); it shows the tab's picked order. -->
+        <TextView
             android:id="@+id/mobile_channel_sort"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/mobile_watch_pill_bg_touch"
+            android:clickable="true"
             android:contentDescription="@string/search_sorting"
-            android:padding="12dp"
-            android:src="@drawable/ic_mobile_tune" />
+            android:focusable="true"
+            android:fontFamily="?attr/appFontMedium"
+            android:gravity="center"
+            android:paddingHorizontal="14dp"
+            android:text="@string/mobile_channel_sort"
+            android:textColor="@color/mobile_color_on_surface"
+            android:textSize="13sp" />
 
     </LinearLayout>
 

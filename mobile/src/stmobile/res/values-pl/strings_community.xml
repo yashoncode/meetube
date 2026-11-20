@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="mobile_channel_posts">Posty</string>
+    <string name="mobile_channel_sort">Sortuj</string>
     <string name="mobile_posts_title">Posty: %1$s</string>
     <string name="mobile_posts_empty">Brak postów</string>
     <string name="mobile_posts_image">Obraz posta</string>

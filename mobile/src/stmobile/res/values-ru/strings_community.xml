@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="mobile_channel_posts">Публикации</string>
+    <string name="mobile_channel_sort">Сортировка</string>
     <string name="mobile_posts_title">Публикации: %1$s</string>
     <string name="mobile_posts_empty">Публикаций пока нет</string>
     <string name="mobile_posts_image">Изображение публикации</string>

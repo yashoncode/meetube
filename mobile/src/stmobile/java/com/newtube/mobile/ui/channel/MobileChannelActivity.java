@@ -85,6 +85,9 @@ public class MobileChannelActivity extends MobileActivity
         /** Issue #50: where the tab was left; picking it again goes back there. */
         @Nullable
         Parcelable scroll;
+        /** Issue #295: the order picked for this tab (Latest / Popular / Oldest), shown on the sort pill. */
+        @Nullable
+        String sort;
 
         Section(int id, String title) {
             this.id = id;
@@ -1084,6 +1087,8 @@ public class MobileChannelActivity extends MobileActivity
         Section active = mSections.get(mActiveSectionId);
         mLastPaginationTriggerCount = -1;
         syncLoadMoreFooter();
+        ((TextView) findViewById(R.id.mobile_channel_sort)).setText(active != null && active.sort != null
+                ? active.sort : getString(R.string.mobile_channel_sort));
         if (restore) {
             mPendingScroll = active != null ? active.scroll : null;
         }
@@ -1235,6 +1240,7 @@ public class MobileChannelActivity extends MobileActivity
                     target.videos.addAll(shown);
                     target.group = group; // further pages continue the sorted list
                     target.scroll = null; // a new order starts at the top
+                    target.sort = group.getTitle();
                     mActiveSectionId = target.id;
                     rebuildTabs();
                     showActiveSection(true);

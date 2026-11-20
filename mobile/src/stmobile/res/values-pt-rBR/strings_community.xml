@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="mobile_channel_posts">Publicações</string>
+    <string name="mobile_channel_sort">Ordenar</string>
     <string name="mobile_posts_title">Publicações de %1$s</string>
     <string name="mobile_posts_empty">Nenhuma publicação ainda</string>
     <string name="mobile_posts_image">Imagem da publicação</string>

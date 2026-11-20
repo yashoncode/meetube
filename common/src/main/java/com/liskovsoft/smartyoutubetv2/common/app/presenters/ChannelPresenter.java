@@ -563,6 +563,7 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
 
                                 VideoGroup replace = VideoGroup.from(mediaGroup);
                                 replace.setId(144);
+                                replace.setTitle(group.getTitle()); // MEETUBE(#295): the phone's sort pill shows it
                                 replace.setPosition(0);
                                 replace.setAction(VideoGroup.ACTION_REPLACE);
                                 getView().update(replace);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="mobile_channel_posts">Publicaciones</string>
+    <string name="mobile_channel_sort">Ordenar</string>
     <string name="mobile_posts_title">Publicaciones de %1$s</string>
     <string name="mobile_posts_like">Me gusta esta publicación</string>
     <string name="mobile_posts_like_failed">No se pudo marcar Me gusta. Inténtalo de nuevo.</string>
