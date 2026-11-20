@@ -4229,6 +4229,7 @@ public class MobilePlaybackActivity extends MobileActivity
                         R.string.mobile_player_sleep_timer, this::showSleepTimerSheet),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_speed,
                         R.string.mobile_player_speed, this::showSpeedSheet),
+                com.newtube.mobile.ui.meetune.MeeTuneSongMenu.karaoke(this),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_video, R.string.meetune_canvas,
                         () -> com.newtube.mobile.ui.meetune.MeeTuneSongMenu.canvas(this, video, mMeeTune.canvasIsLoop(),
                                 () -> mMeeTune.reloadCanvas(video))),

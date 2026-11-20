@@ -1,8 +1,10 @@
 package com.newtube.mobile.ui.meetune;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import com.newtube.mobile.ui.common.MobileSnackbar;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 /**
  * A song's menu on MeeTube's frosted glass, in YouTube Music's order: Like, Dislike and Share across
@@ -24,15 +27,21 @@ import java.util.function.LongSupplier;
  * a song's More; the music player opens it from its More, with its own rows added.
  */
 public final class MeeTuneSongMenu {
-    /** One of the player's own rows: Upgrade quality, Sleep timer, Lyrics offset, Send log. */
+    /** A player action with an optional detail shown below its label. */
     public static final class Row {
         final int icon;
         final int label;
+        @Nullable final Supplier<String> detail;
         final Runnable run;
 
         public Row(int icon, int label, Runnable run) {
+            this(icon, label, null, run);
+        }
+
+        public Row(int icon, int label, @Nullable Supplier<String> detail, Runnable run) {
             this.icon = icon;
             this.label = label;
+            this.detail = detail;
             this.run = run;
         }
     }
@@ -91,7 +100,7 @@ public final class MeeTuneSongMenu {
         });
         content.addView(divider(a));
         if (upgrade != null) {
-            row(content, upgrade.icon, a.getString(upgrade.label), null, () -> {
+            row(content, upgrade.icon, a.getString(upgrade.label), upgrade.detail != null ? upgrade.detail.get() : null, () -> {
                 popup.dismiss();
                 upgrade.run.run();
             });
@@ -165,13 +174,132 @@ public final class MeeTuneSongMenu {
         if (tail.length > 0) {
             content.addView(divider(a));
             for (Row extra : tail) {
-                row(content, extra.icon, a.getString(extra.label), null, () -> {
+                if (extra == null) continue;
+                String label = a.getString(extra.label);
+                String detail = extra.detail != null ? extra.detail.get() : null;
+                TextView view = row(content, extra.icon, label, detail, () -> {
                     popup.dismiss();
                     extra.run.run();
                 });
+                if (extra.detail != null) refreshDetail(popup, view, label, extra.detail, detail);
             }
         }
         return popup;
+    }
+
+    private static void refreshDetail(PopupWindow popup, TextView view, String label,
+                                      Supplier<String> detail, String previous) {
+        view.postDelayed(() -> {
+            if (!popup.isShowing()) return;
+            String current = detail.get();
+            if (!TextUtils.equals(current, previous)) setRowText(view, label, current);
+            refreshDetail(popup, view, label, detail, current);
+        }, 500);
+    }
+
+    @Nullable
+    public static Row karaoke(Activity activity) {
+        if (KaraokePack.abi(activity) == null) return null;
+        return new Row(R.drawable.ic_mobile_mic, R.string.meetune_karaoke_name,
+                () -> karaokeDetail(activity), () -> {
+                    switch (KaraokePack.state(activity)) {
+                        case NOT_DOWNLOADED:
+                            downloadKaraoke(activity, true);
+                            break;
+                        case DOWNLOADING:
+                            MobileSnackbar.show(activity, R.string.meetune_karaoke_still_downloading);
+                            break;
+                        case READY:
+                            if (MeeTuneKaraoke.isOn()) {
+                                MeeTuneKaraoke.setOn(false);
+                                MobileSnackbar.show(activity, R.string.meetune_karaoke_off_snack);
+                            } else {
+                                enableKaraoke(activity);
+                            }
+                            break;
+                    }
+                });
+    }
+
+    private static String karaokeDetail(Context context) {
+        String detail;
+        switch (KaraokePack.state(context)) {
+            case DOWNLOADING:
+                detail = context.getString(R.string.meetune_downloading, KaraokePack.percent());
+                break;
+            case READY:
+                if (MeeTuneKaraoke.isOn()) return context.getString(R.string.mobile_menu_on);
+                detail = context.getString(R.string.mobile_menu_off);
+                break;
+            case NOT_DOWNLOADED:
+                detail = context.getString(R.string.meetune_karaoke_download, karaokeMb(context));
+                break;
+            default:
+                return "";
+        }
+        return context.getString(R.string.meetune_karaoke_beta_detail, detail);
+    }
+
+    /** The engine comes with the first download and goes with the model, so it is nearly always both. */
+    static int karaokeMb(Context context) {
+        return KaraokePack.runtimeReady(context) ? 28 : 39;
+    }
+
+    /** Asks before the one-time download. From the player, karaoke turns on when it finishes. */
+    static void downloadKaraoke(Activity activity, boolean enableWhenReady) {
+        glassConfirm(activity, activity.getString(R.string.meetune_karaoke_beta),
+                activity.getString(R.string.meetune_karaoke_download_message, karaokeMb(activity)),
+                android.R.string.cancel, R.string.meetune_download,
+                () -> startKaraokeDownload(activity, enableWhenReady));
+    }
+
+    private static void startKaraokeDownload(Activity activity, boolean enableWhenReady) {
+        Context app = activity.getApplicationContext();
+        boolean started = KaraokePack.download(app, success -> {
+            if (!success) MobileSnackbar.show(app, R.string.meetune_karaoke_download_failed);
+            else if (enableWhenReady) enableKaraoke(activity);
+        });
+        MobileSnackbar.show(activity, started ? R.string.meetune_karaoke_downloading_snack
+                : R.string.meetune_karaoke_still_downloading);
+    }
+
+    private static void enableKaraoke(Activity activity) {
+        Context app = activity.getApplicationContext();
+        MeeTune.run(activity, () -> KaraokePack.enable(app), (loaded, error) -> MobileSnackbar.show(activity,
+                Boolean.TRUE.equals(loaded) ? R.string.meetune_karaoke_on_snack : R.string.meetune_karaoke_load_failed));
+    }
+
+    static void glassConfirm(Activity a, @Nullable String title, String message, int cancelLabel,
+                             int actionLabel, Runnable action) {
+        LinearLayout content = new LinearLayout(a);
+        PopupWindow popup = glassPrompt(a, content, title, message, cancelLabel);
+        TextView confirm = content.findViewById(android.R.id.button1);
+        confirm.setText(actionLabel);
+        confirm.setVisibility(View.VISIBLE);
+        confirm.setOnClickListener(v -> dismissPrompt(popup, action));
+        place(a, popup, null, true);
+    }
+
+    private static PopupWindow glassPrompt(Activity a, LinearLayout content, @Nullable String title,
+                                           String message, int cancelLabel) {
+        a.getLayoutInflater().inflate(R.layout.meetune_glass_prompt, content);
+        PopupWindow popup = glassPopup(a, content, 320, 28);
+        TextView heading = content.findViewById(android.R.id.title);
+        heading.setText(title);
+        heading.setVisibility(title == null ? View.GONE : View.VISIBLE);
+        ((TextView) content.findViewById(android.R.id.message)).setText(message);
+        TextView cancel = content.findViewById(android.R.id.button2);
+        cancel.setText(cancelLabel);
+        cancel.setOnClickListener(v -> dismissPrompt(popup, null));
+        return popup;
+    }
+
+    private static void dismissPrompt(PopupWindow popup, @Nullable Runnable action) {
+        // The glass remains visible during its closing animation. Accept only the first tap.
+        if (!popup.isTouchable()) return;
+        popup.setTouchable(false);
+        popup.dismiss();
+        if (action != null) action.run();
     }
 
     /** Lyrics offset: earlier or later by half a second, or back to none; the menu stays while it's tuned. */
@@ -417,19 +545,10 @@ public final class MeeTuneSongMenu {
     }
 
     /** A menu row with its icon, and a second line under the name when there is one (the album, the artist). */
-    static void row(ViewGroup parent, int icon, String label, @Nullable String detail, Runnable onClick) {
+    static TextView row(ViewGroup parent, int icon, String label, @Nullable String detail, Runnable onClick) {
         android.content.Context c = parent.getContext();
         TextView row = new TextView(c);
-        android.text.SpannableStringBuilder text = new android.text.SpannableStringBuilder(label);
-        if (detail != null && !detail.isEmpty()) {
-            int start = text.length() + 1;
-            text.append('\n').append(detail);
-            text.setSpan(new android.text.style.ForegroundColorSpan(c.getColor(R.color.mobile_color_on_surface_secondary)),
-                    start, text.length(), 0);
-            text.setSpan(new android.text.style.RelativeSizeSpan(0.82f), start, text.length(), 0);
-        }
-        row.setText(text);
-        row.setMaxLines(detail != null ? 2 : 1);
+        setRowText(row, label, detail);
         row.setEllipsize(android.text.TextUtils.TruncateAt.END);
         row.setTextSize(16);
         row.setGravity(Gravity.CENTER_VERTICAL);
@@ -449,6 +568,20 @@ public final class MeeTuneSongMenu {
             onClick.run();
         });
         parent.addView(row, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        return row;
+    }
+
+    private static void setRowText(TextView row, String label, @Nullable String detail) {
+        android.text.SpannableStringBuilder text = new android.text.SpannableStringBuilder(label);
+        if (!TextUtils.isEmpty(detail)) {
+            int start = text.length() + 1;
+            text.append('\n').append(detail);
+            text.setSpan(new android.text.style.ForegroundColorSpan(row.getContext().getColor(R.color.mobile_color_on_surface_secondary)),
+                    start, text.length(), 0);
+            text.setSpan(new android.text.style.RelativeSizeSpan(0.82f), start, text.length(), 0);
+        }
+        row.setText(text);
+        row.setMaxLines(detail != null ? 2 : 1);
     }
 
     static View divider(Activity a) {

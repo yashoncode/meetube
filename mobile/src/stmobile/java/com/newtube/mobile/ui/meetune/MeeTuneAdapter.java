@@ -383,9 +383,10 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 if (grid != list.getLayoutManager() instanceof androidx.recyclerview.widget.GridLayoutManager) {
                     list.setLayoutManager(grid ? new androidx.recyclerview.widget.GridLayoutManager(view.getContext(), 3)
                             : new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
-                    int side = dp(view.getContext(), grid ? 15 : 20); // a grid cell's 5dp margins make it 20
-                    list.setPadding(side, 0, side, 0);
                 }
+                // a grid cell's 5dp margins make it 20; a column's songs bring 10dp of their own (room for the press pill)
+                int side = dp(view.getContext(), grid ? 15 : row.style == COLUMNS ? 10 : 20);
+                list.setPadding(side, 0, side, 0);
                 boolean dial = row.shelf.dial && MeeTune.speedDial(view.getContext());
                 CoverGlow.attach(list);
                 list.setAdapter(new Carousel(row, dial));
@@ -667,11 +668,11 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             } else if (mRow.style == COLUMNS) {
                 LinearLayout column = new LinearLayout(parent.getContext());
                 column.setOrientation(LinearLayout.VERTICAL);
-                int width = parent.getResources().getDisplayMetrics().widthPixels - dp(parent.getContext(), 56);
+                int width = parent.getResources().getDisplayMetrics().widthPixels - dp(parent.getContext(), 46);
                 column.setLayoutParams(new RecyclerView.LayoutParams(width, ViewGroup.LayoutParams.WRAP_CONTENT));
                 for (int i = 0; i < 4; i++) {
                     View song = inflater.inflate(R.layout.meetune_song_row, column, false);
-                    song.setPadding(0, 0, 0, 0);
+                    song.setPadding(dp(parent.getContext(), 10), 0, 0, 0); // the pill (6dp in) wraps the cover
                     column.addView(song);
                 }
                 view = column;

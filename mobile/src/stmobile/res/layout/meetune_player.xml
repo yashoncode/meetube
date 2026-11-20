@@ -132,6 +132,10 @@
                     android:textColor="#B3FFFFFF"
                     android:textSize="15sp" />
 
+                <include
+                    layout="@layout/meetune_karaoke_chip"
+                    android:theme="@style/ThemeOverlay.NewTube.PlayerChrome" />
+
             </LinearLayout>
 
             <com.newtube.mobile.ui.common.GlassView
@@ -173,7 +177,8 @@
 
         </LinearLayout>
 
-        <ScrollView
+        <view
+            class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$LyricsScroll"
             android:id="@+id/meetune_player_lyrics_scroll"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -192,7 +197,7 @@
                 android:paddingTop="28dp"
                 android:paddingBottom="28dp" />
 
-        </ScrollView>
+        </view>
 
     </LinearLayout>
 
@@ -251,6 +256,10 @@
                     android:maxLines="1"
                     android:textColor="#B3FFFFFF"
                     android:textSize="20sp" />
+
+                <include
+                    layout="@layout/meetune_karaoke_chip"
+                    android:theme="@style/ThemeOverlay.NewTube.PlayerChrome" />
 
             </LinearLayout>
 

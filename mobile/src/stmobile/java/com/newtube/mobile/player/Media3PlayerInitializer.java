@@ -533,6 +533,8 @@ public class Media3PlayerInitializer {
                     .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParams)
                     .setAudioProcessors(new androidx.media3.common.audio.AudioProcessor[] {
                             HeadphoneEq.processor(context),
+                            // MEETUNE(issue #281): Karaoke, MeeTune songs only
+                            com.newtube.mobile.ui.meetune.MeeTuneKaraoke.processor(context),
                             // MEETUNE: its own equalizer, only on MeeTune songs (untouched copy otherwise)
                             com.newtube.mobile.ui.meetune.MeeTuneEq.processor(context),
                             // MEETUNE(issue #262): Spatial sound, after the equalizer, MeeTune songs only

@@ -232,6 +232,10 @@ public final class MeeTunePlayerSkin {
             }
         });
         mControlsColumn.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> padPage());
+        mRoot.getViewTreeObserver().addOnPreDrawListener(() -> {
+            footLyrics();
+            return true;
+        });
 
         handle.setOnClickListener(v -> mControls.minimize());
         mArt.setOnClickListener(v -> mControls.minimize());
@@ -1214,7 +1218,7 @@ public final class MeeTunePlayerSkin {
         ((TextView) line).setTextColor(0xFFFFFFFF);
         if (mMode != NORMAL && android.os.SystemClock.uptimeMillis() - mTouchedAt > HANDS_OFF_MS) {
             mLyricsScroll.post(() -> mLyricsScroll.smoothScrollTo(0,
-                    Math.max(0, mLyricLines.getTop() + line.getTop() - mLyricsScroll.getHeight() / 3)));
+                    Math.max(0, mLyricLines.getTop() + line.getTop() - ((LyricsScroll) mLyricsScroll).room() / 3)));
         }
     }
 
@@ -1257,6 +1261,7 @@ public final class MeeTunePlayerSkin {
     private void setMode(int mode) {
         if (mode == mMode) return;
         int from = mMode;
+        if ((mode != NORMAL) != (from != NORMAL)) setFocus(false); // each page's focus lays out differently: undo it in the old one
         mMode = mode;
         boolean lyrics = mode != NORMAL;
         if (lyrics != (from != NORMAL)) {
@@ -1264,18 +1269,19 @@ public final class MeeTunePlayerSkin {
             fade(mPage, lyrics);
             mTitleRow.setVisibility(lyrics ? View.GONE : View.VISIBLE);
             mRoot.findViewById(R.id.meetune_player_format_space).setVisibility(lyrics ? View.GONE : View.INVISIBLE); // the title row's spacer
+            int pad = mLyricsButton.getPaddingLeft(); // setBackground swaps in the drawable's padding: keep the icon's 12dp
             mLyricsButton.setBackground(lyrics
                     ? androidx.core.content.ContextCompat.getDrawable(mRoot.getContext(), R.drawable.meetune_lyrics_on)
                     : mLyricsButtonBg);
+            mLyricsButton.setPadding(pad, pad, pad, pad);
             if (lyrics) com.newtube.mobile.ui.common.Motion.frostIn(mLyricsScroll);
         }
         mLineRow.setVisibility(lineRowVisibility(mode));
-        if (lyrics) setFocus(false); // the lyrics page shows all lines: focus ends with it
-        mRoot.findViewById(R.id.meetune_player_focus).setVisibility(lyrics ? View.GONE : View.VISIBLE);
         boolean full = mode == FULL;
         mHeadMore.setImageResource(full ? R.drawable.ic_watch_share : R.drawable.ic_meetune_more);
         mHeadMore.setContentDescription(mRoot.getContext().getString(full ? R.string.meetune_share : R.string.meetune_more));
         mControlsColumn.animate().cancel();
+        mControlsColumn.setClickable(lyrics); // the lines run under it now: a tap between buttons is not a tap on them
         if (full) {
             mControlsColumn.animate().alpha(0f).translationY(48 * mRoot.getResources().getDisplayMetrics().density)
                     .setDuration(220).setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD)
@@ -1300,11 +1306,15 @@ public final class MeeTunePlayerSkin {
     private void setFocus(boolean on) {
         if (on == mFocus) return;
         mFocus = on;
-        if (mMode == NORMAL) {
-            android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mRoot,
-                    new android.transition.AutoTransition().setOrdering(android.transition.TransitionSet.ORDERING_TOGETHER)
-                            .setDuration(360).setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD));
-        }
+        android.transition.TransitionManager.beginDelayedTransition((ViewGroup) mRoot,
+                new android.transition.AutoTransition().setOrdering(android.transition.TransitionSet.ORDERING_TOGETHER)
+                        .setDuration(360).setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD));
+        mRoot.findViewById(R.id.meetune_player_volume_row).setVisibility(on ? View.GONE : View.VISIBLE);
+        mRoot.findViewById(R.id.meetune_player_info).setVisibility(on ? View.GONE : View.VISIBLE);
+        mRoot.findViewById(R.id.meetune_player_focus).animate().rotation(on ? 180f : 0f).setDuration(360)
+                .setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD).start();
+        // On the lyrics page that is all: the column shrinks and the lines take its room (padPage).
+        if (mMode != NORMAL) return;
         // The column keeps its height, so the title stays put; the sung line's row takes the room
         // the volume and the pill leave, and the controls settle to the foot.
         ViewGroup.LayoutParams column = mControlsColumn.getLayoutParams();
@@ -1314,8 +1324,6 @@ public final class MeeTunePlayerSkin {
         row.height = on ? 0 : ViewGroup.LayoutParams.WRAP_CONTENT;
         row.weight = on ? 1 : 0;
         mLineRow.setLayoutParams(row);
-        mRoot.findViewById(R.id.meetune_player_volume_row).setVisibility(on ? View.GONE : View.VISIBLE);
-        mRoot.findViewById(R.id.meetune_player_info).setVisibility(on ? View.GONE : View.VISIBLE);
         float from = mLine.getTextSize();
         mLine.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, on ? 26 : 14);
         mLine.setMaxLines(on ? 3 : 2);
@@ -1327,17 +1335,30 @@ public final class MeeTunePlayerSkin {
                 android.animation.PropertyValuesHolder.ofFloat(View.SCALE_X, scale, 1f),
                 android.animation.PropertyValuesHolder.ofFloat(View.SCALE_Y, scale, 1f))
                 .setDuration(360).start();
-        mRoot.findViewById(R.id.meetune_player_focus).animate().rotation(on ? 180f : 0f).setDuration(360)
-                .setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD).start();
     }
 
-    /** The lines end above the controls, or at the page's foot when they fill it. */
+    /**
+     * The lines run down to the page's foot, under the controls (faded out at their top, footLyrics),
+     * and can scroll up clear of them.
+     */
     private void padPage() {
-        int bottom = mMode == FULL ? mControlsColumn.getPaddingBottom()
-                : Math.max(0, mRoot.getHeight() - mControlsColumn.getTop());
-        if (mPage.getPaddingBottom() != bottom) {
-            mPage.post(() -> mPage.setPadding(0, mPage.getPaddingTop(), 0, bottom));
-        }
+        int bottom = mControlsColumn.getPaddingBottom();
+        int under = mMode == FULL ? 0 : mControlsColumn.getHeight() - bottom;
+        int lines = Math.round(28 * mRoot.getResources().getDisplayMetrics().density) + under;
+        mPage.post(() -> {
+            if (mPage.getPaddingBottom() != bottom) mPage.setPadding(0, mPage.getPaddingTop(), 0, bottom);
+            if (mLyricLines.getPaddingBottom() != lines) {
+                mLyricLines.setPadding(mLyricLines.getPaddingLeft(), mLyricLines.getPaddingTop(), mLyricLines.getPaddingRight(), lines);
+            }
+        });
+    }
+
+    /** Every frame: the lines fade out where the controls' top is now, even mid-slide. */
+    private void footLyrics() {
+        if (mPage.getVisibility() != View.VISIBLE) return;
+        int foot = mMode == FULL ? -1 : mControlsColumn.getTop() + Math.round(mControlsColumn.getTranslationY())
+                - mPage.getTop() - mLyricsScroll.getTop();
+        ((LyricsScroll) mLyricsScroll).setFoot(foot);
     }
 
     private static void fade(View view, boolean in) {
@@ -1748,6 +1769,50 @@ public final class MeeTunePlayerSkin {
             super.dispatchDraw(canvas);
             canvas.drawRect(0, 0, getWidth(), getHeight(), mMask);
             canvas.restoreToCount(save);
+        }
+    }
+
+    /**
+     * The lyrics run on under the controls, faded out at their top edge ({@link #setFoot}), so as the
+     * controls slide down the lines below are already there and come into view.
+     */
+    public static final class LyricsScroll extends ScrollView {
+        private final Paint mMask = new Paint();
+        private int mFoot = -1; // y in this view where the lines end; -1: the whole view
+
+        public LyricsScroll(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            mMask.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+        }
+
+        void setFoot(int foot) {
+            if (foot >= getHeight()) foot = -1;
+            if (foot == mFoot) return;
+            mFoot = foot;
+            if (foot >= 0) {
+                float fade = 64 * getResources().getDisplayMetrics().density;
+                mMask.setShader(new LinearGradient(0, foot - fade, 0, foot, 0xFF000000, 0, Shader.TileMode.CLAMP));
+            }
+            invalidate();
+        }
+
+        /** The height the lines show in. */
+        int room() {
+            return mFoot >= 0 ? mFoot : getHeight();
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            if (mFoot < 0) {
+                super.draw(canvas);
+                return;
+            }
+            int y = getScrollY();
+            int layer = canvas.saveLayer(0, y, getWidth(), y + getHeight(), null);
+            super.draw(canvas);
+            canvas.translate(0, y);
+            canvas.drawRect(0, 0, getWidth(), getHeight(), mMask);
+            canvas.restoreToCount(layer);
         }
     }
 

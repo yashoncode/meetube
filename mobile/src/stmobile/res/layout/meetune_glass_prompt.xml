@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:id="@android:id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="22dp"
+        android:paddingTop="14dp"
+        android:fontFamily="?attr/appFontMedium"
+        android:textColor="@color/mobile_color_on_surface"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@android:id/message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="22dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/mobile_color_on_surface_secondary"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end|center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@android:id/button2"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:textColor="@color/mobile_color_on_surface" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@android:id/button1"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:textColor="?attr/meetubeAccent"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</merge>

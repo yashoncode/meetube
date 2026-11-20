@@ -235,6 +235,7 @@ final class MeeTuneSettings {
         note(R.string.meetune_downloads_note);
 
         addOns();
+        karaoke();
 
         // The way back to MeeTube, as MeeTube's settings end with "MeeTune →".
         mRoot.addView(MeeTune.switchLink(mActivity, getString(R.string.meetune_link_meetube),
@@ -268,7 +269,7 @@ final class MeeTuneSettings {
         note(R.string.meetune_canvas_note);
     }
 
-    /** Add-ons: other services MeeTune can link to. Spotify: its account, its canvas, its playlists. */
+    /** Optional services and downloads for MeeTune. */
     private void addOns() {
         header(R.string.meetune_set_addons);
         LinearLayout card = card();
@@ -302,6 +303,88 @@ final class MeeTuneSettings {
         tip(card, R.drawable.ic_player_queue, getString(R.string.meetune_spotify_import),
                 getString(R.string.meetune_spotify_import_summary), null, true, v -> MeeTuneLibrary.importSpotify(mActivity));
         note(R.string.meetune_addons_note);
+    }
+
+    private void karaoke() {
+        if (KaraokePack.abi(mActivity) == null) return;
+        header(R.string.meetune_karaoke_beta);
+        LinearLayout card = card();
+        TextView value = new TextView(mActivity);
+        View item = tip(card, R.drawable.ic_mobile_mic, getString(R.string.meetune_karaoke_model),
+                getString(R.string.meetune_karaoke_model_hint), null, false, v -> {
+                    switch (KaraokePack.state(mActivity)) {
+                        case NOT_DOWNLOADED:
+                            MeeTuneSongMenu.downloadKaraoke(mActivity, false);
+                            break;
+                        case DOWNLOADING:
+                            MobileSnackbar.show(mActivity, R.string.meetune_karaoke_still_downloading);
+                            break;
+                    }
+                });
+        // Keep the current value in the usual summary position, with the expandable hint below it.
+        TextView hint = item.findViewById(R.id.settings_row_summary);
+        LinearLayout labels = (LinearLayout) hint.getParent();
+        value.setTextColor(hint.getTextColors());
+        value.setTextSize(TypedValue.COMPLEX_UNIT_PX, hint.getTextSize());
+        labels.addView(value, labels.indexOfChild(hint),
+                new LinearLayout.LayoutParams((LinearLayout.LayoutParams) hint.getLayoutParams()));
+        ImageView delete = item.findViewById(R.id.settings_row_chevron);
+        delete.setImageResource(R.drawable.ic_meetune_delete);
+        delete.setContentDescription(getString(R.string.meetune_karaoke_delete_label));
+        delete.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+        delete.getLayoutParams().width = delete.getLayoutParams().height = dp(48);
+        delete.setPadding(dp(14), dp(14), dp(14), dp(14));
+        delete.setOnClickListener(v -> MeeTuneSongMenu.glassConfirm(mActivity, null,
+                getString(R.string.meetune_karaoke_delete_message), android.R.string.cancel, R.string.mobile_comments_delete,
+                () -> KaraokePack.WORKER.execute(() -> {
+                    if (!KaraokePack.delete(mActivity)) karaokeError(R.string.meetune_karaoke_delete_failed);
+                })));
+        observeKaraoke(item, () -> refreshKaraokeValue(value, delete));
+        note(R.string.meetune_karaoke_note);
+    }
+
+    private void observeKaraoke(View target, Runnable refresh) {
+        target.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {
+                KaraokePack.addListener(refresh);
+                refresh.run();
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View view) {
+                KaraokePack.removeListener(refresh);
+            }
+        });
+        if (target.isAttachedToWindow()) {
+            KaraokePack.addListener(refresh);
+            refresh.run();
+        }
+    }
+
+    private void refreshKaraokeValue(TextView value, View delete) {
+        // The transfer may have started in the player or on a previous visit to settings.
+        KaraokePack.State state = KaraokePack.state(mActivity);
+        delete.setVisibility(state == KaraokePack.State.READY ? View.VISIBLE : View.GONE);
+        switch (state) {
+            case DOWNLOADING:
+                value.setText(mActivity.getString(R.string.meetune_downloading, KaraokePack.percent()));
+                break;
+            case READY:
+                value.setText(R.string.meetune_karaoke_downloaded);
+                break;
+            case NOT_DOWNLOADED:
+                value.setText(mActivity.getString(R.string.meetune_karaoke_not_downloaded,
+                        MeeTuneSongMenu.karaokeMb(mActivity)));
+                break;
+        }
+    }
+
+    private void karaokeError(int error) {
+        mActivity.runOnUiThread(() -> {
+            if (mActivity.isFinishing() || mActivity.isDestroyed()) return;
+            MobileSnackbar.show(mActivity, error);
+        });
     }
 
     // ------------------------------------------------------------------------------ hints

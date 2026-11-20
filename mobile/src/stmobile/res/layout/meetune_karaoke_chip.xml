@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.newtube.mobile.ui.meetune.KaraokeChip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="22dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="8dp"
+    android:visibility="gone">
+
+    <ImageView
+        android:id="@+id/karaoke_chip_mic"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_mobile_mic"
+        android:tint="?attr/colorOnSurface" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/karaoke_chip_progress"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:importantForAccessibility="no"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:indicatorColor="?attr/colorOnSurface"
+        app:indicatorInset="0dp"
+        app:indicatorSize="12dp"
+        app:trackColor="@android:color/transparent"
+        app:trackThickness="2dp" />
+
+    <TextView
+        android:id="@+id/karaoke_chip_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="?attr/appFontMedium"
+        android:includeFontPadding="false"
+        android:singleLine="true"
+        android:text="@string/meetune_karaoke"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="12sp" />
+
+</com.newtube.mobile.ui.meetune.KaraokeChip>

@@ -44,6 +44,7 @@ final class MeeTuneMiniPill {
     private final ImageView mArt;
     private final TextView mTitle;
     private final TextView mArtist;
+    private final KaraokeChip mKaraoke;
     private final ImageView mPlay;
     private final View mNext;
     private final View mTabIcon;
@@ -95,6 +96,7 @@ final class MeeTuneMiniPill {
         mArt = activity.findViewById(R.id.meetune_mini_art);
         mTitle = activity.findViewById(R.id.meetune_mini_title);
         mArtist = activity.findViewById(R.id.meetune_mini_artist);
+        mKaraoke = activity.findViewById(R.id.meetune_mini_karaoke);
         mPlay = activity.findViewById(R.id.meetune_mini_play);
         mNext = activity.findViewById(R.id.meetune_mini_next);
         mTabIcon = activity.findViewById(R.id.meetune_mini_tab_icon);
@@ -106,6 +108,9 @@ final class MeeTuneMiniPill {
         });
         mListPad = list.getPaddingBottom();
         mDp = MeeTuneAdapter.dp(activity, 1);
+        mKaraoke.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if (mFoldTo > 0f && !chipFitsFolded()) fold(false);
+        });
         mRing = new ProgressRing(mDp, androidx.core.content.ContextCompat.getColor(activity, R.color.mobile_color_on_surface));
         // The ring is the background (a foreground is cut to the padding and clipped the glow). No press
         // ripple: as a foreground it was a grey box; a tap blooms the ring's glow instead (pulse()).
@@ -473,7 +478,7 @@ final class MeeTuneMiniPill {
     }
 
     private void fold(boolean fold) {
-        if (fold && YouTubeMode.isOn(mActivity)) return;
+        if (fold && (YouTubeMode.isOn(mActivity) || !chipFitsFolded())) return;
         float to = fold ? 1f : 0f;
         if (mFolding != null && mFolding.isRunning()) {
             if (mFoldTo == to) return;
@@ -497,6 +502,14 @@ final class MeeTuneMiniPill {
             place();
         });
         mFolding.start();
+    }
+
+    private boolean chipFitsFolded() {
+        if (mKaraoke.getVisibility() != View.VISIBLE) return true;
+        // The folded pill sits between two 56dp circles with 8dp gaps. Its cover,
+        // margins and play control use another 108dp; the artist can yield its space.
+        int available = mNavGlass.getWidth() - 2 * 64 * mDp - MeeTuneAdapter.dp(mActivity, 108);
+        return mKaraoke.contentWidth() + MeeTuneAdapter.dp(mActivity, 4) <= available;
     }
 
     /** Lays the pill, the bar and the two circles out for {@link #mFold}. */
