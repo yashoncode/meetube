@@ -191,6 +191,8 @@ final class AppPages {
                     .option("Google Sans", com.newtube.mobile.ui.common.AppFont.GOOGLE_SANS)
                     .option("Minecraft", com.newtube.mobile.ui.common.AppFont.MINECRAFT)
                     .option("Vazirmatn", com.newtube.mobile.ui.common.AppFont.VAZIRMATN)
+                    .option(context.getString(R.string.mobile_settings_font_file),
+                            customFontHint(context), com.newtube.mobile.ui.common.AppFont.CUSTOM)
                     .bind(() -> com.newtube.mobile.ui.common.AppFont.current(context),
                             font -> com.newtube.mobile.ui.common.AppFont.set(context, font))
                     .needsRestart());
@@ -596,6 +598,12 @@ final class AppPages {
      * UI scale. The TV list ran from 0.4x; on a phone the useful range is a step or two either way
      * of 1x (a value stored from the old list stays listed so the row still shows it).
      */
+    /** MEETUBE(font): the loaded file's name, or how to load one; picking the option always opens the picker. */
+    private static CharSequence customFontHint(Context context) {
+        String name = com.newtube.mobile.ui.common.AppFont.customName(context);
+        return name != null ? name : context.getString(R.string.mobile_settings_font_file_hint);
+    }
+
     private static SettingsRow interfaceSize(Context context, MainUIData mainUIData) {
         List<Float> scales = new ArrayList<>();
         for (float scale : new float[] {0.8f, 0.85f, 0.9f, 0.95f, 1.0f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f}) {

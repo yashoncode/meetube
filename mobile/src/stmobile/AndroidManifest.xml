@@ -395,6 +395,12 @@
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+        <!-- MEETUBE(font): invisible host for the file picker of Settings > Font > Your font file. -->
+        <activity
+            android:name="com.newtube.mobile.ui.common.AppFont$Picker"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <!-- MEETUBE(seek thumb): invisible host for the image picker of the seek bar's picture. -->
         <activity
             android:name="com.newtube.mobile.ui.playback.SeekThumb"

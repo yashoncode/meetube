@@ -661,20 +661,27 @@ final class MeeTuneSettings {
     private void fonts() {
         String[] fonts = {com.newtube.mobile.ui.common.AppFont.SYSTEM,
                 com.newtube.mobile.ui.common.AppFont.GOOGLE_SANS, com.newtube.mobile.ui.common.AppFont.MINECRAFT,
-                com.newtube.mobile.ui.common.AppFont.VAZIRMATN};
+                com.newtube.mobile.ui.common.AppFont.VAZIRMATN, com.newtube.mobile.ui.common.AppFont.CUSTOM};
+        String customName = com.newtube.mobile.ui.common.AppFont.customName(mActivity);
         FrameLayout frame = new FrameLayout(mActivity);
         frame.setPadding(dp(14), dp(4), dp(14), dp(8));
         frame.setClipToPadding(false);
         GlassChipTrack track = new GlassChipTrack(mActivity);
         track.setGlassSource(null);
         track.setChips(Arrays.asList(getString(R.string.mobile_theme_system), "Google Sans",
-                "Minecraft", "Vazirmatn"));
+                "Minecraft", "Vazirmatn", customName != null ? customName : getString(R.string.mobile_settings_font_file)));
         track.setSelected(Math.max(0, Arrays.asList(fonts).indexOf(com.newtube.mobile.ui.common.AppFont.current(mActivity))));
         track.setOnPicked(index -> {
             if (fonts[index].equals(com.newtube.mobile.ui.common.AppFont.current(mActivity))) {
                 return;
             }
             Haptics.click(track);
+            if (com.newtube.mobile.ui.common.AppFont.CUSTOM.equals(fonts[index])) {
+                // The file picker sets the font and offers the restart itself; until then the pill stays put.
+                track.setSelected(Math.max(0, Arrays.asList(fonts).indexOf(com.newtube.mobile.ui.common.AppFont.current(mActivity))));
+                com.newtube.mobile.ui.common.AppFont.set(mActivity, fonts[index]);
+                return;
+            }
             com.newtube.mobile.ui.common.AppFont.set(mActivity, fonts[index]);
             android.content.Context app = mActivity.getApplicationContext();
             MobileSnackbar.show(mActivity, getString(R.string.mobile_settings_restart_needed),

@@ -280,6 +280,9 @@
     <string name="mobile_app_icon_gta_vi">GTA VI</string>
     <string name="mobile_settings_loader">Loading spinner</string>
     <string name="mobile_settings_font">Font</string>
+    <string name="mobile_settings_font_file">Your font file</string>
+    <string name="mobile_settings_font_file_hint">Pick a TTF or OTF file</string>
+    <string name="mobile_settings_font_file_failed">Couldn’t use that file as a font (TTF or OTF, 30 MB at most)</string>
     <string name="mobile_loader_neon">Neon ring</string>
     <string name="mobile_loader_frosted">Frosted glass</string>
     <string name="mobile_loader_cookie">Cookie</string>
