@@ -2,6 +2,7 @@ package com.newtube.mobile.downloads;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.work.Constraints;
@@ -170,6 +171,22 @@ public final class AutoDownload {
     public static void checkNow(Context context) {
         WorkManager.getInstance(context).enqueueUniqueWork(WORK + "_now", ExistingWorkPolicy.REPLACE,
                 new OneTimeWorkRequest.Builder(AutoDownloadWorker.class).setConstraints(constraints(context)).build());
+    }
+
+    /**
+     * Issue #300: a queue left unfinished (the process died, a background check ran out of time, or
+     * Android's daily limit stopped the download service) goes on by itself. One pending resume at a
+     * time; a stopped one is run again by WorkManager, as soon as the constraints allow.
+     */
+    static void resumeQueue(Context context) {
+        try {
+            WorkManager.getInstance(context).enqueueUniqueWork(WORK + "_resume", ExistingWorkPolicy.KEEP,
+                    new OneTimeWorkRequest.Builder(AutoDownloadWorker.class)
+                            .setInputData(new androidx.work.Data.Builder().putBoolean(AutoDownloadWorker.DRAIN_ONLY, true).build())
+                            .setConstraints(constraints(context)).build());
+        } catch (IllegalStateException e) { // WorkManager not initialized yet (too early in the process)
+            Log.w("AutoDownload", "resume not scheduled: " + e);
+        }
     }
 
     private static Constraints constraints(Context context) {

@@ -29,6 +29,8 @@ public final class AutoDownloadWorker extends Worker {
     private static final String TAG = "AutoDownload";
     /** ponytail: a first check of a long Watch later would queue it all; more come at the next checks. */
     private static final int PER_PLAYLIST = 10;
+    /** Input: only finish the queue (issue #300's resume), no looking for new videos. */
+    static final String DRAIN_ONLY = "drain_only";
 
     public AutoDownloadWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
@@ -38,6 +40,14 @@ public final class AutoDownloadWorker extends Worker {
     @Override
     public Result doWork() {
         Context context = getApplicationContext();
+        if (!getInputData().getBoolean(DRAIN_ONLY, false)) {
+            discover(context);
+        }
+        MobileDownloadService.startOrDrain(context, this::isStopped);
+        return Result.success();
+    }
+
+    private void discover(Context context) {
         ContentService content = YouTubeServiceManager.instance().getContentService();
         Set<String> seen = AutoDownload.seen(context);
         List<MediaItem> wanted = new ArrayList<>();
@@ -107,8 +117,6 @@ public final class AutoDownloadWorker extends Worker {
 
         AutoDownload.setSeen(context, seen);
         AutoDownload.setPrimed(context, primed);
-        MobileDownloadService.startOrDrain(context);
-        return Result.success();
     }
 
     private static List<MediaItem> items(MediaGroup group) {
