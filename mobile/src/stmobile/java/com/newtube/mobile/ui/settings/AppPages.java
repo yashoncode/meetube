@@ -331,6 +331,13 @@ final class AppPages {
                         style -> com.newtube.mobile.ui.common.Glass.setPlayerButtons(context, style))
                 .needsRestart(), 72, Tiles.BUTTONS_SEE_THROUGH, Tiles.FX_FROST, Tiles.BUTTONS_MINIMAL));
 
+        // MEETUBE(issue #303): the landscape controls at the screen corners, over the black bars.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_controls_corners),
+                context.getString(R.string.mobile_settings_controls_corners_summary),
+                () -> com.newtube.mobile.ui.playback.MobilePlaybackActivity.cornerControls(context),
+                on -> com.newtube.mobile.ui.playback.MobilePlaybackActivity.setCornerControls(context, on)),
+                Tiles.BUTTONS_SEE_THROUGH));
+
         // MEETUBE(seek thumb): the player seek bar's dot, or a picture the user picks.
         rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_seek_thumb))
                 .option(context.getString(R.string.mobile_settings_seek_thumb_dot), null,

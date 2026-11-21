@@ -668,6 +668,8 @@
     <string name="mobile_settings_tv_busy">An install is already running. Give it a moment.</string>
     <string name="mobile_settings_tv_permission">Allow local network access to find and connect to your TV.</string>
     <string name="mobile_settings_tv_footer">You can turn debugging off on the TV afterwards.</string>
+    <string name="mobile_settings_controls_corners">Controls at the screen corners</string>
+    <string name="mobile_settings_controls_corners_summary">In landscape, the player buttons sit in the screen corners over the black bars instead of at the video edges</string>
     <string name="mobile_settings_seek_line">Progress line under the video</string>
     <string name="mobile_settings_most_replayed">Most replayed graph</string>
     <string name="mobile_settings_most_replayed_summary">While you drag the seek bar, a wave above it shows the parts people watch the most</string>

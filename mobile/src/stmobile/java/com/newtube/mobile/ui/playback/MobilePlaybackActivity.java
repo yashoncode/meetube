@@ -3360,7 +3360,8 @@ public class MobilePlaybackActivity extends MobileActivity
                     ? box.getWidth() : getResources().getDisplayMetrics().widthPixels;
             int height = box.getHeight() > 0
                     ? box.getHeight() : getResources().getDisplayMetrics().heightPixels;
-            int strip = controlsStrip(width, height, mVideoAspect, getResizeMode());
+            // MEETUBE(issue #303): or the screen's corners, over the black bars, like YouTube.
+            int strip = cornerControls(this) ? 0 : controlsStrip(width, height, mVideoAspect, getResizeMode());
             left = Math.max(bars.left, strip);
             right = Math.max(bars.right, strip);
             top = bars.top;
@@ -3605,6 +3606,15 @@ public class MobilePlaybackActivity extends MobileActivity
      * keeps the 16:9 control box instead of a thin column; 0 when the video covers the width: a
      * wider film, or a fill/zoom resize mode. An unknown aspect (no video size yet) counts as 16:9.
      */
+    /** MEETUBE(issue #303): fullscreen controls at the screen corners instead of the video edges. */
+    public static boolean cornerControls(Context context) {
+        return context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).getBoolean("controls_corners", false);
+    }
+
+    public static void setCornerControls(Context context, boolean on) {
+        context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).edit().putBoolean("controls_corners", on).apply();
+    }
+
     static int controlsStrip(int width, int height, float videoAspect, int resizeMode) {
         int strip16x9 = Math.max(0, Math.round((width - height * 16f / 9f) / 2f));
         if (resizeMode != PlayerConstants.RESIZE_MODE_DEFAULT
