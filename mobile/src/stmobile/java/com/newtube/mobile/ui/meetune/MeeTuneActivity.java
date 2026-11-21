@@ -1507,7 +1507,6 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
      */
     private void syncTopFrost() {
         float alpha = mYouTubeBar && mStack.isEmpty() ? 1f
-                : mStack.isEmpty() && mTab == HOME ? 0f // Home has no frost: its pills float on the shelves
                 : Math.min(1f, mList.computeVerticalScrollOffset() / (float) MeeTuneAdapter.dp(this, 48));
         if (mTopFrost.getAlpha() != alpha) mTopFrost.setAlpha(alpha);
     }

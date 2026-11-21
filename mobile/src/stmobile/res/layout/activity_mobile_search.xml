@@ -76,6 +76,17 @@
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/mobile_search_results_top" />
 
+        <!-- MEETUBE(glass): a progressive frost behind the search pill and the chips, thinning out to
+             nothing below them (as MeeTune's top bar); over the results only, under the chips. -->
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/mobile_search_frost"
+            android:layout_width="match_parent"
+            android:layout_height="128dp"
+            app:glassCornerRadius="0dp"
+            app:glassFadeBottom="128dp"
+            app:glassLiquid="false"
+            app:glassTint="@color/meetube_glass_tint" />
+
         <!-- MEETUBE(search chips): YouTube's chip row over the results - All, Videos, Shorts, Live,
              Recently uploaded - shortcuts to the filter dialog's own flags. Shown from the first
              search on; the suggestions list below covers it while the query is edited. -->

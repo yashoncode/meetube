@@ -546,8 +546,11 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             int side = card != null ? card.getLayoutParams().width : 0;
             String url = item.art != null && side > 0 && side < dp(art.getContext(), 120)
                     ? MusicApi.sized(item.art, side) : item.art;
-            Glide.with(art).load(url).placeholder(cover) // no art: its own cover
-                    .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
+            com.bumptech.glide.RequestBuilder<android.graphics.drawable.Drawable> request =
+                    Glide.with(art).load(url).placeholder(cover); // no art: its own cover
+            int[] fixed = fixedSize(art);
+            if (fixed != null) request = request.override(fixed[0], fixed[1]);
+            request.listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
                         @Override
                         public boolean onLoadFailed(@androidx.annotation.Nullable com.bumptech.glide.load.engine.GlideException e,
                                 Object model, @NonNull com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
@@ -580,6 +583,27 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     static final Object PROGRESS = new Object();
 
     /** A download still coming: its cover frosted (blurred) with how far and how fast over it. */
+    /**
+     * A cover's size straight from its layout (its own or a frame's, in dp), or null when only
+     * measuring tells. Glide otherwise waits for the cover's first layout to learn its size, so a
+     * card made ahead (a shelf's prefetch, still below the screen) only began its download as it
+     * scrolled in; with the size known the download starts at the bind.
+     */
+    @androidx.annotation.Nullable
+    private static int[] fixedSize(View art) {
+        View view = art;
+        for (int i = 0; i < 3 && view != null; i++) {
+            ViewGroup.LayoutParams lp = view.getLayoutParams();
+            if (lp == null) return null;
+            if (lp.width > 0 && lp.height > 0) return new int[] {lp.width, lp.height};
+            if (lp.width != ViewGroup.LayoutParams.MATCH_PARENT || lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+                return null; // wraps, or one side measured
+            }
+            view = view.getParent() instanceof View ? (View) view.getParent() : null;
+        }
+        return null;
+    }
+
     private static void bindDownload(View view, MusicApi.Item item) {
         TextView progress = view.findViewById(R.id.meetune_art_progress);
         View bar = view.findViewById(R.id.meetune_art_bar);
