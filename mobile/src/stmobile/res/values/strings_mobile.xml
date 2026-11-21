@@ -451,6 +451,9 @@
     <string name="mobile_cast_direct_load_failed">Couldn\'t prepare this video for direct cast</string>
     <string name="mobile_cast_direct_no_wifi">Direct cast needs the phone and TV on the same Wi-Fi</string>
     <string name="mobile_cast_link_code">Link with TV code</string>
+    <string name="mobile_cast_car">Car</string>
+    <string name="mobile_cast_car_subtitle">MeeTune carries on in the car</string>
+    <string name="mobile_cast_car_playing">Playing in the car</string>
     <string name="mobile_cast_link_code_subtitle">Works with YouTube and MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_code_hint">12-digit code</string>
     <string name="mobile_cast_code_title">Link TV</string>

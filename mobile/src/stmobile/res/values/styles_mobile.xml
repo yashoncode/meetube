@@ -796,4 +796,11 @@
         <item name="appFontMedium">@font/app_vazirmatn</item>
         <item name="appFontBlack">@font/app_vazirmatn</item>
     </style>
+    <!-- MEETUBE(android auto, issue #253): the car's own theme, read only by the car host (the phone
+         theme's accent is near black there): MeeTune red for the seekbar and highlights. -->
+    <style name="Theme.MeeTube.Car" parent="">
+        <item name="android:colorPrimary">@color/meetune_accent</item>
+        <item name="android:colorPrimaryDark">#FF121212</item>
+        <item name="android:colorAccent">@color/meetune_accent</item>
+    </style>
 </resources>

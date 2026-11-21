@@ -19,10 +19,11 @@ public final class NewTubeGlideModule extends AppGlideModule {
      * Image fetching must never crowd out the video stream. Glide sizes its source executor from the
      * CPU count (4 on any current phone), so a feed fling or a freshly opened watch page can hold
      * four concurrent HTTP fetches against googleusercontent while /player and the first media
-     * chunks are still in flight - on a narrow link the thumbnails simply win. Two threads still
-     * keep a scrolling feed populated.
+     * chunks are still in flight - on a narrow link the thumbnails simply win. It was two threads,
+     * but MeeTune's Home (a dozen shelves of covers) filled in too slowly with two, so it is four
+     * again, the CPU count.
      */
-    private static final int SOURCE_THREADS = 2;
+    private static final int SOURCE_THREADS = 4;
 
     /**
      * Glide's built-in 2500ms connect+read budget is a LAN default. On a high-RTT mobile link the

@@ -9,6 +9,7 @@ import android.text.method.DigitsKeyListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -23,7 +24,13 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.liskovsoft.mediaserviceinterfaces.CastSenderService;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import androidx.media3.exoplayer.ExoPlayer;
+import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
+import com.newtube.mobile.car.CarMediaService;
 import com.newtube.mobile.ui.common.Haptics;
+import com.newtube.mobile.ui.meetune.MeeTune;
+import com.newtube.mobile.ui.playback.MiniPlayerBridge;
+import com.newtube.mobile.ui.playback.MobilePlaybackActivity;
 import com.newtube.mobile.casting.castv2.CastV2Discovery;
 
 import java.util.Collections;
@@ -139,6 +146,7 @@ public class CastPickerSheet {
         if (mClosed || mTargetsContainer == null) return;
         List<CastDeviceRegistry.Device> devices = mDevices.devices();
         mTargetsContainer.removeAllViews();
+        boolean car = addCarRow();
         boolean hasSmartTube = false;
         for (CastDeviceRegistry.Device device : devices) {
             List<CastTarget> routes = device.routes();
@@ -158,7 +166,7 @@ public class CastPickerSheet {
             });
         }
         mProgressRow.setVisibility(mDiscoveryReady ? View.GONE : View.VISIBLE);
-        mEmptyView.setVisibility(mDiscoveryReady && devices.isEmpty() ? View.VISIBLE : View.GONE);
+        mEmptyView.setVisibility(mDiscoveryReady && devices.isEmpty() && !car ? View.VISIBLE : View.GONE);
         mSmartTubePrompt.setVisibility(hasSmartTube ? View.GONE : View.VISIBLE);
         if (mChooserTarget != null) showChooser(mChooserTarget);
     }
@@ -231,6 +239,39 @@ public class CastPickerSheet {
                     mDevices.add(typed);
                     renderDevices();
                 }).show());
+    }
+
+    /**
+     * MEETUBE(issue #253): a connected car (Android Auto, or the car's own screen) is offered for a
+     * MeeTune song, and only a tap sends it there: the song from where it is, then its Up next.
+     */
+    private boolean addCarRow() {
+        Video video;
+        ExoPlayer player;
+        if (mActivity instanceof MobilePlaybackActivity) {
+            video = ((MobilePlaybackActivity) mActivity).getVideo();
+            player = ((MobilePlaybackActivity) mActivity).getSharedPlayer();
+        } else { // Browse: the song in the mini player
+            video = MiniPlayerBridge.getVideo();
+            player = MiniPlayerBridge.getPlayer();
+        }
+        if (!CarMediaService.carConnected() || player == null || !MeeTune.isMusic(video)) {
+            return false;
+        }
+        View row = inflateRow(mTargetsContainer, mActivity.getString(R.string.mobile_cast_car),
+                R.string.mobile_cast_car_subtitle);
+        ((ImageView) row.findViewById(R.id.cast_target_icon)).setImageResource(R.drawable.ic_mobile_car);
+        row.findViewById(R.id.cast_target_progress).setVisibility(View.GONE);
+        row.findViewById(R.id.cast_target_more).setVisibility(View.GONE);
+        row.setOnClickListener(v -> {
+            if (CarMediaService.playOnCar(video, player)) {
+                MessageHelpers.showMessage(mActivity, R.string.mobile_cast_car_playing);
+                mDialog.dismiss();
+            } else {
+                MessageHelpers.showMessage(mActivity, R.string.mobile_cast_unavailable);
+            }
+        });
+        return true;
     }
 
     private void showDeviceList() {

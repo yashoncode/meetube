@@ -241,6 +241,18 @@ final class MeeTuneSettings {
                 v -> MeeTune.setDownloadLyrics(mActivity, !MeeTune.downloadLyrics(mActivity)));
         note(R.string.meetune_downloads_note);
 
+        // MEETUBE(android auto, issue #253): how MeeTune plays in the car.
+        header(R.string.meetune_set_car);
+        card = card();
+        tip(card, R.drawable.ic_meetune_autoplay, getString(R.string.meetune_car_autoplay),
+                getString(R.string.meetune_car_autoplay_summary), CarMusic.autoplay(mActivity), false,
+                v -> CarMusic.setAutoplay(mActivity, !CarMusic.autoplay(mActivity)));
+        card.addView(divider());
+        tip(card, R.drawable.ic_watch_lyrics, getString(R.string.meetune_car_lyrics),
+                getString(R.string.meetune_car_lyrics_summary), CarMusic.lyrics(mActivity), false,
+                v -> CarMusic.setLyrics(mActivity, !CarMusic.lyrics(mActivity)));
+        note(R.string.meetune_car_note);
+
         addOns();
         karaoke();
 

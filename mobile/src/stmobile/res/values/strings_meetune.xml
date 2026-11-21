@@ -133,6 +133,7 @@
     <string name="meetune_queued">Added to queue</string>
     <string name="meetune_download">Download</string>
     <string name="meetune_convert_video">Convert to video</string>
+    <string name="meetune_connect_car">Connect to car</string>
     <string name="meetune_uncache">Remove from cache</string>
     <string name="meetune_uncached">Removed from cache</string>
     <string name="meetune_uncache_none">Nothing of this song is cached</string>
@@ -313,4 +314,25 @@
     <string name="meetune_spotify_not_linked">Not linked. Tap to sign in</string>
     <string name="meetune_addons_note">Add-ons link MeeTune to other services. They are unofficial, read only, and may stop working when those services change.</string>
     <string name="meetune_hints">What this does</string>
+    <!-- Android Auto (CarMediaService) -->
+    <string name="meetune_car_unlike">Remove from liked</string>
+    <string name="meetune_car_shuffle_off">Shuffle off</string>
+    <string name="meetune_car_repeat">Repeat</string>
+    <string name="meetune_car_repeat_off">Repeat off</string>
+    <string name="meetune_car_lyrics_show">Show lyrics</string>
+    <string name="meetune_car_lyrics_hide">Hide lyrics</string>
+    <string name="meetune_car_shuffle_play">Shuffle play</string>
+    <string name="meetune_car_songs">%1$d songs</string>
+    <string name="meetune_car_made_for_you">Made for you</string>
+    <string name="meetune_car_recents">Recents</string>
+    <string name="meetune_car_artist_mix">%1$s Mix</string>
+    <string name="meetune_car_mix_based">Based on %1$s</string>
+    <string name="meetune_car_your_mixes">From your listening</string>
+    <string name="meetune_car_close">Close player</string>
+    <string name="meetune_set_car">Android Auto</string>
+    <string name="meetune_car_autoplay">Autoplay in the car</string>
+    <string name="meetune_car_autoplay_summary">When the songs you picked run out, similar songs keep playing.</string>
+    <string name="meetune_car_lyrics">Lyrics on the car screen</string>
+    <string name="meetune_car_lyrics_summary">The line being sung shows in place of the song title. The car player has the same switch.</string>
+    <string name="meetune_car_note">The car plays at your Streaming quality. Say \"Hey Google, play my liked songs on MeeTune\" (or my downloads, my recents, my mix, or any song or artist).</string>
 </resources>

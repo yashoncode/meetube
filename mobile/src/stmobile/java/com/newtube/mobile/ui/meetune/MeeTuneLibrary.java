@@ -77,6 +77,10 @@ public final class MeeTuneLibrary {
         return browseId != null && browseId.startsWith(PLAYLIST);
     }
 
+    static boolean exists(Context c, String browseId) {
+        return playlist(load(c), browseId) != null;
+    }
+
     @Nullable
     private static JSONObject playlist(JSONObject library, String browseId) {
         JSONArray all = library.optJSONArray("playlists");
