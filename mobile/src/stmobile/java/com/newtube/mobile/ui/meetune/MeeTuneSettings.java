@@ -196,6 +196,13 @@ final class MeeTuneSettings {
 
         canvas();
 
+        // Issue #305: History shared with YouTube Music (both ways) while signed in, or kept on the phone.
+        header(R.string.meetune_history);
+        card = card();
+        tip(card, R.drawable.ic_meetune_history, getString(R.string.meetune_history_sync),
+                getString(R.string.meetune_history_sync_summary), MeeTune.historySync(mActivity), false,
+                v -> MeeTune.setHistorySync(mActivity, !MeeTune.historySync(mActivity)));
+
         // The library on this phone (no account): out to a file and back.
         if (mActivity instanceof MeeTuneActivity) {
             MeeTuneActivity screen = (MeeTuneActivity) mActivity;

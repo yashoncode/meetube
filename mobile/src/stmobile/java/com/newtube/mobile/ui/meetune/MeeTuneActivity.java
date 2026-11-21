@@ -275,6 +275,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
         show(current(), false);
         MeeTune.sHistoryChanged = mHistoryChanged;
+        MeeTune.sHomeMore = mHomeMore;
         MeeTuneLibrary.sChanged = mLibraryChanged;
         sOpen = new java.lang.ref.WeakReference<>(this);
     }
@@ -518,7 +519,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             boolean[] landed = {false};
             MeeTune.home(this, force, rows -> {
                 landed[0] = true;
-                done.done(rows, null);
+                mHomeChip = 0;
+                done.done(withChips(rows), null);
             });
             if (!landed[0] && !mSwipe.isRefreshing()) mProgress.setVisibility(View.VISIBLE);
             return;
@@ -526,6 +528,14 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mProgress.setVisibility(View.VISIBLE);
         MeeTune.run(this, () -> {
             if (pushed && MeeTune.HISTORY.equals(page.browseId)) {
+                if (MeeTune.syncingHistory(this)) { // issue #305: the account's YouTube Music History
+                    try {
+                        List<MusicApi.Shelf> synced = MusicApi.browse(this, "FEmusic_history", null);
+                        if (!synced.isEmpty()) return MeeTuneAdapter.rows(synced, true, false);
+                    } catch (Exception e) {
+                        // offline: the songs played on this phone
+                    }
+                }
                 return MeeTuneAdapter.rows(MeeTune.history(this), true, false);
             }
             if (pushed && MeeTune.DOWNLOADS.equals(page.browseId)) {
@@ -661,6 +671,97 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     private com.newtube.mobile.ui.common.GlassChipTrack mFilters;
     @Nullable
     private View mFilterRow;
+
+    /** Home's picked top chip: 0 is All (YouTube Music's own Home), then {@link MeeTune#sHomeChips} + 1. */
+    private int mHomeChip;
+    @Nullable
+    private com.newtube.mobile.ui.common.GlassChipTrack mHomeChips;
+    @Nullable
+    private View mHomeChipRow;
+
+    /** Issue #304: Home's rows under its chips (All, Podcasts, Relax, Feel good...), when it has any. */
+    @Nullable
+    private List<MeeTuneAdapter.Row> withChips(@Nullable List<MeeTuneAdapter.Row> rows) {
+        if (rows == null || MeeTune.sHomeChips.isEmpty()) return rows == null ? null : new ArrayList<>(rows);
+        List<MeeTuneAdapter.Row> out = new ArrayList<>();
+        out.add(MeeTuneAdapter.viewRow(homeChipRow()));
+        out.addAll(rows);
+        return out;
+    }
+
+    private View homeChipRow() {
+        List<String> labels = new ArrayList<>();
+        labels.add(getString(R.string.meetune_filter_all));
+        for (MusicApi.Item chip : MeeTune.sHomeChips) labels.add(chip.title);
+        if (mHomeChipRow == null) {
+            android.widget.FrameLayout frame = new android.widget.FrameLayout(this);
+            frame.setPadding(MeeTuneAdapter.dp(this, 14), MeeTuneAdapter.dp(this, 4), MeeTuneAdapter.dp(this, 14),
+                    MeeTuneAdapter.dp(this, 8));
+            frame.setClipToPadding(false);
+            mHomeChips = new com.newtube.mobile.ui.common.GlassChipTrack(this);
+            mHomeChips.setGlassSource(null);
+            mHomeChips.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View v) { // as Search's: the pill runs on to the picked chip
+                    mHomeChips.setSelected(-1);
+                    mHomeChips.setSelected(mHomeChip);
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                }
+            });
+            mHomeChips.setOnPicked(this::pickHomeChip);
+            frame.addView(mHomeChips, new android.widget.FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, MeeTuneAdapter.dp(this, 44)));
+            mHomeChipRow = frame;
+        }
+        mHomeChips.setChips(labels);
+        mHomeChips.setSelected(mHomeChip);
+        return mHomeChipRow;
+    }
+
+    private void pickHomeChip(int index) {
+        if (index == mHomeChip || index > MeeTune.sHomeChips.size()) return;
+        Haptics.click(mHomeChips);
+        mHomeChip = index;
+        Page page = mTabs[HOME];
+        int generation = ++mGeneration;
+        page.generation = generation;
+        page.scroll = null;
+        if (index == 0) { // All: YouTube Music's own Home again, as loaded
+            load(page, false);
+            return;
+        }
+        List<MeeTuneAdapter.Row> waiting = new ArrayList<>();
+        waiting.add(MeeTuneAdapter.viewRow(homeChipRow())); // the chips stay while it loads
+        mAdapter.setRows(waiting);
+        mMessage.setVisibility(View.GONE);
+        mProgress.setVisibility(View.VISIBLE);
+        String params = MeeTune.sHomeChips.get(index - 1).params;
+        MeeTune.run(this, () -> MeeTune.homeChip(this, params), (rows, error) -> {
+            if (generation != mGeneration) return;
+            mProgress.setVisibility(View.GONE);
+            if (rows == null) {
+                message(getString(R.string.meetune_error), getString(R.string.meetune_retry), () -> {
+                    mHomeChip = 0;
+                    pickHomeChip(index);
+                });
+                return;
+            }
+            rows.add(0, MeeTuneAdapter.viewRow(homeChipRow()));
+            page.rows = rows;
+            if (current() == page) render(page);
+        });
+    }
+
+    /** Home's later shelves, as they land: under the ones shown, while Home shows All. */
+    private final java.util.function.Consumer<List<MeeTuneAdapter.Row>> mHomeMore = rows -> {
+        Page page = mTabs[HOME];
+        if (mHomeChip != 0 || page.rows == null) return;
+        page.rows.addAll(rows);
+        if (current() == page) mAdapter.append(rows);
+    };
 
     /** All, Songs, Videos, Albums, Artists, Playlists: MeeTube's glass segment over the results. */
     private View filterRow() {
@@ -1390,6 +1491,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     protected void onDestroy() {
         MiniPlayerBridge.unregisterMiniHost(this);
         if (MeeTune.sHistoryChanged == mHistoryChanged) MeeTune.sHistoryChanged = null;
+        if (MeeTune.sHomeMore == mHomeMore) MeeTune.sHomeMore = null;
         if (MeeTuneLibrary.sChanged == mLibraryChanged) MeeTuneLibrary.sChanged = null;
         mPill.release();
         super.onDestroy();

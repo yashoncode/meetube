@@ -213,8 +213,9 @@ public final class MeeTune {
         sHomeLoading = true;
         WORKER.execute(() -> {
             List<MeeTuneAdapter.Row> rows = null;
+            MusicApi.HomePage[] first = {null};
             try {
-                rows = MeeTuneAdapter.rows(home(app), false, true);
+                rows = MeeTuneAdapter.rows(home(app, first), false, true);
             } catch (Exception ignored) {
                 // the page shows its retry
             }
@@ -225,12 +226,58 @@ public final class MeeTune {
                     sHome = loaded;
                     sHomeAt = System.currentTimeMillis();
                     sHomeAccount = account;
+                    sHomeChips = first[0].chips;
                 }
                 List<Runnable> waiting = new ArrayList<>(sHomeWaiting);
                 sHomeWaiting.clear();
                 for (Runnable then : waiting) then.run();
+                if (loaded != null) more(app, loaded, first[0].next);
             });
         });
+    }
+
+    /** Home's top chips (Podcasts, Relax, Feel good...), from the last Home loaded. */
+    static List<MusicApi.Item> sHomeChips = new ArrayList<>();
+    /** MeeTune's screen, handed Home's later shelves as they land (it adds them under the ones shown). */
+    @Nullable
+    static java.util.function.Consumer<List<MeeTuneAdapter.Row>> sHomeMore;
+    /** How many of Home's later pages load: YouTube Music's own Home runs about this long. */
+    private static final int HOME_PAGES = 6;
+
+    /**
+     * Issue #304: YouTube Music sends Home a few shelves at a time (Quick picks, Listen again...), the
+     * rest (Trending, New releases, Mixed for you, Forgotten favorites...) page by page. They load
+     * behind the first page, which shows at once, and join {@code home} unless a new Home replaced it.
+     */
+    private static void more(Context app, List<MeeTuneAdapter.Row> home, @Nullable String token) {
+        if (token == null) return;
+        WORKER.execute(() -> {
+            String next = token;
+            for (int i = 0; i < HOME_PAGES && next != null && sHome == home; i++) {
+                List<MeeTuneAdapter.Row> rows;
+                try {
+                    MusicApi.HomePage page = MusicApi.home(app, null, next);
+                    shuffle(page.shelves);
+                    rows = MeeTuneAdapter.rows(page.shelves, false, false);
+                    next = page.next;
+                } catch (Exception e) {
+                    return; // Home keeps what it has
+                }
+                MAIN.post(() -> {
+                    if (sHome != home || rows.isEmpty()) return;
+                    home.addAll(rows);
+                    if (sHomeMore != null) sHomeMore.accept(rows);
+                });
+            }
+        });
+    }
+
+    private static void shuffle(List<MusicApi.Shelf> shelves) {
+        // YouTube Music answers much the same Home each time: each row's picks come in a new order,
+        // so every visit and every refresh looks new.
+        for (MusicApi.Shelf shelf : shelves) {
+            if (shelf.items != null && shelf.items.size() > 2) java.util.Collections.shuffle(shelf.items);
+        }
     }
 
     /**
@@ -259,10 +306,11 @@ public final class MeeTune {
     }
 
     /** YouTube Music's Home, then a "Find Your Mood" row from its moods page, both asked at once. */
-    private static List<MusicApi.Shelf> home(Context context) throws Exception {
+    private static List<MusicApi.Shelf> home(Context context, MusicApi.HomePage[] first) throws Exception {
         java.util.concurrent.Future<List<MusicApi.Shelf>> moods =
                 WORKER.submit(() -> MusicApi.browse(context, "FEmusic_moods_and_genres", null));
-        List<MusicApi.Shelf> shelves = MusicApi.browse(context, "FEmusic_home", null);
+        first[0] = MusicApi.home(context, null, null);
+        List<MusicApi.Shelf> shelves = first[0].shelves;
         try {
             for (MusicApi.Shelf shelf : moods.get(8, java.util.concurrent.TimeUnit.SECONDS)) {
                 if (shelf.allMoods()) {
@@ -276,12 +324,20 @@ public final class MeeTune {
         } catch (Exception ignored) {
             // Home stands without its moods row.
         }
-        // YouTube Music answers much the same Home each time: each row's picks come in a new order,
-        // so every visit and every refresh looks new.
-        for (MusicApi.Shelf shelf : shelves) {
-            if (shelf.items != null && shelf.items.size() > 2) java.util.Collections.shuffle(shelf.items);
-        }
+        shuffle(shelves);
         return shelves;
+    }
+
+    /** Home filtered by one of its top chips: its first pages, all at once (a chip's Home is short). */
+    static List<MeeTuneAdapter.Row> homeChip(Context context, String params) throws Exception {
+        MusicApi.HomePage page = MusicApi.home(context, params, null);
+        List<MusicApi.Shelf> shelves = new ArrayList<>(page.shelves);
+        for (int i = 0; i < 2 && page.next != null; i++) { // ponytail: 2 more pages up front, no paging on scroll
+            page = MusicApi.home(context, null, page.next);
+            shelves.addAll(page.shelves);
+        }
+        shuffle(shelves);
+        return MeeTuneAdapter.rows(shelves, false, true);
     }
 
     static <T> void run(Activity owner, Task<T> task, Result<T> result) {
@@ -556,16 +612,33 @@ public final class MeeTune {
 
     public static void remember(Context context, Video video) {
         if (video == null || video.videoId == null || video.videoId.equals(sLastRemembered)) return;
-        sLastRemembered = video.videoId;
         MusicApi.Item item = item(video);
+        remember(context, video.videoId, item.title, item.artist != null ? item.artist : artist(item.subtitle), art(video));
+    }
+
+    /** A song played in MeeTune (the phone's player or the car's) goes to the top of History. Main thread. */
+    static void remember(Context context, String videoId, @Nullable String title, @Nullable String artist,
+                         @Nullable String art) {
+        if (videoId.equals(sLastRemembered)) return;
+        sLastRemembered = videoId;
+        if (syncingHistory(context)) { // into YouTube Music's History too, as music.youtube.com does
+            Context app = context.getApplicationContext();
+            WORKER.execute(() -> {
+                try {
+                    MusicApi.addToHistory(app, videoId);
+                    android.util.Log.d("MeeTune", "History synced: " + videoId);
+                } catch (Exception e) {
+                    android.util.Log.w("MeeTune", "History sync failed: " + e.getMessage());
+                }
+            });
+        }
         try {
             org.json.JSONArray old = new org.json.JSONArray(prefs(context).getString("history", "[]"));
             org.json.JSONArray now = new org.json.JSONArray();
-            now.put(new org.json.JSONObject().put("v", video.videoId).put("t", item.title)
-                    .put("a", item.artist != null ? item.artist : artist(item.subtitle)).put("art", art(video)));
+            now.put(new org.json.JSONObject().put("v", videoId).put("t", title).put("a", artist).put("art", art));
             for (int i = 0; i < old.length() && now.length() < HISTORY_MAX; i++) {
                 org.json.JSONObject o = old.optJSONObject(i);
-                if (o != null && !video.videoId.equals(o.optString("v"))) now.put(o);
+                if (o != null && !videoId.equals(o.optString("v"))) now.put(o);
             }
             prefs(context).edit().putString("history", now.toString()).apply();
             Runnable changed = sHistoryChanged;
@@ -976,5 +1049,19 @@ public final class MeeTune {
 
     static void setDownloadLyrics(Context context, boolean on) {
         prefs(context).edit().putBoolean("download_lyrics", on).apply();
+    }
+
+    /** Issue #305: History is the account's YouTube Music history (read and written), not only the phone's. */
+    static boolean historySync(Context context) {
+        return prefs(context).getBoolean("history_sync", true);
+    }
+
+    static void setHistorySync(Context context, boolean on) {
+        prefs(context).edit().putBoolean("history_sync", on).apply();
+    }
+
+    /** History syncs now: switched on, and signed in. */
+    static boolean syncingHistory(Context context) {
+        return historySync(context) && MusicApi.signedIn(context);
     }
 }

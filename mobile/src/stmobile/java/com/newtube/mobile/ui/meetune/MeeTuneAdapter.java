@@ -129,6 +129,13 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         mHost = host;
     }
 
+    /** More rows under the last one (Home's later shelves). */
+    void append(List<Row> rows) {
+        int at = mRows.size();
+        mRows.addAll(rows);
+        notifyItemRangeInserted(at, rows.size());
+    }
+
     void setRows(List<Row> rows) {
         mRows.clear();
         mRows.addAll(rows);
@@ -531,7 +538,12 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 layers.setLayerGravity(1, android.view.Gravity.CENTER);
                 cover = layers;
             }
-            Glide.with(art).load(item.art).placeholder(cover) // no art: its own cover
+            // Art comes at 544px for the big cards and the player; a song row's 48dp cover asked at its
+            // own size is a tenth of the bytes, so lists and Quick picks fill in far sooner.
+            int side = card != null ? card.getLayoutParams().width : 0;
+            String url = item.art != null && side > 0 && side < dp(art.getContext(), 120)
+                    ? MusicApi.sized(item.art, side) : item.art;
+            Glide.with(art).load(url).placeholder(cover) // no art: its own cover
                     .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
                         @Override
                         public boolean onLoadFailed(@androidx.annotation.Nullable com.bumptech.glide.load.engine.GlideException e,

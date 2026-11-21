@@ -244,6 +244,8 @@
     <string name="meetune_sleep_toast_end">Song will pause at the end</string>
     <string name="meetune_downloads">Downloads</string>
     <string name="meetune_history">History</string>
+    <string name="meetune_history_sync">Sync with YouTube Music</string>
+    <string name="meetune_history_sync_summary">Songs you play here show in YouTube Music\'s history, and History shows what you played there. Turn off to pause sync and keep History on this phone. Needs a signed-in account.</string>
     <plurals name="meetune_history_count">
         <item quantity="one">%1$d song played</item>
         <item quantity="other">%1$d songs played</item>

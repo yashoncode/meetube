@@ -152,6 +152,67 @@ final class MusicApi {
         return shelves;
     }
 
+    /** One page of YouTube Music's Home: it sends a few shelves at a time, then more on scroll (issue #304). */
+    static final class HomePage {
+        final List<Shelf> shelves = new ArrayList<>();
+        /** The top chips (Podcasts, Relax, Feel good...): a title and the Home {@code params} it filters by. */
+        final List<Item> chips = new ArrayList<>();
+        @Nullable
+        String next;
+    }
+
+    /** Home's first page ({@code token} null; {@code params}: a chip's filter), or the page after {@code token}. */
+    static HomePage home(Context context, @Nullable String params, @Nullable String token) throws Exception {
+        JSONObject response;
+        if (token == null) {
+            JSONObject body = new JSONObject().put("browseId", "FEmusic_home");
+            if (params != null) body.put("params", params);
+            response = post(context, "browse", body);
+        } else {
+            String t = java.net.URLEncoder.encode(token, "UTF-8");
+            response = post(context, "browse?ctoken=" + t + "&continuation=" + t + "&type=next", new JSONObject());
+        }
+        HomePage page = new HomePage();
+        walk(response.opt(token == null ? "contents" : "continuationContents"), page.shelves);
+        JSONObject list = find(response, "sectionListRenderer", "sectionListContinuation");
+        JSONArray more = list != null ? list.optJSONArray("continuations") : null;
+        JSONObject next = obj(more != null ? more.optJSONObject(0) : null, "nextContinuationData");
+        page.next = next != null ? next.optString("continuation", null) : null;
+        JSONObject cloud = token == null ? find(response.optJSONObject("contents"), "chipCloudRenderer") : null;
+        JSONArray chips = cloud != null ? cloud.optJSONArray("chips") : null;
+        for (int i = 0; chips != null && i < chips.length(); i++) {
+            JSONObject chip = obj(chips.optJSONObject(i), "chipCloudChipRenderer");
+            JSONObject browse = obj(chip, "navigationEndpoint", "browseEndpoint");
+            Item item = new Item();
+            item.title = text(chip != null ? chip.opt("text") : null);
+            item.params = browse != null ? browse.optString("params", null) : null;
+            if (item.title != null && item.params != null) page.chips.add(item);
+        }
+        return page;
+    }
+
+    /** The first object under {@code node} held by one of {@code keys}, at any depth. */
+    @Nullable
+    private static JSONObject find(@Nullable Object node, String... keys) {
+        if (node instanceof JSONArray) {
+            for (int i = 0; i < ((JSONArray) node).length(); i++) {
+                JSONObject hit = find(((JSONArray) node).opt(i), keys);
+                if (hit != null) return hit;
+            }
+        } else if (node instanceof JSONObject) {
+            JSONObject o = (JSONObject) node;
+            for (String key : keys) {
+                if (o.optJSONObject(key) != null) return o.optJSONObject(key);
+            }
+            Iterator<String> it = o.keys();
+            while (it.hasNext()) {
+                JSONObject hit = find(o.opt(it.next()), keys);
+                if (hit != null) return hit;
+            }
+        }
+        return null;
+    }
+
     static List<Shelf> search(Context context, String query, @Nullable String filter) throws Exception {
         List<Shelf> shelves = new ArrayList<>();
         JSONObject body = new JSONObject().put("query", query);
@@ -392,11 +453,45 @@ final class MusicApi {
                 .put("clientName", "WEB_REMIX").put("clientVersion", version)
                 .put("hl", locale.getLanguage()).put("gl", locale.getCountry())));
         Request.Builder request = new Request.Builder()
-                .url(ORIGIN + "/youtubei/v1/" + endpoint + "?prettyPrint=false")
+                .url(ORIGIN + "/youtubei/v1/" + endpoint + (endpoint.contains("?") ? "&" : "?") + "prettyPrint=false")
                 .post(RequestBody.create(body.toString(), JSON))
                 .header("Origin", ORIGIN).header("X-Origin", ORIGIN).header("Referer", ORIGIN + "/")
                 .header("User-Agent", UA).header("X-Youtube-Client-Name", "67")
                 .header("X-Youtube-Client-Version", version);
+        return signed(context, request);
+    }
+
+    /**
+     * Issue #305: puts a song in the account's YouTube Music History, as music.youtube.com does when
+     * a song starts: its /player answer's playback stats URL, pinged as the account.
+     */
+    static void addToHistory(Context context, String videoId) throws Exception {
+        // Without the player script's timestamp YouTube answers as for a bot: no playback stats URL.
+        JSONObject body = new JSONObject().put("videoId", videoId).put("racyCheckOk", true).put("contentCheckOk", true);
+        String sts = com.liskovsoft.youtubeapi.app.AppService.instance().getSignatureTimestamp();
+        if (sts != null) {
+            body.put("playbackContext", new JSONObject().put("contentPlaybackContext",
+                    new JSONObject().put("signatureTimestamp", Long.parseLong(sts))));
+        }
+        JSONObject player = post(context, "player", body);
+        Object url = path(player, "playbackTracking", "videostatsPlaybackUrl", "baseUrl");
+        if (!(url instanceof String)) {
+            JSONObject status = player.optJSONObject("playabilityStatus");
+            throw new IOException("No playback stats URL (sts=" + sts + ", "
+                    + (status != null ? status.optString("status") + ": " + status.optString("reason") : "no status") + ")");
+        }
+        String cpnChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+        StringBuilder cpn = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < 16; i++) cpn.append(cpnChars.charAt(random.nextInt(64)));
+        Request.Builder request = new Request.Builder()
+                .url(url + "&ver=2&c=WEB_REMIX&cpn=" + cpn)
+                .header("Origin", ORIGIN).header("Referer", ORIGIN + "/").header("User-Agent", UA);
+        signed(context, request); // a 204: nothing to read
+    }
+
+    /** {@code request} sent as the signed-in account (its cookies and SAPISIDHASH), or as no one. */
+    private static JSONObject signed(Context context, Request.Builder request) throws IOException {
         CookieStore store = signedIn(context) ? WebSession.getCookieStore() : null;
         if (store == null) {
             return execute(request.build(), null);
@@ -422,7 +517,8 @@ final class MusicApi {
                 throw new IOException("YouTube Music returned HTTP " + response.code());
             }
             try {
-                return new JSONObject(response.body() != null ? response.body().string() : "{}");
+                String text = response.body() != null ? response.body().string() : "";
+                return new JSONObject(text.isEmpty() ? "{}" : text);
             } catch (org.json.JSONException e) {
                 throw new IOException("Unreadable YouTube Music response");
             }
