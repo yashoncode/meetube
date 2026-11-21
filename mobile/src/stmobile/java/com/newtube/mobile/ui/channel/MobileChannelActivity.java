@@ -1145,6 +1145,11 @@ public class MobileChannelActivity extends MobileActivity
     }
 
     @Override
+    public void syncMiniCard() {
+        if (mMiniPlayer != null) mMiniPlayer.sync(false);
+    }
+
+    @Override
     public Class<?> getMiniHostViewClass() {
         return ChannelView.class;
     }

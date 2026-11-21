@@ -55,6 +55,10 @@ public final class MiniPlayerBridge {
          * THIS host's card instead of always assuming Home's geometry.
          */
         int getMiniCardBottomOffsetPx();
+
+        /** MEETUNE(song pill): show this screen's card again now (the song's pill closed over it). */
+        default void syncMiniCard() {
+        }
     }
 
     /**
@@ -359,9 +363,16 @@ public final class MiniPlayerBridge {
 
     public static boolean claim(boolean music) {
         if (!isActive()) {
+            com.newtube.mobile.ui.meetune.MeeTubeSongPill.hide();
             return false;
         }
         MobilePlaybackActivity activity = sActivity.get();
+        // MEETUNE(song pill): a song playing when MeeTube comes to the front plays on there in its own pill
+        if (music) {
+            com.newtube.mobile.ui.meetune.MeeTubeSongPill.hide(); // back in MeeTune: its own pill has the song
+        } else if (com.newtube.mobile.ui.meetune.MeeTubeSongPill.show()) {
+            return false;
+        }
         if (com.newtube.mobile.ui.meetune.MeeTune.isMusic(activity.getVideo()) == music) {
             return true;
         }

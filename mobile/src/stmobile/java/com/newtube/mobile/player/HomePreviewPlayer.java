@@ -126,6 +126,7 @@ public final class HomePreviewPlayer {
                 ExoPlayer player = player();
                 player.setMediaSource(result);
                 player.setVolume(mMuted ? 0f : 1f);
+                if (!mMuted) com.newtube.mobile.ui.meetune.MeeTubeSongPill.quiet(); // MEETUNE(song pill): the preview's sound wins
                 player.prepare();
                 player.setPlayWhenReady(true);
                 NetPath.log("home-preview play video=" + mVideoId);
@@ -144,6 +145,7 @@ public final class HomePreviewPlayer {
     public void setMuted(boolean muted) {
         mMuted = muted;
         if (mPlayer != null) {
+            if (!muted) com.newtube.mobile.ui.meetune.MeeTubeSongPill.quiet(); // MEETUNE(song pill): turned up, the song pauses
             mPlayer.setVolume(muted ? 0f : 1f);
         }
     }

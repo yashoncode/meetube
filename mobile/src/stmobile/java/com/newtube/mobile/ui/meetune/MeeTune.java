@@ -107,7 +107,7 @@ public final class MeeTune {
 
     /** MeeTune back to MeeTube, the same way round: MeeTune blurs away, MeeTube comes back into focus. */
     static void leave(Activity meetune) {
-        pausePlaying(true); // a MeeTune song doesn't play on into MeeTube
+        // a playing song plays on into MeeTube, in its pill there (MeeTubeSongPill, from MiniPlayerBridge.claim)
         closeMeeTubeHint(meetune); // switched back once: its hint has done its job
         blurAway(meetune, () -> {
             // Like issue #171's way back to Browse: the player MeeTune expanded sits between Browse and

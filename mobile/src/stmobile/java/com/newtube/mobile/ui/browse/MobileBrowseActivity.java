@@ -883,6 +883,11 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     @Override
+    public void syncMiniCard() {
+        syncMiniPlayer();
+    }
+
+    @Override
     public Class<?> getMiniHostViewClass() {
         return BrowseView.class;
     }

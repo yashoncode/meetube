@@ -924,6 +924,11 @@ public class MobileSearchActivity extends MobileActivity
     }
 
     @Override
+    public void syncMiniCard() {
+        if (mMiniPlayer != null) mMiniPlayer.sync(false);
+    }
+
+    @Override
     public Class<?> getMiniHostViewClass() {
         return SearchView.class;
     }

@@ -8752,7 +8752,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 ? Math.min(picW / video.width(), cardH / video.height()) : 0.44f;
         // MEETUBE(issue #273): the card's own end margin (8dp for Default); 12dp landed it 4dp short and it jumped right.
         float targetX = mContainer.getWidth() - MiniSize.endMargin(this) - cardW + picLeft + (picW - video.width() * scale) / 2f;
-        float targetY = mContainer.getHeight() - bottomNav - margin - (cardH + video.height() * scale) / 2f;
+        float targetY = hostBottom(host) - bottomNav - margin - (cardH + video.height() * scale) / 2f;
 
         mMorphScaleX = scale;
         mMorphScaleY = scale;
@@ -8760,6 +8760,24 @@ public class MobilePlaybackActivity extends MobileActivity
         // top-left pivot its rendered origin is layoutOrigin + translation, independent of scale.
         mMorphTx = targetX - video.left;
         mMorphTy = targetY - video.top;
+    }
+
+    /**
+     * MEETUBE(youtube mode): where the destination host's content ends, in this container's
+     * coordinates. A docked bar's host draws under the gesture area while this container stops above
+     * it, so measuring from our own bottom landed the morph a gesture-bar's height above the card.
+     */
+    private float hostBottom(@Nullable MiniPlayerBridge.MiniHost host) {
+        View content = host instanceof android.app.Activity
+                ? ((android.app.Activity) host).findViewById(android.R.id.content) : null;
+        if (content == null || content.getHeight() == 0) {
+            return mContainer.getHeight();
+        }
+        int[] hostAt = new int[2];
+        int[] ourAt = new int[2];
+        content.getLocationOnScreen(hostAt);
+        mContainer.getLocationOnScreen(ourAt);
+        return hostAt[1] + content.getHeight() - content.getPaddingBottom() - ourAt[1];
     }
 
     /** Map the watch-page video box onto an arbitrary tapped thumbnail in screen coordinates. */
