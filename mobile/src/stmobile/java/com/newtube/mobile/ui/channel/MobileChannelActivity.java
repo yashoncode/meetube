@@ -1087,8 +1087,11 @@ public class MobileChannelActivity extends MobileActivity
         Section active = mSections.get(mActiveSectionId);
         mLastPaginationTriggerCount = -1;
         syncLoadMoreFooter();
-        ((TextView) findViewById(R.id.mobile_channel_sort)).setText(active != null && active.sort != null
-                ? active.sort : getString(R.string.mobile_channel_sort));
+        TextView sort = findViewById(R.id.mobile_channel_sort);
+        sort.setText(active != null && active.sort != null ? active.sort : getString(R.string.mobile_channel_sort));
+        // The sort's Latest / Popular / Oldest pages are the Videos tab's: on the Shorts tab they
+        // were filtered down to Shorts, which left the tab empty.
+        sort.setVisibility(active != null && !active.shorts ? View.VISIBLE : View.GONE);
         if (restore) {
             mPendingScroll = active != null ? active.scroll : null;
         }

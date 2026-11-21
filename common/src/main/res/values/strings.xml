@@ -699,6 +699,7 @@
     <string name="disable_remote_history">Disable history when using remote control</string>
     <string name="keyboard_fix">Prevent OK button from opening the keyboard (G20s and others)</string>
     <string name="nothing_found">Nothing found</string>
+    <string name="channel_sort_failed">Couldn\'t sort this channel. Try again.</string>
     <string name="auto_frame_rate_desc">This option removes jittering on scenes where the camera moves fast, e.g. sports streaming</string>
     <string name="channel_filter_hint">Filter channels</string>
     <string name="player_loop_shorts">Loop Shorts</string>

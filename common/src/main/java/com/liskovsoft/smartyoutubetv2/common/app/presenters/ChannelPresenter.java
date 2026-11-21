@@ -38,6 +38,7 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
     private Disposable mUpdateAction;
     private Disposable mScrollAction;
     private int mSortIdx;
+    private Disposable mSortAction;
     private Video mChannel;
     /** The running first-page load has put at least one item on screen. */
     private boolean mLoadDelivered;
@@ -545,9 +546,21 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
 
     /** MEETUBE(channel sort): {@code channelId} = the UC id (a link-opened channel only knows its @handle). */
     public void onSearchSettingsClicked(String channelId) {
-        Observable<List<MediaGroup>> sorting = getContentService().getChannelSortingOptionsObserve(channelId);
-        Disposable result = sorting.subscribe(
+        // MEETUBE(channel sort): it used to fail silently (no options, a network error, a tap
+        // before the channel id was known), so a tap sometimes did nothing. Now a spinner shows,
+        // a second tap while it loads is ignored, and a failure says so.
+        if (RxHelper.isAnyActionRunning(mSortAction) || channelId == null) {
+            return;
+        }
+        LoadingManager.showLoading(getContext(), true);
+        boolean[] shown = {false};
+        mSortAction = getContentService().getChannelSortingOptionsObserve(channelId).subscribe(
                 items -> {
+                    if (items == null || items.isEmpty() || getView() == null) {
+                        return;
+                    }
+                    shown[0] = true;
+                    LoadingManager.showLoading(getContext(), false);
                     AppDialogPresenter dialogPresenter = AppDialogPresenter.instance(getContext());
                     List<OptionItem> options = new ArrayList<>();
                     int idx = 0;
@@ -555,11 +568,15 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
                         final int tempIdx = idx;
                         options.add(UiOptionItem.from(group.getTitle(), item -> {
                             dialogPresenter.closeDialog(); // MEETUBE(channel sort): one tap picks
-                            Observable<MediaGroup> continuation = getContentService().continueGroupObserve(group);
-                            Disposable result2 = continuation.subscribe(mediaGroup -> {
-                                if (getView() == null) {
+                            LoadingManager.showLoading(getContext(), true);
+                            boolean[] sorted = {false};
+                            RxHelper.disposeActions(mSortAction);
+                            mSortAction = getContentService().continueGroupObserve(group).subscribe(mediaGroup -> {
+                                if (getView() == null || mediaGroup == null || mediaGroup.isEmpty()) {
                                     return;
                                 }
+                                sorted[0] = true;
+                                LoadingManager.showLoading(getContext(), false);
 
                                 VideoGroup replace = VideoGroup.from(mediaGroup);
                                 replace.setId(144);
@@ -569,6 +586,10 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
                                 getView().update(replace);
                                 //getView().setPosition(1);
                                 mSortIdx = tempIdx;
+                            }, error -> onSortFailed(error), () -> {
+                                if (!sorted[0]) {
+                                    onSortFailed(null);
+                                }
                             });
                         }, mSortIdx == idx));
                         idx++;
@@ -576,8 +597,21 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
                     dialogPresenter.appendRadioCategory(getContext().getString(R.string.search_sorting), options);
                     dialogPresenter.showDialog();
                 },
-                error -> Log.e(TAG, "onSearchSettingsClicked error: %s", error.getMessage())
+                error -> onSortFailed(error),
+                () -> {
+                    if (!shown[0]) {
+                        onSortFailed(null);
+                    }
+                }
         );
+    }
+
+    private void onSortFailed(Throwable error) {
+        Log.e(TAG, "Channel sort failed: %s", error != null ? error.getMessage() : "no result");
+        if (getContext() != null) {
+            LoadingManager.showLoading(getContext(), false);
+            MessageHelpers.showMessage(getContext(), R.string.channel_sort_failed);
+        }
     }
 
     public boolean onSearchSubmit(String query) {
