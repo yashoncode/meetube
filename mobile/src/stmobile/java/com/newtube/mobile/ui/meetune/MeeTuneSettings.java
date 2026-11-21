@@ -287,8 +287,27 @@ final class MeeTuneSettings {
         note(R.string.meetune_downloads_note);
     }
 
+    /** Android Auto's own settings; where it's only the system stub (not set up), its Play Store page. */
+    private void openAndroidAuto() {
+        String aa = "com.google.android.projection.gearhead";
+        Intent[] tries = {
+                new Intent(Intent.ACTION_APPLICATION_PREFERENCES).setPackage(aa),
+                new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=" + aa)),
+                new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=" + aa))};
+        for (Intent intent : tries) {
+            try {
+                mActivity.startActivity(intent);
+                return;
+            } catch (android.content.ActivityNotFoundException ignored) {
+            }
+        }
+    }
+
     /** MEETUBE(android auto, issue #253): how MeeTune plays in the car. */
     private void car() {
+        // Sideloaded apps only show in Android Auto once its developer setting "Unknown sources" is on.
+        tip(card(), R.drawable.ic_mobile_car, getString(R.string.meetune_car_show),
+                getString(R.string.meetune_car_show_summary), null, true, v -> openAndroidAuto());
         LinearLayout card = card();
         tip(card, R.drawable.ic_meetune_autoplay, getString(R.string.meetune_car_autoplay),
                 getString(R.string.meetune_car_autoplay_summary), CarMusic.autoplay(mActivity), false,
