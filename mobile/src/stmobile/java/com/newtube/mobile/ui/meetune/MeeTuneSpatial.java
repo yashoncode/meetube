@@ -17,7 +17,10 @@ import java.nio.ByteBuffer;
  * head model (MIT KEMAR, {@link MeeTuneHrtf}) plays it as two speakers in front of you rather than
  * inside your head, and a few early reflections that differ per ear give it a room. Cinema adds a
  * deeper bass. Loudness is kept level with the dry sound and peaks are softly held, and changes glide
- * in over ~50 ms so switching never clicks. Light by default; Off, or a MeeTube video: an untouched copy.
+ * in over ~50 ms so switching never clicks. Off, or a MeeTube video: an untouched copy.
+ *
+ * <p>Wide (the default) is Auris's simpler, brighter trick instead of the head model: the stereo
+ * difference times 2.5 and a dulled 15 ms crossfeed from the other ear, at 0.82 to make room.
  *
  * <p>Head tracking (Android 13+): when it is on and the phone's own spatial audio would take this
  * song, the song is handed over as 5.1 (the room in the back channels) and Android renders it for the
@@ -28,12 +31,14 @@ public final class MeeTuneSpatial {
     static final int LIGHT = 1;
     static final int STRONG = 2;
     static final int CINEMA = 3;
-    private static final float[] AMOUNTS = {0f, 0.5f, 1f, 1.3f};
-    private static final float[] BASS = {0f, 0f, 0f, 1f};
+    static final int WIDE = 4;
+    private static final float[] AMOUNTS = {0f, 0.5f, 1f, 1.3f, 0f};
+    private static final float[] BASS = {0f, 0f, 0f, 1f, 0f};
 
     /** The wanted amount, 0..1.3, and bass, 0..1, read on the audio thread. */
     private static volatile float sAmount = -1f;
     private static volatile float sBass;
+    private static volatile boolean sWide;
     private static volatile boolean sHeadTracking;
     private static Context sContext;
 
@@ -45,6 +50,7 @@ public final class MeeTuneSpatial {
             int level = level(context);
             sAmount = AMOUNTS[level];
             sBass = BASS[level];
+            sWide = level == WIDE;
             sHeadTracking = headTracking(context);
         }
         sContext = context.getApplicationContext();
@@ -56,14 +62,19 @@ public final class MeeTuneSpatial {
     }
 
     static int level(Context context) {
-        int level = prefs(context).getInt("spatial", LIGHT);
-        return level >= OFF && level <= CINEMA ? level : LIGHT;
+        int level = prefs(context).getInt("spatial", WIDE);
+        return level >= OFF && level <= WIDE ? level : WIDE;
     }
 
     static void setLevel(Context context, int level) {
         prefs(context).edit().putInt("spatial", level).apply();
         sBass = BASS[level];
+        sWide = level == WIDE;
         setAmount(AMOUNTS[level]);
+    }
+
+    static void setWide(boolean on) {
+        sWide = on;
     }
 
     static void setAmount(float amount) {
@@ -123,6 +134,13 @@ public final class MeeTuneSpatial {
         private boolean mPendingSurround;
         private float mWet;
         private float mBassWet;
+        private float mWideWet;
+        /** Wide's crossfeed: the last 15 ms of each ear, and the dulled copy of the other one. */
+        private float[] mDelayL = new float[1];
+        private float[] mDelayR = new float[1];
+        private int mDelayPos;
+        private float mFeedL;
+        private float mFeedR;
         private float mGlide;
         private float mBassCoef;
         private float mLowCoef;
@@ -173,12 +191,17 @@ public final class MeeTuneSpatial {
             mHistory = new float[samples(TAPS_R_MS, rate)[TAPS_R_MS.length - 1] + 1];
             mHistoryPos = 0;
             mSideLow = mBassLow = mRoomLow = 0f;
+            mDelayL = new float[Math.max(1, Math.round(0.015f * rate))];
+            mDelayR = new float[mDelayL.length];
+            mDelayPos = 0;
+            mFeedL = mFeedR = 0f;
         }
 
         @Override
         protected void onReset() {
             mWet = 0f;
             mBassWet = 0f;
+            mWideWet = 0f;
             mSurround = mPendingSurround = false;
         }
 
@@ -205,9 +228,12 @@ public final class MeeTuneSpatial {
             boolean music = MeeTuneEq.isPlaying();
             float goal = music ? Math.max(0f, sAmount) : 0f;
             float bassGoal = music ? sBass : 0f;
-            if (goal == 0f && mWet < 1e-4f && bassGoal == 0f && mBassWet < 1e-4f) {
+            float wideGoal = music && sWide ? 1f : 0f;
+            if (goal == 0f && mWet < 1e-4f && bassGoal == 0f && mBassWet < 1e-4f
+                    && wideGoal == 0f && mWideWet < 1e-4f) {
                 mWet = 0f;
                 mBassWet = 0f;
+                mWideWet = 0f;
                 if (!mSurround) {
                     output.put(input);
                 } else {
@@ -232,6 +258,20 @@ public final class MeeTuneSpatial {
                 float w = mWet;
                 float l = read(input);
                 float r = read(input);
+
+                // Wide: the stereo difference x2.5, plus 0.2 of the other ear 15 ms late and dulled.
+                mWideWet += (wideGoal - mWideWet) * mGlide;
+                mFeedL += 0.3f * (mDelayR[mDelayPos] - mFeedL);
+                mFeedR += 0.3f * (mDelayL[mDelayPos] - mFeedR);
+                mDelayL[mDelayPos] = l;
+                mDelayR[mDelayPos] = r;
+                mDelayPos = mDelayPos + 1 == mDelayL.length ? 0 : mDelayPos + 1;
+                if (mWideWet > 0f) {
+                    float m = (l + r) * 0.5f;
+                    float s = (l - r) * 1.25f;
+                    l += ((m + s + 0.2f * mFeedL) * 0.82f - l) * mWideWet;
+                    r += ((m - s + 0.2f * mFeedR) * 0.82f - r) * mWideWet;
+                }
 
                 // Wider above the bass.
                 float mid = (l + r) * 0.5f;

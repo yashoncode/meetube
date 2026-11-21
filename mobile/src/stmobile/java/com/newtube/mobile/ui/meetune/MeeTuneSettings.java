@@ -169,9 +169,11 @@ final class MeeTuneSettings {
                 v -> mHost.open(EQUALIZER));
         // MEETUNE(issue #262): Spatial sound, for headphones.
         String[] spatial = {getString(R.string.mobile_menu_off), getString(R.string.meetune_spatial_light),
-                getString(R.string.meetune_spatial_strong), getString(R.string.meetune_spatial_cinema)};
+                getString(R.string.meetune_spatial_strong), getString(R.string.meetune_spatial_cinema),
+                getString(R.string.meetune_spatial_wide)};
         String[] spatialNotes = {getString(R.string.meetune_spatial_off_summary), getString(R.string.meetune_spatial_light_summary),
-                getString(R.string.meetune_spatial_strong_summary), getString(R.string.meetune_spatial_cinema_summary)};
+                getString(R.string.meetune_spatial_strong_summary), getString(R.string.meetune_spatial_cinema_summary),
+                getString(R.string.meetune_spatial_wide_summary)};
         int spatialLevel = MeeTuneSpatial.level(mActivity);
         card.addView(divider());
         row(card, R.drawable.ic_player_volume_up, getString(R.string.meetune_spatial), spatial[spatialLevel], null, true,
