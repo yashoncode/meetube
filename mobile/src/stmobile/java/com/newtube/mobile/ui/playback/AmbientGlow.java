@@ -53,8 +53,11 @@ public final class AmbientGlow implements Runnable {
     private final GlowDrawable mDrawable;
     private final FillDrawable mFill = new FillDrawable();
     private final BarDrawable mBar = new BarDrawable();
+    private final GlowDrawable mSideGlow;
     @Nullable
     private View mBarHost;
+    @Nullable
+    private View mSideHost;
     @Nullable
     private View mFillHost;
     private boolean mRunning;
@@ -77,7 +80,26 @@ public final class AmbientGlow implements Runnable {
         mHost = host;
         mVideo = video;
         mDrawable = new GlowDrawable(pageColor, host.getResources().getDisplayMetrics().density);
+        mSideGlow = new GlowDrawable(pageColor, host.getResources().getDisplayMetrics().density);
         host.setBackground(mDrawable);
+    }
+
+    /**
+     * MEETUBE(issue #6, meetube-tv): {@code column} (the tablet's Up next column beside the video)
+     * glows from its top too, so the light reaches across the whole page; null gives it back
+     * {@code pageColor}.
+     */
+    void setSide(@Nullable View column, int pageColor) {
+        if (column == mSideHost) {
+            return;
+        }
+        if (mSideHost != null) {
+            mSideHost.setBackgroundColor(pageColor);
+        }
+        mSideHost = column;
+        if (column != null) {
+            column.setBackground(mSideGlow);
+        }
     }
 
     void start() {
@@ -131,7 +153,8 @@ public final class AmbientGlow implements Runnable {
             return;
         }
         boolean fill = mFillHost != null && mFillHost.isShown();
-        if (mHost.isShown() || fill) {
+        boolean side = mSideHost != null && mSideHost.isShown();
+        if (mHost.isShown() || fill || side) {
             if (mSurface != null) {
                 copySurface(mSurface);
             } else if (mVideo.isAvailable()) {
@@ -172,6 +195,7 @@ public final class AmbientGlow implements Runnable {
         if (frame != null) {
             blur(frame);
             mDrawable.push(frame);
+            mSideGlow.push(frame);
             mFill.push(frame);
             mBar.push(frame);
         }

@@ -1869,9 +1869,6 @@ public class MobilePlaybackActivity extends MobileActivity
                 mTitleView.setVisibility(View.VISIBLE);
             }
         } else {
-            if (mAmbient != null && !isTallMode()) {
-                mAmbient.setFill(null); // upright, the page's glow is around the video, not in it
-            }
             // Configuration width is already updated when display metrics/window views can still
             // have the previous landscape bounds. The layout listener above then makes this exact
             // for split-screen, inset and resize changes once the new window has been laid out.
@@ -1879,6 +1876,10 @@ public class MobilePlaybackActivity extends MobileActivity
             int width = Math.round(config.screenWidthDp
                     * getResources().getDisplayMetrics().density);
             width -= applyWatchSide(width); // MEETUBE(issue #230): the page beside Up next
+            if (mAmbient != null) {
+                // Upright the page's glow is around the video, not in it; beside Up next the bands glow too.
+                mAmbient.setFill(ambientFillArea());
+            }
             if (mCommentsSide) { // an open panel goes back under the video
                 mCommentsSide = false;
                 setResizeMode(PlayerData.instance(this).getResizeMode());
@@ -1971,6 +1972,9 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
         mWatchSide.setVisibility(side ? View.VISIBLE : View.GONE);
+        if (mAmbient != null) { // MEETUBE(issue #6, meetube-tv): the column glows with the page
+            mAmbient.setSide(side ? findViewById(R.id.mobile_watch_side_scroll) : null, ambientPageColor());
+        }
         ViewGroup.LayoutParams columnLp = mWatchSide.getLayoutParams();
         ViewGroup.MarginLayoutParams rootLp = (ViewGroup.MarginLayoutParams) mWatchRoot.getLayoutParams();
         if (columnLp.width != columnWidth || rootLp.getMarginEnd() != columnWidth) {
@@ -5939,21 +5943,41 @@ public class MobilePlaybackActivity extends MobileActivity
     private void applyAmbientSetting() {
         boolean ambient = AmbientGlow.isOn(this);
         if (ambient && mAmbient == null && mVideoTexture != null && mWatchContent != null) {
-            mAmbient = new AmbientGlow(mWatchContent, mVideoTexture,
-                    androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background));
+            mAmbient = new AmbientGlow(mWatchContent, mVideoTexture, ambientPageColor());
             mAmbient.setBar(findViewById(android.R.id.content)); // the status bar glows too
             mAmbient.setSurface(mHdrOutput && !mHdrSwapPending ? mHdrSurface : null);
         } else if (!ambient && mAmbient != null) {
             mAmbient.stop();
             mAmbient.setFill(null);
             mAmbient.setBar(null);
+            mAmbient.setSide(null, ambientPageColor());
             mAmbient = null;
             mWatchContent.setBackground(null);
         }
         if (mAmbient != null) {
             mAmbient.start();
-            mAmbient.setFill(isTallMode() || isLandscape() ? mVideoArea : null);
+            mAmbient.setFill(ambientFillArea());
+            mAmbient.setSide(isWatchSideShown() ? findViewById(R.id.mobile_watch_side_scroll) : null, ambientPageColor());
         }
+    }
+
+    private int ambientPageColor() {
+        return androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background);
+    }
+
+    /** MEETUBE(issue #230): the tablet page with Up next in its own column. */
+    private boolean isWatchSideShown() {
+        return mWatchSide != null && mWatchSide.getVisibility() == View.VISIBLE;
+    }
+
+    /**
+     * The video box whose black bands take the ambient fill: sideways, tall (shorts, vertical
+     * fullscreen) and the tablet page beside Up next (issue #6, meetube-tv); upright on a phone the
+     * glow is under the video instead.
+     */
+    @Nullable
+    private View ambientFillArea() {
+        return isTallMode() || isLandscape() || isWatchSideShown() ? mVideoArea : null;
     }
 
     /** MEETUBE(autoplay): on unless "When a video ends" is Pause or Close the player. */
@@ -7778,7 +7802,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         setResizeMode(PlayerData.instance(this).getResizeMode()); // fit while upright-full; also re-lays the controls
         if (mAmbient != null) {
-            mAmbient.setFill(on ? mVideoArea : null); // the black bands glow with the video
+            mAmbient.setFill(on ? mVideoArea : ambientFillArea()); // the black bands glow with the video
         }
         if (on) {
             applyDisplayCutoutMode(true); // the picture may use the camera's band too
@@ -8071,7 +8095,7 @@ public class MobilePlaybackActivity extends MobileActivity
         applyWatchLayoutForOrientation(layoutOrientation());
         setResizeMode(PlayerData.instance(this).getResizeMode());
         if (mAmbient != null) {
-            mAmbient.setFill(isTallMode() || isLandscape() ? mVideoArea : null); // the bands around a short glow
+            mAmbient.setFill(ambientFillArea()); // the bands around a short glow
         }
         updateSeekBarLine();
         if (isShortsMode()) {
@@ -9399,7 +9423,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /** Live player accessor for the mini bar (package-private, see MiniPlayerBridge). */
-    ExoPlayer getSharedPlayer() {
+    public ExoPlayer getSharedPlayer() {
         return mPlayer;
     }
 
