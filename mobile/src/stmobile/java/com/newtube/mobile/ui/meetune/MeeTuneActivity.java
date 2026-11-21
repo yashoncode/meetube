@@ -12,6 +12,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.util.TypedValue;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -133,12 +134,18 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mNav = findViewById(R.id.meetune_nav);
 
         View source = findViewById(R.id.meetune_blur);
+        mTopFrost = findViewById(R.id.meetune_top_frost);
+        mTopChips = findViewById(R.id.meetune_top_chips);
+        mYouTubeBar = com.newtube.mobile.ui.common.YouTubeMode.isOn(this);
+        if (mYouTubeBar) setUpYouTubeTopBar(); // before the glass gets its source
         for (int id : new int[] {R.id.meetune_nav_glass, R.id.meetune_back, R.id.meetune_search_glass,
                 R.id.meetune_settings, R.id.meetune_sort, R.id.meetune_brand, R.id.meetune_mini, R.id.meetune_mini_tab,
                 R.id.meetune_mini_search}) {
+            // YouTube mode: the brand and avatar sit on the bar's frost with no glass of their own (as MeeTube's)
+            if (mYouTubeBar && (id == R.id.meetune_brand || id == R.id.meetune_settings)) continue;
             Glass.blur(findViewById(id), source);
         }
-        com.newtube.mobile.ui.common.GlassView topFrost = findViewById(R.id.meetune_top_frost);
+        com.newtube.mobile.ui.common.GlassView topFrost = mTopFrost;
         topFrost.setBlur(24f);
         Glass.blur(topFrost, source);
 
@@ -158,8 +165,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             @Override
             public void onScrolled(RecyclerView view, int dx, int dy) {
                 followBackdrop();
-                // The top bar frosts in over the first 48dp of scroll; at the top of a page it's clear.
-                topFrost.setAlpha(Math.min(1f, view.computeVerticalScrollOffset() / (float) MeeTuneAdapter.dp(MeeTuneActivity.this, 48)));
+                syncTopFrost();
             }
         });
         if (android.os.Build.VERSION.SDK_INT >= 31) {
@@ -458,6 +464,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         mSort.setVisibility(View.GONE); // until a list that sorts has loaded
         if (!search) closeSuggestions();
         showBackdrop(pushed ? page.art : null); // up while the page loads too
+        syncTopChips();
 
         if (page.settings != 0) { // built fresh each time: a value set on the page above shows here
             List<MeeTuneAdapter.Row> rows = new ArrayList<>();
@@ -684,9 +691,25 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     private List<MeeTuneAdapter.Row> withChips(@Nullable List<MeeTuneAdapter.Row> rows) {
         if (rows == null || MeeTune.sHomeChips.isEmpty()) return rows == null ? null : new ArrayList<>(rows);
         List<MeeTuneAdapter.Row> out = new ArrayList<>();
-        out.add(MeeTuneAdapter.viewRow(homeChipRow()));
+        out.add(chipSpace());
         out.addAll(rows);
         return out;
+    }
+
+    /** The chips' height: 4dp over them, 44dp of chips, 8dp under. */
+    private static final int CHIPS_DP = 56;
+
+    /**
+     * The chips stay pinned under the top row (syncTopChips); the list opens with their height of space,
+     * so the first shelf starts under them. Labelling them here keeps them in step with the rows.
+     */
+    private MeeTuneAdapter.Row chipSpace() {
+        homeChipRow();
+        syncTopChips();
+        View space = new View(this);
+        space.setLayoutParams(new android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                MeeTuneAdapter.dp(this, CHIPS_DP)));
+        return MeeTuneAdapter.viewRow(space);
     }
 
     private View homeChipRow() {
@@ -715,6 +738,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             frame.addView(mHomeChips, new android.widget.FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, MeeTuneAdapter.dp(this, 44)));
             mHomeChipRow = frame;
+            mTopChips.addView(frame);
         }
         mHomeChips.setChips(labels);
         mHomeChips.setSelected(mHomeChip);
@@ -734,7 +758,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             return;
         }
         List<MeeTuneAdapter.Row> waiting = new ArrayList<>();
-        waiting.add(MeeTuneAdapter.viewRow(homeChipRow())); // the chips stay while it loads
+        waiting.add(chipSpace()); // the chips stay while it loads
         mAdapter.setRows(waiting);
         mMessage.setVisibility(View.GONE);
         mProgress.setVisibility(View.VISIBLE);
@@ -749,7 +773,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 });
                 return;
             }
-            rows.add(0, MeeTuneAdapter.viewRow(homeChipRow()));
+            rows.add(0, chipSpace());
             page.rows = rows;
             if (current() == page) render(page);
         });
@@ -1265,11 +1289,14 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         ViewGroup.MarginLayoutParams heartLp = (ViewGroup.MarginLayoutParams) heart.getLayoutParams();
         heartLp.setMarginEnd(name ? MeeTuneAdapter.dp(this, 8) : 0);
         heart.setLayoutParams(heartLp); // a start/end margin only re-resolves on setLayoutParams: the old 8dp stayed, heart off-centre
-        row.setGravity(name ? android.view.Gravity.CENTER_VERTICAL : android.view.Gravity.CENTER);
-        row.setPaddingRelative(name ? MeeTuneAdapter.dp(this, 14) : 0, 0, name ? MeeTuneAdapter.dp(this, 16) : 0, 0);
-        row.getLayoutParams().width = name ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+        // YouTube mode: no pill, the heart flush with the page's 16dp edge, as MeeTube's logo.
+        boolean pill = name || mYouTubeBar;
+        row.setGravity(pill ? android.view.Gravity.CENTER_VERTICAL : android.view.Gravity.CENTER);
+        row.setPaddingRelative(pill && !mYouTubeBar ? MeeTuneAdapter.dp(this, 14) : 0, 0,
+                name ? MeeTuneAdapter.dp(this, 16) : 0, 0);
+        row.getLayoutParams().width = pill ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
         View brand = findViewById(R.id.meetune_brand);
-        brand.getLayoutParams().width = name ? ViewGroup.LayoutParams.WRAP_CONTENT : MeeTuneAdapter.dp(this, 44);
+        brand.getLayoutParams().width = pill ? ViewGroup.LayoutParams.WRAP_CONTENT : MeeTuneAdapter.dp(this, 44);
         brand.requestLayout();
     }
 
@@ -1413,22 +1440,72 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     private void blendIntoStatusBar(View topFrost) {
         View row = findViewById(R.id.meetune_top);
         View suggestions = findViewById(R.id.meetune_suggestions);
-        int frostBase = topFrost.getLayoutParams().height;
         int listBase = mList.getPaddingTop();
-        int spinner = MeeTuneAdapter.dp(this, 40);
+        mListBase = listBase;
+        int rowHeight = row.getLayoutParams().height;
         ViewCompat.setOnApplyWindowInsetsListener(row, (v, insets) -> {
             int top = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()).top;
+            mStatusTop = top;
             ((ViewGroup.MarginLayoutParams) row.getLayoutParams()).topMargin = top;
             row.requestLayout();
-            topFrost.getLayoutParams().height = frostBase + top;
-            topFrost.requestLayout();
+            ((ViewGroup.MarginLayoutParams) mTopChips.getLayoutParams()).topMargin = top + rowHeight;
+            mTopChips.requestLayout();
             mList.setPadding(mList.getPaddingLeft(), listBase + top, mList.getPaddingRight(), mList.getPaddingBottom());
             suggestions.setPadding(suggestions.getPaddingLeft(), listBase + top, suggestions.getPaddingRight(),
                     suggestions.getPaddingBottom());
-            mSwipe.setProgressViewOffset(false, listBase + top - spinner, listBase + top + spinner / 2);
+            syncTopChips();
             return insets;
         });
         ViewCompat.requestApplyInsets(row);
+    }
+
+    private com.newtube.mobile.ui.common.GlassView mTopFrost;
+    private android.widget.FrameLayout mTopChips;
+    /** MEETUBE(youtube mode): MeeTube Home's top bar, one flat frost with the brand and avatar on it. */
+    private boolean mYouTubeBar;
+    private int mStatusTop;
+    private int mListBase;
+
+    /** Home's chips pinned under the top row while Home has them; the frost and the spinner go below them. */
+    private void syncTopChips() {
+        boolean chips = mStack.isEmpty() && mTab == HOME && !MeeTune.sHomeChips.isEmpty() && mHomeChipRow != null;
+        mTopChips.setVisibility(chips ? View.VISIBLE : View.GONE);
+        int chipsHeight = chips ? MeeTuneAdapter.dp(this, CHIPS_DP) : 0;
+        int frost = mStatusTop + MeeTuneAdapter.dp(this, 64) + chipsHeight + (mYouTubeBar ? 0 : MeeTuneAdapter.dp(this, 20));
+        if (mTopFrost.getLayoutParams().height != frost) {
+            mTopFrost.getLayoutParams().height = frost;
+            mTopFrost.requestLayout();
+        }
+        int base = mListBase + mStatusTop + chipsHeight;
+        int spinner = MeeTuneAdapter.dp(this, 40);
+        mSwipe.setProgressViewOffset(false, base - spinner, base + spinner / 2);
+        syncTopFrost();
+    }
+
+    /**
+     * The top bar frosts in over the first 48dp of scroll; at the top of a page it's clear. In YouTube
+     * mode a tab's bar is always frosted, as MeeTube Home's; a pushed page keeps its cover clear.
+     */
+    private void syncTopFrost() {
+        float alpha = mYouTubeBar && mStack.isEmpty() ? 1f
+                : Math.min(1f, mList.computeVerticalScrollOffset() / (float) MeeTuneAdapter.dp(this, 48));
+        if (mTopFrost.getAlpha() != alpha) mTopFrost.setAlpha(alpha);
+    }
+
+    /** MEETUBE(youtube mode): as MeeTube's setUpYouTubeTopBar, the brand and avatar lose their pills. */
+    private void setUpYouTubeTopBar() {
+        mTopFrost.setFadeBottom(0);
+        TypedValue tint = new TypedValue();
+        getTheme().resolveAttribute(R.attr.meetubeNavTint, tint, true);
+        mTopFrost.setTint(tint.data);
+        ((com.newtube.mobile.ui.common.GlassView) findViewById(R.id.meetune_brand)).setPlain();
+        ((com.newtube.mobile.ui.common.GlassView) findViewById(R.id.meetune_settings)).setPlain();
+        TextView name = findViewById(R.id.meetune_brand_name);
+        View heart = ((ViewGroup) name.getParent()).getChildAt(0);
+        heart.getLayoutParams().width = heart.getLayoutParams().height = MeeTuneAdapter.dp(this, 28);
+        name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 21);
+        name.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD));
+        name.setLetterSpacing(-0.02f);
     }
 
     @Override

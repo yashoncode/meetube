@@ -45,7 +45,6 @@
     <string name="meetune_filter_artists">Artists</string>
     <string name="meetune_filter_playlists">Playlists</string>
     <string name="meetune_set_customize">Customization</string>
-    <string name="meetune_set_customize_summary">The You page heart, the name beside the logo and Search\'s glow</string>
     <string name="meetune_set_brand_name">MeeTune name beside the logo</string>
     <string name="meetune_set_brand_name_summary">Off, Home\'s corner shows the heart alone</string>
     <string name="meetune_link_meetube">MeeTube →</string>
@@ -195,7 +194,8 @@
     <string name="meetune_stream_wifi">On Wi-Fi</string>
     <string name="meetune_stream_mobile">On mobile data</string>
     <string name="meetune_stream_note">Mobile data also covers hotspots and other metered networks</string>
-    <string name="meetune_set_look">Look</string>
+    <string name="meetune_set_group_music">Music</string>
+    <string name="meetune_set_sound_playback">Sound and playback</string>
     <string name="meetune_speed_dial">Speed dial</string>
     <string name="meetune_speed_dial_summary">Home\'s Listen again as pages of square tiles, nine at a glance</string>
     <string name="meetune_set_playback">Playback</string>

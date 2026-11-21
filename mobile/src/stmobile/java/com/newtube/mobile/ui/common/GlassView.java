@@ -186,7 +186,7 @@ public class GlassView extends FrameLayout {
     /** The widest it grows (glassMaxWidth), 0: no limit. */
     private final int mMaxWidth;
     /** The frost fades out over this much of the bottom (glassFadeBottom), 0: a hard edge. */
-    private final int mFadeBottom;
+    private int mFadeBottom;
     private final Paint mFadePaint = new Paint();
     @Nullable private RenderNode mNode;
     /** RuntimeShaders (API 33+), kept as Object so older phones never resolve the class. */
@@ -317,6 +317,12 @@ public class GlassView extends FrameLayout {
         mOnGlass = true; // the tint as given, transparent, never the opaque no-backdrop fill
         setElevation(0f);
         setClipToOutline(false);
+        invalidate();
+    }
+
+    /** A hard bottom edge (or a fade of {@code px}) in place of glassFadeBottom; call before its first layout. */
+    public void setFadeBottom(int px) {
+        mFadeBottom = px;
         invalidate();
     }
 

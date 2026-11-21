@@ -39,7 +39,6 @@
     <string name="meetune_filter_artists">Исполнители</string>
     <string name="meetune_filter_playlists">Плейлисты</string>
     <string name="meetune_set_customize">Персонализация</string>
-    <string name="meetune_set_customize_summary">Значок-сердце на странице «Вы», название рядом с логотипом и свечение поиска</string>
     <string name="meetune_set_brand_name">Название MeeTune рядом с логотипом</string>
     <string name="meetune_set_brand_name_summary">Без подписи в углу главной останется только сердце.</string>
     <string name="meetune_queue">Далее</string>

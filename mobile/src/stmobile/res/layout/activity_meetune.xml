@@ -329,6 +329,15 @@
 
     </LinearLayout>
 
+    <!-- Home's chips (All, Podcasts, Relax...), pinned under the top row as MeeTube Home's tabs:
+         the shelves scroll under them. Placed and shown by MeeTuneActivity.syncTopChips. -->
+    <FrameLayout
+        android:id="@+id/meetune_top_chips"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:visibility="gone" />
+
     <!-- "Tap the icon to switch to MeeTube" under Home's brand pill, MeeTube Home's twin
          (mobile_meetune_hint); placed by MeeTune.showSwitchHint. -->
     <com.newtube.mobile.ui.common.GlassView
