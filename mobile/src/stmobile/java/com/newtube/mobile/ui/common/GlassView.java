@@ -320,9 +320,14 @@ public class GlassView extends FrameLayout {
         invalidate();
     }
 
-    /** A hard bottom edge (or a fade of {@code px}) in place of glassFadeBottom; call before its first layout. */
+    /** A hard bottom edge (or a fade of {@code px}) in place of glassFadeBottom. */
     public void setFadeBottom(int px) {
+        if (px == mFadeBottom) return;
         mFadeBottom = px;
+        int h = getHeight();
+        if (px > 0 && h > 0) { // already laid out: the gradient now, not at the next size change
+            mFadePaint.setShader(new LinearGradient(0, h - px, 0, h, 0xFF000000, 0x00000000, Shader.TileMode.CLAMP));
+        }
         invalidate();
     }
 

@@ -84,6 +84,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private final List<Row> mRows = new ArrayList<>();
     @Nullable
     private RecyclerView mList;
+    /** One pool for every shelf: a shelf scrolling in takes cards the last one left, not new ones. */
+    private final RecyclerView.RecycledViewPool mShelfPool = new RecyclerView.RecycledViewPool();
 
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView list) {
@@ -301,7 +303,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 RecyclerView list = new RecyclerView(parent.getContext());
                 list.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT));
-                list.setLayoutManager(new LinearLayoutManager(parent.getContext(), RecyclerView.HORIZONTAL, false));
+                list.setLayoutManager(shelfLayout(parent.getContext()));
+                list.setRecycledViewPool(mShelfPool);
                 list.setClipToPadding(false);
                 int pad = dp(parent.getContext(), 20);
                 list.setPadding(pad, 0, pad, 0);
@@ -389,14 +392,14 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 boolean grid = row.style == GRID;
                 if (grid != list.getLayoutManager() instanceof androidx.recyclerview.widget.GridLayoutManager) {
                     list.setLayoutManager(grid ? new androidx.recyclerview.widget.GridLayoutManager(view.getContext(), 3)
-                            : new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
+                            : shelfLayout(view.getContext()));
                 }
                 // a grid cell's 5dp margins make it 20; a column's songs bring 10dp of their own (room for the press pill)
                 int side = dp(view.getContext(), grid ? 15 : row.style == COLUMNS ? 10 : 20);
                 list.setPadding(side, 0, side, 0);
                 boolean dial = row.shelf.dial && MeeTune.speedDial(view.getContext());
                 CoverGlow.attach(list);
-                list.setAdapter(new Carousel(row, dial));
+                list.swapAdapter(new Carousel(row, dial), true); // its cards go back to the pool, not away
                 list.setOnFlingListener(null);
                 if (row.style == COLUMNS || dial) new PagerSnapHelper().attachToRecyclerView(list);
         }
@@ -602,6 +605,13 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         bar.setScaleX(Math.max(0.02f, item.downloadPercent / 100f));
     }
 
+    /** Its first 4 cards are made while the shelf is still below the screen (RecyclerView's prefetch). */
+    private static LinearLayoutManager shelfLayout(Context context) {
+        LinearLayoutManager layout = new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false);
+        layout.setInitialPrefetchItemCount(4);
+        return layout;
+    }
+
     private final class Carousel extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private final Row mRow;
         private final List<MusicApi.Item> mItems;
@@ -613,6 +623,13 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             mRow = row;
             mItems = row.shelf.items;
             mDial = dial;
+            mShelfPool.setMaxRecycledViews(getItemViewType(0), 12);
+        }
+
+        /** Cells differ only by the shelf's style, so shelves of one style share them. */
+        @Override
+        public int getItemViewType(int position) {
+            return mDial ? 1000 : mRow.style;
         }
 
         @Override

@@ -108,7 +108,7 @@
         android:layout_height="84dp"
         android:alpha="0"
         app:glassCornerRadius="0dp"
-        app:glassFadeBottom="20dp"
+        app:glassFadeBottom="40dp"
         app:glassLiquid="false"
         app:glassTint="@color/meetube_glass_tint" />
     <!-- The top row: Back on a pushed page, the search field on Search, Settings and MeeTube on Home. -->
@@ -233,6 +233,19 @@
             </LinearLayout>
 
         </com.newtube.mobile.ui.common.GlassView>
+
+        <!-- Home's chips slid away on scroll: this arrow beside the brand brings them back (ChipBar). -->
+        <ImageView
+            android:id="@+id/meetune_chip_expand"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/mobile_feed_show_filters"
+            android:elevation="6dp"
+            android:scaleType="center"
+            android:src="@drawable/ic_chips_expand"
+            android:tint="@color/mobile_color_on_surface"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/meetune_title"

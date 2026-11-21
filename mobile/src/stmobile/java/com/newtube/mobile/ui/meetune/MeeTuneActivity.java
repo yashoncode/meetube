@@ -136,6 +136,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         View source = findViewById(R.id.meetune_blur);
         mTopFrost = findViewById(R.id.meetune_top_frost);
         mTopChips = findViewById(R.id.meetune_top_chips);
+        mChipBar = new com.newtube.mobile.ui.browse.ChipBar(mTopChips, findViewById(R.id.meetune_chip_expand));
         mYouTubeBar = com.newtube.mobile.ui.common.YouTubeMode.isOn(this);
         if (mYouTubeBar) setUpYouTubeTopBar(); // before the glass gets its source
         for (int id : new int[] {R.id.meetune_nav_glass, R.id.meetune_back, R.id.meetune_search_glass,
@@ -166,7 +167,20 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             public void onScrolled(RecyclerView view, int dx, int dy) {
                 followBackdrop();
                 syncTopFrost();
+                mChipBar.onScrolled(dy, !view.canScrollVertically(-1));
             }
+        });
+        // As MeeTube Home's: chips slide away on scroll down, and the frost's bottom follows them up.
+        View topRow = findViewById(R.id.meetune_top);
+        topFrost.getViewTreeObserver().addOnPreDrawListener(() -> {
+            float bottom = topRow.getBottom();
+            if (mTopChips.getVisibility() == View.VISIBLE) {
+                bottom = Math.max(bottom, mTopChips.getTop() + mTopChips.getTranslationY()
+                        + mTopChips.getHeight() * mTopChips.getAlpha());
+            }
+            float slide = Math.min(0f, bottom + (mYouTubeBar ? 0 : MeeTuneAdapter.dp(this, FADE_DP)) - topFrost.getBottom());
+            if (topFrost.getTranslationY() != slide) topFrost.setTranslationY(slide);
+            return true;
         });
         if (android.os.Build.VERSION.SDK_INT >= 31) {
             float blur = MeeTuneAdapter.dp(this, 40);
@@ -1461,6 +1475,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     private com.newtube.mobile.ui.common.GlassView mTopFrost;
     private android.widget.FrameLayout mTopChips;
+    private com.newtube.mobile.ui.browse.ChipBar mChipBar;
+    /** The frost runs 40dp past the row (or the chips) so its fade ends below them. */
+    private static final int FADE_DP = 40;
     /** MEETUBE(youtube mode): MeeTube Home's top bar, one flat frost with the brand and avatar on it. */
     private boolean mYouTubeBar;
     private int mStatusTop;
@@ -1469,9 +1486,11 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     /** Home's chips pinned under the top row while Home has them; the frost and the spinner go below them. */
     private void syncTopChips() {
         boolean chips = mStack.isEmpty() && mTab == HOME && !MeeTune.sHomeChips.isEmpty() && mHomeChipRow != null;
-        mTopChips.setVisibility(chips ? View.VISIBLE : View.GONE);
+        mChipBar.setActive(chips);
         int chipsHeight = chips ? MeeTuneAdapter.dp(this, CHIPS_DP) : 0;
-        int frost = mStatusTop + MeeTuneAdapter.dp(this, 64) + chipsHeight + (mYouTubeBar ? 0 : MeeTuneAdapter.dp(this, 20));
+        int frost = mStatusTop + MeeTuneAdapter.dp(this, 64) + chipsHeight + (mYouTubeBar ? 0 : MeeTuneAdapter.dp(this, FADE_DP));
+        // Progressive: full under the status bar, then thinning out over the row (and chips) to nothing.
+        if (!mYouTubeBar) mTopFrost.setFadeBottom(frost - mStatusTop);
         if (mTopFrost.getLayoutParams().height != frost) {
             mTopFrost.getLayoutParams().height = frost;
             mTopFrost.requestLayout();
@@ -1488,6 +1507,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
      */
     private void syncTopFrost() {
         float alpha = mYouTubeBar && mStack.isEmpty() ? 1f
+                : mStack.isEmpty() && mTab == HOME ? 0f // Home has no frost: its pills float on the shelves
                 : Math.min(1f, mList.computeVerticalScrollOffset() / (float) MeeTuneAdapter.dp(this, 48));
         if (mTopFrost.getAlpha() != alpha) mTopFrost.setAlpha(alpha);
     }
