@@ -1,0 +1,685 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="mobile_player_back">Quay lại</string>
+    <string name="mobile_player_minimize">Thu nhỏ</string>
+    <string name="mobile_player_audio_only">Chỉ âm thanh</string>
+    <string name="mobile_player_audio_off">Bật hình ảnh</string>
+    <string name="mobile_player_play">Phát</string>
+    <string name="mobile_player_pause">Tạm dừng</string>
+    <string name="mobile_player_replay">Phát lại</string>
+    <string name="mobile_player_fullscreen">Bật/tắt toàn màn hình</string>
+    <string name="mobile_player_hide_actions">Ẩn nút thao tác</string>
+    <string name="mobile_player_show_actions">Hiện nút thao tác</string>
+    <string name="mobile_player_quality">Chất lượng</string>
+    <string name="mobile_player_audio_track">Bản âm thanh</string>
+    <string name="mobile_player_subtitles">Phụ đề</string>
+    <string name="mobile_player_speed">Tốc độ phát</string>
+    <string name="mobile_player_sleep_timer">Hẹn giờ tắt</string>
+    <string name="mobile_feed_all">Tất cả</string>
+    <string name="mobile_feed_show_filters">Hiện bộ lọc</string>
+    <string name="mobile_player_autoplay">Tự động phát</string>
+    <string name="mobile_sleep_end_of_video">Hết video</string>
+    <string name="mobile_sleep_left">Còn %1$d phút</string>
+    <string name="mobile_sleep_toast_minutes">Video sẽ tạm dừng sau %1$s</string>
+    <string name="mobile_sleep_toast_end">Video sẽ tạm dừng khi kết thúc</string>
+    <string name="mobile_sleep_toast_off">Đã tắt hẹn giờ tắt</string>
+    <string name="mobile_player_chapter_button">Chương: %1$s. Hiện tất cả các chương</string>
+    <string name="mobile_player_release_to_cancel">Thả tay để hủy</string>
+    <string name="mobile_player_pip">Hình trong hình</string>
+    <string name="mobile_player_previous">Trước đó</string>
+    <string name="mobile_player_next">Tiếp theo</string>
+    <string name="mobile_playlist_play_all">Phát tất cả</string>
+    <string name="mobile_playlist_shuffle">Phát ngẫu nhiên</string>
+    <string name="mobile_player_zoom_fill">Phóng đầy màn hình</string>
+    <string name="mobile_player_zoom_original">Kích thước gốc</string>
+
+    <!-- Player gear bottom-sheet menu -->
+    <string name="mobile_player_more">Tùy chọn khác</string>
+    <string name="mobile_menu_more">Thêm</string>
+    <string name="mobile_menu_watch_regular">Xem ở trình phát thường</string>
+    <string name="mobile_shorts_autoscroll">Tự động cuộn</string>
+    <string name="mobile_player_skip_segment">Bỏ qua</string>
+    <string name="mobile_shorts_rest_title">Lướt hơi hăng rồi đấy nhỉ??</string>
+    <string name="mobile_shorts_rest_message">Đã xem Shorts 30 phút rồi đấy. Nghỉ ngơi chút đi bạn ơi :)</string>
+    <string name="mobile_shorts_rest_ok">Rồi rồi, biết rồi</string>
+    <string name="mobile_quality_auto_current">Tự động (%1$s)</string>
+    <string name="mobile_quality_auto_short">Tự động</string>
+    <string name="mobile_menu_repeat">Chế độ lặp</string>
+    <string name="mobile_menu_shuffle">Trộn bài</string>
+    <string name="mobile_menu_zoom">Thu phóng</string>
+    <string name="mobile_menu_background">Phát trong nền</string>
+    <string name="mobile_menu_stats">Thống kê chi tiết</string>
+    <string name="mobile_menu_playlist_add">Lưu vào danh sách phát</string>
+    <string name="mobile_menu_queue">Hàng chờ phát</string>
+    <string name="mobile_menu_on">Bật</string>
+    <string name="mobile_menu_off">Tắt</string>
+
+    <!-- Background playback media notification -->
+    <string name="mobile_playback_channel_name">Phát lại</string>
+    <string name="mobile_playback_channel_desc">Điều khiển đa phương tiện khi phát trong nền</string>
+
+    <!-- Watch page -->
+    <string name="mobile_watch_like">Thích</string>
+    <string name="mobile_watch_dislike">Không thích</string>
+    <string name="mobile_watch_share">Chia sẻ</string>
+    <string name="mobile_lyrics">Lời bài hát</string>
+    <string name="mobile_lyrics_none">Không có lời bài hát cho bài này</string>
+    <string name="mobile_lyrics_source">Nguồn: %1$s</string>
+    <string name="mobile_lyrics_provider_description">Nguồn lời bài hát: %1$s</string>
+    <string name="mobile_lyrics_provider_choose">Chọn nguồn lời bài hát</string>
+    <string name="mobile_lyrics_provider_current">Nguồn hiện tại</string>
+    <string name="mobile_lyrics_provider_found">Đã tìm thấy lời · Chạm để dùng</string>
+    <string name="mobile_lyrics_provider_fetching">Đang tìm lời bài hát&#8230;</string>
+    <string name="mobile_lyrics_provider_not_fetched">Chạm để tải</string>
+    <string name="mobile_lyrics_provider_not_found">Không tìm thấy lời bài hát</string>
+    <string name="mobile_watch_save">Lưu</string>
+    <string name="mobile_watch_saved">Đã lưu</string>
+    <string name="mobile_watch_subscribe">Đăng ký</string>
+    <string name="mobile_watch_subscribed">Đã đăng ký</string>
+    <string name="mobile_watch_related">Tiếp theo</string>
+    <string name="mobile_watch_chip_all">Tất cả</string>
+    <string name="mobile_watch_chip_channel">Từ %1$s</string>
+    <string name="mobile_watch_chip_new">Mới với bạn</string>
+    <string name="mobile_watch_chip_watched">Xem tiếp</string>
+    <string name="mobile_settings_watch_style">Trang xem video</string>
+    <string name="mobile_settings_watch_style_compact">Gọn gàng</string>
+    <string name="mobile_settings_watch_style_compact_desc">Các nút thao tác nằm cạnh nút Đăng ký, bình luận hàng đầu hiện từng dòng một</string>
+    <string name="mobile_settings_watch_style_classic">Cổ điển</string>
+    <string name="mobile_settings_watch_style_classic_desc">Các nút có nhãn chữ và một hàng thông tin kênh</string>
+    <string name="mobile_settings_player_buttons">Các nút trình phát</string>
+    <string name="mobile_settings_player_buttons_summary">Hiện hoặc ẩn các nút điều khiển trên video</string>
+    <string name="mobile_settings_player_buttons_note">Các nút đã ẩn sẽ luôn tắt ở mọi video. Thay đổi áp dụng từ lần mở trình phát tiếp theo.</string>
+    <string name="mobile_settings_player_buttons_top">Thanh trên</string>
+    <string name="mobile_settings_player_buttons_center">Chính giữa</string>
+    <string name="mobile_settings_player_buttons_fullscreen">Thao tác toàn màn hình</string>
+    <string name="mobile_settings_player_prev_next">Video trước và tiếp theo</string>
+    <string name="mobile_player_lock">Khóa màn hình</string>
+    <string name="mobile_player_locked">Đã khóa · chạm để mở khóa</string>
+    <string name="mobile_transcript">Bản chép lời</string>
+    <string name="mobile_transcript_follow">Theo dõi nội dung qua bản chép lời.</string>
+    <string name="mobile_transcript_show">Hiện bản chép lời</string>
+    <string name="mobile_transcript_search">Tìm trong bản chép lời</string>
+    <string name="mobile_transcript_none">Video này không có bản chép lời.</string>
+    <string name="mobile_transcript_failed">Không thể tải bản chép lời.</string>
+    <string name="mobile_description_details">Chi tiết video</string>
+    <string name="mobile_description_date">Ngày đăng</string>
+    <string name="mobile_player_more_videos">Video khác</string>
+    <string name="mobile_watch_offline">Bạn đang ngoại tuyến</string>
+    <string name="mobile_watch_queue_from">Đang phát từ %1$s</string>
+    <string name="mobile_watch_queue_fallback">hàng chờ</string>
+    <string name="mobile_watch_queue_now_playing">Đang phát</string>
+    <string name="mobile_watch_description">Mô tả</string>
+    <string name="mobile_description_likes">Lượt thích</string>
+    <string name="mobile_description_views">Lượt xem</string>
+    <string name="mobile_watch_share_subject">Xem video này nhé</string>
+    <string name="mobile_watch_share_at">Chia sẻ từ %1$s</string>
+
+    <!-- Comments panel -->
+    <string name="mobile_comments_entry">Bình luận</string>
+    <string name="mobile_settings_card_style">Kiểu thẻ</string>
+    <string name="mobile_you_about">Giới thiệu MeeTube  ›</string>
+    <string name="mobile_card_style_plain">Tối giản</string>
+    <string name="mobile_card_style_plain_desc">Kính mờ nhẹ trên nền đen với viền kính, không có màu nhấn</string>
+    <string name="mobile_card_style_minimal">MeeTube tối giản</string>
+    <string name="mobile_card_style_minimal_desc">Ánh màu nhấn dịu nhẹ ở góc trên phải, viền ấm dần về góc dưới phải</string>
+    <string name="mobile_card_style_ember">Góc than hồng</string>
+    <string name="mobile_card_style_ember_desc">Gần như đen tuyền, với một quầng sáng màu nhấn tụ ở góc dưới bên phải</string>
+    <string name="mobile_card_style_frosted">Kính mờ</string>
+    <string name="mobile_card_style_frosted_desc">Kính mờ đục phủ lên ánh sáng màu nhấn nhòe nhẹ</string>
+    <string name="mobile_card_style_mist">Sương màu nhấn</string>
+    <string name="mobile_card_style_mist_desc">Một lớp sương màu nhấn nhạt tan dần từ bên trái</string>
+    <string name="mobile_card_style_rim">Viền sáng</string>
+    <string name="mobile_card_style_rim_desc">Màu nhấn chỉ chạy dọc theo cạnh trên</string>
+    <string name="mobile_card_style_dual">Ánh sáng kép</string>
+    <string name="mobile_card_style_dual_desc">Ánh sáng màu nhấn bên dưới và viền sáng trắng phía trên</string>
+    <string name="mobile_hype_title">Hype cho video này</string>
+    <string name="mobile_hype_points">Điểm Hype</string>
+    <string name="mobile_comments_title">Bình luận</string>
+    <string name="mobile_comments_replies_title">Phản hồi</string>
+    <string name="mobile_comments_none">Chưa có bình luận nào</string>
+    <string name="mobile_comments_load_error">Không thể tải bình luận.</string>
+    <string name="mobile_comments_replies_load_error">Không thể tải phản hồi.</string>
+    <string name="mobile_comments_sort_top">Hàng đầu</string>
+    <string name="mobile_comments_sort_top_hint">Nhiều lượt thích nhất trước</string>
+    <string name="mobile_comments_sort_newest">Mới nhất</string>
+    <string name="mobile_comments_sort_newest_hint">Bao gồm bình luận có thể là spam</string>
+    <string name="mobile_comments_sort_description">Sắp xếp bình luận: %1$s</string>
+    <string name="mobile_comments_close">Đóng bình luận</string>
+    <string name="mobile_comments_back">Quay lại bình luận</string>
+    <string name="mobile_comments_read_more">Đọc thêm</string>
+    <string name="mobile_comments_show_less">Thu gọn</string>
+    <string name="mobile_comments_open_replies">Mở phản hồi</string>
+    <string name="mobile_comments_copy">Sao chép bình luận</string>
+    <string name="mobile_comments_copied">Đã sao chép bình luận</string>
+    <string name="mobile_comments_like">Thích bình luận</string>
+    <string name="mobile_comments_unlike">Bỏ thích</string>
+    <string name="mobile_comments_liked">Đã thích</string>
+    <string name="mobile_comments_sign_in_to_like">Đăng nhập để thích bình luận</string>
+    <string name="mobile_comments_add_hint">Viết bình luận&#8230;</string>
+    <string name="mobile_comments_reply_hint">Viết câu trả lời&#8230;</string>
+    <string name="mobile_comments_reply">Trả lời</string>
+    <string name="mobile_comments_post">Đăng</string>
+    <string name="mobile_comments_posted">Đã đăng bình luận</string>
+    <string name="mobile_comments_reply_posted">Đã đăng phản hồi</string>
+    <string name="mobile_comments_view_reply">Xem</string>
+    <string name="mobile_comments_post_failed">Không thể đăng bình luận</string>
+    <string name="mobile_comments_post_failed_reason">Không thể đăng: %1$s</string>
+    <string name="mobile_comments_try_again">Thử lại</string>
+    <string name="mobile_comments_sign_in_to_comment">Đăng nhập để bình luận</string>
+    <string name="mobile_comments_more">Hành động khác</string>
+    <string name="mobile_comments_delete">Xóa</string>
+    <string name="mobile_comments_translate_to">Dịch sang %1$s</string>
+    <string name="mobile_comments_show_original">Xem bản gốc</string>
+    <string name="mobile_comments_already_translated">Đã ở ngôn ngữ của bạn</string>
+    <string name="mobile_comments_translate_failed">Không thể dịch bình luận</string>
+    <string name="mobile_comments_delete_title">Xóa bình luận?</string>
+    <string name="mobile_comments_delete_reply_title">Xóa phản hồi?</string>
+    <string name="mobile_comments_delete_message">Bình luận này sẽ bị xóa vĩnh viễn với mọi người.</string>
+    <string name="mobile_comments_delete_cancel">Hủy</string>
+    <string name="mobile_comments_deleted">Đã xóa bình luận</string>
+    <string name="mobile_comments_delete_failed">Không thể xóa bình luận</string>
+    <plurals name="mobile_comments_replies">
+        <item quantity="other">%1$d phản hồi</item>
+    </plurals>
+
+    <!-- Live chat panel -->
+    <string name="mobile_live_chat_entry">Trò chuyện trực tiếp</string>
+    <string name="mobile_live_chat_title">Trò chuyện trực tiếp</string>
+    <string name="mobile_live_chat_empty">Đang chờ tin nhắn&#8230;</string>
+
+    <string name="mobile_sheet_close">Đóng</string>
+    <string name="mobile_dialog_back">Quay lại</string>
+    <string name="mobile_dialog_unavailable">Chưa khả dụng trên điện thoại.</string>
+    <string name="mobile_back">Quay lại</string>
+    <string name="mobile_search_hint">Tìm kiếm video</string>
+    <string name="mobile_search_button">Tìm kiếm</string>
+    <string name="mobile_search_voice">Tìm kiếm bằng giọng nói</string>
+    <string name="mobile_search_insert">Chỉnh sửa từ khóa này</string>
+    <string name="mobile_search_clear">Xóa tìm kiếm</string>
+    <string name="mobile_search_filters">Bộ lọc tìm kiếm</string>
+    <string name="mobile_search_filter_type">Loại</string>
+    <string name="mobile_search_filter_all">Tất cả</string>
+    <string name="mobile_search_filter_videos">Video</string>
+    <string name="mobile_search_filter_shorts">Shorts</string>
+    <string name="mobile_search_filter_channels">Kênh</string>
+    <string name="mobile_search_filter_playlists">Danh sách phát</string>
+    <string name="mobile_search_filter_movies">Phim</string>
+    <string name="mobile_search_filter_duration">Thời lượng</string>
+    <string name="mobile_search_filter_any">Bất kỳ</string>
+    <string name="mobile_search_filter_under_3">Dưới 3 phút</string>
+    <string name="mobile_search_filter_3_20">3 - 20 phút</string>
+    <string name="mobile_search_filter_over_20">Trên 20 phút</string>
+    <string name="mobile_search_filter_upload_date">Ngày tải lên</string>
+    <string name="mobile_search_filter_anytime">Mọi lúc</string>
+    <string name="mobile_search_filter_today">Hôm nay</string>
+    <string name="mobile_search_filter_this_week">Tuần này</string>
+    <string name="mobile_search_filter_this_month">Tháng này</string>
+    <string name="mobile_search_filter_this_year">Năm nay</string>
+    <string name="mobile_search_filter_recent">Mới tải lên gần đây</string>
+    <string name="mobile_search_filter_prioritize">Ưu tiên theo</string>
+    <string name="mobile_search_filter_relevance">Mức độ liên quan</string>
+    <string name="mobile_search_filter_popularity">Độ phổ biến</string>
+    <string name="mobile_search_filter_features">Tính năng</string>
+    <string name="mobile_search_filter_live">Trực tiếp</string>
+    <string name="mobile_search_filter_subtitles">Phụ đề/CC</string>
+    <string name="mobile_search_filter_creative_commons">Giấy phép Creative Commons</string>
+    <string name="mobile_search_filter_location">Vị trí</string>
+    <string name="mobile_search_filter_purchased">Đã mua</string>
+    <string name="mobile_search_filter_apply">Áp dụng</string>
+    <string name="mobile_search_no_results">Không có kết quả cho “%1$s”</string>
+    <string name="mobile_search_error">Không thể tải kết quả.</string>
+    <string name="mobile_channel_tab_videos">Video</string>
+    <string name="mobile_channel_tab_more">Thêm</string>
+
+    <!-- Bottom-nav "You" tab -->
+    <string name="mobile_nav_you">Bạn</string>
+    <string name="mobile_nav_hint_tabs">Tùy chỉnh thẻ  ›</string>
+    <string name="mobile_nav_hint_change">Thay đổi</string>
+    <string name="mobile_nav_hint_confirm_title">Tùy chỉnh các thẻ?</string>
+    <string name="mobile_nav_hint_confirm_body">Mở Cài đặt để chọn và sắp xếp lại các thẻ ở thanh dưới.</string>
+    <string name="mobile_nav_hint_confirm_open">Mở</string>
+    <string name="mobile_nav_subs">Đăng ký</string>
+    <string name="mobile_subs_all_channels">Tất cả kênh đăng ký</string>
+    <string name="mobile_you_explore">Khám phá</string>
+    <string name="mobile_you_library">Thư viện</string>
+    <string name="mobile_you_watch_later">Xem sau</string>
+    <string name="mobile_you_liked_videos">Video đã thích</string>
+
+    <!-- External-link handoff -->
+    <string name="mobile_no_browser">Không tìm thấy ứng dụng để mở liên kết này</string>
+
+    <!-- Companion-device pairing -->
+    <string name="mobile_add_device_title">Ghép nối thiết bị</string>
+    <string name="mobile_add_device_done">Xong</string>
+
+    <!-- Quality / audio sheets -->
+    <string name="mobile_quality_title">Chất lượng</string>
+    <string name="mobile_quality_auto">Tự động (khuyên dùng)</string>
+    <string name="mobile_audio_default">Mặc định</string>
+    <string name="mobile_audio_role_original">âm thanh gốc</string>
+    <string name="mobile_audio_role_dubbed">lồng tiếng</string>
+    <string name="mobile_audio_role_auto_dubbed">lồng tiếng tự động</string>
+    <string name="mobile_audio_role_descriptive">mô tả âm thanh</string>
+    <string name="mobile_audio_track_toast">Bản âm thanh: %1$s</string>
+
+    <!-- Captions sheet -->
+    <string name="mobile_captions_off">Tắt phụ đề</string>
+    <string name="mobile_captions_empty">Video này không có phụ đề</string>
+    <string name="mobile_captions_style">Kiểu &amp; cỡ chữ phụ đề</string>
+    <string name="mobile_captions_on_toast">Đã bật phụ đề (%1$s)</string>
+    <string name="mobile_captions_off_toast">Đã tắt phụ đề</string>
+
+    <!-- Speed sheet & Sign-in -->
+    <string name="mobile_speed_normal">Bình thường</string>
+    <string name="mobile_speed_more">Tốc độ khác</string>
+    <string name="mobile_speed_toast">Tốc độ phát: %1$s</string>
+    <string name="mobile_signin_title">Đăng nhập</string>
+    <string name="mobile_signin_lead">Kết nối tài khoản Google để đồng bộ kênh đăng ký, danh sách phát và lịch sử của bạn.</string>
+    <string name="mobile_signin_step1_title">Chạm \u201cTiếp tục với Google\u201d</string>
+    <string name="mobile_signin_step1_caption">Trang đăng nhập của Google sẽ mở ra ngay tại đây.</string>
+    <string name="mobile_signin_step2_title">Chọn tài khoản của bạn và cấp quyền truy cập</string>
+    <string name="mobile_signin_step2_caption">Trang có thể nhắc tới TV hoặc thiết bị khác \u2014 điều này hoàn toàn bình thường: MeeTube đăng nhập theo cơ chế của TV nên mật khẩu của bạn không bao giờ đi qua ứng dụng.</string>
+    <string name="mobile_signin_step3_title">Quay lại MeeTube</string>
+    <string name="mobile_signin_step3_caption">Quá trình đăng nhập sẽ tự hoàn tất \u2014 bạn không cần làm gì thêm.</string>
+    <string name="mobile_signin_code_label">Google sẽ hiện mã này \u2014 hãy kiểm tra xem có khớp không:</string>
+    <string name="mobile_signin_copy_hint">Chạm vào mã để sao chép</string>
+    <string name="mobile_signin_code_copied">Đã sao chép mã vào bộ nhớ tạm</string>
+    <string name="mobile_signin_open_button">Tiếp tục với Google</string>
+    <string name="mobile_signin_manual_hint">Nút không hoạt động? Hãy mở địa chỉ này trên trình duyệt bất kỳ và nhập mã:</string>
+    <string name="mobile_signin_notification">Đang đăng nhập bằng Google\u2026</string>
+    <string name="mobile_signin_waiting_title">Đang chờ Google\u2026</string>
+    <string name="mobile_signin_waiting_caption">Hoàn tất trên trang Google: chọn tài khoản và cho phép truy cập. Bạn sẽ được đăng nhập tự động tại đây.</string>
+    <string name="mobile_signin_reopen_button">Mở lại trang đăng nhập</string>
+    <string name="mobile_signin_success">Bạn đã đăng nhập thành công!</string>
+    <string name="mobile_signin_error">Không thể hoàn tất đăng nhập. Hãy kiểm tra mạng và thử lại — bạn sẽ nhận được mã mới.</string>
+    <string name="mobile_signin_retry_button">Thử lại</string>
+
+    <!-- Accounts sheet -->
+    <string name="mobile_accounts_title">Tài khoản</string>
+    <string name="mobile_accounts_signed_out">Dùng không cần tài khoản</string>
+    <string name="mobile_accounts_sign_out">Đăng xuất</string>
+    <string name="mobile_accounts_tab_main">Tài khoản chính</string>
+    <string name="mobile_accounts_tab_web">Tài khoản web</string>
+    <string name="mobile_accounts_add">Thêm tài khoản</string>
+    <string name="mobile_accounts_sign_out_title">Đăng xuất?</string>
+    <string name="mobile_accounts_sign_out_confirm">%1$s sẽ bị gỡ khỏi thiết bị này. Bạn có thể đăng nhập lại bất cứ lúc nào.</string>
+
+    <!-- Empty / sign-in-gated states -->
+    <string name="mobile_empty_signin_section">Đăng nhập để xem %1$s của bạn</string>
+    <string name="mobile_empty_signin_generic">Đăng nhập để xem nội dung này</string>
+    <string name="mobile_empty_signin_subscriptions">Đăng nhập để xem kênh đăng ký của bạn</string>
+    <string name="mobile_empty_signin_channels">Đăng nhập để xem các kênh bạn theo dõi</string>
+    <string name="mobile_empty_signin_playlists">Đăng nhập để xem danh sách phát của bạn</string>
+    <string name="mobile_empty_signin_my_videos">Đăng nhập để xem video của bạn</string>
+    <string name="mobile_empty_signin_history">Đăng nhập để xem lịch sử xem của bạn</string>
+    <string name="mobile_empty_signin_notifications">Đăng nhập để xem thông báo của bạn</string>
+    <string name="action_signin" tools:ignore="ExtraTranslation">Đăng nhập</string>
+    <string name="mobile_empty_generic">Chưa có nội dung nào ở đây</string>
+    <string name="mobile_empty_subscriptions">Video từ các kênh bạn đăng ký sẽ xuất hiện tại đây</string>
+    <string name="mobile_empty_my_videos">Các video công khai bạn tải lên sẽ hiện ở đây. YouTube không đưa video riêng tư và không công khai vào kiểu đăng nhập TV mà MeeTube sử dụng.</string>
+    <string name="mobile_empty_no_connection">Không có kết nối. Hãy kiểm tra mạng và thử lại.</string>
+    <string name="mobile_page_load_error">Không thể tải trang này.</string>
+    <string name="mobile_load_more_error">Không thể tải thêm.</string>
+    <string name="mobile_refresh_error">Không thể làm mới.</string>
+
+    <!-- In-app mini-player & card menu -->
+    <string name="mobile_mini_play_pause">Phát hoặc tạm dừng</string>
+    <string name="mobile_mini_expand">Mở rộng trình phát</string>
+    <string name="pin_playlist">Lưu danh sách phát vào mục Bạn</string>
+    <string name="pin_channel">Ghim kênh vào mục Bạn</string>
+    <string name="pinned_to_sidebar">Đã ghim vào mục Bạn</string>
+    <string name="unpin_from_sidebar">Bỏ ghim khỏi mục Bạn</string>
+    <string name="unpin_playlist">Xóa khỏi danh sách phát đã lưu</string>
+    <string name="unpinned_from_sidebar">Đã bỏ ghim khỏi mục Bạn</string>
+    <string name="subscribe_to_channel">Đăng ký</string>
+    <string name="unsubscribe_from_channel">Hủy đăng ký</string>
+    <string name="subscribe_unsubscribe_from_channel">Đăng ký hoặc hủy đăng ký</string>
+    <string name="share_link">Chia sẻ</string>
+    <string name="mobile_you_pinned">Đã ghim</string>
+    <string name="mobile_you_pinned_channels">Kênh đã ghim</string>
+    <string name="mobile_you_saved_playlists">Danh sách phát đã lưu</string>
+    <string name="mobile_playlist_save">Lưu danh sách phát</string>
+    <string name="mobile_playlist_unsave">Xóa khỏi danh sách phát đã lưu</string>
+    <string name="mobile_playlist_saved">Đã lưu vào mục Bạn</string>
+    <string name="mobile_playlist_unsaved">Đã xóa khỏi danh sách phát đã lưu</string>
+    <string name="pin_unpin_from_sidebar">Ghim vào mục Bạn</string>
+    <string name="mobile_settings_experimental">Thử nghiệm</string>
+    <string name="mobile_settings_gestures">Cử chỉ</string>
+    <string name="mobile_settings_gesture_levels">Vuốt chỉnh độ sáng và âm lượng</string>
+    <string name="mobile_settings_gesture_levels_summary">Vuốt lên xuống ở bên trái hoặc bên phải khi xem toàn màn hình</string>
+    <string name="mobile_settings_gesture_seek">Vuốt để tua</string>
+    <string name="mobile_settings_gesture_seek_summary">Vuốt ngang trên video</string>
+    <string name="mobile_settings_double_tap_seek">Chạm hai lần để tua</string>
+    <string name="subscribed_to_channel">Đã đăng ký</string>
+    <string name="unsubscribed_from_channel">Đã hủy đăng ký</string>
+    <string name="mobile_player_settings">Cài đặt</string>
+    <string name="mobile_more_options_for">Tùy chọn khác cho %1$s</string>
+    <string name="mobile_comment_likes">%1$s lượt thích</string>
+    <string name="mobile_comment_gif">GIF</string>
+    <string name="mobile_mini_close">Đóng trình phát</string>
+    <string name="mobile_first_run_setup">Thiết lập lần đầu — đang kết nối với YouTube…</string>
+
+    <!-- Casting -->
+    <string name="mobile_cast_button">Truyền lên TV</string>
+    <string name="mobile_cast_picker_title">Truyền tới</string>
+    <string name="mobile_cast_searching">Đang tìm thiết bị…</string>
+    <string name="mobile_cast_empty">Không tìm thấy thiết bị nào trên mạng Wi-Fi này</string>
+    <string name="mobile_cast_subtitle_no_ads">Chỉnh chất lượng ngay trên điện thoại</string>
+    <string name="mobile_cast_subtitle_youtube_app">YouTube hoặc MeeTube TV / SmartTube TV trên TV</string>
+    <string name="mobile_cast_chooser_title">Truyền lên %1$s</string>
+    <string name="mobile_cast_option_direct_title">Truyền trực tiếp</string>
+    <string name="mobile_cast_option_direct_subtitle">Chỉnh chất lượng từ điện thoại · không có phụ đề</string>
+    <string name="mobile_cast_option_app_title">Phát qua ứng dụng TV</string>
+    <string name="mobile_cast_option_app_subtitle">Bắt buộc cho phát trực tiếp và phụ đề · chỉnh chất lượng bằng remote TV</string>
+    <string name="mobile_cast_connecting_youtube_app">Đang kết nối tới ứng dụng YouTube trên TV…</string>
+    <string name="mobile_cast_direct_live_unsupported">Luồng phát trực tiếp cần có YouTube hoặc MeeTube TV / SmartTube TV trên TV</string>
+    <string name="mobile_cast_direct_incompatible">Không thể truyền trực tiếp video này (không có định dạng nào TV phát được)</string>
+    <string name="mobile_cast_direct_load_failed">Không thể chuẩn bị video này để truyền trực tiếp</string>
+    <string name="mobile_cast_direct_no_wifi">Truyền trực tiếp yêu cầu điện thoại và TV dùng chung một mạng Wi-Fi</string>
+    <string name="mobile_cast_link_code">Liên kết bằng mã TV</string>
+    <string name="mobile_cast_link_code_subtitle">Hoạt động với YouTube và MeeTube TV / SmartTube TV</string>
+    <string name="mobile_cast_code_hint">Mã gồm 12 chữ số</string>
+    <string name="mobile_cast_code_title">Liên kết TV</string>
+    <string name="mobile_cast_code_app_label">Ứng dụng TV</string>
+    <string name="mobile_cast_code_choose_app">Chọn ứng dụng đang mở trên TV của bạn.</string>
+    <string name="mobile_cast_code_open_smarttube">Trong MeeTube TV / SmartTube TV trên TV, hãy mở:</string>
+    <string name="mobile_cast_code_open_youtube">Trong YouTube trên TV, hãy mở:</string>
+    <string name="mobile_cast_code_find">Tìm mã trong một trong hai ứng dụng TV:</string>
+    <string name="mobile_cast_code_youtube_path">Cài đặt → Liên kết bằng mã TV</string>
+    <string name="mobile_cast_code_smarttube_path">Cài đặt → Điều khiển từ xa</string>
+    <string name="mobile_cast_code_helper">Có dấu gạch ngang hay dấu cách đều được</string>
+    <string name="mobile_cast_code_smarttube_benefit">Mẹo: với MeeTube TV / SmartTube TV, bạn có thể chỉnh chất lượng và phụ đề ngay trên TV.</string>
+    <string name="mobile_cast_code_positive">Liên kết</string>
+    <string name="mobile_cast_code_invalid">Mã phải có đủ 12 chữ số</string>
+    <string name="mobile_cast_pairing">Đang liên kết với TV…</string>
+    <string name="mobile_cast_pair_failed">Không thể liên kết bằng mã đó. Hãy kiểm tra lại và thử lần nữa.</string>
+    <string name="mobile_cast_connecting">Đang kết nối tới %1$s…</string>
+    <string name="mobile_cast_launch_failed">Không thể kết nối tới ứng dụng YouTube trên TV. Hãy thử “Liên kết bằng mã TV”.</string>
+    <string name="mobile_cast_unavailable">Tính năng truyền phát chưa khả dụng trên bản dựng này</string>
+    <string name="mobile_cast_playing_on">Đang phát trên %1$s</string>
+    <string name="mobile_cast_disconnect">Ngắt kết nối</string>
+    <string name="mobile_cast_channel_name">Truyền phát</string>
+    <string name="mobile_cast_channel_desc">Điều khiển phiên truyền phát lên TV</string>
+    <string name="mobile_cast_fallback_switching">Đang thử mở YouTube trên TV…</string>
+    <string name="mobile_cast_trying_smarttube">Đang thử MeeTube TV / SmartTube TV trên TV…</string>
+    <string name="mobile_cast_trying_direct">Đang thử truyền trực tiếp…</string>
+    <string name="mobile_cast_trying_saved">Đang thử ứng dụng TV đã lưu…</string>
+    <string name="mobile_cast_checking_ad_free">Đang kiểm tra TV…</string>
+    <string name="mobile_cast_smarttube_title">MeeTube TV / SmartTube TV</string>
+    <string name="mobile_cast_smarttube_subtitle">MeeTube TV / SmartTube TV · có thể tắt điện thoại</string>
+    <string name="mobile_cast_youtube_title">YouTube</string>
+    <string name="mobile_cast_youtube_subtitle">YouTube · dự phòng</string>
+    <string name="mobile_cast_unknown_title">Ứng dụng TV đã lưu</string>
+    <string name="mobile_cast_unknown_subtitle">Chưa rõ ứng dụng TV · chọn ⋮ để thiết lập</string>
+    <string name="mobile_cast_identify_app">Mã này lấy từ ứng dụng TV nào?</string>
+    <string name="mobile_cast_onboarding_title">TV bạn có MeeTube TV / SmartTube TV không?</string>
+    <string name="mobile_cast_onboarding_body">Ghép nối một lần và các video bạn truyền sẽ tự mở trong MeeTube TV / SmartTube TV.</string>
+    <string name="mobile_cast_pair_smarttube">Ghép nối MeeTube TV / SmartTube TV</string>
+    <string name="mobile_cast_receiver_no_playback">Ứng dụng TV chưa bắt đầu phát</string>
+    <string name="mobile_cast_switching_tv_app">Đang mở điều khiển YouTube trên TV…</string>
+    <string name="mobile_cast_choose_method">Chọn phương thức truyền phát</string>
+    <string name="mobile_cast_more_options">Tùy chọn phát trên TV</string>
+    <string name="mobile_cast_controls_title">Tùy chọn phát trên TV</string>
+    <string name="mobile_cast_direct_summary">Truyền trực tiếp · chỉnh chất lượng từ điện thoại · phụ đề cần ứng dụng TV</string>
+    <string name="mobile_cast_app_summary">Ứng dụng TV · chọn phụ đề từ điện thoại · chỉnh chất lượng bằng remote TV</string>
+    <string name="mobile_cast_quality_auto_1080">Tự động (tối đa 1080p)</string>
+    <string name="mobile_cast_quality_cap">Tối đa %1$dp</string>
+    <string name="mobile_cast_quality_tv_remote">Dùng remote TV</string>
+    <string name="mobile_cast_subtitles_need_tv_app">Chuyển sang ứng dụng TV</string>
+    <string name="mobile_cast_quality_receiver_help">Chọn chất lượng trong phần cài đặt trình phát trên TV của bạn.</string>
+    <string name="mobile_cast_subtitles_sent">Đã gửi lựa chọn phụ đề lên TV</string>
+    <string name="mobile_cast_subtitles_failed">Không thể đổi phụ đề trên thiết bị nhận này</string>
+    <string name="mobile_cast_switch_subtitles_title">Dùng ứng dụng TV để hiện phụ đề?</string>
+    <string name="mobile_cast_switch_subtitles_message">Ứng dụng TV hỗ trợ phụ đề và cho phép chỉnh chất lượng bằng remote TV. Chúng tôi sẽ thử MeeTube TV / SmartTube TV đã ghép nối trước, rồi mới tới YouTube.</string>
+    <string name="mobile_cast_switch_subtitles_positive">Chuyển</string>
+    <string name="mobile_cast_tv_volume_label">Âm lượng TV</string>
+
+    <!-- Watch-page confirmations & Downloads -->
+    <string name="mobile_sign_in_to_rate">Đăng nhập để thích hoặc không thích video</string>
+    <string name="mobile_subscribed_to">Đã đăng ký %1$s</string>
+    <string name="mobile_unsubscribed_from">Đã hủy đăng ký %1$s</string>
+    <string name="mobile_subscribed">Đã đăng ký</string>
+    <string name="mobile_unsubscribed">Đã hủy đăng ký</string>
+    <string name="mobile_undo">Hoàn tác</string>
+    <string name="mobile_liked">Đã thêm vào Video đã thích</string>
+    <string name="mobile_like_removed">Đã xóa khỏi Video đã thích</string>
+    <string name="mobile_disliked">Bạn đã không thích video này</string>
+    <string name="mobile_dislike_removed">Đã bỏ không thích</string>
+    <string name="mobile_rate_not_ready">Đang tải video này. Hãy thử lại sau giây lát.</string>
+    <string name="mobile_rating_not_saved">Không thể lưu đánh giá. Hãy kiểm tra kết nối và thử lại.</string>
+    <string name="mobile_download_started">Đã bắt đầu tải xuống</string>
+    <string name="mobile_download_started_size">Đã bắt đầu tải • %1$s</string>
+    <string name="mobile_download_done">Đã tải xuống</string>
+    <string name="mobile_download_done_size">Đã tải xuống • %1$s</string>
+    <string name="mobile_download_already_here">Đã tải xuống từ trước</string>
+    <string name="mobile_download_view">Xem</string>
+    <string name="mobile_download_preparing">Đang chuẩn bị tải xuống…</string>
+    <string name="mobile_download_unavailable">Không thể tải xuống video này</string>
+    <string name="mobile_download_unavailable_live">Không thể tải xuống luồng phát trực tiếp</string>
+    <string name="mobile_download_audio_only">Chỉ âm thanh</string>
+    <string name="mobile_download_part">Tải một đoạn</string>
+    <string name="mobile_download_part_description">Chọn điểm bắt đầu và kết thúc</string>
+    <string name="mobile_download_part_start">Bắt đầu</string>
+    <string name="mobile_download_part_end">Kết thúc</string>
+    <string name="mobile_download_part_next">Tiếp theo</string>
+    <string name="mobile_download_part_invalid">Nhập mốc thời gian như 1:30, kết thúc phải sau bắt đầu</string>
+    <string name="mobile_download_part_title">Tải xuống %1$s</string>
+    <string name="mobile_download_part_note">Chỉ tải đoạn này. Trên 1080p, toàn bộ video sẽ được tải trước rồi mới cắt sau.</string>
+    <string name="mobile_download_already">đã được tải xuống</string>
+    <string name="mobile_download_state_queued">Đang chờ tải xuống</string>
+    <string name="mobile_download_state_downloading">Đang tải · %1$d%% · %2$s / %3$s</string>
+    <string name="mobile_download_state_downloading_bytes">Đang tải · %1$s</string>
+    <string name="mobile_download_time_left">Còn %1$s</string>
+    <string name="mobile_download_state_processing">Đang hoàn tất…</string>
+    <string name="mobile_download_error_generic">Tải xuống thất bại. Chạm để thử lại.</string>
+    <string name="mobile_download_error_link">Liên kết tải đã hết hạn. Chạm để thử lại.</string>
+    <string name="mobile_download_done_title">Tải xuống hoàn tất</string>
+    <string name="mobile_download_open_folder">Mở trong thư mục</string>
+    <string name="mobile_download_saved_in">Đã lưu tại %1$s</string>
+    <string name="mobile_download_retry">Thử tải lại</string>
+    <string name="mobile_download_folder">Thư mục tải xuống</string>
+    <string name="mobile_download_folder_video">Thư mục video</string>
+    <string name="mobile_download_folder_audio">Thư mục nhạc</string>
+    <string name="mobile_download_folder_title">Đang lưu vào: %1$s</string>
+    <string name="mobile_download_folder_internal">Bộ nhớ trong</string>
+    <string name="mobile_download_folder_choose">Chọn thư mục</string>
+    <string name="mobile_download_folder_use_default">Dùng thư mục mặc định</string>
+    <string name="mobile_download_folder_set">Nội dung tải xuống sẽ lưu vào %1$s</string>
+    <string name="mobile_download_folder_failed">Không thể sử dụng thư mục đó</string>
+    <string name="mobile_download_cancel">Hủy tải xuống</string>
+    <string name="mobile_download_delete">Xóa tệp tải xuống</string>
+    <string name="mobile_download_file_missing">Tệp đã tải không còn trên thiết bị này nữa</string>
+    <string name="mobile_download_pill_downloaded">Đã tải</string>
+    <string name="mobile_downloads_empty">Video bạn tải xuống sẽ xuất hiện tại đây.\nChọn Tải xuống trong menu của video hoặc ngay trên trang xem.</string>
+    <string name="mobile_download_badge_queued">Đang chờ</string>
+    <string name="mobile_download_badge_downloading">Đang tải</string>
+    <string name="mobile_download_badge_failed">Thất bại</string>
+    <string name="mobile_download_pause">Tạm dừng tải xuống</string>
+    <string name="mobile_download_resume">Tiếp tục tải xuống</string>
+    <string name="mobile_download_action_pause">Tạm dừng</string>
+    <string name="mobile_download_state_paused">Đã tạm dừng · %1$d%% · %2$s / %3$s</string>
+    <string name="mobile_download_badge_paused">Đã tạm dừng</string>
+    <string name="mobile_download_channel_name">Tải xuống</string>
+    <string name="mobile_download_channel_desc">Tiến trình tải xuống video</string>
+
+    <!-- Update flow & Notifications -->
+    <string name="mobile_update_checking">Đang kiểm tra cập nhật…</string>
+    <string name="mobile_update_up_to_date">MeeTube đã là bản mới nhất</string>
+    <string name="mobile_update_version">Phiên bản %1$s</string>
+    <string name="mobile_update_check_failed_title">Không thể kiểm tra cập nhật</string>
+    <string name="mobile_update_check_failed_body">Hãy kiểm tra kết nối mạng và thử lại.</string>
+    <string name="mobile_update_available_title">Có bản cập nhật mới</string>
+    <string name="mobile_update_app_version">MeeTube %1$s</string>
+    <string name="mobile_update_app_version_size">MeeTube %1$s · %2$s</string>
+    <string name="mobile_update_metered">Bạn đang dùng dữ liệu di động.</string>
+    <string name="mobile_update_whats_new_in">Chi tiết bản cập nhật %1$s</string>
+    <string name="mobile_update_release_notes">Chi tiết bản phát hành</string>
+    <string name="mobile_update_later">Để sau</string>
+    <string name="mobile_update_dont_ask">Không hỏi lại</string>
+    <string name="mobile_update_dont_ask_done">Đã rõ. Bạn có thể cập nhật bất cứ lúc nào từ thẻ Bạn hoặc Cài đặt › Giới thiệu.</string>
+    <string name="mobile_settings_update_prompt">Hộp thoại cập nhật</string>
+    <string name="mobile_settings_update_prompt_summary">Hỏi cập nhật mỗi khi có phiên bản mới ra mắt</string>
+    <string name="mobile_update_update">Cập nhật</string>
+    <string name="mobile_update_downloading_title">Đang tải bản cập nhật</string>
+    <string name="mobile_update_progress">%1$s / %2$s</string>
+    <string name="mobile_update_cancel">Hủy</string>
+    <string name="mobile_update_download_failed_title">Tải xuống chưa hoàn tất</string>
+    <string name="mobile_update_download_failed_body">Hãy thử lại, hoặc tải MeeTube %1$s từ GitHub.</string>
+    <string name="mobile_update_install_failed_title">Không thể mở trình cài đặt</string>
+    <string name="mobile_update_github">Mở GitHub</string>
+    <string name="mobile_update_try_again">Thử lại</string>
+    <string name="mobile_update_ready_title">Sẵn sàng cài đặt</string>
+    <string name="mobile_update_install">Cài đặt</string>
+    <string name="mobile_update_permission_title">Cho phép MeeTube cài đặt bản cập nhật</string>
+    <string name="mobile_update_permission_body">Android chỉ hỏi quyền này một lần. Ở màn hình tiếp theo, hãy bật “Cho phép từ nguồn này” rồi quay lại: bản cập nhật sẽ tự cài ngay.</string>
+    <string name="mobile_update_open_settings">Mở cài đặt</string>
+    <string name="mobile_update_not_now">Lúc khác</string>
+    <string name="mobile_update_done">Xong</string>
+    <string name="mobile_update_whats_new">Có gì mới</string>
+    <string name="mobile_update_updated">Đã cập nhật lên MeeTube %1$s</string>
+    <string name="mobile_update_downloaded">Đã tải xong bản cập nhật</string>
+    <string name="mobile_update_row_available">Có bản cập nhật mới</string>
+    <string name="mobile_update_row_downloading">Đang tải bản cập nhật</string>
+    <string name="mobile_update_row_downloading_percent">MeeTube %1$s · %2$d%%</string>
+    <string name="mobile_update_row_ready">Bản cập nhật sẵn sàng cài đặt</string>
+    <string name="mobile_update_channel_name">Cập nhật ứng dụng</string>
+    <string name="mobile_update_channel_desc">Đang tải bản cập nhật MeeTube</string>
+    <string name="mobile_new_uploads_channel">Video tải lên mới</string>
+    <string name="mobile_new_uploads_channel_desc">Video mới từ các kênh bạn đã đăng ký</string>
+    <string name="mobile_channel_bell">Thông báo cho kênh này</string>
+    <string name="mobile_channel_bell_on">Đã bật thông báo cho kênh này</string>
+    <string name="mobile_channel_bell_off">Đã tắt thông báo cho kênh này</string>
+    <string name="mobile_channel_bell_on_done">Video mới từ %1$s sẽ thông báo cho bạn</string>
+    <string name="mobile_channel_bell_off_done">Sẽ không nhận thêm thông báo từ %1$s</string>
+    <string name="mobile_channel_bell_on_master_off">Thông báo video mới đang tắt trong Cài đặt</string>
+    <string name="mobile_channel_bell_turn_on">Bật lên</string>
+    <string name="mobile_update_notify_channel">Phiên bản mới</string>
+    <string name="mobile_update_notify_channel_desc">Thông báo khi có phiên bản MeeTube mới</string>
+    <string name="mobile_update_notify_title">Có bản cập nhật mới ✨</string>
+    <string name="mobile_update_notify_text">MeeTube %1$s đã ra mắt. Chạm để xem có gì mới</string>
+    <string name="mobile_update_notify_love">Được tạo nên bằng tất cả tâm huyết và vài đêm thức trắng. Nếu MeeTube giúp ngày của bạn vui hơn một chút, một ly cà phê ☕ sẽ tiếp thêm động lực cho mình. Không ép buộc đâu nhé ❤️</string>
+    <string name="mobile_theme">Giao diện</string>
+    <string name="mobile_theme_system">Theo hệ thống</string>
+    <string name="mobile_theme_light">Sáng</string>
+    <string name="mobile_theme_dark">Tối</string>
+
+    <!-- About & Stats -->
+    <string name="mobile_about_star">Tặng sao cho MeeTube trên GitHub</string>
+    <string name="mobile_about_star_desc">Miễn phí và mã nguồn mở. Một ngôi sao giúp nhiều người biết đến hơn</string>
+    <string name="mobile_about_share">Chia sẻ MeeTube</string>
+    <string name="mobile_about_share_desc">Gửi liên kết cho người bạn nghĩ sẽ thích</string>
+    <string name="mobile_about_share_text">MeeTube — ứng dụng YouTube cho điện thoại, xây dựng trên nền tảng SmartTube: %1$s</string>
+    <string name="mobile_about_made_by">Phát triển bởi %1$s</string>
+    <string name="mobile_about_star_short">Tặng sao</string>
+    <string name="mobile_about_share_short">Chia sẻ</string>
+    <string name="mobile_about_log_short">Gửi nhật ký</string>
+    <string name="mobile_about_creator">Nhà phát triển</string>
+    <string name="mobile_about_coffee_note"><![CDATA[<font color="#FF5F56">●</font> <font color="#FFBD2E">●</font> <font color="#27C93F">●</font><br><br><font color="#4ADE80">$</font> meetube --thank-you<br><font color="#E6EDF3">&#160;&#160;quảng cáo: 0 | tài trợ: đã bỏ qua</font><br><font color="#8B949E">// code lúc 3h sáng bằng caffeine nguyên chất<br>// tiếp thêm ly nữa? hoàn toàn tùy tâm :)</font>]]></string>
+    <string name="mobile_stats_today">Hôm nay</string>
+    <string name="mobile_stats_hero_label">trong MeeTube hôm nay</string>
+    <string name="mobile_stats_videos">Video</string>
+    <string name="mobile_stats_week_title">7 ngày qua · %1$s</string>
+    <string name="mobile_stats_tap">Chạm vào một cột để xem ngày đó</string>
+    <string name="mobile_stats_avg">Trung bình ngày</string>
+    <string name="mobile_stats_watched">Đã xem</string>
+    <string name="mobile_stats_day">%1$s: %2$s trong MeeTube, đã xem %3$s, %4$s video</string>
+    <string name="mobile_stats_storage_header">Thống kê của bạn</string>
+    <string name="mobile_stats_delete">Xóa thống kê của tôi</string>
+    <string name="mobile_stats_delete_confirm">Xóa thống kê của bạn?</string>
+    <string name="mobile_stats_delete_body">Thời gian dùng app, thời gian xem và số lượng video đã đếm của mọi ngày đều sẽ bị xóa và đếm lại từ đầu.</string>
+    <string name="mobile_stats_private">Thống kê của bạn (thời gian mở MeeTube, thời gian xem, số video đã mở) chỉ lưu cục bộ trên điện thoại này. Chúng không bao giờ bị tải lên hay chia sẻ: không có dữ liệu nào rời khỏi máy.</string>
+    <string name="mobile_stats_on_device">🔒 Chỉ lưu trên điện thoại này. Không có gì rời khỏi thiết bị của bạn.</string>
+    <plurals name="mobile_stats_delete_summary">
+        <item quantity="other">Đã lưu %d ngày trên điện thoại này</item>
+    </plurals>
+    <string name="mobile_about_tv_badge">MỚI</string>
+    <string name="mobile_about_tv_title">MeeTube TV đã ra mắt 📺</string>
+    <string name="mobile_about_tv_text">Mọi thứ bạn yêu thích ở đây, nay đã có trên màn hình lớn. Thanh bên kính mờ, thẻ Shorts phát sáng riêng biệt và đăng nhập nhanh bằng mã. Chiếc sofa đang vẫy gọi đấy.</string>
+    <string name="mobile_about_tv_button">Cài đặt lên TV của tôi</string>
+    <string name="mobile_about_tv_repo">⭐ Tặng sao trên GitHub hoặc tự tải tệp APK</string>
+    <string name="mobile_about_tv_shot">Trang chủ MeeTube TV trên màn hình TV</string>
+    <string name="mobile_about_reporters">Người báo lỗi</string>
+    <string name="mobile_about_reporters_summary">Tri ân tất cả những người đã báo lỗi</string>
+    <string name="mobile_about_reporters_note">Cảm ơn tất cả mọi người đã mở issue báo lỗi. Mọi góp ý và ý tưởng đều giúp MeeTube tốt hơn từng ngày.</string>
+    <string name="mobile_about_reporters_loading">Đang tải từ GitHub…</string>
+    <string name="mobile_about_reporters_failed">Không thể tải danh sách từ GitHub. Hãy kiểm tra kết nối và mở lại trang này.</string>
+    <plurals name="mobile_about_reporters_count">
+        <item quantity="other">%d vấn đề</item>
+    </plurals>
+    <string name="mobile_about_contributors">Người đóng góp</string>
+    <string name="mobile_about_contributors_summary">Những người đã góp sức xây dựng MeeTube và đóng góp của họ</string>
+    <string name="mobile_about_contributors_code">Mã nguồn và bản dịch</string>
+    <string name="mobile_about_contributors_built_on">Xây dựng trên nền tảng</string>
+    <string name="mobile_about_credit_zh_tw">Bản dịch tiếng Trung phồn thể (#14)</string>
+    <string name="mobile_about_credit_ru">Bản dịch tiếng Nga (#194)</string>
+    <string name="mobile_about_credit_icons">Các biểu tượng Red CRT, Chrome Play, Pixel Play, Starry Night và GTA VI (#193)</string>
+    <string name="mobile_about_credit_smarttube">SmartTube: trình phát và hệ thống YouTube mà MeeTube vận hành</string>
+    <string name="mobile_about_credit_newtube">NewTube: ứng dụng điện thoại tiền thân của MeeTube</string>
+    <string name="mobile_about_credit_backdrop">Backdrop: thấu kính kính lỏng trên các thanh điều hướng</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: bộ hồ sơ tinh chỉnh tai nghe</string>
+
+    <!-- Experimental SABR playback -->
+    <string name="sabr_vod_option">Ưu tiên SABR ngay cả khi liên kết vẫn chạy (thử nghiệm; video VOD tiếp theo)</string>
+    <string name="sabr_vod_stopped">Phát thử nghiệm SABR đã dừng. Chạm Phát để thử lại hoặc tắt SABR trong Cài đặt.</string>
+
+    <!-- Up next, Shorts mute, Greeting & Focus timer -->
+    <string name="mobile_next_in">Tiếp theo sau %1$d giây</string>
+    <string name="mobile_next_play">Phát ngay</string>
+    <string name="mobile_next_cancel">Hủy</string>
+    <string name="mobile_shorts_mute">Tắt tiếng</string>
+    <string name="mobile_shorts_unmute">Bật tiếng</string>
+    <string name="mobile_greet_morning">Chào buổi sáng</string>
+    <string name="mobile_greet_afternoon">Chào buổi chiều</string>
+    <string name="mobile_greet_evening">Chào buổi tối</string>
+    <string name="mobile_greet_night">Chúc ngủ ngon</string>
+    <string-array name="mobile_greet_quotes">
+        <item>“Bí quyết để tiến lên phía trước là hãy bắt đầu.”\nMark Twain</item>
+        <item>“Làm tốt hơn là nói hay.”\nBenjamin Franklin</item>
+        <item>“Đi chậm đến đâu không quan trọng, miễn là bạn đừng dừng lại.”\nKhổng Tử</item>
+        <item>“Hành trình vạn dặm bắt đầu từ một bước chân.”\nLão Tử</item>
+        <item>“Sự đơn giản là đỉnh cao của sự tinh tế.”\nLeonardo da Vinci</item>
+        <item>“Hãy là chính mình; tất cả những người khác đều đã có người đóng vai rồi.”\nOscar Wilde</item>
+        <item>“Dù bạn là ai, hãy là một người tử tế.”\nAbraham Lincoln</item>
+        <item>“Giữa lòng khó khăn luôn ẩn chứa cơ hội.”\nAlbert Einstein</item>
+        <item>“Hiểu chính mình là khởi đầu của mọi trí tuệ.”\nAristotle</item>
+        <item>“Hạnh phúc phụ thuộc vào chính bản thân chúng ta.”\nAristotle</item>
+        <item>“Lối thoát tốt nhất luôn là đi xuyên qua nó.”\nRobert Frost</item>
+        <item>“Chẳng có gì vận hành nếu bạn không hành động.”\nMaya Angelou</item>
+        <item>“Hãy cứ khát khao, hãy cứ dại khờ.”\nSteve Jobs</item>
+        <item>“Cuộc sống là những gì xảy ra khi bạn đang bận lập những kế hoạch khác.”\nJohn Lennon</item>
+        <item>“Hãy hành động như thể điều bạn làm tạo nên sự khác biệt. Nó thực sự như vậy đấy.”\nWilliam James</item>
+        <item>“Hãy hướng tâm trí về vẻ đẹp của cuộc sống.”\nMarcus Aurelius</item>
+        <item>“Đừng lãng phí thời gian tranh luận xem một người tốt nên như thế nào nữa. Hãy trở thành người như thế.”\nMarcus Aurelius</item>
+        <item>“May mắn là điều xảy ra khi sự chuẩn bị gặp gỡ cơ hội.”\nSeneca</item>
+        <item>“Trong lúc chúng ta chờ đợi cuộc sống, cuộc sống cứ thế trôi qua.”\nSeneca</item>
+        <item>“Bạn sẽ trượt 100%% những cú sút mà bạn không bao giờ thực hiện.”\nWayne Gretzky</item>
+        <item>“Hãy biến những vết thương của bạn thành trí tuệ.”\nOprah Winfrey</item>
+        <item>“Không phải ai lang thang cũng đều lạc lối.”\nJ. R. R. Tolkien</item>
+        <item>“Cách duy nhất để làm nên điều tuyệt vời là yêu công việc bạn làm.”\nSteve Jobs</item>
+        <item>“Từng chút một, người ta sẽ đi được rất xa.”\nJ. R. R. Tolkien</item>
+        <item>“Nếu bạn đang đi qua địa ngục, hãy cứ bước tiếp.”\nWinston Churchill</item>
+        <item>“Hãy làm những gì bạn có thể, với những gì bạn có, tại nơi bạn đang đứng.”\nTheodore Roosevelt</item>
+        <item>“Chúng ta là những gì chúng ta nghĩ.”\nĐức Phật</item>
+        <item>“Mỗi khoảnh khắc đều là một khởi đầu mới.”\nT. S. Eliot</item>
+    </string-array>
+    <string name="mobile_focus_idle">Hẹn giờ · %d phút</string>
+    <string name="mobile_focus_running">Hẹn giờ · %s</string>
+    <string name="mobile_focus_start">Bắt đầu đếm</string>
+    <string name="mobile_focus_stop">Dừng hẹn giờ</string>
+    <string name="mobile_focus_started">Đã đặt %d phút. Hết giờ tôi sẽ nhắc đấy.</string>
+    <string name="mobile_focus_title">Đang tập trung chứ nhỉ?</string>
+    <plurals name="mobile_focus_message">
+        <item quantity="other">Đã hết %d phút rồi. Tập trung làm việc thôi nào. Video vẫn ở đây đợi bạn mà, hứa danh dự đấy.</item>
+    </plurals>
+    <string name="mobile_focus_win">Có, đang tập trung</string>
+    <string name="mobile_focus_snooze">Thêm 5 phút</string>
+    <string name="mobile_focus_won">Giỏi lắm! Cố gắng lên nhé.</string>
+    <string name="mobile_focus_snoozed">5 phút nhé. Tôi đang đếm đấy.</string>
+    <string name="mobile_focus_snoozed_again">Nữa hả? Được rồi, 5 phút cuối. Chắc thế.</string>
+    <string name="mobile_focus_custom_title">Hẹn giờ tùy chỉnh</string>
+    <string name="mobile_focus_custom_hint">Số phút (1 đến 600)</string>
+    <string name="mobile_shorts_clean_on">Đã ẩn các nút. Nhấn giữ để hiện lại</string>
+    <string name="mobile_shorts_clean_off">Đã hiện lại các nút. Nhấn giữ để ẩn đi</string>
+    <string name="mobile_shorts_clean_tip">Mẹo: nhấn giữ vào Short để ẩn các nút</string>
+    <string name="mobile_player_most_replayed">Được xem lại nhiều nhất</string>
+</resources>
