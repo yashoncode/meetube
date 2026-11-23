@@ -83,13 +83,32 @@ final class DownloadJob {
             fail(mContext.getString(R.string.mobile_download_error_link));
         } catch (IOException e) {
             Log.w(TAG, "download failed: " + e);
-            fail(mContext.getString(R.string.mobile_download_error_generic));
+            fail(reason(e));
         } catch (RuntimeException e) {
             Log.e(TAG, "download crashed", e);
-            fail(mContext.getString(R.string.mobile_download_error_generic));
+            fail(reason(e));
         }
 
         mRegistry.notifyChanged();
+    }
+
+    /**
+     * Issue #317: what went wrong, not only that it did - full storage says so, and anything else
+     * carries its cause in brackets, so a screenshot is enough to tell why.
+     */
+    private String reason(Throwable e) {
+        Throwable root = e;
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            String m = String.valueOf(t.getMessage());
+            if (m.contains("ENOSPC") || m.contains("No space left")) {
+                return mContext.getString(R.string.mobile_download_error_space);
+            }
+            root = t;
+        }
+        String detail = root.getMessage() != null ? root.getMessage() : root.getClass().getSimpleName();
+        if (detail.length() > 80) detail = detail.substring(0, 80) + "…";
+        return mContext.getString(mItem.state == DownloadItem.STATE_PROCESSING
+                ? R.string.mobile_download_error_save : R.string.mobile_download_error_detail, detail);
     }
 
     private void fail(String message) {
@@ -338,6 +357,14 @@ final class DownloadJob {
         mItem.state = DownloadItem.STATE_PROCESSING;
         mRegistry.notifyChanged();
         mListener.onProgress(mItem);
+
+        // Issue #317: the finished file is about the parts' size; without room for it the muxer
+        // fails late with nothing to show for it, so say so before it starts.
+        long needed = (videoPart != null ? videoPart.length() : 0) + (audioPart != null ? audioPart.length() : 0);
+        if (DownloadFolder.get(mContext, mItem.isAudioOnly()) == null
+                && DownloadRegistry.partsDir(mContext).getUsableSpace() < needed + (16L << 20)) {
+            throw new IOException("ENOSPC: " + needed + " bytes needed");
+        }
 
         // MEETUBE(4k-download): VP9 + Opus parts (1440p and up) can only go into WebM.
         boolean webm = DownloadOptions.isWebmFile(videoPart);
