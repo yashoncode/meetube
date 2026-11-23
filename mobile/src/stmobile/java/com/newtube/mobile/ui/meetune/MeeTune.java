@@ -438,6 +438,22 @@ public final class MeeTune {
         return out;
     }
 
+    /** The queue page's remove on an AutoPlay song: it leaves the radio's Up next. */
+    public static void dropUpNext(String videoId) {
+        sBatch.remove(videoId);
+    }
+
+    /** The queue page's drag: the AutoPlay songs {@code videoIds} take their old places in this new order. */
+    public static void reorderUpNext(List<String> videoIds) {
+        int[] slots = new int[videoIds.size()];
+        for (int i = 0; i < slots.length; i++) {
+            slots[i] = sBatch.indexOf(videoIds.get(i));
+            if (slots[i] < 0) return; // a new batch came in meanwhile
+        }
+        java.util.Arrays.sort(slots);
+        for (int i = 0; i < slots.length; i++) sBatch.set(slots[i], videoIds.get(i));
+    }
+
     /** Not in the last queue, or among its last three: time to ask for the songs after it. */
     private static boolean lastOfBatch(String id) {
         int at = sBatch.indexOf(id);

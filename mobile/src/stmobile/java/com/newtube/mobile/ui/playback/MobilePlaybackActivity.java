@@ -4194,8 +4194,12 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override public void cast() {
                 openCastPicker();
             }
-            @Override public void queue() {
-                showMeeTuneQueue();
+            @Override public List<Video> related() {
+                return new ArrayList<>(mRelatedVideos);
+            }
+            @Override public void play(Video video) {
+                com.newtube.mobile.ui.meetune.MeeTune.keep(video);
+                onRelatedClicked(video);
             }
             @Override public void like() {
                 if (mWatchLike != null) {
@@ -4254,56 +4258,6 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /** MEETUNE: Up next as a list of songs; a pick stays in the music look. */
-    private void showMeeTuneQueue() {
-        // The YouTube Music radio's songs; YouTube's suggestions only until the radio is in.
-        List<Video> radio = com.newtube.mobile.ui.meetune.MeeTune.upNext(PlaybackPresenter.instance(this).getVideo());
-        if ((radio.isEmpty() && mRelatedVideos.isEmpty()) || isFinishing()) {
-            return;
-        }
-        com.google.android.material.bottomsheet.BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(
-                new com.google.android.material.bottomsheet.BottomSheetDialog(this));
-        androidx.recyclerview.widget.RecyclerView list = new androidx.recyclerview.widget.RecyclerView(this);
-        list.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
-        List<Video> videos = radio.isEmpty() ? new ArrayList<>(mRelatedVideos) : radio;
-        list.setAdapter(new androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
-            @Override public int getItemCount() {
-                return videos.size();
-            }
-            @NonNull @Override public androidx.recyclerview.widget.RecyclerView.ViewHolder onCreateViewHolder(
-                    @NonNull ViewGroup parent, int viewType) {
-                View row = getLayoutInflater().inflate(R.layout.meetune_song_row, parent, false);
-                row.findViewById(R.id.meetune_row_more).setVisibility(View.GONE);
-                return new androidx.recyclerview.widget.RecyclerView.ViewHolder(row) { };
-            }
-            @Override public void onBindViewHolder(
-                    @NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder, int position) {
-                Video video = videos.get(position);
-                View row = holder.itemView;
-                ((TextView) row.findViewById(R.id.meetune_title)).setText(video.getTitle());
-                ((TextView) row.findViewById(R.id.meetune_subtitle)).setText(video.getAuthor());
-                com.bumptech.glide.Glide.with(row).load(video.cardImageUrl)
-                        .into((ImageView) row.findViewById(R.id.meetune_art));
-                row.setOnClickListener(v -> {
-                    sheet.dismiss();
-                    com.newtube.mobile.ui.meetune.MeeTune.keep(video);
-                    onRelatedClicked(video);
-                });
-            }
-        });
-        TextView title = new TextView(this);
-        title.setText(R.string.meetune_queue);
-        title.setTextSize(20);
-        title.setTextColor(getColorInt(R.color.mobile_color_on_surface));
-        int pad = Math.round(20 * getResources().getDisplayMetrics().density);
-        title.setPadding(pad, pad, pad, pad / 2);
-        android.widget.LinearLayout content = new android.widget.LinearLayout(this);
-        content.setOrientation(android.widget.LinearLayout.VERTICAL);
-        content.addView(title);
-        content.addView(list);
-        sheet.setContentView(sheetRoot(content));
-        showPlayerSheet(sheet);
-    }
-
     /** The audio-only cover: {@code video}'s thumbnail, dimmed, with the headphones over it. */
     private void showAudioCover(@Nullable Video video) {
         if (!mAudioOnly || video == null || mPlayerView == null) {
@@ -8146,7 +8100,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mSwipeDownRawX = downRawX;
         if (mMeeTune != null && mMeeTune.isShown()) { // MEETUNE: the music look only swipes down, to minimize
-            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag()
+            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag() && !mMeeTune.holdsSwipeDown()
                     ? SWIPE_MINIMIZE : PlayerContainerLayout.SWIPE_NONE;
         }
         boolean vertical = direction == PlayerContainerLayout.UP || direction == PlayerContainerLayout.DOWN;

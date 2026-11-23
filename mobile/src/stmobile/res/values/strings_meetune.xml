@@ -59,6 +59,14 @@
         <item quantity="other">%1$s · %2$d songs</item>
     </plurals>
     <string name="meetune_queue">Up next</string>
+    <string name="meetune_queue_title">Queue</string>
+    <string name="meetune_queue_search">Search songs</string>
+    <string name="meetune_queue_close">Close queue</string>
+    <string name="meetune_queue_playing_next">Playing next</string>
+    <string name="meetune_queue_autoplay">AutoPlay</string>
+    <string name="meetune_queue_autoplay_summary">Similar music, selected to play next</string>
+    <string name="meetune_queue_remove">Remove from queue</string>
+    <string name="meetune_queue_move">Drag to move</string>
     <string name="meetune_lyrics">Lyrics</string>
     <string name="meetune_focus">Focus on the lyrics</string>
     <string name="meetune_cast">Cast</string>

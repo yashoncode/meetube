@@ -3,6 +3,7 @@ package com.newtube.mobile.ui.playback;
 import android.content.Context;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -38,6 +39,7 @@ import com.newtube.mobile.ui.common.GlowProgressBar;
 import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.meetune.MeeTune;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -68,7 +70,11 @@ public final class MeeTunePlayerSkin {
 
         void cast();
 
-        void queue();
+        /** YouTube's suggestions: the queue page's list until the radio is in. */
+        java.util.List<Video> related();
+
+        /** A song tapped on the queue page plays now. */
+        void play(Video video);
 
         void like();
 
@@ -100,6 +106,7 @@ public final class MeeTunePlayerSkin {
     private static final int NORMAL = 0;
     private static final int LYRICS = 1; // the lyrics over the controls
     private static final int FULL = 2; // the lyrics, the whole page
+    private static final int QUEUE = 3; // what plays now and next, over the bar
     private static final long LEAD_MS = 300; // as LyricsSheet: a line lights as it starts
     private static final long HANDS_OFF_MS = 4_000;
     private int mMode = NORMAL;
@@ -182,6 +189,24 @@ public final class MeeTunePlayerSkin {
         mHeadMore = mRoot.findViewById(R.id.meetune_player_head_more);
         mLyricsButton = mRoot.findViewById(R.id.meetune_player_lyrics);
         mLyricsButtonBg = mLyricsButton.getBackground();
+        mQueuePage = mRoot.findViewById(R.id.meetune_player_queue_page);
+        mQueueClose = mRoot.findViewById(R.id.meetune_player_queue_close);
+        mQueueSearch = mRoot.findViewById(R.id.meetune_player_queue_search);
+        mQueueList = mRoot.findViewById(R.id.meetune_player_queue_list);
+        mQueueList.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(context));
+        mQueueList.setAdapter(mQueue);
+        mQueueList.setItemAnimator(null); // the dragged row moves by itself; a refresh never cross-fades
+        mQueueDrag.attachToRecyclerView(mQueueList);
+        mQueueClose.setOnClickListener(v -> setMode(NORMAL));
+        mQueueSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override public void afterTextChanged(android.text.Editable s) {
+                refreshQueue();
+            }
+        });
 
         if (Build.VERSION.SDK_INT >= 31) {
             mBg.setRenderEffect(RenderEffect.createBlurEffect(90f, 90f, Shader.TileMode.CLAMP));
@@ -226,7 +251,8 @@ public final class MeeTunePlayerSkin {
             mRoot.getLocationOnScreen(at);
             int below = Math.max(0, top - (at[1] - Math.round(mRoot.getTranslationY())));
             handle.setTranslationY(below);
-            int pageTop = below + Math.round(36 * context.getResources().getDisplayMetrics().density);
+            mQueueClose.setTranslationY(below);
+            int pageTop = below + Math.round((mMode == QUEUE ? 46 : 36) * context.getResources().getDisplayMetrics().density);
             if (mPage.getPaddingTop() != pageTop) {
                 mPage.setPadding(0, pageTop, 0, mPage.getPaddingBottom());
             }
@@ -272,7 +298,7 @@ public final class MeeTunePlayerSkin {
             return false;
         });
         bounce(mRoot.findViewById(R.id.meetune_player_cast), mControls::cast);
-        bounce(mRoot.findViewById(R.id.meetune_player_queue), mControls::queue);
+        bounce(mRoot.findViewById(R.id.meetune_player_queue), () -> setMode(mMode == QUEUE ? NORMAL : QUEUE));
         android.widget.ImageView mode = mRoot.findViewById(R.id.meetune_player_mode);
         showPlayMode(mode, com.newtube.mobile.ui.meetune.MeeTune.playMode(mRoot.getContext()));
         bounce(mode, () -> {
@@ -691,6 +717,11 @@ public final class MeeTunePlayerSkin {
         void setColor(int color) {
             int from = mBar.getColor();
             if (from == color) return;
+            if (!isAttachedToWindow()) { // not shown yet: nothing to ease from
+                mBar.setColor(color);
+                mBar.setShadowLayer(6 * getResources().getDisplayMetrics().density, 0, 0, (color & 0x00FFFFFF) | 0xCC000000);
+                return;
+            }
             android.animation.ValueAnimator shift = android.animation.ValueAnimator.ofArgb(from, color).setDuration(600);
             shift.addUpdateListener(a -> {
                 int c = (int) a.getAnimatedValue();
@@ -1169,6 +1200,7 @@ public final class MeeTunePlayerSkin {
 
     /** The sung line's row keeps its room on the normal page, lyrics or not, so the title and bar never move. */
     private int lineRowVisibility(int mode) {
+        if (mode == QUEUE) return timed() ? View.VISIBLE : View.GONE; // the sung line over the bar, as on the queue's foot
         return mode != NORMAL ? View.GONE : timed() || lyricsLoading() ? View.VISIBLE : View.INVISIBLE;
     }
 
@@ -1216,7 +1248,7 @@ public final class MeeTunePlayerSkin {
         if (sung < 0 || sung >= mLyricLines.getChildCount()) return;
         View line = mLyricLines.getChildAt(sung);
         ((TextView) line).setTextColor(0xFFFFFFFF);
-        if (mMode != NORMAL && android.os.SystemClock.uptimeMillis() - mTouchedAt > HANDS_OFF_MS) {
+        if ((mMode == LYRICS || mMode == FULL) && android.os.SystemClock.uptimeMillis() - mTouchedAt > HANDS_OFF_MS) {
             mLyricsScroll.post(() -> mLyricsScroll.smoothScrollTo(0,
                     Math.max(0, mLyricLines.getTop() + line.getTop() - ((LyricsScroll) mLyricsScroll).room() / 3)));
         }
@@ -1261,20 +1293,43 @@ public final class MeeTunePlayerSkin {
     private void setMode(int mode) {
         if (mode == mMode) return;
         int from = mMode;
-        if ((mode != NORMAL) != (from != NORMAL)) setFocus(false); // each page's focus lays out differently: undo it in the old one
+        boolean queue = mode == QUEUE;
+        if ((mode != NORMAL) != (from != NORMAL) || queue != (from == QUEUE)) {
+            setFocus(false); // each page's focus lays out differently: undo it in the old one
+        }
         mMode = mode;
-        boolean lyrics = mode != NORMAL;
+        boolean lyrics = mode != NORMAL; // the small song at the top: lyrics or queue under it
         if (lyrics != (from != NORMAL)) {
             fade(mArt, !lyrics);
             fade(mPage, lyrics);
             mTitleRow.setVisibility(lyrics ? View.GONE : View.VISIBLE);
             mRoot.findViewById(R.id.meetune_player_format_space).setVisibility(lyrics ? View.GONE : View.INVISIBLE); // the title row's spacer
-            int pad = mLyricsButton.getPaddingLeft(); // setBackground swaps in the drawable's padding: keep the icon's 12dp
-            mLyricsButton.setBackground(lyrics
-                    ? androidx.core.content.ContextCompat.getDrawable(mRoot.getContext(), R.drawable.meetune_lyrics_on)
-                    : mLyricsButtonBg);
-            mLyricsButton.setPadding(pad, pad, pad, pad);
-            if (lyrics) com.newtube.mobile.ui.common.Motion.frostIn(mLyricsScroll);
+        }
+        int pad = mLyricsButton.getPaddingLeft(); // setBackground swaps in the drawable's padding: keep the icon's 12dp
+        mLyricsButton.setBackground(lyrics && !queue
+                ? androidx.core.content.ContextCompat.getDrawable(mRoot.getContext(), R.drawable.meetune_lyrics_on)
+                : mLyricsButtonBg);
+        mLyricsButton.setPadding(pad, pad, pad, pad);
+        if (queue != (from == QUEUE) || from == NORMAL) {
+            // The queue page: the list in the lyrics' place, the controls under it as on Lyrics.
+            mLyricsScroll.setVisibility(queue ? View.GONE : View.VISIBLE);
+            mQueuePage.setVisibility(queue ? View.VISIBLE : View.GONE);
+            mRoot.findViewById(R.id.meetune_player_handle).setVisibility(queue ? View.GONE : View.VISIBLE);
+            mQueueClose.setVisibility(queue ? View.VISIBLE : View.GONE);
+            if (queue) {
+                setFocus(true); // the queue opens minimized: no volume, no song pill (the focus arrow brings them back)
+                mQueueKey = null;
+                refreshQueue();
+                mQueueList.scrollToPosition(0);
+            } else if (mQueueSearch.length() > 0 || mQueueSearch.hasFocus()) {
+                mQueueSearch.setText(null);
+                mQueueSearch.clearFocus();
+                android.view.inputmethod.InputMethodManager keyboard = (android.view.inputmethod.InputMethodManager)
+                        mRoot.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (keyboard != null) keyboard.hideSoftInputFromWindow(mQueueSearch.getWindowToken(), 0);
+            }
+            if (lyrics) com.newtube.mobile.ui.common.Motion.frostIn(queue ? mQueuePage : mLyricsScroll);
+            mRoot.requestLayout(); // the page's top makes room for the queue's chevron
         }
         mLineRow.setVisibility(lineRowVisibility(mode));
         boolean full = mode == FULL;
@@ -1296,6 +1351,279 @@ public final class MeeTunePlayerSkin {
         mTouchedAt = -HANDS_OFF_MS;
         mRoot.post(() -> followLyrics(mControls.position()));
     }
+
+    // ----------------------------------------------------------------------------- queue
+
+    private static final int ROW_LABEL = 0;
+    private static final int ROW_AUTOPLAY = 1; // AutoPlay's own header, its icon and a line under it
+    private static final int ROW_NOW = 2;
+    private static final int ROW_QUEUED = 3; // the listener's Play next / Add to queue
+    private static final int ROW_RADIO = 4; // AutoPlay: the YouTube Music radio's songs
+    private static final int ROW_SUGGESTED = 5; // YouTube's suggestions, until the radio is in: not editable
+
+    private static final class QueueRow {
+        final int kind;
+        @Nullable final Video video;
+        final int label;
+
+        QueueRow(int kind, @Nullable Video video, int label) {
+            this.kind = kind;
+            this.video = video;
+            this.label = label;
+        }
+    }
+
+    private final View mQueuePage;
+    private final View mQueueClose;
+    private final android.widget.EditText mQueueSearch;
+    private final androidx.recyclerview.widget.RecyclerView mQueueList;
+    private final List<QueueRow> mQueueRows = new java.util.ArrayList<>();
+    /** What the list shows (kinds, ids, the search): a tick that finds the same rebinds nothing. */
+    @Nullable private String mQueueKey;
+    private boolean mQueueDragging;
+    @Nullable private EqBars mQueueBars;
+
+    private void refreshQueue() {
+        if (mVideo == null || mVideo.videoId == null) return;
+        String query = mQueueSearch.getText().toString().trim().toLowerCase(Locale.ROOT);
+        List<QueueRow> rows = new java.util.ArrayList<>();
+        rows.add(new QueueRow(ROW_LABEL, null, R.string.mobile_watch_queue_now_playing));
+        rows.add(new QueueRow(ROW_NOW, mVideo, 0));
+        List<QueueRow> queued = new java.util.ArrayList<>();
+        List<Video> after = com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance().getAllAfterCurrent();
+        if (after != null) {
+            for (Video video : after) {
+                if (video.fromQueue && !mVideo.videoId.equals(video.videoId) && matches(video, query)) {
+                    queued.add(new QueueRow(ROW_QUEUED, video, 0));
+                }
+            }
+        }
+        if (!queued.isEmpty()) {
+            rows.add(new QueueRow(ROW_LABEL, null, R.string.meetune_queue_playing_next));
+            rows.addAll(queued);
+        }
+        List<Video> next = MeeTune.upNext(mVideo);
+        int kind = ROW_RADIO;
+        if (next.isEmpty()) {
+            next = mControls.related();
+            kind = ROW_SUGGESTED;
+        }
+        List<QueueRow> radio = new java.util.ArrayList<>();
+        for (Video video : next) {
+            if (video.videoId != null && !mVideo.videoId.equals(video.videoId) && matches(video, query)) {
+                radio.add(new QueueRow(kind, video, 0));
+            }
+        }
+        if (!radio.isEmpty() || query.isEmpty()) {
+            rows.add(new QueueRow(ROW_AUTOPLAY, null, 0));
+            rows.addAll(radio);
+        }
+        StringBuilder key = new StringBuilder(query);
+        for (QueueRow row : rows) key.append('|').append(row.kind).append(row.video != null ? row.video.videoId : "");
+        if (key.toString().equals(mQueueKey)) return;
+        mQueueKey = key.toString();
+        mQueueRows.clear();
+        mQueueRows.addAll(rows);
+        mQueue.notifyDataSetChanged();
+    }
+
+    private static boolean matches(Video video, String query) {
+        if (query.isEmpty()) return true;
+        String title = video.getTitle(), artist = video.getAuthor();
+        return (title != null && title.toLowerCase(Locale.ROOT).contains(query))
+                || (artist != null && artist.toLowerCase(Locale.ROOT).contains(query));
+    }
+
+    /** The X: the playing song skips, a queued one leaves the queue, an AutoPlay one leaves the radio. */
+    private void removeFromQueue(QueueRow row) {
+        if (row.video == null) return;
+        if (row.kind == ROW_NOW) {
+            mControls.next();
+            return;
+        }
+        if (row.kind == ROW_QUEUED) {
+            com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance().remove(row.video);
+        } else if (row.kind == ROW_RADIO) {
+            MeeTune.dropUpNext(row.video.videoId);
+        }
+        refreshQueue();
+    }
+
+    /** A dropped row: its section's new order goes to the playlist (queued) or the radio (AutoPlay). */
+    private void commitQueueOrder(int kind) {
+        List<Video> order = new java.util.ArrayList<>();
+        for (QueueRow row : mQueueRows) if (row.kind == kind) order.add(row.video);
+        if (kind == ROW_QUEUED) { // each in turn to just after the playing song, last first
+            com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist playlist =
+                    com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance();
+            for (int i = order.size() - 1; i >= 0; i--) playlist.next(order.get(i));
+        } else if (kind == ROW_RADIO) {
+            List<String> ids = new java.util.ArrayList<>();
+            for (Video video : order) ids.add(video.videoId);
+            MeeTune.reorderUpNext(ids);
+        }
+        mQueueKey = null;
+        refreshQueue();
+    }
+
+    private static boolean editable(int kind) {
+        return kind == ROW_QUEUED || kind == ROW_RADIO;
+    }
+
+    private final androidx.recyclerview.widget.ItemTouchHelper mQueueDrag = new androidx.recyclerview.widget.ItemTouchHelper(
+            new androidx.recyclerview.widget.ItemTouchHelper.Callback() {
+                private int mDragged = -1;
+
+                @Override
+                public int getMovementFlags(@androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView list,
+                                            @androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder) {
+                    int at = holder.getBindingAdapterPosition();
+                    boolean drags = at >= 0 && at < mQueueRows.size() && editable(mQueueRows.get(at).kind)
+                            && mQueueSearch.length() == 0; // a filtered list has no places to move between
+                    return drags ? makeMovementFlags(androidx.recyclerview.widget.ItemTouchHelper.UP
+                            | androidx.recyclerview.widget.ItemTouchHelper.DOWN, 0) : 0;
+                }
+
+                @Override
+                public boolean onMove(@androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView list,
+                                      @androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder,
+                                      @androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder target) {
+                    int from = holder.getBindingAdapterPosition(), to = target.getBindingAdapterPosition();
+                    if (from < 0 || to < 0 || mQueueRows.get(from).kind != mQueueRows.get(to).kind) return false; // within its section
+                    java.util.Collections.swap(mQueueRows, from, to);
+                    mQueue.notifyItemMoved(from, to);
+                    mDragged = mQueueRows.get(to).kind;
+                    return true;
+                }
+
+                @Override
+                public void onSwiped(@androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder, int direction) {
+                }
+
+                @Override
+                public void onSelectedChanged(@Nullable androidx.recyclerview.widget.RecyclerView.ViewHolder holder, int state) {
+                    super.onSelectedChanged(holder, state);
+                    if (state == androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_DRAG) {
+                        mQueueDragging = true;
+                        if (holder != null) holder.itemView.setBackgroundColor(0x26FFFFFF);
+                    }
+                }
+
+                @Override
+                public void clearView(@androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView list,
+                                      @androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder) {
+                    super.clearView(list, holder);
+                    holder.itemView.setBackground(rowBackground(holder.itemView.getContext()));
+                    mQueueDragging = false;
+                    if (mDragged >= 0) commitQueueOrder(mDragged);
+                    mDragged = -1;
+                }
+            });
+
+    private static android.graphics.drawable.Drawable rowBackground(Context context) {
+        android.util.TypedValue value = new android.util.TypedValue();
+        context.getTheme().resolveAttribute(android.R.attr.selectableItemBackground, value, true);
+        return androidx.core.content.ContextCompat.getDrawable(context, value.resourceId);
+    }
+
+    private final androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder> mQueue =
+            new androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+                @Override
+                public int getItemCount() {
+                    return mQueueRows.size();
+                }
+
+                @Override
+                public int getItemViewType(int position) {
+                    int kind = mQueueRows.get(position).kind;
+                    return kind == ROW_LABEL || kind == ROW_AUTOPLAY ? kind : ROW_NOW; // every song shares one row
+                }
+
+                @androidx.annotation.NonNull
+                @Override
+                public androidx.recyclerview.widget.RecyclerView.ViewHolder onCreateViewHolder(
+                        @androidx.annotation.NonNull ViewGroup parent, int type) {
+                    Context context = parent.getContext();
+                    float density = context.getResources().getDisplayMetrics().density;
+                    View view;
+                    if (type == ROW_LABEL) {
+                        TextView label = new TextView(context);
+                        label.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 19);
+                        label.setTextColor(0xB3FFFFFF);
+                        label.setTypeface(com.newtube.mobile.ui.common.AppFont.bold(context));
+                        label.setPadding(Math.round(22 * density), Math.round(20 * density), Math.round(22 * density), Math.round(6 * density));
+                        view = label;
+                    } else if (type == ROW_AUTOPLAY) {
+                        LinearLayout header = new LinearLayout(context);
+                        header.setGravity(android.view.Gravity.CENTER_VERTICAL);
+                        header.setPadding(Math.round(22 * density), Math.round(18 * density), Math.round(22 * density), Math.round(8 * density));
+                        ImageView icon = new ImageView(context);
+                        icon.setImageResource(R.drawable.ic_meetune_autoplay);
+                        header.addView(icon, new LinearLayout.LayoutParams(Math.round(26 * density), Math.round(26 * density)));
+                        LinearLayout names = new LinearLayout(context);
+                        names.setOrientation(LinearLayout.VERTICAL);
+                        names.setPaddingRelative(Math.round(14 * density), 0, 0, 0);
+                        TextView title = new TextView(context);
+                        title.setText(R.string.meetune_queue_autoplay);
+                        title.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 18);
+                        title.setTextColor(Color.WHITE);
+                        title.setTypeface(com.newtube.mobile.ui.common.AppFont.bold(context));
+                        TextView summary = new TextView(context);
+                        summary.setText(R.string.meetune_queue_autoplay_summary);
+                        summary.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
+                        summary.setTextColor(0xB3FFFFFF);
+                        names.addView(title);
+                        names.addView(summary);
+                        header.addView(names);
+                        view = header;
+                    } else {
+                        view = LayoutInflater.from(context).inflate(R.layout.meetune_queue_row, parent, false);
+                    }
+                    if (view.getLayoutParams() == null) {
+                        view.setLayoutParams(new androidx.recyclerview.widget.RecyclerView.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    }
+                    androidx.recyclerview.widget.RecyclerView.ViewHolder holder =
+                            new androidx.recyclerview.widget.RecyclerView.ViewHolder(view) { };
+                    if (type == ROW_NOW) {
+                        view.findViewById(R.id.meetune_queue_grip).setOnTouchListener((v, event) -> {
+                            if (event.getActionMasked() == android.view.MotionEvent.ACTION_DOWN) mQueueDrag.startDrag(holder);
+                            return false;
+                        });
+                        ((EqBars) view.findViewById(R.id.meetune_queue_bars)).setColor(Color.WHITE);
+                    }
+                    return holder;
+                }
+
+                @Override
+                public void onBindViewHolder(@androidx.annotation.NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder,
+                                             int position) {
+                    QueueRow row = mQueueRows.get(position);
+                    View view = holder.itemView;
+                    if (row.kind == ROW_LABEL) {
+                        ((TextView) view).setText(row.label);
+                        return;
+                    }
+                    if (row.video == null) return; // AutoPlay's header: nothing of its own
+                    boolean now = row.kind == ROW_NOW;
+                    ((TextView) view.findViewById(R.id.meetune_queue_title)).setText(row.video.getTitle());
+                    ((TextView) view.findViewById(R.id.meetune_queue_artist)).setText(row.video.getAuthor());
+                    images().load(MeeTune.art(row.video)).into((ImageView) view.findViewById(R.id.meetune_queue_art));
+                    view.findViewById(R.id.meetune_queue_grip).setVisibility(editable(row.kind) ? View.VISIBLE : now ? View.GONE : View.INVISIBLE);
+                    view.findViewById(R.id.meetune_queue_remove).setVisibility(now || editable(row.kind) ? View.VISIBLE : View.GONE);
+                    view.findViewById(R.id.meetune_queue_remove).setOnClickListener(v -> removeFromQueue(row));
+                    EqBars bars = view.findViewById(R.id.meetune_queue_bars);
+                    bars.setVisibility(now ? View.VISIBLE : View.GONE);
+                    if (now) {
+                        mQueueBars = bars;
+                        bars.setPlaying(mControls.playing());
+                    } else if (mQueueBars == bars) {
+                        mQueueBars = null;
+                    }
+                    view.setOnClickListener(now ? null : v -> mControls.play(row.video));
+                    view.setClickable(!now);
+                }
+            };
 
     private boolean mFocus;
 
@@ -1347,6 +1675,9 @@ public final class MeeTunePlayerSkin {
         int lines = Math.round(28 * mRoot.getResources().getDisplayMetrics().density) + under;
         mPage.post(() -> {
             if (mPage.getPaddingBottom() != bottom) mPage.setPadding(0, mPage.getPaddingTop(), 0, bottom);
+            if (mQueueList.getPaddingBottom() != lines) { // the list runs under the controls too, faded at their top
+                mQueueList.setPadding(0, mQueueList.getPaddingTop(), 0, lines);
+            }
             if (mLyricLines.getPaddingBottom() != lines) {
                 mLyricLines.setPadding(mLyricLines.getPaddingLeft(), mLyricLines.getPaddingTop(), mLyricLines.getPaddingRight(), lines);
             }
@@ -1359,6 +1690,8 @@ public final class MeeTunePlayerSkin {
         int foot = mMode == FULL ? -1 : mControlsColumn.getTop() + Math.round(mControlsColumn.getTranslationY())
                 - mPage.getTop() - mLyricsScroll.getTop();
         ((LyricsScroll) mLyricsScroll).setFoot(foot);
+        ((QueueList) mQueueList).setFoot(mMode == FULL ? -1 : mControlsColumn.getTop() + Math.round(mControlsColumn.getTranslationY())
+                - mPage.getTop() - mQueuePage.getTop() - mQueueList.getTop());
     }
 
     private static void fade(View view, boolean in) {
@@ -1581,6 +1914,11 @@ public final class MeeTunePlayerSkin {
         return mRoot.getVisibility() == View.VISIBLE;
     }
 
+    /** The queue scrolled down: a swipe down scrolls it back, it doesn't minimize the player. */
+    boolean holdsSwipeDown() {
+        return mMode == QUEUE && mQueueList.canScrollVertically(-1);
+    }
+
     void show() {
         if (isShown()) return;
         mRoot.setTranslationY(0f);
@@ -1658,6 +1996,10 @@ public final class MeeTunePlayerSkin {
             }
         }
         ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setPlaying(playing);
+        if (mMode == QUEUE) {
+            if (!mQueueDragging) refreshQueue(); // the radio came in, a song moved on: the list follows
+            if (mQueueBars != null) mQueueBars.setPlaying(playing);
+        }
         if (!mNextArtFetched && position > 3000) { // the next song is known by now (queue or suggestions)
             mNextArtFetched = true;
             fetchNextArt();
@@ -1811,6 +2153,45 @@ public final class MeeTunePlayerSkin {
             int layer = canvas.saveLayer(0, y, getWidth(), y + getHeight(), null);
             super.draw(canvas);
             canvas.translate(0, y);
+            canvas.drawRect(0, 0, getWidth(), getHeight(), mMask);
+            canvas.restoreToCount(layer);
+        }
+    }
+
+    /** The queue's list, faded out at the controls' top as the lyrics are (LyricsScroll). */
+    public static final class QueueList extends androidx.recyclerview.widget.RecyclerView {
+        private final Paint mMask = new Paint();
+        private int mFoot = -1;
+
+        public QueueList(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            mMask.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+        }
+
+        void setFoot(int foot) {
+            if (foot >= getHeight()) foot = -1;
+            if (foot == mFoot) return;
+            mFoot = foot;
+            if (foot >= 0) {
+                float fade = 64 * getResources().getDisplayMetrics().density;
+                mMask.setShader(new LinearGradient(0, foot - fade, 0, foot, 0xFF000000, 0, Shader.TileMode.CLAMP));
+            }
+            invalidate();
+        }
+
+        @Override
+        protected float getBottomFadingEdgeStrength() {
+            return 0f; // the foot's mask fades the bottom; the edge fade stays at the top, under the search
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            if (mFoot < 0) {
+                super.draw(canvas);
+                return;
+            }
+            int layer = canvas.saveLayer(0, 0, getWidth(), getHeight(), null);
+            super.draw(canvas);
             canvas.drawRect(0, 0, getWidth(), getHeight(), mMask);
             canvas.restoreToCount(layer);
         }
