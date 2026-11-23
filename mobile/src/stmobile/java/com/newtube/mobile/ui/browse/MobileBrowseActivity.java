@@ -346,6 +346,7 @@ public class MobileBrowseActivity extends MobileActivity
     private boolean mSuppressNavCallback;
     private int mLastPaginationTriggerCount = -1;
     private int mLastNearEndTriggerCount = -1;
+    private int mSegmentPagedAt = -1;
     /**
      * The grid is painting a stale {@link FeedCache} snapshot while the presenter refetches the
      * section. While set, the presenter's clear-before-load empty REPLACE is skipped (it would
@@ -2807,6 +2808,7 @@ public class MobileBrowseActivity extends MobileActivity
 
         mLastPaginationTriggerCount = -1;
         mLastNearEndTriggerCount = -1;
+        mSegmentPagedAt = -1;
         markLiveChannels();
         mContentGrid.animate().cancel();
         mContentGrid.setAlpha(1f);
@@ -4776,6 +4778,14 @@ public class MobileBrowseActivity extends MobileActivity
         markLiveChannels();
         mAdapter.setRanked(mCurrentSectionId == MediaGroup.TYPE_TRENDING);
         List<Video> list = segmented(mCurrentVideos);
+        // MEETUBE(issue #309): Shorts on Subscriptions hid every loaded card, and with nothing to
+        // scroll nothing asked for the next page. Page on until the filter has a screen's worth.
+        int loaded = mCurrentVideos.size();
+        if (list.size() < 12 && list.size() < loaded && loaded != mSegmentPagedAt && loaded < 400
+                && mPresenter != null) {
+            mSegmentPagedAt = loaded;
+            mPresenter.onScrollEnd(mCurrentVideos.get(loaded - 1));
+        }
         if (mParkedItemAnimator == null && !mSectionSwapPending) {
             mAdapter.submitList(list);
         } else {
