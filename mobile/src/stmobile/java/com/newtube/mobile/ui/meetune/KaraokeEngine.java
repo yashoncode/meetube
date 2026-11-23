@@ -37,6 +37,7 @@ public final class KaraokeEngine {
     private boolean released;
     private boolean failed;
     private boolean drainingRaw;
+    private volatile long lastRunFrames; // How long the last chunk took to separate, in playback frames.
 
     public KaraokeEngine(KaraokeModel model, int sampleRate, int leadFrames, Consumer<Throwable> onError) {
         this(model, sampleRate, leadFrames, onError, null);
@@ -131,7 +132,7 @@ public final class KaraokeEngine {
         mix.discardBefore(Math.max(0, end - TRIM));
         if (end > ready.end && !failed && !drainingRaw) {
             wetLevel = 0;
-            ready.clear(end + sampleRate);
+            ready.clear(end + retryLead());
             rescheduling = true;
             generation++;
             notifyAll();
@@ -213,7 +214,16 @@ public final class KaraokeEngine {
     private long nextChunkStart() {
         // A stale inference may still have been running while playback continued in raw.
         // Pick the retry's actual start when the worker can take it.
-        return rescheduling ? Math.max(ready.end, readPosition + sampleRate) : ready.end;
+        return rescheduling ? Math.max(ready.end, readPosition + retryLead()) : ready.end;
+    }
+
+    /**
+     * MEETUBE(issue #314): a retry one second ahead never landed on a phone that needs longer than that
+     * per chunk, so after one miss every chunk was thrown away: vocals came back and the CPU ran hot for
+     * nothing. Start the retry twice the last chunk's time ahead (1 to 10 s; the input buffer holds 20).
+     */
+    private long retryLead() {
+        return Math.max(sampleRate, Math.min(10L * sampleRate, 2 * lastRunFrames));
     }
 
     private boolean chunkAvailable() {
@@ -259,6 +269,7 @@ public final class KaraokeEngine {
                 Arrays.fill(dsp.segment, 2 * (prefix + real), 2 * CHUNK, 0f);
             }
 
+            long began = System.nanoTime();
             try {
                 dsp.analyze(stream, count);
                 if (stream != generation) {
@@ -269,6 +280,7 @@ public final class KaraokeEngine {
                     throw new IllegalArgumentException("Expected " + dsp.input.length + " vocal spectrum values");
                 }
                 dsp.synthesize(vocals, count, stream);
+                lastRunFrames = (System.nanoTime() - began) * sampleRate / 1_000_000_000L;
             } catch (Throwable error) {
                 synchronized (this) {
                     if (released) return;
