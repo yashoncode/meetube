@@ -2878,6 +2878,12 @@ public class MobileBrowseActivity extends MobileActivity
 
         mPresenter.onVideoItemSelected(video);
 
+        long preview = mPreview != null ? mPreview.continueMs(video) : 0; // MEETUBE(issue #320)
+        if (preview > 0) {
+            video.pendingPosMs = preview; // over its saved spot too: the preview is the newest
+            video.pendingPosResume = true; // its keyframe, as a history resume: an exact seek took seconds
+        }
+
         // MEETUBE(shorts): a short opens the vertical player with the tab's shorts as its queue,
         // so a swipe up plays the next one (and down the previous) - see ShortsOverlay.
         List<Video> shelf = shelfOf(video);

@@ -87,6 +87,8 @@ public final class Video {
     public String channelGroupId;
     public long startTimeMs;
     public long pendingPosMs;
+    /** MEETUBE(issue #320): pendingPosMs is a resume (a Home preview's spot): land on its keyframe, not exact. */
+    public boolean pendingPosResume;
     public boolean fromQueue;
     public boolean fromCrashRestorer;
     /**

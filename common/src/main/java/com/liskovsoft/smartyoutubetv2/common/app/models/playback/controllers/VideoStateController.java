@@ -641,9 +641,14 @@ public class VideoStateController extends BasePlayerController {
         Video item = getVideo();
 
         if (item.pendingPosMs > 0) {
-            getPlayer().setPositionMs(item.pendingPosMs);
+            if (item.pendingPosResume) {
+                getPlayer().setResumePositionMs(item.pendingPosMs); // an exact seek decodes up to it before any frame shows
+            } else {
+                getPlayer().setPositionMs(item.pendingPosMs);
+            }
             item.pendingPosMs = 0;
         }
+        item.pendingPosResume = false;
     }
 
     private void restoreSpeedAndPositionIfNeeded() {

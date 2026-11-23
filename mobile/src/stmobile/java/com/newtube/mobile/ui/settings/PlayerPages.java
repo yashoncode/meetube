@@ -158,6 +158,10 @@ final class PlayerPages {
                         com.newtube.mobile.ui.browse.HomePreview.OFF)
                 .bind(() -> com.newtube.mobile.ui.browse.HomePreview.mode(context),
                         mode -> com.newtube.mobile.ui.browse.HomePreview.setMode(context, mode)));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_preview_continue),
+                context.getString(R.string.mobile_settings_home_preview_continue_summary),
+                () -> com.newtube.mobile.ui.browse.HomePreview.continues(context),
+                on -> com.newtube.mobile.ui.browse.HomePreview.setContinues(context, on)));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_resume)));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_resume_short),
