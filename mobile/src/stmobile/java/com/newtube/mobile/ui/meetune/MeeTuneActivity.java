@@ -1296,7 +1296,8 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     /** Home's brand pill: the heart and "MeeTune", or the heart alone on a round glass (Customization). */
     private void showBrand() {
         boolean name = MeeTune.brandName(this);
-        View label = findViewById(R.id.meetune_brand_name);
+        TextView label = findViewById(R.id.meetune_brand_name);
+        label.setText(MeeTune.brandLabel(this));
         label.setVisibility(name ? View.VISIBLE : View.GONE);
         android.widget.LinearLayout row = (android.widget.LinearLayout) label.getParent();
         View heart = row.getChildAt(0);

@@ -632,6 +632,13 @@ final class MeeTuneSettings {
         LinearLayout card = card();
         row(card, 0, getString(R.string.meetune_set_brand_name), getString(R.string.meetune_set_brand_name_summary),
                 MeeTune.brandName(mActivity), false, v -> MeeTune.setBrandName(mActivity, !MeeTune.brandName(mActivity)));
+        row(card, R.drawable.ic_menu_edit, getString(R.string.mobile_settings_brand_label),
+                com.newtube.mobile.ui.common.BrandLabel.summary(mActivity, MeeTune.brandLabel(mActivity)), null, true,
+                v -> com.newtube.mobile.ui.common.BrandLabel.ask(mActivity, MeeTune.brandLabel(mActivity),
+                        getString(R.string.meetune_name), label -> {
+                            MeeTune.setBrandLabel(mActivity, label);
+                            rebuild();
+                        }));
         // MeeTube's own Search glow and Typing glow (Settings > Effects there): the same switches.
         row(card, 0, getString(R.string.mobile_settings_search_glow), getString(R.string.mobile_settings_search_glow_summary),
                 com.newtube.mobile.ui.search.SiriGlow.enabled(mActivity), false,

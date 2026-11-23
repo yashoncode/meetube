@@ -453,6 +453,15 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_brand_name_summary),
                 () -> NavTabs.showBrandName(context), on -> NavTabs.setShowBrandName(context, on)), Tiles.FX_BRAND_NAME));
 
+        // MEETUBE(app label): the brand pill's name, up to 10 characters.
+        rows.add(SettingsRow.action(R.drawable.ic_menu_edit, context.getString(R.string.mobile_settings_brand_label),
+                () -> com.newtube.mobile.ui.common.BrandLabel.summary(context, NavTabs.brandLabel(context)),
+                page -> page.showDialog(com.newtube.mobile.ui.common.BrandLabel.ask(page.requireContext(),
+                        NavTabs.brandLabel(context), context.getString(R.string.app_name), label -> {
+                            NavTabs.setBrandLabel(context, label);
+                            page.rebuild();
+                        }))));
+
         // MEETUBE(issue #181): off by default - the top pills slide away with the bottom bar.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_top_bar),
                 context.getString(R.string.mobile_settings_top_bar_summary),

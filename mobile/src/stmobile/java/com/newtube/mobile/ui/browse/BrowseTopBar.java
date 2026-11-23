@@ -64,7 +64,7 @@ final class BrowseTopBar {
         mBack.setVisibility(subScreen ? View.VISIBLE : View.GONE);
         mMark.setVisibility(subScreen ? View.GONE : View.VISIBLE);
         mTitle.setText(subScreen && title != null && title.length() > 0
-                ? title : mTitle.getContext().getString(R.string.app_name));
+                ? title : NavTabs.brandLabel(mTitle.getContext()));
 
         // MEETUBE(brand name): without the name, the icon sits alone in a round pill.
         boolean named = subScreen || NavTabs.showBrandName(mTitle.getContext());

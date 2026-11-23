@@ -970,6 +970,16 @@ public final class MeeTune {
         prefs(context).edit().putBoolean("brand_name", on).apply();
     }
 
+    /** The name beside the heart, up to 10 characters (Customization); unset, "MeeTune". */
+    static String brandLabel(Context context) {
+        return com.newtube.mobile.ui.common.BrandLabel.or(prefs(context).getString("brand_label", null),
+                context.getString(R.string.meetune_name));
+    }
+
+    static void setBrandLabel(Context context, String label) {
+        prefs(context).edit().putString("brand_label", label).apply();
+    }
+
     /** Streaming quality, YouTube Music's three: High (the best sound), Normal, Low. */
     static final int STREAM_HIGH = 0;
     static final int STREAM_NORMAL = 1;
