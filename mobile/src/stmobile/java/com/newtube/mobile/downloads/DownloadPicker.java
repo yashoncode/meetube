@@ -325,7 +325,8 @@ public final class DownloadPicker {
                     author, thumb, option);
             item.song = true;
             MobileDownloadService.enqueue(context, item);
-            MobileSnackbar.show(context, R.string.meetune_download_started);
+            MobileSnackbar.show(context, AutoDownload.mustWait(context)
+                    ? R.string.mobile_download_wifi_wait : R.string.meetune_download_started);
             return;
         }
         if (alreadyHere) {
@@ -341,6 +342,11 @@ public final class DownloadPicker {
         item.clipStartMs = clipStartMs;
         item.clipEndMs = clipEndMs;
         MobileDownloadService.enqueue(context, item);
+        if (AutoDownload.mustWait(context)) { // issue #318: queued, it starts on Wi-Fi
+            MobileSnackbar.show(context, context.getString(R.string.mobile_download_wifi_wait),
+                    context.getString(R.string.mobile_download_view), () -> openDownloads(context));
+            return;
+        }
         // NEWTUBE(snackbar): confirm with the size, and a way to the Downloads tab.
         String started = size.isEmpty()
                 ? context.getString(R.string.mobile_download_started)

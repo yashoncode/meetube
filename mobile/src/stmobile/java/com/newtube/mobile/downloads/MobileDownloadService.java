@@ -115,7 +115,8 @@ public final class MobileDownloadService extends Service {
         NotificationManager notifications = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         createChannel(context, notifications);
         DownloadItem next;
-        while (!stopped.getAsBoolean() && (next = registry.claimNextQueued()) != null) {
+        long[] lastCheck = {0};
+        while (!stopped.getAsBoolean() && !AutoDownload.mustWait(context) && (next = registry.claimNextQueued()) != null) {
             boolean[] cut = {false};
             notifyProgress(context, notifications, next);
             new DownloadJob(context, next, registry, item -> {
@@ -123,6 +124,7 @@ public final class MobileDownloadService extends Service {
                     cut[0] = true;
                     item.pauseRequested = true; // the job stops at its next chunk, parts kept
                 }
+                if (waitForWifi(context, item, lastCheck)) cut[0] = true;
                 notifyProgress(context, notifications, item);
             }).run();
             if (cut[0]) {
@@ -153,6 +155,26 @@ public final class MobileDownloadService extends Service {
         if (notifications != null) {
             notifications.notify(NOTIFICATION_ID, buildProgressNotification(context, item));
         }
+    }
+
+    /** Starts the queue if anything waits in it (Settings turned Wi-Fi only off). */
+    static void kick(Context context) {
+        if (DownloadRegistry.instance(context).nextQueued() != null) {
+            start(context);
+        }
+    }
+
+    /**
+     * Issue #318: Wi-Fi only is on and the network turned metered. The running item stops at its
+     * next chunk with its part files and goes back in the queue (checked at most once a second).
+     */
+    private static boolean waitForWifi(Context context, DownloadItem item, long[] lastCheck) {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (item.pauseRequested || now - lastCheck[0] < 1000) return false;
+        lastCheck[0] = now;
+        if (!AutoDownload.mustWait(context)) return false;
+        item.pauseRequested = true;
+        return true;
     }
 
     private static void start(Context context) {
@@ -212,7 +234,12 @@ public final class MobileDownloadService extends Service {
 
     private void drain() {
         try {
+            long[] lastCheck = {0};
             while (!mTimedOut) {
+                if (AutoDownload.mustWait(this)) { // issue #318: the queue waits; Wi-Fi resumes it
+                    AutoDownload.resumeQueue(this);
+                    break;
+                }
                 DownloadItem running = mRegistry.claimNextQueued();
                 if (running == null) {
                     synchronized (mDrainLock) {
@@ -227,9 +254,13 @@ public final class MobileDownloadService extends Service {
                 }
                 mRunning = running;
                 updateProgressNotification(running);
-                new DownloadJob(this, running, mRegistry, this::updateProgressNotification).run();
+                boolean[] cut = {false};
+                new DownloadJob(this, running, mRegistry, item -> {
+                    if (waitForWifi(this, item, lastCheck)) cut[0] = true;
+                    updateProgressNotification(item);
+                }).run();
                 mRunning = null;
-                if (mTimedOut) {
+                if (mTimedOut || cut[0]) {
                     requeue(mRegistry, running);
                 }
                 if (running.isDone()) {

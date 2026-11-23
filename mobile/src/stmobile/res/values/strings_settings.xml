@@ -50,6 +50,9 @@
     <string name="mobile_settings_auto_none">None</string>
     <string name="mobile_settings_auto_watch_later">Watch later</string>
     <string name="mobile_settings_auto_quality">Auto download quality</string>
+    <string name="mobile_settings_download_wifi">Download on Wi-Fi only</string>
+    <string name="mobile_settings_download_wifi_summary">On mobile data, downloads wait and start once you are back on Wi-Fi</string>
+    <string name="mobile_download_wifi_wait">Queued. It downloads once you are on Wi-Fi</string>
     <string name="mobile_settings_auto_wifi">Only on Wi-Fi</string>
     <string name="mobile_settings_auto_wifi_summary">Wait for Wi-Fi before checking and downloading</string>
     <string name="mobile_settings_auto_now">Check now</string>

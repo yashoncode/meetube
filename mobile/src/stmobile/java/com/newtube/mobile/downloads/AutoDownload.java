@@ -76,6 +76,27 @@ public final class AutoDownload {
         schedule(context);
     }
 
+    /** MEETUBE(issue #318): every download, not just the automatic ones, waits for Wi-Fi. */
+    public static boolean wifiOnlyAll(Context context) {
+        return prefs(context).getBoolean("wifi_only_all", false);
+    }
+
+    public static void setWifiOnlyAll(Context context, boolean on) {
+        prefs(context).edit().putBoolean("wifi_only_all", on).apply();
+        schedule(context);
+        if (!on) {
+            MobileDownloadService.kick(context); // what waited for Wi-Fi goes now
+        }
+    }
+
+    /** Wi-Fi only for all downloads, and the network now is metered (mobile data, a hotspot): wait. */
+    public static boolean mustWait(Context context) {
+        if (!wifiOnlyAll(context)) return false;
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm == null || cm.isActiveNetworkMetered();
+    }
+
     /**
      * The rung a set quality takes: the tallest at or under it (else the shortest there is), or the
      * audio track for {@link #AUDIO}; null when there is nothing to take.
@@ -191,7 +212,7 @@ public final class AutoDownload {
 
     private static Constraints constraints(Context context) {
         return new Constraints.Builder()
-                .setRequiredNetworkType(wifiOnly(context) ? NetworkType.UNMETERED : NetworkType.CONNECTED)
+                .setRequiredNetworkType(wifiOnly(context) || wifiOnlyAll(context) ? NetworkType.UNMETERED : NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(true)
                 .setRequiresStorageNotLow(true)
                 .build();
