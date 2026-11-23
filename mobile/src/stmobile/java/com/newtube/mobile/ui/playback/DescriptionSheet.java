@@ -109,6 +109,13 @@ final class DescriptionSheet {
         TextView text = content.findViewById(R.id.description_sheet_text);
         // A selectable TextView with autoLink still clicks the ClickableSpan under a tap.
         text.setText(withTimestamps(description, extras));
+        if (text.getText() instanceof android.text.Spannable) { // autoLink made it one when it found a link
+            com.newtube.mobile.ui.common.ChannelLinks.apply((android.text.Spannable) text.getText());
+        } else if (!TextUtils.isEmpty(description)) {
+            android.text.SpannableString linked = new android.text.SpannableString(text.getText());
+            com.newtube.mobile.ui.common.ChannelLinks.apply(linked);
+            text.setText(linked, TextView.BufferType.SPANNABLE);
+        }
         text.setVisibility(TextUtils.isEmpty(description) ? View.GONE : View.VISIBLE);
 
         LinearLayout stats = content.findViewById(R.id.description_sheet_stats);
