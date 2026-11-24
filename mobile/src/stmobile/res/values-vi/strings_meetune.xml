@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="meetune_name" translatable="false">MeeTune</string>
     <string name="meetune_try">Dùng thử MeeTune</string>
     <string name="meetune_home">Trang chủ</string>
     <string name="meetune_explore">Khám phá</string>
@@ -8,6 +9,11 @@
     <string name="meetune_search_hint">Bài hát, album, nghệ sĩ</string>
     <string name="meetune_back">Quay lại</string>
     <string name="meetune_settings">Cài đặt MeeTune</string>
+    <string name="meetune_stats_hero_label">trong MeeTune hôm nay</string>
+    <string name="meetune_stats_listened">Đã nghe</string>
+    <string name="meetune_stats_day">%1$s: %2$s trong MeeTune, đã nghe %3$s, %4$s bài hát</string>
+    <string name="meetune_sleep_idle">Hẹn giờ tắt · %1$d phút</string>
+    <string name="meetune_sleep_running">Hẹn giờ tắt · %1$s</string>
     <string name="meetune_account">Tài khoản và cài đặt</string>
     <string name="meetune_add_account">Thêm tài khoản</string>
     <string name="meetune_to_meetube">Quay lại MeeTube</string>
@@ -49,9 +55,18 @@
     <string name="meetune_cached_summary">Nghe không cần mạng</string>
     <string name="meetune_storage_songs">Bài hát MeeTune (trong bộ nhớ đệm)</string>
     <plurals name="meetune_storage_songs_value">
+        <item quantity="one">%1$s · %2$d bài hát</item>
         <item quantity="other">%1$s · %2$d bài hát</item>
     </plurals>
     <string name="meetune_queue">Tiếp theo</string>
+    <string name="meetune_queue_title">Hàng chờ</string>
+    <string name="meetune_queue_search">Tìm bài hát</string>
+    <string name="meetune_queue_close">Đóng hàng chờ</string>
+    <string name="meetune_queue_playing_next">Phát tiếp theo</string>
+    <string name="meetune_queue_autoplay">Tự động phát</string>
+    <string name="meetune_queue_autoplay_summary">Tự chọn nhạc tương tự để phát tiếp</string>
+    <string name="meetune_queue_remove">Xóa khỏi hàng chờ</string>
+    <string name="meetune_queue_move">Kéo để di chuyển</string>
     <string name="meetune_lyrics">Lời bài hát</string>
     <string name="meetune_focus">Tập trung vào lời bài hát</string>
     <string name="meetune_cast">Truyền phát</string>
@@ -69,7 +84,6 @@
     <string name="meetune_unsave">Xóa khỏi thư viện</string>
     <string name="meetune_save_sign_in">Đăng nhập để lưu nhạc vào thư viện</string>
     <string name="meetune_save_failed">Không thể cập nhật thư viện của bạn</string>
-
     <!-- MeeTune's Equalizer -->
     <string name="meetune_eq">Bộ chỉnh âm MeeTune</string>
     <string name="meetune_eq_sound">Âm thanh</string>
@@ -88,9 +102,9 @@
     <string name="meetune_eq_custom">Tùy chỉnh</string>
     <string-array name="meetune_eq_presets">
         <item>Phẳng</item>
-        <item>Tăng âm trầm</item>
-        <item>Giảm âm trầm</item>
-        <item>Tăng âm bổng</item>
+        <item>Tăng âm trầm (Bass)</item>
+        <item>Giảm âm trầm (Bass)</item>
+        <item>Tăng âm bổng (Treble)</item>
         <item>Giọng hát</item>
         <item>Rock</item>
         <item>Pop</item>
@@ -99,7 +113,7 @@
         <item>Nhạc điện tử</item>
         <item>Hip hop</item>
         <item>Acoustic</item>
-        <item>Tăng độ lớn</item>
+        <item>Tăng độ lớn (Loudness)</item>
     </string-array>
     <string name="meetune_eq_bands">Các dải tần</string>
     <string name="meetune_eq_reset">Đặt lại tất cả dải tần</string>
@@ -112,8 +126,7 @@
     <string name="meetune_eq_system_summary">Bảng chỉnh âm mặc định của điện thoại</string>
     <string name="meetune_eq_system_none">Điện thoại này không có bảng chỉnh âm hệ thống</string>
     <string name="meetune_eq_system_note">Chạy sau bộ chỉnh âm của MeeTune, trực tiếp trên âm thanh hệ thống. Bật cả hai sẽ áp dụng hiệu ứng của cả hai.</string>
-
-    <!-- Song menu & AI Karaoke -->
+    <!-- The song menu (a song's three dots): YouTube Music's, on MeeTube's frosted glass. -->
     <string name="meetune_dislike">Không thích</string>
     <string name="meetune_liked_done">Đã thêm vào danh sách nhạc đã thích</string>
     <string name="meetune_unliked">Đã xóa khỏi danh sách nhạc đã thích</string>
@@ -127,6 +140,7 @@
     <string name="meetune_queued">Đã thêm vào hàng chờ</string>
     <string name="meetune_download">Tải xuống</string>
     <string name="meetune_convert_video">Chuyển sang video</string>
+    <string name="meetune_connect_car">Kết nối với ô tô</string>
     <string name="meetune_uncache">Xóa khỏi bộ nhớ đệm</string>
     <string name="meetune_uncached">Đã xóa khỏi bộ nhớ đệm</string>
     <string name="meetune_uncache_none">Bài hát này chưa có dữ liệu đệm nào</string>
@@ -158,8 +172,7 @@
     <string name="meetune_info_artist">Nghệ sĩ</string>
     <string name="meetune_info_album">Album</string>
     <string name="meetune_info_length">Thời lượng</string>
-
-    <!-- Spatial sound & playback -->
+    <!-- Settings: Spatial sound (issue #262) -->
     <string name="meetune_spatial">Âm thanh không gian</string>
     <string name="meetune_spatial_off_summary">Giữ nguyên âm thanh như bản thu gốc</string>
     <string name="meetune_spatial_light">Nhẹ</string>
@@ -168,6 +181,8 @@
     <string name="meetune_spatial_strong_summary">Rộng rãi và vang, như dàn loa đặt ngay trước mặt bạn</string>
     <string name="meetune_spatial_cinema">Rạp chiếu phim</string>
     <string name="meetune_spatial_cinema_summary">Rộng và thoáng nhất, với âm trầm sâu hơn</string>
+    <string name="meetune_spatial_wide">Rộng</string>
+    <string name="meetune_spatial_wide_summary">Trong trẻo và thoáng rộng, tách kênh stereo nhẹ kết hợp trộn âm chéo (crossfeed)</string>
     <string name="meetune_head_tracking">Theo dõi chuyển động đầu</string>
     <string name="meetune_head_tracking_summary">Âm thanh giữ nguyên vị trí khi bạn xoay đầu, trên các tai nghe có hỗ trợ tính năng này. Áp dụng từ bài tiếp theo</string>
     <string name="meetune_head_tracking_summary_none">Cần Âm thanh không gian của điện thoại: hãy đeo tai nghe có hỗ trợ và bật tính năng này trong phần cài đặt Bluetooth của tai nghe</string>
@@ -182,14 +197,15 @@
     <string name="meetune_bit_perfect">Bit-perfect USB DAC</string>
     <string name="meetune_bit_perfect_summary">Khi cắm USB DAC, bài hát được truyền nguyên bản theo đúng tần số lấy mẫu gốc, bỏ qua bộ trộn của Android. Áp dụng từ bài tiếp theo. Để tín hiệu thuần khiết, hãy giữ bộ chỉnh âm phẳng, tắt Âm thanh không gian và đặt Âm lượng MeeTune ở mức 100%</string>
     <string name="meetune_bit_perfect_summary_none">Yêu cầu Android 14 trở lên</string>
-
-    <!-- Streaming quality, Downloads & Canvas -->
+    <!-- Settings: Streaming quality and Downloads -->
     <string name="meetune_set_stream">Chất lượng phát nhạc</string>
     <string name="meetune_set_stream_wifi">Chất lượng phát qua Wi-Fi</string>
     <string name="meetune_set_stream_mobile">Chất lượng phát qua dữ liệu di động</string>
     <string name="meetune_stream_wifi">Khi dùng Wi-Fi</string>
     <string name="meetune_stream_mobile">Khi dùng dữ liệu di động</string>
     <string name="meetune_stream_note">Dữ liệu di động cũng bao gồm điểm phát sóng cá nhân và các mạng tính phí theo lưu lượng khác</string>
+    <string name="meetune_set_group_music">Âm nhạc</string>
+    <string name="meetune_set_sound_playback">Âm thanh và phát lại</string>
     <string name="meetune_speed_dial">Ô phát nhanh (Speed dial)</string>
     <string name="meetune_speed_dial_summary">Hiển thị mục Nghe lại trên Trang chủ thành các trang ô vuông, 9 bài mỗi trang để xem nhanh</string>
     <string name="meetune_set_playback">Phát lại</string>
@@ -202,6 +218,7 @@
     <string name="meetune_download_high_summary">AAC 128 kbps, chất lượng âm thanh tốt nhất khi tải bài hát</string>
     <string name="meetune_download_low_summary">AAC 48 kbps, dung lượng chỉ khoảng một phần ba</string>
     <plurals name="meetune_download_count">
+        <item quantity="one">%1$d bài hát trên điện thoại này</item>
         <item quantity="other">%1$d bài hát trên điện thoại này</item>
     </plurals>
     <string name="meetune_download_deleted">Đã xóa bản tải xuống</string>
@@ -238,21 +255,22 @@
     <string name="meetune_sleep_toast_end">Bài hát sẽ tạm dừng khi kết thúc</string>
     <string name="meetune_downloads">Tải xuống</string>
     <string name="meetune_history">Lịch sử</string>
+    <string name="meetune_history_sync">Đồng bộ với YouTube Music</string>
+    <string name="meetune_history_sync_summary">Các bài bạn nghe ở đây sẽ hiện trong lịch sử YouTube Music, và mục Lịch sử cũng hiện những bài bạn đã nghe bên đó. Tắt đi để tạm dừng đồng bộ và chỉ lưu lịch sử trên máy này. Cần đăng nhập tài khoản.</string>
     <plurals name="meetune_history_count">
-        <item quantity="other">Đã phát %1$d bài hát</item>
+        <item quantity="one">Đã nghe %1$d bài hát</item>
+        <item quantity="other">Đã nghe %1$d bài hát</item>
     </plurals>
     <string name="meetune_download_started">Đang tải xuống. Xem trong Thư viện &gt; Tải xuống</string>
     <string name="meetune_download_already_here">Đã tải xuống rồi. Xem trong Thư viện &gt; Tải xuống</string>
     <string name="meetune_downloading">Đang tải %1$d%%</string>
     <string name="meetune_download_failed">Tải xuống thất bại</string>
-
-    <!-- Play modes -->
+    <!-- MEETUNE(play mode): the player's mode button, shown as the tap's message too. -->
     <string name="meetune_mode_autoplay">Tự động phát: Bật</string>
     <string name="meetune_mode_shuffle">Trộn bài: Bật</string>
     <string name="meetune_mode_repeat_one">Lặp lại bài này</string>
     <string name="meetune_mode_off">Tự động phát: Tắt</string>
-
-    <!-- Library on this phone & Add-ons -->
+    <!-- MEETUNE(library on this phone): playlists and saved pages with no account. -->
     <string name="meetune_on_phone">Trên điện thoại này</string>
     <string name="meetune_new_playlist">Danh sách phát mới</string>
     <string name="meetune_playlist_name">Tên danh sách phát</string>
@@ -293,10 +311,12 @@
     <string name="meetune_spotify_imported">%1$s: tìm thấy %2$d/%3$d bài hát</string>
     <string name="meetune_import_action">Nhập</string>
     <plurals name="meetune_playlist_count">
+        <item quantity="one">%1$d bài hát</item>
         <item quantity="other">%1$d bài hát</item>
     </plurals>
     <plurals name="meetune_spotify_importing">
-        <item quantity="other">Đang nhập %1$d danh sách phát. Mỗi danh sách sẽ báo khi hoàn tất</item>
+        <item quantity="one">Đang nhập %1$d danh sách phát. Mỗi danh sách sẽ báo khi xong</item>
+        <item quantity="other">Đang nhập %1$d danh sách phát. Mỗi danh sách sẽ báo khi xong</item>
     </plurals>
     <string name="meetune_set_addons">Tiện ích mở rộng</string>
     <string name="meetune_spotify">Spotify</string>
@@ -304,4 +324,27 @@
     <string name="meetune_spotify_not_linked">Chưa liên kết. Chạm để đăng nhập</string>
     <string name="meetune_addons_note">Tiện ích mở rộng giúp kết nối MeeTune với các dịch vụ khác. Đây là tính năng không chính thức, chỉ có quyền đọc và có thể ngừng hoạt động khi các dịch vụ đó thay đổi.</string>
     <string name="meetune_hints">Giải thích tính năng</string>
+    <!-- Android Auto (CarMediaService) -->
+    <string name="meetune_car_unlike">Bỏ thích</string>
+    <string name="meetune_car_shuffle_off">Tắt trộn bài</string>
+    <string name="meetune_car_repeat">Lặp lại</string>
+    <string name="meetune_car_repeat_off">Tắt lặp lại</string>
+    <string name="meetune_car_lyrics_show">Hiện lời bài hát</string>
+    <string name="meetune_car_lyrics_hide">Ẩn lời bài hát</string>
+    <string name="meetune_car_shuffle_play">Phát ngẫu nhiên</string>
+    <string name="meetune_car_songs">%1$d bài hát</string>
+    <string name="meetune_car_made_for_you">Dành cho bạn</string>
+    <string name="meetune_car_recents">Gần đây</string>
+    <string name="meetune_car_artist_mix">Mix %1$s</string>
+    <string name="meetune_car_mix_based">Dựa trên %1$s</string>
+    <string name="meetune_car_your_mixes">Theo lịch sử nghe của bạn</string>
+    <string name="meetune_car_close">Đóng trình phát</string>
+    <string name="meetune_set_car">Android Auto</string>
+    <string name="meetune_car_autoplay">Tự động phát trên ô tô</string>
+    <string name="meetune_car_autoplay_summary">Khi phát hết các bài bạn đã chọn, các bài tương tự sẽ tự động phát tiếp.</string>
+    <string name="meetune_car_lyrics">Lời bài hát trên màn hình ô tô</string>
+    <string name="meetune_car_lyrics_summary">Câu hát hiện tại sẽ hiển thị thay cho tên bài hát. Trình phát trên ô tô cũng có nút bật/tắt tương tự.</string>
+    <string name="meetune_car_note">Trên ô tô sẽ phát theo mức Chất lượng phát nhạc của bạn. Bạn có thể nói \"Hey Google, play my liked songs on MeeTune\" (hoặc my downloads, my recents, my mix, hoặc tên bài hát hay nghệ sĩ bất kỳ).</string>
+    <string name="meetune_car_show">Hiện MeeTune trong Android Auto</string>
+    <string name="meetune_car_show_summary">Android Auto sẽ ẩn các ứng dụng không cài từ Play Store cho đến khi bạn cho phép. Chạm vào đây để mở cài đặt của Android Auto, cuộn xuống và nhấn vào mục Phiên bản khoảng 10 lần, sau đó mở menu ba chấm &gt; Cài đặt cho nhà phát triển rồi bật Nguồn không xác định. Kết nối lại với ô tô, MeeTune sẽ xuất hiện cùng các ứng dụng nghe nhạc khác.</string>
 </resources>
