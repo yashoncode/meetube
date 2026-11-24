@@ -492,7 +492,9 @@ public class VideoMenuPresenter extends BaseMenuPresenter {
             return;
         }
 
-        if ((!mVideo.belongsToHome() && !mVideo.belongsToShorts()) || !mIsNotInterestedButtonEnabled) {
+        // MEETUBE(issue #316): the watch page's related videos too, as in YouTube.
+        if ((!mVideo.belongsToHome() && !mVideo.belongsToShorts() && !mVideo.belongsToSuggestions())
+                || !mIsNotInterestedButtonEnabled) {
             return;
         }
 
