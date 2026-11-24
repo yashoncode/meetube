@@ -150,6 +150,12 @@ MeeTube's glass design on Android TV and Google TV, tuned its own way. It instal
 
 Downloads, the changelog and the code all live in [meetube-tv](https://github.com/yashoncode/meetube-tv). Get the newest APK from its [latest release](https://github.com/yashoncode/meetube-tv/releases/latest), and report TV bugs in its [issues](https://github.com/yashoncode/meetube-tv/issues).
 
+## Community
+
+Join the MeeTube community on Telegram to get help, report bugs, suggest features and hear about new releases first.
+
+<p align="center"><a href="https://t.me/+fLlQpFKSfqdhMGZl"><img src="https://img.shields.io/badge/MeeTube%20Community-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Join the MeeTube community on Telegram"></a></p>
+
 ## Build
 
 ```
