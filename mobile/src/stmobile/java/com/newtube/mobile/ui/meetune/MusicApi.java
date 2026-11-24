@@ -137,6 +137,7 @@ final class MusicApi {
             response = (JSONObject) kept[1];
         } else {
             response = post(context, "browse", body);
+            if (browseId.startsWith("VL")) restOfPlaylist(context, response);
             if (keep(browseId)) PAGES.put(key, new Object[] {System.currentTimeMillis(), response});
         }
         List<Shelf> shelves = new ArrayList<>();
@@ -150,6 +151,27 @@ final class MusicApi {
         }
         walk(response.opt("contents"), shelves);
         return shelves;
+    }
+
+    /**
+     * A playlist comes 100 tracks at a time, the last row a continuation (issue #308): fetches the rest into the
+     * first page's shelf, so the list, its search and Play all see every track.
+     */
+    private static void restOfPlaylist(Context context, JSONObject response) throws Exception {
+        JSONObject shelf = find(response.opt("contents"), "musicPlaylistShelfRenderer");
+        JSONArray tracks = shelf != null ? shelf.optJSONArray("contents") : null;
+        for (int page = 0; tracks != null && page < 50; page++) { // ponytail: 5000-track cap, page lazily if that bites
+            JSONObject last = tracks.length() > 0 ? tracks.optJSONObject(tracks.length() - 1) : null;
+            JSONObject command = obj(last, "continuationItemRenderer", "continuationEndpoint", "continuationCommand");
+            String token = command != null ? command.optString("token", null) : null;
+            if (token == null) return;
+            tracks.remove(tracks.length() - 1);
+            JSONObject more = find(post(context, "browse", new JSONObject().put("continuation", token))
+                    .opt("onResponseReceivedActions"), "appendContinuationItemsAction");
+            JSONArray items = more != null ? more.optJSONArray("continuationItems") : null;
+            for (int i = 0; items != null && i < items.length(); i++) tracks.put(items.opt(i));
+            if (items == null) return;
+        }
     }
 
     /** One page of YouTube Music's Home: it sends a few shelves at a time, then more on scroll (issue #304). */
