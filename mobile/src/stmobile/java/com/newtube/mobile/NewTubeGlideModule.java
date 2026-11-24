@@ -56,6 +56,9 @@ public final class NewTubeGlideModule extends AppGlideModule {
                 .dispatcher(dispatcher)
                 .connectTimeout(HTTP_TIMEOUT_MS, TimeUnit.MILLISECONDS)
                 .readTimeout(HTTP_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+                // One HTTP/2 connection carries every cover, so a NAT-dropped idle one timed them all out
+                // together and left blank cards. The ping keeps it alive and drops a dead one in 10 s.
+                .pingInterval(10, TimeUnit.SECONDS)
                 .build();
         registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(client));
     }
