@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.6.0** Sakura](#360-sakura) | 2026-11-24 | Android Auto |
 | [**3.5.8** Amber](#358-amber) | 2026-11-21 | Karaoke |
 | [**3.5.5** Hyper](#355-hyper) | 2026-11-17 | Automix |
 | [**3.5.2** Slash](#352-slash) | 2026-11-17 | Spatial |
@@ -50,6 +51,62 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.6.0 Sakura
+
+> **Android Auto**<br>
+> 📅 2026-11-24 · closes #253, #300, #303, #304, #305, #308, #309, #310, #313, #314, #317, #318 and #320
+
+### ✨ Highlights
+
+- **MeeTune in your car with Android Auto:** Home, Made for you, Recents and Library tabs with rounded covers, your liked songs, downloads and cached songs offline, voice search and lyrics. The car player has a heart, shuffle, repeat, radio and close. Connect to car in the MeeTune player's menu moves the song you're playing to the car, and Settings > Car has a Show MeeTune in Android Auto row with the steps to turn it on (#253).
+- **MeeTune Home like YouTube Music:** every shelf loads now (Trending, New releases, Mixed for you and more) with its chips on top, and more come as you scroll (#304).
+- **History syncs with YouTube Music** both ways, with a switch in MeeTune settings to pause it (#305).
+- **A real Up next queue:** a full page with a search box, Now playing, your Play next songs and AutoPlay's radio. Drag a song to move it, tap X to drop it.
+- **MeeTune keeps playing in MeeTube:** switch apps and the song stays on in a frosted pill you can drag anywhere and swipe off any edge to close.
+- **Continue from the Home preview:** tapping a Home video while its preview plays picks up where the preview was. Turn it off in Settings > Player (#320).
+- **Download on Wi-Fi only** in Settings > Downloads. On mobile data downloads wait, and one that's running pauses and resumes on Wi-Fi (#318).
+
+### 🎵 MeeTune
+
+- Hold MeeTune's logo for a greeting with your listening stats, a sleep timer and a settings shortcut. MeeTube and MeeTune time are counted separately.
+- Covers load about 4x faster, and shelves scroll smoother.
+- Spatial sound has a Wide mode, now the default, for a crisper and wider sound on headphones.
+- Big playlists show every track, not just the first 100, and search inside them finds them all (#308).
+- Karaoke keeps removing vocals after the phone falls behind once, and no longer runs the phone hot (#314).
+- Settings open as a list of sections like MeeTube's, each on its own page.
+- Home's chips slide away on scroll and come back from a little arrow by the heart, and the top bar matches MeeTube Home in YouTube mode.
+
+### New
+
+- Custom app name in Settings > Customization > Tabs and bars, up to 10 characters, in MeeTube and MeeTune.
+- Your font file in Font settings: pick any TTF or OTF from your phone for the whole app.
+- Landscape player controls at the screen corners over the black bars, like YouTube (#303).
+- Ambient mode covers the whole tablet watch page.
+- Channels mentioned in a description open in the app when you tap an @name or a channel link (#310).
+- MeeTube in Vietnamese.
+
+### Changed
+
+- Auto downloads keep going in the background, and downloads cut off by the app being killed resume on their own (#300).
+- Download errors say why, and a check before saving catches a full phone early (#317).
+- Subs filters follow the Chips style, so they stay glass pills in OG Mode.
+- Search results get a faded blur under the top bar.
+
+### Fixed
+
+- Shorts on Subs is no longer empty (#309).
+- Channel sort no longer does nothing sometimes, and it's hidden on the Shorts tab where sorting emptied it.
+- Unmuting a feed preview pauses MeeTune instead of playing over it.
+- The mini player no longer jumps after a swipe down in YouTube mode.
+
+### 💬 Community
+
+MeeTube has a Telegram group now. Come say hi, get help, share ideas and hear about new releases first: [MeeTube Community](https://t.me/+fLlQpFKSfqdhMGZl) (#313).
+
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @PravinGavand, @MAKAKAIglitch, @VedantS5, @ra-rear, @kadheerk49, @SneednFeed88, @nouse8192-tech, @dhanunjay333i-cyber, @itsstryxx, @mygtvact, @mahidulmahin80-cloud and @socsieuquaypro-sketch for the Vietnamese translation.
 
 ## 3.5.8 Amber
 
