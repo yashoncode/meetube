@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_settings_search_hint">Tìm kiếm cài đặt</string>
+    <string name="mobile_settings_search_none">Không tìm thấy cài đặt nào khớp với “%1$s”</string>
+
+    <string name="mobile_settings_search_kw_account">đăng nhập đăng xuất tài khoản google hồ sơ chuyển đổi</string>
+    <string name="mobile_settings_search_kw_theme">chế độ tối chế độ sáng ban đêm giao diện màu sắc</string>
+    <string name="mobile_settings_search_kw_customize">tùy biến cá nhân hóa giao diện kiểu dáng bố cục</string>
+    <string name="mobile_settings_search_kw_country">quốc gia vùng lãnh thổ vị trí</string>
+    <string name="mobile_settings_search_kw_start_screen">màn hình khởi động mở mặc định trang chủ</string>
+    <string name="mobile_settings_search_kw_interface_size">tỷ lệ giao diện thu phóng cỡ chữ mật độ lớn nhỏ</string>
+    <string name="mobile_settings_search_kw_tabs">thanh dưới mục điều hướng thẻ khám phá</string>
+    <string name="mobile_settings_search_kw_hidden">ẩn video đã xem lọc công chiếu trực tiếp</string>
+    <string name="mobile_settings_search_kw_video_menu">menu ngữ cảnh ba chấm nhấn giữ tùy chọn</string>
+    <string name="mobile_settings_search_kw_channels_order">kênh đăng ký sắp xếp thứ tự kênh</string>
+    <string name="mobile_settings_search_kw_watch_history">tạm dừng lịch sử ẩn danh</string>
+    <string name="mobile_settings_search_kw_video_ends">tự động phát lặp lại trộn bài video tiếp theo</string>
+    <string name="mobile_settings_search_kw_background">phát nền chạy ngầm hình trong hình pip chỉ âm thanh thu nhỏ</string>
+    <string name="mobile_settings_search_kw_natural_voice">cao độ giọng nói tự nhiên tốc độ phát</string>
+    <string name="mobile_settings_search_kw_audio_focus">cuộc gọi thông báo ứng dụng khác gián đoạn tạm dừng âm thanh</string>
+    <string name="mobile_settings_search_kw_hide_related">đề xuất video liên quan tiếp theo</string>
+    <string name="mobile_settings_search_kw_dislikes">không thích dislike return youtube dislike ryd</string>
+    <string name="mobile_settings_search_kw_home_layout">hàng kệ bảng tin lưới smarttube bố cục trang chủ</string>
+    <string name="mobile_settings_search_kw_app_icon">biểu tượng icon logo màn hình chính cổ điển trái tim thủy tinh ruby neon gta</string>
+    <string name="mobile_settings_search_kw_quality">độ phân giải 4k 1080p 720p hd tiết kiệm dữ liệu 4g</string>
+    <string name="mobile_settings_search_kw_loudness">cân bằng âm lượng tự động nhỏ to</string>
+    <string name="mobile_settings_search_kw_player_volume">nhỏ to tăng âm lượng khuếch đại 125 150 175 200</string>
+    <string name="mobile_settings_search_kw_captions">phụ đề cc thuyết minh cỡ chữ</string>
+    <string name="mobile_settings_search_kw_sponsorblock">bỏ qua tài trợ quảng cáo đoạn mở đầu sponsorblock</string>
+    <string name="mobile_settings_search_kw_dearrow">câu view clickbait tiêu đề ảnh thu nhỏ</string>
+    <string name="mobile_settings_search_kw_backup">sao lưu khôi phục xuất nhập lưu cài đặt backup</string>
+    <string name="mobile_settings_search_kw_buffer">bộ đệm bộ nhớ đệm giật lag tải trước ram</string>
+    <string name="mobile_settings_search_kw_dns">dns ipv4 ipv6 máy chủ</string>
+    <string name="mobile_settings_search_kw_conscrypt">ssl tls chứng chỉ bảo mật chặn kiểm duyệt byebyedpi</string>
+    <string name="mobile_settings_search_kw_multi_profiles">hồ sơ tài khoản riêng khác nhau</string>
+    <string name="mobile_settings_search_kw_updates">cập nhật phiên bản mới thông báo</string>
+    <string name="mobile_settings_search_kw_diagnostic_log">báo lỗi nhật ký log gỡ lỗi debug</string>
+    <string name="mobile_settings_search_kw_gesture_levels">cử chỉ vuốt độ sáng âm lượng</string>
+    <string name="mobile_settings_search_kw_gesture_seek">cử chỉ vuốt tua nhanh tua lùi</string>
+    <string name="mobile_settings_search_kw_double_tap_seek">chạm hai lần tua nhanh tua lùi giây nhảy</string>
+    <string name="mobile_settings_search_kw_loader">vòng xoay tải loading tiến trình neon kính mờ bánh quy giọt lỏng</string>
+    <string name="mobile_settings_search_kw_badge_icons">mix nốt nhạc biểu tượng nhãn thời lượng thời gian</string>
+    <string name="mobile_settings_search_kw_seek_pill">chạm hai lần tua nhanh 10 giây viên thuốc gợn sóng</string>
+    <string name="mobile_settings_search_kw_watched_bar">vạch đỏ đã xem tiến trình lịch sử ảnh thu nhỏ</string>
+    <string name="mobile_settings_search_kw_home_cast">nút cast truyền phát thanh trên ẩn hiện tv chromecast</string>
+    <string name="mobile_settings_search_kw_home_chips">thẻ chủ đề danh mục bộ lọc trang chủ ẩn hiện</string>
+    <string name="mobile_settings_search_kw_haptics">rung phản hồi xúc giác chạm tắt rung</string>
+    <string name="mobile_settings_search_kw_refresh_sound">âm thanh làm mới tiếng tách kéo vuốt tắt tiếng</string>
+    <string name="mobile_settings_search_kw_short_ends">shorts lặp lại tự cuộn chuyển tiếp vuốt</string>
+    <string name="mobile_settings_search_kw_stable_volume">âm lượng ổn định nén dải động drc to nhỏ</string>
+    <string name="mobile_settings_search_kw_equalizer">equalizer eq bộ chỉnh âm bass treble tần số âm thanh</string>
+    <string name="mobile_settings_search_web_signin">trò chuyện google đăng nhập cookie phiên gửi tin nhắn</string>
+</resources>
