@@ -84,6 +84,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private final List<Row> mRows = new ArrayList<>();
     @Nullable
     private RecyclerView mList;
+    /** One pool for every shelf: a shelf scrolling in takes cards the last one left, not new ones. */
+    private final RecyclerView.RecycledViewPool mShelfPool = new RecyclerView.RecycledViewPool();
 
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView list) {
@@ -127,6 +129,13 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     MeeTuneAdapter(Host host) {
         mHost = host;
+    }
+
+    /** More rows under the last one (Home's later shelves). */
+    void append(List<Row> rows) {
+        int at = mRows.size();
+        mRows.addAll(rows);
+        notifyItemRangeInserted(at, rows.size());
     }
 
     void setRows(List<Row> rows) {
@@ -294,7 +303,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 RecyclerView list = new RecyclerView(parent.getContext());
                 list.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT));
-                list.setLayoutManager(new LinearLayoutManager(parent.getContext(), RecyclerView.HORIZONTAL, false));
+                list.setLayoutManager(shelfLayout(parent.getContext()));
+                list.setRecycledViewPool(mShelfPool);
                 list.setClipToPadding(false);
                 int pad = dp(parent.getContext(), 20);
                 list.setPadding(pad, 0, pad, 0);
@@ -382,14 +392,14 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 boolean grid = row.style == GRID;
                 if (grid != list.getLayoutManager() instanceof androidx.recyclerview.widget.GridLayoutManager) {
                     list.setLayoutManager(grid ? new androidx.recyclerview.widget.GridLayoutManager(view.getContext(), 3)
-                            : new LinearLayoutManager(view.getContext(), RecyclerView.HORIZONTAL, false));
+                            : shelfLayout(view.getContext()));
                 }
                 // a grid cell's 5dp margins make it 20; a column's songs bring 10dp of their own (room for the press pill)
                 int side = dp(view.getContext(), grid ? 15 : row.style == COLUMNS ? 10 : 20);
                 list.setPadding(side, 0, side, 0);
                 boolean dial = row.shelf.dial && MeeTune.speedDial(view.getContext());
                 CoverGlow.attach(list);
-                list.setAdapter(new Carousel(row, dial));
+                list.swapAdapter(new Carousel(row, dial), true); // its cards go back to the pool, not away
                 list.setOnFlingListener(null);
                 if (row.style == COLUMNS || dial) new PagerSnapHelper().attachToRecyclerView(list);
         }
@@ -531,8 +541,16 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 layers.setLayerGravity(1, android.view.Gravity.CENTER);
                 cover = layers;
             }
-            Glide.with(art).load(item.art).placeholder(cover) // no art: its own cover
-                    .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
+            // Art comes at 544px for the big cards and the player; a song row's 48dp cover asked at its
+            // own size is a tenth of the bytes, so lists and Quick picks fill in far sooner.
+            int side = card != null ? card.getLayoutParams().width : 0;
+            String url = item.art != null && side > 0 && side < dp(art.getContext(), 120)
+                    ? MusicApi.sized(item.art, side) : item.art;
+            com.bumptech.glide.RequestBuilder<android.graphics.drawable.Drawable> request =
+                    Glide.with(art).load(url).placeholder(cover); // no art: its own cover
+            int[] fixed = fixedSize(art);
+            if (fixed != null) request = request.override(fixed[0], fixed[1]);
+            request.listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
                         @Override
                         public boolean onLoadFailed(@androidx.annotation.Nullable com.bumptech.glide.load.engine.GlideException e,
                                 Object model, @NonNull com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
@@ -565,6 +583,27 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     static final Object PROGRESS = new Object();
 
     /** A download still coming: its cover frosted (blurred) with how far and how fast over it. */
+    /**
+     * A cover's size straight from its layout (its own or a frame's, in dp), or null when only
+     * measuring tells. Glide otherwise waits for the cover's first layout to learn its size, so a
+     * card made ahead (a shelf's prefetch, still below the screen) only began its download as it
+     * scrolled in; with the size known the download starts at the bind.
+     */
+    @androidx.annotation.Nullable
+    private static int[] fixedSize(View art) {
+        View view = art;
+        for (int i = 0; i < 3 && view != null; i++) {
+            ViewGroup.LayoutParams lp = view.getLayoutParams();
+            if (lp == null) return null;
+            if (lp.width > 0 && lp.height > 0) return new int[] {lp.width, lp.height};
+            if (lp.width != ViewGroup.LayoutParams.MATCH_PARENT || lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+                return null; // wraps, or one side measured
+            }
+            view = view.getParent() instanceof View ? (View) view.getParent() : null;
+        }
+        return null;
+    }
+
     private static void bindDownload(View view, MusicApi.Item item) {
         TextView progress = view.findViewById(R.id.meetune_art_progress);
         View bar = view.findViewById(R.id.meetune_art_bar);
@@ -590,6 +629,13 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         bar.setScaleX(Math.max(0.02f, item.downloadPercent / 100f));
     }
 
+    /** Its first 4 cards are made while the shelf is still below the screen (RecyclerView's prefetch). */
+    private static LinearLayoutManager shelfLayout(Context context) {
+        LinearLayoutManager layout = new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false);
+        layout.setInitialPrefetchItemCount(4);
+        return layout;
+    }
+
     private final class Carousel extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private final Row mRow;
         private final List<MusicApi.Item> mItems;
@@ -601,6 +647,13 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             mRow = row;
             mItems = row.shelf.items;
             mDial = dial;
+            mShelfPool.setMaxRecycledViews(getItemViewType(0), 12);
+        }
+
+        /** Cells differ only by the shelf's style, so shelves of one style share them. */
+        @Override
+        public int getItemViewType(int position) {
+            return mDial ? 1000 : mRow.style;
         }
 
         @Override

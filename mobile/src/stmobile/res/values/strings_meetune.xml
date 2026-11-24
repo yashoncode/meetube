@@ -9,6 +9,11 @@
     <string name="meetune_search_hint">Songs, albums, artists</string>
     <string name="meetune_back">Back</string>
     <string name="meetune_settings">MeeTune settings</string>
+    <string name="meetune_stats_hero_label">in MeeTune today</string>
+    <string name="meetune_stats_listened">Listened</string>
+    <string name="meetune_stats_day">%1$s: %2$s in MeeTune, %3$s listened, %4$s songs</string>
+    <string name="meetune_sleep_idle">Sleep timer · %1$d min</string>
+    <string name="meetune_sleep_running">Sleep timer · %1$s</string>
     <string name="meetune_account">Account and settings</string>
     <string name="meetune_add_account">Add account</string>
     <string name="meetune_to_meetube">Back to MeeTube</string>
@@ -40,7 +45,6 @@
     <string name="meetune_filter_artists">Artists</string>
     <string name="meetune_filter_playlists">Playlists</string>
     <string name="meetune_set_customize">Customization</string>
-    <string name="meetune_set_customize_summary">The You page heart, the name beside the logo and Search\'s glow</string>
     <string name="meetune_set_brand_name">MeeTune name beside the logo</string>
     <string name="meetune_set_brand_name_summary">Off, Home\'s corner shows the heart alone</string>
     <string name="meetune_link_meetube">MeeTube →</string>
@@ -55,6 +59,14 @@
         <item quantity="other">%1$s · %2$d songs</item>
     </plurals>
     <string name="meetune_queue">Up next</string>
+    <string name="meetune_queue_title">Queue</string>
+    <string name="meetune_queue_search">Search songs</string>
+    <string name="meetune_queue_close">Close queue</string>
+    <string name="meetune_queue_playing_next">Playing next</string>
+    <string name="meetune_queue_autoplay">AutoPlay</string>
+    <string name="meetune_queue_autoplay_summary">Similar music, selected to play next</string>
+    <string name="meetune_queue_remove">Remove from queue</string>
+    <string name="meetune_queue_move">Drag to move</string>
     <string name="meetune_lyrics">Lyrics</string>
     <string name="meetune_focus">Focus on the lyrics</string>
     <string name="meetune_cast">Cast</string>
@@ -128,6 +140,7 @@
     <string name="meetune_queued">Added to queue</string>
     <string name="meetune_download">Download</string>
     <string name="meetune_convert_video">Convert to video</string>
+    <string name="meetune_connect_car">Connect to car</string>
     <string name="meetune_uncache">Remove from cache</string>
     <string name="meetune_uncached">Removed from cache</string>
     <string name="meetune_uncache_none">Nothing of this song is cached</string>
@@ -168,12 +181,14 @@
     <string name="meetune_spatial_strong_summary">Wide and roomy, like speakers in front of you</string>
     <string name="meetune_spatial_cinema">Cinema</string>
     <string name="meetune_spatial_cinema_summary">The widest and roomiest, with a deeper bass</string>
+    <string name="meetune_spatial_wide">Wide</string>
+    <string name="meetune_spatial_wide_summary">Crisp and wide, the stereo pushed out with a little crossfeed</string>
     <string name="meetune_head_tracking">Head tracking</string>
     <string name="meetune_head_tracking_summary">The sound stays in place as you turn your head, on earbuds that track it. Starts with the next song</string>
     <string name="meetune_head_tracking_summary_none">Needs the Spatial audio of this phone: put on earbuds that support it and turn it on in their Bluetooth settings</string>
     <string name="meetune_crossfade">Crossfade</string>
     <string name="meetune_volume">Volume</string>
-    <string name="meetune_volume_note">Songs only; MeeTube keeps its own Player volume. Over 100% boosts quiet songs and quiet phones. Very high levels can distort the sound or damage speakers</string>
+    <string name="meetune_volume_note" formatted="false">Songs only; MeeTube keeps its own Player volume. Over 100% boosts quiet songs and quiet phones. Very high levels can distort the sound or damage speakers</string>
     <string name="meetune_crossfade_off">Off</string>
     <string name="meetune_crossfade_seconds">%1$d s</string>
     <string name="meetune_automix">MeeTuneMix</string>
@@ -189,7 +204,8 @@
     <string name="meetune_stream_wifi">On Wi-Fi</string>
     <string name="meetune_stream_mobile">On mobile data</string>
     <string name="meetune_stream_note">Mobile data also covers hotspots and other metered networks</string>
-    <string name="meetune_set_look">Look</string>
+    <string name="meetune_set_group_music">Music</string>
+    <string name="meetune_set_sound_playback">Sound and playback</string>
     <string name="meetune_speed_dial">Speed dial</string>
     <string name="meetune_speed_dial_summary">Home\'s Listen again as pages of square tiles, nine at a glance</string>
     <string name="meetune_set_playback">Playback</string>
@@ -239,6 +255,8 @@
     <string name="meetune_sleep_toast_end">Song will pause at the end</string>
     <string name="meetune_downloads">Downloads</string>
     <string name="meetune_history">History</string>
+    <string name="meetune_history_sync">Sync with YouTube Music</string>
+    <string name="meetune_history_sync_summary">Songs you play here show in YouTube Music\'s history, and History shows what you played there. Turn off to pause sync and keep History on this phone. Needs a signed-in account.</string>
     <plurals name="meetune_history_count">
         <item quantity="one">%1$d song played</item>
         <item quantity="other">%1$d songs played</item>
@@ -306,4 +324,27 @@
     <string name="meetune_spotify_not_linked">Not linked. Tap to sign in</string>
     <string name="meetune_addons_note">Add-ons link MeeTune to other services. They are unofficial, read only, and may stop working when those services change.</string>
     <string name="meetune_hints">What this does</string>
+    <!-- Android Auto (CarMediaService) -->
+    <string name="meetune_car_unlike">Remove from liked</string>
+    <string name="meetune_car_shuffle_off">Shuffle off</string>
+    <string name="meetune_car_repeat">Repeat</string>
+    <string name="meetune_car_repeat_off">Repeat off</string>
+    <string name="meetune_car_lyrics_show">Show lyrics</string>
+    <string name="meetune_car_lyrics_hide">Hide lyrics</string>
+    <string name="meetune_car_shuffle_play">Shuffle play</string>
+    <string name="meetune_car_songs">%1$d songs</string>
+    <string name="meetune_car_made_for_you">Made for you</string>
+    <string name="meetune_car_recents">Recents</string>
+    <string name="meetune_car_artist_mix">%1$s Mix</string>
+    <string name="meetune_car_mix_based">Based on %1$s</string>
+    <string name="meetune_car_your_mixes">From your listening</string>
+    <string name="meetune_car_close">Close player</string>
+    <string name="meetune_set_car">Android Auto</string>
+    <string name="meetune_car_autoplay">Autoplay in the car</string>
+    <string name="meetune_car_autoplay_summary">When the songs you picked run out, similar songs keep playing.</string>
+    <string name="meetune_car_lyrics">Lyrics on the car screen</string>
+    <string name="meetune_car_lyrics_summary">The line being sung shows in place of the song title. The car player has the same switch.</string>
+    <string name="meetune_car_note">The car plays at your Streaming quality. Say \"Hey Google, play my liked songs on MeeTune\" (or my downloads, my recents, my mix, or any song or artist).</string>
+    <string name="meetune_car_show">Show MeeTune in Android Auto</string>
+    <string name="meetune_car_show_summary">Android Auto hides apps that aren\'t from the Play Store until you allow them. Tap here to open its settings, scroll down and tap Version about 10 times, then open the three-dot menu, Developer settings, and turn on Unknown sources. Reconnect to the car and MeeTune shows with your other music apps.</string>
 </resources>

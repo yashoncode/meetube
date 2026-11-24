@@ -126,6 +126,7 @@ public final class HomePreviewPlayer {
                 ExoPlayer player = player();
                 player.setMediaSource(result);
                 player.setVolume(mMuted ? 0f : 1f);
+                if (!mMuted) com.newtube.mobile.ui.meetune.MeeTubeSongPill.quiet(); // MEETUNE(song pill): the preview's sound wins
                 player.prepare();
                 player.setPlayWhenReady(true);
                 NetPath.log("home-preview play video=" + mVideoId);
@@ -144,6 +145,7 @@ public final class HomePreviewPlayer {
     public void setMuted(boolean muted) {
         mMuted = muted;
         if (mPlayer != null) {
+            if (!muted) com.newtube.mobile.ui.meetune.MeeTubeSongPill.quiet(); // MEETUNE(song pill): turned up, the song pauses
             mPlayer.setVolume(muted ? 0f : 1f);
         }
     }
@@ -162,6 +164,11 @@ public final class HomePreviewPlayer {
     public long remainingMs() {
         return mPlayer == null || mPlayer.getDuration() == C.TIME_UNSET
                 ? -1 : Math.max(0, mPlayer.getDuration() - mPlayer.getCurrentPosition());
+    }
+
+    /** Where the preview is now, in ms (0 before it plays). */
+    public long positionMs() {
+        return mPlayer == null ? 0 : Math.max(0, mPlayer.getCurrentPosition());
     }
 
     /** 0..1 of the video played so far. */

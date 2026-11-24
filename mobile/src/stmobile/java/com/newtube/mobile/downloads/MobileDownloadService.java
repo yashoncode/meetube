@@ -22,6 +22,7 @@ import com.newtube.mobile.ui.browse.MobileBrowseActivity;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BooleanSupplier;
 
 /**
  * Foreground service that drains the download queue one item at a time.
@@ -49,6 +50,10 @@ public final class MobileDownloadService extends Service {
     @Nullable private PowerManager.WakeLock mWakeLock;
     private volatile boolean mDraining;
     private volatile boolean mForeground;
+    /** The item the drain is running now, so a timeout can stop it. */
+    @Nullable private volatile DownloadItem mRunning;
+    /** Android 15+'s daily dataSync limit was reached: the drain stops and the queue waits for a resume. */
+    private volatile boolean mTimedOut;
 
     /** Adds the item to the registry and makes sure the queue is being drained. */
     public static void enqueue(Context context, DownloadItem item) {
@@ -91,9 +96,12 @@ public final class MobileDownloadService extends Service {
 
     /**
      * MEETUBE(auto download): from a background worker. Android 12+ refuses a foreground start while
-     * the app is not in front; then the caller's thread drains the queue itself (no notification).
+     * the app is not in front; then the worker drains the queue itself, with the same progress
+     * notification (posted, not foreground). Issue #300: a worker only gets a window of minutes, so
+     * when {@code stopped} turns true the running item stops at its next chunk, keeps its part files
+     * and goes back in the queue, and a resume check picks it up where it stopped.
      */
-    static void startOrDrain(Context context) {
+    static void startOrDrain(Context context, BooleanSupplier stopped) {
         DownloadRegistry registry = DownloadRegistry.instance(context);
         if (registry.nextQueued() == null) {
             return;
@@ -104,10 +112,69 @@ public final class MobileDownloadService extends Service {
         } catch (RuntimeException e) {
             Log.w(TAG, "background start refused, draining in the worker: " + e);
         }
+        NotificationManager notifications = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        createChannel(context, notifications);
         DownloadItem next;
-        while ((next = registry.nextQueued()) != null) {
-            new DownloadJob(context, next, registry, item -> { }).run();
+        long[] lastCheck = {0};
+        while (!stopped.getAsBoolean() && !AutoDownload.mustWait(context) && (next = registry.claimNextQueued()) != null) {
+            boolean[] cut = {false};
+            notifyProgress(context, notifications, next);
+            new DownloadJob(context, next, registry, item -> {
+                if (stopped.getAsBoolean() && !item.pauseRequested) {
+                    cut[0] = true;
+                    item.pauseRequested = true; // the job stops at its next chunk, parts kept
+                }
+                if (waitForWifi(context, item, lastCheck)) cut[0] = true;
+                notifyProgress(context, notifications, item);
+            }).run();
+            if (cut[0]) {
+                requeue(registry, next);
+            }
+            if (next.isDone()) {
+                postDoneNotification(context, notifications, next);
+            }
         }
+        if (notifications != null) {
+            notifications.cancel(NOTIFICATION_ID);
+        }
+        if (registry.nextQueued() != null) {
+            AutoDownload.resumeQueue(context);
+        }
+    }
+
+    /** An item stopped by the system, not by the user: back in the queue, its part files kept. */
+    private static void requeue(DownloadRegistry registry, DownloadItem item) {
+        if (item.state == DownloadItem.STATE_PAUSED) {
+            item.state = DownloadItem.STATE_QUEUED;
+            item.pauseRequested = false;
+            registry.notifyChanged();
+        }
+    }
+
+    private static void notifyProgress(Context context, @Nullable NotificationManager notifications, DownloadItem item) {
+        if (notifications != null) {
+            notifications.notify(NOTIFICATION_ID, buildProgressNotification(context, item));
+        }
+    }
+
+    /** Starts the queue if anything waits in it (Settings turned Wi-Fi only off). */
+    static void kick(Context context) {
+        if (DownloadRegistry.instance(context).nextQueued() != null) {
+            start(context);
+        }
+    }
+
+    /**
+     * Issue #318: Wi-Fi only is on and the network turned metered. The running item stops at its
+     * next chunk with its part files and goes back in the queue (checked at most once a second).
+     */
+    private static boolean waitForWifi(Context context, DownloadItem item, long[] lastCheck) {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (item.pauseRequested || now - lastCheck[0] < 1000) return false;
+        lastCheck[0] = now;
+        if (!AutoDownload.mustWait(context)) return false;
+        item.pauseRequested = true;
+        return true;
     }
 
     private static void start(Context context) {
@@ -120,7 +187,7 @@ public final class MobileDownloadService extends Service {
         super.onCreate();
         mRegistry = DownloadRegistry.instance(this);
         mNotifications = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        createChannel();
+        createChannel(this, mNotifications);
     }
 
     @Override
@@ -130,7 +197,7 @@ public final class MobileDownloadService extends Service {
         // Every start must promote promptly: a startForegroundService() that never reaches
         // startForeground() is an ANR-class crash on API 26+. Cancel and Pause arrive the same way
         // (the notification actions), so they promote too and step back down when nothing is running.
-        promote(buildProgressNotification(mRegistry.nextQueued()));
+        promote(buildProgressNotification(this, mRegistry.nextQueued()));
 
         if (ACTION_CANCEL.equals(action) || ACTION_PAUSE.equals(action)) {
             DownloadItem item = mRegistry.find(intent.getStringExtra(EXTRA_ITEM_ID));
@@ -167,8 +234,13 @@ public final class MobileDownloadService extends Service {
 
     private void drain() {
         try {
-            while (true) {
-                DownloadItem running = mRegistry.nextQueued();
+            long[] lastCheck = {0};
+            while (!mTimedOut) {
+                if (AutoDownload.mustWait(this)) { // issue #318: the queue waits; Wi-Fi resumes it
+                    AutoDownload.resumeQueue(this);
+                    break;
+                }
+                DownloadItem running = mRegistry.claimNextQueued();
                 if (running == null) {
                     synchronized (mDrainLock) {
                         // Re-check under the lock: an enqueue that raced the empty check must not be
@@ -180,10 +252,19 @@ public final class MobileDownloadService extends Service {
                     }
                     continue;
                 }
+                mRunning = running;
                 updateProgressNotification(running);
-                new DownloadJob(this, running, mRegistry, this::updateProgressNotification).run();
+                boolean[] cut = {false};
+                new DownloadJob(this, running, mRegistry, item -> {
+                    if (waitForWifi(this, item, lastCheck)) cut[0] = true;
+                    updateProgressNotification(item);
+                }).run();
+                mRunning = null;
+                if (mTimedOut || cut[0]) {
+                    requeue(mRegistry, running);
+                }
                 if (running.isDone()) {
-                    postDoneNotification(running);
+                    postDoneNotification(this, mNotifications, running);
                 }
             }
         } finally {
@@ -194,6 +275,24 @@ public final class MobileDownloadService extends Service {
             stopForegroundCompat();
             stopSelf();
         }
+    }
+
+    /**
+     * Issue #300: Android 15+ gives a dataSync service 6 hours a day. Past that it must stop within
+     * seconds: the running item stops at its next chunk and goes back in the queue, and a resume
+     * check goes on in background windows until the service may run again.
+     */
+    @Override
+    public void onTimeout(int startId, int fgsType) {
+        Log.w(TAG, "dataSync time limit reached, handing the queue to a resume check");
+        mTimedOut = true;
+        DownloadItem running = mRunning;
+        if (running != null) {
+            running.pauseRequested = true;
+        }
+        stopForegroundCompat();
+        stopSelf();
+        AutoDownload.resumeQueue(this);
     }
 
     // ---------------------------------------------------------------------------------
@@ -230,13 +329,13 @@ public final class MobileDownloadService extends Service {
         if (!mForeground) {
             return;
         }
-        mNotifications.notify(NOTIFICATION_ID, buildProgressNotification(item));
+        mNotifications.notify(NOTIFICATION_ID, buildProgressNotification(this, item));
     }
 
-    private Notification buildProgressNotification(@Nullable DownloadItem item) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+    private static Notification buildProgressNotification(Context context, @Nullable DownloadItem item) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_nav_downloads_fill)
-                .setContentIntent(openDownloadsIntent())
+                .setContentIntent(openDownloadsIntent(context))
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setSilent(true)
@@ -244,66 +343,69 @@ public final class MobileDownloadService extends Service {
                 .setCategory(NotificationCompat.CATEGORY_PROGRESS);
 
         if (item == null) {
-            builder.setContentTitle(getString(R.string.header_downloads))
+            builder.setContentTitle(context.getString(R.string.header_downloads))
                     .setProgress(0, 0, true);
             return builder.build();
         }
 
         builder.setContentTitle(item.title);
         if (item.state == DownloadItem.STATE_PROCESSING) {
-            builder.setContentText(getString(R.string.mobile_download_state_processing))
+            builder.setContentText(context.getString(R.string.mobile_download_state_processing))
                     .setProgress(0, 0, true);
         } else {
             int percent = item.progressPercent();
-            builder.setContentText(DownloadProgressText.of(this, item))
+            builder.setContentText(DownloadProgressText.of(context, item))
                     .setProgress(100, Math.max(0, percent), percent < 0);
-            builder.addAction(R.drawable.ic_player_pause, getString(R.string.mobile_download_action_pause),
-                    actionIntent(item, ACTION_PAUSE));
-            builder.addAction(R.drawable.ic_sheet_close, getString(R.string.cancel),
-                    actionIntent(item, ACTION_CANCEL));
+            builder.addAction(R.drawable.ic_player_pause, context.getString(R.string.mobile_download_action_pause),
+                    actionIntent(context, item, ACTION_PAUSE));
+            builder.addAction(R.drawable.ic_sheet_close, context.getString(R.string.cancel),
+                    actionIntent(context, item, ACTION_CANCEL));
         }
         return builder.build();
     }
 
-    private void postDoneNotification(DownloadItem item) {
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+    private static void postDoneNotification(Context context, @Nullable NotificationManager notifications, DownloadItem item) {
+        if (notifications == null) {
+            return;
+        }
+        Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_watch_downloaded)
-                .setContentTitle(getString(R.string.mobile_download_done_title))
+                .setContentTitle(context.getString(R.string.mobile_download_done_title))
                 .setContentText(item.title)
-                .setContentIntent(openDownloadsIntent())
+                .setContentIntent(openDownloadsIntent(context))
                 .setAutoCancel(true)
                 .setSilent(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .build();
-        mNotifications.notify(DONE_NOTIFICATION_BASE + (item.id.hashCode() & 0xFF), notification);
+        notifications.notify(DONE_NOTIFICATION_BASE + (item.id.hashCode() & 0xFF), notification);
     }
 
-    private PendingIntent openDownloadsIntent() {
-        Intent intent = new Intent(this, MobileBrowseActivity.class)
+    private static PendingIntent openDownloadsIntent(Context context) {
+        Intent intent = new Intent(context, MobileBrowseActivity.class)
                 .setAction(MobileBrowseActivity.ACTION_OPEN_DOWNLOADS)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP
                         | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        return PendingIntent.getActivity(this, 0, intent,
+        return PendingIntent.getActivity(context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    private PendingIntent actionIntent(DownloadItem item, String action) {
-        Intent intent = new Intent(this, MobileDownloadService.class)
+    private static PendingIntent actionIntent(Context context, DownloadItem item, String action) {
+        Intent intent = new Intent(context, MobileDownloadService.class)
                 .setAction(action)
                 .putExtra(EXTRA_ITEM_ID, item.id);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                ? PendingIntent.getForegroundService(this, item.id.hashCode(), intent, flags)
-                : PendingIntent.getService(this, item.id.hashCode(), intent, flags);
+                ? PendingIntent.getForegroundService(context, item.id.hashCode(), intent, flags)
+                : PendingIntent.getService(context, item.id.hashCode(), intent, flags);
     }
 
-    private void createChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && mNotifications != null) {
+    private static void createChannel(Context context, @Nullable NotificationManager notifications) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && notifications != null) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                    getString(R.string.mobile_download_channel_name), NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription(getString(R.string.mobile_download_channel_desc));
+                    context.getString(R.string.mobile_download_channel_name), NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription(context.getString(R.string.mobile_download_channel_desc));
             channel.setShowBadge(false);
-            mNotifications.createNotificationChannel(channel);
+            notifications.createNotificationChannel(channel);
         }
     }
 

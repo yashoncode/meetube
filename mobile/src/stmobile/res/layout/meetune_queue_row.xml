@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUNE: a song on the player's queue page: its grip (gone on the playing song), cover, names,
+     the playing song's bars, and remove. White on the player's tinted backdrop in both themes. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="22dp"
+    android:paddingEnd="10dp">
+
+    <ImageView
+        android:id="@+id/meetune_queue_grip"
+        android:layout_width="36dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="-8dp"
+        android:contentDescription="@string/meetune_queue_move"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="12dp"
+        android:src="@drawable/ic_settings_drag_handle"
+        android:tint="#80FFFFFF" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        app:cardBackgroundColor="#33FFFFFF"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <ImageView
+            android:id="@+id/meetune_queue_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/meetune_queue_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="?attr/appFontMedium"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/meetune_queue_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="#B3FFFFFF"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+    <view
+        class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$EqBars"
+        android:id="@+id/meetune_queue_bars"
+        android:layout_width="18dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="10dp"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/meetune_queue_remove"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="4dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/meetune_queue_remove"
+        android:padding="12dp"
+        android:src="@drawable/ic_sheet_close"
+        android:tint="#B3FFFFFF" />
+
+</LinearLayout>

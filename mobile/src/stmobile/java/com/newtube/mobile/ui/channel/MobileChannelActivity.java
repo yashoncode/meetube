@@ -242,6 +242,14 @@ public class MobileChannelActivity extends MobileActivity
         setTextOrGone(R.id.mobile_channel_handle, info.handle);
         setTextOrGone(R.id.mobile_channel_stats, info.stats);
         TextView description = setTextOrGone(R.id.mobile_channel_description, info.description);
+        // MEETUBE(issue #310): its links, other channels included, open like the video description's.
+        if (!android.text.TextUtils.isEmpty(info.description)) {
+            android.text.SpannableString linked = new android.text.SpannableString(info.description);
+            android.text.util.Linkify.addLinks(linked, android.text.util.Linkify.WEB_URLS);
+            com.newtube.mobile.ui.common.ChannelLinks.apply(linked);
+            description.setText(linked);
+            description.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+        }
         description.setMaxLines(2);
         description.setOnClickListener(v -> description.setMaxLines(
                 description.getMaxLines() == 2 ? Integer.MAX_VALUE : 2)); // tap: the rest, in place
@@ -1087,8 +1095,11 @@ public class MobileChannelActivity extends MobileActivity
         Section active = mSections.get(mActiveSectionId);
         mLastPaginationTriggerCount = -1;
         syncLoadMoreFooter();
-        ((TextView) findViewById(R.id.mobile_channel_sort)).setText(active != null && active.sort != null
-                ? active.sort : getString(R.string.mobile_channel_sort));
+        TextView sort = findViewById(R.id.mobile_channel_sort);
+        sort.setText(active != null && active.sort != null ? active.sort : getString(R.string.mobile_channel_sort));
+        // The sort's Latest / Popular / Oldest pages are the Videos tab's: on the Shorts tab they
+        // were filtered down to Shorts, which left the tab empty.
+        sort.setVisibility(active != null && !active.shorts ? View.VISIBLE : View.GONE);
         if (restore) {
             mPendingScroll = active != null ? active.scroll : null;
         }
@@ -1139,6 +1150,11 @@ public class MobileChannelActivity extends MobileActivity
     @Override
     public boolean prepareMiniPlayerForHandoff(Runnable onDrawn) {
         return mMiniPlayer != null && mMiniPlayer.prepareForHandoff(onDrawn);
+    }
+
+    @Override
+    public void syncMiniCard() {
+        if (mMiniPlayer != null) mMiniPlayer.sync(false);
     }
 
     @Override

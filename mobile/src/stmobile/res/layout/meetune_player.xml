@@ -72,6 +72,21 @@
         android:layout_marginTop="10dp"
         android:background="@drawable/meetune_handle" />
 
+    <!-- The queue page's way back to the player, where the handle is on the others. -->
+    <ImageView
+        android:id="@+id/meetune_player_queue_close"
+        android:layout_width="44dp"
+        android:layout_height="40dp"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="14dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/meetune_queue_close"
+        android:padding="8dp"
+        android:rotation="90"
+        android:src="@drawable/ic_chevron_right"
+        android:tint="@android:color/white"
+        android:visibility="gone" />
+
     <!-- Lyrics: the song small at the top, the synced lines under it down to the controls (or the
          whole page, a tap on the lines away). -->
     <LinearLayout
@@ -198,6 +213,59 @@
                 android:paddingBottom="28dp" />
 
         </view>
+
+        <!-- Queue: the song small at the top as on Lyrics, then what plays now and next. -->
+        <LinearLayout
+            android:id="@+id/meetune_player_queue_page"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:textStyle="bold"
+                android:paddingHorizontal="22dp"
+                android:text="@string/meetune_queue_title"
+                android:textColor="@android:color/white"
+                android:textSize="22sp" />
+
+            <EditText
+                android:id="@+id/meetune_player_queue_search"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:layout_marginHorizontal="22dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/meetune_queue_search"
+                android:drawableStart="@drawable/ic_mobile_search"
+                android:drawablePadding="10dp"
+                android:drawableTint="#B3FFFFFF"
+                android:hint="@string/meetune_queue_search"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:paddingHorizontal="12dp"
+                android:singleLine="true"
+                android:textColor="@android:color/white"
+                android:textColorHint="#99FFFFFF"
+                android:textSize="14sp" />
+
+            <view
+                class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$QueueList"
+                android:id="@+id/meetune_player_queue_list"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp"
+                android:fadingEdgeLength="40dp"
+                android:overScrollMode="never"
+                android:clipToPadding="false"
+                android:requiresFadingEdge="vertical" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

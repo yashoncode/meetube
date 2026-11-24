@@ -1125,6 +1125,11 @@ public class MobileChannelUploadsActivity extends MobileActivity
     }
 
     @Override
+    public void syncMiniCard() {
+        if (mMiniPlayer != null) mMiniPlayer.sync(false);
+    }
+
+    @Override
     public Class<?> getMiniHostViewClass() {
         return ChannelUploadsView.class;
     }

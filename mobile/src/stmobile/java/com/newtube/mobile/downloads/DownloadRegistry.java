@@ -34,8 +34,8 @@ import java.util.concurrent.Executors;
  * thread. Writes are coalesced onto a single background thread.
  *
  * <p>An item found QUEUED, DOWNLOADING or PROCESSING when the registry loads was interrupted by
- * a process death: it is marked paused, and its part files keep whatever was fetched so Resume
- * goes on rather than restarts.
+ * a process death (issue #300): it goes back in the queue, its part files keep whatever was fetched
+ * so it goes on rather than restarts, and a resume check is scheduled to pick it up.
  */
 public final class DownloadRegistry {
     private static final String TAG = DownloadRegistry.class.getSimpleName();
@@ -72,7 +72,9 @@ public final class DownloadRegistry {
 
     private DownloadRegistry(Context context) {
         mContext = context;
-        load();
+        if (load()) {
+            AutoDownload.resumeQueue(context);
+        }
     }
 
     public static File dir(Context context) {
@@ -134,6 +136,19 @@ public final class DownloadRegistry {
             }
         }
         return null;
+    }
+
+    /**
+     * The next queued item, marked downloading in the same lock, so two drains (the service and a
+     * background check) never take the same one.
+     */
+    @Nullable
+    synchronized DownloadItem claimNextQueued() {
+        DownloadItem next = nextQueued();
+        if (next != null) {
+            next.state = DownloadItem.STATE_DOWNLOADING;
+        }
+        return next;
     }
 
     @Nullable
@@ -206,31 +221,35 @@ public final class DownloadRegistry {
         return new File(dir(mContext), FILE_NAME);
     }
 
-    private void load() {
+    /** @return whether an interrupted item went back in the queue */
+    private boolean load() {
         File file = file();
         if (!file.exists()) {
-            return;
+            return false;
         }
+        boolean requeued = false;
 
         try {
             String text = readAll(file);
             JSONArray array = new JSONObject(text).optJSONArray("items");
             if (array == null) {
-                return;
+                return false;
             }
             for (int i = 0; i < array.length(); i++) {
                 DownloadItem item = DownloadItem.fromJson(array.getJSONObject(i));
                 if (item.state == DownloadItem.STATE_DOWNLOADING || item.state == DownloadItem.STATE_PROCESSING
                         || item.state == DownloadItem.STATE_QUEUED) {
-                    // Interrupted by a process death: nothing is running it any more.
-                    item.state = DownloadItem.STATE_PAUSED;
+                    // Interrupted by a process death: nothing is running it any more. Back in the queue.
+                    item.state = DownloadItem.STATE_QUEUED;
                     item.error = null;
+                    requeued = true;
                 }
                 mItems.add(item);
             }
         } catch (IOException | JSONException | RuntimeException e) {
             Log.e(TAG, "registry unreadable, starting empty: " + e);
         }
+        return requeued;
     }
 
     private static String readAll(File file) throws IOException {

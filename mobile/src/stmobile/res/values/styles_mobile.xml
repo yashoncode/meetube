@@ -796,4 +796,22 @@
         <item name="appFontMedium">@font/app_vazirmatn</item>
         <item name="appFontBlack">@font/app_vazirmatn</item>
     </style>
+    <!-- The user's own font file: a family name AppFont adds to Typeface's map, not a resource.
+         Black is the same file in synthetic bold. -->
+    <style name="ThemeOverlay.MeeTube.Font.Custom" parent="">
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:useLocalePreferredLineHeightForMinimum" tools:targetApi="35">false</item>
+        <item name="android:fontFamily">meetube-custom</item>
+        <item name="fontFamily">meetube-custom</item>
+        <item name="appFontRegular">meetube-custom</item>
+        <item name="appFontMedium">meetube-custom</item>
+        <item name="appFontBlack">meetube-custom-black</item>
+    </style>
+    <!-- MEETUBE(android auto, issue #253): the car's own theme, read only by the car host (the phone
+         theme's accent is near black there): MeeTune red for the seekbar and highlights. -->
+    <style name="Theme.MeeTube.Car" parent="">
+        <item name="android:colorPrimary">@color/meetune_accent</item>
+        <item name="android:colorPrimaryDark">#FF121212</item>
+        <item name="android:colorAccent">@color/meetune_accent</item>
+    </style>
 </resources>

@@ -40,6 +40,10 @@ final class DownloadPages {
         }
         rows.add(quality(context, context.getString(R.string.mobile_settings_download_quality), true,
                 AutoDownload.defaultQuality(context), q -> AutoDownload.setDefaultQuality(context, q)));
+        // MEETUBE(issue #318): every download waits for Wi-Fi, and a running one pauses off it.
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_download_wifi),
+                context.getString(R.string.mobile_settings_download_wifi_summary),
+                () -> AutoDownload.wifiOnlyAll(context), on -> AutoDownload.setWifiOnlyAll(context, on)));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_auto_download)));
         rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_auto_channels),

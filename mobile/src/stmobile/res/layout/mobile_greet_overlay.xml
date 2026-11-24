@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(greeting): the held brand pill frosts the page. GreetingOverlay adds the stats,
+     timer and shortcuts for the side that opened it. -->
+<com.newtube.mobile.ui.common.GlassView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_greet_overlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:elevation="20dp"
+    android:focusable="true"
+    android:visibility="gone"
+    app:glassCornerRadius="0dp"
+    app:glassLiquid="false"
+    app:glassTint="@color/meetube_glass_tint">
+
+    <LinearLayout
+        android:id="@+id/mobile_greet_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="40dp">
+
+        <TextView
+            android:id="@+id/mobile_greet_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="cursive"
+            android:gravity="center"
+            android:textColor="@color/mobile_color_on_surface"
+            android:textSize="44sp"
+            android:textStyle="bold"
+            tools:text="Good evening" />
+
+        <TextView
+            android:id="@+id/mobile_greet_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="28dp"
+            android:gravity="center"
+            android:textColor="@color/mobile_color_on_surface_secondary"
+            android:textSize="16sp"
+            tools:text="Wind down with something good" />
+
+    </LinearLayout>
+
+</com.newtube.mobile.ui.common.GlassView>

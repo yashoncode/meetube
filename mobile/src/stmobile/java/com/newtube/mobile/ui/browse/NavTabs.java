@@ -141,6 +141,16 @@ public final class NavTabs {
         prefs(context).edit().putBoolean(KEY_BRAND_NAME, show).apply();
     }
 
+    /** MEETUBE(app label): Settings > Customization > App label - the name in the brand pill. */
+    public static String brandLabel(Context context) {
+        return com.newtube.mobile.ui.common.BrandLabel.or(prefs(context).getString("brand_label", null),
+                context.getString(com.liskovsoft.smartyoutubetv2.tv.R.string.app_name));
+    }
+
+    public static void setBrandLabel(Context context, String label) {
+        prefs(context).edit().putString("brand_label", label).apply();
+    }
+
     /** MEETUBE(search place): Settings > Customization > Tabs - Search in the top bar instead of the bottom one. */
     public static boolean searchOnTop(Context context) {
         // MEETUBE(youtube mode): Search sits in the top bar, as on YouTube.

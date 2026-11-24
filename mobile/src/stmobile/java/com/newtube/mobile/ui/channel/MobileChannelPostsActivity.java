@@ -306,6 +306,8 @@ public class MobileChannelPostsActivity extends MobileActivity implements MiniPl
         return mMiniPlayer != null && mMiniPlayer.prepareForHandoff(onDrawn);
     }
 
+    @Override public void syncMiniCard() { if (mMiniPlayer != null) mMiniPlayer.sync(false); }
+
     @Override public Class<?> getMiniHostViewClass() { return MobileChannelPostsActivity.class; }
     @Override public int getMiniCardBottomOffsetPx() { return 0; }
 }

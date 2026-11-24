@@ -388,6 +388,7 @@ public class MobileSearchActivity extends MobileActivity
         // MEETUBE(glass segmented): the same filters as one glass segment (Settings > Customization > Chips style).
         mChipTrack = findViewById(R.id.mobile_search_chip_track);
         mChipTrack.setGlassSource(results);
+        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_search_frost), results);
         java.util.List<CharSequence> labels = new java.util.ArrayList<>();
         for (int[] entry : CHIPS) {
             labels.add(getString(entry[0]));
@@ -921,6 +922,11 @@ public class MobileSearchActivity extends MobileActivity
     @Override
     public boolean prepareMiniPlayerForHandoff(Runnable onDrawn) {
         return mMiniPlayer != null && mMiniPlayer.prepareForHandoff(onDrawn);
+    }
+
+    @Override
+    public void syncMiniCard() {
+        if (mMiniPlayer != null) mMiniPlayer.sync(false);
     }
 
     @Override

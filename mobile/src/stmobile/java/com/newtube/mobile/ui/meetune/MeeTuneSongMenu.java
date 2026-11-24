@@ -56,10 +56,23 @@ public final class MeeTuneSongMenu {
      */
     public static void showForPlayer(Activity activity, Video video, Runnable minimize, @Nullable Row upgrade, Row... tail) {
         MusicApi.Item item = MeeTune.item(video);
+        Row car = null;
+        if (com.newtube.mobile.car.CarMediaService.carConnected()
+                && activity instanceof com.newtube.mobile.ui.playback.MobilePlaybackActivity) {
+            // issue #253: like a TV in the cast sheet, the song goes to the car only when picked
+            androidx.media3.exoplayer.ExoPlayer player =
+                    ((com.newtube.mobile.ui.playback.MobilePlaybackActivity) activity).getSharedPlayer();
+            car = new Row(R.drawable.ic_mobile_car, R.string.meetune_connect_car,
+                    () -> activity.getString(R.string.mobile_cast_car_subtitle), () -> {
+                if (com.newtube.mobile.car.CarMediaService.playOnCar(video, player)) {
+                    MobileSnackbar.show(activity, R.string.mobile_cast_car_playing);
+                }
+            });
+        }
         PopupWindow popup = build(activity, item, browseId -> {
             MeeTune.openOnReturn(browseId);
             minimize.run();
-        }, upgrade, withEqualizer(tail, minimize));
+        }, car, upgrade, withEqualizer(tail, minimize));
         place(activity, popup, null, false);
     }
 
@@ -75,11 +88,11 @@ public final class MeeTuneSongMenu {
     }
 
     static void show(Activity activity, View anchor, MusicApi.Item item, Consumer<String> openBrowse, Row... tail) {
-        place(activity, build(activity, item, openBrowse, null, tail), anchor, false);
+        place(activity, build(activity, item, openBrowse, null, null, tail), anchor, false);
     }
 
     private static PopupWindow build(Activity a, MusicApi.Item item, Consumer<String> openBrowse,
-                                     @Nullable Row upgrade, Row... tail) {
+                                     @Nullable Row car, @Nullable Row upgrade, Row... tail) {
         LinearLayout content = new LinearLayout(a);
         PopupWindow popup = glassPopup(a, content, 264, 28);
         LinearLayout top = new LinearLayout(a);
@@ -99,11 +112,13 @@ public final class MeeTuneSongMenu {
                     .putExtra(Intent.EXTRA_TEXT, Uri.parse(MusicApi.ORIGIN + "/watch?v=" + item.videoId).toString()), null));
         });
         content.addView(divider(a));
-        if (upgrade != null) {
-            row(content, upgrade.icon, a.getString(upgrade.label), upgrade.detail != null ? upgrade.detail.get() : null, () -> {
-                popup.dismiss();
-                upgrade.run.run();
-            });
+        for (Row first : new Row[] {car, upgrade}) {
+            if (first != null) {
+                row(content, first.icon, a.getString(first.label), first.detail != null ? first.detail.get() : null, () -> {
+                    popup.dismiss();
+                    first.run.run();
+                });
+            }
         }
         row(content, R.drawable.ic_meetune_video, a.getString(R.string.meetune_convert_video), null, () -> {
             popup.dismiss();

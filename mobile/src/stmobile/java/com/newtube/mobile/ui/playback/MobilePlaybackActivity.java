@@ -1869,9 +1869,6 @@ public class MobilePlaybackActivity extends MobileActivity
                 mTitleView.setVisibility(View.VISIBLE);
             }
         } else {
-            if (mAmbient != null && !isTallMode()) {
-                mAmbient.setFill(null); // upright, the page's glow is around the video, not in it
-            }
             // Configuration width is already updated when display metrics/window views can still
             // have the previous landscape bounds. The layout listener above then makes this exact
             // for split-screen, inset and resize changes once the new window has been laid out.
@@ -1879,6 +1876,10 @@ public class MobilePlaybackActivity extends MobileActivity
             int width = Math.round(config.screenWidthDp
                     * getResources().getDisplayMetrics().density);
             width -= applyWatchSide(width); // MEETUBE(issue #230): the page beside Up next
+            if (mAmbient != null) {
+                // Upright the page's glow is around the video, not in it; beside Up next the bands glow too.
+                mAmbient.setFill(ambientFillArea());
+            }
             if (mCommentsSide) { // an open panel goes back under the video
                 mCommentsSide = false;
                 setResizeMode(PlayerData.instance(this).getResizeMode());
@@ -1971,6 +1972,9 @@ public class MobilePlaybackActivity extends MobileActivity
             }
         }
         mWatchSide.setVisibility(side ? View.VISIBLE : View.GONE);
+        if (mAmbient != null) { // MEETUBE(issue #6, meetube-tv): the column glows with the page
+            mAmbient.setSide(side ? findViewById(R.id.mobile_watch_side_scroll) : null, ambientPageColor());
+        }
         ViewGroup.LayoutParams columnLp = mWatchSide.getLayoutParams();
         ViewGroup.MarginLayoutParams rootLp = (ViewGroup.MarginLayoutParams) mWatchRoot.getLayoutParams();
         if (columnLp.width != columnWidth || rootLp.getMarginEnd() != columnWidth) {
@@ -2190,9 +2194,8 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mPlayer.setPlayWhenReady(true);
         // MEETUBE(sleep-timer): "End of video" pauses where autoplay would open the next one.
-        mPlayer.setPauseAtEndOfMediaItems(SleepTimer.isEndOfVideo());
+        SleepTimer.attach(mPlayer, this::sleepNow);
         mPlayer.addListener(mSleepEndListener);
-        SleepTimer.attach(mSleepPause);
         mBenchTicker = com.newtube.mobile.player.BenchTicker.startIfEnabled(
                 BuildConfig.DEBUG || BuildConfig.BENCHMARK, mPlayer, () -> {
                     Video video = getVideo();
@@ -2315,6 +2318,7 @@ public class MobilePlaybackActivity extends MobileActivity
             return;
         }
 
+        SleepTimer.detach(mPlayer);
         stopProgressUpdates();
         mPlayer.removeListener(mUiPlayerListener);
 
@@ -2678,7 +2682,6 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mShorts != null) {
             mShorts.releasePeek();
         }
-        SleepTimer.detach(mSleepPause);
         DownloadRegistry.instance(this).removeListener(mDownloadsListener);
         MobileSheets.setPlayerShown(false, false);
         cancelAutoHide();
@@ -3361,7 +3364,8 @@ public class MobilePlaybackActivity extends MobileActivity
                     ? box.getWidth() : getResources().getDisplayMetrics().widthPixels;
             int height = box.getHeight() > 0
                     ? box.getHeight() : getResources().getDisplayMetrics().heightPixels;
-            int strip = controlsStrip(width, height, mVideoAspect, getResizeMode());
+            // MEETUBE(issue #303): or the screen's corners, over the black bars, like YouTube.
+            int strip = cornerControls(this) ? 0 : controlsStrip(width, height, mVideoAspect, getResizeMode());
             left = Math.max(bars.left, strip);
             right = Math.max(bars.right, strip);
             top = bars.top;
@@ -3606,6 +3610,15 @@ public class MobilePlaybackActivity extends MobileActivity
      * keeps the 16:9 control box instead of a thin column; 0 when the video covers the width: a
      * wider film, or a fill/zoom resize mode. An unknown aspect (no video size yet) counts as 16:9.
      */
+    /** MEETUBE(issue #303): fullscreen controls at the screen corners instead of the video edges. */
+    public static boolean cornerControls(Context context) {
+        return context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).getBoolean("controls_corners", false);
+    }
+
+    public static void setCornerControls(Context context, boolean on) {
+        context.getSharedPreferences("meetube_app", Context.MODE_PRIVATE).edit().putBoolean("controls_corners", on).apply();
+    }
+
     static int controlsStrip(int width, int height, float videoAspect, int resizeMode) {
         int strip16x9 = Math.max(0, Math.round((width - height * 16f / 9f) / 2f));
         if (resizeMode != PlayerConstants.RESIZE_MODE_DEFAULT
@@ -4181,8 +4194,12 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override public void cast() {
                 openCastPicker();
             }
-            @Override public void queue() {
-                showMeeTuneQueue();
+            @Override public List<Video> related() {
+                return new ArrayList<>(mRelatedVideos);
+            }
+            @Override public void play(Video video) {
+                com.newtube.mobile.ui.meetune.MeeTune.keep(video);
+                onRelatedClicked(video);
             }
             @Override public void like() {
                 if (mWatchLike != null) {
@@ -4241,56 +4258,6 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /** MEETUNE: Up next as a list of songs; a pick stays in the music look. */
-    private void showMeeTuneQueue() {
-        // The YouTube Music radio's songs; YouTube's suggestions only until the radio is in.
-        List<Video> radio = com.newtube.mobile.ui.meetune.MeeTune.upNext(PlaybackPresenter.instance(this).getVideo());
-        if ((radio.isEmpty() && mRelatedVideos.isEmpty()) || isFinishing()) {
-            return;
-        }
-        com.google.android.material.bottomsheet.BottomSheetDialog sheet = com.newtube.mobile.ui.common.Haptics.watch(
-                new com.google.android.material.bottomsheet.BottomSheetDialog(this));
-        androidx.recyclerview.widget.RecyclerView list = new androidx.recyclerview.widget.RecyclerView(this);
-        list.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
-        List<Video> videos = radio.isEmpty() ? new ArrayList<>(mRelatedVideos) : radio;
-        list.setAdapter(new androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
-            @Override public int getItemCount() {
-                return videos.size();
-            }
-            @NonNull @Override public androidx.recyclerview.widget.RecyclerView.ViewHolder onCreateViewHolder(
-                    @NonNull ViewGroup parent, int viewType) {
-                View row = getLayoutInflater().inflate(R.layout.meetune_song_row, parent, false);
-                row.findViewById(R.id.meetune_row_more).setVisibility(View.GONE);
-                return new androidx.recyclerview.widget.RecyclerView.ViewHolder(row) { };
-            }
-            @Override public void onBindViewHolder(
-                    @NonNull androidx.recyclerview.widget.RecyclerView.ViewHolder holder, int position) {
-                Video video = videos.get(position);
-                View row = holder.itemView;
-                ((TextView) row.findViewById(R.id.meetune_title)).setText(video.getTitle());
-                ((TextView) row.findViewById(R.id.meetune_subtitle)).setText(video.getAuthor());
-                com.bumptech.glide.Glide.with(row).load(video.cardImageUrl)
-                        .into((ImageView) row.findViewById(R.id.meetune_art));
-                row.setOnClickListener(v -> {
-                    sheet.dismiss();
-                    com.newtube.mobile.ui.meetune.MeeTune.keep(video);
-                    onRelatedClicked(video);
-                });
-            }
-        });
-        TextView title = new TextView(this);
-        title.setText(R.string.meetune_queue);
-        title.setTextSize(20);
-        title.setTextColor(getColorInt(R.color.mobile_color_on_surface));
-        int pad = Math.round(20 * getResources().getDisplayMetrics().density);
-        title.setPadding(pad, pad, pad, pad / 2);
-        android.widget.LinearLayout content = new android.widget.LinearLayout(this);
-        content.setOrientation(android.widget.LinearLayout.VERTICAL);
-        content.addView(title);
-        content.addView(list);
-        sheet.setContentView(sheetRoot(content));
-        showPlayerSheet(sheet);
-    }
-
     /** The audio-only cover: {@code video}'s thumbnail, dimmed, with the headphones over it. */
     private void showAudioCover(@Nullable Video video) {
         if (!mAudioOnly || video == null || mPlayerView == null) {
@@ -5930,21 +5897,41 @@ public class MobilePlaybackActivity extends MobileActivity
     private void applyAmbientSetting() {
         boolean ambient = AmbientGlow.isOn(this);
         if (ambient && mAmbient == null && mVideoTexture != null && mWatchContent != null) {
-            mAmbient = new AmbientGlow(mWatchContent, mVideoTexture,
-                    androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background));
+            mAmbient = new AmbientGlow(mWatchContent, mVideoTexture, ambientPageColor());
             mAmbient.setBar(findViewById(android.R.id.content)); // the status bar glows too
             mAmbient.setSurface(mHdrOutput && !mHdrSwapPending ? mHdrSurface : null);
         } else if (!ambient && mAmbient != null) {
             mAmbient.stop();
             mAmbient.setFill(null);
             mAmbient.setBar(null);
+            mAmbient.setSide(null, ambientPageColor());
             mAmbient = null;
             mWatchContent.setBackground(null);
         }
         if (mAmbient != null) {
             mAmbient.start();
-            mAmbient.setFill(isTallMode() || isLandscape() ? mVideoArea : null);
+            mAmbient.setFill(ambientFillArea());
+            mAmbient.setSide(isWatchSideShown() ? findViewById(R.id.mobile_watch_side_scroll) : null, ambientPageColor());
         }
+    }
+
+    private int ambientPageColor() {
+        return androidx.core.content.ContextCompat.getColor(this, R.color.mobile_color_background);
+    }
+
+    /** MEETUBE(issue #230): the tablet page with Up next in its own column. */
+    private boolean isWatchSideShown() {
+        return mWatchSide != null && mWatchSide.getVisibility() == View.VISIBLE;
+    }
+
+    /**
+     * The video box whose black bands take the ambient fill: sideways, tall (shorts, vertical
+     * fullscreen) and the tablet page beside Up next (issue #6, meetube-tv); upright on a phone the
+     * glow is under the video instead.
+     */
+    @Nullable
+    private View ambientFillArea() {
+        return isTallMode() || isLandscape() || isWatchSideShown() ? mVideoArea : null;
     }
 
     /** MEETUBE(autoplay): on unless "When a video ends" is Pause or Close the player. */
@@ -7769,7 +7756,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         setResizeMode(PlayerData.instance(this).getResizeMode()); // fit while upright-full; also re-lays the controls
         if (mAmbient != null) {
-            mAmbient.setFill(on ? mVideoArea : null); // the black bands glow with the video
+            mAmbient.setFill(on ? mVideoArea : ambientFillArea()); // the black bands glow with the video
         }
         if (on) {
             applyDisplayCutoutMode(true); // the picture may use the camera's band too
@@ -8062,7 +8049,7 @@ public class MobilePlaybackActivity extends MobileActivity
         applyWatchLayoutForOrientation(layoutOrientation());
         setResizeMode(PlayerData.instance(this).getResizeMode());
         if (mAmbient != null) {
-            mAmbient.setFill(isTallMode() || isLandscape() ? mVideoArea : null); // the bands around a short glow
+            mAmbient.setFill(ambientFillArea()); // the bands around a short glow
         }
         updateSeekBarLine();
         if (isShortsMode()) {
@@ -8113,7 +8100,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mSwipeDownRawX = downRawX;
         if (mMeeTune != null && mMeeTune.isShown()) { // MEETUNE: the music look only swipes down, to minimize
-            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag()
+            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag() && !mMeeTune.holdsSwipeDown()
                     ? SWIPE_MINIMIZE : PlayerContainerLayout.SWIPE_NONE;
         }
         boolean vertical = direction == PlayerContainerLayout.UP || direction == PlayerContainerLayout.DOWN;
@@ -8719,7 +8706,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 ? Math.min(picW / video.width(), cardH / video.height()) : 0.44f;
         // MEETUBE(issue #273): the card's own end margin (8dp for Default); 12dp landed it 4dp short and it jumped right.
         float targetX = mContainer.getWidth() - MiniSize.endMargin(this) - cardW + picLeft + (picW - video.width() * scale) / 2f;
-        float targetY = mContainer.getHeight() - bottomNav - margin - (cardH + video.height() * scale) / 2f;
+        float targetY = hostBottom(host) - bottomNav - margin - (cardH + video.height() * scale) / 2f;
 
         mMorphScaleX = scale;
         mMorphScaleY = scale;
@@ -8727,6 +8714,24 @@ public class MobilePlaybackActivity extends MobileActivity
         // top-left pivot its rendered origin is layoutOrigin + translation, independent of scale.
         mMorphTx = targetX - video.left;
         mMorphTy = targetY - video.top;
+    }
+
+    /**
+     * MEETUBE(youtube mode): where the destination host's content ends, in this container's
+     * coordinates. A docked bar's host draws under the gesture area while this container stops above
+     * it, so measuring from our own bottom landed the morph a gesture-bar's height above the card.
+     */
+    private float hostBottom(@Nullable MiniPlayerBridge.MiniHost host) {
+        View content = host instanceof android.app.Activity
+                ? ((android.app.Activity) host).findViewById(android.R.id.content) : null;
+        if (content == null || content.getHeight() == 0) {
+            return mContainer.getHeight();
+        }
+        int[] hostAt = new int[2];
+        int[] ourAt = new int[2];
+        content.getLocationOnScreen(hostAt);
+        mContainer.getLocationOnScreen(ourAt);
+        return hostAt[1] + content.getHeight() - content.getPaddingBottom() - ourAt[1];
     }
 
     /** Map the watch-page video box onto an arbitrary tapped thumbnail in screen coordinates. */
@@ -9390,7 +9395,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /** Live player accessor for the mini bar (package-private, see MiniPlayerBridge). */
-    ExoPlayer getSharedPlayer() {
+    public ExoPlayer getSharedPlayer() {
         return mPlayer;
     }
 
@@ -11099,8 +11104,6 @@ public class MobilePlaybackActivity extends MobileActivity
     // MEETUBE(sleep-timer): gear -> Sleep timer (SleepTimer holds the countdown).
     // ---------------------------------------------------------------------------------
 
-    private final Runnable mSleepPause = this::sleepNow;
-
     private final Player.Listener mSleepEndListener = new Player.Listener() {
         @Override
         public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
@@ -11112,9 +11115,6 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** The timer ran out (or the video ended under "End of video"): pause, like the pause button. */
     private void sleepNow() {
-        if (mPlayer != null) {
-            mPlayer.setPauseAtEndOfMediaItems(false);
-        }
         if (mExoPlayerController != null && mExoPlayerController.getPlayWhenReady()) {
             mExoPlayerController.setPlayWhenReady(false);
             if (mPresenter != null) {
@@ -11162,9 +11162,6 @@ public class MobilePlaybackActivity extends MobileActivity
         for (int minutes : SleepTimer.PRESETS) {
             addQualityRow(list, sleepPresetLabel(minutes), minutes == picked, () -> {
                 SleepTimer.set(minutes);
-                if (mPlayer != null) {
-                    mPlayer.setPauseAtEndOfMediaItems(SleepTimer.isEndOfVideo());
-                }
                 String toast = minutes == SleepTimer.END_OF_VIDEO ? getString(meeTuneSong() ? R.string.meetune_sleep_toast_end : R.string.mobile_sleep_toast_end)
                         : minutes == SleepTimer.OFF ? getString(R.string.mobile_sleep_toast_off)
                         : getString(R.string.mobile_sleep_toast_minutes, sleepPresetLabel(minutes));

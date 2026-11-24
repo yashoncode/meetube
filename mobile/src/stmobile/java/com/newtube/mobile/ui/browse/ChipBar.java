@@ -9,7 +9,7 @@ import android.view.animation.DecelerateInterpolator;
  * a small glass arrow, and a tap on it brings the chips. The row keeps its layout height while
  * hidden (INVISIBLE, never GONE) so the feed never jumps under it.
  */
-final class ChipBar {
+public final class ChipBar {
     private static final int SHOWN = 0;
     private static final int HIDDEN = 1;
     private static final int ARROW = 2;
@@ -22,7 +22,7 @@ final class ChipBar {
     private int mState = SHOWN;
     private int mTravel; // signed scroll distance since the last change of direction
 
-    ChipBar(View row, View arrow) {
+    public ChipBar(View row, View arrow) {
         mRow = row;
         mArrow = arrow;
         mSlopPx = Math.round(24 * row.getResources().getDisplayMetrics().density);
@@ -30,7 +30,7 @@ final class ChipBar {
     }
 
     /** On for Home and its topics (not over the You panel); off hides both, without animation. */
-    void setActive(boolean active) {
+    public void setActive(boolean active) {
         if (active == mActive) {
             return;
         }
@@ -50,7 +50,7 @@ final class ChipBar {
     }
 
     /** From the feed's scroll listener; {@code atTop} = the feed cannot scroll further up. */
-    void onScrolled(int dy, boolean atTop) {
+    public void onScrolled(int dy, boolean atTop) {
         if (!mActive) {
             return;
         }

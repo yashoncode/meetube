@@ -50,6 +50,25 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         prefs(context).edit().putInt("home_autoplay", mode).apply();
     }
 
+    /** Issue #320: a tapped card opens where its preview got to, not at 0:00. */
+    public static boolean continues(Context context) {
+        return prefs(context).getBoolean("home_preview_continue", true);
+    }
+
+    public static void setContinues(Context context, boolean on) {
+        prefs(context).edit().putBoolean("home_preview_continue", on).apply();
+    }
+
+    /** Where {@code video}'s preview is playing now, in ms; 0 when it isn't (or Continue is off). */
+    long continueMs(Video video) {
+        if (mHolder == null || video == null || video.videoId == null || !continues(mContext)
+                || !video.videoId.equals(mPlayer.videoId()) || mTexture.getAlpha() == 0f) {
+            return 0;
+        }
+        long at = mPlayer.positionMs();
+        return at >= 3_000 && mPlayer.remainingMs() > 5_000 ? at : 0; // a glance, or the very end: from the usual spot
+    }
+
     private static SharedPreferences prefs(Context context) {
         return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }

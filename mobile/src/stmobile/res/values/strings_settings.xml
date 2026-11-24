@@ -50,6 +50,9 @@
     <string name="mobile_settings_auto_none">None</string>
     <string name="mobile_settings_auto_watch_later">Watch later</string>
     <string name="mobile_settings_auto_quality">Auto download quality</string>
+    <string name="mobile_settings_download_wifi">Download on Wi-Fi only</string>
+    <string name="mobile_settings_download_wifi_summary">On mobile data, downloads wait and start once you are back on Wi-Fi</string>
+    <string name="mobile_download_wifi_wait">Queued. It downloads once you are on Wi-Fi</string>
     <string name="mobile_settings_auto_wifi">Only on Wi-Fi</string>
     <string name="mobile_settings_auto_wifi_summary">Wait for Wi-Fi before checking and downloading</string>
     <string name="mobile_settings_auto_now">Check now</string>
@@ -155,6 +158,10 @@
     <string name="mobile_settings_nav_labels_summary">Show each tab\'s name under its icon in the bottom bar</string>
     <string name="mobile_settings_brand_name">App name in the top bar</string>
     <string name="mobile_settings_brand_name_summary">Show MeeTube next to its icon at the top. Off, only the icon</string>
+    <string name="mobile_settings_brand_label">Custom app name</string>
+    <string name="mobile_settings_brand_label_summary">%1$s. Tap to rename it, up to %2$d characters</string>
+    <string name="mobile_settings_brand_label_body">The name in the top left corner, up to %1$d characters</string>
+    <string name="mobile_settings_brand_label_reset">Reset</string>
     <string name="mobile_settings_top_bar">Always show the top bar</string>
     <string name="mobile_settings_top_bar_summary">Keep the top bar on screen while a feed scrolls, instead of sliding it away</string>
     <string name="mobile_settings_search_fab">Search button when the bar hides</string>
@@ -280,6 +287,9 @@
     <string name="mobile_app_icon_gta_vi">GTA VI</string>
     <string name="mobile_settings_loader">Loading spinner</string>
     <string name="mobile_settings_font">Font</string>
+    <string name="mobile_settings_font_file">Your font file</string>
+    <string name="mobile_settings_font_file_hint">Pick a TTF or OTF file</string>
+    <string name="mobile_settings_font_file_failed">Couldn’t use that file as a font (TTF or OTF, 30 MB at most)</string>
     <string name="mobile_loader_neon">Neon ring</string>
     <string name="mobile_loader_frosted">Frosted glass</string>
     <string name="mobile_loader_cookie">Cookie</string>
@@ -610,6 +620,8 @@
     <string name="mobile_settings_home_autoplay_always_desc">Plays muted on mobile data too</string>
     <string name="mobile_settings_home_autoplay_off">Off</string>
     <string name="mobile_settings_home_autoplay_off_desc">Home shows thumbnails only</string>
+    <string name="mobile_settings_home_preview_continue">Continue from Home preview</string>
+    <string name="mobile_settings_home_preview_continue_summary">A video you tap while its preview plays opens where the preview got to</string>
     <!-- MEETUBE(coffee): a small thank-you, wherever you are sipping. -->
     <string name="mobile_settings_coffee_title">Brew one for the dev ☕</string>
     <string name="mobile_settings_coffee_subtitle">Where are you sipping from?</string>
@@ -668,6 +680,8 @@
     <string name="mobile_settings_tv_busy">An install is already running. Give it a moment.</string>
     <string name="mobile_settings_tv_permission">Allow local network access to find and connect to your TV.</string>
     <string name="mobile_settings_tv_footer">You can turn debugging off on the TV afterwards.</string>
+    <string name="mobile_settings_controls_corners">Controls at the screen corners</string>
+    <string name="mobile_settings_controls_corners_summary">In landscape, the player buttons sit in the screen corners over the black bars instead of at the video edges</string>
     <string name="mobile_settings_seek_line">Progress line under the video</string>
     <string name="mobile_settings_most_replayed">Most replayed graph</string>
     <string name="mobile_settings_most_replayed_summary">While you drag the seek bar, a wave above it shows the parts people watch the most</string>

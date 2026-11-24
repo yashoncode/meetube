@@ -191,6 +191,8 @@ final class AppPages {
                     .option("Google Sans", com.newtube.mobile.ui.common.AppFont.GOOGLE_SANS)
                     .option("Minecraft", com.newtube.mobile.ui.common.AppFont.MINECRAFT)
                     .option("Vazirmatn", com.newtube.mobile.ui.common.AppFont.VAZIRMATN)
+                    .option(context.getString(R.string.mobile_settings_font_file),
+                            customFontHint(context), com.newtube.mobile.ui.common.AppFont.CUSTOM)
                     .bind(() -> com.newtube.mobile.ui.common.AppFont.current(context),
                             font -> com.newtube.mobile.ui.common.AppFont.set(context, font))
                     .needsRestart());
@@ -331,6 +333,13 @@ final class AppPages {
                         style -> com.newtube.mobile.ui.common.Glass.setPlayerButtons(context, style))
                 .needsRestart(), 72, Tiles.BUTTONS_SEE_THROUGH, Tiles.FX_FROST, Tiles.BUTTONS_MINIMAL));
 
+        // MEETUBE(issue #303): the landscape controls at the screen corners, over the black bars.
+        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_controls_corners),
+                context.getString(R.string.mobile_settings_controls_corners_summary),
+                () -> com.newtube.mobile.ui.playback.MobilePlaybackActivity.cornerControls(context),
+                on -> com.newtube.mobile.ui.playback.MobilePlaybackActivity.setCornerControls(context, on)),
+                Tiles.BUTTONS_SEE_THROUGH));
+
         // MEETUBE(seek thumb): the player seek bar's dot, or a picture the user picks.
         rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_seek_thumb))
                 .option(context.getString(R.string.mobile_settings_seek_thumb_dot), null,
@@ -443,6 +452,15 @@ final class AppPages {
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_brand_name),
                 context.getString(R.string.mobile_settings_brand_name_summary),
                 () -> NavTabs.showBrandName(context), on -> NavTabs.setShowBrandName(context, on)), Tiles.FX_BRAND_NAME));
+
+        // MEETUBE(app label): the brand pill's name, up to 10 characters.
+        rows.add(SettingsRow.action(R.drawable.ic_menu_edit, context.getString(R.string.mobile_settings_brand_label),
+                () -> com.newtube.mobile.ui.common.BrandLabel.summary(context, NavTabs.brandLabel(context)),
+                page -> page.showDialog(com.newtube.mobile.ui.common.BrandLabel.ask(page.requireContext(),
+                        NavTabs.brandLabel(context), context.getString(R.string.app_name), label -> {
+                            NavTabs.setBrandLabel(context, label);
+                            page.rebuild();
+                        }))));
 
         // MEETUBE(issue #181): off by default - the top pills slide away with the bottom bar.
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_top_bar),
@@ -589,6 +607,12 @@ final class AppPages {
      * UI scale. The TV list ran from 0.4x; on a phone the useful range is a step or two either way
      * of 1x (a value stored from the old list stays listed so the row still shows it).
      */
+    /** MEETUBE(font): the loaded file's name, or how to load one; picking the option always opens the picker. */
+    private static CharSequence customFontHint(Context context) {
+        String name = com.newtube.mobile.ui.common.AppFont.customName(context);
+        return name != null ? name : context.getString(R.string.mobile_settings_font_file_hint);
+    }
+
     private static SettingsRow interfaceSize(Context context, MainUIData mainUIData) {
         List<Float> scales = new ArrayList<>();
         for (float scale : new float[] {0.8f, 0.85f, 0.9f, 0.95f, 1.0f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f}) {

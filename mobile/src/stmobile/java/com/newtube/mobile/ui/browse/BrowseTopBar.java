@@ -37,9 +37,8 @@ final class BrowseTopBar {
             }
         });
         // MEETUBE(greeting): held, on a tab or a sub-screen, it greets with three shortcuts.
-        com.newtube.mobile.ui.common.Glass.blur(activity.findViewById(R.id.mobile_greet_overlay),
-                activity.findViewById(R.id.mobile_blur_target));
-        GreetingOverlay greeting = new GreetingOverlay((androidx.activity.ComponentActivity) activity);
+        GreetingOverlay greeting = new GreetingOverlay((androidx.activity.ComponentActivity) activity,
+                activity.findViewById(R.id.mobile_greet_overlay), activity.findViewById(R.id.mobile_blur_target), false, null);
         activity.findViewById(R.id.mobile_brand_glass).setOnLongClickListener(v -> {
             greeting.show();
             return true;
@@ -65,7 +64,7 @@ final class BrowseTopBar {
         mBack.setVisibility(subScreen ? View.VISIBLE : View.GONE);
         mMark.setVisibility(subScreen ? View.GONE : View.VISIBLE);
         mTitle.setText(subScreen && title != null && title.length() > 0
-                ? title : mTitle.getContext().getString(R.string.app_name));
+                ? title : NavTabs.brandLabel(mTitle.getContext()));
 
         // MEETUBE(brand name): without the name, the icon sits alone in a round pill.
         boolean named = subScreen || NavTabs.showBrandName(mTitle.getContext());

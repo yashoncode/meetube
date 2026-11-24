@@ -19,7 +19,31 @@ public class MeeTuneSpatialTest {
     public void tearDown() {
         MeeTuneSpatial.setAmount(0f);
         MeeTuneSpatial.setBass(0f);
+        MeeTuneSpatial.setWide(false);
         MeeTuneEq.setPlaying(false);
+    }
+
+    @Test
+    public void wideSpreadsTheStereoAndNeverClips() throws Exception {
+        MeeTuneEq.setPlaying(true);
+        MeeTuneSpatial.setWide(true);
+        for (float sample : run(loudStereo())) {
+            assertTrue("sample " + sample, Math.abs(sample) < 1f);
+        }
+        float[] in = new float[FRAMES * 2]; // only a difference between the ears: no middle at all
+        for (int f = 0; f < FRAMES; f++) {
+            in[f * 2] = 0.1f * (float) Math.sin(2 * Math.PI * 1_000 * f / 48_000.0);
+            in[f * 2 + 1] = -in[f * 2];
+        }
+        float[] out = run(in);
+        double inPower = 0;
+        double outPower = 0;
+        for (int i = FRAMES; i < out.length; i++) { // the second half: the glide is done
+            inPower += in[i] * in[i];
+            outPower += out[i] * out[i];
+        }
+        double db = 10 * Math.log10(outPower / inPower);
+        assertTrue("side " + db + " dB", db > 3);
     }
 
     @Test

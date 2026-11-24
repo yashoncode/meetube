@@ -395,6 +395,12 @@
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+        <!-- MEETUBE(font): invisible host for the file picker of Settings > Font > Your font file. -->
+        <activity
+            android:name="com.newtube.mobile.ui.common.AppFont$Picker"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <!-- MEETUBE(seek thumb): invisible host for the image picker of the seek bar's picture. -->
         <activity
             android:name="com.newtube.mobile.ui.playback.SeekThumb"
@@ -560,6 +566,38 @@
             android:screenOrientation="unspecified"
             android:theme="@style/Theme.NewTube" />
 
+        <!-- MEETUBE(android auto, issue #253): MeeTune in the car, sound only, on its own player
+             (CarMediaService). The phone's player and screens never use it. The car shows it as MeeTune,
+             with MeeTune's icon: it plays only music. -->
+        <service
+            android:name="com.newtube.mobile.car.CarMediaService"
+            android:icon="@drawable/ic_meetune"
+            android:label="@string/meetune_name"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaLibraryService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+            <!-- Android Automotive OS: list this service in the car's media screen even though the
+                 app also has a phone launcher icon. -->
+            <meta-data android:name="androidx.car.app.launchable" android:value="true" />
+        </service>
+        <!-- Cover art for the car: serves only YouTube image hosts (CarArtProvider). -->
+        <provider
+            android:name="com.newtube.mobile.car.CarArtProvider"
+            android:authorities="${applicationId}.carart"
+            android:exported="true" />
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+        <meta-data
+            android:name="com.google.android.gms.car.application.theme"
+            android:resource="@style/Theme.MeeTube.Car" />
+        <!-- The same opt-in for cars that run Android themselves (Android Automotive OS). -->
+        <meta-data
+            android:name="com.android.automotive"
+            android:resource="@xml/automotive_app_desc" />
     </application>
 
 </manifest>

@@ -2,6 +2,7 @@ package com.newtube.mobile.downloads;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.work.Constraints;
@@ -73,6 +74,27 @@ public final class AutoDownload {
     public static void setWifiOnly(Context context, boolean on) {
         prefs(context).edit().putBoolean(KEY_WIFI, on).apply();
         schedule(context);
+    }
+
+    /** MEETUBE(issue #318): every download, not just the automatic ones, waits for Wi-Fi. */
+    public static boolean wifiOnlyAll(Context context) {
+        return prefs(context).getBoolean("wifi_only_all", false);
+    }
+
+    public static void setWifiOnlyAll(Context context, boolean on) {
+        prefs(context).edit().putBoolean("wifi_only_all", on).apply();
+        schedule(context);
+        if (!on) {
+            MobileDownloadService.kick(context); // what waited for Wi-Fi goes now
+        }
+    }
+
+    /** Wi-Fi only for all downloads, and the network now is metered (mobile data, a hotspot): wait. */
+    public static boolean mustWait(Context context) {
+        if (!wifiOnlyAll(context)) return false;
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm == null || cm.isActiveNetworkMetered();
     }
 
     /**
@@ -172,9 +194,25 @@ public final class AutoDownload {
                 new OneTimeWorkRequest.Builder(AutoDownloadWorker.class).setConstraints(constraints(context)).build());
     }
 
+    /**
+     * Issue #300: a queue left unfinished (the process died, a background check ran out of time, or
+     * Android's daily limit stopped the download service) goes on by itself. One pending resume at a
+     * time; a stopped one is run again by WorkManager, as soon as the constraints allow.
+     */
+    static void resumeQueue(Context context) {
+        try {
+            WorkManager.getInstance(context).enqueueUniqueWork(WORK + "_resume", ExistingWorkPolicy.KEEP,
+                    new OneTimeWorkRequest.Builder(AutoDownloadWorker.class)
+                            .setInputData(new androidx.work.Data.Builder().putBoolean(AutoDownloadWorker.DRAIN_ONLY, true).build())
+                            .setConstraints(constraints(context)).build());
+        } catch (IllegalStateException e) { // WorkManager not initialized yet (too early in the process)
+            Log.w("AutoDownload", "resume not scheduled: " + e);
+        }
+    }
+
     private static Constraints constraints(Context context) {
         return new Constraints.Builder()
-                .setRequiredNetworkType(wifiOnly(context) ? NetworkType.UNMETERED : NetworkType.CONNECTED)
+                .setRequiredNetworkType(wifiOnly(context) || wifiOnlyAll(context) ? NetworkType.UNMETERED : NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(true)
                 .setRequiresStorageNotLow(true)
                 .build();

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUNE: the queue page's search field, frosted white over the player's tinted backdrop. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#26FFFFFF" />
+    <corners android:radius="14dp" />
+</shape>

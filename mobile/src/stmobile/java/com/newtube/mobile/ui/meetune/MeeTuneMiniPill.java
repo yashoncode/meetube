@@ -328,7 +328,7 @@ final class MeeTuneMiniPill {
         mMorph.start();
     }
 
-    private static final class ProgressRing extends android.graphics.drawable.Drawable {
+    static final class ProgressRing extends android.graphics.drawable.Drawable {
         private final android.graphics.Paint mPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
         private final android.graphics.RectF mOval = new android.graphics.RectF();
         private final int mDp;

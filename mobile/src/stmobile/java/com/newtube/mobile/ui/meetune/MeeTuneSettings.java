@@ -54,9 +54,18 @@ final class MeeTuneSettings {
     static final int SETTINGS = 1;
     static final int EQUALIZER = 2;
     static final int CUSTOMIZE = 3;
+    // The top page's sections, each its own page like MeeTube's settings.
+    static final int SOUND = 4;
+    static final int STREAMING = 6;
+    static final int CANVAS = 7;
+    static final int HISTORY = 8;
+    static final int LIBRARY = 9;
+    static final int DOWNLOADS = 10;
+    static final int CAR = 11;
+    static final int ADD_ONS = 12;
 
     interface Host {
-        /** Pushes {@link #EQUALIZER} or {@link #CUSTOMIZE}. */
+        /** Pushes the page {@code which}. */
         void open(int which);
     }
 
@@ -83,8 +92,19 @@ final class MeeTuneSettings {
     }
 
     static String title(Context context, int which) {
-        return context.getString(which == EQUALIZER ? R.string.meetune_eq
-                : which == CUSTOMIZE ? R.string.meetune_set_customize : R.string.meetune_settings);
+        switch (which) {
+            case EQUALIZER: return context.getString(R.string.meetune_eq);
+            case CUSTOMIZE: return context.getString(R.string.meetune_set_customize);
+            case SOUND: return context.getString(R.string.meetune_set_sound_playback);
+            case STREAMING: return context.getString(R.string.meetune_set_stream);
+            case CANVAS: return context.getString(R.string.meetune_set_canvas);
+            case HISTORY: return context.getString(R.string.meetune_history);
+            case LIBRARY: return context.getString(R.string.meetune_set_library);
+            case DOWNLOADS: return context.getString(R.string.header_downloads);
+            case CAR: return context.getString(R.string.meetune_set_car);
+            case ADD_ONS: return context.getString(R.string.meetune_set_addons);
+            default: return context.getString(R.string.meetune_settings);
+        }
     }
 
     private void rebuild() {
@@ -93,43 +113,67 @@ final class MeeTuneSettings {
     }
 
     private void build() {
-        if (mWhich == EQUALIZER) {
-            equalizer();
-        } else if (mWhich == CUSTOMIZE) {
-            customize();
-        } else {
-            settings();
+        switch (mWhich) {
+            case EQUALIZER: equalizer(); break;
+            case CUSTOMIZE: customize(); break;
+            case SOUND: sound(); break;
+            case STREAMING: streaming(); break;
+            case CANVAS: canvas(); break;
+            case HISTORY: history(); break;
+            case LIBRARY: library(); break;
+            case DOWNLOADS: downloads(); break;
+            case CAR: car(); break;
+            case ADD_ONS: addOns(); break;
+            default: settings(); break;
         }
     }
 
     // ------------------------------------------------------------------------------ pages
 
+    /** The top page, like MeeTube's: a row per section (names only), each opening its own page. */
     private void settings() {
-        // Accounts live in Home's corner menu. What a setting does is behind its own i.
-        header(R.string.meetune_set_look);
+        // Accounts live in Home's corner menu.
+        header(R.string.mobile_settings_group_app);
         LinearLayout card = card();
-        tip(card, R.drawable.ic_settings_customize, getString(R.string.meetune_set_customize),
-                getString(R.string.meetune_set_customize_summary), null, true, v -> mHost.open(CUSTOMIZE));
-        // MeeTube's High performance mode (one setting for both): the display's top refresh rate.
-        card.addView(divider());
-        tip(card, R.drawable.ic_player_speed, getString(R.string.mobile_settings_high_refresh),
-                mActivity.getString(R.string.mobile_settings_high_refresh_summary,
-                        com.newtube.mobile.ui.common.HighRefresh.topRate(mActivity)),
-                com.newtube.mobile.ui.common.HighRefresh.isEnabled(mActivity), false, v -> {
-                    com.newtube.mobile.ui.common.HighRefresh.setEnabled(mActivity,
-                            !com.newtube.mobile.ui.common.HighRefresh.isEnabled(mActivity));
-                    com.newtube.mobile.ui.common.HighRefresh.apply(mActivity);
-                });
+        section(card, R.drawable.ic_settings_customize, CUSTOMIZE);
+        section(card, R.drawable.ic_meetune_history, HISTORY);
+        if (mActivity instanceof MeeTuneActivity) section(card, R.drawable.ic_settings_backup, LIBRARY);
+        section(card, R.drawable.ic_nav_downloads_outline, DOWNLOADS);
 
-        header(R.string.meetune_eq_sound);
+        header(R.string.meetune_set_group_music);
         card = card();
+        section(card, R.drawable.ic_settings_audio, SOUND);
+        section(card, R.drawable.ic_settings_quality, STREAMING);
+        section(card, R.drawable.ic_meetune_video, CANVAS);
+
+        header(R.string.mobile_settings_group_other);
+        card = card();
+        section(card, R.drawable.ic_mobile_car, CAR);
+        section(card, R.drawable.ic_meetune_addon, ADD_ONS);
+
+        // The way back to MeeTube, as MeeTube's settings end with "MeeTune →".
+        mRoot.addView(MeeTune.switchLink(mActivity, getString(R.string.meetune_link_meetube),
+                v -> MeeTune.leave(mActivity)));
+    }
+
+    private void section(LinearLayout card, int icon, int which) {
+        if (card.getChildCount() > 0) card.addView(divider());
+        row(card, icon, title(mActivity, which), null, null, true, v -> mHost.open(which));
+    }
+
+    /** Sound, then Playback (crossfade, Automix, volume), then Karaoke when the phone can run it. */
+    private void sound() {
+        header(R.string.meetune_eq_sound);
+        LinearLayout card = card();
         row(card, R.drawable.ic_player_equalizer, getString(R.string.meetune_eq), summary(), null, true,
                 v -> mHost.open(EQUALIZER));
         // MEETUNE(issue #262): Spatial sound, for headphones.
         String[] spatial = {getString(R.string.mobile_menu_off), getString(R.string.meetune_spatial_light),
-                getString(R.string.meetune_spatial_strong), getString(R.string.meetune_spatial_cinema)};
+                getString(R.string.meetune_spatial_strong), getString(R.string.meetune_spatial_cinema),
+                getString(R.string.meetune_spatial_wide)};
         String[] spatialNotes = {getString(R.string.meetune_spatial_off_summary), getString(R.string.meetune_spatial_light_summary),
-                getString(R.string.meetune_spatial_strong_summary), getString(R.string.meetune_spatial_cinema_summary)};
+                getString(R.string.meetune_spatial_strong_summary), getString(R.string.meetune_spatial_cinema_summary),
+                getString(R.string.meetune_spatial_wide_summary)};
         int spatialLevel = MeeTuneSpatial.level(mActivity);
         card.addView(divider());
         row(card, R.drawable.ic_player_volume_up, getString(R.string.meetune_spatial), spatial[spatialLevel], null, true,
@@ -170,15 +214,18 @@ final class MeeTuneSettings {
             usb.setAlpha(0.38f);
             usb.findViewById(R.id.settings_row_switch).setEnabled(false);
         }
-        crossfade(); // Playback: crossfade and Automix
+        header(R.string.meetune_set_playback);
+        crossfade();
+        karaoke();
+    }
 
-        // A ceiling per network: Wi-Fi, and mobile data (any metered network, a hotspot too).
+    /** A ceiling per network: Wi-Fi, and mobile data (any metered network, a hotspot too). */
+    private void streaming() {
         String[] streams = {getString(R.string.meetune_stream_high), getString(R.string.meetune_stream_normal),
                 getString(R.string.meetune_stream_low)};
         String[] streamNotes = {getString(R.string.meetune_stream_high_summary),
                 getString(R.string.meetune_stream_normal_summary), getString(R.string.meetune_stream_low_summary)};
-        header(R.string.meetune_set_stream);
-        card = card();
+        LinearLayout card = card();
         int stream = MeeTune.streamQuality(mActivity);
         row(card, R.drawable.ic_mobile_tune, getString(R.string.meetune_stream_wifi), streams[stream], null, true,
                 v -> choose(getString(R.string.meetune_set_stream_wifi), streams, streamNotes, stream, picked -> {
@@ -193,25 +240,32 @@ final class MeeTuneSettings {
                     com.newtube.mobile.ui.playback.MiniPlayerBridge.applyMusicQuality();
                 }));
         note(R.string.meetune_stream_note);
+    }
 
-        canvas();
+    /** Issue #305: History shared with YouTube Music (both ways) while signed in, or kept on the phone. */
+    private void history() {
+        LinearLayout card = card();
+        tip(card, R.drawable.ic_meetune_history, getString(R.string.meetune_history_sync),
+                getString(R.string.meetune_history_sync_summary), MeeTune.historySync(mActivity), false,
+                v -> MeeTune.setHistorySync(mActivity, !MeeTune.historySync(mActivity)));
+    }
 
-        // The library on this phone (no account): out to a file and back.
-        if (mActivity instanceof MeeTuneActivity) {
-            MeeTuneActivity screen = (MeeTuneActivity) mActivity;
-            header(R.string.meetune_set_library);
-            card = card();
-            tip(card, R.drawable.ic_meetune_share, getString(R.string.meetune_export),
-                    getString(R.string.meetune_export_summary), null, true, v -> screen.exportLibrary());
-            card.addView(divider());
-            tip(card, R.drawable.ic_meetune_download, getString(R.string.meetune_import),
-                    getString(R.string.meetune_import_summary), null, true, v -> screen.importLibrary());
-            note(R.string.meetune_library_note);
-        }
+    /** The library on this phone (no account): out to a file and back. */
+    private void library() {
+        if (!(mActivity instanceof MeeTuneActivity)) return;
+        MeeTuneActivity screen = (MeeTuneActivity) mActivity;
+        LinearLayout card = card();
+        tip(card, R.drawable.ic_meetune_share, getString(R.string.meetune_export),
+                getString(R.string.meetune_export_summary), null, true, v -> screen.exportLibrary());
+        card.addView(divider());
+        tip(card, R.drawable.ic_meetune_download, getString(R.string.meetune_import),
+                getString(R.string.meetune_import_summary), null, true, v -> screen.importLibrary());
+        note(R.string.meetune_library_note);
+    }
 
-        // MeeTube's download folder for music and its download qualities; a song's own default.
-        header(R.string.header_downloads);
-        card = card();
+    /** MeeTube's download folder for music and its download qualities; a song's own default. */
+    private void downloads() {
+        LinearLayout card = card();
         if (com.newtube.mobile.downloads.DownloadFolder.isSupported()) {
             row(card, R.drawable.ic_watch_download, getString(R.string.mobile_download_folder_audio),
                     com.newtube.mobile.downloads.DownloadFolder.label(mActivity, true).toString(), null, true, v -> {
@@ -233,18 +287,42 @@ final class MeeTuneSettings {
                 getString(R.string.meetune_download_lyrics_summary), MeeTune.downloadLyrics(mActivity), false,
                 v -> MeeTune.setDownloadLyrics(mActivity, !MeeTune.downloadLyrics(mActivity)));
         note(R.string.meetune_downloads_note);
+    }
 
-        addOns();
-        karaoke();
+    /** Android Auto's own settings; where it's only the system stub (not set up), its Play Store page. */
+    private void openAndroidAuto() {
+        String aa = "com.google.android.projection.gearhead";
+        Intent[] tries = {
+                new Intent(Intent.ACTION_APPLICATION_PREFERENCES).setPackage(aa),
+                new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=" + aa)),
+                new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=" + aa))};
+        for (Intent intent : tries) {
+            try {
+                mActivity.startActivity(intent);
+                return;
+            } catch (android.content.ActivityNotFoundException ignored) {
+            }
+        }
+    }
 
-        // The way back to MeeTube, as MeeTube's settings end with "MeeTune →".
-        mRoot.addView(MeeTune.switchLink(mActivity, getString(R.string.meetune_link_meetube),
-                v -> MeeTune.leave(mActivity)));
+    /** MEETUBE(android auto, issue #253): how MeeTune plays in the car. */
+    private void car() {
+        // Sideloaded apps only show in Android Auto once its developer setting "Unknown sources" is on.
+        tip(card(), R.drawable.ic_mobile_car, getString(R.string.meetune_car_show),
+                getString(R.string.meetune_car_show_summary), null, true, v -> openAndroidAuto());
+        LinearLayout card = card();
+        tip(card, R.drawable.ic_meetune_autoplay, getString(R.string.meetune_car_autoplay),
+                getString(R.string.meetune_car_autoplay_summary), CarMusic.autoplay(mActivity), false,
+                v -> CarMusic.setAutoplay(mActivity, !CarMusic.autoplay(mActivity)));
+        card.addView(divider());
+        tip(card, R.drawable.ic_watch_lyrics, getString(R.string.meetune_car_lyrics),
+                getString(R.string.meetune_car_lyrics_summary), CarMusic.lyrics(mActivity), false,
+                v -> CarMusic.setLyrics(mActivity, !CarMusic.lyrics(mActivity)));
+        note(R.string.meetune_car_note);
     }
 
     /** The player's canvas: its sources, and when music-video loops may be fetched (Spotify's is an add-on). */
     private void canvas() {
-        header(R.string.meetune_set_canvas);
         LinearLayout card = card();
         tip(card, R.drawable.ic_meetune_album, getString(R.string.meetune_canvas_covers),
                 getString(R.string.meetune_canvas_covers_summary), MeeTuneCanvas.covers(mActivity), false,
@@ -271,7 +349,6 @@ final class MeeTuneSettings {
 
     /** Optional services and downloads for MeeTune. */
     private void addOns() {
-        header(R.string.meetune_set_addons);
         LinearLayout card = card();
         boolean signedIn = MeeTuneSpotify.signedIn();
         row(card, R.drawable.ic_meetune_addon, getString(R.string.meetune_spotify),
@@ -555,6 +632,13 @@ final class MeeTuneSettings {
         LinearLayout card = card();
         row(card, 0, getString(R.string.meetune_set_brand_name), getString(R.string.meetune_set_brand_name_summary),
                 MeeTune.brandName(mActivity), false, v -> MeeTune.setBrandName(mActivity, !MeeTune.brandName(mActivity)));
+        row(card, R.drawable.ic_menu_edit, getString(R.string.mobile_settings_brand_label),
+                com.newtube.mobile.ui.common.BrandLabel.summary(mActivity, MeeTune.brandLabel(mActivity)), null, true,
+                v -> com.newtube.mobile.ui.common.BrandLabel.ask(mActivity, MeeTune.brandLabel(mActivity),
+                        getString(R.string.meetune_name), label -> {
+                            MeeTune.setBrandLabel(mActivity, label);
+                            rebuild();
+                        }));
         // MeeTube's own Search glow and Typing glow (Settings > Effects there): the same switches.
         row(card, 0, getString(R.string.mobile_settings_search_glow), getString(R.string.mobile_settings_search_glow_summary),
                 com.newtube.mobile.ui.search.SiriGlow.enabled(mActivity), false,
@@ -567,6 +651,15 @@ final class MeeTuneSettings {
         // MEETUNE(issue #264): Home's "Listen again" as Speed dial; off keeps Home as it was.
         row(card, 0, getString(R.string.meetune_speed_dial), getString(R.string.meetune_speed_dial_summary),
                 MeeTune.speedDial(mActivity), false, v -> MeeTune.setSpeedDial(mActivity, !MeeTune.speedDial(mActivity)));
+        // MeeTube's High performance mode (one setting for both): the display's top refresh rate.
+        row(card, 0, getString(R.string.mobile_settings_high_refresh),
+                mActivity.getString(R.string.mobile_settings_high_refresh_summary,
+                        com.newtube.mobile.ui.common.HighRefresh.topRate(mActivity)),
+                com.newtube.mobile.ui.common.HighRefresh.isEnabled(mActivity), false, v -> {
+                    com.newtube.mobile.ui.common.HighRefresh.setEnabled(mActivity,
+                            !com.newtube.mobile.ui.common.HighRefresh.isEnabled(mActivity));
+                    com.newtube.mobile.ui.common.HighRefresh.apply(mActivity);
+                });
         if (com.newtube.mobile.ui.common.AppFont.isSupported()) {
             header(R.string.mobile_settings_font);
             fonts();
@@ -577,20 +670,27 @@ final class MeeTuneSettings {
     private void fonts() {
         String[] fonts = {com.newtube.mobile.ui.common.AppFont.SYSTEM,
                 com.newtube.mobile.ui.common.AppFont.GOOGLE_SANS, com.newtube.mobile.ui.common.AppFont.MINECRAFT,
-                com.newtube.mobile.ui.common.AppFont.VAZIRMATN};
+                com.newtube.mobile.ui.common.AppFont.VAZIRMATN, com.newtube.mobile.ui.common.AppFont.CUSTOM};
+        String customName = com.newtube.mobile.ui.common.AppFont.customName(mActivity);
         FrameLayout frame = new FrameLayout(mActivity);
         frame.setPadding(dp(14), dp(4), dp(14), dp(8));
         frame.setClipToPadding(false);
         GlassChipTrack track = new GlassChipTrack(mActivity);
         track.setGlassSource(null);
         track.setChips(Arrays.asList(getString(R.string.mobile_theme_system), "Google Sans",
-                "Minecraft", "Vazirmatn"));
+                "Minecraft", "Vazirmatn", customName != null ? customName : getString(R.string.mobile_settings_font_file)));
         track.setSelected(Math.max(0, Arrays.asList(fonts).indexOf(com.newtube.mobile.ui.common.AppFont.current(mActivity))));
         track.setOnPicked(index -> {
             if (fonts[index].equals(com.newtube.mobile.ui.common.AppFont.current(mActivity))) {
                 return;
             }
             Haptics.click(track);
+            if (com.newtube.mobile.ui.common.AppFont.CUSTOM.equals(fonts[index])) {
+                // The file picker sets the font and offers the restart itself; until then the pill stays put.
+                track.setSelected(Math.max(0, Arrays.asList(fonts).indexOf(com.newtube.mobile.ui.common.AppFont.current(mActivity))));
+                com.newtube.mobile.ui.common.AppFont.set(mActivity, fonts[index]);
+                return;
+            }
             com.newtube.mobile.ui.common.AppFont.set(mActivity, fonts[index]);
             android.content.Context app = mActivity.getApplicationContext();
             MobileSnackbar.show(mActivity, getString(R.string.mobile_settings_restart_needed),
@@ -797,7 +897,6 @@ final class MeeTuneSettings {
 
     /** MEETUNE: Crossfade, Off (gapless: each song plays to its end) to 12 s, on a slider. */
     private void crossfade() {
-        header(R.string.meetune_set_playback);
         LinearLayout card = card();
         card.setPadding(dp(16), dp(16), dp(16), dp(16));
         LinearLayout top = new LinearLayout(mActivity);
@@ -1017,7 +1116,8 @@ final class MeeTuneSettings {
         TextView note = (TextView) mInflater.inflate(R.layout.item_mobile_settings_note, mRoot, false);
         note.setText(text);
         mRoot.addView(note);
-        if (mWhich == SETTINGS && mLastHeader != null) { // the group's note: behind an i on its header
+        // Volume's note waits behind an i beside its name; a section page's notes show as they are.
+        if (mWhich != EQUALIZER && mLastHeader != null) {
             note.setVisibility(View.GONE);
             boolean groupHeader = mLastHeader.getId() == R.id.settings_header_title;
             withInfo(mLastHeader, note, groupHeader ? Gravity.BOTTOM : Gravity.CENTER_VERTICAL, groupHeader ? dp(4) : 0);

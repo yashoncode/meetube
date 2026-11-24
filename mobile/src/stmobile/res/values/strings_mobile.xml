@@ -451,6 +451,9 @@
     <string name="mobile_cast_direct_load_failed">Couldn\'t prepare this video for direct cast</string>
     <string name="mobile_cast_direct_no_wifi">Direct cast needs the phone and TV on the same Wi-Fi</string>
     <string name="mobile_cast_link_code">Link with TV code</string>
+    <string name="mobile_cast_car">Car</string>
+    <string name="mobile_cast_car_subtitle">MeeTune carries on in the car</string>
+    <string name="mobile_cast_car_playing">Playing in the car</string>
     <string name="mobile_cast_link_code_subtitle">Works with YouTube and MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_code_hint">12-digit code</string>
     <string name="mobile_cast_code_title">Link TV</string>
@@ -552,6 +555,9 @@
     <string name="mobile_download_time_left">%1$s left</string>
     <string name="mobile_download_state_processing">Finishing…</string>
     <string name="mobile_download_error_generic">Download failed. Tap to retry.</string>
+    <string name="mobile_download_error_space">Not enough storage to save it. Free up some space and tap to retry.</string>
+    <string name="mobile_download_error_save">Downloaded, but saving the video failed (%1$s). Tap to retry.</string>
+    <string name="mobile_download_error_detail">Download failed (%1$s). Tap to retry.</string>
     <string name="mobile_download_error_link">Download link expired. Tap to retry.</string>
     <string name="mobile_download_done_title">Download complete</string>
     <string name="mobile_download_open_folder">Open in folder</string>
