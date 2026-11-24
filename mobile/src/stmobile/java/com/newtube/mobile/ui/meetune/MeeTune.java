@@ -995,11 +995,11 @@ public final class MeeTune {
 
     /** Crossfade between songs, 0 (off: gapless, each song to its end) to 12 seconds. */
     /** MEETUNE(issue #272): songs' own player volume, 0.1 to 2.0 (200%: the volume boost). */
-    static float volume(Context context) {
+    public static float volume(Context context) {
         return Math.max(0.1f, Math.min(2f, prefs(context).getFloat("volume", 1f)));
     }
 
-    static void setVolume(Context context, float volume) {
+    public static void setVolume(Context context, float volume) {
         prefs(context).edit().putFloat("volume", Math.max(0.1f, Math.min(2f, volume))).apply();
     }
 

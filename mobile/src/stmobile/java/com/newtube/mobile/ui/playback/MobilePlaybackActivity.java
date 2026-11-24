@@ -4246,6 +4246,8 @@ public class MobilePlaybackActivity extends MobileActivity
                         R.string.mobile_player_sleep_timer, this::showSleepTimerSheet),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_speed,
                         R.string.mobile_player_speed, this::showSpeedSheet),
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_volume_up,
+                        R.string.meetune_volume, this::playerVolumeLabel, this::showVolumeSheet),
                 com.newtube.mobile.ui.meetune.MeeTuneSongMenu.karaoke(this),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_video, R.string.meetune_canvas,
                         () -> com.newtube.mobile.ui.meetune.MeeTuneSongMenu.canvas(this, video, mMeeTune.canvasIsLoop(),
@@ -5864,6 +5866,8 @@ public class MobilePlaybackActivity extends MobileActivity
         addMenuRow(content, sheet, R.drawable.ic_player_equalizer, R.string.mobile_settings_equalizer,
                 com.newtube.mobile.ui.settings.EqualizerSheet.summary(this).toString(), true,
                 () -> showPlayerSheet(com.newtube.mobile.ui.settings.EqualizerSheet.create(this)));
+        addMenuRow(content, sheet, R.drawable.ic_player_volume_up, R.string.mobile_settings_player_volume,
+                playerVolumeLabel(), true, this::showVolumeSheet);
         addMenuRow(content, sheet, R.drawable.ic_player_autoplay, R.string.mobile_player_autoplay,
                 stateLabel(isAutoplayOn()), false, this::toggleAutoplay);
         addMenuRow(content, sheet, R.drawable.ic_player_sleep_timer, R.string.mobile_player_sleep_timer,
@@ -11145,6 +11149,88 @@ public class MobilePlaybackActivity extends MobileActivity
         return minutes == SleepTimer.END_OF_VIDEO ? getString(meeTuneSong() ? R.string.meetune_sleep_end_of_song : R.string.mobile_sleep_end_of_video)
                 : minutes == SleepTimer.OFF ? getString(R.string.mobile_menu_off)
                 : getResources().getQuantityString(R.plurals.mobile_settings_minutes, minutes, minutes);
+    }
+
+    /** The volume this player plays at: a song's MeeTune Volume, or a video's Player volume, 0.1 to 2. */
+    private float playerVolume() {
+        return meeTuneSong() ? com.newtube.mobile.ui.meetune.MeeTune.volume(this)
+                : PlayerData.instance(this).getPlayerVolume();
+    }
+
+    private String playerVolumeLabel() {
+        return Math.round(playerVolume() * 100) + "%";
+    }
+
+    /**
+     * Volume boost from the player's menu (MeeTube's gear and MeeTune's More), the same 10%..200%
+     * slider as Settings > Player volume and MeeTune's Volume, so it's not three pages deep.
+     */
+    private void showVolumeSheet() {
+        cancelAutoHide();
+        boolean song = meeTuneSong();
+        BottomSheetDialog dialog = Haptics.watch(new BottomSheetDialog(this));
+        View content = getLayoutInflater().inflate(R.layout.sheet_mobile_speed, null);
+        dialog.setContentView(content);
+        ((TextView) content.findViewById(R.id.speed_sheet_title))
+                .setText(song ? R.string.meetune_volume : R.string.mobile_settings_player_volume);
+        content.findViewById(R.id.speed_sheet_more).setVisibility(View.GONE);
+
+        LinearLayout list = content.findViewById(R.id.speed_sheet_list);
+        list.setPadding(dp(24), dp(8), dp(24), dp(8));
+        LinearLayout top = new LinearLayout(this);
+        top.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        TextView value = new TextView(this);
+        value.setTextSize(17);
+        value.setTextColor(ContextCompat.getColor(this, R.color.mobile_color_on_surface));
+        top.addView(value, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        com.newtube.mobile.ui.common.VolumeFace face = com.newtube.mobile.ui.common.VolumeFace.create(this);
+        top.addView(face);
+        list.addView(top);
+        com.newtube.mobile.ui.common.GlassSlider slider = new com.newtube.mobile.ui.common.GlassSlider(this);
+        slider.setMax(38); // (p + 2) * 5 percent: 10..200
+        slider.setProgress(Math.max(0, Math.min(38, Math.round(playerVolume() * 20) - 2)));
+        slider.setContentDescription(getString(R.string.mobile_settings_player_volume));
+        list.addView(slider, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        TextView warning = new TextView(this); // keeps its room and only fades, so the slider never jumps
+        warning.setText(R.string.volume_boost_warning);
+        warning.setTextColor(ContextCompat.getColor(this, R.color.mobile_color_on_surface_secondary));
+        warning.setTextSize(13);
+        list.addView(warning);
+        Runnable show = () -> {
+            int percent = (slider.getProgress() + 2) * 5;
+            value.setText(percent + "%");
+            float alpha = percent > 100 ? 1f : 0f;
+            if (warning.getAlpha() != alpha) warning.animate().alpha(alpha).setDuration(180).start();
+        };
+        warning.setAlpha((slider.getProgress() + 2) * 5 > 100 ? 1f : 0f);
+        show.run();
+        face.set((slider.getProgress() + 2) * 5, false);
+        slider.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(android.widget.SeekBar s, int progress, boolean fromUser) {
+                if (!fromUser) return;
+                Haptics.tick(s);
+                show.run();
+                face.set((progress + 2) * 5, true);
+                com.newtube.mobile.player.AudioEffects.applyPlayerVolume((progress + 2) * 0.05f); // live
+            }
+
+            @Override
+            public void onStartTrackingTouch(android.widget.SeekBar s) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(android.widget.SeekBar s) {
+                face.release();
+                float volume = (s.getProgress() + 2) * 0.05f;
+                if (song) com.newtube.mobile.ui.meetune.MeeTune.setVolume(MobilePlaybackActivity.this, volume);
+                else PlayerData.instance(MobilePlaybackActivity.this).setPlayerVolume(volume);
+            }
+        });
+
+        dialog.setOnDismissListener(d -> armAutoHide());
+        showPlayerSheet(dialog);
     }
 
     private void showSleepTimerSheet() {
