@@ -24,8 +24,8 @@
 
 <table>
 <tr>
-<td width="25%"><img src=".github/assets/meetube/screens/meetune_home.jpg" alt="MeeTune, MeeTube's music side"></td>
-<td width="25%"><img src=".github/assets/meetube/screens/meetune_now_playing.jpg" alt="MeeTune's player with synced lyrics"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/meetune_home_new.jpg" alt="MeeTune, MeeTube's music side"></td>
+<td width="25%"><img src=".github/assets/meetube/screens/meetune_player.jpg" alt="MeeTune's player with synced lyrics"></td>
 <td width="50%">
 
 ### MeeTune, your music side (beta)
