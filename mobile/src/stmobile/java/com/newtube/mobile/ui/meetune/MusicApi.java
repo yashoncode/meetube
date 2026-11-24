@@ -471,9 +471,15 @@ final class MusicApi {
         day.setTimeZone(TimeZone.getTimeZone("UTC"));
         String version = "1." + day.format(new Date()) + ".01.00"; // as music.youtube.com sends today
         LocaleManager locale = LocaleManager.instance();
-        body.put("context", new JSONObject().put("client", new JSONObject()
-                .put("clientName", "WEB_REMIX").put("clientVersion", version)
-                .put("hl", locale.getLanguage()).put("gl", locale.getCountry())));
+        JSONObject client = new JSONObject().put("clientName", "WEB_REMIX").put("clientVersion", version)
+                .put("hl", locale.getLanguage());
+        // YouTube Music answers HTTP 400 to a gl that is no country (a phone in plain "Arabic" has none,
+        // a test locale says XB); youtube.com takes them, so only MeeTune failed. Left out, the IP decides.
+        String country = locale.getCountry();
+        if (country != null && country.matches("[A-Z]{2}") && !"XB".equals(country) && !"XA".equals(country)) {
+            client.put("gl", country);
+        }
+        body.put("context", new JSONObject().put("client", client));
         Request.Builder request = new Request.Builder()
                 .url(ORIGIN + "/youtubei/v1/" + endpoint + (endpoint.contains("?") ? "&" : "?") + "prettyPrint=false")
                 .post(RequestBody.create(body.toString(), JSON))
