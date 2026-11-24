@@ -750,27 +750,43 @@ public class VideoMenuPresenter extends BaseMenuPresenter {
         removeFromHistory();
     }
 
+    /**
+     * MEETUBE(#327): YouTube's answer decides. The old call ignored it, and a card without a token
+     * sent nothing at all, yet both said "Removed": the video came back on the next refresh.
+     */
     private void removeFromHistory() {
-        if (mVideo.mediaItem == null || mVideo.mediaItem.getFeedbackToken() == null) {
-            onRemoveFromHistoryDone();
-        } else {
-            mNotInterestedAction = mMediaItemService.markAsNotInterestedObserve(mVideo.mediaItem.getFeedbackToken())
-                    .subscribe(
-                            var -> {},
-                            error -> Log.e(TAG, "Remove from history error: %s", error.getMessage()),
-                            this::onRemoveFromHistoryDone
-                    );
+        Video video = mVideo;
+        VideoMenuCallback callback = mCallback;
+        String token = video.mediaItem != null ? video.mediaItem.getFeedbackToken() : null;
+        String line = "feedback history-remove video=" + video.videoId;
+        if (token == null) {
+            NetPath.log(line + " token=n");
+            MessageHelpers.showMessage(getContext(), R.string.feedback_failed);
+            return;
         }
-    }
-
-    private void onRemoveFromHistoryDone() {
-        if (mCallback != null) {
-            mCallback.onItemAction(mVideo, VideoMenuCallback.ACTION_REMOVE);
-        } else {
-            MessageHelpers.showMessage(getContext(), R.string.removed_from_history);
-        }
-        VideoStateService stateService = VideoStateService.instance(getContext());
-        stateService.removeByVideoId(mVideo.videoId);
+        mNotInterestedAction = mMediaItemService.sendFeedbackObserve(token)
+                .subscribe(
+                        result -> {
+                            boolean ok = result.getCode() >= 200 && result.getCode() < 300 && result.isProcessed();
+                            NetPath.log(line + " code=" + result.getCode() + " processed=" + result.isProcessed());
+                            if (!ok) {
+                                MessageHelpers.showMessage(getContext(), R.string.feedback_failed);
+                                return;
+                            }
+                            if (callback != null) {
+                                callback.onItemAction(video, VideoMenuCallback.ACTION_REMOVE);
+                            } else {
+                                MessageHelpers.showMessage(getContext(), R.string.removed_from_history);
+                            }
+                            VideoStateService.instance(getContext()).removeByVideoId(video.videoId);
+                            // A replay must make a new history record, not reuse the removed one.
+                            com.liskovsoft.youtubeapi.track.TrackingService.instance().clearCache();
+                        },
+                        error -> {
+                            NetPath.log(line + " code=-1 error=" + error.getClass().getSimpleName());
+                            MessageHelpers.showMessage(getContext(), R.string.feedback_failed);
+                        }
+                );
     }
 
     private void appendRemoveFromSubscriptionsButton() {
