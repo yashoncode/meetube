@@ -39,7 +39,6 @@
     <string name="meetune_filter_artists">Nghệ sĩ</string>
     <string name="meetune_filter_playlists">Danh sách phát</string>
     <string name="meetune_set_customize">Tùy biến</string>
-    <string name="meetune_set_customize_summary">Trái tim ở trang chủ, tên cạnh logo và hiệu ứng ánh sáng khung Tìm kiếm</string>
     <string name="meetune_set_brand_name">Hiện tên MeeTune cạnh logo</string>
     <string name="meetune_set_brand_name_summary">Khi tắt, góc Trang chủ chỉ hiện biểu tượng trái tim</string>
     <string name="meetune_link_meetube">MeeTube →</string>
@@ -174,7 +173,7 @@
     <string name="meetune_head_tracking_summary_none">Cần Âm thanh không gian của điện thoại: hãy đeo tai nghe có hỗ trợ và bật tính năng này trong phần cài đặt Bluetooth của tai nghe</string>
     <string name="meetune_crossfade">Crossfade (Chuyển bài mượt)</string>
     <string name="meetune_volume">Âm lượng</string>
-    <string name="meetune_volume_note">Chỉ áp dụng cho bài hát; MeeTube giữ riêng mức Âm lượng trình phát. Mức trên 100% giúp tăng âm lượng cho các bài hát nhỏ hoặc điện thoại loa nhỏ. Mức quá cao có thể làm méo tiếng hoặc hỏng loa</string>
+    <string name="meetune_volume_note" formatted="false">Chỉ áp dụng cho bài hát; MeeTube giữ riêng mức Âm lượng trình phát. Mức trên 100% giúp tăng âm lượng cho các bài hát nhỏ hoặc điện thoại loa nhỏ. Mức quá cao có thể làm méo tiếng hoặc hỏng loa</string>
     <string name="meetune_crossfade_off">Tắt</string>
     <string name="meetune_crossfade_seconds">%1$d giây</string>
     <string name="meetune_automix">MeeTuneMix</string>
@@ -191,7 +190,6 @@
     <string name="meetune_stream_wifi">Khi dùng Wi-Fi</string>
     <string name="meetune_stream_mobile">Khi dùng dữ liệu di động</string>
     <string name="meetune_stream_note">Dữ liệu di động cũng bao gồm điểm phát sóng cá nhân và các mạng tính phí theo lưu lượng khác</string>
-    <string name="meetune_set_look">Giao diện</string>
     <string name="meetune_speed_dial">Ô phát nhanh (Speed dial)</string>
     <string name="meetune_speed_dial_summary">Hiển thị mục Nghe lại trên Trang chủ thành các trang ô vuông, 9 bài mỗi trang để xem nhanh</string>
     <string name="meetune_set_playback">Phát lại</string>
