@@ -159,7 +159,11 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         blendIntoStatusBar(topFrost);
         mSwipe.setOnRefreshListener(() -> {
             com.newtube.mobile.ui.common.RefreshFeedback.play(mSwipe);
-            if (current() == mTabs[HOME]) show(mTabs[HOME], true);
+            if (current() == mTabs[HOME] && mHomeChip != 0) { // a picked chip (Romance...) refreshes itself, not All
+                int chip = mHomeChip;
+                mHomeChip = 0;
+                pickHomeChip(chip);
+            } else if (current() == mTabs[HOME]) show(mTabs[HOME], true);
             else mSwipe.setRefreshing(false);
         });
         mList.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -775,11 +779,12 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         waiting.add(chipSpace()); // the chips stay while it loads
         mAdapter.setRows(waiting);
         mMessage.setVisibility(View.GONE);
-        mProgress.setVisibility(View.VISIBLE);
+        if (!mSwipe.isRefreshing()) mProgress.setVisibility(View.VISIBLE); // a pull already shows its spinner
         String params = MeeTune.sHomeChips.get(index - 1).params;
         MeeTune.run(this, () -> MeeTune.homeChip(this, params), (rows, error) -> {
             if (generation != mGeneration) return;
             mProgress.setVisibility(View.GONE);
+            mSwipe.setRefreshing(false);
             if (rows == null) {
                 message(getString(R.string.meetune_error), getString(R.string.meetune_retry), () -> {
                     mHomeChip = 0;
