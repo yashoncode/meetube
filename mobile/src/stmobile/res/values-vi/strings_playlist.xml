@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_playlist_by_owner">của %1$s</string>
+    <string name="mobile_playlist_type">Danh sách phát</string>
+    <string name="mobile_playlist_download_all">Tải xuống tất cả</string>
+    <string name="mobile_playlist_download_confirm">Tải xuống %1$d video?</string>
+    <string name="mobile_playlist_download_quality">Chất lượng tải xuống cho tất cả video</string>
+    <string name="mobile_playlist_download_best">Cao nhất hiện có</string>
+    <string name="mobile_playlist_download_queued">Đã đưa %1$d video vào hàng chờ</string>
+    <string name="mobile_playlist_download_skipped">Đã đưa %1$d video vào hàng chờ. %2$d video không khả dụng.</string>
+    <string name="mobile_playlist_load_failed">Không thể tải toàn bộ danh sách phát. Hãy thử lại.</string>
+    <string name="mobile_playlist_sort">Sắp xếp theo</string>
+    <string name="mobile_playlist_sort_manual">Thủ công</string>
+    <string name="mobile_playlist_sort_newest">Ngày xuất bản (mới nhất)</string>
+    <string name="mobile_playlist_sort_oldest">Ngày xuất bản (cũ nhất)</string>
+    <string name="mobile_playlist_sort_popular">Phổ biến nhất</string>
+    <string name="mobile_playlist_filter_all">Tất cả</string>
+    <string name="mobile_playlist_filter_videos">Video</string>
+    <string name="mobile_playlist_filter_shorts">Shorts</string>
+    <string name="mobile_playlist_download_select">Chọn video</string>
+    <string name="mobile_playlist_select_all">Chọn tất cả</string>
+    <string name="mobile_playlist_selected">Đã chọn %1$d</string>
+    <string name="mobile_playlist_download_selected">Tải xuống</string>
+    <string name="mobile_playlist_add_videos">Thêm video</string>
+    <string name="mobile_playlist_add_hint">Tìm kiếm để thêm vào %1$s</string>
+    <string name="mobile_playlist_loading">Đang tải danh sách phát</string>
+    <plurals name="mobile_playlist_video_count">
+        <item quantity="other">%d video</item>
+    </plurals>
+</resources>
