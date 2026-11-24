@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_web_signin_title">Đăng nhập vào YouTube</string>
+    <string name="mobile_web_signin_privacy">Đây là trang chính thức của Google. MeeTube không bao giờ thấy mật khẩu của bạn.</string>
+    <string name="mobile_web_signin_loading">Đang mở Google</string>
+    <string name="mobile_web_signin_finishing">Đang hoàn tất đăng nhập</string>
+    <string name="mobile_web_signin_failed">Không thể hoàn tất đăng nhập YouTube. Hãy kiểm tra mạng và thử lại.</string>
+    <string name="mobile_web_signin_retry">Thử lại</string>
+    <string name="mobile_web_signin_explain_title">Thêm một bước đăng nhập nữa</string>
+    <string name="mobile_web_signin_explain_need">Để gửi tin nhắn trò chuyện trực tiếp và thích bài đăng, bạn cần đăng nhập trên chính trang web của YouTube. Chỉ mất một phút và chỉ cần làm một lần.</string>
+    <string name="mobile_web_signin_explain_current">Phiên đăng nhập hiện tại của bạn vẫn giữ nguyên và tiếp tục xử lý video, lịch sử và kênh đăng ký.</string>
+    <string name="mobile_web_signin_explain_risk">Hãy dùng cùng một tài khoản Google. Vì Google không chấp thuận ứng dụng không chính thức nên sẽ có một chút rủi ro nhỏ cho tài khoản bạn dùng.</string>
+    <string name="mobile_web_signin_google">Đăng nhập bằng Google</string>
+    <string name="mobile_web_signin_not_now">Lúc khác</string>
+    <string name="mobile_web_signin_sign_out">Đăng xuất khỏi phiên web YouTube?</string>
+    <string name="mobile_web_signin_sign_out_confirm">Bạn sẽ cần đăng nhập lại nếu muốn gửi tin nhắn trò chuyện trực tiếp. Tài khoản MeeTube hiện tại của bạn vẫn giữ nguyên.</string>
+    <string name="mobile_web_signin_sign_out_failed">Không thể đăng xuất. Hãy thử lại.</string>
+    <string name="mobile_web_signin_signed_out">Đã đăng xuất khỏi phiên web YouTube</string>
+    <string name="mobile_web_signin_add">Thêm tài khoản web</string>
+    <string name="mobile_web_signin_choose">Trò chuyện với tên</string>
+    <string name="mobile_web_signin_switch">Chuyển tài khoản web</string>
+    <string name="mobile_web_signin_expired">Phiên đăng nhập web YouTube của bạn đã hết hạn. Hãy đăng nhập lại.</string>
+    <string name="mobile_chat_as">Trò chuyện với tên %1$s</string>
+    <string name="mobile_chat_hint">Nói điều gì đó</string>
+    <string name="mobile_chat_send">Gửi tin nhắn</string>
+    <string name="mobile_chat_send_failed">Không thể gửi tin nhắn. Hãy thử lại.</string>
+    <string name="mobile_chat_not_ready">Trò chuyện chưa sẵn sàng. Hãy thử lại sau giây lát.</string>
+</resources>
