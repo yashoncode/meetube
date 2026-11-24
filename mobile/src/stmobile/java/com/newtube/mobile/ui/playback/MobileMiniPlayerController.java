@@ -579,6 +579,10 @@ public final class MobileMiniPlayerController {
         if (window == null) {
             return;
         }
+        // Window.setFlags re-lays out the whole window even when nothing changed; this runs every tick.
+        if (on == ((window.getAttributes().flags & android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0)) {
+            return;
+        }
         if (on) {
             window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {

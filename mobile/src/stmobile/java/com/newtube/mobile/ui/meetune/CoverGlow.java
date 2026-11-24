@@ -1,5 +1,6 @@
 package com.newtube.mobile.ui.meetune;
 
+import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -18,6 +19,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.playback.MeeTunePlayerSkin;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -29,14 +31,23 @@ import java.util.WeakHashMap;
  */
 final class CoverGlow extends RecyclerView.ItemDecoration {
     private static final Map<Drawable, Integer> ACCENTS = new WeakHashMap<>();
-    private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
     private final Rect mRect = new Rect();
     private final RectF mGlow = new RectF();
     private final float mDp;
+    private final float mBlur;
+    private final int mPad; // the blur's reach past the shape
+    /**
+     * Each glow shape blurred once, as an alpha mask the paint colours. A blur paint drawn straight
+     * into the list was blurred again on every scroll frame, every cover on screen: MeeTune scrolled
+     * at about 60 fps on a 120 Hz phone (7% janky frames, 2% without the glow).
+     */
+    private final Map<Long, Bitmap> mMasks = new HashMap<>();
 
     private CoverGlow(float dp) {
         mDp = dp;
-        mPaint.setMaskFilter(new BlurMaskFilter(14 * dp, BlurMaskFilter.Blur.NORMAL));
+        mBlur = 14 * dp;
+        mPad = (int) Math.ceil(2 * mBlur);
     }
 
     /** Once per list. */
@@ -91,6 +102,24 @@ final class CoverGlow extends RecyclerView.ItemDecoration {
         int alpha = grey ? 0x5C : 0x8C;
         mPaint.setColor(accent);
         mPaint.setAlpha(Math.round(alpha * frame.getAlpha()));
-        canvas.drawRoundRect(mGlow, radius, radius, mPaint);
+        Bitmap mask = mask(Math.round(mGlow.width()), Math.round(mGlow.height()), radius);
+        if (mask != null) canvas.drawBitmap(mask, mGlow.left - mPad, mGlow.top - mPad, mPaint);
+    }
+
+    @androidx.annotation.Nullable
+    private Bitmap mask(int width, int height, float radius) {
+        if (width <= 0 || height <= 0) return null;
+        long key = ((long) width << 40) | ((long) height << 20) | Math.round(radius);
+        Bitmap mask = mMasks.get(key);
+        if (mask == null) {
+            // ponytail: a handful of cover sizes per list; cleared when sizes pile up (rotation, resizing)
+            if (mMasks.size() > 24) mMasks.clear();
+            mask = Bitmap.createBitmap(width + 2 * mPad, height + 2 * mPad, Bitmap.Config.ALPHA_8);
+            Paint blur = new Paint(Paint.ANTI_ALIAS_FLAG);
+            blur.setMaskFilter(new BlurMaskFilter(mBlur, BlurMaskFilter.Blur.NORMAL));
+            new Canvas(mask).drawRoundRect(mPad, mPad, mPad + width, mPad + height, radius, radius, blur);
+            mMasks.put(key, mask);
+        }
+        return mask;
     }
 }

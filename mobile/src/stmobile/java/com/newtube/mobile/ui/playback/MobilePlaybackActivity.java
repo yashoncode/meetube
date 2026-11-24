@@ -2370,7 +2370,10 @@ public class MobilePlaybackActivity extends MobileActivity
         if (window == null) {
             return;
         }
-        if (on && !mIsStopped) {
+        boolean want = on && !mIsStopped;
+        if (want == ((window.getAttributes().flags & android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0)) {
+            // an unchanged setFlags still re-lays out the whole window
+        } else if (want) {
             window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
             window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

@@ -1245,6 +1245,9 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void setMiniKeepScreenOn(boolean on) {
+        if (on == ((getWindow().getAttributes().flags & android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0)) {
+            return; // an unchanged setFlags still re-lays out the whole window
+        }
         if (on) {
             getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
