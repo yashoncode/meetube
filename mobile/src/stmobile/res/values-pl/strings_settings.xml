@@ -470,7 +470,6 @@
     <string name="mobile_settings_seek_pill">Pigułka przewijania</string>
     <string name="mobile_settings_seek_pill_summary">Podwójne dotknięcie pokazuje sprężystą pigułkę +10 i przesuwa film; wyłączone: klasyczna fala</string>
     <string name="mobile_settings_home_cast">Przycisk przesyłania</string>
-    <string name="mobile_settings_home_cast_summary">Pokazuj przycisk przesyłania na górnym pasku strony głównej</string>
     <string name="mobile_settings_home_chips">Etykiety na stronie głównej</string>
     <string name="mobile_settings_home_chips_summary">Pokazuj etykiety tematów pod górnym paskiem strony głównej</string>
     <string name="mobile_settings_haptics">Haptyka</string>

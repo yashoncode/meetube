@@ -497,6 +497,17 @@
                     android:padding="11dp"
                     android:src="@drawable/ic_mobile_cast" />
 
+                <!-- MEETUBE(issue #326): Notifications, when Settings > Customization turns it on. -->
+                <ImageButton
+                    android:id="@+id/mobile_bell_button"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:visibility="gone"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/mobile_settings_home_bell"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_menu_bell" />
+
                 <ImageButton
                     android:id="@+id/mobile_search_button"
                     android:layout_width="44dp"

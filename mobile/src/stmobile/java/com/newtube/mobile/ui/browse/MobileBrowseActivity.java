@@ -281,6 +281,7 @@ public class MobileBrowseActivity extends MobileActivity
     private MaterialButton mErrorAction;
     private ImageButton mSearchButton;
     private ImageButton mCastButton;
+    private ImageButton mBellButton;
     /** Process-wide cast session singleton; Browse only reads state + opens the picker. */
     private CastSessionManager mCastSessionManager;
 
@@ -456,6 +457,20 @@ public class MobileBrowseActivity extends MobileActivity
         mErrorAction = findViewById(R.id.mobile_error_action);
         mSearchButton = findViewById(R.id.mobile_search_button);
         mCastButton = findViewById(R.id.mobile_cast_button);
+        mBellButton = findViewById(R.id.mobile_bell_button);
+        // MEETUBE(issue #326): the phone has no notification inbox (YouTube refuses it to the app's
+        // sign-in), so the bell opens Settings > Notifications: the channels whose uploads notify.
+        mBellButton.setOnClickListener(v -> startActivity(com.newtube.mobile.ui.settings.MobileSettingsActivity.intent(
+                this, com.newtube.mobile.ui.settings.SettingsPages.NOTIFICATIONS)));
+        // A long press on any top bar button: the settings that add or remove them.
+        View.OnLongClickListener barSettings = v -> {
+            startActivity(com.newtube.mobile.ui.settings.MobileSettingsActivity.intent(
+                    this, com.newtube.mobile.ui.settings.SettingsPages.FEEDS_TABS));
+            return true;
+        };
+        mCastButton.setOnLongClickListener(barSettings);
+        mBellButton.setOnLongClickListener(barSettings);
+        findViewById(R.id.mobile_search_button).setOnLongClickListener(barSettings);
         mTopBar = new BrowseTopBar(this, () -> getOnBackPressedDispatcher().onBackPressed());
 
         // MEETUBE(glass): the floating nav pill blurs the page scrolling under it (real backdrop
@@ -3919,7 +3934,9 @@ public class MobileBrowseActivity extends MobileActivity
         // neither Cast nor Search in it, the whole pill goes.
         boolean castShown = com.newtube.mobile.ui.common.HomeBar.castShown(this);
         mCastButton.setVisibility(castShown ? View.VISIBLE : View.GONE);
-        ((View) mCastButton.getParent().getParent()).setVisibility(castShown || searchOnTop ? View.VISIBLE : View.GONE);
+        boolean bellShown = com.newtube.mobile.ui.common.HomeBar.bellShown(this);
+        mBellButton.setVisibility(bellShown ? View.VISIBLE : View.GONE);
+        ((View) mCastButton.getParent().getParent()).setVisibility(castShown || bellShown || searchOnTop ? View.VISIBLE : View.GONE);
         updateStrip();
         if (searchOnTop == (mBottomNav.getMenu().findItem(SEARCH_ITEM_ID) != null)) {
             rebuildNavigation();
@@ -4787,6 +4804,9 @@ public class MobileBrowseActivity extends MobileActivity
         if (list.size() < 12 && list.size() < loaded && loaded != mSegmentPagedAt && loaded < 400
                 && mPresenter != null) {
             mSegmentPagedAt = loaded;
+            // MEETUBE(issue #328): Subscriptions is a shelf section, paged by onScrollNearEnd
+            // (onScrollEnd returns early there), so Shorts stayed blank. Both, as the scroll listener.
+            mPresenter.onScrollNearEnd(loaded);
             mPresenter.onScrollEnd(mCurrentVideos.get(loaded - 1));
         }
         if (mParkedItemAnimator == null && !mSectionSwapPending) {

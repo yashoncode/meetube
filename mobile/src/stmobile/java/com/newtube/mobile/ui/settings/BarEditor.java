@@ -1,5 +1,7 @@
 package com.newtube.mobile.ui.settings;
 
+import com.newtube.mobile.ui.common.HomeBar;
+
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
@@ -45,7 +47,8 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int BOTTOM_HEADER = -101;
     private static final int SEARCH = -102;
     private static final int YOU = -103;
-    private static final int CAST = -104; // the preview's top bar only
+    private static final int CAST = -104; // issue #326: Cast and the bell, shown or hidden by a tap
+    private static final int BELL = -105;
     private static final int VIEW_HEADER = 0;
     private static final int VIEW_TILE = 1;
 
@@ -107,6 +110,8 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             middle.add(Math.max(0, Math.min(2, NavTabs.searchPosition(context))), SEARCH);
         }
         mItems.add(TOP_HEADER);
+        mItems.add(CAST);
+        mItems.add(BELL);
         if (onTop) {
             mItems.add(SEARCH);
         }
@@ -149,6 +154,23 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ((TextView) view.findViewById(R.id.bar_tile_title)).setText(title(item));
         ((TextView) view.findViewById(R.id.bar_tile_summary)).setText(summary(item));
         ImageView grip = view.findViewById(R.id.bar_tile_grip);
+        grip.setVisibility(item == CAST || item == BELL ? View.GONE : View.VISIBLE);
+        if (item == CAST || item == BELL) { // a tap shows or hides it; they don't move
+            view.setAlpha(shown(item) ? 1f : 0.6f);
+            grip.setOnTouchListener(null);
+            view.setOnClickListener(v -> {
+                if (item == CAST) {
+                    HomeBar.setCastShown(mContext, !HomeBar.castShown(mContext));
+                } else {
+                    HomeBar.setBellShown(mContext, !HomeBar.bellShown(mContext));
+                }
+                Haptics.click(v);
+                notifyItemChanged(holder.getBindingAdapterPosition());
+                syncPreview();
+            });
+            view.setClickable(true);
+            return;
+        }
         grip.setImageResource(fixed ? R.drawable.ic_bar_lock : R.drawable.ic_bar_drag);
         boolean homeOff = item == MediaGroup.TYPE_HOME && !NavTabs.showHome(mContext);
         view.setAlpha(item == NavTabs.NONE || homeOff ? 0.6f : 1f);
@@ -317,13 +339,13 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private void syncPreview() {
         List<Integer> top = new ArrayList<>();
-        top.add(CAST);
         List<Integer> bottom = new ArrayList<>();
         int bottomHeader = mItems.indexOf(BOTTOM_HEADER);
         for (int i = 0; i < mItems.size(); i++) {
             int item = mItems.get(i);
             if (item == TOP_HEADER || item == BOTTOM_HEADER || item == NavTabs.NONE
-                    || (item == MediaGroup.TYPE_HOME && !NavTabs.showHome(mContext))) {
+                    || (item == MediaGroup.TYPE_HOME && !NavTabs.showHome(mContext))
+                    || ((item == CAST || item == BELL) && !shown(item))) {
                 continue;
             }
             (i < bottomHeader ? top : bottom).add(item);
@@ -383,7 +405,7 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private ImageView previewIcon(int item) {
         ImageView icon = new ImageView(mContext);
         icon.setTag(item);
-        icon.setImageResource(item == CAST ? R.drawable.ic_mobile_cast : icon(item));
+        icon.setImageResource(icon(item));
         icon.setImageTintList(ContextCompat.getColorStateList(mContext, R.color.mobile_color_on_surface));
         icon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         int pad = dp(mContext, 9);
@@ -407,8 +429,16 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     // ---- what each item looks like -------------------------------------------------------------
 
+    private boolean shown(int item) {
+        return item == CAST ? HomeBar.castShown(mContext) : HomeBar.bellShown(mContext);
+    }
+
     private static int icon(int item) {
         switch (item) {
+            case CAST:
+                return R.drawable.ic_mobile_cast;
+            case BELL:
+                return R.drawable.ic_menu_bell;
             case MediaGroup.TYPE_HOME:
                 return R.drawable.ic_nav_home;
             case SEARCH:
@@ -436,6 +466,10 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 return mContext.getString(R.string.header_home);
             case SEARCH:
                 return mContext.getString(R.string.mobile_search_button);
+            case CAST:
+                return mContext.getString(R.string.mobile_settings_home_cast);
+            case BELL:
+                return mContext.getString(R.string.mobile_settings_home_bell);
             case YOU:
                 return mContext.getString(R.string.mobile_nav_you);
             case NavTabs.NONE:
@@ -452,6 +486,9 @@ final class BarEditor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         ? R.string.mobile_settings_bar_home_summary : R.string.mobile_settings_bar_home_removed);
             case YOU:
                 return mContext.getString(R.string.mobile_settings_bar_last);
+            case CAST:
+            case BELL:
+                return mContext.getString(shown(item) ? R.string.mobile_settings_bar_shown : R.string.mobile_settings_bar_hidden);
             case SEARCH:
                 return mContext.getString(mItems.indexOf(SEARCH) < mItems.indexOf(BOTTOM_HEADER)
                         ? R.string.mobile_settings_bar_search_down : R.string.mobile_settings_bar_search_up);

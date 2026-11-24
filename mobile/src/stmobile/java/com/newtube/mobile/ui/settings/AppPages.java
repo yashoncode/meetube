@@ -392,11 +392,8 @@ final class AppPages {
     static SettingsPages.Page customizeBars(Context context) {
         List<SettingsRow> rows = new ArrayList<>();
 
-        // MEETUBE(home bar): the Cast button in Home's top bar, and the topic chips under it.
-        rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_cast),
-                context.getString(R.string.mobile_settings_home_cast_summary),
-                () -> com.newtube.mobile.ui.common.HomeBar.castShown(context),
-                on -> com.newtube.mobile.ui.common.HomeBar.setCastShown(context, on)), Tiles.FX_TOP_BAR));
+        // MEETUBE(home bar): the topic chips under Home's top bar. Its Cast and Notifications
+        // buttons are in Tabs' top bar section (BarEditor, issue #326).
         rows.add(Tiles.toggle(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_chips),
                 context.getString(R.string.mobile_settings_home_chips_summary),
                 () -> com.newtube.mobile.ui.common.HomeBar.chipsShown(context),

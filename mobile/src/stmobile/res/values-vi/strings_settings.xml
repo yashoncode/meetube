@@ -531,7 +531,6 @@
     <string name="mobile_settings_seek_pill">Viên thuốc tua</string>
     <string name="mobile_settings_seek_pill_summary">Chạm hai lần để tua sẽ hiện viên +10 nảy nhẹ và đẩy nhẹ khung hình; tắt để dùng hiệu ứng gợn sóng cổ điển</string>
     <string name="mobile_settings_home_cast">Nút Truyền phát</string>
-    <string name="mobile_settings_home_cast_summary">Hiện nút Truyền phát (Cast) trên thanh trên của Trang chủ</string>
     <string name="mobile_settings_home_chips">Thẻ chủ đề Trang chủ</string>
     <string name="mobile_settings_home_chips_summary">Hiện các thẻ chủ đề bên dưới thanh trên của Trang chủ</string>
     <string name="mobile_settings_haptics">Rung phản hồi</string>

@@ -118,6 +118,11 @@ final class PhoneOnlyPrefs implements AppPrefs.ProfileChangeListener {
         if (data.isContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY)) {
             data.setContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY, false);
         }
+        // MEETUBE(issue #328): the same TV default dropped every Short from Subscriptions, so its Shorts
+        // pill showed a blank page. The All | Videos | Shorts pill is the phone's way to hide them.
+        if (data.isContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_SUBSCRIPTIONS)) {
+            data.setContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_SUBSCRIPTIONS, false);
+        }
     }
 
     /**

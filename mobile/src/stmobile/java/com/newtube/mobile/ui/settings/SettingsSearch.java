@@ -95,7 +95,6 @@ final class SettingsSearch {
             {R.string.mobile_settings_watched_bar, R.string.mobile_settings_search_kw_watched_bar},
             {R.string.mobile_settings_badge_icons, R.string.mobile_settings_search_kw_badge_icons},
             {R.string.mobile_settings_seek_pill, R.string.mobile_settings_search_kw_seek_pill},
-            {R.string.mobile_settings_home_cast, R.string.mobile_settings_search_kw_home_cast},
             {R.string.mobile_settings_home_chips, R.string.mobile_settings_search_kw_home_chips},
             {R.string.mobile_settings_haptics, R.string.mobile_settings_search_kw_haptics},
             {R.string.mobile_settings_refresh_sound, R.string.mobile_settings_search_kw_refresh_sound},

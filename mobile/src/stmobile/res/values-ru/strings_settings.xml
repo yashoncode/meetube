@@ -498,7 +498,6 @@
     <string name="mobile_settings_mini_type_disabled">Отключён</string>
     <string name="mobile_settings_mini_type_disabled_desc">При смахивании вниз видео закрывается, а не сворачивается</string>
     <string name="mobile_settings_home_cast">Кнопка трансляции</string>
-    <string name="mobile_settings_home_cast_summary">Показывать кнопку трансляции на верхней панели главного экрана</string>
     <string name="mobile_settings_home_chips">Фильтры главного экрана</string>
     <string name="mobile_settings_home_chips_summary">Показывать тематические фильтры под верхней панелью главного экрана</string>
     <string name="mobile_settings_haptics">Виброотклик</string>

@@ -10,6 +10,7 @@ public final class HomeBar {
     private static final String PREFS = "meetube_app";
     private static final String KEY_CAST = "home_cast_button";
     private static final String KEY_CHIPS = "home_chips";
+    private static final String KEY_BELL = "home_bell_button";
 
     private HomeBar() {
     }
@@ -20,6 +21,15 @@ public final class HomeBar {
 
     public static void setCastShown(Context context, boolean shown) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_CAST, shown).apply();
+    }
+
+    /** Issue #326: a bell in the top bar that opens Notifications. Off by default. */
+    public static boolean bellShown(Context context) {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_BELL, false);
+    }
+
+    public static void setBellShown(Context context, boolean shown) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_BELL, shown).apply();
     }
 
     public static boolean chipsShown(Context context) {

@@ -12,7 +12,7 @@
     <string name="mobile_settings_search_kw_country">country region</string>
     <string name="mobile_settings_search_kw_start_screen">launch startup opens on default tab home page</string>
     <string name="mobile_settings_search_kw_interface_size">ui scale zoom font text size density bigger smaller</string>
-    <string name="mobile_settings_search_kw_tabs">bottom bar sections navigation explore</string>
+    <string name="mobile_settings_search_kw_tabs">bottom bar top bar sections navigation explore cast button notifications bell</string>
     <string name="mobile_settings_search_kw_hidden">hide watched filter upcoming premieres live</string>
     <string name="mobile_settings_search_kw_video_menu">context menu three dots long press options</string>
     <string name="mobile_settings_search_kw_channels_order">subscriptions sort channels</string>
@@ -45,7 +45,6 @@
     <string name="mobile_settings_search_kw_badge_icons">mix music note icon symbol pill badge duration time</string>
     <string name="mobile_settings_search_kw_seek_pill">double tap skip seek forward rewind 10 seconds animation ripple pill</string>
     <string name="mobile_settings_search_kw_watched_bar">watched progress red line bar history seen thumbnail</string>
-    <string name="mobile_settings_search_kw_home_cast">cast button top bar hide show tv chromecast</string>
     <string name="mobile_settings_search_kw_home_chips">chips topics categories filters home hide show</string>
     <string name="mobile_settings_search_kw_haptics">haptics vibration vibrate buzz tick feedback touch off</string>
     <string name="mobile_settings_search_kw_refresh_sound">refresh sound pop audio pull swipe noise mute</string>
