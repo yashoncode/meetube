@@ -239,6 +239,24 @@ public class MobileBrowseActivity extends MobileActivity
     private static final long HOME_CHIP_ID = 1_000_000;
     private static final int HOME_CHIPS_MAX = 10;
     /**
+     * MEETUBE(issue #336): another account's chips and history row stayed until the tab was left.
+     * Fires on the main thread after FeedCache.clear(), from the You sheet and Settings alike.
+     */
+    private final MediaServiceManager.AccountChangeListener mAccountListener = account -> onAccountSwitched();
+
+    private void onAccountSwitched() {
+        updateAccountRow();
+        mHomeChips = null;
+        loadHomeChips();
+        if (mHomeChip == null && isHomeChip(mCurrentSectionId) && !mYouShowing) {
+            updateStrip(); // drop the old chips now, not when the new ones land
+        }
+        showYouHistory(null);
+        if (mYouShowing) {
+            loadYouHistory();
+        }
+    }
+    /**
      * MEETUBE(hyped): Hyped's chart, one list per category (in order, Top 100 first), and the
      * category on screen (null: the first). Every category comes in the one fetch; a chip only
      * changes which list the grid shows.
@@ -378,6 +396,7 @@ public class MobileBrowseActivity extends MobileActivity
 
         setContentView(R.layout.activity_mobile_browse);
         com.newtube.mobile.ui.common.LaunchSplash.play(this);
+        MediaServiceManager.instance().addAccountListener(mAccountListener);
 
         registerBackHandler(this::handleBack);
         sLive = new java.lang.ref.WeakReference<>(this);
@@ -4263,6 +4282,7 @@ public class MobileBrowseActivity extends MobileActivity
 
     @Override
     protected void onDestroy() {
+        MediaServiceManager.instance().removeAccountListener(mAccountListener);
         unwatchMiniScreenOn(); // the shared player outlives this Activity
         mPreview.release();
         mNavHandler.removeCallbacks(mNavRebuild);
