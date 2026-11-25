@@ -4280,6 +4280,12 @@ public class MobilePlaybackActivity extends MobileActivity
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_video, R.string.meetune_canvas,
                         () -> com.newtube.mobile.ui.meetune.MeeTuneSongMenu.canvas(this, video, mMeeTune.canvasIsLoop(),
                                 () -> mMeeTune.reloadCanvas(video))),
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_ambient, R.string.meetune_ambient,
+                        () -> getString(com.newtube.mobile.ui.meetune.MeeTune.ambient(this) ? R.string.mobile_menu_on : R.string.mobile_menu_off),
+                        () -> {
+                            com.newtube.mobile.ui.meetune.MeeTune.setAmbient(this, !com.newtube.mobile.ui.meetune.MeeTune.ambient(this));
+                            mMeeTune.applyAmbient();
+                        }),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_mobile_tune, R.string.meetune_lyrics_offset,
                         () -> com.newtube.mobile.ui.meetune.MeeTuneSongMenu.lyricsOffset(this,
                                 mMeeTune::lyricsOffset, mMeeTune::setLyricsOffset)),

@@ -215,6 +215,7 @@ public final class MeeTunePlayerSkin {
         } else {
             mBg.setAlpha(0.35f);
         }
+        applyAmbient();
         mArt.setOutlineProvider(new android.view.ViewOutlineProvider() { // round as it lands on the pill
             @Override
             public void getOutline(View view, android.graphics.Outline outline) {
@@ -710,7 +711,15 @@ public final class MeeTunePlayerSkin {
             super(context, attrs);
             mBar.setColor(0xFF5BE38A);
             mBar.setShadowLayer(6 * getResources().getDisplayMetrics().density, 0, 0, 0xCC5BE38A); // the glow
-            setLayerType(LAYER_TYPE_SOFTWARE, null); // a shadow on shapes needs it before Android 9
+            // A shadow on shapes needs software before Android 9; after, a software layer redrawn every
+            // frame cost the whole player a frame's worth of GPU, menu pop-ins included.
+            if (Build.VERSION.SDK_INT < 28) setLayerType(LAYER_TYPE_SOFTWARE, null);
+        }
+
+        @Override
+        public void onWindowFocusChanged(boolean hasFocus) {
+            super.onWindowFocusChanged(hasFocus);
+            invalidate(); // a menu took the focus (the bars rest under it) or gave it back
         }
 
         /** The bars and their glow take {@code color}, easing over from the old one. */
@@ -740,7 +749,9 @@ public final class MeeTunePlayerSkin {
 
         @Override
         protected void onDraw(android.graphics.Canvas canvas) {
-            mMotion = Math.max(0f, Math.min(1f, mMotion + (mPlaying ? 0.08f : -0.06f)));
+            // Under a menu or sheet the bars rest, so the player stops redrawing while it pops in.
+            boolean moving = mPlaying && hasWindowFocus();
+            mMotion = Math.max(0f, Math.min(1f, mMotion + (moving ? 0.08f : -0.06f)));
             // MEETUNE: drawn inside the padding, which holds the glow; at the edge it was cut square.
             canvas.save();
             canvas.translate(getPaddingLeft(), getPaddingTop());
@@ -756,7 +767,7 @@ public final class MeeTunePlayerSkin {
                 canvas.drawRoundRect(mRect, bar / 2, bar / 2, mBar);
             }
             canvas.restore();
-            if (mPlaying || mMotion > 0f) postInvalidateOnAnimation();
+            if (moving || mMotion > 0f) postInvalidateOnAnimation();
         }
     }
 
@@ -921,6 +932,29 @@ public final class MeeTunePlayerSkin {
         return new android.graphics.drawable.BitmapDrawable(view.getResources(), copy);
     }
 
+    /**
+     * The ambient behind the player is the cover itself, melting from the old song's colours to the
+     * new one's. It had a load of its own, which could end empty while the cover showed: a black player.
+     */
+    private void ambient(android.graphics.drawable.Drawable art) {
+        android.graphics.drawable.Drawable.ConstantState state = art.getConstantState();
+        if (state == null) return;
+        android.graphics.drawable.Drawable bg = state.newDrawable(mBg.getResources()); // own bounds, same bitmap
+        android.graphics.drawable.Drawable old = mBg.getDrawable();
+        if (old instanceof android.graphics.drawable.TransitionDrawable) { // melt from the last, not a chain of melts
+            old = ((android.graphics.drawable.TransitionDrawable) old).getDrawable(1);
+        }
+        if (old == null) {
+            mBg.setImageDrawable(bg);
+            return;
+        }
+        android.graphics.drawable.TransitionDrawable melt =
+                new android.graphics.drawable.TransitionDrawable(new android.graphics.drawable.Drawable[] {old, bg});
+        melt.setCrossFadeEnabled(true);
+        mBg.setImageDrawable(melt);
+        melt.startTransition(700);
+    }
+
     /** The showing art's height over its width (1: square). */
     private float mArtShape = 1f;
 
@@ -964,6 +998,16 @@ public final class MeeTunePlayerSkin {
      * A bright cover (white, pastel) blurred behind the controls washed out the white icons and their
      * light glass (#323): the scrim darkens it until the backdrop is no brighter than about 45%.
      */
+    /** The scrim's resting alpha for this cover: the minimize flight hands back this, not 1 (a black player). */
+    private float mDim = 0.25f;
+
+    /** Ambient blur on or off (the menu's switch): off, the player's plain background shows. */
+    public void applyAmbient() {
+        int shown = MeeTune.ambient(mRoot.getContext()) ? View.VISIBLE : View.INVISIBLE;
+        mBg.setVisibility(shown);
+        mRoot.findViewById(R.id.meetune_player_scrim).setVisibility(shown);
+    }
+
     private void dimForCover(android.graphics.drawable.Drawable art) {
         android.graphics.Bitmap small = android.graphics.Bitmap.createBitmap(16, 16, android.graphics.Bitmap.Config.ARGB_8888);
         android.graphics.Rect bounds = art.copyBounds();
@@ -979,7 +1023,8 @@ public final class MeeTunePlayerSkin {
         small.recycle();
         float lum = sum / 256f;
         float dim = lum > 0.6f ? Math.min(0.6f, 1f - 0.45f / lum) : 0.25f;
-        mRoot.findViewById(R.id.meetune_player_scrim).animate().alpha(Math.max(0.25f, dim)).setDuration(700).start();
+        mDim = Math.max(0.25f, dim);
+        mRoot.findViewById(R.id.meetune_player_scrim).animate().alpha(mDim).setDuration(700).start();
     }
 
     /** The new cover is here: in from the side the songs move from, unless it is the first one. */
@@ -990,6 +1035,7 @@ public final class MeeTunePlayerSkin {
         mArt.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mArt.setImageDrawable(art);
         fitArt();
+        ambient(art);
         int accent = accent(art);
         dimForCover(art);
         ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setColor(accent);
@@ -1098,10 +1144,6 @@ public final class MeeTunePlayerSkin {
                     else showArt(art);
                 }
             });
-            // The ambient behind it melts from the old song's colours to the new one's.
-            images.load(art).error(images.load(fallback)).placeholder(mBg.getDrawable())
-                    .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(700))
-                    .into(mBg);
         }
     }
 
@@ -1913,6 +1955,7 @@ public final class MeeTunePlayerSkin {
 
     /** A view's resting alpha (the blurred art is fainter where Android can't blur it). */
     private float base(View view) {
+        if (view.getId() == R.id.meetune_player_scrim) return mDim;
         return view == mBg && Build.VERSION.SDK_INT < 31 ? 0.35f : 1f;
     }
 

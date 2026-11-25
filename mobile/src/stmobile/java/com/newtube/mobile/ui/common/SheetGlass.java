@@ -314,14 +314,15 @@ public final class SheetGlass {
             mDecor.getLocationOnScreen(origin);
             Bitmap page = copy;
             try {
+                // Copied and blurred off the main thread: blurring there held a menu's pop-in for ~60 ms.
                 PixelCopy.request(mPage, page, result -> {
                     boolean copied = result == PixelCopy.SUCCESS;
                     if (copied && !mLive) {
                         // The message pill is frosted, not see-through: twice the blur, shapes gone.
                         blur(page, mTint != 0 ? BLUR_RADIUS * 2 : BLUR_RADIUS);
                     }
-                    show(copied ? page : null, origin, pageW, pageH);
-                }, mMain);
+                    mMain.post(() -> show(copied ? page : null, origin, pageW, pageH));
+                }, worker());
             } catch (IllegalArgumentException e) {
                 // The page's window has no surface (already gone): keep what the sheet shows.
             }
@@ -376,6 +377,18 @@ public final class SheetGlass {
     }
 
     /** Three box passes each way approximate a gaussian; on a 1/8 copy that is a wide, soft blur. */
+    @Nullable private static Handler sWorker;
+
+    /** The thread page copies land and blur on. */
+    private static Handler worker() {
+        if (sWorker == null) {
+            android.os.HandlerThread thread = new android.os.HandlerThread("SheetGlass");
+            thread.start();
+            sWorker = new Handler(thread.getLooper());
+        }
+        return sWorker;
+    }
+
     static void blur(Bitmap bitmap, int radius) {
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();

@@ -236,6 +236,7 @@
     <string name="meetune_upgraded">This song plays at the best sound now</string>
     <string name="meetune_set_canvas">Canvas</string>
     <string name="meetune_canvas">Canvas</string>
+    <string name="meetune_ambient">Ambient blur</string>
     <string name="meetune_canvas_covers">Animated covers</string>
     <string name="meetune_canvas_covers_summary">The moving album cover from Apple Music or Tidal, when the song has one</string>
     <string name="meetune_canvas_video">Music video loops</string>
