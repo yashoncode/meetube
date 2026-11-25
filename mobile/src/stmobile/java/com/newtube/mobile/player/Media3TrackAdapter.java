@@ -64,13 +64,13 @@ public class Media3TrackAdapter {
      * then play the highest stream under the cap (1080p, or 720p on a video that tops out there)
      * instead of adapting to the measured bandwidth. Read on the next video's selection.
      */
-    private static volatile boolean sForceQuality;
+    private static volatile boolean sForceQuality = true;
     private static final String PREFS = "meetube_player";
     private static final String KEY_FORCE_QUALITY = "force_quality";
 
     static void loadForceQuality(android.content.Context context) {
         sForceQuality = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
-                .getBoolean(KEY_FORCE_QUALITY, false);
+                .getBoolean(KEY_FORCE_QUALITY, true);
     }
 
     public static boolean isForceQuality(android.content.Context context) {
