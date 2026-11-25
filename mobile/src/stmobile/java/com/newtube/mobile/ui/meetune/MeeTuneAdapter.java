@@ -33,6 +33,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         void showAll(MusicApi.Shelf shelf);
 
+        void playAll(List<MusicApi.Item> songs);
+
         void songMenu(View anchor, MusicApi.Item item);
 
         /** The head's Add: save the page to the library, or take it out (the icon follows). */
@@ -339,9 +341,14 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         switch (row.type) {
             case TITLE:
                 ((TextView) view.findViewById(R.id.meetune_shelf_title)).setText(row.shelf.title);
-                View more = view.findViewById(R.id.meetune_shelf_more);
-                more.setVisibility(row.shelf.moreBrowseId != null ? View.VISIBLE : View.GONE);
-                more.setOnClickListener(v -> mHost.showAll(row.shelf));
+                TextView more = view.findViewById(R.id.meetune_shelf_more);
+                // A songs shelf with nothing more to show (Quick picks): Play all, then its radio plays on (#329).
+                boolean playAll = row.shelf.moreBrowseId == null && row.shelf.items.size() > 1 && row.shelf.allSongs();
+                more.setVisibility(row.shelf.moreBrowseId != null || playAll ? View.VISIBLE : View.GONE);
+                more.setText(playAll ? R.string.mobile_playlist_play_all : R.string.meetune_show_all);
+                more.setOnClickListener(v -> {
+                    if (playAll) mHost.playAll(row.shelf.items); else mHost.showAll(row.shelf);
+                });
                 break;
             case SONG:
                 bindItem(view, row.item);

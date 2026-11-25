@@ -1363,6 +1363,16 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     }
 
     @Override
+    public void playAll(List<MusicApi.Item> songs) {
+        boolean first = true;
+        for (MusicApi.Item song : songs) {
+            if (!song.playable()) continue;
+            if (first) open(song, songs); else MeeTune.queue(this, song, false);
+            first = false;
+        }
+    }
+
+    @Override
     public void addToPlaylist(MusicApi.Item item) {
         MeeTuneLibrary.addSheet(this, item);
     }
