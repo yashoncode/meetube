@@ -138,7 +138,7 @@ is a stopgap for the other.
 - **Reference implementations:** protocol doc = thibauts/node-castv2; Java senders =
   vitalidze/chromecast-java-api-v2 and DigitalMediaServer/Cast-API (Apache-2.0, OK to
   build from). Grayjay's `StateCasting.kt` is the architecture reference but is
-  FUTO Source-First licensed — **read, never copy** (we're MIT).
+  FUTO Source-First licensed — **read, never copy** (its non-commercial terms clash with MeeTube's GPLv3).
 - **Range requests:** pass `Range` headers through untouched. Do NOT mirror ranges
   into query params — see the `GOOGLEVIDEO_RANGE_QUERY` post-mortem in HANDOFF.
 
