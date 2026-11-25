@@ -994,6 +994,23 @@ public class Media3PlayerController implements Player.Listener {
         return duration != C.TIME_UNSET ? duration : -1;
     }
 
+    /**
+     * MEETUBE(live seek bar): where a live stream's playing target is right now, in the window's own
+     * time, or -1. The window's duration grows only at each manifest refresh (5 s), so a seek bar
+     * measured against it crept forward and snapped back every refresh; the clock moves on between.
+     */
+    public long getLiveEdgeMs() {
+        if (mPlayer == null || !mPlayer.isCurrentMediaItemLive()) return -1;
+        androidx.media3.common.Timeline timeline = mPlayer.getCurrentTimeline();
+        if (timeline.isEmpty()) return -1;
+        androidx.media3.common.Timeline.Window window =
+                timeline.getWindow(mPlayer.getCurrentMediaItemIndex(), new androidx.media3.common.Timeline.Window());
+        if (window.windowStartTimeMs == C.TIME_UNSET || window.elapsedRealtimeEpochOffsetMs == C.TIME_UNSET) return -1;
+        long target = window.liveConfiguration != null && window.liveConfiguration.targetOffsetMs != C.TIME_UNSET
+                ? window.liveConfiguration.targetOffsetMs : 0;
+        return window.getCurrentUnixTimeMs() - window.windowStartTimeMs - target;
+    }
+
     public void setPlayWhenReady(boolean play) {
         if (mPlayer == null) {
             return;

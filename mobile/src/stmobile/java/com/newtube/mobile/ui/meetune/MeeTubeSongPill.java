@@ -120,7 +120,8 @@ public final class MeeTubeSongPill {
             @Override
             public void run() {
                 long duration = mPlayer.getDuration();
-                mRing.setLevel(duration > 0 ? mPlayer.getCurrentPosition() / (float) duration : 0f, mPlayer.isPlaying());
+                mRing.setLevel(mPlayer.isCurrentMediaItemLive() ? 1f // live: full, as the player's bar
+                        : duration > 0 ? mPlayer.getCurrentPosition() / (float) duration : 0f, mPlayer.isPlaying());
                 postDelayed(this, 250);
             }
         };

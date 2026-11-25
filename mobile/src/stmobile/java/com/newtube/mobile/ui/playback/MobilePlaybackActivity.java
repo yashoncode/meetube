@@ -13470,6 +13470,12 @@ public class MobilePlaybackActivity extends MobileActivity
         if ((durationMs <= 0 || durationMs > Video.MAX_LIVE_DURATION_MS) && liveDurationMs != 0) {
             durationMs = liveDurationMs;
         }
+        // MEETUBE(live seek bar): the bar ends at the live edge, which moves on with the clock, so
+        // playing live keeps the dot at the end instead of a crawl and a snap back each refresh.
+        long edge = mExoPlayerController.getLiveEdgeMs();
+        if (edge > 0) {
+            durationMs = Math.max(edge, mExoPlayerController.getPositionMs());
+        }
 
         return durationMs;
     }
