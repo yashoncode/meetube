@@ -37,6 +37,7 @@ One app for YouTube videos **and** YouTube Music. Tap the logo on Home and MeeTu
 - **A real music player:** synced lyrics, a moving cover, the song's format on a glass pill, and a radio that keeps the songs coming.
 - **Sound that surrounds you:** Spatial sound with a real head model (MIT KEMAR) and a Cinema level with deeper bass, Head tracking on Android 13+ through your phone's own spatial audio, Dolby, headphone correction, and crossfade between songs.
 - **Quality your way:** pick the audio quality for Wi-Fi and for mobile data, and a speed for your songs (0.25x to 4x, in 0.01 steps) that a video's speed never changes.
+- 🚗 **Android Auto:** MeeTune in your car with Home, Made for you, Recents and Library, voice search and lyrics. Tap **Connect to car** in the player menu to move the song you're playing to the car.
 - **Plays anywhere:** downloads with lyrics play offline, and cached songs play with no network at all.
 - **Its own space:** a History, Downloads and an equalizer just for your songs, and a player kept apart from your videos.
 
@@ -232,6 +233,49 @@ And thank you to everyone who sent a fix, reported a bug or suggested an idea. M
 <a href="https://github.com/Abinpj1" title="Abinpj1"><img src="https://github.com/Abinpj1.png?size=96" width="48" height="48" alt="Abinpj1"></a>
 <a href="https://github.com/Subbarao6338" title="Subbarao6338"><img src="https://github.com/Subbarao6338.png?size=96" width="48" height="48" alt="Subbarao6338"></a>
 <a href="https://github.com/sauravdahalbro-ui" title="sauravdahalbro-ui"><img src="https://github.com/sauravdahalbro-ui.png?size=96" width="48" height="48" alt="sauravdahalbro-ui"></a>
+<a href="https://github.com/TheLastOne-25" title="TheLastOne-25"><img src="https://github.com/TheLastOne-25.png?size=96" width="48" height="48" alt="TheLastOne-25"></a>
+<a href="https://github.com/Qbitarman" title="Qbitarman"><img src="https://github.com/Qbitarman.png?size=96" width="48" height="48" alt="Qbitarman"></a>
+<a href="https://github.com/sirpaarth-beep" title="sirpaarth-beep"><img src="https://github.com/sirpaarth-beep.png?size=96" width="48" height="48" alt="sirpaarth-beep"></a>
+<a href="https://github.com/nouse8192-tech" title="nouse8192-tech"><img src="https://github.com/nouse8192-tech.png?size=96" width="48" height="48" alt="nouse8192-tech"></a>
+<a href="https://github.com/Diaa219" title="Diaa219"><img src="https://github.com/Diaa219.png?size=96" width="48" height="48" alt="Diaa219"></a>
+<a href="https://github.com/mhommad222" title="mhommad222"><img src="https://github.com/mhommad222.png?size=96" width="48" height="48" alt="mhommad222"></a>
+<a href="https://github.com/orbit21" title="orbit21"><img src="https://github.com/orbit21.png?size=96" width="48" height="48" alt="orbit21"></a>
+<a href="https://github.com/MrRo-bot" title="MrRo-bot"><img src="https://github.com/MrRo-bot.png?size=96" width="48" height="48" alt="MrRo-bot"></a>
+<a href="https://github.com/sahidur2007" title="sahidur2007"><img src="https://github.com/sahidur2007.png?size=96" width="48" height="48" alt="sahidur2007"></a>
+<a href="https://github.com/Oregonipisidi" title="Oregonipisidi"><img src="https://github.com/Oregonipisidi.png?size=96" width="48" height="48" alt="Oregonipisidi"></a>
+<a href="https://github.com/Silver-Skyy" title="Silver-Skyy"><img src="https://github.com/Silver-Skyy.png?size=96" width="48" height="48" alt="Silver-Skyy"></a>
+<a href="https://github.com/suhail-enosis" title="suhail-enosis"><img src="https://github.com/suhail-enosis.png?size=96" width="48" height="48" alt="suhail-enosis"></a>
+<a href="https://github.com/AbhishekGanvir" title="AbhishekGanvir"><img src="https://github.com/AbhishekGanvir.png?size=96" width="48" height="48" alt="AbhishekGanvir"></a>
+<a href="https://github.com/rgrimjr41" title="rgrimjr41"><img src="https://github.com/rgrimjr41.png?size=96" width="48" height="48" alt="rgrimjr41"></a>
+<a href="https://github.com/PravinGavand" title="PravinGavand"><img src="https://github.com/PravinGavand.png?size=96" width="48" height="48" alt="PravinGavand"></a>
+<a href="https://github.com/huh442413-blip" title="huh442413-blip"><img src="https://github.com/huh442413-blip.png?size=96" width="48" height="48" alt="huh442413-blip"></a>
+<a href="https://github.com/mohamedalim26" title="mohamedalim26"><img src="https://github.com/mohamedalim26.png?size=96" width="48" height="48" alt="mohamedalim26"></a>
+<a href="https://github.com/sfpcshch" title="sfpcshch"><img src="https://github.com/sfpcshch.png?size=96" width="48" height="48" alt="sfpcshch"></a>
+<a href="https://github.com/Ulrich2022" title="Ulrich2022"><img src="https://github.com/Ulrich2022.png?size=96" width="48" height="48" alt="Ulrich2022"></a>
+<a href="https://github.com/guitar3tar" title="guitar3tar"><img src="https://github.com/guitar3tar.png?size=96" width="48" height="48" alt="guitar3tar"></a>
+<a href="https://github.com/hashiravai123-lgtm" title="hashiravai123-lgtm"><img src="https://github.com/hashiravai123-lgtm.png?size=96" width="48" height="48" alt="hashiravai123-lgtm"></a>
+<a href="https://github.com/fcaballeros1303-netizen" title="fcaballeros1303-netizen"><img src="https://github.com/fcaballeros1303-netizen.png?size=96" width="48" height="48" alt="fcaballeros1303-netizen"></a>
+<a href="https://github.com/MuntasirTonmoy" title="MuntasirTonmoy"><img src="https://github.com/MuntasirTonmoy.png?size=96" width="48" height="48" alt="MuntasirTonmoy"></a>
+<a href="https://github.com/pambat" title="pambat"><img src="https://github.com/pambat.png?size=96" width="48" height="48" alt="pambat"></a>
+<a href="https://github.com/Rayet63" title="Rayet63"><img src="https://github.com/Rayet63.png?size=96" width="48" height="48" alt="Rayet63"></a>
+<a href="https://github.com/SneednFeed88" title="SneednFeed88"><img src="https://github.com/SneednFeed88.png?size=96" width="48" height="48" alt="SneednFeed88"></a>
+<a href="https://github.com/aaalthaff" title="aaalthaff"><img src="https://github.com/aaalthaff.png?size=96" width="48" height="48" alt="aaalthaff"></a>
+<a href="https://github.com/Mahantor" title="Mahantor"><img src="https://github.com/Mahantor.png?size=96" width="48" height="48" alt="Mahantor"></a>
+<a href="https://github.com/delgadoleonard555-jpg" title="delgadoleonard555-jpg"><img src="https://github.com/delgadoleonard555-jpg.png?size=96" width="48" height="48" alt="delgadoleonard555-jpg"></a>
+<a href="https://github.com/Rex000" title="Rex000"><img src="https://github.com/Rex000.png?size=96" width="48" height="48" alt="Rex000"></a>
+<a href="https://github.com/gapwbxytvi283-byte" title="gapwbxytvi283-byte"><img src="https://github.com/gapwbxytvi283-byte.png?size=96" width="48" height="48" alt="gapwbxytvi283-byte"></a>
+<a href="https://github.com/VedantS5" title="VedantS5"><img src="https://github.com/VedantS5.png?size=96" width="48" height="48" alt="VedantS5"></a>
+<a href="https://github.com/lqchibl-creator" title="lqchibl-creator"><img src="https://github.com/lqchibl-creator.png?size=96" width="48" height="48" alt="lqchibl-creator"></a>
+<a href="https://github.com/cloudgame1408-coder" title="cloudgame1408-coder"><img src="https://github.com/cloudgame1408-coder.png?size=96" width="48" height="48" alt="cloudgame1408-coder"></a>
+<a href="https://github.com/socsieuquaypro-sketch" title="socsieuquaypro-sketch"><img src="https://github.com/socsieuquaypro-sketch.png?size=96" width="48" height="48" alt="socsieuquaypro-sketch"></a>
+<a href="https://github.com/itsstryxx" title="itsstryxx"><img src="https://github.com/itsstryxx.png?size=96" width="48" height="48" alt="itsstryxx"></a>
+<a href="https://github.com/mahidulmahin80-cloud" title="mahidulmahin80-cloud"><img src="https://github.com/mahidulmahin80-cloud.png?size=96" width="48" height="48" alt="mahidulmahin80-cloud"></a>
+<a href="https://github.com/Dibbya-debug" title="Dibbya-debug"><img src="https://github.com/Dibbya-debug.png?size=96" width="48" height="48" alt="Dibbya-debug"></a>
+<a href="https://github.com/kylinzang" title="kylinzang"><img src="https://github.com/kylinzang.png?size=96" width="48" height="48" alt="kylinzang"></a>
+<a href="https://github.com/vdevloper" title="vdevloper"><img src="https://github.com/vdevloper.png?size=96" width="48" height="48" alt="vdevloper"></a>
+<a href="https://github.com/beldimohamedlamine-ux" title="beldimohamedlamine-ux"><img src="https://github.com/beldimohamedlamine-ux.png?size=96" width="48" height="48" alt="beldimohamedlamine-ux"></a>
+<a href="https://github.com/murat0252" title="murat0252"><img src="https://github.com/murat0252.png?size=96" width="48" height="48" alt="murat0252"></a>
+<a href="https://github.com/kayronnBR" title="kayronnBR"><img src="https://github.com/kayronnBR.png?size=96" width="48" height="48" alt="kayronnBR"></a>
 </p>
 
 ## License
