@@ -208,13 +208,12 @@ public final class MeeTunePlayerSkin {
             }
         });
 
-        if (Build.VERSION.SDK_INT >= 31) {
-            mBg.setRenderEffect(RenderEffect.createBlurEffect(90f, 90f, Shader.TileMode.CLAMP));
-            mBg.setScaleX(1.3f);
-            mBg.setScaleY(1.3f);
-        } else {
-            mBg.setAlpha(0.35f);
-        }
+        mBg.setScaleX(1.3f);
+        mBg.setScaleY(1.3f);
+        // A wide cover centres in the space above the controls: fitted again once they are laid out
+        // (or move), not only when the cover comes in, when they may not be placed yet.
+        mRoot.findViewById(R.id.meetune_player_controls).addOnLayoutChangeListener(
+                (v, l, t, r, b, ol, ot, or, ob) -> { if (t != ot) v.post(this::fitArt); });
         applyAmbient();
         mArt.setOutlineProvider(new android.view.ViewOutlineProvider() { // round as it lands on the pill
             @Override
@@ -941,9 +940,22 @@ public final class MeeTunePlayerSkin {
      * new one's. It had a load of its own, which could end empty while the cover showed: a black player.
      */
     private void ambient(android.graphics.drawable.Drawable art) {
-        android.graphics.drawable.Drawable.ConstantState state = art.getConstantState();
-        if (state == null) return;
-        android.graphics.drawable.Drawable bg = state.newDrawable(mBg.getResources()); // own bounds, same bitmap
+        // Blurred once, small, here: a live blur on the view cost the GPU 10 to 20 ms a frame while the
+        // player flew to the pill, and the scaled-up tiny bitmap looks the same.
+        int iw = art.getIntrinsicWidth(), ih = art.getIntrinsicHeight();
+        if (iw <= 0 || ih <= 0) return;
+        // Always the backdrop's own shape, the cover cropped into it: a wide cover melting from a square
+        // one was stretched to the square (a melt draws both at the larger size).
+        int w = 72, h = mBg.getWidth() > 0 ? Math.max(1, Math.round(72f * mBg.getHeight() / mBg.getWidth())) : 156;
+        android.graphics.Bitmap small = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888);
+        android.graphics.Rect bounds = art.copyBounds();
+        float fill = Math.max((float) w / iw, (float) h / ih);
+        int dw = Math.round(iw * fill), dh = Math.round(ih * fill);
+        art.setBounds((w - dw) / 2, (h - dh) / 2, (w - dw) / 2 + dw, (h - dh) / 2 + dh);
+        art.draw(new android.graphics.Canvas(small));
+        art.setBounds(bounds);
+        com.newtube.mobile.ui.common.SheetGlass.blur(small, 5);
+        android.graphics.drawable.Drawable bg = new android.graphics.drawable.BitmapDrawable(mBg.getResources(), small);
         android.graphics.drawable.Drawable old = mBg.getDrawable();
         if (old instanceof android.graphics.drawable.TransitionDrawable) { // melt from the last, not a chain of melts
             old = ((android.graphics.drawable.TransitionDrawable) old).getDrawable(1);
@@ -1961,7 +1973,7 @@ public final class MeeTunePlayerSkin {
     /** A view's resting alpha (the blurred art is fainter where Android can't blur it). */
     private float base(View view) {
         if (view.getId() == R.id.meetune_player_scrim) return mDim;
-        return view == mBg && Build.VERSION.SDK_INT < 31 ? 0.35f : 1f;
+        return 1f;
     }
 
     /** Everything back where it rests. */

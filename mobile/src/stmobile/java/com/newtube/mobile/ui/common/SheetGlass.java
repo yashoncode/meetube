@@ -389,7 +389,7 @@ public final class SheetGlass {
         return sWorker;
     }
 
-    static void blur(Bitmap bitmap, int radius) {
+    public static void blur(Bitmap bitmap, int radius) {
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
         int[] a = new int[w * h];
