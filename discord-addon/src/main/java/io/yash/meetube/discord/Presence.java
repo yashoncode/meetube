@@ -31,7 +31,7 @@ import okhttp3.WebSocketListener;
  * (contract in docs/discord-presence/README.md); OkHttp and org.json are the app's own.
  *
  * Discord has no API that lets another app set a user's presence, so this logs in to the gateway
- * with the user's token and identifies as Discord Android, as BitChord and Kizzy do.
+ * with the user's token and identifies as Discord Android. Presence only: it never reads or sends messages.
  *
  * Every field is touched only on {@link #exec}, so there are no locks. Behaviour that matters on
  * a phone in a pocket: a heartbeat that goes unacknowledged drops the socket (a dead TCP link is
