@@ -80,7 +80,7 @@ import java.util.List;
  */
 public class MobileSearchActivity extends MobileActivity
         implements SearchView, MiniPlayerBridge.MiniHost {
-    private static final int SCROLL_END_THRESHOLD_ITEMS = 6;
+    private static final int SCROLL_END_THRESHOLD_ITEMS = 20; // asked early, as Home (16 + a screen): the next page is in before you get there
     private static final int REQUEST_VOICE = 5001;
     /** Pause after the last keystroke before hitting the suggest endpoint. */
     private static final long SUGGEST_DEBOUNCE_MS = 200;
@@ -161,6 +161,7 @@ public class MobileSearchActivity extends MobileActivity
     private long mLastSubmitAtMs;
     private String mLastSubmitText;
     private int mSubmitSequence;
+    private int mBuzzedSequence;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -502,6 +503,7 @@ public class MobileSearchActivity extends MobileActivity
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 // dy == 0: a layout pass changed the visible range, not the user.
                 maybeTriggerPagination(dy != 0);
+                showMoreSpinner();
             }
         });
     }
@@ -774,6 +776,12 @@ public class MobileSearchActivity extends MobileActivity
         }
         mPresenter.onVideoItemLongClicked(video);
         return true;
+    }
+
+    /** The next page still loading once the results are scrolled to their end: a spinner there, as nothing else moves. */
+    private void showMoreSpinner() {
+        boolean atEnd = mLoading && !mVideos.isEmpty() && !mGrid.canScrollVertically(1);
+        findViewById(R.id.mobile_search_more_progress).setVisibility(atEnd ? View.VISIBLE : View.GONE);
     }
 
     private void maybeTriggerPagination(boolean userScroll) {
@@ -1115,6 +1123,10 @@ public class MobileSearchActivity extends MobileActivity
             if (!mVideos.isEmpty()) {
                 mSearchMessage.setVisibility(View.GONE);
                 setSkeletonVisible(false);
+                if (mBuzzedSequence != mSubmitSequence) {
+                    mBuzzedSequence = mSubmitSequence; // once per search, not per page scrolled in
+                    com.newtube.mobile.ui.common.Haptics.loaded(mSkeleton);
+                }
             }
         });
     }
@@ -1251,6 +1263,7 @@ public class MobileSearchActivity extends MobileActivity
                 return; // NEWTUBE(shorts): another page is on its way - still loading
             }
             mLoading = show;
+            showMoreSpinner();
             if (show || mSkeleton.getVisibility() != View.VISIBLE) {
                 setSkeletonVisible(show && mVideos.isEmpty());
             } else {

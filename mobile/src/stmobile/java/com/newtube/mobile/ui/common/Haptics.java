@@ -111,6 +111,24 @@ public final class Haptics {
         }
     }
 
+    /** Search results are in (MeeTube and MeeTune): two soft taps. No vibrator: CONFIRM. */
+    public static void loaded(@Nullable View view) {
+        if (view == null || !isOn(view.getContext())) {
+            return;
+        }
+        Vibrator vibrator = (Vibrator) view.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+        try {
+            if (vibrator != null && vibrator.hasVibrator()) {
+                vibrator.vibrate(VibrationEffect.createWaveform(
+                        new long[] {0, 40, 30, 40}, new int[] {0, 255, 0, 255}, -1));
+                return;
+            }
+        } catch (RuntimeException ignored) {
+        }
+        view.performHapticFeedback(Build.VERSION.SDK_INT >= 30
+                ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.CONTEXT_CLICK);
+    }
+
     /**
      * MEETUBE(nav haptics): the bottom bar's buzz, YTXTube's feel: one short one-shot at a set
      * strength (tap 22 ms / 255, drag start 18 / 170, a tab crossed 16 / 170, let go 20 / 190),

@@ -66,6 +66,14 @@
             android:layout_marginTop="@dimen/mobile_search_results_top"
             android:visibility="gone" />
 
+        <!-- MEETUBE(search paging): the next page loading under the results already shown. -->
+        <ProgressBar
+            android:id="@+id/mobile_search_more_progress"
+            style="@style/Widget.MeeTube.GlassSpinner"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone" />
+
         <!-- A search that ends with zero rows used to just... stop (spinner gone, screen
              blank). Shown by showProgressBar(false) when the grid is empty, worded by
              SearchLoadState: no connection / couldn't load (both with Try again) / no results. -->

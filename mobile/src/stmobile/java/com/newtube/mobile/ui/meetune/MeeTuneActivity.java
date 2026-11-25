@@ -869,6 +869,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 message(getString(R.string.meetune_error), getString(R.string.meetune_retry), () -> runSearch(query));
                 return;
             }
+            if (!rows.isEmpty()) com.newtube.mobile.ui.common.Haptics.loaded(mList);
             rows.add(0, MeeTuneAdapter.viewRow(filterRow()));
             page.rows = rows;
             page.scroll = null;
