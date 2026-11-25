@@ -65,7 +65,7 @@ Every MeeTube release, newest first.<br>
 - **Pause watch history for real:** Don't save adds nothing now, signed in or out. A new Don't save, keep showing option pauses history and keeps the old list visible (#340).
 - **Mute every channel in one tap:** the new Channel notifications switch on the Notifications page turns every channel off at once and keeps each channel's bell for later. The channel picker has a Select all row (#333).
 - **Brightness and volume swipes, your call:** each has its own switch in Settings > Player, both on by default (#333).
-- **Endless search, no waiting:** the next page loads early as you scroll, with a spinner at the bottom if you get there first, and a double buzz tells you results are in.
+- **Join the MeeTube Community on Telegram:** get help, share ideas and hear about new releases first at [t.me/meetubecommunity](https://t.me/meetubecommunity).
 - **What's new, in your language:** release notes come translated into every language the app has (#324).
 
 ### 🎵 MeeTune
@@ -89,6 +89,7 @@ Every MeeTube release, newest first.<br>
 
 ### Changed
 
+- Search loads the next page early as you scroll, like Home, with a spinner at the bottom if you get there first and a double buzz when results are in.
 - Landscape player controls sit evenly on both sides (#339).
 - Shorts button labels can take two lines, so long words like the Russian Dislike show in full (#342).
 - The Up next pill on the watch page is more see-through, so the ambient glow shows behind it.
@@ -106,7 +107,7 @@ Every MeeTube release, newest first.<br>
 
 ### Thanks
 
-Thanks to everyone who reports issues, and in this release to @lqchibl-creator, @AbhishekGanvir, @Ishaanj2007, @kylinzang, @SneednFeed88, @vdevloper, @murat0252, @kayronnBR, @zine3064-del and @TimurNTa for reporting, and @socsieuquaypro-sketch for the Vietnamese translation and reports.
+A big thank you to the community for every report, it's what shapes each update. In this release thanks to @lqchibl-creator, @AbhishekGanvir, @Ishaanj2007, @kylinzang, @SneednFeed88, @vdevloper, @murat0252, @kayronnBR, @zine3064-del and @TimurNTa for reporting, and @socsieuquaypro-sketch for the Vietnamese translation and reports.
 
 ## 3.6.0 Sakura
 
