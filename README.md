@@ -155,7 +155,7 @@ Downloads, the changelog and the code all live in [meetube-tv](https://github.co
 
 Join the MeeTube community on Telegram to get help, report bugs, suggest features and hear about new releases first.
 
-<p align="center"><a href="https://t.me/+fLlQpFKSfqdhMGZl"><img src="https://img.shields.io/badge/MeeTube%20Community-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Join the MeeTube community on Telegram"></a></p>
+<p align="center"><a href="https://t.me/meetubecommunity"><img src="https://img.shields.io/badge/MeeTube%20Community-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Join the MeeTube community on Telegram"></a></p>
 
 ## Build
 
