@@ -801,6 +801,11 @@ public class MobilePlaybackActivity extends MobileActivity
                 restored.pendingPosMs = savedMs >= 5_000 ? savedMs : 0;
                 NetPath.log("playback-activity restore=process-death video=" + restored.videoId
                         + " posMs=" + restored.pendingPosMs);
+                // MEETUNE(restore-song): MeeTune's song marks live in memory and died with the process;
+                // unmarked, the song came back as a MeeTube video in MeeTube's mini player.
+                if (savedInstanceState.getBoolean(STATE_MUSIC)) {
+                    com.newtube.mobile.ui.meetune.MeeTune.keep(restored);
+                }
                 mPresenter.onNewVideo(restored); // loads now, or pends until the engine initializes
                 return;
             }
@@ -833,6 +838,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private static final String STATE_VIDEO = "meetube.playback.video";
     private static final String STATE_POSITION_MS = "meetube.playback.positionMs";
+    private static final String STATE_MUSIC = "meetube.playback.music";
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
@@ -842,6 +848,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (video != null && video.hasVideo() && !video.isLocal()) {
             outState.putString(STATE_VIDEO, video.toString());
             outState.putLong(STATE_POSITION_MS, getPositionMs());
+            outState.putBoolean(STATE_MUSIC, com.newtube.mobile.ui.meetune.MeeTune.isMusic(video));
         }
     }
 
