@@ -1959,7 +1959,9 @@ public final class MeeTunePlayerSkin {
         }
         for (int i = 0; i < ((ViewGroup) mTitleRow).getChildCount(); i++) {
             View child = ((ViewGroup) mTitleRow).getChildAt(i);
-            if (child != text) child.setAlpha(gone);
+            if (child == text) continue;
+            child.setAlpha(gone); // like and the menu slide off to the right as they fade
+            child.setTranslationX(72 * density * (1f - gone));
         }
         mRoot.findViewById(R.id.meetune_player_handle).setAlpha(gone);
         float ground = Math.max(0f, 1f - 1.5f * f);
