@@ -6599,9 +6599,13 @@ public class MobilePlaybackActivity extends MobileActivity
                 position = 0;
             }
 
+            // Live: a full bar at the edge and LIVE alone, no clock (its end moves with the clock, so the
+            // times kept counting and the dot kept sliding). Rewound into the DVR window it shows where.
+            boolean live = getVideo() != null && getVideo().isLive;
+            findViewById(R.id.mobile_player_time).setVisibility(live ? View.GONE : View.VISIBLE);
             mTimeBar.setDuration(duration);
-            mTimeBar.setPosition(position);
-            mTimeBar.setBufferedPosition(buffered);
+            mTimeBar.setPosition(live && duration - position <= LIVE_EDGE_THRESHOLD_MS ? duration : position);
+            mTimeBar.setBufferedPosition(live ? duration : buffered);
             if (mShorts != null) {
                 mShorts.setProgress(position, duration);
             }
@@ -6713,6 +6717,17 @@ public class MobilePlaybackActivity extends MobileActivity
                     && (mCastSessionManager == null || !mCastSessionManager.isConnected())
                     && getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
                 showControlsInternal(true);
+            }
+        }
+
+        @Override
+        public void onTimelineChanged(androidx.media3.common.Timeline timeline, int reason) {
+            // A song opened from MeeTune carries no live flag: the stream says so, so the video
+            // view shows LIVE and a still bar like any live video, not a clock that keeps counting.
+            Video video = getVideo();
+            if (video != null && !video.isLive && mPlayer != null && mPlayer.isCurrentMediaItemLive()) {
+                video.isLive = true;
+                updateSeekBarLine();
             }
         }
 
