@@ -264,7 +264,6 @@ public final class MeeTunePlayerSkin {
         });
 
         handle.setOnClickListener(v -> mControls.minimize());
-        mArt.setOnClickListener(v -> mControls.minimize());
         bounce(mPlay, () -> {
             mControls.playPause();
             mPlay.postDelayed(this::update, 100);
