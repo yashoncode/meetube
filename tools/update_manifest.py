@@ -9,8 +9,10 @@ versionCode and changelog lines ("changelog", "changelog_<language>"). The app o
 versionCode and shows the changelog of every listed version newer than the installed one. Every
 top-level key but "package" is read as a version, so new fields must go inside "package".
 
-The changelog lines are the bold lead of each bullet of CHANGELOG.md / CHANGELOG.es.md, from the
-newest few versions. Usage (release.yml runs it on the built APKs):
+The changelog lines are the bold lead of each bullet of CHANGELOG.md, from the newest few versions,
+in every language the app ships (issue #324). A CHANGELOG.<language>.md (CHANGELOG.es.md) gives a
+language its own lines; the others get CHANGELOG.md through Google Translate, and a language the
+translator fails falls back to English in the app. Usage (release.yml runs it on the built APKs):
 
     tools/update_manifest.py --tag v1.10.3 --dist dist --out dist/meetube.json
 """
@@ -19,6 +21,8 @@ import json
 import pathlib
 import re
 import sys
+import urllib.parse
+import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 REPO = "yashoncode/meetube"
@@ -29,9 +33,63 @@ ABIS = ["arm64-v8a", "armeabi-v7a", "x86"]
 SKIP_SECTIONS = re.compile(r"still limited|behind the scenes|todav[ií]a limitad|sigue limitad|entre bastidores",
                            re.IGNORECASE)
 MAX_LINES_PER_VERSION = 6
+BRAND = re.compile(r"\bMee(?:Tune|Tube)\w*")  # MeeTune, MeeTuneMix, MeeTube: never translated
 # The last line of the newest version's notes in the update sheet and "What's new".
 SUPPORT_LINE = ("Like my work? Support MeeTube for longer and faster updates: sudo brew coffee in About. "
                 "Never forced, always appreciated ❤️")
+
+
+def app_languages():
+    """{manifest key: Google Translate code} for each values-<language> folder of the app. The key is
+    what the updater looks up (Locale.getLanguage(), and "zh-TW" for Traditional Chinese)."""
+    languages = {}
+    for folder in (ROOT / "mobile" / "src" / "stmobile" / "res").glob("values-*"):
+        m = re.fullmatch(r"values-([a-z]{2})(?:-r([A-Z]{2}))?", folder.name)
+        if not m:
+            continue  # values-night, values-sw600dp, values-v27
+        language, region = m.groups()
+        if language == "zh":
+            key = "zh-TW" if region in ("TW", "HK") else "zh"
+            languages[key] = "zh-TW" if key == "zh-TW" else "zh-CN"
+        else:
+            languages[language] = language
+    return languages
+
+
+def translate(lines, target):
+    """lines in target, one for one, or None when Google Translate fails or merges lines."""
+    # The names go through as __0__, __1__: translated, MeeTune came back "MeetTune" in Spanish and
+    # "PoznajTuneMix" in Polish.
+    names = []
+
+    def hide(match):
+        names.append(match.group(0))
+        return f"__{len(names) - 1}__"
+
+    text = "\n".join(BRAND.sub(hide, line) for line in lines)
+    request = urllib.request.Request(
+        "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&dt=t&tl=" + target,
+        data=urllib.parse.urlencode({"q": text}).encode(),
+        headers={"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                 # a script's own agent is sent to a captcha page, a browser's is not
+                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                               "Chrome/130.0 Safari/537.36"})
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            reply = json.load(response)
+        out = "".join(part[0] for part in reply[0] if part[0]).split("\n")
+    except Exception as e:  # the release must not fail on a translation
+        print(f"warning: no {target} changelog: {e!r}", file=sys.stderr)
+        return None
+    out = [line.strip() for line in out]
+    if len(out) != len(lines) or not all(out):
+        print(f"warning: no {target} changelog: {len(out)} lines for {len(lines)}", file=sys.stderr)
+        return None
+    joined = "\n".join(out)
+    if any(f"__{i}__" not in joined for i in range(len(names))):
+        print(f"warning: no {target} changelog: a name was lost", file=sys.stderr)
+        return None
+    return re.sub(r"__(\d+)__", lambda m: names[int(m.group(1))], joined).split("\n")
 
 
 def version_code(name):
@@ -95,7 +153,8 @@ def main():
 
     name = args.tag[1:] if args.tag.startswith("v") else args.tag
     english = parse_changelog(ROOT / "CHANGELOG.md")
-    spanish = parse_changelog(ROOT / "CHANGELOG.es.md")
+    written = {key: parse_changelog(ROOT / f"CHANGELOG.{key}.md") for key in app_languages()
+               if (ROOT / f"CHANGELOG.{key}.md").is_file()}
     newest = next(iter(english), None)
     if newest != name:
         sys.exit(f"CHANGELOG.md starts at {newest}, not {name}")
@@ -124,8 +183,10 @@ def main():
     for version in list(english)[:args.versions]:
         entry = {"versionCode": version_code(version),
                  "changelog": english[version][:MAX_LINES_PER_VERSION]}
-        if spanish.get(version):
-            entry["changelog_es"] = spanish[version][:MAX_LINES_PER_VERSION]
+        for key, target in app_languages().items():
+            lines = (written.get(key) or {}).get(version) or translate(entry["changelog"], target)
+            if lines:
+                entry["changelog_" + key] = lines[:MAX_LINES_PER_VERSION]
         manifest[version] = entry
     manifest[name]["changelog"].append(SUPPORT_LINE)
 
