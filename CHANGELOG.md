@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.6.1** Fury](#361-fury) | 2026-11-25 | Control |
 | [**3.6.0** Sakura](#360-sakura) | 2026-11-24 | Android Auto |
 | [**3.5.8** Amber](#358-amber) | 2026-11-21 | Karaoke |
 | [**3.5.5** Hyper](#355-hyper) | 2026-11-17 | Automix |
@@ -51,6 +52,62 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.6.1 Fury
+
+> **Control**<br>
+> 📅 2026-11-25 · closes #311, #316, #321, #323, #324, #325, #326, #327, #328, #329, #332, #333, #335, #336, #338, #339, #340 and #342
+
+### ✨ Highlights
+
+- **Force quality:** a new switch on Video quality, on by default. The player stays on the quality you picked, or the highest the video has under it, instead of dropping with the connection.
+- **Watch history Don't save really stops it:** nothing is added, signed in or out. A new Don't save, keep showing option pauses history and keeps the old list visible (#340).
+- **Channel notifications switch** on the Notifications page turns every channel off at once and keeps each channel's bell for later. The channel picker has a Select all row (#333).
+- **Brightness and volume swipes** each have their own switch in Settings > Player, both on by default (#333).
+- **Search loads like Home:** the next page loads early as you scroll, with a spinner at the bottom if you get there first, and a double buzz tells you results are in.
+- **Update notes in your language:** release notes come translated into every language the app has (#324).
+
+### 🎵 MeeTune
+
+- Smooth song changes: songs fade out and back in when you skip, pause or play, on by default. A small hint the first time shows where to turn it off.
+- New switch to turn off loudness normalization for music. Wide no longer distorts loud peaks, and Automix no longer clicks or jumps in volume.
+- Play all on Quick picks plays the whole shelf, then keeps going with similar songs (#329).
+- Player buttons no longer wash out on bright covers (#323).
+- Works again in regions without YouTube Music, like China (#335), and on phones whose language has no country set, like plain Arabic or French in Algeria.
+- New Cover glow switch, and smoother scrolling with the cover glow blurred once instead of every frame.
+- Covers no longer stay blank after the app sits idle.
+- Home and Search top bars get a dark progressive blur, and the Home chips are frosted glass again.
+- A shelf with one card shows it as one wide card across the row.
+- The queue equalizer glows round in the cover's color, with no bars when nothing is playing.
+- Pull to refresh on a Home chip reloads that chip instead of jumping back to All.
+
+### New
+
+- Optional notifications button in the top bar, off by default. Top bar buttons live on the Tabs page, and a long press on them opens it (#328).
+- Not interested in the menu of related videos on the watch page (#316).
+- Volume boost in the player menu: Player volume in MeeTube's gear and Volume in MeeTune's More.
+- Settings in Turkish (#332), and Vietnamese is complete (#321, #325).
+
+### Changed
+
+- Landscape player controls sit evenly on both sides (#339).
+- Shorts button labels can take two lines, so long words like the Russian Dislike show in full (#342).
+- The Up next pill on the watch page is more see-through, so the ambient glow shows behind it.
+- The About screen drops the old donate, feedback and links sections, Telegram links go to the MeeTube Community, and the UPI QR is new.
+- MeeTube is now GPLv3.
+
+### Fixed
+
+- Search scrolls smoothly again at 120 Hz.
+- The transcript opens on the current line without stuttering (#311).
+- Switching accounts refreshes Home chips and the You history right away (#336).
+- The playlist card on the watch page loads the rest of the playlist as you scroll (#338).
+- Remove from history works again, and says so when YouTube refuses it (#327).
+- Shorts on Subscriptions show up again (#326).
+
+### Thanks
+
+Thanks to everyone who reports issues, and in this release to @lqchibl-creator, @AbhishekGanvir, @Ishaanj2007, @kylinzang, @SneednFeed88, @vdevloper, @murat0252, @kayronnBR, @zine3064-del and @TimurNTa for reporting, and @socsieuquaypro-sketch for the Vietnamese translation and reports.
 
 ## 3.6.0 Sakura
 
