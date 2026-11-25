@@ -2478,20 +2478,29 @@ public final class MeeTunePlayerSkin {
                 super.onDraw(canvas);
                 return;
             }
-            // The arrows glide a little the way the songs go and fade, as the next pair fades in behind them.
-            float t = EASE.getInterpolation(mDash);
-            float shift = getWidth() * 0.16f;
-            drawAt(canvas, mDashDir * shift * t, 1f - t);
-            drawAt(canvas, -mDashDir * shift * (1f - t), t);
+            // Each arrow on its own: the leading one nudges the way the songs go and springs back,
+            // the other follows a beat later. The arrows overlap by their rounded stroke, so each is
+            // its own drawable, not a clip.
+            float shift = getWidth() * 0.09f;
+            boolean next = mDashDir > 0;
+            for (int i = 0; i < 2; i++) {
+                boolean leading = i == 0;
+                float t = Math.max(0f, Math.min(1f, (mDash - (leading ? 0f : STAGGER)) / (1f - STAGGER)));
+                boolean right = leading == next; // Next leads with the right arrow, Previous with the left
+                android.graphics.drawable.Drawable arrow = getContext().getDrawable(next
+                        ? (right ? R.drawable.ic_meetune_forward_b : R.drawable.ic_meetune_forward_a)
+                        : (right ? R.drawable.ic_meetune_rewind_b : R.drawable.ic_meetune_rewind_a));
+                drawAt(canvas, arrow, mDashDir * shift * (float) Math.sin(Math.PI * t), 1f);
+            }
         }
 
-        private static final android.view.animation.Interpolator EASE =
-                new android.view.animation.PathInterpolator(0.2f, 0f, 0f, 1f);
+        private static final float STAGGER = 0.25f;
+
         private float mDash;
         private int mDashDir = 1;
         @Nullable private android.animation.ValueAnimator mDashAnim;
 
-        /** Next ({@code dir} 1) or Previous (-1): the arrows glide that way, a new pair fades in. */
+        /** Next ({@code dir} 1) or Previous (-1): each arrow nudges that way and back, one after the other. */
         void dash(int dir) {
             mDashDir = dir;
             if (mDashAnim != null) mDashAnim.cancel();
@@ -2504,11 +2513,15 @@ public final class MeeTunePlayerSkin {
             mDashAnim.start();
         }
 
-        private void drawAt(Canvas canvas, float dx, float alpha) {
-            if (alpha <= 0.01f) return;
-            int save = canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), Math.round(255 * Math.min(1f, alpha)));
-            canvas.translate(dx, 0f);
-            super.onDraw(canvas);
+        /** One arrow placed like the icon, moved by {@code dx} and faded to {@code alpha}. */
+        private void drawAt(Canvas canvas, android.graphics.drawable.Drawable arrow, float dx, float alpha) {
+            if (alpha <= 0.01f || arrow == null) return;
+            int save = canvas.save();
+            canvas.translate(getPaddingLeft() + dx, getPaddingTop());
+            canvas.concat(getImageMatrix());
+            arrow.setBounds(0, 0, arrow.getIntrinsicWidth(), arrow.getIntrinsicHeight());
+            arrow.setAlpha(Math.round(255 * Math.min(1f, alpha)));
+            arrow.draw(canvas);
             canvas.restoreToCount(save);
         }
     }
