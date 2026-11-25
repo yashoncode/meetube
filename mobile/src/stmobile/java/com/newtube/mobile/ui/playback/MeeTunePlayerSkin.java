@@ -955,6 +955,28 @@ public final class MeeTunePlayerSkin {
         shift.start();
     }
 
+    /**
+     * A bright cover (white, pastel) blurred behind the controls washed out the white icons and their
+     * light glass (#323): the scrim darkens it until the backdrop is no brighter than about 45%.
+     */
+    private void dimForCover(android.graphics.drawable.Drawable art) {
+        android.graphics.Bitmap small = android.graphics.Bitmap.createBitmap(16, 16, android.graphics.Bitmap.Config.ARGB_8888);
+        android.graphics.Rect bounds = art.copyBounds();
+        art.setBounds(0, 0, 16, 16);
+        art.draw(new android.graphics.Canvas(small));
+        art.setBounds(bounds);
+        float sum = 0f;
+        for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) {
+            int p = small.getPixel(x, y);
+            sum += (0.2126f * android.graphics.Color.red(p) + 0.7152f * android.graphics.Color.green(p)
+                    + 0.0722f * android.graphics.Color.blue(p)) / 255f;
+        }
+        small.recycle();
+        float lum = sum / 256f;
+        float dim = lum > 0.6f ? Math.min(0.6f, 1f - 0.45f / lum) : 0.25f;
+        mRoot.findViewById(R.id.meetune_player_scrim).animate().alpha(Math.max(0.25f, dim)).setDuration(700).start();
+    }
+
     /** The new cover is here: in from the side the songs move from, unless it is the first one. */
     private void showArt(@Nullable android.graphics.drawable.Drawable art) {
         if (art == null) return;
@@ -964,6 +986,7 @@ public final class MeeTunePlayerSkin {
         mArt.setImageDrawable(art);
         fitArt();
         int accent = accent(art);
+        dimForCover(art);
         ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setColor(accent);
         tintInfoPill(accent);
         Float at = SWUNG.get(mArt);

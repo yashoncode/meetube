@@ -26,10 +26,13 @@
         android:contentDescription="@null"
         android:scaleType="centerCrop" />
 
+    <!-- Darker on a bright cover (MeeTunePlayerSkin.dimForCover), so the white buttons stay clear (#323). -->
     <View
+        android:id="@+id/meetune_player_scrim"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#40000000" />
+        android:alpha="0.25"
+        android:background="#FF000000" />
 
     <!-- The art's lower part fades out to nothing, so it melts into its own blur under the controls. -->
     <view
