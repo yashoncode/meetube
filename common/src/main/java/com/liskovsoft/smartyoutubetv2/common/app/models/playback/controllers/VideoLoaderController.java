@@ -302,6 +302,10 @@ public class VideoLoaderController extends BasePlayerController {
 
         // Stop the playback if the user is browsing options or reading comments
         int playbackMode = getPlaybackMode();
+        // MEETUNE(issue: no next song): a diagnostics log names the end's decision.
+        Log.d(TAG, "play end mode=%s stored=%s dialog=%s overlay=%s queueNext=%s next=%s actions=%s", playbackMode,
+                getPlayerData().getPlaybackMode(), getAppDialogPresenter().isDialogShown(), getAppDialogPresenter().isOverlay(),
+                mPlaylist.getNext() != null, mSuggestionsController.getNext() != null, isActionsRunning());
         if (getAppDialogPresenter().isDialogShown() && !getAppDialogPresenter().isOverlay() && playbackMode != PlayerConstants.PLAYBACK_MODE_ONE) {
             getAppDialogPresenter().setOnFinish(mOnApplyPlaybackMode);
         } else {

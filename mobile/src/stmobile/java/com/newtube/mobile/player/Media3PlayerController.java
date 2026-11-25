@@ -110,6 +110,8 @@ public class Media3PlayerController implements Player.Listener {
     private static final long FOCUS_GRACE_MS = 5_000;
     private long mLastPrepareMs;
     private boolean mFocusGraceUsed;
+    /** Who asked for the last pause, taken at the call: inside a player callback the listener's own stack names nobody. */
+    @Nullable private String mPauseBy;
     private boolean mSabrSourceActive;
     /** Whether the active SABR source is the automatic fallback rather than the opt-in preference. */
     private boolean mSabrWasFallback;
@@ -995,6 +997,7 @@ public class Media3PlayerController implements Player.Listener {
         if (mPlayer == null) {
             return;
         }
+        if (!play) mPauseBy = pauseCaller();
         // MEETUNE(smooth switch): with smooth song changes on, a pause eases out and a play eases in.
         boolean smooth = !mExternalFade && !mFadingOut && MeeTune.isMusic(getVideo()) && MeeTune.smoothSwitch(mContext);
         if (play && mFadingPause) {
@@ -1721,8 +1724,11 @@ public class Media3PlayerController implements Player.Listener {
         if (!playWhenReady) {
             // MEETUBE(issue #278): every pause names its reason and, for a call from the app, its caller,
             // so a diagnostics log tells a tap from the focus, a headset or a setting.
-            NetPath.log("pause reason=" + reason + " by=" + pauseCaller());
+            String by = pauseCaller();
+            if ("-".equals(by) && mPauseBy != null) by = mPauseBy;
+            NetPath.log("pause reason=" + reason + " by=" + by);
         }
+        mPauseBy = null;
         // NEWTUBE(focus-grace): see FOCUS_GRACE_MS. One retry per prepare.
         if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS
                 && !mFocusGraceUsed
