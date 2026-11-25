@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Phone Settings (issue #2): titles and one-line summaries of the settings tree
+     (com.newtube.mobile.ui.settings). Spanish in values-es. -->
 <resources>
     <!-- Shared -->
     <string name="mobile_settings_restart_needed">Khởi động lại MeeTube để áp dụng thay đổi này</string>
@@ -10,9 +12,11 @@
     <string name="mobile_settings_cleared">Đã xóa</string>
     <string name="mobile_settings_unavailable">Không khả dụng trên điện thoại này</string>
     <plurals name="mobile_settings_minutes">
+        <item quantity="one">%d phút</item>
         <item quantity="other">%d phút</item>
     </plurals>
     <plurals name="mobile_settings_hours">
+        <item quantity="one">%d giờ</item>
         <item quantity="other">%d giờ</item>
     </plurals>
     <string name="mobile_settings_hours_minutes">%1$d giờ %2$d phút</string>
@@ -38,7 +42,7 @@
     <string name="mobile_settings_privacy_summary">Lịch sử xem và tìm kiếm</string>
     <string name="mobile_settings_downloads_summary">Thư mục, chất lượng, tự động tải</string>
     <string name="mobile_settings_download_quality">Chất lượng tải xuống</string>
-    <string name="mobile_settings_download_ask">Luôn hỏi mỗi lần</string>
+    <string name="mobile_settings_download_ask">Hỏi mỗi lần</string>
     <string name="mobile_settings_download_best">Cao nhất hiện có</string>
     <string name="mobile_settings_auto_download">Tự động tải xuống</string>
     <string name="mobile_settings_auto_channels">Các kênh</string>
@@ -46,6 +50,9 @@
     <string name="mobile_settings_auto_none">Không có</string>
     <string name="mobile_settings_auto_watch_later">Xem sau</string>
     <string name="mobile_settings_auto_quality">Chất lượng tự động tải</string>
+    <string name="mobile_settings_download_wifi">Chỉ tải xuống qua Wi-Fi</string>
+    <string name="mobile_settings_download_wifi_summary">Khi dùng dữ liệu di động, các mục tải sẽ tạm chờ và tự bắt đầu lại khi có Wi-Fi</string>
+    <string name="mobile_download_wifi_wait">Đã vào hàng chờ. Tệp sẽ tự tải xuống khi bạn kết nối Wi-Fi</string>
     <string name="mobile_settings_auto_wifi">Chỉ khi có Wi-Fi</string>
     <string name="mobile_settings_auto_wifi_summary">Chờ có kết nối Wi-Fi mới kiểm tra và tải xuống</string>
     <string name="mobile_settings_auto_now">Kiểm tra ngay</string>
@@ -98,6 +105,7 @@
     <string name="mobile_settings_about">Giới thiệu</string>
     <string name="mobile_settings_coffee">Mời mình ly cà phê</string>
     <string name="mobile_settings_coffee_summary">Nếu bạn yêu thích MeeTube và muốn tiếp sức cho dự án</string>
+    <string name="mobile_settings_coffee_url" translatable="false">https://buymeacoffee.com/yashwynth</string>
 
     <!-- General -->
     <string name="mobile_settings_language">Ngôn ngữ</string>
@@ -114,15 +122,18 @@
     <string name="mobile_settings_notify_off">Tắt</string>
     <string name="mobile_settings_notify_every">Kiểm tra video mới mỗi</string>
     <plurals name="mobile_settings_notify_minutes">
+        <item quantity="one">%d phút</item>
         <item quantity="other">%d phút</item>
     </plurals>
     <plurals name="mobile_settings_notify_hours">
+        <item quantity="one">%d giờ</item>
         <item quantity="other">%d giờ</item>
     </plurals>
     <string name="mobile_settings_notify_channels">Các kênh</string>
     <string name="mobile_settings_notify_channels_all">Tất cả kênh đã đăng ký</string>
     <plurals name="mobile_settings_notify_channels_muted">
-        <item quantity="other">Tất cả kênh đã đăng ký trừ %d kênh</item>
+        <item quantity="one">Tất cả kênh đã đăng ký, trừ %d kênh</item>
+        <item quantity="other">Tất cả kênh đã đăng ký, trừ %d kênh</item>
     </plurals>
     <string name="mobile_settings_notify_no_channels">Hãy đăng nhập hoặc đăng ký một kênh trước</string>
     <string name="mobile_settings_notify_reliable">Khi đóng MeeTube</string>
@@ -147,6 +158,10 @@
     <string name="mobile_settings_nav_labels_summary">Hiện tên của từng thẻ bên dưới biểu tượng ở thanh dưới</string>
     <string name="mobile_settings_brand_name">Tên ứng dụng trên thanh trên</string>
     <string name="mobile_settings_brand_name_summary">Hiện chữ MeeTube cạnh biểu tượng ở trên cùng. Tắt đi sẽ chỉ hiện biểu tượng</string>
+    <string name="mobile_settings_brand_label">Tên ứng dụng tùy chỉnh</string>
+    <string name="mobile_settings_brand_label_summary">%1$s. Chạm để đổi tên, tối đa %2$d ký tự</string>
+    <string name="mobile_settings_brand_label_body">Tên hiển thị ở góc trên bên trái, tối đa %1$d ký tự</string>
+    <string name="mobile_settings_brand_label_reset">Đặt lại</string>
     <string name="mobile_settings_top_bar">Luôn hiện thanh trên</string>
     <string name="mobile_settings_top_bar_summary">Giữ thanh trên cố định trên màn hình khi cuộn bảng tin, thay vì ẩn đi</string>
     <string name="mobile_settings_search_fab">Nút tìm kiếm khi thanh bị ẩn</string>
@@ -175,7 +190,8 @@
     <string name="mobile_settings_hidden">Video bị ẩn</string>
     <string name="mobile_settings_hidden_none">Không ẩn gì</string>
     <plurals name="mobile_settings_hidden_count">
-        <item quantity="other">Đã ẩn %d loại video</item>
+        <item quantity="one">Đang ẩn %d loại video</item>
+        <item quantity="other">Đang ẩn %d loại video</item>
     </plurals>
     <string name="mobile_settings_hidden_watched">Video đã xem</string>
     <string name="mobile_settings_hidden_watched_home">Ẩn video đã xem trên Trang chủ</string>
@@ -192,7 +208,7 @@
     <string name="mobile_settings_video_menu">Menu video</string>
     <string name="mobile_settings_video_menu_summary">Chọn các mục hiện trong menu ⋮</string>
     <string name="mobile_settings_video_menu_note">Những mục xuất hiện trong menu ⋮ của video và menu khi nhấn giữ thẻ. Các mục chỉ hiển thị ở nơi phù hợp.</string>
-    <string name="mobile_settings_menu_play">Đang phát</string>
+    <string name="mobile_settings_menu_play">Phát video</string>
     <string name="mobile_settings_menu_queue_add">Thêm vào hàng chờ</string>
     <string name="mobile_settings_menu_save">Lưu trữ</string>
     <string name="mobile_settings_menu_recent_playlist">Lưu vào danh sách phát vừa dùng</string>
@@ -253,7 +269,7 @@
     <string name="mobile_settings_auto_backup_off">Không bao giờ</string>
     <string name="mobile_settings_backup_note">Bản sao lưu lưu lại toàn bộ thiết lập của bạn trong MeeTube. Những dữ liệu thuộc về tài khoản YouTube như kênh đăng ký và lịch sử vẫn nằm trên tài khoản đó.</string>
 
-    <!-- Home layout, icons & look -->
+    <!-- MEETUBE(home-rows): General > Home layout (issue #4). -->
     <string name="mobile_settings_home_layout">Bố cục Trang chủ</string>
     <string name="mobile_settings_app_icon">Biểu tượng ứng dụng</string>
     <string name="mobile_app_icon_default">Cổ điển (Mặc định)</string>
@@ -271,6 +287,9 @@
     <string name="mobile_app_icon_gta_vi">GTA VI</string>
     <string name="mobile_settings_loader">Vòng xoay tải</string>
     <string name="mobile_settings_font">Phông chữ</string>
+    <string name="mobile_settings_font_file">Tệp phông chữ của bạn</string>
+    <string name="mobile_settings_font_file_hint">Chọn một tệp TTF hoặc OTF</string>
+    <string name="mobile_settings_font_file_failed">Không thể dùng tệp đó làm phông chữ (chỉ hỗ trợ TTF hoặc OTF, tối đa 30 MB)</string>
     <string name="mobile_loader_neon">Vòng neon</string>
     <string name="mobile_loader_frosted">Kính mờ</string>
     <string name="mobile_loader_cookie">Bánh quy</string>
@@ -286,6 +305,7 @@
     <string name="mobile_settings_home_layout_rows_desc">Mỗi chủ đề là một hàng vuốt ngang, giống SmartTube</string>
     <string name="mobile_settings_home_shorts">Shorts trên Trang chủ</string>
     <string name="mobile_settings_home_shorts_summary">Hiện hàng Shorts vuốt ngang tại những vị trí YouTube chèn vào</string>
+    <!-- MEETUBE(glass, issue #80; minimal buttons) -->
     <string name="mobile_settings_chip_style">Kiểu thẻ chọn</string>
     <string name="mobile_settings_chip_style_segment">Bong bóng trượt</string>
     <string name="mobile_settings_chip_style_segment_desc">Thẻ chủ đề Trang chủ và bộ lọc tìm kiếm nằm chung trong một thanh kính; nhấn giữ mục đang chọn và kéo như một thấu kính</string>
@@ -298,13 +318,17 @@
     <string name="mobile_settings_player_buttons_frosted_desc">Các nút tròn làm mờ hình ảnh phía dưới. Tốn pin hơn và có thể giật trên máy yếu</string>
     <string name="mobile_settings_player_buttons_minimal">Tối giản</string>
     <string name="mobile_settings_player_buttons_minimal_desc">Không có vòng tròn nền, chỉ hiện biểu tượng kèm bóng đổ nhẹ như YouTube</string>
+    <!-- MEETUBE(performance) -->
     <string name="mobile_settings_performance">Hiệu năng</string>
     <string name="mobile_settings_high_refresh">Chế độ hiệu năng cao</string>
     <string name="mobile_settings_high_refresh_summary">Giữ ứng dụng chạy ở %1$d Hz để chuyển động mượt nhất. Tốn pin hơn; Android có thể hạ xuống khi máy nóng hoặc bật tiết kiệm pin</string>
+    <!-- MEETUBE(nav lens, issue #46) -->
     <string name="mobile_settings_tab_motion">Hiệu ứng chuyển thẻ</string>
     <string name="mobile_settings_tab_motion_summary">Thấu kính thủy tinh trượt sang thẻ được chọn và thanh công cụ rung nhẹ. Mặc định tắt trên máy yếu</string>
+    <!-- MEETUBE(bar reset) -->
     <string name="mobile_settings_tabs_reset">Đặt lại thanh về mặc định</string>
     <string name="mobile_settings_tabs_reset_summary">Trang chủ, Shorts, Tìm kiếm, Đăng ký, Bạn</string>
+    <!-- MEETUBE(list layout, issue #82) -->
     <string name="mobile_settings_video_layout">Bố cục danh sách video</string>
     <string name="mobile_settings_video_layout_cards">Thẻ lớn</string>
     <string name="mobile_settings_video_layout_cards_desc">Ảnh thu nhỏ kích thước lớn cho mỗi video</string>
@@ -312,6 +336,7 @@
     <string name="mobile_settings_video_layout_list_desc">Ảnh thu nhỏ bên cạnh tiêu đề, hiển thị được nhiều video hơn trên màn hình</string>
 
     <!-- Playback -->
+    <!-- MEETUBE(background): the battery-optimization exemption row (Playback). -->
     <string name="mobile_settings_screen_off">Tiếp tục phát khi tắt màn hình</string>
     <string name="mobile_settings_screen_off_on">Đã cho phép: trình tiết kiệm pin sẽ không ngắt âm thanh</string>
     <string name="mobile_settings_screen_off_off">Trình tiết kiệm pin có thể ngắt âm thanh. Chạm để cho phép MeeTube chạy nền</string>
@@ -374,9 +399,11 @@
     <!-- Video quality -->
     <string name="mobile_settings_quality_intro">Chất lượng mặc định khi bắt đầu video. Bạn vẫn có thể đổi cho từng video trong cài đặt trình phát.</string>
     <string name="mobile_settings_default_quality">Chất lượng mặc định</string>
+    <!-- MEETUBE(quality-network): one default per network; "%1$s" are the two picks' labels. -->
     <string name="mobile_settings_quality_wifi">Khi dùng Wi-Fi</string>
     <string name="mobile_settings_quality_mobile">Khi dùng dữ liệu di động</string>
     <string name="mobile_settings_quality_same">Giống như Wi-Fi</string>
+    <!-- MEETUBE(shorts-quality): issue #26. -->
     <string name="mobile_settings_quality_shorts">Shorts</string>
     <string name="mobile_settings_quality_both">Wi-Fi: %1$s · Dữ liệu di động: %2$s</string>
     <string name="mobile_settings_quality_auto">Tự động (tối đa %1$dp)</string>
@@ -461,30 +488,31 @@
     <string name="mobile_settings_dns_system">DNS của điện thoại</string>
     <string name="mobile_settings_dns_google">Google DNS</string>
     <string name="mobile_settings_conscrypt">Conscrypt</string>
-    <string name="mobile_settings_conscrypt_summary">Thư viện bảo mật tích hợp cho kết nối mạng. Hữu ích ở nơi YouTube bị chặn, dùng kèm các app như ByeByeDPI</string>
+    <string name="mobile_settings_conscrypt_summary">Thư viện bảo mật tích hợp cho kết nối mạng. Hữu ích ở nơi YouTube bị chặn, dùng kèm các ứng dụng như ByeByeDPI</string>
     <string name="mobile_settings_accounts">Tài khoản</string>
     <string name="mobile_settings_multi_profiles">Cài đặt riêng cho từng tài khoản</string>
     <string name="mobile_settings_multi_profiles_summary">Mỗi tài khoản giữ bộ cài đặt riêng, bắt đầu từ mặc định</string>
     <string name="mobile_settings_legacy_feeds">Bảng tin kiểu cũ</string>
     <string name="mobile_settings_legacy_feeds_summary">Tải Kênh đăng ký, kênh và danh sách phát theo cách ứng dụng YouTube TV thực hiện. Hãy thử bật nếu các mục này bị trống</string>
 
-    <!-- About & Customization groups -->
+    <!-- About -->
     <string name="mobile_settings_version">Phiên bản</string>
     <string name="mobile_settings_update_notify_summary">Thông báo cho bạn khi có phiên bản mới, ngay cả khi đã đóng ứng dụng</string>
+    <!-- MEETUBE(customize): the Customization page's groups and its tiles' short names -->
     <string name="mobile_settings_customize_look">Giao diện</string>
     <string name="mobile_settings_customize_layout">Bố cục</string>
     <string name="mobile_settings_customize_effects">Hiệu ứng và phản hồi</string>
     <string name="mobile_settings_customize_effects_summary">Kính lỏng, ánh sáng viền, rung phản hồi, âm thanh</string>
     <string name="mobile_settings_customize_theme">Giao diện và màu sắc</string>
-    <string name="mobile_settings_customize_theme_summary">Chế độ OG, giao diện, màu nhấn, biểu tượng app, kích thước</string>
+    <string name="mobile_settings_customize_theme_summary">Chế độ OG, giao diện, màu nhấn, biểu tượng ứng dụng, kích thước</string>
     <string name="mobile_settings_customize_lists">Trang chủ và danh sách video</string>
     <string name="mobile_settings_customize_lists_summary">Bố cục Trang chủ, dạng thẻ hoặc danh sách, ảnh thu nhỏ</string>
     <string name="mobile_settings_customize_player">Trang xem và trình phát</string>
     <string name="mobile_settings_customize_player_summary">Kiểu trang xem, nút trình phát, thanh tua, trình phát thu nhỏ</string>
     <string name="mobile_settings_customize_bars">Thẻ và thanh điều hướng</string>
     <string name="mobile_settings_customize_bars_summary">Thẻ thanh dưới, thanh trên, nút Tìm kiếm, menu video</string>
-    <string name="mobile_settings_video_layout_all">Tất cả các trang</string>
-    <string name="mobile_settings_video_layout_follow">Giống như Tất cả các trang</string>
+    <string name="mobile_settings_video_layout_all">Bố cục video trên tất cả các trang</string>
+    <string name="mobile_settings_video_layout_follow">Giống như tất cả các trang</string>
     <string name="mobile_settings_video_layout_home">Trang chủ</string>
     <string name="mobile_settings_video_layout_subscriptions">Kênh đăng ký</string>
     <string name="mobile_settings_video_layout_library">Lịch sử, Tải xuống và các thẻ khác</string>
@@ -537,8 +565,7 @@
     <string name="mobile_settings_haptics_summary">Rung nhẹ khi chạm, kéo hoặc nhấn giữ</string>
     <string name="mobile_settings_refresh_sound">Âm thanh làm mới</string>
     <string name="mobile_settings_refresh_sound_summary">Tiếng tách nhẹ khi bạn kéo trang xuống để làm mới</string>
-
-    <!-- Settings transfer -->
+    <!-- MEETUBE(settings-transfer): Backup > Share or move your settings. -->
     <string name="mobile_settings_transfer">Chia sẻ hoặc chuyển cài đặt</string>
     <string name="mobile_settings_transfer_export">Lưu cài đặt ra tệp</string>
     <string name="mobile_settings_transfer_export_summary">Lưu lại dùng sau hoặc chuyển sang điện thoại khác</string>
@@ -553,8 +580,7 @@
     <string name="mobile_settings_transfer_imported">Đã nhập cài đặt. MeeTube đang khởi động lại</string>
     <string name="mobile_settings_transfer_failed">Không thể lưu tệp cài đặt</string>
     <string name="mobile_settings_transfer_not_settings">Đó không phải là tệp cài đặt của MeeTube</string>
-
-    <!-- Audio & Equalizer -->
+    <!-- MEETUBE(issue #177): phone player audio. -->
     <string name="mobile_settings_stable_volume">Âm lượng ổn định</string>
     <string name="mobile_settings_stable_volume_summary">Cho phép nén âm thanh của YouTube làm dịu bớt các đoạn quá to hoặc quá nhỏ. Áp dụng từ video tiếp theo</string>
     <string name="mobile_settings_audio_language">Ngôn ngữ âm thanh</string>
@@ -593,8 +619,9 @@
     <string name="mobile_settings_home_autoplay_always_desc">Phát tắt tiếng ngay cả khi dùng dữ liệu di động</string>
     <string name="mobile_settings_home_autoplay_off">Tắt</string>
     <string name="mobile_settings_home_autoplay_off_desc">Trang chủ chỉ hiển thị ảnh thu nhỏ</string>
-
-    <!-- Coffee -->
+    <string name="mobile_settings_home_preview_continue">Phát tiếp từ đoạn xem trước ở Trang chủ</string>
+    <string name="mobile_settings_home_preview_continue_summary">Khi chạm vào video đang phát xem trước, trình phát sẽ mở ngay tại đoạn đang chiếu</string>
+    <!-- MEETUBE(coffee): a small thank-you, wherever you are sipping. -->
     <string name="mobile_settings_coffee_title">Pha một ly cho dev nhé ☕</string>
     <string name="mobile_settings_coffee_subtitle">Bạn đang thưởng thức từ đâu?</string>
     <string name="mobile_settings_coffee_india_emoji">🇮🇳</string>
@@ -604,13 +631,14 @@
     <string name="mobile_settings_coffee_elsewhere">Nơi khác</string>
     <string name="mobile_settings_coffee_elsewhere_summary">Buy Me a Coffee · $</string>
     <string name="mobile_settings_coffee_upi_label">UPI ID</string>
+    <string name="mobile_settings_coffee_upi_id" translatable="false">yashwynth@slc</string>
     <string name="mobile_settings_coffee_copy">Sao chép</string>
     <string name="mobile_settings_coffee_copied">Đã sao chép UPI ID</string>
     <string name="mobile_settings_coffee_qr">Mã QR UPI</string>
     <string name="mobile_settings_coffee_scan">Hoặc quét từ điện thoại khác</string>
     <string name="mobile_settings_coffee_footer">Hoàn toàn tự nguyện. Một ⭐ trên GitHub cũng quý giá không kém ❤️</string>
 
-    <!-- Install on TV -->
+    <!-- MEETUBE(tv install): the phone walks through an ADB install on the TV. -->
     <string name="mobile_settings_tv_title">Cài đặt lên TV</string>
     <string name="mobile_settings_tv_summary">Cài MeeTube TV lên Android TV ngay từ điện thoại này</string>
     <string name="mobile_settings_tv_android">Google TV / Android TV</string>
@@ -629,9 +657,10 @@
     <string name="mobile_settings_tv_same_wifi">Đảm bảo điện thoại và TV đang kết nối cùng một mạng Wi-Fi.</string>
     <string name="mobile_settings_tv_search">Tìm trên Wi-Fi của tôi</string>
     <string name="mobile_settings_tv_searching">Đang tìm kiếm…</string>
-    <string name="mobile_settings_tv_none_found">Không thấy TV nào phản hồi. Hãy kiểm tra lại bước 2 hoặc tự nhập IP của TV. Android TV: Cài đặt › Mạng và Internet › Wi-Fi của bạn. Fire TV: Cài đặt › My Fire TV › Giới thiệu › Mạng.</string>
+    <string name="mobile_settings_tv_none_found">Không thấy TV nào phản hồi. Hãy kiểm tra lại bước 2 hoặc tự nhập IP của TV. Android TV: Cài đặt › Mạng &amp; Internet › Wi-Fi của bạn. Fire TV: Cài đặt › My Fire TV › Giới thiệu › Mạng.</string>
     <string name="mobile_settings_tv_found">Đã tìm thấy %1$s. Chạm vào địa chỉ bên dưới.</string>
     <string name="mobile_settings_tv_ip">Địa chỉ IP của TV</string>
+    <string name="mobile_settings_tv_ip_hint" translatable="false">192.168.1.20</string>
     <string name="mobile_settings_tv_ip_invalid">Nhập địa chỉ IPv4 của TV, ví dụ %1$s</string>
     <string name="mobile_settings_tv_install">Cài đặt</string>
     <string name="mobile_settings_tv_install_button">Cài đặt MeeTube TV</string>
@@ -650,8 +679,8 @@
     <string name="mobile_settings_tv_busy">Đang có tiến trình cài đặt khác chạy. Vui lòng đợi một lát.</string>
     <string name="mobile_settings_tv_permission">Cho phép truy cập mạng cục bộ để tìm và kết nối tới TV của bạn.</string>
     <string name="mobile_settings_tv_footer">Bạn có thể tắt gỡ lỗi trên TV sau khi cài xong.</string>
-
-    <!-- Seek line, accent & misc -->
+    <string name="mobile_settings_controls_corners">Nút điều khiển ở góc màn hình</string>
+    <string name="mobile_settings_controls_corners_summary">Khi xoay ngang, các nút trình phát nằm ở góc màn hình trên phần viền đen thay vì sát mép video</string>
     <string name="mobile_settings_seek_line">Thanh tiến trình dưới video</string>
     <string name="mobile_settings_most_replayed">Biểu đồ đoạn xem nhiều nhất</string>
     <string name="mobile_settings_most_replayed_summary">Khi kéo thanh tua, một đường sóng phía trên sẽ hiện những đoạn được mọi người xem lại nhiều nhất</string>
