@@ -102,7 +102,7 @@ Every MeeTube release, newest first.<br>
 
 ### 💬 Community
 
-MeeTube has a Telegram group now. Come say hi, get help, share ideas and hear about new releases first: [MeeTube Community](https://t.me/+fLlQpFKSfqdhMGZl) (#313).
+MeeTube has a Telegram group now. Come say hi, get help, share ideas and hear about new releases first: [MeeTube Community](https://t.me/meetubecommunity) (#313).
 
 ### Thanks
 
