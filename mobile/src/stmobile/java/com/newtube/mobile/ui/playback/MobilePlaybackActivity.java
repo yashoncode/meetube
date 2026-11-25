@@ -4174,6 +4174,9 @@ public class MobilePlaybackActivity extends MobileActivity
             mMeeTune = new MeeTunePlayerSkin(findViewById(R.id.mobile_player_container), meeTuneControls());
         }
         mMeeTune.bind(item);
+        // Back from the video's full screen: the song player keeps the status bar (it stayed hidden).
+        setPortraitFull(false);
+        if (!isLandscape()) applySystemBarsForOrientation(Configuration.ORIENTATION_PORTRAIT);
         mMeeTune.show();
         ViewCompat.requestApplyInsets(findViewById(android.R.id.content));
         if (com.newtube.mobile.ui.meetune.MeeTune.audioOnly(this) && !mAudioOnly) {

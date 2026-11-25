@@ -245,8 +245,12 @@ public final class MeeTunePlayerSkin {
         // and the handle came a whole status bar lower on the art).
         mRoot.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             android.view.WindowInsets window = mRoot.getRootWindowInsets();
-            int top = window == null ? 0 : WindowInsetsCompat.toWindowInsetsCompat(window)
-                    .getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            // The bar's height even while it is hidden (back from the video's full screen it was, and the
+            // handle rose into the camera hole), and never above the cutout.
+            WindowInsetsCompat compat = window == null ? null : WindowInsetsCompat.toWindowInsetsCompat(window);
+            int top = compat == null ? 0 : Math.max(
+                    compat.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.statusBars()).top,
+                    compat.getInsets(WindowInsetsCompat.Type.displayCutout()).top);
             int[] at = new int[2];
             mRoot.getLocationOnScreen(at);
             int below = Math.max(0, top - (at[1] - Math.round(mRoot.getTranslationY())));
