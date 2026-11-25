@@ -1,15 +1,15 @@
 package com.newtube.mobile.downloads;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
 import com.liskovsoft.smartyoutubetv2.tv.R;
+import com.newtube.mobile.ui.common.LocalizedPickerActivity;
 
 /** MEETUBE(download-folder): an invisible host for the system folder picker, so any screen can open it. */
-public final class DownloadFolderActivity extends Activity {
+public final class DownloadFolderActivity extends LocalizedPickerActivity {
     private static final int REQUEST_TREE = 1;
 
     @Override

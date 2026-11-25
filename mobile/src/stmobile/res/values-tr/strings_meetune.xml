@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="meetune_link_meetune">MeeTune →</string>
+    <string name="meetune_storage_songs">MeeTune şarkıları (önbellekte)</string>
+    <plurals name="meetune_storage_songs_value">
+        <item quantity="one">%1$s · %2$d şarkı</item>
+        <item quantity="other">%1$s · %2$d şarkı</item>
+    </plurals>
+</resources>

@@ -1,6 +1,5 @@
 package com.newtube.mobile.ui.playback;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +15,8 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
+import com.newtube.mobile.ui.common.LocalizedPickerActivity;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -26,7 +27,7 @@ import java.io.OutputStream;
  * animated WebP moves). The picked file is copied to the app's files dir; no file = the dot.
  * Also the invisible host for the system image picker, like {@code DownloadFolderActivity}.
  */
-public final class SeekThumb extends Activity {
+public final class SeekThumb extends LocalizedPickerActivity {
     private static final int REQUEST_IMAGE = 1;
     private static final long MAX_BYTES = 5L * 1024 * 1024;
     private static final int DECODE_PX = 192;

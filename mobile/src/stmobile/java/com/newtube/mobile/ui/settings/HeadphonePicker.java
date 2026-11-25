@@ -179,7 +179,7 @@ public final class HeadphonePicker {
                 root.post(() -> {
                     list.setEnabled(true);
                     if (applied) {
-                        Toast.makeText(app, app.getString(R.string.mobile_settings_autoeq_applied, entry.name),
+                        Toast.makeText(themed, themed.getString(R.string.mobile_settings_autoeq_applied, entry.name),
                                 Toast.LENGTH_SHORT).show();
                         sheet.dismiss();
                         changed.run();

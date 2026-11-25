@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_settings_search_hint">Ayarlarda ara</string>
+    <string name="mobile_settings_search_none">“%1$s” ile eşleşen ayar bulunamadı</string>
+
+    <string name="mobile_settings_search_kw_account">giriş çıkış oturum aç kapat google profil hesap değiştir</string>
+    <string name="mobile_settings_search_kw_theme">koyu karanlık açık aydınlık gece mod görünüm renk tema</string>
+    <string name="mobile_settings_search_kw_customize">özelleştir kişiselleştir görünüm stil düzen</string>
+    <string name="mobile_settings_search_kw_country">ülke bölge konum</string>
+    <string name="mobile_settings_search_kw_start_screen">başlangıç açılış varsayılan sekme ana sayfa</string>
+    <string name="mobile_settings_search_kw_interface_size">arayüz ölçek yakınlaştır yazı boyut metin yoğunluk büyüt küçült</string>
+    <string name="mobile_settings_search_kw_tabs">alt üst çubuk bölüm gezinme keşfet yayınla düğme bildirim zil</string>
+    <string name="mobile_settings_search_kw_hidden">gizle izlenen filtre yaklaşan ilk gösterim canlı yayın</string>
+    <string name="mobile_settings_search_kw_video_menu">bağlam menü üç nokta basılı tut seçenekler</string>
+    <string name="mobile_settings_search_kw_channels_order">abonelik kanal sırala sıralama</string>
+    <string name="mobile_settings_search_kw_watch_history">duraklat geçmiş gizli mod</string>
+    <string name="mobile_settings_search_kw_video_ends">otomatik oynat tekrar döngü karıştır sonraki video</string>
+    <string name="mobile_settings_search_kw_background">arka plan oynatma pencere içinde pencere pip yalnızca ses küçült</string>
+    <string name="mobile_settings_search_kw_natural_voice">ses perdesi ton hız süre tiz</string>
+    <string name="mobile_settings_search_kw_audio_focus">arama çağrı bildirim diğer uygulamalar kesinti</string>
+    <string name="mobile_settings_search_kw_hide_related">öneriler ilgili sıradaki tavsiye</string>
+    <string name="mobile_settings_search_kw_dislikes">return youtube dislike ryd beğenmeme</string>
+    <string name="mobile_settings_search_kw_home_layout">satır raf kaydır akış ızgara smarttube</string>
+    <string name="mobile_settings_search_kw_app_icon">başlatıcı logo simge ana ekran eski klasik fantezi beyaz cam kalp yakut oynat koyu alev ateş</string>
+    <string name="mobile_settings_search_kw_quality">çözünürlük 4k 1080p 720p hd veri tasarrufu mobil internet kalite</string>
+    <string name="mobile_settings_search_kw_loudness">ses düzeyi normalleştirme otomatik yüksek düşük sessiz</string>
+    <string name="mobile_settings_search_kw_player_volume">ses yükselt güçlendir kazanç artır düşük yüksek 125 150 175 200</string>
+    <string name="mobile_settings_search_kw_captions">altyazı alt yazı cc kapalı açıklamalı</string>
+    <string name="mobile_settings_search_kw_sponsorblock">atla sponsor reklam bölüm giriş</string>
+    <string name="mobile_settings_search_kw_dearrow">tıklama tuzağı yanıltıcı başlık küçük resim kapak</string>
+    <string name="mobile_settings_search_kw_backup">dışa aktar içe aktar kaydet ayarlar yedek</string>
+    <string name="mobile_settings_search_kw_buffer">yükleniyor arabellek önbellek bellek donma</string>
+    <string name="mobile_settings_search_kw_dns">dns ipv4 ipv6 sunucu</string>
+    <string name="mobile_settings_search_kw_conscrypt">ssl tls sertifika güvenlik sansür engel byebyedpi</string>
+    <string name="mobile_settings_search_kw_multi_profiles">profil hesap ayrı farklı kişisel</string>
+    <string name="mobile_settings_search_kw_updates">güncelleme yeni sürüm yayın haber ver bildirim</string>
+    <string name="mobile_settings_search_kw_diagnostic_log">hata bildir rapor günlük kayıt hata ayıklama</string>
+    <string name="mobile_settings_search_kw_gesture_levels">hareket kaydır parlaklık ses düzeyi</string>
+    <string name="mobile_settings_search_kw_gesture_seek">hareket kaydır sar atla ileri geri</string>
+    <string name="mobile_settings_search_kw_double_tap_seek">çift dokun sar atla ileri geri saniye aralık</string>
+    <string name="mobile_settings_search_kw_loader">yükleme gösterge ilerleme neon buzlu cam kurabiye sıvı halka küre damla yörünge</string>
+    <string name="mobile_settings_search_kw_badge_icons">miks müzik nota simge sembol rozet etiket süre zaman</string>
+    <string name="mobile_settings_search_kw_seek_pill">çift dokun atla sar ileri geri 10 saniye animasyon dalga gösterge</string>
+    <string name="mobile_settings_search_kw_watched_bar">izlenen izleme ilerleme kırmızı çizgi çubuk geçmiş küçük resim</string>
+    <string name="mobile_settings_search_kw_home_chips">konu kategori filtre düğme ana sayfa gizle göster</string>
+    <string name="mobile_settings_search_kw_haptics">titreşim titre dokunsal geri bildirim dokun kapat</string>
+    <string name="mobile_settings_search_kw_refresh_sound">yenile ses çek kaydır sessiz kapat</string>
+    <string name="mobile_settings_search_kw_short_ends">shorts kısa tekrar döngü otomatik kaydır sonraki</string>
+    <string name="mobile_settings_search_kw_stable_volume">sabit ses düzeyi drc sıkıştırma dinamik aralık yüksek düşük</string>
+    <string name="mobile_settings_search_kw_equalizer">ekolayzır ekolayzer eq bas tiz frekans bant hazır ayar özel ses</string>
+    <string name="mobile_settings_search_web_signin">canlı sohbet google giriş çerez hesap oturum mesaj gönder</string>
+</resources>

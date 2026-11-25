@@ -749,4 +749,11 @@
         <item quantity="one">%s saniye</item>
         <item quantity="other">%s saniye</item>
     </plurals>
+    <string name="header_downloads">İndirilenler</string>
+    <string name="dialog_download">İndir</string>
+    <string name="about_app">%1$s hakkında</string>
+    <string name="about_source_code">Kaynak kodu</string>
+    <string name="about_license">Lisans</string>
+    <string name="diagnostic_log_send">Tanılama günlüğünü gönder</string>
+    <string name="header_live">Canlı</string>
 </resources>

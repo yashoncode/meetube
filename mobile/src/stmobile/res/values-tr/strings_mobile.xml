@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_player_audio_only">Yalnızca ses</string>
+    <string name="mobile_player_quality">Kalite</string>
+    <string name="mobile_player_subtitles">Altyazılar</string>
+    <string name="mobile_player_speed">Oynatma hızı</string>
+    <string name="mobile_watch_like">Beğen</string>
+    <string name="mobile_watch_dislike">Beğenme</string>
+    <string name="mobile_watch_share">Paylaş</string>
+
+    <string name="mobile_settings_watch_style">İzleme sayfası</string>
+    <string name="mobile_settings_watch_style_compact">Kompakt</string>
+    <string name="mobile_settings_watch_style_compact_desc">İşlem düğmeleri abonelik düğmesinin yanında görünür, öne çıkan yorumlar tek tek gösterilir</string>
+    <string name="mobile_settings_watch_style_classic">Klasik</string>
+    <string name="mobile_settings_watch_style_classic_desc">Etiketli düğmeler ve kanal için ayrı bir satır</string>
+    <string name="mobile_settings_player_buttons">Oynatıcı düğmeleri</string>
+    <string name="mobile_settings_player_buttons_summary">Videonun üzerindeki düğmeleri gösterin veya gizleyin</string>
+    <string name="mobile_settings_player_buttons_note">Gizlediğiniz düğmeler hiçbir videoda görünmez. Değişiklik, oynatıcı sonraki açılışında uygulanır.</string>
+    <string name="mobile_settings_player_buttons_top">Üst çubuk</string>
+    <string name="mobile_settings_player_buttons_center">Orta</string>
+    <string name="mobile_settings_player_buttons_fullscreen">Tam ekran işlemleri</string>
+    <string name="mobile_settings_player_prev_next">Önceki ve sonraki</string>
+
+    <string name="mobile_player_lock">Ekran kilidi</string>
+    <string name="mobile_comments_entry">Yorumlar</string>
+    <string name="mobile_settings_card_style">Kart stili</string>
+    <string name="mobile_card_style_plain">Sade</string>
+    <string name="mobile_card_style_plain_desc">Siyah zemin üzerinde cam kenarlık ve belli belirsiz bir cam efekti</string>
+    <string name="mobile_card_style_minimal">Sade MeeTube</string>
+    <string name="mobile_card_style_minimal_desc">Sağ üstte hafif bir vurgu parıltısı, sağ alt kenarda sıcak bir ton</string>
+    <string name="mobile_card_style_ember">Köşede kor</string>
+    <string name="mobile_card_style_ember_desc">Siyaha yakın zemin üzerinde sağ alt köşede vurgu renginde tek bir ışık</string>
+    <string name="mobile_card_style_frosted">Buzlu cam</string>
+    <string name="mobile_card_style_frosted_desc">Bulanık bir vurgu ışığının üzerinde süt beyazı cam</string>
+    <string name="mobile_card_style_mist">Renkli sis</string>
+    <string name="mobile_card_style_mist_desc">Soldan yayılan hafif bir vurgu rengi</string>
+    <string name="mobile_card_style_rim">Işıklı kenar</string>
+    <string name="mobile_card_style_rim_desc">Vurgu rengi yalnızca üst kenarda görünür</string>
+    <string name="mobile_card_style_dual">Çift ışık</string>
+    <string name="mobile_card_style_dual_desc">Altta vurgu renginde bir parıltı, üstte beyaz bir yansıma</string>
+
+    <string name="mobile_live_chat_entry">Canlı sohbet</string>
+    <string name="mobile_dialog_back">Geri</string>
+    <string name="mobile_search_button">Ara</string>
+    <string name="mobile_search_clear">Aramayı temizle</string>
+    <string name="mobile_nav_you">Siz</string>
+    <string name="mobile_you_explore">Keşfet</string>
+    <string name="mobile_you_library">Kitaplık</string>
+    <string name="mobile_you_watch_later">Daha sonra izle</string>
+    <string name="mobile_you_liked_videos">Beğendiğim videolar</string>
+    <string name="mobile_speed_more">Diğer hızlar</string>
+
+    <string name="mobile_settings_experimental">Deneysel</string>
+    <string name="mobile_settings_gestures">Hareketler</string>
+    <string name="mobile_settings_gesture_levels">Parlaklık ve ses için kaydır</string>
+    <string name="mobile_settings_gesture_levels_summary">Tam ekranda videonun sol veya sağ tarafında yukarı ya da aşağı kaydırın</string>
+    <string name="mobile_settings_gesture_seek">Kaydırarak ileri veya geri sar</string>
+    <string name="mobile_settings_gesture_seek_summary">Videoda sağa veya sola kaydırın</string>
+    <string name="mobile_settings_double_tap_seek">Çift dokunarak ileri veya geri sar</string>
+
+    <string name="mobile_cast_button">TV’ye yayınla</string>
+    <string name="mobile_download_audio_only">Yalnızca ses</string>
+    <string name="mobile_download_folder_video">Video klasörü</string>
+    <string name="mobile_download_folder_audio">Müzik klasörü</string>
+    <string name="mobile_download_folder_title">Kayıt konumu: %1$s</string>
+    <string name="mobile_download_folder_internal">Dahili depolama</string>
+    <string name="mobile_download_folder_choose">Klasör seç</string>
+    <string name="mobile_download_folder_use_default">Varsayılan klasörü kullan</string>
+    <string name="mobile_download_folder_set">İndirmeler şu konuma kaydedilecek: %1$s</string>
+    <string name="mobile_download_folder_failed">Bu klasör kullanılamadı</string>
+
+    <string name="mobile_settings_update_prompt">Güncelleme penceresi</string>
+    <string name="mobile_settings_update_prompt_summary">Yeni bir sürüm çıktığında güncellemek isteyip istemediğimi sor</string>
+    <string name="mobile_theme">Tema</string>
+    <string name="mobile_theme_system">Sistem varsayılanı</string>
+    <string name="mobile_theme_light">Açık</string>
+    <string name="mobile_theme_dark">Koyu</string>
+
+    <string name="mobile_about_star">GitHub’da MeeTube’a yıldız ver</string>
+    <string name="mobile_about_share">MeeTube’u paylaş</string>
+    <string name="mobile_about_made_by">Geliştiren: %1$s</string>
+    <string name="mobile_about_star_short">Yıldız ver</string>
+    <string name="mobile_about_share_short">Paylaş</string>
+    <string name="mobile_about_log_short">Günlüğü gönder</string>
+    <string name="mobile_about_creator">Geliştirici</string>
+    <string name="mobile_about_coffee_note"><![CDATA[<font color="#FF5F56">●</font> <font color="#FFBD2E">●</font> <font color="#27C93F">●</font><br><br><font color="#4ADE80">$</font> meetube --thank-you<br><font color="#E6EDF3">&#160;&#160;reklam: 0 | sponsorlar: atlandı</font><br><font color="#8B949E">// sabahın üçünde kahveyle kodlandı<br>// bir kahve daha? karar sizin :)</font>]]></string>
+
+    <string name="mobile_stats_storage_header">İstatistikleriniz</string>
+    <string name="mobile_stats_delete">İstatistiklerimi sil</string>
+    <string name="mobile_stats_delete_confirm">İstatistikleriniz silinsin mi?</string>
+    <string name="mobile_stats_delete_body">Her gün için kaydedilen uygulama kullanım süresi, izleme süresi ve video sayısı silinecek. Sayım sıfırdan başlayacak.</string>
+    <string name="mobile_stats_private">İstatistikleriniz (MeeTube’da geçirdiğiniz süre, izleme süreniz ve başlattığınız videolar) yalnızca bu telefonda saklanır. Yüklenmez veya paylaşılmaz.</string>
+    <plurals name="mobile_stats_delete_summary">
+        <item quantity="one">Bu telefonda %d günlük kayıt var</item>
+        <item quantity="other">Bu telefonda %d günlük kayıt var</item>
+    </plurals>
+
+    <string name="mobile_about_tv_badge">YENİ</string>
+    <string name="mobile_about_tv_title">MeeTube TV karşınızda 📺</string>
+    <string name="mobile_about_tv_text">MeeTube’da sevdiğiniz her şey artık büyük ekranda. Cam görünümlü yan menü, kendi kartlarında ışıldayan Shorts videoları ve kodla oturum açma. Koltuğunuza kurulun!</string>
+    <string name="mobile_about_tv_button">TV’me yükle</string>
+    <string name="mobile_about_tv_repo">⭐ GitHub’da yıldız verin veya APK dosyasını kendiniz indirin</string>
+    <string name="mobile_about_tv_shot">Televizyonda MeeTube TV ana sayfası</string>
+
+    <string name="mobile_about_reporters">Sorun bildirenler</string>
+    <string name="mobile_about_reporters_summary">Sorun bildiren herkese teşekkürler</string>
+    <string name="mobile_about_reporters_note">Sorun bildiren herkese teşekkür ederiz. Her bildirim ve fikir MeeTube’u daha iyi hâle getirdi.</string>
+    <string name="mobile_about_reporters_loading">GitHub’dan yükleniyor…</string>
+    <string name="mobile_about_reporters_failed">Liste GitHub’dan yüklenemedi. Bağlantınızı kontrol edip bu sayfayı yeniden açın.</string>
+    <plurals name="mobile_about_reporters_count">
+        <item quantity="one">%d bildirim</item>
+        <item quantity="other">%d bildirim</item>
+    </plurals>
+    <string name="mobile_about_contributors">Katkıda bulunanlar</string>
+    <string name="mobile_about_contributors_summary">MeeTube’un geliştirilmesine kimler nasıl katkıda bulundu?</string>
+    <string name="mobile_about_contributors_code">Kod ve çeviriler</string>
+    <string name="mobile_about_contributors_built_on">Kullanılan projeler</string>
+    <string name="mobile_about_credit_zh_tw">Geleneksel Çince çevirisi (#14)</string>
+    <string name="mobile_about_credit_ru">Rusça çeviri (#194)</string>
+    <string name="mobile_about_credit_icons">Kırmızı CRT, Krom oynat, Piksel oynat, Yıldızlı gece ve GTA VI uygulama simgeleri (#193)</string>
+    <string name="mobile_about_credit_smarttube">SmartTube: MeeTube’un kullandığı oynatıcı ve YouTube altyapısı</string>
+    <string name="mobile_about_credit_newtube">NewTube: MeeTube’un temel aldığı telefon uygulaması</string>
+    <string name="mobile_about_credit_backdrop">Backdrop: çubuklardaki sıvı cam mercek efekti</string>
+    <string name="mobile_about_credit_autoeq">AutoEq: kulaklık ses düzeltme profilleri</string>
+</resources>

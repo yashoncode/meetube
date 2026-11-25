@@ -98,7 +98,7 @@ final class TvInstall {
 
     private TvInstall(View root, SettingsAdapter.Listener page) {
         mRoot = root;
-        mContext = root.getContext().getApplicationContext();
+        mContext = root.getContext();
         mIp = root.findViewById(R.id.tv_ip);
         mSearch = root.findViewById(R.id.tv_search);
         mInstall = root.findViewById(R.id.tv_install);

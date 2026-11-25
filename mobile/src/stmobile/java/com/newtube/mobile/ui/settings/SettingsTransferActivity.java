@@ -16,6 +16,7 @@ import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.common.AppIcon;
+import com.newtube.mobile.ui.common.LocalizedPickerActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +43,7 @@ import java.util.Map;
  * An import keeps this phone's passwords and restarts the app from the files it wrote (a normal
  * restart first saves the in-memory settings back over them).
  */
-public final class SettingsTransferActivity extends Activity {
+public final class SettingsTransferActivity extends LocalizedPickerActivity {
     private static final String EXTRA_IMPORT = "import";
     private static final int REQUEST_EXPORT = 1;
     private static final int REQUEST_IMPORT = 2;

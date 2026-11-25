@@ -1,6 +1,5 @@
 package com.newtube.mobile.ui.common;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -164,7 +163,7 @@ public final class AppFont {
      * The invisible host for the system file picker (like SeekThumb): copies the pick, keeps it only
      * if Android reads it as a font, then offers the restart.
      */
-    public static final class Picker extends Activity {
+    public static final class Picker extends LocalizedPickerActivity {
         private static final int REQUEST_FONT = 1;
 
         @Override
