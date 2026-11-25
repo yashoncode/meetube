@@ -1,8 +1,16 @@
 # Third-party notices & attributions
 
 MeeTube bundles or depends on third-party software and data. This file collects
-the required attributions and license notices. MeeTube itself is MIT-licensed
-(see [`LICENSE`](LICENSE)).
+the required attributions and license notices.
+
+MeeTube is Copyright (C) 2026-present yashoncode, licensed under the GNU General
+Public License, version 3 (see [`LICENSE`](LICENSE)).
+
+Additional permission under GNU GPL version 3 section 7: if you modify this
+program, or any covered work, by linking or combining it with j2v8 (or a
+modified version of it), containing parts covered by the terms of the Eclipse
+Public License 1.0, the licensors of this program grant you additional
+permission to convey the resulting work.
 
 ## Community data services
 
@@ -59,7 +67,33 @@ separately from their code, and MeeTube uses it under those terms:
 
 ## Upstream
 
-MeeTube is an independent, unofficial fork of **SmartTube** (© yuliskov, MIT —
-https://github.com/yuliskov/SmartTube). Not affiliated with or endorsed by
-SmartTube's developer, Google, or YouTube. "YouTube" and "Android" are
-trademarks of Google LLC.
+MeeTube started from code by **SmartTube** (https://github.com/yuliskov/SmartTube)
+and **NewTube** (https://github.com/aleixrodriala/newtube). That code is under the
+MIT License below, and its notice is kept as the license requires. MeeTube is not
+affiliated with or endorsed by SmartTube's or NewTube's developers, Google, or
+YouTube. "YouTube" and "Android" are trademarks of Google LLC.
+
+```
+MIT License
+
+Copyright (c) 2020-present yuliskov
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```

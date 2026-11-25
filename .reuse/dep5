@@ -1,10 +1,11 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: SmartTube
-Source: https://github.com/yuliskov/SmartTube
+Upstream-Name: MeeTube
+Source: https://github.com/yashoncode/meetube
 
 Files: *
-Copyright: 2020-present yuliskov
-License: MIT
+Copyright: 2026-present yashoncode
+ 2020-present yuliskov (code from SmartTube and NewTube, MIT)
+License: GPL-3.0-only AND MIT
 
 License: MIT
  Permission is hereby granted, free of charge, to any person obtaining a copy

@@ -66,7 +66,7 @@
     <string name="about_source_code">Source code</string>
     <string name="about_source_code_url" translatable="false">https://github.com/yashoncode/meetube</string>
     <string name="about_license">License</string>
-    <string name="about_license_name" translatable="false">MIT</string>
+    <string name="about_license_name" translatable="false">GPLv3</string>
     <string name="about_license_url" translatable="false">https://github.com/yashoncode/meetube/blob/main/LICENSE</string>
     <!-- NEWTUBE(diagnostics): About > "Send diagnostic log" (DiagnosticLog). -->
     <string name="diagnostic_log_send">Send diagnostic log</string>
