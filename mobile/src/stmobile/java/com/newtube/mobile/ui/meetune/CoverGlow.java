@@ -61,6 +61,7 @@ final class CoverGlow extends RecyclerView.ItemDecoration {
 
     @Override
     public void onDraw(@NonNull Canvas canvas, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+        if (!MeeTune.coverGlow(parent.getContext())) return;
         for (int i = 0; i < parent.getChildCount(); i++) {
             draw(canvas, parent, parent.getChildAt(i));
         }

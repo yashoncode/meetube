@@ -1029,6 +1029,15 @@ public final class MeeTune {
         prefs(context).edit().putBoolean("smooth_switch", on).apply();
     }
 
+    /** The soft glow behind covers; off spares each frame the glow, for smoother scrolling. */
+    static boolean coverGlow(Context context) {
+        return prefs(context).getBoolean("cover_glow", true);
+    }
+
+    static void setCoverGlow(Context context, boolean on) {
+        prefs(context).edit().putBoolean("cover_glow", on).apply();
+    }
+
     /** Songs levelled to the same loudness by YouTube's own value (on by default); off leaves them as recorded. */
     public static boolean loudness(Context context) {
         return prefs(context).getBoolean("loudness", true);
