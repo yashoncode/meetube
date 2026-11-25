@@ -453,6 +453,7 @@
 
         <view
             class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$GlowSeek"
+                    android:background="@null"
             android:id="@+id/meetune_player_seek"
             android:layout_width="match_parent"
             android:layout_height="28dp"
@@ -590,6 +591,7 @@
 
                 <view
                     class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$GlowSeek"
+                    android:background="@null"
                     android:id="@+id/meetune_player_volume"
                     android:layout_width="match_parent"
                     android:layout_height="28dp"
