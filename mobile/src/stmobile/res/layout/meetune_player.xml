@@ -367,7 +367,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="#B3FFFFFF"
-                    android:textSize="20sp" />
+                    android:textSize="16sp" />
 
                 <include
                     layout="@layout/meetune_karaoke_chip"
