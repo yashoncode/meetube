@@ -61,11 +61,11 @@ Every MeeTube release, newest first.<br>
 ### ✨ Highlights
 
 - **Force quality:** a new switch on Video quality, on by default. The player stays on the quality you picked, or the highest the video has under it, instead of dropping with the connection.
-- **Watch history Don't save really stops it:** nothing is added, signed in or out. A new Don't save, keep showing option pauses history and keeps the old list visible (#340).
-- **Channel notifications switch** on the Notifications page turns every channel off at once and keeps each channel's bell for later. The channel picker has a Select all row (#333).
-- **Brightness and volume swipes** each have their own switch in Settings > Player, both on by default (#333).
-- **Search loads like Home:** the next page loads early as you scroll, with a spinner at the bottom if you get there first, and a double buzz tells you results are in.
-- **Update notes in your language:** release notes come translated into every language the app has (#324).
+- **Pause watch history for real:** Don't save adds nothing now, signed in or out. A new Don't save, keep showing option pauses history and keeps the old list visible (#340).
+- **Mute every channel in one tap:** the new Channel notifications switch on the Notifications page turns every channel off at once and keeps each channel's bell for later. The channel picker has a Select all row (#333).
+- **Brightness and volume swipes, your call:** each has its own switch in Settings > Player, both on by default (#333).
+- **Endless search, no waiting:** the next page loads early as you scroll, with a spinner at the bottom if you get there first, and a double buzz tells you results are in.
+- **What's new, in your language:** release notes come translated into every language the app has (#324).
 
 ### 🎵 MeeTune
 
