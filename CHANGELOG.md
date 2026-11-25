@@ -10,7 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
-| [**3.6.1** Fury](#361-fury) | 2026-11-25 | Control |
+| [**3.6.1** Fury](#361-fury) | 2026-11-25 | Refinement |
 | [**3.6.0** Sakura](#360-sakura) | 2026-11-24 | Android Auto |
 | [**3.5.8** Amber](#358-amber) | 2026-11-21 | Karaoke |
 | [**3.5.5** Hyper](#355-hyper) | 2026-11-17 | Automix |
@@ -55,7 +55,7 @@ Every MeeTube release, newest first.<br>
 
 ## 3.6.1 Fury
 
-> **Control**<br>
+> **Refinement**<br>
 > 📅 2026-11-25 · closes #311, #316, #321, #323, #324, #325, #326, #327, #328, #329, #332, #333, #335, #336, #338, #339, #340 and #342
 
 ### ✨ Highlights
