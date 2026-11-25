@@ -514,7 +514,9 @@ public final class MeeTunePlayerSkin {
         stopCanvas();
         String canvasFor = video.videoId;
         com.newtube.mobile.ui.meetune.MeeTuneCanvas.find(mRoot.getContext(), video, clip -> {
-            if (clip != null && canvasFor.equals(mVideoId)) startCanvas(clip);
+            // A live station is no album song: a matched album's moving cover was cropped over its own
+            // wide frame and kept swapping with it, the cover looking stretched now and then.
+            if (clip != null && canvasFor.equals(mVideoId) && !video.isLive && !mControls.live()) startCanvas(clip);
         });
     }
 
