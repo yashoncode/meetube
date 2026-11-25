@@ -77,13 +77,14 @@
             android:layout_marginTop="@dimen/mobile_search_results_top" />
 
         <!-- MEETUBE(glass): a progressive frost behind the search pill and the chips, thinning out to
-             nothing below them (as MeeTune's top bar); over the results only, under the chips. -->
+             nothing below them (as MeeTune's top bar); over the results only, under the chips.
+             Solid under the pills, which show it rather than blurring the results again. -->
         <com.newtube.mobile.ui.common.GlassView
             android:id="@+id/mobile_search_frost"
             android:layout_width="match_parent"
             android:layout_height="128dp"
             app:glassCornerRadius="0dp"
-            app:glassFadeBottom="128dp"
+            app:glassFadeBottom="72dp"
             app:glassLiquid="false"
             app:glassTint="@color/meetube_glass_tint" />
 
@@ -159,8 +160,8 @@
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:layout_marginStart="4dp"
-            android:elevation="6dp"
             app:glassCornerRadius="22dp"
+            app:glassOnGlass="true"
             app:glassTint="@color/meetube_search_glass_tint">
 
             <ImageButton
@@ -180,8 +181,8 @@
             android:layout_height="44dp"
             android:layout_marginHorizontal="4dp"
             android:layout_weight="1"
-            android:elevation="6dp"
             app:glassCornerRadius="22dp"
+            app:glassOnGlass="true"
             app:glassTint="@color/meetube_search_glass_tint">
 
             <LinearLayout
@@ -242,8 +243,8 @@
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:layout_marginEnd="4dp"
-            android:elevation="6dp"
             app:glassCornerRadius="22dp"
+            app:glassOnGlass="true"
             app:glassTint="@color/meetube_search_glass_tint">
 
             <ImageButton

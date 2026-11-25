@@ -185,14 +185,10 @@ public class MobileSearchActivity extends MobileActivity
                     syncChips();
                 }));
         setupChips();
-        // MEETUBE(issue #250): the default light frost left the titles scrolling under the pill
-        // readable, tangled with the query; a heavier one turns them into colour, not words.
-        for (int glass : new int[] {R.id.mobile_search_glass, R.id.mobile_search_back_glass,
-                R.id.mobile_search_filters_glass}) {
-            com.newtube.mobile.ui.common.Glass.blur(findViewById(glass),
-                    findViewById(R.id.mobile_search_glass_source));
-            ((com.newtube.mobile.ui.common.GlassView) findViewById(glass)).setBlur(24f);
-        }
+        // The back, search and filters pills sit on the top frost (glassOnGlass): their own live blur
+        // of the results re-rendered ~50 GPU passes a frame and made scrolling stutter at 120 Hz.
+        // MEETUBE(issue #250): so the frost is the heavy one, titles under the pill colour, not words.
+        ((com.newtube.mobile.ui.common.GlassView) findViewById(R.id.mobile_search_frost)).setBlur(24f);
         if (savedInstanceState == null) {
             getWindow().getDecorView().post(() -> SiriGlow.play(this)); // MEETUBE(search glow)
         }
