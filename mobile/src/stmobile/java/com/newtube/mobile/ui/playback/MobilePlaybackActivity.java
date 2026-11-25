@@ -464,6 +464,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private final LinkedHashMap<Integer, VideoGroup> mSuggestionGroups = new LinkedHashMap<>();
     private final List<Video> mRelatedVideos = new ArrayList<>();
     private Video mLastPagedVideo;
+    private Video mLastPagedQueueVideo;
 
     // Queue card ("Playing from <playlist>"). The queue row is one of the suggestion groups: the
     // one that contains the CURRENTLY PLAYING video (see findQueueGroupId). Its videos are shown
@@ -1688,6 +1689,17 @@ public class MobilePlaybackActivity extends MobileActivity
         mQueueList.setHasFixedSize(false);
         mQueueList.setAdapter(mQueueAdapter);
         mQueueList.setMaxHeight(Math.round(getResources().getDisplayMetrics().heightPixels * 0.5f));
+        // MEETUBE(issue #338): the playlist arrives a page at a time; near its last row ask for the next
+        // page, or the card ended there and the scroll ran on into Up next.
+        mQueueList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView list, int dx, int dy) {
+                LinearLayoutManager layout = (LinearLayoutManager) list.getLayoutManager();
+                if (dy > 0 && layout != null && layout.findLastVisibleItemPosition() >= mQueueVideos.size() - 4) {
+                    pageQueue();
+                }
+            }
+        });
         mQueueHeader.setOnClickListener(v -> toggleQueueExpanded());
 
         // Expandable description: tap the title or the views/date row (MEETUBE: no chevron).
@@ -12846,6 +12858,19 @@ public class MobilePlaybackActivity extends MobileActivity
 
         mLastPagedVideo = last;
         // The controller derives the row to continue from last.getGroup().
+        mPresenter.onScrollEnd(last);
+    }
+
+    /** The playlist card's next page: the controller continues the last row's group, once per last row. */
+    private void pageQueue() {
+        if (mPresenter == null || mQueueVideos.isEmpty()) {
+            return;
+        }
+        Video last = mQueueVideos.get(mQueueVideos.size() - 1);
+        if (last == mLastPagedQueueVideo) {
+            return;
+        }
+        mLastPagedQueueVideo = last;
         mPresenter.onScrollEnd(last);
     }
 
