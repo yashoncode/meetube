@@ -271,14 +271,18 @@ public final class MeeTunePlayerSkin {
             mPlay.postDelayed(this::update, 100);
         });
         bounce(mRoot.findViewById(R.id.meetune_player_previous), () -> {
+            ((GlowIcon) mRoot.findViewById(R.id.meetune_player_previous)).dash(-1);
             mDir = -1; // the songs move back (Previous only restarting the song: forward again soon)
             mRoot.postDelayed(() -> mDir = 1, 3000);
             mControls.previous();
         });
-        bounce(mRoot.findViewById(R.id.meetune_player_next), mControls::next);
-        for (View transport : new View[] {mPlay, mRoot.findViewById(R.id.meetune_player_previous),
-                mRoot.findViewById(R.id.meetune_player_next)}) {
-            glassPress(transport);
+        bounce(mRoot.findViewById(R.id.meetune_player_next), () -> {
+            ((GlowIcon) mRoot.findViewById(R.id.meetune_player_next)).dash(1);
+            mControls.next();
+        });
+        glassPress(mPlay);
+        for (int id : new int[] {R.id.meetune_player_previous, R.id.meetune_player_next}) {
+            mRoot.findViewById(id).setBackground(null); // no splash: their arrows' slide is the feedback
         }
         bounce(mLike, this::like);
         bounce(mRoot.findViewById(R.id.meetune_player_more), mControls::more);
@@ -1856,7 +1860,8 @@ public final class MeeTunePlayerSkin {
     private static void bounce(View button, Runnable action) {
         button.setOnClickListener(v -> {
             Haptics.click(v);
-            if (!(v.getBackground() instanceof android.graphics.drawable.GradientDrawable)) { // glassPress animates its own
+            if (!(v.getBackground() instanceof android.graphics.drawable.GradientDrawable) // glassPress animates its own
+                    && !(v instanceof GlowIcon && v.getBackground() == null)) { // Next, Previous: their slide
                 com.newtube.mobile.ui.common.Motion.pop(v.getParent() instanceof GlassView ? (View) v.getParent() : v);
             }
             action.run();
@@ -2450,7 +2455,42 @@ public final class MeeTunePlayerSkin {
             canvas.scale(1f, 1f / 0.6f, cx, cy); // the head's glow is flattened for a line: round again
             mHead.draw(getContext(), canvas, cx, cy, Math.min(cx, cy), 0x66FFFFFF);
             canvas.restoreToCount(save);
+            if (mDash <= 0f || mDash >= 1f) {
+                super.onDraw(canvas);
+                return;
+            }
+            // The arrows glide a little the way the songs go and fade, as the next pair fades in behind them.
+            float t = EASE.getInterpolation(mDash);
+            float shift = getWidth() * 0.16f;
+            drawAt(canvas, mDashDir * shift * t, 1f - t);
+            drawAt(canvas, -mDashDir * shift * (1f - t), t);
+        }
+
+        private static final android.view.animation.Interpolator EASE =
+                new android.view.animation.PathInterpolator(0.2f, 0f, 0f, 1f);
+        private float mDash;
+        private int mDashDir = 1;
+        @Nullable private android.animation.ValueAnimator mDashAnim;
+
+        /** Next ({@code dir} 1) or Previous (-1): the arrows glide that way, a new pair fades in. */
+        void dash(int dir) {
+            mDashDir = dir;
+            if (mDashAnim != null) mDashAnim.cancel();
+            mDashAnim = android.animation.ValueAnimator.ofFloat(0f, 1f);
+            mDashAnim.setDuration(380);
+            mDashAnim.addUpdateListener(a -> {
+                mDash = (float) a.getAnimatedValue();
+                invalidate();
+            });
+            mDashAnim.start();
+        }
+
+        private void drawAt(Canvas canvas, float dx, float alpha) {
+            if (alpha <= 0.01f) return;
+            int save = canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), Math.round(255 * Math.min(1f, alpha)));
+            canvas.translate(dx, 0f);
             super.onDraw(canvas);
+            canvas.restoreToCount(save);
         }
     }
 }
