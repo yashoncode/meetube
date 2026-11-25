@@ -4,7 +4,7 @@
 
 <p align="center">
 <a href="https://github.com/yashoncode/meetube/releases/latest"><img src="https://img.shields.io/github/v/release/yashoncode/meetube?style=for-the-badge&label=Release&color=0e75b6" alt="Release"></a>
-<a href="LICENSE"><img src="https://img.shields.io/github/license/yashoncode/meetube?style=for-the-badge&label=License&color=e8743b" alt="License"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-e8743b?style=for-the-badge" alt="License: GPLv3"></a>
 <a href="#support-meetube"><img src="https://img.shields.io/badge/Support-MeeTube-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Support MeeTube"></a>
 </p>
 
