@@ -3386,8 +3386,9 @@ public class MobilePlaybackActivity extends MobileActivity
                     ? box.getHeight() : getResources().getDisplayMetrics().heightPixels;
             // MEETUBE(issue #303): or the screen's corners, over the black bars, like YouTube.
             int strip = cornerControls(this) ? 0 : controlsStrip(width, height, mVideoAspect, getResizeMode());
-            left = Math.max(bars.left, strip);
-            right = Math.max(bars.right, strip);
+            // MEETUBE(issue #339): both sides keep the wider one's room, so the camera's side
+            // does not leave the controls sitting off-centre toward the other edge.
+            left = right = Math.max(Math.max(bars.left, bars.right), strip);
             top = bars.top;
             bottom = bars.bottom;
         } else if (mPortraitFull) {
