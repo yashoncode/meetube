@@ -5,7 +5,6 @@ import com.liskovsoft.appupdatechecker2.AppUpdateChecker;
 import com.liskovsoft.sharedutils.helpers.AppInfoHelpers;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.helpers.MessageHelpers;
-import com.liskovsoft.sharedutils.locale.LocaleUtility;
 import com.liskovsoft.smartyoutubetv2.common.R;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionItem;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.UiOptionItem;
@@ -15,12 +14,9 @@ import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AmazonBridge
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.AppUpdatePresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.base.BasePresenter;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
-import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 public class AboutSettingsPresenter extends BasePresenter<Void> {
     private final AppUpdateChecker mUpdateChecker;
@@ -42,8 +38,6 @@ public class AboutSettingsPresenter extends BasePresenter<Void> {
 
         AppDialogPresenter settingsPresenter = AppDialogPresenter.instance(getContext());
 
-        String country = LocaleUtility.getCurrentLocale(getContext()).getCountry();
-
         appendUpdateCheckButton(settingsPresenter);
 
         appendAutoUpdateSwitch(settingsPresenter);
@@ -53,12 +47,6 @@ public class AboutSettingsPresenter extends BasePresenter<Void> {
         appendUpdateSource(settingsPresenter);
 
         appendInstallBridge(settingsPresenter);
-
-        if (!Helpers.equalsAny(country, "RU", "UA")) {
-            appendDonation(settingsPresenter);
-            appendFeedback(settingsPresenter);
-            appendLinks(settingsPresenter);
-        }
 
         settingsPresenter.showDialog(mainTitle);
     }
@@ -112,37 +100,6 @@ public class AboutSettingsPresenter extends BasePresenter<Void> {
         settingsPresenter.appendStringsCategory(title, changelog);
     }
 
-    private void appendLinks(AppDialogPresenter settingsPresenter) {
-        OptionItem releasesOption = UiOptionItem.from(getContext().getString(R.string.releases),
-                option -> Utils.openLink(getContext(), Utils.toQrCodeLink(getContext().getString(R.string.releases_url))));
-
-        OptionItem sourcesOption = UiOptionItem.from(getContext().getString(R.string.sources),
-                option -> Utils.openLink(getContext(), Utils.toQrCodeLink(getContext().getString(R.string.sources_url))));
-
-        //OptionItem webSiteOption = UiOptionItem.from(getContext().getString(R.string.web_site),
-        //        option -> Utils.openLink(getContext(), Utils.toQrCodeLink(getContext().getString(R.string.web_site_url))));
-
-        settingsPresenter.appendSingleButton(releasesOption);
-        settingsPresenter.appendSingleButton(sourcesOption);
-        //settingsPresenter.appendSingleButton(webSiteOption);
-    }
-
-    private void appendDonation(AppDialogPresenter settingsPresenter) {
-        List<OptionItem> donateOptions = new ArrayList<>();
-
-        Map<String, String> donations = Helpers.getMap(getContext(), R.array.donations);
-
-        for (Entry<String, String> entry : donations.entrySet()) {
-            donateOptions.add(UiOptionItem.from(
-                    entry.getKey(),
-                    option -> Utils.openLink(getContext(), Utils.toQrCodeLink(entry.getValue()))));
-        }
-
-        if (!donateOptions.isEmpty()) {
-            settingsPresenter.appendStringsCategory(getContext().getString(R.string.donation), donateOptions);
-        }
-    }
-
     private void appendUpdateSource(AppDialogPresenter settingsPresenter) {
         List<OptionItem> options = new ArrayList<>();
 
@@ -164,22 +121,6 @@ public class AboutSettingsPresenter extends BasePresenter<Void> {
         }
 
         settingsPresenter.appendRadioCategory(getContext().getString(R.string.preferred_update_source), options);
-    }
-
-    private void appendFeedback(AppDialogPresenter settingsPresenter) {
-        List<OptionItem> feedbackOptions = new ArrayList<>();
-
-        Map<String, String> feedback = Helpers.getMap(getContext(), R.array.feedback);
-
-        for (Entry<String, String> entry : feedback.entrySet()) {
-            feedbackOptions.add(UiOptionItem.from(
-                    entry.getKey(),
-                    option -> Utils.openLink(getContext(), Utils.toQrCodeLink(entry.getValue()))));
-        }
-
-        if (!feedbackOptions.isEmpty()) {
-            settingsPresenter.appendStringsCategory(getContext().getString(R.string.feedback), feedbackOptions);
-        }
     }
 
     private void appendInstallBridge(AppDialogPresenter settingsPresenter) {

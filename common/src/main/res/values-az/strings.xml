@@ -70,8 +70,6 @@
     <string name="settings_main_ui">İstifadəçi interfeysi</string>
     <string name="dialog_main_ui">İstifadəçi interfeysi</string>
     <string name="card_animated_previews">Animasiyalı önbaxışlar</string>
-    <string name="web_site">Web səhifə</string>
-    <string name="donation">İanə</string>
     <string name="dialog_about">Haqqında</string>
     <string name="dialog_player_ui">Video pleyer</string>
     <string name="player_show_ui_on_pause">Fasilədə interfeysi göstərin</string>
@@ -483,9 +481,6 @@
     <string name="skip_shorts">Shortları ötürün</string>
     <string name="player_disable_suggestions">Təklifləri deaktiv edin</string>
     <string name="suggestions">Təkliflər</string>
-    <string name="feedback">Rəy</string>
-    <string name="sources">Mənbələr</string>
-    <string name="releases">Relizlər</string>
     <string name="prefer_avc_over_vp9">Kodek seçimi: vp9-dan avc-yə üstünlük verin</string>
     <string name="open_chat">Çat/Rəylər</string>
     <string name="open_comments">Rəyləri aç</string>

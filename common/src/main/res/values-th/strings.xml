@@ -66,8 +66,6 @@
     <string name="settings_main_ui">การแสดงผล</string>
     <string name="dialog_main_ui">การแสดงผล</string>
     <string name="card_animated_previews">Animated previews</string>
-    <string name="web_site">เว็บไซต์</string>
-    <string name="donation">การบริจาค</string>
     <string name="dialog_about">เกี่ยวกับ</string>
     <string name="dialog_player_ui">เครื่องเล่นวีดีโอ</string>
     <string name="player_show_ui_on_pause">แสดง UI เมื่อหยุดชั่วคราว</string>

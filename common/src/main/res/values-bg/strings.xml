@@ -65,8 +65,6 @@
   <string name="settings_main_ui">Потребителски интерфейс</string>
   <string name="dialog_main_ui">Потребителски интерфейс</string>
   <string name="card_animated_previews">Анимирано визуализиране</string>
-  <string name="web_site">Уеб сайт</string>
-  <string name="donation">Даряване</string>
   <string name="dialog_about">Относно</string>
   <string name="dialog_player_ui">Видео плейър</string>
   <string name="player_show_ui_on_pause">Показване на потребителския интерфейс на пауза</string>
@@ -462,9 +460,6 @@
   <string name="action_subscribe_on">Включи абониране</string>
   <string name="skip_24_rate">Пропускане на форматите с 24 кадъра в секунда (поправка на реалния кинорежим\?)</string>
   <string name="player_disable_suggestions">Деактивиране на предложенията</string>
-  <string name="feedback">Обратна връзка</string>
-  <string name="sources">Източници</string>
-  <string name="releases">Издания</string>
   <string name="prefer_avc_over_vp9">Избор на кодек: предпочитате avc пред vp9</string>
   <string name="open_chat">Чат/коментари</string>
   <string name="open_comments">Отвори коментари</string>

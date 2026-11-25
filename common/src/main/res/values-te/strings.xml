@@ -66,8 +66,6 @@
     <string name="settings_main_ui">వినియోగ మార్గము</string>
     <string name="dialog_main_ui">వినియోగ మార్గము</string>
     <string name="card_animated_previews">యానిమేటెడ్ ప్రివ్యూలు</string>
-    <string name="web_site">వెబ్‌సైట్</string>
-    <string name="donation">విరాళం</string>
     <string name="dialog_about">గురించి</string>
     <string name="dialog_player_ui">వీడియో ప్లేయర్</string>
     <string name="player_show_ui_on_pause">విరామంలో UI ని చూపించు</string>

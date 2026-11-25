@@ -71,8 +71,6 @@
   <string name="settings_main_ui">ユーザーインターフェース</string>
   <string name="dialog_main_ui">ユーザーインターフェース</string>
   <string name="card_animated_previews">動画のプレビュー</string>
-  <string name="web_site">ウェブサイト</string>
-  <string name="donation">寄付</string>
   <string name="dialog_about">アプリについて</string>
   <string name="dialog_player_ui">動画プレーヤー</string>
   <string name="player_show_ui_on_pause">一時停止時に UI を表示</string>
@@ -485,9 +483,6 @@
   <string name="skip_shorts">ショートをスキップ</string>
   <string name="player_disable_suggestions">おすすめを無効化</string>
   <string name="suggestions">提案</string>
-  <string name="feedback">フィードバック</string>
-  <string name="sources">ソース</string>
-  <string name="releases">リリース</string>
   <string name="prefer_avc_over_vp9">コーデックの選択: VP9 より AVC を優先する</string>
   <string name="open_chat">チャットとコメント</string>
   <string name="open_comments">コメント欄を開く</string>

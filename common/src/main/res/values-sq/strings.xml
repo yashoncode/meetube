@@ -67,8 +67,6 @@
   <string name="settings_main_ui">Ndërfaqja e përdoruesit</string>
   <string name="dialog_main_ui">Ndërfaqja e përdoruesit</string>
   <string name="card_animated_previews">Pamje paraprake të animuara</string>
-  <string name="web_site">Faqja e internetit</string>
-  <string name="donation">Donacion</string>
   <string name="dialog_about">Rreth</string>
   <string name="dialog_player_ui">Luajtësi i videos</string>
   <string name="player_show_ui_on_pause">Shfaq ndërfaqen kur pezullohet luajtja</string>
@@ -475,9 +473,6 @@
   <string name="skip_24_rate">Kapërce formatet 24 fps (rregullim për mënyrën Kinema e vërtetë\?)</string>
   <string name="skip_shorts">Kapërce videot e shkurtra</string>
   <string name="player_disable_suggestions">Çaktivizo sugjerimet</string>
-  <string name="feedback">Reagim</string>
-  <string name="sources">Burimet</string>
-  <string name="releases">Botimet</string>
   <string name="prefer_avc_over_vp9">Zgjedhja e kodekut: parapëlqe avc në vend të vp9</string>
   <string name="open_chat">Biseda/Komente</string>
   <string name="open_comments">Hap komentet</string>

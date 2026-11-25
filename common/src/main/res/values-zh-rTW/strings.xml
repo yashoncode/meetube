@@ -67,8 +67,6 @@
   <string name="settings_main_ui">使用者介面</string>
   <string name="dialog_main_ui">使用者介面</string>
   <string name="card_animated_previews">動畫預覽</string>
-  <string name="web_site">網站</string>
-  <string name="donation">捐贈</string>
   <string name="dialog_about">關於</string>
   <string name="dialog_player_ui">影片播放器</string>
   <string name="player_show_ui_on_pause">暫停時顯示使用者介面</string>
@@ -435,9 +433,6 @@
   <string name="action_subscribe_on">訂閱</string>
   <string name="skip_24_rate">略過 24fps 格式（真實戲院模式修復？）</string>
   <string name="player_disable_suggestions">停用建議</string>
-  <string name="feedback">意見反應</string>
-  <string name="sources">來源</string>
-  <string name="releases">發佈</string>
   <string name="prefer_avc_over_vp9">解碼器選擇：偏好 avc 大過 vp9</string>
   <string name="open_chat">聊天/評論</string>
   <string name="place_chat_left">把聊天室放在左邊</string>

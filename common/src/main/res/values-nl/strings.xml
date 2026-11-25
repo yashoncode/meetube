@@ -69,8 +69,6 @@
     <string name="settings_main_ui">Weergave</string>
     <string name="dialog_main_ui">Weergave</string>
     <string name="card_animated_previews">Videominiaturen voorvertonen</string>
-    <string name="web_site">Website</string>
-    <string name="donation">App ondersteunen</string>
     <string name="dialog_about">Informatie</string>
     <string name="dialog_player_ui">Videospeler</string>
     <string name="player_show_ui_on_pause">Speler weergeven met oké-toets</string>
@@ -475,9 +473,6 @@
     <string name="skip_24_rate">Sla 24fps-formaten over (real cinema fix\?)</string>
     <string name="skip_shorts">Shorts overslaan</string>
     <string name="player_disable_suggestions">Suggesties uitschakelen</string>
-    <string name="feedback">Feedback</string>
-    <string name="sources">Bronnen</string>
-    <string name="releases">Vrijgaven</string>
     <string name="prefer_avc_over_vp9">Codec-selectie: geef de voorkeur aan avc boven vp9</string>
     <string name="open_chat">Chat/Opmerkingen</string>
     <string name="open_comments">Open opmerkingen</string>

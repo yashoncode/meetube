@@ -71,8 +71,6 @@
     <string name="settings_main_ui">Interface de utilizador</string>
     <string name="dialog_main_ui">Interface de utilizador</string>
     <string name="card_animated_previews">Introduções animadas</string>
-    <string name="web_site">Site</string>
-    <string name="donation">Donativos</string>
     <string name="dialog_about">Acerca</string>
     <string name="dialog_player_ui">Reprodutor de vídeo</string>
     <string name="player_show_ui_on_pause">Mostrar interface se em pausa</string>
@@ -487,9 +485,6 @@
     <string name="skip_shorts">Ignorar \'Shorts\'</string>
     <string name="player_disable_suggestions">Desativar sugestões</string>
     <string name="suggestions">Sugestões</string>
-    <string name="feedback">Opinião</string>
-    <string name="sources">Fontes</string>
-    <string name="releases">Versões</string>
     <string name="prefer_avc_over_vp9">Seleção de codificador: preferir avc a vp9</string>
     <string name="open_chat">Chat/Comentários</string>
     <string name="open_comments">Mostrar comentários</string>

@@ -70,8 +70,6 @@
   <string name="settings_main_ui">Antarmuka pengguna</string>
   <string name="dialog_main_ui">Antarmuka pengguna</string>
   <string name="card_animated_previews">Pratinjau animasi</string>
-  <string name="web_site">Situs web</string>
-  <string name="donation">Donasi</string>
   <string name="dialog_about">Tentang</string>
   <string name="dialog_player_ui">Pemutar video</string>
   <string name="player_show_ui_on_pause">Tampilkan UI saat jeda</string>
@@ -471,9 +469,6 @@
   <string name="skip_shorts">Lewati Shorts</string>
   <string name="player_disable_suggestions">Nonaktifkan saran</string>
   <string name="suggestions">Saran</string>
-  <string name="feedback">Masukan</string>
-  <string name="sources">Sumber</string>
-  <string name="releases">Rilis</string>
   <string name="prefer_avc_over_vp9">Pilihan codec: lebih utama avc daripada vp9</string>
   <string name="open_chat">Chat/Komentar</string>
   <string name="open_comments">Buka komentar</string>

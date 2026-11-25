@@ -75,8 +75,6 @@ So, make a copy of values-he and name it values-iw. Keep both in your structure.
     <string name="settings_main_ui">ממשק משתמש</string>
     <string name="dialog_main_ui">ממשק משתמש</string>
     <string name="card_animated_previews">תצוגות מקדימות מונפשות</string>
-    <string name="web_site">אתר אינטרנט</string>
-    <string name="donation">תרומה</string>
     <string name="dialog_about">אודות</string>
     <string name="dialog_player_ui">נגן סרטון</string>
     <string name="player_show_ui_on_pause">הצגת ממשק משתמש בהפסקה</string>
@@ -491,9 +489,6 @@ So, make a copy of values-he and name it values-iw. Keep both in your structure.
     <string name="skip_shorts">דילוג על Shorts</string>
     <string name="player_disable_suggestions">השבתת הצעות</string>
     <string name="suggestions">הצעות</string>
-    <string name="feedback">משוב</string>
-    <string name="sources">מקורות</string>
-    <string name="releases">שחרורים</string>
     <string name="prefer_avc_over_vp9">בחירת קודק: העדפת avc על פני vp9</string>
     <string name="open_chat">צ\'אט/תגובות</string>
     <string name="open_comments">פתיחת תגובות</string>

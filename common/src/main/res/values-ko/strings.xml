@@ -67,8 +67,6 @@
   <string name="settings_main_ui">사용자 인터페이스</string>
   <string name="dialog_main_ui">사용자 인터페이스</string>
   <string name="card_animated_previews">애니메이션 미리보기</string>
-  <string name="web_site">웹 사이트</string>
-  <string name="donation">기부</string>
   <string name="dialog_about">어플리케이션 정보</string>
   <string name="dialog_player_ui">동영상 플레이어</string>
   <string name="player_show_ui_on_pause">일시 정지 시 UI 표시</string>
@@ -475,9 +473,6 @@
   <string name="skip_24_rate">24fps 형식 건너뛰기 (실제 시네마 모드 수정\?)</string>
   <string name="skip_shorts">쇼츠 스킵</string>
   <string name="player_disable_suggestions">제안 비활성화</string>
-  <string name="feedback">피드백</string>
-  <string name="sources">소스</string>
-  <string name="releases">출시</string>
   <string name="prefer_avc_over_vp9">코덱 선택: vp9보다 avc 선호</string>
   <string name="open_chat">채팅/댓글</string>
   <string name="open_comments">댓글 열기</string>

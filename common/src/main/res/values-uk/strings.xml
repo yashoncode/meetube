@@ -71,8 +71,6 @@
     <string name="settings_main_ui">Інтерфейс</string>
     <string name="dialog_main_ui">Інтерфейс застосунку</string>
     <string name="card_animated_previews">Анімований попередній перегляд</string>
-    <string name="web_site">Вебсайт</string>
-    <string name="donation">Підтримати проект</string>
     <string name="dialog_about">Про застосунок</string>
     <string name="dialog_player_ui">Відеоплеєр</string>
     <string name="player_show_ui_on_pause">Відображати інтерфейс на паузі</string>
@@ -482,9 +480,6 @@
     <string name="skip_shorts">Пропускати Shorts</string>
     <string name="player_disable_suggestions">Вимкнути рекомендації</string>
     <string name="suggestions">Пропозиції</string>
-    <string name="feedback">Зворотній зв`язок</string>
-    <string name="sources">Вихідний код</string>
-    <string name="releases">Релізи</string>
     <string name="prefer_avc_over_vp9">Вибір кодека: віддавати перевагу avc над vp9</string>
     <string name="open_chat">Чат/Коментарі</string>
     <string name="open_comments">Відкрити коментарі</string>

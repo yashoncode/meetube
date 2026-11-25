@@ -77,8 +77,6 @@
   <string name="settings_main_ui">Interfaz de usuario</string>
   <string name="dialog_main_ui">Interfaz de usuario</string>
   <string name="card_animated_previews">Previsualizaciones animadas</string>
-  <string name="web_site">Sitio web</string>
-  <string name="donation">Donar</string>
   <string name="dialog_about">Acerca de</string>
   <string name="dialog_player_ui">Reproductor de vídeo</string>
   <string name="player_show_ui_on_pause">Mostrar interfaz en pausa</string>
@@ -471,9 +469,6 @@
   <string name="action_subscribe_on">Suscribirse</string>
   <string name="skip_24_rate">Omitir los formatos de 24fps (¿Solución del modo de cine real\?)</string>
   <string name="player_disable_suggestions">Deshabilitar sugerencias</string>
-  <string name="feedback">Feedback</string>
-  <string name="sources">Fuentes</string>
-  <string name="releases">Publicaciones</string>
   <string name="prefer_avc_over_vp9">Selección de códecs: preferir avc sobre vp9</string>
   <string name="open_chat">Chat/Comentarios</string>
   <string name="place_chat_left">Colocar chat a la izquierda</string>

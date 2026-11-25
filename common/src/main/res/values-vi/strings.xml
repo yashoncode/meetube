@@ -65,8 +65,6 @@
   <string name="settings_main_ui">Giao diện người dùng</string>
   <string name="dialog_main_ui">Giao diện người dùng</string>
   <string name="card_animated_previews">Hình động xem trước</string>
-  <string name="web_site">Trang web</string>
-  <string name="donation">Ủng hộ</string>
   <string name="dialog_about">Giới thiệu</string>
   <string name="dialog_player_ui">Trình phát video</string>
   <string name="player_show_ui_on_pause">Hiện giao diện khi tạm dừng</string>
@@ -445,9 +443,6 @@
   <string name="action_subscribe_on">Đăng ký Bật</string>
   <string name="skip_24_rate">Bỏ qua định dạng 24fps (có thể sửa lỗi ở chế độ điện ảnh\?)</string>
   <string name="player_disable_suggestions">Vô hiệu hoá gợi ý trong trình phát</string>
-  <string name="feedback">Phản hồi</string>
-  <string name="sources">Mã nguồn</string>
-  <string name="releases">Phiên bản</string>
   <string name="open_chat">Trò chuyện</string>
   <string name="prefer_avc_over_vp9">Lựa chọn bộ giải mã: ưu tiên sử dụng avc thay cho vp9</string>
   <string name="place_chat_left">Đặt trò chuyện ở bên trái</string>

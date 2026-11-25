@@ -71,8 +71,6 @@
     <string name="settings_main_ui">Oberfläche</string>
     <string name="dialog_main_ui">Oberfläche</string>
     <string name="card_animated_previews">Animierte Vorschau</string>
-    <string name="web_site">Webseite</string>
-    <string name="donation">Spende</string>
     <string name="dialog_about">Über</string>
     <string name="dialog_player_ui">Video-Player</string>
     <string name="player_show_ui_on_pause">Oberfläche bei Pause anzeigen</string>
@@ -487,9 +485,6 @@
     <string name="skip_shorts">Shorts überspringen</string>
     <string name="player_disable_suggestions">Vorschläge deaktivieren</string>
     <string name="suggestions">Vorschläge</string>
-    <string name="feedback">Feedback</string>
-    <string name="sources">Quellen</string>
-    <string name="releases">Versionen</string>
     <string name="prefer_avc_over_vp9">Codec-Auswahl: avc statt vp9 bevorzugen</string>
     <string name="open_chat">Chat/Kommentare</string>
     <string name="open_comments">Kommentare öffnen</string>

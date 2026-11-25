@@ -71,8 +71,6 @@
     <string name="settings_main_ui">Корисничко сучеље</string>
     <string name="dialog_main_ui">Корисничко сучеље</string>
     <string name="card_animated_previews">Анимирани прегледи</string>
-    <string name="web_site">Веб сајт</string>
-    <string name="donation">Донација</string>
     <string name="dialog_about">О програму</string>
     <string name="dialog_player_ui">Видео плејер</string>
     <string name="player_show_ui_on_pause">Приказ сучеља при паузи</string>
@@ -357,9 +355,6 @@
     <string name="badge_live">УЖИВО</string>
     <string name="player_disable_suggestions">Искључи предлоге</string>
     <string name="suggestions">Предлози</string>
-    <string name="feedback">Повратне информације</string>
-    <string name="sources">Извори</string>
-    <string name="releases">Издања</string>
     <string name="open_chat">Ћаскање</string>
     <string name="open_comments">Отвори коментаре</string>
     <string name="place_chat_left">Постави ћаскање лево</string>

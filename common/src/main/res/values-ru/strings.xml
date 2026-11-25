@@ -71,8 +71,6 @@
     <string name="settings_main_ui">Интерфейс</string>
     <string name="dialog_main_ui">Интерфейс приложения</string>
     <string name="card_animated_previews">Анимированный предпросмотр</string>
-    <string name="web_site">Веб-сайт</string>
-    <string name="donation">Поддержать проект</string>
     <string name="dialog_about">О приложении</string>
     <string name="dialog_player_ui">Видеоплеер</string>
     <string name="player_show_ui_on_pause">Показать интерфейс на паузе</string>
@@ -482,9 +480,6 @@
     <string name="skip_shorts">Пропускать Shorts</string>
     <string name="player_disable_suggestions">Отключить рекомендации</string>
     <string name="suggestions">Предложения</string>
-    <string name="feedback">Обратная связь</string>
-    <string name="sources">Исходники</string>
-    <string name="releases">Релизы</string>
     <string name="prefer_avc_over_vp9">Выбор кодека: отдавать предпочтение avc над vp9</string>
     <string name="open_chat">Чат/Комментарии</string>
     <string name="open_comments">Открыть комментарии</string>

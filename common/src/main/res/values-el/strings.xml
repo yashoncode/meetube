@@ -65,8 +65,6 @@
   <string name="settings_main_ui">Διεπαφή χρήστη</string>
   <string name="dialog_main_ui">Διεπαφή χρήστη</string>
   <string name="card_animated_previews">Προεπισκόπηση βίντεο</string>
-  <string name="web_site">Ιστοσελίδα</string>
-  <string name="donation">Δωρεά</string>
   <string name="dialog_about">Σχετικά</string>
   <string name="dialog_player_ui">Βίντεο player</string>
   <string name="player_show_ui_on_pause">Εμφάνιση UI στη παύση</string>
@@ -424,9 +422,6 @@
   <string name="place_chat_left">Τοποθέτηση συζήτησης αριστερά</string>
   <string name="open_chat">Συζήτηση/Σχόλια</string>
   <string name="prefer_avc_over_vp9">Επιλογή κωδικοποιητή: προτίμηση avc από vp9</string>
-  <string name="releases">Κυκλοφορίες</string>
-  <string name="sources">Πηγές</string>
-  <string name="feedback">Σχόλια</string>
   <string name="player_disable_suggestions">Απενεργοποίηση προτάσεων</string>
   <string name="skip_24_rate">Παράλειψη μορφής 24fps (Επιδιόρθωση λειτουργίας κινηματογράφου;)</string>
   <string name="action_subscribe_on">Εγγραφή ενεργή</string>

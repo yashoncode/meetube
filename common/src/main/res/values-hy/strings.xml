@@ -64,8 +64,6 @@
     <string name="settings_main_ui">Օգտագործողի ինտերֆեյս</string>
     <string name="dialog_main_ui">Օգտագործողի ինտերֆեյս</string>
     <string name="card_animated_previews">Անիմացիոն նախադիտում</string>
-    <string name="web_site">Վեբ կայք</string>
-    <string name="donation">Նվիրատվություն</string>
     <string name="dialog_about">Ծրագրի մասին</string>
     <string name="dialog_player_ui">Նվագարկիչ</string>
     <string name="player_show_ui_on_pause">Ցույց տալ ինտերֆեյս դադարի ժամանակ</string>

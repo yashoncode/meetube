@@ -65,8 +65,6 @@
   <string name="settings_main_ui">Valikko</string>
   <string name="dialog_main_ui">Valikko</string>
   <string name="card_animated_previews">Animoidut esikatselut</string>
-  <string name="web_site">Verkkosivu</string>
-  <string name="donation">Lahjoita projektille</string>
   <string name="dialog_about">Tietoja</string>
   <string name="dialog_player_ui">Videosoitin</string>
   <string name="player_show_ui_on_pause">Näytä valikko kun pysäytetty</string>
@@ -434,9 +432,6 @@
   <string name="action_subscribe_on">Tilaus päälle</string>
   <string name="skip_24_rate">Ohita 24 fps -muodot (oikea elokuvatila\?)</string>
   <string name="player_disable_suggestions">Poista ehdotukset käytöstä</string>
-  <string name="feedback">Palaute</string>
-  <string name="sources">Lähteet</string>
-  <string name="releases">Julkaisut</string>
   <string name="prefer_avc_over_vp9">Koodekin valinta: mieluummin avc kuin vp9</string>
   <string name="proxy_application_aborted">Korjaa ensin välityspalvelimen asetukset</string>
   <string name="proxy_test_start">Testi#%d: %s</string>

@@ -67,8 +67,6 @@
     <string name="settings_main_ui">Korisničko sučelje</string>
     <string name="dialog_main_ui">Korisničko sučelje</string>
     <string name="card_animated_previews">Animirani pregledi</string>
-    <string name="web_site">Web stranica</string>
-    <string name="donation">Donacija</string>
     <string name="dialog_about">Informacije</string>
     <string name="dialog_player_ui">Video repoduktor</string>
     <string name="player_show_ui_on_pause">Prikaži korisničko sučelje pri pauzi</string>
@@ -448,9 +446,6 @@
     <!-- END Moved strings -->
     <string name="skip_24_rate">Preskoči formate s 24sl/sek (real cinema mod popravak?)</string>
     <string name="player_disable_suggestions">Onemogući prijedloge</string>
-    <string name="feedback">Povratne informacije</string>
-    <string name="sources">Izvori</string>
-    <string name="releases">Izdanja</string>
     <string name="prefer_avc_over_vp9">Odabir kôdeka: preferiraj avc prije vp9</string>
     <string name="open_chat">Razgovor</string>
     <string name="place_chat_left">Smjesti razgovor lijevo</string>

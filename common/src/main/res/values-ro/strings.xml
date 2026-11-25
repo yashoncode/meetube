@@ -65,8 +65,6 @@
     <string name="settings_main_ui">Interfață Utilizator</string>
     <string name="dialog_main_ui">Interfață Utilizator</string>
     <string name="card_animated_previews">Previzualizări animate</string>
-    <string name="web_site">Site web</string>
-    <string name="donation">Donează</string>
     <string name="dialog_about">Despre</string>
     <string name="dialog_player_ui">Player video</string>
     <string name="player_show_ui_on_pause">Afișează interfața în pauză</string>
@@ -475,9 +473,6 @@
     <string name="skip_24_rate">Omiteți formatele de 24 cps (remediere reală a modului cinema\?)</string>
     <string name="skip_shorts">Omiteți Short-urile</string>
     <string name="player_disable_suggestions">Dezactivați sugestiile</string>
-    <string name="feedback">Păreri</string>
-    <string name="sources">Surse</string>
-    <string name="releases">Versiuni</string>
     <string name="prefer_avc_over_vp9">Selectarea codecului: preferați avc peste vp9</string>
     <string name="open_chat">Chat/Comentarii</string>
     <string name="open_comments">Deschideți comentariile</string>

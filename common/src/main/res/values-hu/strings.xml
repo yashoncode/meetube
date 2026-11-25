@@ -65,8 +65,6 @@
   <string name="settings_main_ui">Kinézet</string>
   <string name="dialog_main_ui">Kinézet</string>
   <string name="card_animated_previews">Animált előnézet</string>
-  <string name="web_site">Weboldal (QR)</string>
-  <string name="donation">Adományozás</string>
   <string name="dialog_about">Rólunk</string>
   <string name="dialog_player_ui">Videólejátszó</string>
   <string name="player_show_ui_on_pause">A felhasználói felület megjelenítése szünetnél</string>
@@ -446,9 +444,6 @@
   <string name="action_subscribe_on">Feliratkozás bekapcsolva</string>
   <string name="skip_24_rate">24 képkocka/mp-es formátumok kihagyása (javítás az igazi mozi módban\?)</string>
   <string name="player_disable_suggestions">Javaslatok letiltása</string>
-  <string name="feedback">Visszajelzés</string>
-  <string name="sources">Program forrása (QR)</string>
-  <string name="releases">Programverziók (QR)</string>
   <string name="prefer_avc_over_vp9">Kodek kiválasztása: Az avc előnyben részesítése a vp9 helyett</string>
   <string name="open_chat">Hozzászólások</string>
   <string name="place_chat_left">Hozzászólások balra helyezése</string>

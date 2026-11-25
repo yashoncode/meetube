@@ -65,8 +65,6 @@
     <string name="settings_main_ui">Uporabniški vmesnik</string>
     <string name="dialog_main_ui">Uporabniški vmesnik</string>
     <string name="card_animated_previews">Animirani predogledi</string>
-    <string name="web_site">Spletna stran</string>
-    <string name="donation">Donacija</string>
     <string name="dialog_about">O programu</string>
     <string name="dialog_player_ui">Video predvajalnik</string>
     <string name="player_show_ui_on_pause">Pokaži UI med pavzo</string>

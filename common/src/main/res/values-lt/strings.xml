@@ -65,8 +65,6 @@
     <string name="settings_main_ui">Naudotojo sąsaja</string>
     <string name="dialog_main_ui">Naudotojo sąsaja</string>
     <string name="card_animated_previews">Animuotos peržiūros</string>
-    <string name="web_site">Svetainė</string>
-    <string name="donation">Aukojimas</string>
     <string name="dialog_about">Apie</string>
     <string name="dialog_player_ui">Vaizdo grotuvas</string>
     <string name="player_show_ui_on_pause">Rodyti naudotojo sąsają pristabdžius</string>

@@ -66,8 +66,6 @@
   <string name="settings_main_ui">واجهة المستخدم</string>
   <string name="dialog_main_ui">واجهة التطبيق</string>
   <string name="card_animated_previews">معاينات متحركة</string>
-  <string name="web_site">الموقع الإلكتروني</string>
-  <string name="donation">تبرع</string>
   <string name="dialog_about">حول</string>
   <string name="dialog_player_ui">مشغل الفيديو</string>
   <string name="player_show_ui_on_pause">عرض واجهة المستخدم عند الإيقاف</string>
@@ -445,9 +443,6 @@
   <string name="action_subscribe_on">الاشتراك</string>
   <string name="skip_24_rate">تخطي تنسيقات 24 إطارًا في الثانية (إصلاح وضع السينما الحقيقي؟)</string>
   <string name="player_disable_suggestions">تعطيل الاقتراحات</string>
-  <string name="sources">المصادر</string>
-  <string name="releases">الإصدارات</string>
-  <string name="feedback">الملاحظات</string>
   <string name="prefer_avc_over_vp9">تحديد برنامج الترميز: تفضيل AVC على VP9</string>
   <string name="open_chat">التعليقات/المحادثات المباشرة</string>
   <string name="place_chat_left">ضع المحادثات المباشرة على اليسار</string>

@@ -71,8 +71,6 @@
     <string name="settings_main_ui">Používateľské rozhranie</string>
     <string name="dialog_main_ui">Používateľské rozhranie</string>
     <string name="card_animated_previews">Animované náhľady</string>
-    <string name="web_site">Webová stránka</string>
-    <string name="donation">Darovanie</string>
     <string name="dialog_about">Informácie</string>
     <string name="dialog_player_ui">Video prehrávač</string>
     <string name="player_show_ui_on_pause">Zobraziť rozhranie počas pauzy</string>
@@ -487,9 +485,6 @@
     <string name="skip_shorts">Preskočiť Shorts</string>
     <string name="player_disable_suggestions">Vypnúť návrhy</string>
     <string name="suggestions">Návrhy</string>
-    <string name="feedback">Spätná väzba</string>
-    <string name="sources">Zdroje</string>
-    <string name="releases">Vydané verzie</string>
     <string name="prefer_avc_over_vp9">Výber kodeku: preferovať AVC pred VP9</string>
     <string name="open_chat">Chat/Komentáre</string>
     <string name="open_comments">Otvoriť komentáre</string>

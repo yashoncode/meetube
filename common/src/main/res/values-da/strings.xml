@@ -64,8 +64,6 @@
   <string name="settings_main_ui">Brugergrænseflade (UI)</string>
   <string name="dialog_main_ui">Brugergrænseflade (UI)</string>
   <string name="card_animated_previews">Animerede forhåndsvisninger</string>
-  <string name="web_site">Website</string>
-  <string name="donation">Donation</string>
   <string name="dialog_about">Om</string>
   <string name="dialog_player_ui">Videoafspiller</string>
   <string name="player_show_ui_on_pause">Vis UI, når pauset</string>
@@ -509,9 +507,6 @@
   <string name="action_subscribe_on">Abonner til</string>
   <string name="skip_24_rate">Spring 24fps-formater over (rettelse til ægte biograftilstand\?)</string>
   <string name="player_disable_suggestions">Deaktiver forslag</string>
-  <string name="feedback">Feedback</string>
-  <string name="sources">Kilder</string>
-  <string name="releases">Udgivelser</string>
   <string name="prefer_avc_over_vp9">Codec-valg: Foretræk AVC over VP9</string>
   <string name="open_chat">Chat/kommentarer</string>
   <string name="open_comments">Åbn kommentarer</string>

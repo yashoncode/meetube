@@ -71,8 +71,6 @@
     <string name="settings_main_ui">Kullanıcı arayüzü</string>
     <string name="dialog_main_ui">Kullanıcı arayüzü</string>
     <string name="card_animated_previews">Hareketli ön izlemeler</string>
-    <string name="web_site">Web sitesi</string>
-    <string name="donation">Bağış</string>
     <string name="dialog_about">Hakkında</string>
     <string name="dialog_player_ui">Video oynatıcı</string>
     <string name="player_show_ui_on_pause">Duraklatıldığında kullanıcı arayüzünü göster</string>
@@ -488,9 +486,6 @@
     <string name="skip_shorts">Shortsları atla</string>
     <string name="player_disable_suggestions">Önerileri devre dışı bırak</string>
     <string name="suggestions">Öneriler</string>
-    <string name="feedback">Geri bildirim</string>
-    <string name="sources">Kaynaklar</string>
-    <string name="releases">Sürümler</string>
     <string name="prefer_avc_over_vp9">Kod çözücü seçimi: avc\'yi vp9\'a tercih et</string>
     <string name="open_chat">Sohbet/Yorumlar</string>
     <string name="open_comments">Yorumları aç</string>

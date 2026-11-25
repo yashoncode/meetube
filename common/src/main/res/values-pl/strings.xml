@@ -67,8 +67,6 @@
   <string name="settings_main_ui">Interfejs</string>
   <string name="dialog_main_ui">Interfejs użytkownika</string>
   <string name="card_animated_previews">Animowany podgląd</string>
-  <string name="web_site">Strona internetowa</string>
-  <string name="donation">Darowizna na dalszy rozwój</string>
   <string name="dialog_about">O. </string>
   <string name="dialog_player_ui">Odtwarzacz wideo</string>
   <string name="player_show_ui_on_pause">Pokaż interfejs podczas pauzy</string>
@@ -475,9 +473,6 @@
   <string name="skip_24_rate">Pomiń format 24 kl./s (naprawa prawdziwego trybu kinowego\?)</string>
   <string name="skip_shorts">Nie stosuj tych ustawień w przypadku Szortów</string>
   <string name="player_disable_suggestions">Wyłącz sugestie</string>
-  <string name="feedback">Uwagi, sugestie</string>
-  <string name="sources">Kod źródłowy</string>
-  <string name="releases">Wydania aplikacji</string>
   <string name="prefer_avc_over_vp9">Wybór kodeka: pierwszeństwo AVC przed VP9</string>
   <string name="open_chat">Czat/Komentarze</string>
   <string name="open_comments">Otwórz komentarze</string>

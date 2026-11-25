@@ -64,8 +64,6 @@
     <string name="settings_main_ui">Brukergrensesnitt</string>
     <string name="dialog_main_ui">Brukergrensesnitt</string>
     <string name="card_animated_previews">Animerte forhåndsvisninger</string>
-    <string name="web_site">Nettsted</string>
-    <string name="donation">Donasjon</string>
     <string name="dialog_about">Om</string>
     <string name="dialog_player_ui">Video avspiller</string>
     <string name="player_show_ui_on_pause">Vis brukergrensesnittet ved pause</string>
@@ -488,9 +486,6 @@
     <string name="skip_shorts">Hopp over Shorts</string>
     <string name="player_disable_suggestions">Deaktiver forslag</string>
     <string name="suggestions">Forslag</string>
-    <string name="feedback">Tilbakemelding</string>
-    <string name="sources">Kilder</string>
-    <string name="releases">Utgivelser</string>
     <string name="prefer_avc_over_vp9">Kodekvalg: foretrekk avc fremfor vp9</string>
     <string name="open_chat">Chat/Kommentarer</string>
     <string name="open_comments">Åpne kommentarer</string>

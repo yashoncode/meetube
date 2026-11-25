@@ -66,8 +66,6 @@
   <string name="settings_main_ui">رابط کاربری اصلی</string>
   <string name="dialog_main_ui">رابط کاربری برنامه</string>
   <string name="card_animated_previews">پیش‌نمایش متحرک</string>
-  <string name="web_site">وب‌سایت</string>
-  <string name="donation">حمایت از توسعه‌دهنده</string>
   <string name="dialog_about">درباره برنامه</string>
   <string name="dialog_player_ui">پخش کننده ویدیو</string>
   <string name="player_show_ui_on_pause">نمایش رابط کاربری هنگام توقف</string>
@@ -444,9 +442,6 @@
   <string name="action_subscribe_on">اشتراک فعال</string>
   <string name="skip_24_rate">رد کردن فرمت‌های ۲۴ فریم در ثانیه (رفع حالت سینمای واقعی؟)</string>
   <string name="player_disable_suggestions">غیرفعال کردن پیشنهادات</string>
-  <string name="sources">منابع</string>
-  <string name="releases">انتشارات</string>
-  <string name="feedback">بازخورد</string>
   <string name="prefer_avc_over_vp9">انتخاب کدک: ترجیح avc بر vp9</string>
   <string name="open_chat">نظرات/چت زنده</string>
   <string name="place_chat_left">قرار دادن چت زنده در سمت چپ</string>

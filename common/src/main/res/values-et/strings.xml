@@ -65,8 +65,6 @@
   <string name="settings_main_ui">Kasutajaliides</string>
   <string name="dialog_main_ui">Kasutajaliides</string>
   <string name="card_animated_previews">Animeeritud eelvaade</string>
-  <string name="web_site">Veebileht</string>
-  <string name="donation">Toeta projekti</string>
   <string name="dialog_about">Äpist</string>
   <string name="dialog_player_ui">Pleier</string>
   <string name="player_show_ui_on_pause">Kuva kasutajaliides peatatud taasesituse ajal</string>
@@ -468,9 +466,6 @@
   <string name="action_subscribe_on">Tellimused sisse</string>
   <string name="skip_24_rate">Jäta 24fps vormingud vahele</string>
   <string name="player_disable_suggestions">Keela soovitused</string>
-  <string name="feedback">Tagasiside</string>
-  <string name="sources">Allikad</string>
-  <string name="releases">Väljalasked</string>
   <string name="prefer_avc_over_vp9">Koodeki valik: eelista avc-d vp9-le</string>
   <string name="open_chat">Vestlus/Kommentaarid</string>
   <string name="open_comments">Ava kommentaarid</string>

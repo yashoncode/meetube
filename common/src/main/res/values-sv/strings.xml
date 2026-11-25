@@ -71,8 +71,6 @@
   <string name="settings_main_ui">Användargränssnitt</string>
   <string name="dialog_main_ui">Användargränssnitt</string>
   <string name="card_animated_previews">Animerade förhandsvisningar</string>
-  <string name="web_site">Webbplats</string>
-  <string name="donation">Donation</string>
   <string name="dialog_about">Om</string>
   <string name="dialog_player_ui">Videospelare</string>
   <string name="player_show_ui_on_pause">Visa användargränssnittet vid paus</string>
@@ -487,9 +485,6 @@
   <string name="skip_shorts">Hoppa över Shorts-videor</string>
   <string name="player_disable_suggestions">Inaktivera förslag</string>
   <string name="suggestions">Förslag</string>
-  <string name="feedback">Feedback</string>
-  <string name="sources">Källor</string>
-  <string name="releases">Versioner</string>
   <string name="prefer_avc_over_vp9">Val av kodek: föredra avc framför vp9</string>
   <string name="open_chat">Chatt/kommetarer</string>
   <string name="open_comments">Öppna kommentarer</string>

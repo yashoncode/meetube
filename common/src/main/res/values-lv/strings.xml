@@ -64,8 +64,6 @@
     <string name="settings_main_ui">Lietotāja interfeiss</string>
     <string name="dialog_main_ui">Lietotāja interfeiss</string>
     <string name="card_animated_previews">Animēti priekšskatījumi</string>
-    <string name="web_site">Web lapa</string>
-    <string name="donation">Ziedošana (Donation)</string>
     <string name="dialog_about">Par</string>
     <string name="dialog_player_ui">Video atskaņotājs</string>
     <string name="player_show_ui_on_pause">Rādīt UI nopauzējot</string>

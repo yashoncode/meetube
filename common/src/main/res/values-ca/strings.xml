@@ -67,8 +67,6 @@
   <string name="settings_main_ui">Interfície d\'usuari</string>
   <string name="dialog_main_ui">Interfície d\'usuari</string>
   <string name="card_animated_previews">Previsualitzacions animades</string>
-  <string name="web_site">Lloc web</string>
-  <string name="donation">Donació</string>
   <string name="dialog_about">Sobre</string>
   <string name="dialog_player_ui">Reproductor de vídeo</string>
   <string name="player_show_ui_on_pause">Mostra la interfície d\'usuari en pausa</string>
@@ -447,9 +445,6 @@
   <string name="action_subscribe_on">Subscriu-te activat</string>
   <string name="skip_24_rate">Omet els formats de 24 fps (correcció del mode cinema real\?)</string>
   <string name="player_disable_suggestions">Desactiva els suggeriments</string>
-  <string name="feedback">Comentaris</string>
-  <string name="sources">Fonts</string>
-  <string name="releases">Alliberaments</string>
   <string name="prefer_avc_over_vp9">Selecció de còdec: preferiu avc sobre vp9</string>
   <string name="open_chat">Xat/Comentaris</string>
   <string name="place_chat_left">Col·loca el xat a l\'esquerra</string>
