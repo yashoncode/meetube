@@ -294,8 +294,10 @@
     <string name="pin_unpin_from_sidebar">تثبيت في «أنت»</string>
     <string name="mobile_settings_experimental">تجريبية</string>
     <string name="mobile_settings_gestures">الإيماءات</string>
-    <string name="mobile_settings_gesture_levels">السحب لضبط السطوع ومستوى الصوت</string>
-    <string name="mobile_settings_gesture_levels_summary">اسحب لأعلى أو لأسفل على الجانب الأيسر أو الأيمن من الفيديو في وضع ملء الشاشة</string>
+    <string name="mobile_settings_gesture_brightness">السحب لضبط السطوع</string>
+    <string name="mobile_settings_gesture_brightness_summary">لأعلى أو لأسفل على يسار الفيديو في وضع ملء الشاشة</string>
+    <string name="mobile_settings_gesture_volume">السحب لضبط مستوى الصوت</string>
+    <string name="mobile_settings_gesture_volume_summary">لأعلى أو لأسفل على يمين الفيديو في وضع ملء الشاشة</string>
     <string name="mobile_settings_gesture_seek">السحب للتقديم والترجيع</string>
     <string name="mobile_settings_gesture_seek_summary">اسحب أفقيًا على الفيديو</string>
     <string name="mobile_settings_double_tap_seek">النقر مرتين للتقديم والترجيع</string>

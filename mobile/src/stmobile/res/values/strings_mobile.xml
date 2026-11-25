@@ -406,8 +406,10 @@
     <string name="mobile_settings_experimental">Experimental</string>
     <!-- NEWTUBE(gestures): Settings > Player, the switches for the optional player swipes (#12). -->
     <string name="mobile_settings_gestures">Gestures</string>
-    <string name="mobile_settings_gesture_levels">Swipe for brightness and volume</string>
-    <string name="mobile_settings_gesture_levels_summary">Up and down on the left or right of the fullscreen video</string>
+    <string name="mobile_settings_gesture_brightness">Swipe for brightness</string>
+    <string name="mobile_settings_gesture_brightness_summary">Up and down on the left of the fullscreen video</string>
+    <string name="mobile_settings_gesture_volume">Swipe for volume</string>
+    <string name="mobile_settings_gesture_volume_summary">Up and down on the right of the fullscreen video</string>
     <string name="mobile_settings_gesture_seek">Swipe to seek</string>
     <string name="mobile_settings_gesture_seek_summary">Sideways on the video</string>
     <string name="mobile_settings_double_tap_seek">Double-tap to seek</string>

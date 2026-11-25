@@ -18,6 +18,8 @@ public final class PlayerGesturePrefs {
     private static final String PREFS_NAME = "newtube_gestures";
     private static final String KEY_LEVEL_SWIPES = "level_swipes";
     private static final String KEY_SEEK_SWIPE = "seek_swipe";
+    private static final String KEY_BRIGHTNESS_SWIPE = "brightness_swipe";
+    private static final String KEY_VOLUME_SWIPE = "volume_swipe";
 
     private PlayerGesturePrefs() {
     }
@@ -26,13 +28,28 @@ public final class PlayerGesturePrefs {
         return context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
-    /** Swipe up and down on the left (brightness) and right (volume) of the fullscreen video. */
-    public static boolean isLevelSwipesOn(Context context) {
-        return prefs(context).getBoolean(KEY_LEVEL_SWIPES, true);
+    /**
+     * MEETUBE(issue #333): swipe up and down on the left of the fullscreen video for brightness, on
+     * the right for volume, each its own switch. Both start from the old shared one (KEY_LEVEL_SWIPES).
+     */
+    public static boolean isBrightnessSwipeOn(Context context) {
+        return prefs(context).getBoolean(KEY_BRIGHTNESS_SWIPE, levelSwipes(context));
     }
 
-    public static void setLevelSwipesOn(Context context, boolean on) {
-        prefs(context).edit().putBoolean(KEY_LEVEL_SWIPES, on).apply();
+    public static void setBrightnessSwipeOn(Context context, boolean on) {
+        prefs(context).edit().putBoolean(KEY_BRIGHTNESS_SWIPE, on).apply();
+    }
+
+    public static boolean isVolumeSwipeOn(Context context) {
+        return prefs(context).getBoolean(KEY_VOLUME_SWIPE, levelSwipes(context));
+    }
+
+    public static void setVolumeSwipeOn(Context context, boolean on) {
+        prefs(context).edit().putBoolean(KEY_VOLUME_SWIPE, on).apply();
+    }
+
+    private static boolean levelSwipes(Context context) {
+        return prefs(context).getBoolean(KEY_LEVEL_SWIPES, true);
     }
 
     /** Swipe sideways on the video to seek. */

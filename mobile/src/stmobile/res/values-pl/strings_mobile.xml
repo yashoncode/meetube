@@ -312,8 +312,10 @@
     <string name="pin_unpin_from_sidebar">Przypnij w Moim profilu</string>
     <string name="mobile_settings_experimental">Eksperymentalne</string>
     <string name="mobile_settings_gestures">Gesty</string>
-    <string name="mobile_settings_gesture_levels">Przesuń, aby zmienić jasność i głośność</string>
-    <string name="mobile_settings_gesture_levels_summary">W górę i w dół po lewej lub prawej stronie filmu na pełnym ekranie</string>
+    <string name="mobile_settings_gesture_brightness">Przesuń, aby zmienić jasność</string>
+    <string name="mobile_settings_gesture_brightness_summary">W górę i w dół po lewej stronie filmu na pełnym ekranie</string>
+    <string name="mobile_settings_gesture_volume">Przesuń, aby zmienić głośność</string>
+    <string name="mobile_settings_gesture_volume_summary">W górę i w dół po prawej stronie filmu na pełnym ekranie</string>
     <string name="mobile_settings_gesture_seek">Przesuń, aby przewinąć</string>
     <string name="mobile_settings_gesture_seek_summary">W bok na filmie</string>
     <string name="mobile_settings_double_tap_seek">Dotknij dwukrotnie, aby przewinąć</string>

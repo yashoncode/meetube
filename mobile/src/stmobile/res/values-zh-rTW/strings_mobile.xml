@@ -342,8 +342,10 @@
     <string name="pin_unpin_from_sidebar">釘選到「你的頻道」</string>
     <string name="mobile_settings_experimental">實驗功能</string>
     <string name="mobile_settings_gestures">手勢</string>
-    <string name="mobile_settings_gesture_levels">滑動調整亮度與音量</string>
-    <string name="mobile_settings_gesture_levels_summary">在全螢幕影片的左側或右側上下滑動</string>
+    <string name="mobile_settings_gesture_brightness">滑動調整亮度</string>
+    <string name="mobile_settings_gesture_brightness_summary">在全螢幕影片左側上下滑動</string>
+    <string name="mobile_settings_gesture_volume">滑動調整音量</string>
+    <string name="mobile_settings_gesture_volume_summary">在全螢幕影片右側上下滑動</string>
     <string name="mobile_settings_gesture_seek">滑動快進倒退</string>
     <string name="mobile_settings_gesture_seek_summary">在影片上左右滑動</string>
     <string name="subscribed_to_channel">已訂閱</string>

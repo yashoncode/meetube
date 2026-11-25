@@ -311,8 +311,10 @@
     <string name="pin_unpin_from_sidebar">Fixar em Você</string>
     <string name="mobile_settings_experimental">Experimental</string>
     <string name="mobile_settings_gestures">Gestos</string>
-    <string name="mobile_settings_gesture_levels">Deslize para brilho e volume</string>
-    <string name="mobile_settings_gesture_levels_summary">Para cima e para baixo, à esquerda ou à direita do vídeo em tela cheia</string>
+    <string name="mobile_settings_gesture_brightness">Deslize para o brilho</string>
+    <string name="mobile_settings_gesture_brightness_summary">Para cima e para baixo, à esquerda do vídeo em tela cheia</string>
+    <string name="mobile_settings_gesture_volume">Deslize para o volume</string>
+    <string name="mobile_settings_gesture_volume_summary">Para cima e para baixo, à direita do vídeo em tela cheia</string>
     <string name="mobile_settings_gesture_seek">Deslize para avançar ou voltar</string>
     <string name="mobile_settings_gesture_seek_summary">Para os lados sobre o vídeo</string>
     <string name="mobile_settings_double_tap_seek">Toque duplo para avançar ou voltar</string>

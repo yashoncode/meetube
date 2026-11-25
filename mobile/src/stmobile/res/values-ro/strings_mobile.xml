@@ -222,8 +222,10 @@
     <string name="mobile_you_pinned">Fixat</string>
     <string name="mobile_settings_experimental">Experimental</string>
     <string name="mobile_settings_gestures">Gesturi</string>
-    <string name="mobile_settings_gesture_levels">Glisează pentru a regla luminozitatea și volumul</string>
-    <string name="mobile_settings_gesture_levels_summary">Sus și jos, în stânga sau dreapta videoclipului afișat pe ecranul complet</string>
+    <string name="mobile_settings_gesture_brightness">Glisează pentru luminozitate</string>
+    <string name="mobile_settings_gesture_brightness_summary">Sus și jos, în stânga videoclipului afișat pe ecranul complet</string>
+    <string name="mobile_settings_gesture_volume">Glisează pentru volum</string>
+    <string name="mobile_settings_gesture_volume_summary">Sus și jos, în dreapta videoclipului afișat pe ecranul complet</string>
     <string name="mobile_settings_gesture_seek">Glisează pentru a căuta</string>
     <string name="subscribed_to_channel">Abonat</string>
     <string name="unsubscribed_from_channel">Dezabonat</string>

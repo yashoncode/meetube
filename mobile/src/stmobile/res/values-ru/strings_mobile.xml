@@ -225,8 +225,10 @@
     <string name="pin_unpin_from_sidebar">Закрепить в разделе «Вы»</string>
     <string name="mobile_settings_experimental">Экспериментально</string>
     <string name="mobile_settings_gestures">Жесты</string>
-    <string name="mobile_settings_gesture_levels">Свайп для яркости и громкости</string>
-    <string name="mobile_settings_gesture_levels_summary">Вверх и вниз слева или справа от полноэкранного видео</string>
+    <string name="mobile_settings_gesture_brightness">Свайп для яркости</string>
+    <string name="mobile_settings_gesture_brightness_summary">Вверх и вниз слева на полноэкранном видео</string>
+    <string name="mobile_settings_gesture_volume">Свайп для громкости</string>
+    <string name="mobile_settings_gesture_volume_summary">Вверх и вниз справа на полноэкранном видео</string>
     <string name="mobile_settings_gesture_seek">Свайп для перемотки</string>
     <string name="mobile_settings_gesture_seek_summary">В сторону по видео</string>
     <string name="subscribed_to_channel">Вы подписаны</string>

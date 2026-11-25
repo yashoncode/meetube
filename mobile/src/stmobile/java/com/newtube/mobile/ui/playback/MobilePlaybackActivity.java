@@ -8283,17 +8283,17 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** Fullscreen: SWIPE_BRIGHTNESS / SWIPE_VOLUME for a swipe that began at {@code rawX}, if any. */
     private int levelSwipeAt(float rawX) {
-        if (!PlayerGesturePrefs.isLevelSwipesOn(this) || isCastOverlayShown()) {
+        if (isCastOverlayShown()) {
             return PlayerContainerLayout.SWIPE_NONE;
         }
         int[] at = new int[2];
         mContainer.getLocationOnScreen(at);
         float width = Math.max(1, mContainer.getWidth());
         float x = (rawX - at[0]) / width;
-        if (x < LEVEL_ZONE && mSwipeLevels.canSwipe(SwipeLevels.BRIGHTNESS)) {
+        if (x < LEVEL_ZONE && PlayerGesturePrefs.isBrightnessSwipeOn(this) && mSwipeLevels.canSwipe(SwipeLevels.BRIGHTNESS)) {
             return SWIPE_BRIGHTNESS;
         }
-        if (x > 1f - LEVEL_ZONE && mSwipeLevels.canSwipe(SwipeLevels.VOLUME)) {
+        if (x > 1f - LEVEL_ZONE && PlayerGesturePrefs.isVolumeSwipeOn(this) && mSwipeLevels.canSwipe(SwipeLevels.VOLUME)) {
             return SWIPE_VOLUME;
         }
         return PlayerContainerLayout.SWIPE_NONE;

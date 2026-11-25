@@ -52,8 +52,10 @@
 
     <string name="mobile_settings_experimental">Deneysel</string>
     <string name="mobile_settings_gestures">Hareketler</string>
-    <string name="mobile_settings_gesture_levels">Parlaklık ve ses için kaydır</string>
-    <string name="mobile_settings_gesture_levels_summary">Tam ekranda videonun sol veya sağ tarafında yukarı ya da aşağı kaydırın</string>
+    <string name="mobile_settings_gesture_brightness">Parlaklık için kaydır</string>
+    <string name="mobile_settings_gesture_brightness_summary">Tam ekranda videonun sol tarafında yukarı ya da aşağı kaydırın</string>
+    <string name="mobile_settings_gesture_volume">Ses için kaydır</string>
+    <string name="mobile_settings_gesture_volume_summary">Tam ekranda videonun sağ tarafında yukarı ya da aşağı kaydırın</string>
     <string name="mobile_settings_gesture_seek">Kaydırarak ileri veya geri sar</string>
     <string name="mobile_settings_gesture_seek_summary">Videoda sağa veya sola kaydırın</string>
     <string name="mobile_settings_double_tap_seek">Çift dokunarak ileri veya geri sar</string>

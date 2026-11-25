@@ -392,8 +392,10 @@
     <string name="mobile_settings_experimental">Thử nghiệm</string>
     <!-- NEWTUBE(gestures): Settings > Player, the switches for the optional player swipes (#12). -->
     <string name="mobile_settings_gestures">Cử chỉ</string>
-    <string name="mobile_settings_gesture_levels">Vuốt chỉnh độ sáng và âm lượng</string>
-    <string name="mobile_settings_gesture_levels_summary">Vuốt lên xuống ở bên trái hoặc bên phải khi xem toàn màn hình</string>
+    <string name="mobile_settings_gesture_brightness">Vuốt để chỉnh độ sáng</string>
+    <string name="mobile_settings_gesture_brightness_summary">Vuốt lên và xuống ở bên trái video toàn màn hình</string>
+    <string name="mobile_settings_gesture_volume">Vuốt để chỉnh âm lượng</string>
+    <string name="mobile_settings_gesture_volume_summary">Vuốt lên và xuống ở bên phải video toàn màn hình</string>
     <string name="mobile_settings_gesture_seek">Vuốt để tua</string>
     <string name="mobile_settings_gesture_seek_summary">Vuốt ngang trên video</string>
     <string name="mobile_settings_double_tap_seek">Chạm hai lần để tua</string>

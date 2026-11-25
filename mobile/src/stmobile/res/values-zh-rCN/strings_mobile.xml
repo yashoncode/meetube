@@ -218,8 +218,10 @@
     <string name="pin_unpin_from_sidebar">添加至侧边栏或从中移除</string>
     <string name="mobile_settings_experimental">实验性</string>
     <string name="mobile_settings_gestures">手势</string>
-    <string name="mobile_settings_gesture_levels">滑动调节亮度和音量</string>
-    <string name="mobile_settings_gesture_levels_summary">在全屏视频的左侧或右侧上下滑动</string>
+    <string name="mobile_settings_gesture_brightness">滑动调节亮度</string>
+    <string name="mobile_settings_gesture_brightness_summary">在全屏视频左侧上下滑动</string>
+    <string name="mobile_settings_gesture_volume">滑动调节音量</string>
+    <string name="mobile_settings_gesture_volume_summary">在全屏视频右侧上下滑动</string>
     <string name="mobile_settings_gesture_seek">滑动快进快退</string>
     <string name="mobile_settings_gesture_seek_summary">在视频上左右滑动</string>
     <string name="subscribed_to_channel">已订阅</string>
