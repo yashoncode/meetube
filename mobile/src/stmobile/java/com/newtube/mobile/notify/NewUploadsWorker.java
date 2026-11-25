@@ -59,6 +59,7 @@ public class NewUploadsWorker extends Worker {
     private static final String KEY_SEEN = "seen";
     private static final String KEY_MUTED = "muted";
     private static final String KEY_EVERY = "every_minutes";
+    private static final String KEY_CHANNELS = "channels_on";
     private static final String SEP = "";
     /** WorkManager's shortest period is 15 minutes. */
     public static final int[] EVERY_MINUTES = {15, 30, 60, 180, 360};
@@ -78,6 +79,15 @@ public class NewUploadsWorker extends Worker {
         // Off forgets what was seen: turning it back on starts quiet instead of posting the gap
         prefs(context).edit().putBoolean(KEY_ON, on).remove(KEY_SEEN).apply();
         schedule(context);
+    }
+
+    /** MEETUBE(issue #333): every channel's bell at once; off keeps each channel's own pick for later. */
+    public static boolean isChannelsOn(Context context) {
+        return prefs(context).getBoolean(KEY_CHANNELS, true);
+    }
+
+    public static void setChannelsOn(Context context, boolean on) {
+        prefs(context).edit().putBoolean(KEY_CHANNELS, on).apply();
     }
 
     public static int everyMinutes(Context context) {
@@ -166,12 +176,13 @@ public class NewUploadsWorker extends Worker {
         Set<String> seen = new LinkedHashSet<>(first ? new ArrayList<>() : Arrays.asList(TextUtils.split(stored, ",")));
         List<MediaItem> fresh = new ArrayList<>();
         java.util.Map<String, String> muted = muted(context);
+        boolean channelsOn = isChannelsOn(context); // off: still marked seen, so on again starts quiet
         for (MediaItem item : items) { // newest first
             String id = item.getVideoId();
             if (id == null || item.isUpcoming() || !seen.add(id)) {
                 continue;
             }
-            if (!first && fresh.size() < MAX_POSTS && !isMuted(muted, item)) {
+            if (!first && channelsOn && fresh.size() < MAX_POSTS && !isMuted(muted, item)) {
                 fresh.add(item);
             }
         }

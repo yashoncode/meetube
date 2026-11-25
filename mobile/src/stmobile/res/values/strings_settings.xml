@@ -721,4 +721,7 @@
     <string name="settings_what_this_does">What this does</string>
     <string name="mobile_settings_force_quality">Force quality</string>
     <string name="mobile_settings_force_quality_summary">Plays the quality above, or the highest the video has below it, and never drops lower</string>
+    <string name="mobile_settings_notify_channels_master">Channel notifications</string>
+    <string name="mobile_settings_notify_channels_master_summary">Off: no channel notifies you. Every channel keeps its own bell setting for when it is back on</string>
+    <string name="mobile_settings_notify_select_all">Select all</string>
 </resources>

@@ -718,4 +718,7 @@
     <string name="mobile_settings_bar_hidden">Đang ẩn. Chạm để hiện</string>
     <string name="mobile_settings_force_quality">Ép chất lượng</string>
     <string name="mobile_settings_force_quality_summary">Phát đúng chất lượng ở trên, hoặc mức cao nhất video có dưới mức đó, và không bao giờ hạ xuống</string>
+    <string name="mobile_settings_notify_channels_master">Thông báo kênh</string>
+    <string name="mobile_settings_notify_channels_master_summary">Tắt: không kênh nào gửi thông báo. Chuông của từng kênh vẫn giữ như bạn đã đặt</string>
+    <string name="mobile_settings_notify_select_all">Chọn tất cả</string>
 </resources>

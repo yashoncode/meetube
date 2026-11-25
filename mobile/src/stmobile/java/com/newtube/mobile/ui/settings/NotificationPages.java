@@ -44,8 +44,13 @@ final class NotificationPages {
         rows.add(every.bind(() -> NewUploadsWorker.everyMinutes(context),
                 minutes -> NewUploadsWorker.setEveryMinutes(context, minutes)));
 
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_notify_channels_master),
+                context.getString(R.string.mobile_settings_notify_channels_master_summary),
+                () -> NewUploadsWorker.isChannelsOn(context), on -> NewUploadsWorker.setChannelsOn(context, on)));
+
         rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_notify_channels),
-                () -> channelsSummary(context), NotificationPages::pickChannels));
+                () -> channelsSummary(context), NotificationPages::pickChannels)
+                .enabledWhen(() -> NewUploadsWorker.isChannelsOn(context)));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_notify_reliable)));
         rows.add(SettingsRow.action(0, context.getString(R.string.mobile_settings_notify_background),
@@ -103,17 +108,39 @@ final class NotificationPages {
                         return;
                     }
                     Map<String, String> muted = NewUploadsWorker.muted(context);
+                    // MEETUBE(issue #333): row 0 is "Select all", ticked while every channel is.
                     List<String> ids = new ArrayList<>(offered.keySet());
-                    CharSequence[] titles = offered.values().toArray(new CharSequence[0]);
+                    ids.add(0, null);
+                    List<CharSequence> names = new ArrayList<>(offered.values());
+                    names.add(0, context.getString(R.string.mobile_settings_notify_select_all));
+                    CharSequence[] titles = names.toArray(new CharSequence[0]);
                     boolean[] checked = new boolean[ids.size()];
-                    for (int i = 0; i < ids.size(); i++) {
+                    boolean all = true;
+                    for (int i = 1; i < ids.size(); i++) {
                         checked[i] = !muted.containsKey(ids.get(i));
+                        all &= checked[i];
                     }
+                    checked[0] = all;
                     page.showDialog(new MaterialAlertDialogBuilder(page.requireActivity(), R.style.MobileAlertDialog_GlassCheck)
                             .setTitle(R.string.mobile_settings_notify_channels)
-                            .setMultiChoiceItems(titles, checked, (dialog, which, on) -> checked[which] = on)
+                            .setMultiChoiceItems(titles, checked, (dialog, which, on) -> {
+                                android.widget.ListView list = ((androidx.appcompat.app.AlertDialog) dialog).getListView();
+                                if (which == 0) {
+                                    for (int i = 1; i < checked.length; i++) {
+                                        checked[i] = on;
+                                        list.setItemChecked(i, on);
+                                    }
+                                }
+                                checked[which] = on;
+                                boolean every = true;
+                                for (int i = 1; i < checked.length; i++) {
+                                    every &= checked[i];
+                                }
+                                checked[0] = every;
+                                list.setItemChecked(0, every);
+                            })
                             .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                                for (int i = 0; i < ids.size(); i++) {
+                                for (int i = 1; i < ids.size(); i++) {
                                     if (checked[i]) {
                                         muted.remove(ids.get(i));
                                     } else {

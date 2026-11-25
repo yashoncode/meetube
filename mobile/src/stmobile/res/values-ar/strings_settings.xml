@@ -446,4 +446,7 @@
     <string name="mobile_accent_pearl">لؤلؤ</string>
     <string name="mobile_settings_force_quality">فرض الجودة</string>
     <string name="mobile_settings_force_quality_summary">يشغّل الجودة المحددة أعلاه، أو أعلى جودة متاحة في الفيديو دونها، ولا ينخفض عنها أبدًا</string>
+    <string name="mobile_settings_notify_channels_master">إشعارات القنوات</string>
+    <string name="mobile_settings_notify_channels_master_summary">عند الإيقاف لا تُرسل أي قناة إشعارات، ويبقى جرس كل قناة كما ضبطته</string>
+    <string name="mobile_settings_notify_select_all">تحديد الكل</string>
 </resources>

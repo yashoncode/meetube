@@ -696,4 +696,7 @@
     <string name="settings_what_this_does">Bu ayar ne işe yarar?</string>
     <string name="mobile_settings_force_quality">Kaliteyi zorla</string>
     <string name="mobile_settings_force_quality_summary">Yukarıdaki kaliteyi ya da videonun altındaki en yüksek kalitesini oynatır, asla düşürmez</string>
+    <string name="mobile_settings_notify_channels_master">Kanal bildirimleri</string>
+    <string name="mobile_settings_notify_channels_master_summary">Kapalıyken hiçbir kanal bildirim göndermez. Her kanalın zili ayarladığınız gibi kalır</string>
+    <string name="mobile_settings_notify_select_all">Tümünü seç</string>
 </resources>
