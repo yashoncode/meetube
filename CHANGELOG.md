@@ -61,6 +61,7 @@ Every MeeTube release, newest first.<br>
 ### ✨ Highlights
 
 - **Force quality:** a new switch on Video quality, on by default. The player stays on the quality you picked, or the highest the video has under it, instead of dropping with the connection.
+- **MeeTune flows song to song:** songs fade out and back in when you skip, pause or play, on by default, with a hint the first time on where to turn it off. A new switch turns off loudness normalization, Wide no longer distorts loud peaks, and Automix no longer clicks or jumps in volume.
 - **Pause watch history for real:** Don't save adds nothing now, signed in or out. A new Don't save, keep showing option pauses history and keeps the old list visible (#340).
 - **Mute every channel in one tap:** the new Channel notifications switch on the Notifications page turns every channel off at once and keeps each channel's bell for later. The channel picker has a Select all row (#333).
 - **Brightness and volume swipes, your call:** each has its own switch in Settings > Player, both on by default (#333).
@@ -69,8 +70,6 @@ Every MeeTube release, newest first.<br>
 
 ### 🎵 MeeTune
 
-- Smooth song changes: songs fade out and back in when you skip, pause or play, on by default. A small hint the first time shows where to turn it off.
-- New switch to turn off loudness normalization for music. Wide no longer distorts loud peaks, and Automix no longer clicks or jumps in volume.
 - Play all on Quick picks plays the whole shelf, then keeps going with similar songs (#329).
 - Player buttons no longer wash out on bright covers (#323).
 - Works again in regions without YouTube Music, like China (#335), and on phones whose language has no country set, like plain Arabic or French in Algeria.
