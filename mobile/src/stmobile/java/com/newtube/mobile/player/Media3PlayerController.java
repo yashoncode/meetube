@@ -27,6 +27,7 @@ import com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.TrackSelectorMan
 import com.liskovsoft.smartyoutubetv2.common.misc.NetPath;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
 import com.newtube.mobile.ui.common.UsageStats;
+import com.newtube.mobile.discord.DiscordPresence;
 import com.newtube.mobile.ui.meetune.MeeTune;
 
 import android.os.Handler;
@@ -1243,6 +1244,7 @@ public class Media3PlayerController implements Player.Listener {
             mPlayer = null;
             if (sCurrent == this) sCurrent = null;
         }
+        DiscordPresence.update(mContext, this); // MEETUBE(discord): released, the card goes
         mHoldBase = null;
         mTempoTrim = 1f;
     }
@@ -1677,6 +1679,7 @@ public class Media3PlayerController implements Player.Listener {
 
             mEventListener.onVideoLoaded(getVideo());
             UsageStats.videoOpened(MeeTune.isMusic(getVideo())); // MEETUBE(stats)
+            DiscordPresence.update(mContext, this); // MEETUBE(discord): next song or video
 
             if (mOnVideoLoaded != null) {
                 mOnVideoLoaded.run();
@@ -1715,6 +1718,12 @@ public class Media3PlayerController implements Player.Listener {
             ramp(true, mFadeInMs, null);
         }
         UsageStats.playing(isPlaying, MeeTune.isMusic(getVideo())); // MEETUBE(stats): watch or listen time
+        DiscordPresence.update(mContext, this); // MEETUBE(discord): play shows the card, pause takes it down
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(androidx.media3.common.PlaybackParameters parameters) {
+        DiscordPresence.update(mContext, this); // MEETUBE(discord): speed is divided out of the card's times
     }
 
     @Override
@@ -1805,6 +1814,7 @@ public class Media3PlayerController implements Player.Listener {
                 mNextPreloader.onSeek();
             }
             mEventListener.onSeekEnd();
+            DiscordPresence.update(mContext, this); // MEETUBE(discord): new times for the card's bar
             // SmartTube 6331ce5: seek completion resets the buffering watchdog. Media3 may
             // already have emitted BUFFERING, with no further state transition until data arrives.
             // Re-arm only an actively playing seek; paused or already-ready seeks must stay idle.

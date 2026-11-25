@@ -1,6 +1,7 @@
 include ':mobile', ':common', ':filepicker-lib', ':doubletapplayerview-media3', ':slidableactivity'
 include ':macrobenchmark'
 include ':sabr-media3'
+include ':discord-addon' // MEETUBE(discord): downloaded add-on, not part of the APK
 
 def rootDir = settingsDir
 
