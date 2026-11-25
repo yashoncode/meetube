@@ -1171,7 +1171,12 @@ public class MobilePlaybackActivity extends MobileActivity
         mWatchRelated = findViewById(R.id.mobile_watch_related);
         mRelatedChips = findViewById(R.id.mobile_watch_related_chips);
         mRelatedTrack = findViewById(R.id.mobile_watch_related_track);
-        mRelatedTrack.setGlassSource(null);
+        if (ThemeMode.isLight(this)) {
+            mRelatedTrack.setGlassSource(null);
+        } else {
+            // A lighter tint than the page glass (40% black): the ambient glow behind Up next shows through.
+            com.newtube.mobile.ui.common.GlassDrawable.apply(mRelatedTrack, null, 0, 0x26000000);
+        }
         mRelatedTrack.setOnPicked(index -> {
             if (index < mTrackChips.size()) {
                 onRelatedChip(mTrackChips.get(index));
