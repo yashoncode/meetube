@@ -444,4 +444,6 @@
     <string name="mobile_accent_ocean">محيط</string>
     <string name="mobile_accent_amethyst">جمشت</string>
     <string name="mobile_accent_pearl">لؤلؤ</string>
+    <string name="mobile_settings_force_quality">فرض الجودة</string>
+    <string name="mobile_settings_force_quality_summary">يشغّل الجودة المحددة أعلاه، أو أعلى جودة متاحة في الفيديو دونها، ولا ينخفض عنها أبدًا</string>
 </resources>

@@ -35,7 +35,7 @@ import java.util.List;
  * {@code VideoStateController.restoreFormats} keeps calling {@code setFormat} on each new video,
  * exactly like on the legacy path.</p>
  */
-class Media3TrackAdapter {
+public class Media3TrackAdapter {
 
     private static final String TAG = Media3TrackAdapter.class.getSimpleName();
 
@@ -58,6 +58,31 @@ class Media3TrackAdapter {
      */
     @Nullable
     private static volatile FormatItem sBeyondDecoderPick;
+
+    /**
+     * MEETUBE(force quality): Settings > Video quality > "Force quality". Auto and every "Up to" cap
+     * then play the highest stream under the cap (1080p, or 720p on a video that tops out there)
+     * instead of adapting to the measured bandwidth. Read on the next video's selection.
+     */
+    private static volatile boolean sForceQuality;
+    private static final String PREFS = "meetube_player";
+    private static final String KEY_FORCE_QUALITY = "force_quality";
+
+    static void loadForceQuality(android.content.Context context) {
+        sForceQuality = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
+                .getBoolean(KEY_FORCE_QUALITY, false);
+    }
+
+    public static boolean isForceQuality(android.content.Context context) {
+        loadForceQuality(context);
+        return sForceQuality;
+    }
+
+    public static void setForceQuality(android.content.Context context, boolean force) {
+        context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE).edit()
+                .putBoolean(KEY_FORCE_QUALITY, force).apply();
+        sForceQuality = force;
+    }
 
     Media3TrackAdapter(DefaultTrackSelector trackSelector) {
         mTrackSelector = trackSelector;
@@ -309,6 +334,8 @@ class Media3TrackAdapter {
             MediaTrack track = item.getTrack();
             String codec = track != null && track.format != null ? track.format.codecs : null;
             builder.setPreferredVideoMimeTypes(mimeTypesForCodec(codec));
+            // Fixed on the best track under the ceiling, no adapting (and so no viewport cap either).
+            builder.setForceHighestSupportedBitrate(sForceQuality);
             TrackSelectionOverride hdr = hdrOverride(ceiling);
             if (hdr != null) {
                 builder.setOverrideForType(hdr);
@@ -320,6 +347,7 @@ class Media3TrackAdapter {
                 builder.setMaxVideoSize(Integer.MAX_VALUE, Integer.MAX_VALUE);
                 builder.setMaxVideoFrameRate(Integer.MAX_VALUE);
                 builder.setPreferredVideoMimeTypes();
+                builder.setForceHighestSupportedBitrate(false);
                 builder.setOverrideForType(
                         new TrackSelectionOverride(location.group.getMediaTrackGroup(), location.trackIndex));
             } else if (!mTracks.getGroups().isEmpty()) {

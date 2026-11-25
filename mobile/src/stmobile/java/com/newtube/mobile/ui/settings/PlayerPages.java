@@ -287,6 +287,10 @@ final class PlayerPages {
         rows.add(defaultQuality(context, QUALITY_WIFI));
         rows.add(defaultQuality(context, QUALITY_MOBILE));
         rows.add(defaultQuality(context, QUALITY_SHORTS));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_force_quality),
+                context.getString(R.string.mobile_settings_force_quality_summary),
+                () -> com.newtube.mobile.player.Media3TrackAdapter.isForceQuality(context),
+                force -> com.newtube.mobile.player.Media3TrackAdapter.setForceQuality(context, force)));
         // MEETUBE(issue #35): only where the screen can show it.
         if (com.newtube.mobile.player.Media3PlayerController.isHdrDisplay(context)) {
             rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_hdr),

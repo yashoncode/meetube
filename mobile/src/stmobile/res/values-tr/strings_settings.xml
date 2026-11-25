@@ -694,4 +694,6 @@
     <string name="mobile_settings_youtube_mode">Orijinal mod</string>
     <string name="mobile_settings_youtube_mode_summary">YouTube’daki gibi tüm video kartları köşeli görünür. Buzlu cam alt çubuk ekranın alt kenarına sabitlenir.</string>
     <string name="settings_what_this_does">Bu ayar ne işe yarar?</string>
+    <string name="mobile_settings_force_quality">Kaliteyi zorla</string>
+    <string name="mobile_settings_force_quality_summary">Yukarıdaki kaliteyi ya da videonun altındaki en yüksek kalitesini oynatır, asla düşürmez</string>
 </resources>

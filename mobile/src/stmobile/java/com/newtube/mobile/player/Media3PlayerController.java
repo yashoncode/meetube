@@ -1178,6 +1178,7 @@ public class Media3PlayerController implements Player.Listener {
     public void setTrackSelector(DefaultTrackSelector trackSelector) {
         mTrackSelector = trackSelector;
         mTrackAdapter = new Media3TrackAdapter(trackSelector);
+        Media3TrackAdapter.loadForceQuality(mContext);
         mTrackAdapter.setPreferOriginalAudio(true); // NEWTUBE(mobile): match the legacy default
         applyPersistedFormats();
     }

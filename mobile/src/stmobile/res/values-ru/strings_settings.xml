@@ -707,4 +707,6 @@
     <string name="mobile_settings_fixed_nav_summary">Нижняя панель остаётся на экране при прокрутке</string>
     <string name="mobile_settings_youtube_mode">Режим OG</string>
     <string name="mobile_settings_youtube_mode_summary">Квадратные карточки видео и нижняя панель с матовым стеклом, как в YouTube.</string>
+    <string name="mobile_settings_force_quality">Принудительное качество</string>
+    <string name="mobile_settings_force_quality_summary">Воспроизводит выбранное выше качество или максимальное ниже него и никогда не снижает его</string>
 </resources>

@@ -719,4 +719,6 @@
     <string name="mobile_settings_youtube_mode">OG Mode</string>
     <string name="mobile_settings_youtube_mode_summary">Square video cards everywhere and the bottom bar docked to the bottom edge, frosted glass, like YouTube</string>
     <string name="settings_what_this_does">What this does</string>
+    <string name="mobile_settings_force_quality">Force quality</string>
+    <string name="mobile_settings_force_quality_summary">Plays the quality above, or the highest the video has below it, and never drops lower</string>
 </resources>
