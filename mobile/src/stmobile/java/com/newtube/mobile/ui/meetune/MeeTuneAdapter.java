@@ -66,6 +66,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     static final int COLUMNS = 3;
     /** The Library's cards: all of them, three a row, instead of one sideways row. */
     static final int GRID = 4;
+    /** A shelf YouTube sent one card for (Listen together, often): that card across the row, not a lone tile. */
+    static final int WIDE = 6;
 
     static final class Row {
         final int type;
@@ -204,6 +206,8 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 row.style = MOODS;
             } else if (shelf.allSongs()) {
                 row.style = COLUMNS;
+            } else if (shelf.items.size() == 1) {
+                row.style = WIDE;
             } else if (!bigUsed) {
                 row.style = BIG;
                 bigUsed = true;
@@ -730,9 +734,14 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 }
                 view = column;
             } else {
-                int layout = mRow.style == BIG ? R.layout.meetune_card_big
+                int layout = mRow.style == BIG || mRow.style == WIDE ? R.layout.meetune_card_big
                         : mRow.style == MOODS ? R.layout.meetune_mood : R.layout.meetune_tile;
                 view = inflater.inflate(layout, parent, false);
+                if (mRow.style == WIDE) { // the row's width at 16:9, the shape these cards come in
+                    int width = parent.getResources().getDisplayMetrics().widthPixels - dp(parent.getContext(), 40);
+                    RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(width, width * 9 / 16);
+                    view.setLayoutParams(lp);
+                }
                 if (mRow.style == GRID) { // a third of the row, square cover, smaller type
                     int gap = dp(parent.getContext(), 5);
                     int size = (parent.getResources().getDisplayMetrics().widthPixels - dp(parent.getContext(), 30)) / 3 - 2 * gap;
