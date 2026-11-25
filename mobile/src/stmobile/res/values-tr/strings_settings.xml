@@ -237,8 +237,11 @@
     <string name="mobile_settings_watch_history_auto_desc">YouTube hesabınızda izleme geçmişi açıksa kaydedilir</string>
     <string name="mobile_settings_watch_history_on">Her zaman kaydet</string>
     <string name="mobile_settings_watch_history_on_desc">MeeTube her açıldığında YouTube izleme geçmişini yeniden etkinleştirir</string>
-    <string name="mobile_settings_watch_history_off">Kaydetme</string>
-    <string name="mobile_settings_watch_history_off_desc">MeeTube izlediklerinizi YouTube’a bildirmez</string>
+    <string name="mobile_settings_watch_history_off">Kaydetme ve gösterme</string>
+    <string name="mobile_settings_watch_history_off_desc">İzlediklerin kaydedilmez ve geçmiş gizlenir</string>
+    <string name="mobile_settings_watch_history_off_shown">Kaydetme, göstermeye devam et</string>
+    <string name="mobile_settings_watch_history_off_shown_desc">İzlediklerin kaydedilmez; geçmiş olduğu gibi kalır</string>
+    <string name="mobile_you_history_empty">İzleme geçmişi yok</string>
     <string name="mobile_settings_clear_watch_history">İzleme geçmişini temizle</string>
     <string name="mobile_settings_clear_watch_history_summary">İzlediğiniz videoları YouTube geçmişinizden siler</string>
     <string name="mobile_settings_clear_watch_history_confirm">İzleme geçmişi temizlensin mi?</string>

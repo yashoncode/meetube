@@ -162,8 +162,11 @@
     <string name="mobile_settings_watch_history_auto_desc">يُحفظ إذا كان حسابك على YouTube يحتفظ بالسجلّ</string>
     <string name="mobile_settings_watch_history_on">الحفظ دائمًا</string>
     <string name="mobile_settings_watch_history_on_desc">إعادة تفعيل سجلّ المشاهدة على YouTube في كل مرة تفتح فيها MeeTube</string>
-    <string name="mobile_settings_watch_history_off">عدم الحفظ</string>
-    <string name="mobile_settings_watch_history_off_desc">يتوقّف MeeTube عن إبلاغ YouTube بما تشاهده</string>
+    <string name="mobile_settings_watch_history_off">عدم الحفظ أو العرض</string>
+    <string name="mobile_settings_watch_history_off_desc">يتوقف حفظ ما تشاهده ويُخفى السجل</string>
+    <string name="mobile_settings_watch_history_off_shown">عدم الحفظ مع إبقاء العرض</string>
+    <string name="mobile_settings_watch_history_off_shown_desc">يتوقف حفظ ما تشاهده ويبقى السجل كما هو</string>
+    <string name="mobile_you_history_empty">لا يوجد سجل مشاهدة</string>
     <string name="mobile_settings_clear_watch_history">محو سجلّ المشاهدة</string>
     <string name="mobile_settings_clear_watch_history_summary">حذف الفيديوهات التي شاهدتها من سجلّك على YouTube</string>
     <string name="mobile_settings_clear_watch_history_confirm">هل تريد محو سجلّ المشاهدة؟</string>

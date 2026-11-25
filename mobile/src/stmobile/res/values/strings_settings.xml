@@ -246,8 +246,11 @@
     <string name="mobile_settings_watch_history_auto_desc">Saved if your YouTube account keeps history</string>
     <string name="mobile_settings_watch_history_on">Always save</string>
     <string name="mobile_settings_watch_history_on_desc">Turns your YouTube watch history back on each time MeeTube opens</string>
-    <string name="mobile_settings_watch_history_off">Don\'t save</string>
-    <string name="mobile_settings_watch_history_off_desc">MeeTube stops telling YouTube what you watch</string>
+    <string name="mobile_settings_watch_history_off">Don\'t save or show</string>
+    <string name="mobile_settings_watch_history_off_desc">Stops saving what you watch and hides History</string>
+    <string name="mobile_settings_watch_history_off_shown">Don\'t save, keep showing</string>
+    <string name="mobile_settings_watch_history_off_shown_desc">Stops saving what you watch; History keeps what it has</string>
+    <string name="mobile_you_history_empty">No watch history</string>
     <string name="mobile_settings_clear_watch_history">Clear watch history</string>
     <string name="mobile_settings_clear_watch_history_summary">Deletes the videos you watched from your YouTube history</string>
     <string name="mobile_settings_clear_watch_history_confirm">Clear watch history?</string>

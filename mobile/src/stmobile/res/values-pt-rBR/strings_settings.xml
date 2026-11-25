@@ -194,8 +194,11 @@
     <string name="mobile_settings_watch_history_auto_desc">Salvo se a sua conta do YouTube mantém o histórico</string>
     <string name="mobile_settings_watch_history_on">Salvar sempre</string>
     <string name="mobile_settings_watch_history_on_desc">Liga de novo o seu histórico de exibição do YouTube toda vez que o MeeTube abre</string>
-    <string name="mobile_settings_watch_history_off">Não salvar</string>
-    <string name="mobile_settings_watch_history_off_desc">O MeeTube para de informar ao YouTube o que você assiste</string>
+    <string name="mobile_settings_watch_history_off">Não salvar nem mostrar</string>
+    <string name="mobile_settings_watch_history_off_desc">Para de salvar o que você assiste e oculta o histórico</string>
+    <string name="mobile_settings_watch_history_off_shown">Não salvar, continuar mostrando</string>
+    <string name="mobile_settings_watch_history_off_shown_desc">Para de salvar o que você assiste; o histórico mantém o que tem</string>
+    <string name="mobile_you_history_empty">Nenhum histórico de exibição</string>
     <string name="mobile_settings_clear_watch_history">Limpar histórico de exibição</string>
     <string name="mobile_settings_clear_watch_history_summary">Apaga os vídeos que você assistiu do seu histórico do YouTube</string>
     <string name="mobile_settings_clear_watch_history_confirm">Limpar histórico de exibição?</string>

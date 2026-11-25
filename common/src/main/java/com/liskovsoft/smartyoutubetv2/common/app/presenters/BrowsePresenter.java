@@ -27,6 +27,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.models.errors.PasswordError;
 import com.liskovsoft.smartyoutubetv2.common.app.models.errors.SignInError;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.DefaultNetworkRecoveryWatcher;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService;
+import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.State;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.base.BasePresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.dialogs.VideoActionPresenter;
@@ -1464,7 +1465,9 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
 
         getView().showProgressBar(true);
 
-        if (getSignInService().isSigned()) {
+        if (isHistorySection() && GeneralData.instance(getContext()).getHistoryState() == GeneralData.HISTORY_DISABLED) {
+            getView().showProgressBar(false); // issue #340: "Don't save" shows no History, signed in or not
+        } else if (getSignInService().isSigned()) {
             callback.run();
         } else if (getView() != null) {
             if (isHistorySection() && !VideoStateService.instance(getContext()).isEmpty()) {
@@ -1910,7 +1913,8 @@ public class BrowsePresenter extends BasePresenter<BrowseView> implements Sectio
     }
 
     private void appendLocalHistory(VideoGroup videoGroup) {
-        if (!isHistorySection()) {
+        // Issue #340: "Don't save" keeps watched videos out of History, the signed-out local one too.
+        if (!isHistorySection() || GeneralData.instance(getContext()).getHistoryState() == GeneralData.HISTORY_DISABLED) {
             return;
         }
 

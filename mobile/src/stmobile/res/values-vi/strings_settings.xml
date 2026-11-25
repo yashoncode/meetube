@@ -245,8 +245,11 @@
     <string name="mobile_settings_watch_history_auto_desc">Lưu lại nếu tài khoản YouTube của bạn có bật lịch sử</string>
     <string name="mobile_settings_watch_history_on">Luôn lưu</string>
     <string name="mobile_settings_watch_history_on_desc">Tự bật lại lịch sử xem YouTube mỗi khi MeeTube khởi động</string>
-    <string name="mobile_settings_watch_history_off">Không lưu</string>
-    <string name="mobile_settings_watch_history_off_desc">MeeTube ngừng báo cho YouTube biết bạn đã xem gì</string>
+    <string name="mobile_settings_watch_history_off">Không lưu và không hiện</string>
+    <string name="mobile_settings_watch_history_off_desc">Ngừng lưu nội dung bạn xem và ẩn nhật ký</string>
+    <string name="mobile_settings_watch_history_off_shown">Không lưu, vẫn hiện</string>
+    <string name="mobile_settings_watch_history_off_shown_desc">Ngừng lưu nội dung bạn xem; nhật ký giữ nguyên</string>
+    <string name="mobile_you_history_empty">Không có nhật ký xem</string>
     <string name="mobile_settings_clear_watch_history">Xóa lịch sử xem</string>
     <string name="mobile_settings_clear_watch_history_summary">Xóa các video đã xem khỏi lịch sử YouTube của bạn</string>
     <string name="mobile_settings_clear_watch_history_confirm">Xóa lịch sử xem?</string>

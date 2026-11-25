@@ -871,6 +871,8 @@ final class AppPages {
                         context.getString(R.string.mobile_settings_watch_history_on_desc), GeneralData.HISTORY_ENABLED)
                 .option(context.getString(R.string.mobile_settings_watch_history_off),
                         context.getString(R.string.mobile_settings_watch_history_off_desc), GeneralData.HISTORY_DISABLED)
+                .option(context.getString(R.string.mobile_settings_watch_history_off_shown),
+                        context.getString(R.string.mobile_settings_watch_history_off_shown_desc), GeneralData.HISTORY_DISABLED_SHOWN)
                 .bind(generalData::getHistoryState, state -> {
                     generalData.setHistoryState(state);
                     MediaServiceManager.instance().enableHistory(state == GeneralData.HISTORY_AUTO || state == GeneralData.HISTORY_ENABLED);

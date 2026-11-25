@@ -164,8 +164,11 @@
     <string name="mobile_settings_watch_history_auto_desc">Se guarda si tu cuenta de YouTube guarda el historial</string>
     <string name="mobile_settings_watch_history_on">Guardar siempre</string>
     <string name="mobile_settings_watch_history_on_desc">Vuelve a activar tu historial de YouTube cada vez que abres MeeTube</string>
-    <string name="mobile_settings_watch_history_off">No guardar</string>
-    <string name="mobile_settings_watch_history_off_desc">MeeTube deja de contarle a YouTube lo que ves</string>
+    <string name="mobile_settings_watch_history_off">No guardar ni mostrar</string>
+    <string name="mobile_settings_watch_history_off_desc">Deja de guardar lo que ves y oculta el historial</string>
+    <string name="mobile_settings_watch_history_off_shown">No guardar, seguir mostrando</string>
+    <string name="mobile_settings_watch_history_off_shown_desc">Deja de guardar lo que ves; el historial conserva lo que tiene</string>
+    <string name="mobile_you_history_empty">No hay historial de reproducciones</string>
     <string name="mobile_settings_clear_watch_history">Borrar historial de reproducciones</string>
     <string name="mobile_settings_clear_watch_history_summary">Borra de tu historial de YouTube los vídeos que has visto</string>
     <string name="mobile_settings_clear_watch_history_confirm">¿Borrar el historial de reproducciones?</string>

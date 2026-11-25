@@ -501,8 +501,10 @@ public class MediaServiceManager implements OnAccountChange {
     }
 
     public void enableHistory(boolean enable) {
-        if (enable) { // don't disable history for other clients
-            RxHelper.runAsyncUser(() -> mContentService.enableHistory(true));
+        // Signed in, a pause would stop history on the account's other devices too. Signed out (issue #340) the
+        // history is this phone's own, and YouTube records it from /player itself, so only a pause keeps it out.
+        if (enable || getSelectedAccount() == null) {
+            RxHelper.runAsyncUser(() -> mContentService.enableHistory(enable));
         }
     }
 

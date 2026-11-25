@@ -205,8 +205,11 @@
     <string name="mobile_settings_watch_history_auto_desc">Zapisywana, jeśli konto YouTube przechowuje historię</string>
     <string name="mobile_settings_watch_history_on">Zawsze zapisuj</string>
     <string name="mobile_settings_watch_history_on_desc">Włącza historię oglądania YouTube przy każdym uruchomieniu MeeTube</string>
-    <string name="mobile_settings_watch_history_off">Nie zapisuj</string>
-    <string name="mobile_settings_watch_history_off_desc">MeeTube przestaje informować YouTube, co oglądasz</string>
+    <string name="mobile_settings_watch_history_off">Nie zapisuj i nie pokazuj</string>
+    <string name="mobile_settings_watch_history_off_desc">Przestaje zapisywać, co oglądasz, i ukrywa historię</string>
+    <string name="mobile_settings_watch_history_off_shown">Nie zapisuj, ale pokazuj</string>
+    <string name="mobile_settings_watch_history_off_shown_desc">Przestaje zapisywać, co oglądasz; historia zostaje bez zmian</string>
+    <string name="mobile_you_history_empty">Brak historii oglądania</string>
     <string name="mobile_settings_clear_watch_history">Wyczyść historię oglądania</string>
     <string name="mobile_settings_clear_watch_history_summary">Usuwa obejrzane filmy z historii YouTube</string>
     <string name="mobile_settings_clear_watch_history_confirm">Wyczyścić historię oglądania?</string>

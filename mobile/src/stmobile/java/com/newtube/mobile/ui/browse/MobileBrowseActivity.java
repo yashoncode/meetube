@@ -2307,11 +2307,30 @@ public class MobileBrowseActivity extends MobileActivity
         mYouHistoryToStart = true;
         // MEETUBE(you refresh): with nothing cached the row keeps its cards until the fresh ones land;
         // an empty list hid it and the fetch brought it back, a blink on every visit.
+        // Issue #340: "Don't save" (not "Don't save, keep showing") hides History, signed in or not.
+        boolean hidden = com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData.instance(this).getHistoryState()
+                == com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData.HISTORY_DISABLED;
+        if (hidden) {
+            com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mYouHistoryAction);
+            showYouHistory(null);
+            return;
+        }
         List<Video> cached = FeedCache.get(MediaGroup.TYPE_HISTORY);
         if (cached != null || mYouHistoryAdapter.getItemCount() == 0) {
             showYouHistory(cached);
         }
         com.liskovsoft.sharedutils.rx.RxHelper.disposeActions(mYouHistoryAction);
+        if (com.liskovsoft.smartyoutubetv2.common.misc.MediaServiceManager.instance().getSelectedAccount() == null) {
+            // Issue #340: signed out, the History page lists this phone's watched videos (BrowsePresenter.appendLocalHistory),
+            // so the row does too, newest first.
+            List<Video> local = new ArrayList<>();
+            for (com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.State state
+                    : com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.instance(this).getStates()) {
+                local.add(0, state.video);
+            }
+            showYouHistory(local);
+            return;
+        }
         mYouHistoryAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
                 com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService().getHistoryObserve(),
                 group -> runOnUiThread(() -> showYouHistory(group != null ? VideoGroup.from(group).getVideos() : null)),
@@ -2332,6 +2351,7 @@ public class MobileBrowseActivity extends MobileActivity
         }
         RecyclerView list = findViewById(R.id.mobile_you_history_list);
         list.setVisibility(shown.isEmpty() ? View.GONE : View.VISIBLE);
+        findViewById(R.id.mobile_you_history_empty).setVisibility(shown.isEmpty() ? View.VISIBLE : View.GONE);
         // MEETUBE(issue #215): decide before the swap. A card inserted in front kept the old first card
         // anchored at the left edge, so the row came back one video in, the same one each time, and
         // the post-swap check saw a row that could scroll left and left it there.

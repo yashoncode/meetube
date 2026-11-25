@@ -303,8 +303,21 @@
                         android:paddingHorizontal="16dp"
                         android:text="@string/header_history"
                         android:textColor="@color/mobile_color_on_surface"
-                        android:textSize="20sp"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
+
+                    <!-- Issue #340: shown instead of the row when History has nothing; faint, like a hint. -->
+                    <TextView
+                        android:id="@+id/mobile_you_history_empty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:alpha="0.45"
+                        android:paddingHorizontal="16dp"
+                        android:paddingBottom="8dp"
+                        android:text="@string/mobile_you_history_empty"
+                        android:textColor="@color/mobile_color_on_surface"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/mobile_you_history_list"

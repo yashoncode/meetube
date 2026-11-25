@@ -167,8 +167,11 @@
     <string name="mobile_settings_watch_history_auto_desc">Сохранять историю, если она включена в аккаунте YouTube</string>
     <string name="mobile_settings_watch_history_on">Всегда сохранять</string>
     <string name="mobile_settings_watch_history_on_desc">При каждом запуске MeeTube снова включает историю просмотров YouTube</string>
-    <string name="mobile_settings_watch_history_off">Не сохранять</string>
-    <string name="mobile_settings_watch_history_off_desc">MeeTube перестаёт передавать YouTube информацию о просмотренных видео</string>
+    <string name="mobile_settings_watch_history_off">Не сохранять и не показывать</string>
+    <string name="mobile_settings_watch_history_off_desc">Просмотры не сохраняются, история скрыта</string>
+    <string name="mobile_settings_watch_history_off_shown">Не сохранять, но показывать</string>
+    <string name="mobile_settings_watch_history_off_shown_desc">Просмотры не сохраняются, история остаётся как есть</string>
+    <string name="mobile_you_history_empty">История просмотра пуста</string>
     <string name="mobile_settings_clear_watch_history">Очистить историю просмотров</string>
     <string name="mobile_settings_clear_watch_history_summary">Удаляет просмотренные видео из истории YouTube</string>
     <string name="mobile_settings_clear_watch_history_confirm">Очистить историю просмотров?</string>

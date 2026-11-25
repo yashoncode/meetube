@@ -540,7 +540,8 @@ public class VideoStateController extends BasePlayerController {
     private void savePosition() {
         Video video = getVideo();
 
-        if (video == null || getPlayer() == null || !getPlayer().containsMedia()) {
+        // Issue #340: "Don't save" keeps this phone's list (signed out, it is the History page) as it was.
+        if (video == null || getPlayer() == null || !getPlayer().containsMedia() || !getGeneralData().isHistorySaved()) {
             return;
         }
 
@@ -623,7 +624,7 @@ public class VideoStateController extends BasePlayerController {
 
         if (video == null || mIncognito || (sOwnHistory != null && sOwnHistory.test(video)) || getPlayer() == null || !getPlayer().containsMedia()
                 || (video.isRemote && getRemoteControlData().isRemoteHistoryDisabled())
-                || getGeneralData().getHistoryState() == GeneralData.HISTORY_DISABLED) {
+                || !getGeneralData().isHistorySaved()) {
             return;
         }
 

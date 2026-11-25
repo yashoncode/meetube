@@ -23,7 +23,8 @@ public class GeneralData implements ProfileChangeListener {
     public static final int BACKGROUND_PLAYBACK_SHORTCUT_BACK = 2;
     public static final int HISTORY_AUTO = 0;
     public static final int HISTORY_ENABLED = 1;
-    public static final int HISTORY_DISABLED = 2;
+    public static final int HISTORY_DISABLED = 2; // not saved, and History shows nothing
+    public static final int HISTORY_DISABLED_SHOWN = 3; // not saved, History still shows what it had (issue #340)
     public static final int ACTION_UNDEFINED = -1;
     public static final int ACTION_VOLUME_UP_DOWN = 0;
     public static final int ACTION_NEXT_PREVIOUS = 1;
@@ -398,6 +399,11 @@ public class GeneralData implements ProfileChangeListener {
 
     public void setHistoryEnabled(boolean enabled) {
         setHistoryState(enabled ? HISTORY_ENABLED : HISTORY_AUTO);
+    }
+
+    /** False for both "Don't save" choices. */
+    public boolean isHistorySaved() {
+        return mHistoryState != HISTORY_DISABLED && mHistoryState != HISTORY_DISABLED_SHOWN;
     }
 
     public int getHistoryState() {

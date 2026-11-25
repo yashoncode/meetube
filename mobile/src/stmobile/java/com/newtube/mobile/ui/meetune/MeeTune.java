@@ -637,7 +637,8 @@ public final class MeeTune {
                          @Nullable String art) {
         if (videoId.equals(sLastRemembered)) return;
         sLastRemembered = videoId;
-        if (syncingHistory(context)) { // into YouTube Music's History too, as music.youtube.com does
+        // Issue #340: YouTube Music's History is the account's YouTube History, so Settings' "Don't save" stops it too.
+        if (syncingHistory(context) && com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData.instance(context).isHistorySaved()) { // as music.youtube.com does
             Context app = context.getApplicationContext();
             WORKER.execute(() -> {
                 try {
