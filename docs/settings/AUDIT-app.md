@@ -291,7 +291,7 @@ Two entry points share `AccountSettingsPresenter` (a singleton):
 | Check for updates (desc "MeeTube <version>"). On `-Pfdroid` builds this row is just the version line and does nothing | `AppUpdatePresenter.start(true)` -> `PhoneUpdates.showUpdateScreen` | — | MMA hooks (`setPhoneUpdates`) | LIVE | Looks for a newer MeeTube. | |
 | Notify about updates (switch; hidden on F-Droid builds) | `AppUpdateChecker#isUpdateCheckEnabled` / `#setUpdateCheckEnabled` (minIntervalMs > 0) | on | `AppUpdates`:192 (automatic checks), `AppUpdates`:464 (the You badge) | LIVE | Tells you when an update is out. | |
 | Source code (desc "github.com/aleixrodriala/newtube") | `Utils.openLinkExt` | — | — | LIVE | Opens the repository. | |
-| License (desc "MIT") | `Utils.openLinkExt` | — | — | LIVE | Opens the licence. | |
+| License (desc "GPLv3") | `Utils.openLinkExt` | — | — | LIVE | Opens the licence. | |
 | Send diagnostic log (desc "For bug reports. Includes the videos and channels you opened; passwords and sign-in tokens are removed") | `DiagnosticLog.share` | — | `DiagnosticLog.start` in MMA | LIVE | Shares recent app logs for a bug report. | |
 | Star MeeTube on GitHub *[stmobile]* (desc "Free and open source. A star helps others find it") | `AboutShareRows` | — | — | LIVE | Opens the repo to star it. | |
 | Share MeeTube *[stmobile]* (desc "Send the link to someone who'd like it") | `AboutShareRows.share` | — | — | LIVE | System share sheet with the site link. | MeeTube's own share targets are excluded. |

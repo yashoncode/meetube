@@ -190,7 +190,7 @@ non-embeddable video, one normal control; LTE and Wi-Fi; play past 120 s.
     `backoff_time_ms` (= the ad wait), `RELOAD_PLAYER_RESPONSE`, `SABR_REDIRECT`; recheck
     `EnabledTrackTypes` (googlevideo VIDEO_ONLY = 2; STATUS.md assumed none). Arms: **WEB_EMBEDDED SABR**
     (the phone already receives embedded SABR metadata), WEB and MWEB SABR on the kids set. Copy-safe
-    references: googlevideo, SmartTube `library/sabr` (MIT); LibreTube/Grayjay for reading only.
+    references: googlevideo, SmartTube `library/sabr` (MIT); LibreTube (GPL-3.0, copyable since MeeTube went GPLv3); Grayjay for reading only.
 11. Low: ANDROID_VR Pico/XR 1.64.34/1.69.27 DASH with an OAuth bearer (Morphe requires sign-in; does it
     accept MeeTube's TV device-flow bearer?) — normal videos only, no kids. ANDROID_CREATOR needs an
     Android account token, almost certainly not the TV bearer.
@@ -590,7 +590,7 @@ Token from a jsdom worker (bgutils 3.2.0) using the **old `/att/get` challenge**
 | project | language / player | license | size | state |
 |---|---|---|---|---|
 | yuliskov/SmartTube `exoplayer-amzn-2.10.6/library/sabr` | Java, ExoPlayer 2.10.6, port of yt-dlp's SABR processor | MIT | ~8.6k LOC | active (f406bc7 09-17); yuliskov 09-09: "very poor … live or past live videos are completely unplayable" |
-| MeeTube `sabr-media3` | media3 1.10.1 | MIT | — | opt-in, off in release (dies ~60 s without POT except VISIONOS) |
+| MeeTube `sabr-media3` | media3 1.10.1 | GPL-3.0 | — | opt-in, off in release (dies ~60 s without POT except VISIONOS) |
 | LibreTube `player/` | Kotlin, media3 | GPL-3.0 | ~2.3k LOC | shipped v32 (08-20), VOD only, VISIONOS context |
 | grayjay-android `sabr` | Kotlin, media3 1.9.0 | Source-First 1.1 | ~5k LOC | default on since 08-22 |
 | A-EDev/Flow `player/sabr` | Kotlin, media3 1.11.0 | GPL-3.0 | ~3.6k LOC | active 09-28; SABR only as an upgrade when direct streams top out <720p |
@@ -599,8 +599,8 @@ Token from a jsdom worker (bgutils 3.2.0) using the **old `/att/get` challenge**
 | chadacious/sabr-exoplayer | Kotlin, media3 1.4.1, DASH + `sabr://` DataSource | MIT | ~3.4k LOC | dormant since 2025-11 |
 | felipeucelli/JavaTube | Java downloader | MIT | — | default VISION_OS since 09-06 |
 
-Copy-safe for MIT MeeTube: SmartTube, googlevideo, sabr-exoplayer, JavaTube, yt-dlp (Unlicense). GPL and
-Grayjay: reference only.
+Copy-safe for GPLv3 MeeTube (since 2026-11-25): SmartTube, googlevideo, sabr-exoplayer, JavaTube, yt-dlp (Unlicense),
+and GPL-3.0 or GPL-2.0-or-later code (LibreTube, NewPipe), keeping their notices. GPL-2.0-only and Grayjay: reference only.
 
 Architectures: (a) custom MediaSource/MediaPeriod + ChunkSampleStream fed by a session pump (Grayjay,
 LibreTube, SmartTube, MeeTube `sabr-media3`); (b) DASH manifest with `sabr://` URIs + DataSource

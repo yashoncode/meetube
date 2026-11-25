@@ -4,8 +4,8 @@ Built 2026-10-02 on `feat/gestures`. The player's one-finger swipes, what each o
 why. YouTube 21.18 numbers were measured on the reference emulator (stock app, `ytref2_api35`
 clone of `ytref_api35`); the conventions for brightness, volume and seek swipes come from
 reading the source of ReVanced's swipe controls, NewPipe, VLC, LibreTube, mpv-android and Just
-Player (behaviour only: only mpv-android (MIT) and Just Player (Unlicense) are compatible with
-this repo's licence, and no code was taken from any of them).
+Player (behaviour only: no code was taken from any of them. Since MeeTube became GPLv3 on
+2026-11-25, the GPL ones are copyable too, with their notices kept).
 
 ## What each swipe does
 
