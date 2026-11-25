@@ -249,8 +249,15 @@ final class TranscriptSheet {
                             return boxStart + (boxEnd - boxStart) / 4 - viewStart; // a quarter down
                         }
                     };
+                    // MEETUBE(issue #311): opened mid-video, the smooth scroll ran from line 0 through
+                    // every row to the one said, restarted on each tick until it got there: a stutter.
+                    // Off screen it jumps; a scroll already running is left to finish.
                     View row = layout.findViewByPosition(said);
-                    if (row == null || Math.abs(row.getTop() - list.getHeight() / 4) > row.getHeight()) {
+                    if (layout.isSmoothScrolling()) {
+                        // let it land
+                    } else if (row == null) {
+                        layout.scrollToPositionWithOffset(said, list.getHeight() / 4);
+                    } else if (Math.abs(row.getTop() - list.getHeight() / 4) > row.getHeight()) {
                         scroller.setTargetPosition(said);
                         layout.startSmoothScroll(scroller);
                     }
