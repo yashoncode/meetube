@@ -59,6 +59,12 @@ public final class Glass {
         return playerButtons(context) == BUTTONS_FROSTED;
     }
 
+    /** A top bar's frost tint: the page colour (black, or white in the light theme) at 70%, never washed out. */
+    public static int barTint(android.content.Context context) {
+        return (androidx.core.content.ContextCompat.getColor(context,
+                com.liskovsoft.smartyoutubetv2.tv.R.color.mobile_color_background) & 0xFFFFFF) | 0xB3000000;
+    }
+
     public static void blur(View glass, View source) {
         if (glass instanceof GlassView && source instanceof GlassSource) {
             ((GlassView) glass).setSource((GlassSource) source);

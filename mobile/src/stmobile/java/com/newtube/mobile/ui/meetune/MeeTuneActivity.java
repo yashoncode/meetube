@@ -148,6 +148,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         }
         com.newtube.mobile.ui.common.GlassView topFrost = mTopFrost;
         topFrost.setBlur(24f);
+        if (!mYouTubeBar) topFrost.setTint(Glass.barTint(this)); // a dark (light theme: white) frost, not washed out
         Glass.blur(topFrost, source);
 
         mAdapter = new MeeTuneAdapter(this);
@@ -182,7 +183,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                 bottom = Math.max(bottom, mTopChips.getTop() + mTopChips.getTranslationY()
                         + mTopChips.getHeight() * mTopChips.getAlpha());
             }
-            float slide = Math.min(0f, bottom + (mYouTubeBar ? 0 : MeeTuneAdapter.dp(this, FADE_DP)) - topFrost.getBottom());
+            // Only YouTube mode's flat bar follows them; the progressive frost stays put, as Search's
+            // (sliding up, its dark top went under the status bar and the row kept only the faint tail).
+            float slide = mYouTubeBar ? Math.min(0f, bottom - topFrost.getBottom()) : 0f;
             if (topFrost.getTranslationY() != slide) topFrost.setTranslationY(slide);
             return true;
         });
@@ -740,7 +743,10 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
                     MeeTuneAdapter.dp(this, 8));
             frame.setClipToPadding(false);
             mHomeChips = new com.newtube.mobile.ui.common.GlassChipTrack(this);
-            mHomeChips.setGlassSource(null);
+            // frosted from the page itself (as Search's chips), not see-through over the shelves
+            View page = findViewById(R.id.meetune_blur);
+            mHomeChips.setGlassSource(page instanceof com.newtube.mobile.ui.common.GlassSource
+                    ? (com.newtube.mobile.ui.common.GlassSource) page : null);
             mHomeChips.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
                 @Override
                 public void onViewAttachedToWindow(View v) { // as Search's: the pill runs on to the picked chip
@@ -1496,7 +1502,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         int chipsHeight = chips ? MeeTuneAdapter.dp(this, CHIPS_DP) : 0;
         int frost = mStatusTop + MeeTuneAdapter.dp(this, 64) + chipsHeight + (mYouTubeBar ? 0 : MeeTuneAdapter.dp(this, FADE_DP));
         // Progressive: full under the status bar, then thinning out over the row (and chips) to nothing.
-        if (!mYouTubeBar) mTopFrost.setFadeBottom(frost - mStatusTop);
+        if (!mYouTubeBar) mTopFrost.setFadeBottom(frost - mStatusTop); // progressive: full at the status bar, thinning out to nothing
         if (mTopFrost.getLayoutParams().height != frost) {
             mTopFrost.getLayoutParams().height = frost;
             mTopFrost.requestLayout();

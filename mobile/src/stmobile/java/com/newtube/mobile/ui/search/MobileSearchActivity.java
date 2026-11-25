@@ -279,6 +279,38 @@ public class MobileSearchActivity extends MobileActivity
     /** MEETUBE(youtube mode): the docked tab bar, there only when Search came from Browse. */
     private boolean mNavDocked;
 
+    /**
+     * MEETUBE(glass): the top frost starts at the status bar, the results scrolling under both. The
+     * content keeps no top inset; the screen moves its own top views down by it instead.
+     */
+    @Override
+    protected androidx.core.graphics.Insets contentInsets(WindowInsetsCompat windowInsets) {
+        androidx.core.graphics.Insets insets = super.contentInsets(windowInsets);
+        shiftForStatusBar(insets.top);
+        return androidx.core.graphics.Insets.of(insets.left, 0, insets.right, insets.bottom);
+    }
+
+    private int mStatusTop;
+
+    private void shiftForStatusBar(int top) {
+        int delta = top - mStatusTop;
+        if (delta == 0) return;
+        mStatusTop = top;
+        for (int id : new int[] {R.id.mobile_search_grid, R.id.mobile_search_suggestions}) {
+            View v = findViewById(id);
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop() + delta, v.getPaddingRight(), v.getPaddingBottom());
+        }
+        for (int id : new int[] {R.id.mobile_feed_skeleton, R.id.mobile_search_message, R.id.mobile_search_chip_track,
+                R.id.mobile_search_chips_scroll, R.id.mobile_search_toolbar}) {
+            View v = findViewById(id);
+            ((android.view.ViewGroup.MarginLayoutParams) v.getLayoutParams()).topMargin += delta;
+            v.requestLayout();
+        }
+        View frost = findViewById(R.id.mobile_search_frost); // solid behind the status bar, fading below the chips
+        frost.getLayoutParams().height += delta;
+        frost.requestLayout();
+    }
+
     @Override
     protected boolean shouldInsetContentForNavigationBar() {
         return !mNavDocked;
@@ -388,7 +420,9 @@ public class MobileSearchActivity extends MobileActivity
         // MEETUBE(glass segmented): the same filters as one glass segment (Settings > Customization > Chips style).
         mChipTrack = findViewById(R.id.mobile_search_chip_track);
         mChipTrack.setGlassSource(results);
-        com.newtube.mobile.ui.common.Glass.blur(findViewById(R.id.mobile_search_frost), results);
+        com.newtube.mobile.ui.common.GlassView frost = findViewById(R.id.mobile_search_frost);
+        frost.setTint(com.newtube.mobile.ui.common.Glass.barTint(this));
+        com.newtube.mobile.ui.common.Glass.blur(frost, results);
         java.util.List<CharSequence> labels = new java.util.ArrayList<>();
         for (int[] entry : CHIPS) {
             labels.add(getString(entry[0]));
