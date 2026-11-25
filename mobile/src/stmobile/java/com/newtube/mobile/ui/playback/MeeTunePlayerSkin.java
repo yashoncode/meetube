@@ -929,6 +929,12 @@ public final class MeeTunePlayerSkin {
         android.graphics.drawable.Drawable d = view.getDrawable();
         int w = d == null ? 0 : d.getIntrinsicWidth(), h = d == null ? 0 : d.getIntrinsicHeight();
         if (w <= 0 || h <= 0) return d; // no bitmap behind it (a colour, a drawn cover): nothing to lose
+        if (d instanceof android.graphics.drawable.BitmapDrawable) { // a plain copy, not a software redraw
+            android.graphics.Bitmap b = ((android.graphics.drawable.BitmapDrawable) d).getBitmap();
+            if (b != null && !b.isRecycled() && b.getConfig() != null && b.getConfig() != android.graphics.Bitmap.Config.HARDWARE) {
+                return new android.graphics.drawable.BitmapDrawable(view.getResources(), b.copy(b.getConfig(), false));
+            }
+        }
         float s = Math.min(1f, 512f / Math.max(w, h));
         android.graphics.Bitmap copy = android.graphics.Bitmap.createBitmap(
                 Math.max(1, Math.round(w * s)), Math.max(1, Math.round(h * s)), android.graphics.Bitmap.Config.ARGB_8888);
@@ -2125,7 +2131,10 @@ public final class MeeTunePlayerSkin {
         }
     }
 
-    /** The next song's cover goes to Glide's disk cache now, so it shows at once when that song starts. */
+    /**
+     * The next song's cover is decoded now, at the cover's size, into Glide's memory cache: the switch
+     * finds it at once, where a disk-only fetch still left the spot empty while it decoded.
+     */
     private void fetchNextArt() {
         android.content.Context context = mRoot.getContext().getApplicationContext();
         com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.SuggestionsController suggestions =
@@ -2135,21 +2144,26 @@ public final class MeeTunePlayerSkin {
         if (next == null || next.videoId == null) return;
         String art = MeeTune.art(next);
         String id = next.videoId;
-        Glide.with(context).downloadOnly().load(art).listener(new com.bumptech.glide.request.RequestListener<java.io.File>() {
+        int w = mArt.getWidth(), h = mArt.getHeight();
+        if (w <= 0 || h <= 0) return;
+        String hq = "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg";
+        Glide.with(context).load(NO_MAXRES.contains(id) ? hq : art).listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
             @Override
             public boolean onLoadFailed(@Nullable com.bumptech.glide.load.engine.GlideException e, Object model,
-                                        @androidx.annotation.NonNull com.bumptech.glide.request.target.Target<java.io.File> target, boolean first) {
-                if (art.endsWith("/maxresdefault.jpg")) NO_MAXRES.add(id);
+                                        @androidx.annotation.NonNull com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, boolean first) {
+                if (art.endsWith("/maxresdefault.jpg") && NO_MAXRES.add(id)) {
+                    Glide.with(context).load(hq).preload(w, h); // the cover it will show instead
+                }
                 return false;
             }
 
             @Override
-            public boolean onResourceReady(@androidx.annotation.NonNull java.io.File file, @androidx.annotation.NonNull Object model,
-                                           com.bumptech.glide.request.target.Target<java.io.File> target,
+            public boolean onResourceReady(@androidx.annotation.NonNull android.graphics.drawable.Drawable d, @androidx.annotation.NonNull Object model,
+                                           com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target,
                                            @androidx.annotation.NonNull com.bumptech.glide.load.DataSource source, boolean first) {
                 return false;
             }
-        }).preload();
+        }).preload(w, h);
         // The fallback too: many songs have no maxresdefault, and a failed load isn't cached, so
         // without it every switch to such a song waited for the 404 and then for hqdefault.
         Glide.with(context).downloadOnly().load("https://i.ytimg.com/vi/" + next.videoId + "/hqdefault.jpg").preload();
