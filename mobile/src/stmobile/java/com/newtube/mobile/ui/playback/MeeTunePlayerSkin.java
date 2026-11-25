@@ -741,7 +741,11 @@ public final class MeeTunePlayerSkin {
         @Override
         protected void onDraw(android.graphics.Canvas canvas) {
             mMotion = Math.max(0f, Math.min(1f, mMotion + (mPlaying ? 0.08f : -0.06f)));
-            float w = getWidth(), h = getHeight(), bar = w / 9f, gap = (w - 5 * bar) / 4f;
+            // MEETUNE: drawn inside the padding, which holds the glow; at the edge it was cut square.
+            canvas.save();
+            canvas.translate(getPaddingLeft(), getPaddingTop());
+            float w = getWidth() - getPaddingLeft() - getPaddingRight(), h = getHeight() - getPaddingTop() - getPaddingBottom();
+            float bar = w / 9f, gap = (w - 5 * bar) / 4f;
             float t = android.os.SystemClock.uptimeMillis() / 1000f;
             for (int i = 0; i < 5; i++) {
                 float dance = 0.2f + 0.8f * Math.abs((float) Math.sin(t * SPEED[i] / 2 + PHASE[i]));
@@ -751,6 +755,7 @@ public final class MeeTunePlayerSkin {
                 mRect.set(left, (h - tall) / 2, left + bar, (h + tall) / 2);
                 canvas.drawRoundRect(mRect, bar / 2, bar / 2, mBar);
             }
+            canvas.restore();
             if (mPlaying || mMotion > 0f) postInvalidateOnAnimation();
         }
     }
@@ -988,6 +993,8 @@ public final class MeeTunePlayerSkin {
         int accent = accent(art);
         dimForCover(art);
         ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setColor(accent);
+        mAccent = accent;
+        if (mQueueBars != null) mQueueBars.setColor(accent);
         tintInfoPill(accent);
         Float at = SWUNG.get(mArt);
         if (at != null && Math.abs(at) >= 0.99f) { // it left: come in from the other side
@@ -1411,6 +1418,8 @@ public final class MeeTunePlayerSkin {
     @Nullable private String mQueueKey;
     private boolean mQueueDragging;
     @Nullable private EqBars mQueueBars;
+    /** The cover's accent, for the queue's bars too. */
+    private int mAccent = Color.WHITE;
 
     private void refreshQueue() {
         if (mVideo == null || mVideo.videoId == null) return;
@@ -1619,7 +1628,6 @@ public final class MeeTunePlayerSkin {
                             if (event.getActionMasked() == android.view.MotionEvent.ACTION_DOWN) mQueueDrag.startDrag(holder);
                             return false;
                         });
-                        ((EqBars) view.findViewById(R.id.meetune_queue_bars)).setColor(Color.WHITE);
                     }
                     return holder;
                 }
@@ -1645,6 +1653,7 @@ public final class MeeTunePlayerSkin {
                     bars.setVisibility(now ? View.VISIBLE : View.GONE);
                     if (now) {
                         mQueueBars = bars;
+                        bars.setColor(mAccent); // the cover's colour, as the pill's bars
                         bars.setPlaying(mControls.playing());
                     } else if (mQueueBars == bars) {
                         mQueueBars = null;

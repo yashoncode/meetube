@@ -54,7 +54,8 @@ final class MeeTunePlaying extends Drawable {
     public void draw(@NonNull Canvas canvas) {
         PlaybackPresenter player = PlaybackPresenter.instance(mContext);
         Video video = player.getVideo();
-        boolean current = video != null && mVideoId.equals(video.videoId) && MeeTune.isMusic(video);
+        // The last song stays the player's video after it closes: no player, no mark (the cover kept it).
+        boolean current = video != null && player.getView() != null && mVideoId.equals(video.videoId) && MeeTune.isMusic(video);
         boolean playing = current && player.isPlaying();
         unscheduleSelf(mTick);
         scheduleSelf(mTick, SystemClock.uptimeMillis() + (playing ? 33 : current ? 300 : 1000));

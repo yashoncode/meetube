@@ -71,9 +71,11 @@
     <view
         class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$EqBars"
         android:id="@+id/meetune_queue_bars"
-        android:layout_width="18dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="10dp"
+        android:layout_width="30dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="-6dp"
+        android:padding="6dp"
         android:visibility="gone" />
 
     <ImageView
