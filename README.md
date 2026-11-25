@@ -280,4 +280,4 @@ And thank you to everyone who sent a fix, reported a bug or suggested an idea. M
 
 ## License
 
-MIT, see [LICENSE](LICENSE). The original NewTube and SmartTube copyright notices are kept. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+MeeTube is © 2026-present yashoncode, licensed under the GNU General Public License v3.0, see [LICENSE](LICENSE). Code that came from SmartTube and NewTube keeps its MIT notice (© 2020-present yuliskov), and every other notice is in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
