@@ -473,20 +473,43 @@ final class MusicApi {
         LocaleManager locale = LocaleManager.instance();
         JSONObject client = new JSONObject().put("clientName", "WEB_REMIX").put("clientVersion", version)
                 .put("hl", locale.getLanguage());
-        // YouTube Music answers HTTP 400 to a gl that is no country (a phone in plain "Arabic" has none,
-        // a test locale says XB); youtube.com takes them, so only MeeTune failed. Left out, the IP decides.
+        // YouTube Music answers HTTP 400 to a gl it does not serve: no country (plain "Arabic"), a test
+        // locale (XA, XB), or a country without YouTube Music (issue #335: CN; also IR, KP, CU, SY, MO).
+        // youtube.com takes them, so only MeeTune failed. Left out, the IP decides.
         String country = locale.getCountry();
-        if (country != null && country.matches("[A-Z]{2}") && !"XB".equals(country) && !"XA".equals(country)) {
+        if (country != null && country.matches("[A-Z]{2}") && !country.equals(sRejectedGl)) {
             client.put("gl", country);
         }
         body.put("context", new JSONObject().put("client", client));
-        Request.Builder request = new Request.Builder()
+        try {
+            return signed(context, request(endpoint, body, version));
+        } catch (HttpError e) {
+            if (e.code != 400 || !client.has("gl")) throw e;
+            sRejectedGl = country; // ponytail: one remembered country; a locale switch mid-session costs one 400
+            client.remove("gl");
+            return signed(context, request(endpoint, body, version));
+        }
+    }
+
+    private static Request.Builder request(String endpoint, JSONObject body, String version) {
+        return new Request.Builder()
                 .url(ORIGIN + "/youtubei/v1/" + endpoint + (endpoint.contains("?") ? "&" : "?") + "prettyPrint=false")
                 .post(RequestBody.create(body.toString(), JSON))
                 .header("Origin", ORIGIN).header("X-Origin", ORIGIN).header("Referer", ORIGIN + "/")
                 .header("User-Agent", UA).header("X-Youtube-Client-Name", "67")
                 .header("X-Youtube-Client-Version", version);
-        return signed(context, request);
+    }
+
+    /** The country YouTube Music refused this session, so later calls skip it without a 400 first. */
+    private static volatile String sRejectedGl;
+
+    static final class HttpError extends IOException {
+        final int code;
+
+        HttpError(int code) {
+            super("YouTube Music returned HTTP " + code);
+            this.code = code;
+        }
     }
 
     /**
@@ -542,7 +565,7 @@ final class MusicApi {
                 for (String cookie : response.headers("Set-Cookie")) store.put(ORIGIN + "/", cookie);
             }
             if (!response.isSuccessful()) {
-                throw new IOException("YouTube Music returned HTTP " + response.code());
+                throw new HttpError(response.code());
             }
             try {
                 String text = response.body() != null ? response.body().string() : "";
