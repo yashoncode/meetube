@@ -107,7 +107,7 @@ Every MeeTube release, newest first.<br>
 
 ### Thanks
 
-A big thank you to the community for every report, it's what shapes each update. In this release thanks to @lqchibl-creator, @AbhishekGanvir, @Ishaanj2007, @kylinzang, @SneednFeed88, @vdevloper, @murat0252, @kayronnBR, @zine3064-del and @TimurNTa for reporting, and @socsieuquaypro-sketch for the Vietnamese translation and reports.
+Thanks to the MeeTube Community for every report, it shapes each update. In this release thanks to @lqchibl-creator, @AbhishekGanvir, @Ishaanj2007, @kylinzang, @SneednFeed88, @vdevloper, @murat0252, @kayronnBR, @zine3064-del and @TimurNTa for reporting, and @socsieuquaypro-sketch for the Vietnamese translation and reports.
 
 ## 3.6.0 Sakura
 
