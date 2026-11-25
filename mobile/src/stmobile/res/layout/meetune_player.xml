@@ -290,6 +290,47 @@
             android:textColor="#8CFFFFFF"
             android:textSize="12sp" />
 
+        <!-- MEETUNE(smooth switch): once, after the first eased skip, until its X closes it. -->
+        <com.newtube.mobile.ui.common.GlassView
+            android:id="@+id/meetune_player_smooth_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:visibility="gone"
+            app:glassLiquid="false">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="44dp"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="4dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingVertical="8dp"
+                    android:text="@string/meetune_smooth_switch_hint"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/meetune_player_smooth_hint_close"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@android:string/cancel"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_sheet_close"
+                    app:tint="#FFFFFFFF" />
+
+            </LinearLayout>
+
+        </com.newtube.mobile.ui.common.GlassView>
+
         <LinearLayout
             android:id="@+id/meetune_player_title_row"
             android:layout_width="match_parent"

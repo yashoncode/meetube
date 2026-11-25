@@ -986,6 +986,12 @@ public final class MeeTunePlayerSkin {
         if (video == null) return;
         mVideo = video;
         boolean switching = mVideoId != null && video.videoId != null && !video.videoId.equals(mVideoId);
+        View smoothHint = mRoot.findViewById(R.id.meetune_player_smooth_hint);
+        smoothHint.setVisibility(MeeTune.showSmoothHint(mRoot.getContext()) ? View.VISIBLE : View.GONE);
+        mRoot.findViewById(R.id.meetune_player_smooth_hint_close).setOnClickListener(v -> {
+            MeeTune.closeSmoothHint(v.getContext());
+            smoothHint.setVisibility(View.GONE);
+        });
         Runnable names = () -> {
             mTitle.setText(video.getTitle());
             mTitle.setSelected(true); // marquee

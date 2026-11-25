@@ -213,6 +213,7 @@
     <string name="meetune_speed_dial">Speed dial</string>
     <string name="meetune_cover_glow">Cover glow</string>
     <string name="meetune_cover_glow_summary">A soft glow behind each cover. Turn it off for smoother scrolling</string>
+    <string name="meetune_smooth_switch_hint">Song changes feel slow? Turn off Smooth song changes in MeeTune settings</string>
     <string name="meetune_speed_dial_summary">Home\'s Listen again as pages of square tiles, nine at a glance</string>
     <string name="meetune_set_playback">Playback</string>
     <string name="meetune_stream_high">High</string>

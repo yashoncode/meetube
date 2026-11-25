@@ -1029,6 +1029,20 @@ public final class MeeTune {
         prefs(context).edit().putBoolean("smooth_switch", on).apply();
     }
 
+    /** After the first eased skip, the player shows where to turn it off, until its X closes that. */
+    public static void smoothSwitchHint(Context context) {
+        if (!prefs(context).getBoolean("smooth_hint_due", false)) prefs(context).edit().putBoolean("smooth_hint_due", true).apply();
+    }
+
+    public static boolean showSmoothHint(Context context) {
+        return smoothSwitch(context) && prefs(context).getBoolean("smooth_hint_due", false)
+                && !prefs(context).getBoolean("smooth_hint_closed", false);
+    }
+
+    public static void closeSmoothHint(Context context) {
+        prefs(context).edit().putBoolean("smooth_hint_closed", true).apply();
+    }
+
     /** The soft glow behind covers; off spares each frame the glow, for smoother scrolling. */
     static boolean coverGlow(Context context) {
         return prefs(context).getBoolean("cover_glow", true);

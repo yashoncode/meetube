@@ -1100,6 +1100,7 @@ public class Media3PlayerController implements Player.Listener {
                 mPlayer.clearMediaItems();
             }
             armFadeIn(SWITCH_IN_MS);
+            MeeTune.smoothSwitchHint(mContext);
             Runnable open = mPendingOpen;
             mPendingOpen = null;
             if (open != null) open.run();
