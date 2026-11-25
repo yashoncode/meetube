@@ -78,7 +78,7 @@
     <string name="mobile_lyrics">Lời bài hát</string>
     <string name="mobile_lyrics_none">Không có lời bài hát cho bài này</string>
     <string name="mobile_lyrics_source">Nguồn: %1$s</string>
-    <!-- MEETUBE(lyrics): the lyrics provider chooser (LyricsSheet), in BitChord's words -->
+    <!-- MEETUBE(lyrics): the lyrics provider chooser (LyricsSheet) -->
     <string name="mobile_lyrics_provider_description">Nguồn lời bài hát: %1$s</string>
     <string name="mobile_lyrics_provider_choose">Chọn nguồn lời bài hát</string>
     <string name="mobile_lyrics_provider_current">Nguồn hiện tại</string>

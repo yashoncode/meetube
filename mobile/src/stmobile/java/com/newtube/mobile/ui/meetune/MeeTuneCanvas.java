@@ -47,7 +47,7 @@ import okhttp3.Response;
  * <ol>
  * <li>Spotify's own canvas, when "Spotify canvas first" is on and Spotify is signed in ({@link MeeTuneSpotify});</li>
  * <li>an animated cover: Apple Music's motion artwork, Tidal's video cover, then the community canvas
- *     list (the one BitChord reads);</li>
+ *     list;</li>
  * <li>a music-video loop: a few seconds of the song's official music video, picked from its most
  *     replayed moment, fetched once (on Wi-Fi unless allowed on mobile data) and played from the phone after.</li>
  * </ol>

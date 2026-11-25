@@ -37,8 +37,8 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
 import java.util.Random;
 
 /**
- * MEETUBE(glass): iOS-style liquid glass over a {@link GlassSource} - BitChord's floating bar,
- * ported from Compose to plain RenderNodes, with its numbers:
+ * MEETUBE(glass): iOS-style liquid glass over a {@link GlassSource}: a floating bar
+ * drawn with plain RenderNodes, with these numbers:
  *
  * <ol>
  *   <li>API 31+: the source's live RenderNode, saturated 1.5x and lightly blurred (8dp), so what
@@ -65,7 +65,7 @@ public class GlassView extends FrameLayout {
 
     /*
      * The two shaders below are Kyant's backdrop (github.com/Kyant0/backdrop v2.0.0,
-     * Copyright 2025 Kyant, Apache License 2.0), as vendored by BitChord; see THIRD_PARTY_NOTICES.
+     * Copyright 2025 Kyant, Apache License 2.0); see THIRD_PARTY_NOTICES.
      */
     private static final String ROUNDED_RECT_SDF =
             "float sdRoundedRect(float2 coord, float2 halfSize, float radius) {\n"
@@ -451,7 +451,7 @@ public class GlassView extends FrameLayout {
         canvas.drawRenderNode(node);
     }
 
-    /** Saturate, blur, then (API 33+) refract the blurred backdrop - BitChord's order. */
+    /** Saturate, blur, then (API 33+) refract the blurred backdrop. */
     @RequiresApi(api = Build.VERSION_CODES.S)
     private RenderEffect effect(int w, int h) {
         float blur = mBlurDp * mDensity;

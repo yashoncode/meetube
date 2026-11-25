@@ -80,7 +80,7 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_indian_counts_summary),
                 () -> CountStyle.isIndian(context), on -> CountStyle.setIndian(context, on)).needsRestart());
 
-        // MEETUBE(performance): every screen at the display's top refresh rate (BitChord's setting).
+        // MEETUBE(performance): every screen at the display's top refresh rate.
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_performance)));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_high_refresh),
                 context.getString(R.string.mobile_settings_high_refresh_summary,

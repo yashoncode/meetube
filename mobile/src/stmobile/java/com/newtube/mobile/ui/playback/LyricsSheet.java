@@ -314,12 +314,12 @@ final class LyricsSheet {
     }
 
     /**
-     * MEETUBE(lyrics): BitChord's provider chooser (LyricsProviderSheet), in the player's single-choice
+     * MEETUBE(lyrics): the lyrics provider chooser, in the player's single-choice
      * sheet: every provider with what it has for this song - the current one, lyrics found (tap to
      * use), none, being fetched, or not asked yet (tap to fetch). A pick with lyrics in hand switches
      * at once and closes the list; one not asked yet is fetched, and switched to when it answers with
      * lyrics unless another pick came after it. Neither the current provider nor one that had none can
-     * be picked. For this song only, as in BitChord: the next one starts from the automatic choice.
+     * be picked. For this song only: the next one starts from the automatic choice.
      */
     private static final class Chooser {
         private final Activity mActivity;
