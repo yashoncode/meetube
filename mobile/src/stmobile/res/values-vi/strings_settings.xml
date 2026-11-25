@@ -105,7 +105,6 @@
     <string name="mobile_settings_about">Giới thiệu</string>
     <string name="mobile_settings_coffee">Mời mình ly cà phê</string>
     <string name="mobile_settings_coffee_summary">Nếu bạn yêu thích MeeTube và muốn tiếp sức cho dự án</string>
-    <string name="mobile_settings_coffee_url" translatable="false">https://buymeacoffee.com/yashwynth</string>
 
     <!-- General -->
     <string name="mobile_settings_language">Ngôn ngữ</string>
@@ -631,7 +630,6 @@
     <string name="mobile_settings_coffee_elsewhere">Nơi khác</string>
     <string name="mobile_settings_coffee_elsewhere_summary">Buy Me a Coffee · $</string>
     <string name="mobile_settings_coffee_upi_label">UPI ID</string>
-    <string name="mobile_settings_coffee_upi_id" translatable="false">yashwynth@slc</string>
     <string name="mobile_settings_coffee_copy">Sao chép</string>
     <string name="mobile_settings_coffee_copied">Đã sao chép UPI ID</string>
     <string name="mobile_settings_coffee_qr">Mã QR UPI</string>
@@ -660,7 +658,6 @@
     <string name="mobile_settings_tv_none_found">Không thấy TV nào phản hồi. Hãy kiểm tra lại bước 2 hoặc tự nhập IP của TV. Android TV: Cài đặt › Mạng &amp; Internet › Wi-Fi của bạn. Fire TV: Cài đặt › My Fire TV › Giới thiệu › Mạng.</string>
     <string name="mobile_settings_tv_found">Đã tìm thấy %1$s. Chạm vào địa chỉ bên dưới.</string>
     <string name="mobile_settings_tv_ip">Địa chỉ IP của TV</string>
-    <string name="mobile_settings_tv_ip_hint" translatable="false">192.168.1.20</string>
     <string name="mobile_settings_tv_ip_invalid">Nhập địa chỉ IPv4 của TV, ví dụ %1$s</string>
     <string name="mobile_settings_tv_install">Cài đặt</string>
     <string name="mobile_settings_tv_install_button">Cài đặt MeeTube TV</string>
@@ -713,4 +710,7 @@
     <string name="mobile_settings_youtube_mode">Chế độ OG</string>
     <string name="mobile_settings_youtube_mode_summary">Thẻ video vuông vắn ở mọi nơi và thanh dưới neo sát cạnh dưới với kính mờ, giống giao diện YouTube</string>
     <string name="settings_what_this_does">Giải thích tính năng</string>
+    <string name="mobile_settings_home_bell">Nút thông báo</string>
+    <string name="mobile_settings_bar_shown">Đang hiện. Chạm để ẩn</string>
+    <string name="mobile_settings_bar_hidden">Đang ẩn. Chạm để hiện</string>
 </resources>

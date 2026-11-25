@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- MeeTube branding: override SmartTube's app_name for the mobile flavor only -->
-    <string name="app_name" translatable="false">MeeTube</string>
     <string name="mobile_player_back">Quay lại</string>
     <string name="mobile_player_minimize">Thu nhỏ</string>
     <string name="mobile_player_audio_only">Chỉ âm thanh</string>
@@ -12,8 +11,6 @@
     <string name="mobile_player_fullscreen">Bật/tắt toàn màn hình</string>
     <string name="mobile_player_hide_actions">Ẩn nút thao tác</string>
     <string name="mobile_player_show_actions">Hiện nút thao tác</string>
-    <string name="mobile_player_time_default" translatable="false">0:00</string>
-    <string name="mobile_player_live" translatable="false">LIVE</string>
     <string name="mobile_player_quality">Chất lượng</string>
     <!-- Gear-sheet row and sheet title for choosing the audio language (dubbed videos only). -->
     <string name="mobile_player_audio_track">Bản âm thanh</string>
@@ -35,12 +32,9 @@
     <string name="mobile_player_chapter_button">Chương: %1$s. Hiện tất cả các chương</string>
     <!-- NEWTUBE(seek bar): the duration after the position ("1:10 / 4:26:52"), and the current
          chapter's title after them ("· Introduction"). -->
-    <string name="mobile_player_duration" translatable="false">\u0020/ %1$s</string>
-    <string name="mobile_player_chapter_title" translatable="false">·\u0020%1$s</string>
     <!-- Over the video while a seek-bar drag rests on where playback was: letting go cancels. -->
     <string name="mobile_player_release_to_cancel">Thả tay để hủy</string>
     <!-- Pill over the video while press-and-hold plays it at double speed. -->
-    <string name="mobile_player_hold_speed" translatable="false">2x</string>
     <string name="mobile_player_pip">Hình trong hình</string>
     <string name="mobile_player_previous">Trước đó</string>
     <string name="mobile_player_next">Tiếp theo</string>
@@ -130,13 +124,11 @@
     <string name="mobile_watch_offline">Bạn đang ngoại tuyến</string>
     <!-- Queue card. "%1$s" is the playlist/queue name; the position line is "3 / 48". -->
     <string name="mobile_watch_queue_from">Đang phát từ %1$s</string>
-    <string name="mobile_watch_queue_position" translatable="false">%1$d / %2$d</string>
     <string name="mobile_watch_queue_fallback">hàng chờ</string>
     <string name="mobile_watch_queue_now_playing">Đang phát</string>
     <string name="mobile_watch_description">Mô tả</string>
     <string name="mobile_description_likes">Lượt thích</string>
     <string name="mobile_description_views">Lượt xem</string>
-    <string name="mobile_watch_count_placeholder" translatable="false">&#8211;</string>
     <string name="mobile_watch_share_subject">Xem video này nhé</string>
     <string name="mobile_watch_share_at">Chia sẻ từ %1$s</string>
 
@@ -254,14 +246,8 @@
     <string name="mobile_search_filter_popularity">Độ phổ biến</string>
     <string name="mobile_search_filter_features">Tính năng</string>
     <string name="mobile_search_filter_live">Trực tiếp</string>
-    <string name="mobile_search_filter_4k" translatable="false">4K</string>
-    <string name="mobile_search_filter_hd" translatable="false">HD</string>
     <string name="mobile_search_filter_subtitles">Phụ đề/CC</string>
     <string name="mobile_search_filter_creative_commons">Giấy phép Creative Commons</string>
-    <string name="mobile_search_filter_360" translatable="false">360°</string>
-    <string name="mobile_search_filter_vr180" translatable="false">VR180</string>
-    <string name="mobile_search_filter_3d" translatable="false">3D</string>
-    <string name="mobile_search_filter_hdr" translatable="false">HDR</string>
     <string name="mobile_search_filter_location">Vị trí</string>
     <string name="mobile_search_filter_purchased">Đã mua</string>
     <string name="mobile_search_filter_apply">Áp dụng</string>
@@ -462,9 +448,7 @@
     <string name="mobile_cast_code_open_smarttube">Trong MeeTube TV / SmartTube TV trên TV, hãy mở:</string>
     <string name="mobile_cast_code_open_youtube">Trong YouTube trên TV, hãy mở:</string>
     <string name="mobile_cast_code_find">Tìm mã trong một trong hai ứng dụng TV:</string>
-    <string name="mobile_cast_code_youtube" translatable="false">YouTube</string>
     <string name="mobile_cast_code_youtube_path">Cài đặt → Liên kết bằng mã TV</string>
-    <string name="mobile_cast_code_smarttube" translatable="false">MeeTube TV / SmartTube TV</string>
     <string name="mobile_cast_code_smarttube_path">Cài đặt → Điều khiển từ xa</string>
     <string name="mobile_cast_code_helper">Có dấu gạch ngang hay dấu cách đều được</string>
     <string name="mobile_cast_code_smarttube_benefit">Mẹo: với MeeTube TV / SmartTube TV, bạn có thể chỉnh chất lượng và phụ đề ngay trên TV.</string>
@@ -566,8 +550,6 @@
     <string name="mobile_download_folder">Thư mục tải xuống</string>
     <string name="mobile_download_folder_video">Thư mục video</string>
     <string name="mobile_download_folder_audio">Thư mục nhạc</string>
-    <string name="mobile_download_folder_default_video" translatable="false">Movies/MeeTube</string>
-    <string name="mobile_download_folder_default_audio" translatable="false">Music/MeeTube</string>
     <string name="mobile_download_folder_title">Đang lưu vào: %1$s</string>
     <string name="mobile_download_folder_internal">Bộ nhớ trong</string>
     <string name="mobile_download_folder_choose">Chọn thư mục</string>
@@ -661,18 +643,13 @@
     <string name="mobile_about_share">Chia sẻ MeeTube</string>
     <string name="mobile_about_share_desc">Gửi liên kết cho người bạn nghĩ sẽ thích</string>
     <string name="mobile_about_share_text">MeeTube — ứng dụng YouTube cho điện thoại, xây dựng trên nền tảng SmartTube: %1$s</string>
-    <string name="mobile_about_repo_url" translatable="false">https://github.com/yashoncode/meetube</string>
     <!-- MEETUBE(about): the card at the top of About. -->
-    <string name="mobile_about_dev_name" translatable="false">Yashwanth</string>
-    <string name="mobile_about_dev_handle" translatable="false">github.com/yashoncode</string>
-    <string name="mobile_about_dev_url" translatable="false">https://github.com/yashoncode</string>
     <string name="mobile_about_made_by">Phát triển bởi %1$s</string>
     <string name="mobile_about_star_short">Tặng sao</string>
     <string name="mobile_about_share_short">Chia sẻ</string>
     <string name="mobile_about_log_short">Gửi nhật ký</string>
     <string name="mobile_about_creator">Nhà phát triển</string>
     <string name="mobile_about_coffee_note"><![CDATA[<font color="#FF5F56">●</font> <font color="#FFBD2E">●</font> <font color="#27C93F">●</font><br><br><font color="#4ADE80">$</font> meetube --thank-you<br><font color="#E6EDF3">&#160;&#160;quảng cáo: 0 | tài trợ: đã bỏ qua</font><br><font color="#8B949E">// code lúc 3h sáng bằng caffeine nguyên chất<br>// tiếp thêm ly nữa? hoàn toàn tùy tâm :)</font>]]></string>
-    <string name="mobile_about_coffee_cta" translatable="false">sudo brew coffee</string>
     <string name="mobile_stats_today">Hôm nay</string>
     <string name="mobile_stats_hero_label">trong MeeTube hôm nay</string>
     <string name="mobile_stats_videos">Video</string>
@@ -696,7 +673,6 @@
     <string name="mobile_about_tv_text">Mọi thứ bạn yêu thích ở đây, nay đã có trên màn hình lớn. Thanh bên kính mờ, thẻ Shorts phát sáng riêng biệt và đăng nhập nhanh bằng mã. Chiếc sofa đang vẫy gọi đấy.</string>
     <string name="mobile_about_tv_button">Cài đặt lên TV của tôi</string>
     <string name="mobile_about_tv_repo">⭐ Tặng sao trên GitHub hoặc tự tải tệp APK</string>
-    <string name="mobile_about_tv_repo_url" translatable="false">github.com/yashoncode/meetube-tv</string>
     <string name="mobile_about_tv_shot">Trang chủ MeeTube TV trên màn hình TV</string>
     <string name="mobile_about_reporters">Người báo lỗi</string>
     <string name="mobile_about_reporters_summary">Tri ân tất cả những người đã báo lỗi</string>
@@ -718,7 +694,6 @@
     <string name="mobile_about_credit_newtube">NewTube: ứng dụng điện thoại tiền thân của MeeTube</string>
     <string name="mobile_about_credit_backdrop">Backdrop: thấu kính kính lỏng trên các thanh điều hướng</string>
     <string name="mobile_about_credit_autoeq">AutoEq: bộ hồ sơ tinh chỉnh tai nghe</string>
-    <string name="mobile_about_site_url" translatable="false">https://github.com/yashoncode/meetube</string>
     <!-- Experimental SABR playback (was strings_sabr.xml) -->
     <string name="sabr_vod_option">Ưu tiên SABR ngay cả khi liên kết vẫn chạy (thử nghiệm; video VOD tiếp theo)</string>
     <string name="sabr_vod_stopped">Phát thử nghiệm SABR đã dừng. Chạm Phát để thử lại hoặc tắt SABR trong Cài đặt.</string>

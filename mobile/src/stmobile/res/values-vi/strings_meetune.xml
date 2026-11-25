@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="meetune_name" translatable="false">MeeTune</string>
     <string name="meetune_try">Dùng thử MeeTune</string>
     <string name="meetune_home">Trang chủ</string>
     <string name="meetune_explore">Khám phá</string>
@@ -347,4 +346,11 @@
     <string name="meetune_car_note">Trên ô tô sẽ phát theo mức Chất lượng phát nhạc của bạn. Bạn có thể nói \"Hey Google, play my liked songs on MeeTune\" (hoặc my downloads, my recents, my mix, hoặc tên bài hát hay nghệ sĩ bất kỳ).</string>
     <string name="meetune_car_show">Hiện MeeTune trong Android Auto</string>
     <string name="meetune_car_show_summary">Android Auto sẽ ẩn các ứng dụng không cài từ Play Store cho đến khi bạn cho phép. Chạm vào đây để mở cài đặt của Android Auto, cuộn xuống và nhấn vào mục Phiên bản khoảng 10 lần, sau đó mở menu ba chấm &gt; Cài đặt cho nhà phát triển rồi bật Nguồn không xác định. Kết nối lại với ô tô, MeeTune sẽ xuất hiện cùng các ứng dụng nghe nhạc khác.</string>
+    <string name="meetune_loudness">Chuẩn hóa âm lượng</string>
+    <string name="meetune_loudness_summary">Đưa mọi bài hát về cùng một mức âm lượng. Khi tắt, các bài nhỏ và lớn trong album sẽ giữ nguyên như bản thu. Áp dụng từ bài tiếp theo</string>
+    <string name="meetune_smooth_switch">Chuyển bài mượt mà</string>
+    <string name="meetune_smooth_switch_summary">Khi bạn bỏ qua, quay lại hoặc chọn bài khác, bài đang phát sẽ nhỏ dần và bài tiếp theo to dần lên</string>
+    <string name="meetune_cover_glow">Hiệu ứng phát sáng ảnh bìa</string>
+    <string name="meetune_cover_glow_summary">Một vầng sáng nhẹ phía sau mỗi ảnh bìa. Tắt đi để cuộn mượt hơn</string>
+    <string name="meetune_smooth_switch_hint">Chuyển bài có vẻ chậm? Hãy tắt Chuyển bài mượt mà trong Cài đặt MeeTune</string>
 </resources>
