@@ -51,7 +51,8 @@ public final class BassSwap {
 
         @Override
         protected void onFlush() {
-            Arrays.fill(mState, 0);
+            // Kept: Media3 flushes on every speed change (Automix), and a zeroed filter clicks.
+            // onConfigure starts a new format from zero.
         }
 
         @Override

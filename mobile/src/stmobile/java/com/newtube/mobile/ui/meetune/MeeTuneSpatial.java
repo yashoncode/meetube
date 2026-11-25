@@ -129,6 +129,7 @@ public final class MeeTuneSpatial {
         private static final float BASS_GAIN = 0.78f;
 
         private boolean mFloat;
+        private boolean mConfigured;
         /** Hand Android 5.1 for its spatial audio (head tracking) instead of rendering for the ears here. */
         private boolean mSurround;
         private boolean mPendingSurround;
@@ -141,6 +142,11 @@ public final class MeeTuneSpatial {
         private int mDelayPos;
         private float mFeedL;
         private float mFeedR;
+        /** Wide's peak control: one gain for both ears, so loud peaks dip in level instead of bending the wave. */
+        private float mLimit = 1f;
+        private int mHold;
+        private int mHoldSamples;
+        private float mRelease;
         private float mGlide;
         private float mBassCoef;
         private float mLowCoef;
@@ -169,11 +175,16 @@ public final class MeeTuneSpatial {
             // ponytail: decided per song; turning head tracking or earbuds on mid-song applies from the next one.
             mPendingSurround = sHeadTracking && MeeTuneEq.isPlaying()
                     && systemSpatializes(sContext, format.sampleRate);
+            mConfigured = true;
             return mPendingSurround ? new AudioFormat(format.sampleRate, 6, format.encoding) : format;
         }
 
         @Override
         protected void onFlush() {
+            // Media3 flushes on every speed change (Automix nudges it ~5x/s): a flush on the same stream
+            // keeps the delay lines, filters and peak gain, or each one is a click and a level jump.
+            if (!mConfigured) return;
+            mConfigured = false;
             int rate = inputAudioFormat.sampleRate;
             mFloat = inputAudioFormat.encoding == C.ENCODING_PCM_FLOAT;
             mSurround = mPendingSurround; // the new format is in force from here
@@ -195,6 +206,10 @@ public final class MeeTuneSpatial {
             mDelayR = new float[mDelayL.length];
             mDelayPos = 0;
             mFeedL = mFeedR = 0f;
+            mLimit = 1f;
+            mHold = 0;
+            mHoldSamples = Math.round(0.03f * rate); // longer than a 40 Hz cycle, so a steady tone gets no ripple
+            mRelease = 1f - (float) Math.exp(-1.0 / (0.15 * rate));
         }
 
         @Override
@@ -319,8 +334,21 @@ public final class MeeTuneSpatial {
                     put(output, soft(roomL * 0.9f * w * level));
                     put(output, soft(roomR * 0.9f * w * level));
                 } else {
-                    put(output, soft((mid + wide + roomL * 0.6f * w) * level));
-                    put(output, soft((mid - wide + roomR * 0.6f * w) * level));
+                    float outL = (mid + wide + roomL * 0.6f * w) * level;
+                    float outR = (mid - wide + roomR * 0.6f * w) * level;
+                    // ponytail: no lookahead, so a peak's first sample steps the gain down at once; a 1-2 ms
+                    // lookahead delay would smooth that if it is ever heard. 5.1 still uses soft() per channel.
+                    float peak = Math.max(Math.abs(outL), Math.abs(outR)) * mLimit;
+                    if (mWideWet > 0f && peak > 0.9f) {
+                        mLimit *= 0.9f / peak;
+                        mHold = mHoldSamples;
+                    } else if (mHold > 0) {
+                        mHold--;
+                    } else {
+                        mLimit += (1f - mLimit) * mRelease;
+                    }
+                    put(output, soft(outL * mLimit));
+                    put(output, soft(outR * mLimit));
                 }
             }
             output.flip();

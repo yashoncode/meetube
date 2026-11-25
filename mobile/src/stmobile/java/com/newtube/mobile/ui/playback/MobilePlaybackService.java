@@ -195,7 +195,7 @@ public class MobilePlaybackService extends Service {
 
         @Override
         public void pause() {
-            super.pause();
+            com.newtube.mobile.player.Media3PlayerController.pause(getWrappedPlayer());
             notifyPauseClicked();
         }
 
@@ -339,7 +339,7 @@ public class MobilePlaybackService extends Service {
             @Override
             public void onPause() {
                 if (mPlayer != null) {
-                    mPlayer.setPlayWhenReady(false);
+                    com.newtube.mobile.player.Media3PlayerController.pause(mPlayer);
                 }
                 notifyPauseClicked();
             }

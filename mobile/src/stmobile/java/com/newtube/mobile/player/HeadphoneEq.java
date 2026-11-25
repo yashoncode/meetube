@@ -177,6 +177,7 @@ public final class HeadphoneEq {
     static final class Processor extends BaseAudioProcessor {
         @Nullable private Profile mApplied;
         private boolean mPrepared;
+        private boolean mConfigured;
         private double[][] mCoefficients = new double[0][];
         /** Per channel, per filter: x1, x2, y1, y2. */
         private double[][] mState = new double[0][];
@@ -187,12 +188,18 @@ public final class HeadphoneEq {
             if (format.encoding != C.ENCODING_PCM_16BIT && format.encoding != C.ENCODING_PCM_FLOAT) {
                 return AudioFormat.NOT_SET; // inactive: passes through untouched
             }
+            mConfigured = true;
             return format;
         }
 
         @Override
         protected void onFlush() {
-            mPrepared = false;
+            // Media3 flushes on every speed change (Automix nudges it ~5x/s): a flush on the same
+            // stream keeps the filters' state, or each one is a click. Rebuilt only after a new format.
+            if (mConfigured) {
+                mConfigured = false;
+                mPrepared = false;
+            }
         }
 
         @Override

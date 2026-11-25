@@ -46,6 +46,33 @@ public class MeeTuneSpatialTest {
         assertTrue("side " + db + " dB", db > 3);
     }
 
+    /** A -3 dBFS 1 kHz tone, opposite in each ear: Wide pushes it far past full scale, and must only turn it down. */
+    @Test
+    public void wideTurnsLoudPeaksDownWithoutDistortingThem() throws Exception {
+        MeeTuneEq.setPlaying(true);
+        MeeTuneSpatial.setWide(true);
+        float[] in = new float[FRAMES * 2];
+        for (int f = 0; f < FRAMES; f++) {
+            in[f * 2] = 0.708f * (float) Math.sin(2 * Math.PI * 1_000 * f / 48_000.0);
+            in[f * 2 + 1] = -in[f * 2];
+        }
+        float[] out = run(in);
+        double re = 0;
+        double im = 0;
+        double power = 0;
+        int n = FRAMES / 2; // the second half, a whole number of cycles
+        for (int f = FRAMES / 2; f < FRAMES; f++) {
+            float x = out[f * 2];
+            re += x * Math.cos(2 * Math.PI * 1_000 * f / 48_000.0);
+            im += x * Math.sin(2 * Math.PI * 1_000 * f / 48_000.0);
+            power += x * x;
+            assertTrue("sample " + x, Math.abs(x) < 1f);
+        }
+        double fundamental = 2 * (re * re + im * im) / n;
+        double thd = Math.sqrt(Math.max(0, power - fundamental) / fundamental);
+        assertTrue("distortion " + thd * 100 + " %", thd < 0.01);
+    }
+
     @Test
     public void cinemaOnFullScaleSoundNeverClips() throws Exception {
         MeeTuneEq.setPlaying(true);

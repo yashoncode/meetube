@@ -194,6 +194,10 @@
     <string name="meetune_automix">MeeTuneMix</string>
     <string name="meetune_automix_summary">Crossfades like a DJ: the next song comes in on the beat, its tempo matched to the playing one, then eases back to its own. Uses the Crossfade length, or 8 s when that is Off</string>
     <string name="meetune_crossfade_note">The end of a song fades into the next one. Songs from Autoplay, a queue or Repeat; not when playback stops after the song</string>
+    <string name="meetune_loudness">Loudness normalization</string>
+    <string name="meetune_loudness_summary">Levels every song to the same loudness. Off leaves an album\'s quiet and loud songs as recorded. Starts with the next song</string>
+    <string name="meetune_smooth_switch">Smooth song changes</string>
+    <string name="meetune_smooth_switch_summary">When you skip, go back or pick another song, the playing one fades out and the next fades in</string>
     <string name="meetune_bit_perfect">Bit-perfect USB DAC</string>
     <string name="meetune_bit_perfect_summary">With a USB DAC plugged in, songs reach it untouched at their own sample rate, past Android\'s mixer. Starts with the next song. For a pure signal keep the equalizer flat, Spatial sound off and Volume at 100%</string>
     <string name="meetune_bit_perfect_summary_none">Needs Android 14 or later</string>

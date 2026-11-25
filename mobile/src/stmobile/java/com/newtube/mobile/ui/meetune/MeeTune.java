@@ -1020,6 +1020,24 @@ public final class MeeTune {
         prefs(context).edit().putBoolean("automix", on).apply();
     }
 
+    /** Changing song by hand eases the old one out and the new one in (on by default). */
+    public static boolean smoothSwitch(Context context) {
+        return prefs(context).getBoolean("smooth_switch", true);
+    }
+
+    static void setSmoothSwitch(Context context, boolean on) {
+        prefs(context).edit().putBoolean("smooth_switch", on).apply();
+    }
+
+    /** Songs levelled to the same loudness by YouTube's own value (on by default); off leaves them as recorded. */
+    public static boolean loudness(Context context) {
+        return prefs(context).getBoolean("loudness", true);
+    }
+
+    static void setLoudness(Context context, boolean on) {
+        prefs(context).edit().putBoolean("loudness", on).apply();
+    }
+
     /** Home's "Listen again" as Speed dial, pages of 3x3 square tiles as YT Music has it (issue #264). Off: Home as it was. */
     static boolean speedDial(Context context) {
         return prefs(context).getBoolean("speed_dial", false);

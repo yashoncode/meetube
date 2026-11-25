@@ -214,7 +214,16 @@ final class MeeTuneSettings {
             usb.setAlpha(0.38f);
             usb.findViewById(R.id.settings_row_switch).setEnabled(false);
         }
+        // Loudness: songs levelled by YouTube's value, or left as recorded. Applies from the next song.
+        card.addView(divider());
+        tip(card, R.drawable.ic_player_volume_up, getString(R.string.meetune_loudness),
+                getString(R.string.meetune_loudness_summary), MeeTune.loudness(mActivity), false,
+                v -> MeeTune.setLoudness(mActivity, !MeeTune.loudness(mActivity)));
         header(R.string.meetune_set_playback);
+        LinearLayout playback = card();
+        tip(playback, R.drawable.ic_player_volume_up, getString(R.string.meetune_smooth_switch),
+                getString(R.string.meetune_smooth_switch_summary), MeeTune.smoothSwitch(mActivity), false,
+                v -> MeeTune.setSmoothSwitch(mActivity, !MeeTune.smoothSwitch(mActivity)));
         crossfade();
         karaoke();
     }

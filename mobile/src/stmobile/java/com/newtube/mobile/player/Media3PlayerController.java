@@ -154,6 +154,27 @@ public class Media3PlayerController implements Player.Listener {
     private float mLoudnessGain = 1f;
     /** MEETUNE(crossfade): 0..1 over the user's volume while a song fades in; 1 otherwise. */
     private float mFadeGain = 1f;
+    /** The crossfade drives {@link #mFadeGain} (it set it below 1): song-change fades stay out of its way. */
+    private boolean mExternalFade;
+    /**
+     * MEETUNE(smooth switch): a song changed by hand (next, previous, a tap in the queue) eases out over
+     * {@link #SWITCH_OUT_MS} before it stops, and the next one rises over {@link #SWITCH_IN_MS}. An open
+     * that arrives during the fade-out waits for it ({@link #mPendingOpen}).
+     */
+    private static final long SWITCH_OUT_MS = 800;
+    private static final long SWITCH_IN_MS = 1200;
+    /** Pause eases out, play eases back in (same setting). */
+    private static final long PAUSE_OUT_MS = 350;
+    private static final long PLAY_IN_MS = 600;
+    /** A fade ends at this level, then the gain drops to 0: below it the cut cannot be heard. */
+    private static final float FADE_FLOOR_DB = -40f;
+    private long mFadeInMs = SWITCH_IN_MS;
+    private boolean mFadingPause;
+    @Nullable private static Media3PlayerController sCurrent;
+    @Nullable private Runnable mSwitchFade;
+    @Nullable private Runnable mPendingOpen;
+    private boolean mFadeInArmed;
+    private boolean mFadingOut;
     @Nullable private AudioEffects mAudioEffects;
     /**
      * NEWTUBE(loudness): follows the format the audio renderer is actually fed. Not
@@ -603,6 +624,11 @@ public class Media3PlayerController implements Player.Listener {
             return;
         }
 
+        if (mFadingOut) { // still easing the last song out: open after it
+            mPendingOpen = () -> openMediaSource(mediaSource, netPathType);
+            return;
+        }
+
         if (mediaSource == null) {
             mEventListener.onEngineError(
                     ExoPlaybackException.TYPE_SOURCE, -1,
@@ -966,13 +992,43 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     public void setPlayWhenReady(boolean play) {
-        if (mPlayer != null) {
-            mPlayer.setPlayWhenReady(play);
+        if (mPlayer == null) {
+            return;
         }
+        // MEETUNE(smooth switch): with smooth song changes on, a pause eases out and a play eases in.
+        boolean smooth = !mExternalFade && !mFadingOut && MeeTune.isMusic(getVideo()) && MeeTune.smoothSwitch(mContext);
+        if (play && mFadingPause) {
+            mFadingPause = false; // changed its mind mid-fade: rise again from where it is
+            ramp(true, PLAY_IN_MS, null);
+            return;
+        }
+        if (!play && smooth && mPlayer.isPlaying()) {
+            if (mFadingPause) return;
+            mFadingPause = true;
+            mFadeInArmed = false;
+            ramp(false, PAUSE_OUT_MS, () -> {
+                mFadingPause = false;
+                if (mPlayer != null) mPlayer.setPlayWhenReady(false);
+                armFadeIn(PLAY_IN_MS);
+            });
+            return;
+        }
+        if (play && smooth && !mPlayer.isPlaying() && mSwitchFade == null && !mFadeInArmed) {
+            applyFadeGain(0f); // paused some other way (focus, a headset): still ease back in
+            armFadeIn(PLAY_IN_MS);
+        }
+        mPlayer.setPlayWhenReady(play);
+    }
+
+    /** The service's notification, lock screen and headset pause go through the same fade. */
+    public static void pause(Player player) {
+        Media3PlayerController c = sCurrent;
+        if (c != null && c.mPlayer == player) c.setPlayWhenReady(false);
+        else player.setPlayWhenReady(false);
     }
 
     public boolean getPlayWhenReady() {
-        return mPlayer != null && mPlayer.getPlayWhenReady();
+        return mPlayer != null && mPlayer.getPlayWhenReady() && !mFadingPause;
     }
 
     /** MEETUNE: the audio track playing now, for the music player's format line. */
@@ -1012,11 +1068,84 @@ public class Media3PlayerController implements Player.Listener {
         mFirstFrameLogged = false; // new open = a fresh NetPath first-frame milestone
         mResumeSnap.onPrepare();
         disarmRepoint();
+        mPendingOpen = null;
 
+        boolean smooth = !mExternalFade && MeeTune.isMusic(getVideo()) && MeeTune.smoothSwitch(mContext);
+        if (mFadingOut) {
+            return; // already easing out; it stops the player when done
+        }
+        stopSwitchFade();
+        if (smooth && containsMedia() && mPlayer.isPlaying() && mFadeGain > 0.01f) {
+            fadeOutThenStop();
+            return;
+        }
         if (containsMedia()) {
             mPlayer.stop();
             mPlayer.clearMediaItems();
         }
+        if (smooth) {
+            applyFadeGain(0f);
+            armFadeIn(SWITCH_IN_MS);
+        } else if (!mExternalFade) {
+            applyFadeGain(1f);
+        }
+    }
+
+    private void fadeOutThenStop() {
+        mFadingOut = true;
+        ramp(false, SWITCH_OUT_MS, () -> {
+            mFadingOut = false;
+            if (mPlayer != null) {
+                mPlayer.stop();
+                mPlayer.clearMediaItems();
+            }
+            armFadeIn(SWITCH_IN_MS);
+            Runnable open = mPendingOpen;
+            mPendingOpen = null;
+            if (open != null) open.run();
+        });
+    }
+
+    private void armFadeIn(long ms) {
+        mFadeInArmed = true;
+        mFadeInMs = ms;
+    }
+
+    /**
+     * Eases {@link #mFadeGain} to full (in) or to silence (out), then runs {@code done}. The level moves
+     * evenly in dB, which the ear hears as an even fade; an even amplitude curve stays loud until its
+     * last moment and sounds like a cut. A ramp from part way takes the matching part of {@code ms}.
+     */
+    private void ramp(boolean in, long ms, @Nullable Runnable done) {
+        if (mSwitchFade != null) mMainHandler.removeCallbacks(mSwitchFade);
+        float fromDb = mFadeGain > 0.01f ? 20f * (float) Math.log10(mFadeGain) : FADE_FLOOR_DB;
+        float toDb = in ? 0f : FADE_FLOOR_DB;
+        long span = Math.max(1, (long) (ms * (toDb - fromDb) / (in ? -FADE_FLOOR_DB : FADE_FLOOR_DB)));
+        long start = android.os.SystemClock.uptimeMillis();
+        mSwitchFade = new Runnable() {
+            @Override
+            public void run() {
+                float t = Math.min(1f, (android.os.SystemClock.uptimeMillis() - start) / (float) span);
+                applyFadeGain(t >= 1f && !in ? 0f : (float) Math.pow(10, (fromDb + (toDb - fromDb) * t) / 20));
+                if (t < 1f) {
+                    mMainHandler.postDelayed(this, 16);
+                    return;
+                }
+                mSwitchFade = null;
+                if (done != null) done.run();
+            }
+        };
+        mMainHandler.post(mSwitchFade);
+    }
+
+    private void stopSwitchFade() {
+        if (mSwitchFade != null) {
+            mMainHandler.removeCallbacks(mSwitchFade);
+            mSwitchFade = null;
+        }
+        mFadeInArmed = false;
+        mFadingOut = false;
+        mFadingPause = false;
     }
 
     // ---------------------------------------------------------------------------------
@@ -1025,6 +1154,7 @@ public class Media3PlayerController implements Player.Listener {
 
     public void setPlayer(ExoPlayer player) {
         mPlayer = player;
+        sCurrent = this;
         mKeepCodecSuspended = false; // a new player starts with its builder's foreground mode
         mUserVolume = 1f; // a new player starts at full volume
         mLoudnessGain = 1f;
@@ -1086,6 +1216,8 @@ public class Media3PlayerController implements Player.Listener {
             mNextPreloader = null;
         }
 
+        stopSwitchFade();
+        mPendingOpen = null;
         if (mPlayer != null) {
             if (mPlayer.isPlaying()) {
                 UsageStats.playing(false, MeeTune.isMusic(getVideo())); // MEETUBE(stats): listener is removed before stop
@@ -1104,6 +1236,7 @@ public class Media3PlayerController implements Player.Listener {
             mPlayer.clearVideoSurface();
             mPlayer.release();
             mPlayer = null;
+            if (sCurrent == this) sCurrent = null;
         }
         mHoldBase = null;
         mTempoTrim = 1f;
@@ -1465,6 +1598,15 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     public void setFadeGain(float gain) {
+        if (gain >= 1f && !mExternalFade) {
+            return; // the crossfade resetting a fade it never started: leave a song-change fade running
+        }
+        stopSwitchFade(); // the crossfade owns the fade now
+        mExternalFade = gain < 1f;
+        applyFadeGain(gain);
+    }
+
+    private void applyFadeGain(float gain) {
         mFadeGain = Math.max(0f, Math.min(1f, gain));
         if (mPlayer != null) {
             mPlayer.setVolume(Math.min(mUserVolume, 1f) * mLoudnessGain * mFadeGain);
@@ -1494,7 +1636,8 @@ public class Media3PlayerController implements Player.Listener {
         AudioLoudness loudness = video != null ? video.loudness : null;
         Float db = null;
         float gain = 1f;
-        if (loudness != null && PlayerTweaksData.instance(mContext).isPlayerAutoVolumeEnabled()) {
+        if (loudness != null && PlayerTweaksData.instance(mContext).isPlayerAutoVolumeEnabled()
+                && (!MeeTune.isMusic(video) || MeeTune.loudness(mContext))) {
             db = loudness.dbFor(audio.id, audio.label, audio.language);
             gain = AudioLoudness.gain(db);
         }
@@ -1562,6 +1705,10 @@ public class Media3PlayerController implements Player.Listener {
 
     @Override
     public void onIsPlayingChanged(boolean isPlaying) {
+        if (isPlaying && mFadeInArmed && mSwitchFade == null) {
+            mFadeInArmed = false;
+            ramp(true, mFadeInMs, null);
+        }
         UsageStats.playing(isPlaying, MeeTune.isMusic(getVideo())); // MEETUBE(stats): watch or listen time
     }
 
