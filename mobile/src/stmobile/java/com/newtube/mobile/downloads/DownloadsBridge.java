@@ -91,6 +91,42 @@ public final class DownloadsBridge implements VideoDownloads.Handler {
         return new DownloadStorage(mContext).exists(item.outputUri) ? item.outputUri : null;
     }
 
+    private final Map<String, Boolean> mShorts = new HashMap<>();
+
+    /**
+     * MEETUBE(shorts): a downloaded short (a finished file, portrait, 3 minutes or less) plays in the
+     * Shorts player. Read from the file: a download never recorded it. Remembered per download.
+     */
+    public boolean isShort(@Nullable Video card) {
+        DownloadItem item = itemFor(card);
+        if (item == null || !item.isDone() || item.outputUri == null || item.isAudioOnly()
+                || item.durationMs <= 0 || item.durationMs > 180_000) {
+            return false;
+        }
+        Boolean known = mShorts.get(item.id);
+        if (known != null) return known;
+        boolean portrait = false;
+        android.media.MediaMetadataRetriever retriever = new android.media.MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(mContext, Uri.parse(item.outputUri));
+            int w = Integer.parseInt(retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+            int h = Integer.parseInt(retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+            String rotation = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
+            boolean turned = "90".equals(rotation) || "270".equals(rotation);
+            portrait = turned ? w > h : h > w;
+        } catch (RuntimeException ignored) {
+            // unreadable: a normal video
+        } finally {
+            try {
+                retriever.release();
+            } catch (Exception ignored) {
+                // released
+            }
+        }
+        mShorts.put(item.id, portrait);
+        return portrait;
+    }
+
     /** The registry entry behind a Downloads card, or null for any other card. */
     @Nullable
     public DownloadItem itemFor(@Nullable Video video) {
@@ -141,9 +177,15 @@ public final class DownloadsBridge implements VideoDownloads.Handler {
                 : item.thumbUrl;
 
         String status = DownloadProgressText.of(mContext, item);
-        card.secondTitle = item.author != null && !item.author.isEmpty()
-                ? item.author + com.newtube.mobile.ui.common.MetaSeparator.DOT + status
-                : status;
+        if (item.state == DownloadItem.STATE_DOWNLOADING && item.bytesTotal > 0) {
+            // The thumbnail has the percent: the line keeps room for the speed and time left.
+            card.secondTitle = DownloadOptions.formatBytes(item.bytesDone) + " / "
+                    + DownloadOptions.formatBytes(item.bytesTotal) + DownloadProgressText.speed(mContext, item);
+        } else {
+            card.secondTitle = item.author != null && !item.author.isEmpty()
+                    ? item.author + com.newtube.mobile.ui.common.MetaSeparator.DOT + status
+                    : status;
+        }
 
         // Every not-ready state carries a badge (and the thumbnail is dimmed by the card), so a
         // download never looks like a video that can be played yet.

@@ -114,6 +114,7 @@ public final class DownloadMenu {
     public static void delete(Context context, DownloadItem item) {
         DownloadStorage storage = new DownloadStorage(context);
         storage.delete(item.outputUri);
+        DownloadSubtitles.delete(context, item.videoId);
         if (item.thumbPath != null) {
             //noinspection ResultOfMethodCallIgnored
             new File(item.thumbPath).delete();

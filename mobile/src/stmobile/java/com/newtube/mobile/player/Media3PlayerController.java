@@ -546,6 +546,18 @@ public class Media3PlayerController implements Player.Listener {
 
     public void openUrlList(List<String> urlList) {
         mReadinessAnswer = null;
+        // MEETUBE(subtitles): a downloaded video's saved track rides along, shown from the start.
+        java.io.File subtitle = urlList != null && urlList.size() == 1 && !urlList.get(0).startsWith("http")
+                ? com.newtube.mobile.downloads.DownloadSubtitles.find(mContext, getVideoId()) : null;
+        if (subtitle != null) {
+            String language = com.newtube.mobile.downloads.DownloadSubtitles.languageOf(subtitle);
+            openMediaSource(mMediaSourceFactory.fromLocalWithSubtitles(urlList.get(0), subtitle, language), "progressive");
+            if (mTrackSelector != null) {
+                mTrackSelector.setParameters(mTrackSelector.buildUponParameters()
+                        .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false).setPreferredTextLanguage(language));
+            }
+            return;
+        }
         openMediaSource(mMediaSourceFactory.fromUrlList(urlList), "progressive");
     }
 

@@ -83,7 +83,9 @@ import com.newtube.mobile.ui.playback.SystemPipBridge;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 
 /**
@@ -2998,8 +3000,10 @@ public class MobileBrowseActivity extends MobileActivity
 
         // MEETUBE(shorts): a short opens the vertical player with the tab's shorts as its queue,
         // so a swipe up plays the next one (and down the previous) - see ShortsOverlay.
-        List<Video> shelf = shelfOf(video);
-        if (shelf != null) {
+        List<Video> shelf = download != null ? null : shelfOf(video);
+        if (download != null && video.isLocal()) {
+            queueDownloads(video);
+        } else if (shelf != null) {
             ShortsFilter.queueAround(shelf, video); // MEETUBE(issue #43): Home pages add theirs (extendShortsQueue)
             com.newtube.mobile.ui.common.ShortsFeedTail.arm(); // MEETUBE(issue #227): then the Shorts feed, without end
         } else if (video.belongsToShorts() && video.hasVideo()) {
@@ -3031,6 +3035,43 @@ public class MobileBrowseActivity extends MobileActivity
         // videos (now mapped to MobilePlaybackActivity - see MobileMainApplication); channel/
         // playlist items are routed elsewhere by the same presenter, which is fine here too.
         mPresenter.onVideoItemClicked(video);
+    }
+
+    /**
+     * MEETUBE(downloads): a download plays on into the next one on the tab, from its file. Without a
+     * queue the next was YouTube's related video, known only once the online suggestions came in.
+     */
+    /** MEETUBE(downloads): the page's cards with the Shorts shelf opened out, one card per download. */
+    private List<Video> downloadCards() {
+        List<Video> cards = new ArrayList<>();
+        for (Video card : mCurrentVideos) {
+            if (card.shortsShelf != null) cards.addAll(card.shortsShelf);
+            else cards.add(card);
+        }
+        return cards;
+    }
+
+    private void queueDownloads(Video tapped) {
+        // A downloaded short plays in the Shorts player with the other downloaded shorts; a video
+        // with the other videos.
+        DownloadsBridge bridge = DownloadsBridge.instance(this);
+        boolean shorts = bridge.isShort(tapped);
+        List<Video> files = new ArrayList<>();
+        for (Video video : downloadCards()) {
+            if (video == tapped || (video.isLocal() && video.hasVideo() && bridge.isShort(video) == shorts)) {
+                if (shorts) {
+                    video.isShorts = true;
+                    video.markShorts();
+                }
+                files.add(video);
+            }
+        }
+        com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist playlist =
+                com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance();
+        playlist.clear();
+        playlist.addAll(files);
+        playlist.setCurrent(tapped);
+        tapped.fromQueue = true;
     }
 
     /** MEETUBE(shorts): a new Shorts page joins the end of a Shorts queue that is playing. */
@@ -3162,7 +3203,7 @@ public class MobileBrowseActivity extends MobileActivity
 
     /** MEETUBE(feed segment): Subscriptions, or a channel pinned to You: they keep their Shorts, behind the pill. */
     private boolean isSegmentSection() {
-        if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
+        if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS || isDownloadsSectionShowing()) {
             return true;
         }
         BrowseSection section = findKnownSection(mCurrentSectionId);
@@ -3184,6 +3225,19 @@ public class MobileBrowseActivity extends MobileActivity
         List<Video> shown = new ArrayList<>(videos.size());
         int filter = mSegment != null && isSegmentSection() ? mSegment.filter() : ShortsSegment.ALL;
         for (Video video : videos) {
+            if (filter == ShortsSegment.SHORTS && video != null && video.shortsShelf != null && video.shelfOfThree) {
+                // MEETUBE(downloads): Shorts alone: the shelf opens out into rows of three, a grid.
+                List<Video> shorts = video.shortsShelf;
+                for (int i = 0; i < shorts.size(); i += 3) {
+                    Video row = shorts.get(i).copy();
+                    row.isShorts = true;
+                    row.shortsShelf = new ArrayList<>(shorts.subList(i, Math.min(shorts.size(), i + 3)));
+                    row.shelfOfThree = true;
+                    row.shelfGridRow = true;
+                    shown.add(row);
+                }
+                continue;
+            }
             boolean isShort = video != null && video.hasVideo() && ShortsFilter.isShort(video);
             if (filter == ShortsSegment.ALL || (filter == ShortsSegment.SHORTS) == isShort) {
                 shown.add(video);
@@ -3727,8 +3781,7 @@ public class MobileBrowseActivity extends MobileActivity
         for (BrowseSection section : mSections) {
             if (section.getId() == VideoDownloads.SECTION_ID) {
                 mPendingDownloadsOpen = false;
-                hideYouPanel();
-                onSectionChosen(VideoDownloads.SECTION_ID);
+                openFromYou(VideoDownloads.SECTION_ID); // a You sub-screen: back arrow and its title
                 return;
             }
         }
@@ -3748,11 +3801,18 @@ public class MobileBrowseActivity extends MobileActivity
             return;
         }
 
-        List<DownloadItem> items = DownloadRegistry.instance(this).itemsNewestFirst();
-        boolean sameSet = items.size() == mCurrentVideos.size();
+        List<DownloadItem> items = new ArrayList<>();
+        for (DownloadItem item : DownloadRegistry.instance(this).itemsNewestFirst()) {
+            if (!item.song) items.add(item); // MeeTune's songs are not on this page
+        }
+        Set<String> shown = new HashSet<>();
+        for (Video card : downloadCards()) {
+            shown.add(card.downloadId);
+        }
+        boolean sameSet = items.size() == shown.size();
         if (sameSet) {
             for (int i = 0; i < items.size(); i++) {
-                if (!items.get(i).id.equals(mCurrentVideos.get(i).downloadId)) {
+                if (!shown.contains(items.get(i).id)) {
                     sameSet = false;
                     break;
                 }
@@ -5014,6 +5074,9 @@ public class MobileBrowseActivity extends MobileActivity
      * on Home). Fewer than two make no shelf; they stay out, like every other stray Short.
      */
     private List<Video> withShortsShelf(List<Video> videos) {
+        if (videos != null && isDownloadsSectionShowing()) {
+            return withDownloadedShortsShelf(videos);
+        }
         if (videos == null || !isHomeChip(mCurrentSectionId) || !HomeLayout.isShortsShelf(this)) {
             return videos;
         }
@@ -5050,6 +5113,39 @@ public class MobileBrowseActivity extends MobileActivity
         Video shelf = shorts.get(0).copy(); // equal to its first short: a reload finds the same card
         shelf.isShorts = true; // a disk snapshot (no shelf field) brings it back as a Short: left out
         shelf.shortsShelf = shorts;
+        result.add(at, shelf);
+        return result;
+    }
+
+    /**
+     * MEETUBE(downloads): the downloaded Shorts (portrait files, DownloadsBridge.isShort) fold into
+     * one shelf, three across, at the first one's place - even a single one.
+     * ponytail: a download finishing later joins as a card of its own until the tab reloads.
+     */
+    private List<Video> withDownloadedShortsShelf(List<Video> videos) {
+        DownloadsBridge bridge = DownloadsBridge.instance(this);
+        List<Video> shorts = new ArrayList<>();
+        int at = -1;
+        List<Video> result = new ArrayList<>(videos.size());
+        for (Video video : videos) {
+            if (video != null && video.isLocal() && bridge.isShort(video)) {
+                video.isShorts = true;
+                video.markShorts(); // plays in the Shorts player, drawn as a tile
+                if (at < 0) {
+                    at = result.size();
+                }
+                shorts.add(video);
+            } else {
+                result.add(video);
+            }
+        }
+        if (shorts.isEmpty()) {
+            return result;
+        }
+        Video shelf = shorts.get(0).copy();
+        shelf.isShorts = true;
+        shelf.shortsShelf = shorts;
+        shelf.shelfOfThree = true;
         result.add(at, shelf);
         return result;
     }

@@ -1220,6 +1220,17 @@ public class Media3SourceFactory {
                 .createMediaSource(MediaItem.fromUri(uri));
     }
 
+    /** MEETUBE(subtitles): a downloaded file with the subtitle track saved beside it. */
+    MediaSource fromLocalWithSubtitles(String fileUri, java.io.File subtitle, String language) {
+        MediaSource video = fromUrlList(java.util.Collections.singletonList(fileUri));
+        String mime = subtitle.getName().endsWith(".ttml") ? MimeTypes.APPLICATION_TTML : MimeTypes.TEXT_VTT;
+        MediaItem.SubtitleConfiguration config = new MediaItem.SubtitleConfiguration.Builder(Uri.fromFile(subtitle))
+                .setMimeType(mime).setLanguage(language).setSelectionFlags(C.SELECTION_FLAG_DEFAULT).build();
+        MediaSource text = new androidx.media3.exoplayer.source.SingleSampleMediaSource.Factory(
+                new DefaultDataSource.Factory(mContext)).createMediaSource(config, C.TIME_UNSET);
+        return new MergingMediaSource(video, text);
+    }
+
     private static boolean isLocalUri(Uri uri) {
         String scheme = uri.getScheme();
         return "content".equals(scheme) || "file".equals(scheme);
