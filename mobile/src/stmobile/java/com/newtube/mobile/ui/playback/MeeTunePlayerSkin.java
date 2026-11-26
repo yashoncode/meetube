@@ -1119,15 +1119,9 @@ public final class MeeTunePlayerSkin {
             MeeTune.closeSmoothHint(v.getContext());
             smoothHint.setVisibility(View.GONE);
         });
-        Runnable names = () -> {
-            mTitle.setText(video.getTitle());
-            mTitle.setSelected(true); // marquee
-            mArtist.setText(video.getAuthor());
-            ((TextView) mRoot.findViewById(R.id.meetune_player_head_title)).setText(video.getTitle());
-            ((TextView) mRoot.findViewById(R.id.meetune_player_head_artist)).setText(video.getAuthor());
-        };
+        Runnable names = () -> showNames(video);
         View nameBlock = (View) mTitle.getParent();
-        if (switching) { // the old song swipes away, the new one comes in behind it
+        if (switching && mFrom == null) { // the old song swipes away, the new one comes in behind it (out of a card the cover grows in instead: openFrom)
             int dir = mDir;
             mDir = 1;
             float nameDist = mRoot.getWidth() * 0.3f;
@@ -2022,9 +2016,10 @@ public final class MeeTunePlayerSkin {
      * up, no pill to land on) the page slides down after the finger.
      */
     void follow(float f) {
-        android.graphics.Rect to = MeeTune.pillArt();
+        if (f <= 0f) mFrom = null; // opened: the next minimize goes to the pill again
+        android.graphics.Rect to = mFrom != null ? mFrom : MeeTune.pillArt();
         boolean fly = f > 0f && mMode == NORMAL && to != null && mArt.getWidth() != 0;
-        MeeTune.flyToPill(f, mVideo, mControls.playing(), fly);
+        MeeTune.flyToPill(f, mVideo, mControls.playing(), fly && mFrom == null);
         if (!fly) {
             land();
             slide(f);
@@ -2053,6 +2048,12 @@ public final class MeeTunePlayerSkin {
         mArtCorner = corner * density / scale;
         mArt.invalidateOutline();
         ((FadeImage) mArt).setFade(1f - clamped); // its melting foot firms up into a tile
+        if (mFrom != null) { // out of a card: the cover grows from it, the name fades in with the page
+            mArt.setAlpha(1f);
+            text.setAlpha(Math.max(0f, 1f - 2.5f * f));
+            fadeAllBut(f, density);
+            return;
+        }
         float handoff = MeeTune.handoff(clamped); // the pill's own take over at the end
         mArt.setAlpha(1f - handoff);
         text.setAlpha(1f - handoff);
@@ -2159,6 +2160,43 @@ public final class MeeTunePlayerSkin {
         }
         return mMode == QUEUE && mQueueList.canScrollVertically(-1);
     }
+
+    /** The tapped card's cover on screen: the opening page grows its own out of it (follow, 1 to 0). */
+    void openFrom(android.graphics.Rect card, @Nullable android.graphics.Bitmap cover) {
+        mFrom = new android.graphics.Rect(card);
+        // The cover is seen from the first frame: no frost over the page (show) hiding it.
+        mRoot.animate().cancel();
+        com.newtube.mobile.ui.common.Motion.stopFrost(mRoot);
+        mRoot.setAlpha(1f);
+        // Nor a song change's sideways swing (bind): the new song's cover and name are just there.
+        View names = (View) mTitle.getParent();
+        for (View view : new View[] {mArt, names}) {
+            android.animation.ValueAnimator swing = SWINGS.remove(view);
+            if (swing != null) swing.cancel();
+            place(view, 0f, 0f, 0f);
+            SWUNG.remove(view);
+        }
+        mArtLeaving = false;
+        mPendingArt = null;
+        mDir = 1;
+        if (mVideo != null) showNames(mVideo);
+        // The card's own picture, until this song's cover loads (it is seldom in yet): it flies, and
+        // the page takes its colours.
+        if (cover != null && !cover.isRecycled()) {
+            showArt(new android.graphics.drawable.BitmapDrawable(mRoot.getResources(),
+                    cover.copy(android.graphics.Bitmap.Config.ARGB_8888, false)));
+        }
+    }
+
+    private void showNames(Video video) {
+        mTitle.setText(video.getTitle());
+        mTitle.setSelected(true); // marquee
+        mArtist.setText(video.getAuthor());
+        ((TextView) mRoot.findViewById(R.id.meetune_player_head_title)).setText(video.getTitle());
+        ((TextView) mRoot.findViewById(R.id.meetune_player_head_artist)).setText(video.getAuthor());
+    }
+
+    @Nullable private android.graphics.Rect mFrom;
 
     void show() {
         if (isShown()) return;

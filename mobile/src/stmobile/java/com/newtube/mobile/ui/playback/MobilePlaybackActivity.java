@@ -2522,7 +2522,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 // Keep those frames behind the selected video's thumbnail until the new load wins.
                 armStillForReady();
             }
-            startOpenMorph(launch.sourceBounds, 300);
+            startOpenMorph(launch.sourceBounds, launch.frame, 300);
             // A docked card elsewhere on the host (another video was tapped): it goes once the
             // player's first frame is up.
             FrameGate.afterNextFrame(mContainer, HOST_CARD_FOLD_WAIT_MS,
@@ -8824,7 +8824,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /** Start with the player hidden, reveal it exactly over the tapped card, then expand. */
-    private void startOpenMorph(Rect sourceBounds, long durationMs) {
+    private void startOpenMorph(Rect sourceBounds, @Nullable Bitmap frame, long durationMs) {
         if (mContainer == null || mVideoArea == null) {
             return;
         }
@@ -8837,6 +8837,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 return;
             }
             computeMorphTarget(sourceBounds);
+            if (mMeeTune != null && mMeeTune.isShown()) mMeeTune.openFrom(sourceBounds, frame); // MEETUNE: a song card's cover
             applyMorph(1f);
             mContainer.setVisibility(View.VISIBLE);
             mContainer.postOnAnimation(() -> animateMorph(0f, durationMs, Motion.EMPHASIZED, () -> {

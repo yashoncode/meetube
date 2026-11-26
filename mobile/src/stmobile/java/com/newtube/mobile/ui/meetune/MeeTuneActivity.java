@@ -1334,6 +1334,9 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
         Haptics.click(mList);
         if (mSuggestions.getVisibility() == View.VISIBLE) closeSuggestions(); // a suggested song or artist picked
         if (item.playable()) {
+            // The player grows its cover out of the tapped card's (startOpenMorph).
+            View tapped = tappedAt(getWindow().getDecorView(), mTapX, mTapY);
+            if (tapped != null) com.newtube.mobile.ui.playback.PlayerTransitionBridge.prepare(tapped.findViewById(R.id.meetune_art));
             MeeTune.play(this, item);
             Page here = current();
             if (MeeTune.CACHED.equals(here.browseId) && here.rows != null) { // the cached songs after it play on
@@ -1461,8 +1464,31 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     // ----------------------------------------------------------------------------- the bar
 
+    private float mTapX, mTapY;
+
+    /** The innermost clickable view under (x, y) that holds a cover: the song card or row just tapped. */
+    @Nullable
+    private static View tappedAt(View view, float x, float y) {
+        if (!view.isShown()) return null;
+        int[] at = new int[2];
+        view.getLocationOnScreen(at);
+        if (x < at[0] || x >= at[0] + view.getWidth() || y < at[1] || y >= at[1] + view.getHeight()) return null;
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = group.getChildCount() - 1; i >= 0; i--) {
+                View inner = tappedAt(group.getChildAt(i), x, y);
+                if (inner != null) return inner;
+            }
+        }
+        return view.hasOnClickListeners() && view.findViewById(R.id.meetune_art) != null ? view : null;
+    }
+
     @Override
     public boolean dispatchTouchEvent(android.view.MotionEvent event) {
+        if (event.getActionMasked() == android.view.MotionEvent.ACTION_UP) {
+            mTapX = event.getRawX();
+            mTapY = event.getRawY();
+        }
         return (mNavBar != null && mNavBar.onTouch(event)) || super.dispatchTouchEvent(event);
     }
 
