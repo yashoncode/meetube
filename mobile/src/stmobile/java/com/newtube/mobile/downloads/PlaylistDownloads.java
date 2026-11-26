@@ -55,6 +55,11 @@ public final class PlaylistDownloads {
     }
 
     public static Disposable enqueue(Context context, List<Video> videos, int quality, Callback callback) {
+        return enqueue(context, videos, quality, false, callback);
+    }
+
+    /** {@code song}: MeeTune's, sound only at {@code quality} (AUDIO or AUDIO_LOW), listed in its Library > Downloads. */
+    public static Disposable enqueue(Context context, List<Video> videos, int quality, boolean song, Callback callback) {
         Context app = context.getApplicationContext();
         return Observable.<int[]>create(emitter -> {
             DownloadRegistry registry = DownloadRegistry.instance(app);
@@ -74,8 +79,11 @@ public final class PlaylistDownloads {
                         unavailable++;
                         continue;
                     }
-                    DownloadOption option = AutoDownload.pick(
-                            DownloadOptions.build(info.getAdaptiveFormats(), info.getUrlFormats()), quality);
+                    List<DownloadOption> options = DownloadOptions.build(info.getAdaptiveFormats(), info.getUrlFormats());
+                    DownloadOption option = quality == DownloadPicker.AUDIO_LOW ? DownloadOptions.lowAudio(info.getAdaptiveFormats()) : null;
+                    if (option == null) {
+                        option = AutoDownload.pick(options, quality == DownloadPicker.AUDIO_LOW ? AutoDownload.AUDIO : quality);
+                    }
                     if (option == null) {
                         unavailable++;
                         continue;
@@ -92,8 +100,10 @@ public final class PlaylistDownloads {
                     }
                     synchronized (registry) {
                         if (!alreadyHere(registry, video.videoId)) {
-                            MobileDownloadService.enqueue(app, DownloadItem.create(video.videoId,
-                                    title != null ? title : video.videoId, author, thumb, option));
+                            DownloadItem item = DownloadItem.create(video.videoId,
+                                    title != null ? title : video.videoId, author, thumb, option);
+                            item.song = song;
+                            MobileDownloadService.enqueue(app, item);
                             queued++;
                         }
                     }

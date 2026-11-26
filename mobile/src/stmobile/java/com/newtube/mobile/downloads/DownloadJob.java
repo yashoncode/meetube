@@ -1,23 +1,40 @@
 package com.newtube.mobile.downloads;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.media.MediaMuxer;
+import android.net.ConnectivityManager;
+import android.os.PowerManager;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
+import com.liskovsoft.sharedutils.okhttp.OkHttpManager;
 import com.liskovsoft.smartyoutubetv2.common.misc.NetPath;
 import com.liskovsoft.youtubeapi.service.YouTubeMediaItemService;
 import com.liskovsoft.youtubeapi.service.YouTubeServiceManager;
 import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.player.Media3SourceFactory;
+import com.newtube.mobile.player.MediaHttpClient;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLongArray;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 
 /**
  * Runs one {@link DownloadItem} to completion on the service's worker thread: fetch the parts,
@@ -47,8 +64,31 @@ final class DownloadJob {
         mItem = item;
         mRegistry = registry;
         mStorage = new DownloadStorage(mContext);
-        mFetcher = new StreamFetcher(Media3SourceFactory.MEDIA_USER_AGENT);
+        mFetcher = new StreamFetcher(downloadClient(), Media3SourceFactory.MEDIA_USER_AGENT);
+        mFetcher.setMaxWorkers(maxWorkers(mContext));
         mListener = listener;
+    }
+
+    /**
+     * The media client on HTTP/1.1: over HTTP/2 OkHttp puts every parallel range on ONE socket,
+     * which shares one congestion window and gains little on a lossy link. Its own Address, so
+     * the player's pooled connections are untouched.
+     */
+    private static OkHttpClient downloadClient() {
+        return MediaHttpClient.create(OkHttpManager.instance().getClient()).newBuilder()
+                .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+                .build();
+    }
+
+    /** Connections per stream: fewer on a metered network, a low-RAM phone or in battery saver. */
+    static int maxWorkers(Context context) {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if ((am != null && am.isLowRamDevice()) || (pm != null && pm.isPowerSaveMode())) {
+            return 2;
+        }
+        return cm != null && cm.isActiveNetworkMetered() ? 4 : 6;
     }
 
     void run() {
@@ -59,13 +99,21 @@ final class DownloadJob {
         File videoPart = mItem.isAudioOnly() ? null : new File(DownloadRegistry.partsDir(mContext), mItem.id + ".video");
         File audioPart = mItem.audioItag != null ? new File(DownloadRegistry.partsDir(mContext), mItem.id + ".audio") : null;
 
+        long startMs = SystemClock.elapsedRealtime();
+        long fetchedMs = startMs;
+        // Off the critical path: the card can show the thumbnail a moment later, the bytes can't wait.
+        Future<?> thumbnail = ParallelFetch.POOL.submit(this::fetchThumbnail);
         try {
-            fetchThumbnail();
             fetchParts(videoPart, audioPart);
             if (mItem.cancelRequested) {
                 throw new StreamFetcher.CancelledException();
             }
+            fetchedMs = SystemClock.elapsedRealtime();
             publish(videoPart, audioPart);
+            long doneMs = SystemClock.elapsedRealtime();
+            NetPath.log("download timing video=" + mItem.videoId + " fetch=" + (fetchedMs - startMs)
+                    + "ms mux=" + (doneMs - fetchedMs) + "ms total=" + (doneMs - startMs)
+                    + "ms bytes=" + mItem.bytesTotal + " workers=" + maxWorkers(mContext));
             mItem.state = DownloadItem.STATE_DONE;
             mItem.error = null;
             retirePreviousCopies();
@@ -89,6 +137,12 @@ final class DownloadJob {
             fail(reason(e));
         }
 
+        try {
+            thumbnail.get(); // thumbPath lands before the final save
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ignored) {
+        }
         mRegistry.notifyChanged();
     }
 
@@ -161,10 +215,13 @@ final class DownloadJob {
                 Log.w(TAG, "links refused (route " + attempt + "/" + MAX_ROUTE_ATTEMPTS + "), rotating client: " + refused);
                 NetPath.log("download route-refused attempt=" + attempt + " video=" + mItem.videoId);
                 // Blame the client that served THIS item's links, not whatever the player or a
-                // preload resolved last (netbench audit C-12).
-                VideoInfoService.instance().anchorRouteToVideo(mItem.videoId);
-                VideoInfoService.instance().markCurrentPlaybackRouteForbidden();
-                YouTubeServiceManager.instance().applyNoPlaybackFix();
+                // preload resolved last (netbench audit C-12). One job at a time: anchor and mark
+                // must not interleave with another running download's.
+                synchronized (DownloadJob.class) {
+                    VideoInfoService.instance().anchorRouteToVideo(mItem.videoId);
+                    VideoInfoService.instance().markCurrentPlaybackRouteForbidden();
+                    YouTubeServiceManager.instance().applyNoPlaybackFix();
+                }
                 resolveUrls(videoPart, audioPart);
             }
         }
@@ -172,8 +229,13 @@ final class DownloadJob {
 
     private void fetchPartsOnce(@Nullable File videoPart, @Nullable File audioPart) throws IOException {
         // Issue #241: a part of the video fetches only the fragments that cover it.
-        ClipRanges.Plan videoPlan = videoPart != null ? clipPlan(mItem.videoUrl, mItem.videoInit, mItem.videoIndex) : null;
-        ClipRanges.Plan audioPlan = audioPart != null ? clipPlan(mItem.audioUrl, mItem.audioInit, mItem.audioIndex) : null;
+        ClipRanges.Plan videoPlan = videoPart != null
+                ? clipPlan(mItem.videoUrl, mItem.videoInit, mItem.videoIndex, mItem.clipStartMs, mItem.clipEndMs) : null;
+        // The audio covers the video's fragments, not just the part: the cut starts on a keyframe up
+        // to a fragment early, and audio fragments start elsewhere, so a narrower plan began after it.
+        ClipRanges.Plan audioPlan = audioPart != null ? clipPlan(mItem.audioUrl, mItem.audioInit, mItem.audioIndex,
+                videoPlan != null ? videoPlan.startMs : mItem.clipStartMs,
+                videoPlan != null ? videoPlan.endMs : mItem.clipEndMs) : null;
         mVideoPartStartMs = videoPlan != null ? videoPlan.startMs : 0;
         mAudioPartStartMs = audioPlan != null ? audioPlan.startMs : 0;
         long videoLen = videoPlan != null ? videoPlan.fileLength() : mItem.videoLength;
@@ -183,30 +245,85 @@ final class DownloadJob {
             mItem.bytesTotal = total;
         }
 
-        final long[] done = {0, 0};
-        if (videoPart != null) {
-            if (mItem.videoUrl == null) {
-                throw new IOException("no video link");
-            }
-            mFetcher.fetch(mItem.videoUrl, videoPart, videoLen, startPart(videoPart, videoPlan), (fileBytes, streamTotal) -> {
-                done[0] = fileBytes;
-                return report(done[0] + done[1]);
-            });
-            done[0] = videoPart.length();
+        if (videoPart != null && mItem.videoUrl == null) {
+            throw new IOException("no video link");
         }
+        if (audioPart != null && mItem.audioUrl == null) {
+            throw new IOException("no audio link");
+        }
+
+        // Video and audio at the same time: the job takes as long as the bigger one, not both.
+        // Either failing stops the other at its next progress tick (stop), and the real cause wins
+        // over the other's CancelledException.
+        AtomicLongArray done = new AtomicLongArray(2);
+        AtomicBoolean stop = new AtomicBoolean();
+        Future<?> audioTask = null;
         if (audioPart != null) {
-            if (mItem.audioUrl == null) {
-                throw new IOException("no audio link");
+            String audioUrl = mItem.audioUrl;
+            long audioShift = startPart(audioPart, audioPlan);
+            Callable<Void> fetchAudio = () -> {
+                try {
+                    // Synced before any byte: what the part holds must survive a process death.
+                    DownloadOptions.writeAudioPartTrack(audioPart, mItem.audioTrack);
+                    mFetcher.fetch(audioUrl, audioPart, audioLen, audioShift, (fileBytes, streamTotal) -> {
+                        done.set(1, fileBytes);
+                        return !stop.get() && report(done.get(0) + done.get(1));
+                    });
+                    done.set(1, audioPart.length());
+                    return null;
+                } catch (IOException | RuntimeException e) {
+                    stop.set(true);
+                    throw e;
+                }
+            };
+            if (videoPart != null) {
+                audioTask = ParallelFetch.POOL.submit(fetchAudio);
+            } else {
+                runInline(fetchAudio);
             }
-            // Synced before any byte: what the part holds must survive a process death.
-            DownloadOptions.writeAudioPartTrack(audioPart, mItem.audioTrack);
-            mFetcher.fetch(mItem.audioUrl, audioPart, audioLen, startPart(audioPart, audioPlan), (fileBytes, streamTotal) -> {
-                done[1] = fileBytes;
-                return report(done[0] + done[1]);
-            });
-            done[1] = audioPart.length();
         }
-        report(done[0] + done[1]);
+        IOException failure = null;
+        if (videoPart != null) {
+            try {
+                mFetcher.fetch(mItem.videoUrl, videoPart, videoLen, startPart(videoPart, videoPlan), (fileBytes, streamTotal) -> {
+                    done.set(0, fileBytes);
+                    return !stop.get() && report(done.get(0) + done.get(1));
+                });
+                done.set(0, videoPart.length());
+            } catch (IOException | RuntimeException e) {
+                // Never leave before the audio task ends: a retry must not race it on the same file.
+                stop.set(true);
+                failure = e instanceof IOException ? (IOException) e : new IOException("video fetch crashed", e);
+            }
+        }
+        if (audioTask != null) {
+            try {
+                audioTask.get();
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                if (failure == null || failure instanceof StreamFetcher.CancelledException) {
+                    failure = cause instanceof IOException ? (IOException) cause : new IOException(cause);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                stop.set(true);
+                if (failure == null) failure = new StreamFetcher.CancelledException();
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
+        report(done.get(0) + done.get(1));
+    }
+
+    private static void runInline(Callable<Void> task) throws IOException {
+        try {
+            task.call();
+        } catch (IOException | RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -214,8 +331,8 @@ final class DownloadJob {
      * progressive stream (no sidx), or an index that does not read.
      */
     @Nullable
-    private ClipRanges.Plan clipPlan(@Nullable String url, @Nullable String init, @Nullable String index)
-            throws IOException {
+    private ClipRanges.Plan clipPlan(@Nullable String url, @Nullable String init, @Nullable String index,
+                                     long startMs, long endMs) throws IOException {
         long[] initRange = ClipRanges.range(init);
         long[] indexRange = ClipRanges.range(index);
         if (!mItem.isClip() || url == null || initRange == null || indexRange == null
@@ -223,8 +340,7 @@ final class DownloadJob {
             return null;
         }
         byte[] head = mFetcher.fetchBytes(url, 0, indexRange[1]);
-        ClipRanges.Plan plan = ClipRanges.plan(head, (int) initRange[1], (int) indexRange[0],
-                mItem.clipStartMs, mItem.clipEndMs);
+        ClipRanges.Plan plan = ClipRanges.plan(head, (int) initRange[1], (int) indexRange[0], startMs, endMs);
         NetPath.log("download part-plan video=" + mItem.videoId + " ok=" + (plan != null)
                 + (plan != null ? " bytes=" + plan.fileLength() : ""));
         return plan;
@@ -235,6 +351,7 @@ final class DownloadJob {
         if (plan == null) {
             return 0;
         }
+        ParallelFetch.dropIfStale(part, plan.fileLength()); // chunks recorded for another plan: start over
         if (!part.exists() || part.length() < plan.header.length || part.length() > plan.fileLength()) {
             try (java.io.FileOutputStream out = new java.io.FileOutputStream(part, false)) {
                 out.write(plan.header);
@@ -243,7 +360,7 @@ final class DownloadJob {
         return plan.from - plan.header.length;
     }
 
-    private boolean report(long bytesDone) {
+    private synchronized boolean report(long bytesDone) {
         mItem.bytesDone = bytesDone;
         long now = System.currentTimeMillis();
         mItem.sampleSpeed(now);
@@ -330,8 +447,7 @@ final class DownloadJob {
     }
 
     private static void deletePart(File part) {
-        //noinspection ResultOfMethodCallIgnored
-        part.delete();
+        ParallelFetch.reset(part);
         //noinspection ResultOfMethodCallIgnored
         DownloadOptions.audioIdFile(part).delete();
     }
@@ -375,12 +491,15 @@ final class DownloadJob {
         DownloadStorage.Target target = mStorage.create(fileName, mItem.isAudioOnly(), mimeOf(fileName));
         MediaMuxer muxer = null;
         try {
-            muxer = mStorage.openMuxer(target, webm);
-            long durationMs = MediaMuxHelper.mux(videoPart, audioPart, muxer,
-                    mItem.clipStartMs * 1000, mItem.clipEndMs * 1000, mVideoPartStartMs * 1000, mAudioPartStartMs * 1000,
-                    (timeUs, durationUs) -> !mItem.cancelRequested);
-            muxer.release();
-            muxer = null;
+            long durationMs = fastJoin(videoPart, audioPart, webm, target);
+            if (durationMs < 0) {
+                muxer = mStorage.openMuxer(target, webm);
+                durationMs = MediaMuxHelper.mux(videoPart, audioPart, muxer,
+                        mItem.clipStartMs * 1000, mItem.clipEndMs * 1000, mVideoPartStartMs * 1000, mAudioPartStartMs * 1000,
+                        (timeUs, durationUs) -> !mItem.cancelRequested);
+                muxer.release();
+                muxer = null;
+            }
             mStorage.commit(target);
             mItem.durationMs = durationMs;
             mItem.outputUri = target.uri.toString();
@@ -402,6 +521,28 @@ final class DownloadJob {
                 throw new StreamFetcher.CancelledException();
             }
             throw e instanceof IOException ? (IOException) e : new IOException("mux failed", e);
+        }
+    }
+
+    /** {@link FastJoin} into the target; -1, with nothing written, when the parts need the muxer. */
+    private long fastJoin(@Nullable File videoPart, @Nullable File audioPart, boolean webm,
+                          DownloadStorage.Target target) throws IOException {
+        // Not closed for a descriptor: the stream does not own it, commit() closes the pfd.
+        FileOutputStream stream = target.pfd != null
+                ? new FileOutputStream(target.pfd.getFileDescriptor()) : new FileOutputStream(target.file);
+        try {
+            FileChannel out = stream.getChannel();
+            long durationMs = FastJoin.join(videoPart, audioPart, webm, mItem.clipStartMs * 1000, mItem.clipEndMs * 1000,
+                    out, (bytes, total) -> !mItem.cancelRequested);
+            out.force(false);
+            return durationMs;
+        } catch (FastJoin.Unsupported e) {
+            Log.w(TAG, "join by copy refused (" + e.getMessage() + "), muxing " + mItem.videoId);
+            return -1;
+        } finally {
+            if (target.pfd == null) {
+                stream.close();
+            }
         }
     }
 
@@ -429,14 +570,10 @@ final class DownloadJob {
 
     private static void deleteParts(@Nullable File videoPart, @Nullable File audioPart) {
         if (videoPart != null) {
-            //noinspection ResultOfMethodCallIgnored
-            videoPart.delete();
+            deletePart(videoPart);
         }
         if (audioPart != null) {
-            //noinspection ResultOfMethodCallIgnored
-            audioPart.delete();
-            //noinspection ResultOfMethodCallIgnored
-            DownloadOptions.audioIdFile(audioPart).delete();
+            deletePart(audioPart);
         }
     }
 }

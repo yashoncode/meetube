@@ -47,6 +47,8 @@ public final class DownloadPicker {
     private static final long REWORD_WINDOW_MS = 6_000;
 
     @Nullable private static Disposable sFetch;
+    /** MEETUBE(subtitles): the tracks of the video the dialog is for (one dialog at a time, like sFetch). */
+    @Nullable private static List<com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle> sSubtitles;
 
     private DownloadPicker() {
     }
@@ -98,6 +100,7 @@ public final class DownloadPicker {
         }
 
         List<DownloadOption> options = DownloadOptions.build(info.getAdaptiveFormats(), info.getUrlFormats());
+        sSubtitles = info.getSubtitles();
         if (options.isEmpty()) {
             MobileSnackbar.show(context, R.string.mobile_download_unavailable);
             return;
@@ -158,6 +161,17 @@ public final class DownloadPicker {
             }));
         }
 
+        List<com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle> tracks = DownloadSubtitles.tracks(sSubtitles);
+        if (!clip && !tracks.isEmpty()) { // MEETUBE(subtitles): which language comes with it, or none
+            com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle picked = DownloadSubtitles.pick(context, sSubtitles);
+            dialog.appendSingleButton(UiOptionItem.from(context.getString(R.string.mobile_download_subtitles),
+                    picked != null ? picked.getName() : context.getString(R.string.mobile_download_subtitles_off),
+                    optionItem -> { // in the same sheet: a close then a new sheet flashed a second dim
+                        askSubtitles(context, tracks, () -> showOptions(context, video, title, author, thumb,
+                                options, lengthMs, clipStartMs, clipEndMs));
+                    }));
+        }
+
         if (!clip && context instanceof Activity) {
             dialog.appendSingleButton(UiOptionItem.from(context.getString(R.string.mobile_download_part),
                     context.getString(R.string.mobile_download_part_description), optionItem -> {
@@ -169,6 +183,29 @@ public final class DownloadPicker {
         dialog.showDialog(clip
                 ? context.getString(R.string.mobile_download_part_title, DownloadOptions.clipLabel(clipStartMs, clipEndMs))
                 : context.getString(R.string.dialog_download));
+    }
+
+    /** Off, or one of the video's languages; remembered, then back to the rungs. */
+    private static void askSubtitles(Context context, List<com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle> tracks,
+                                     Runnable back) {
+        AppDialogPresenter dialog = AppDialogPresenter.instance(context);
+        String current = DownloadSubtitles.language(context);
+        dialog.appendSingleButton(UiOptionItem.from(context.getString(R.string.mobile_download_subtitles_off),
+                current.isEmpty() ? context.getString(R.string.mobile_download_subtitles_current) : null, item -> {
+                    dialog.clearBackstack(); // back to the rungs in place, not a level deeper
+                    DownloadSubtitles.setLanguage(context, "");
+                    back.run();
+                }));
+        for (com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle track : tracks) {
+            dialog.appendSingleButton(UiOptionItem.from(track.getName(),
+                    current.equals(track.getLanguageCode()) ? context.getString(R.string.mobile_download_subtitles_current) : null,
+                    item -> {
+                        dialog.clearBackstack();
+                        DownloadSubtitles.setLanguage(context, track.getLanguageCode());
+                        back.run();
+                    }));
+        }
+        dialog.showDialog(context.getString(R.string.mobile_download_subtitles));
     }
 
     private static long lengthMs(MediaItemFormatInfo info) {
@@ -342,6 +379,9 @@ public final class DownloadPicker {
         item.clipStartMs = clipStartMs;
         item.clipEndMs = clipEndMs;
         MobileDownloadService.enqueue(context, item);
+        if (clipEndMs <= clipStartMs && !option.isAudioOnly()) { // a part's times wouldn't match the track
+            DownloadSubtitles.save(context, video.videoId, DownloadSubtitles.pick(context, sSubtitles));
+        }
         if (AutoDownload.mustWait(context)) { // issue #318: queued, it starts on Wi-Fi
             MobileSnackbar.show(context, context.getString(R.string.mobile_download_wifi_wait),
                     context.getString(R.string.mobile_download_view), () -> openDownloads(context));

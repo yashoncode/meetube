@@ -27,8 +27,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * The next song, whole, into the player's own disk cache a few seconds into the current one (how
- * BitChord reads ahead): a skip at any moment then plays from the phone at once. The cache keys a
+ * The next song, whole, into the player's own disk cache a few seconds into the current one (read
+ * ahead): a skip at any moment then plays from the phone at once. The cache keys a
  * stream by video id and itag, so the copy is found whatever signed link the player opens it with,
  * and it stays until the 512MB cache needs the room (the player's sample preload expires in 90s).
  *

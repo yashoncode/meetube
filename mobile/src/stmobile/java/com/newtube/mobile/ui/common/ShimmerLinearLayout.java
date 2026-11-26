@@ -34,8 +34,8 @@ import com.liskovsoft.smartyoutubetv2.tv.R;
  * animations are off.</p>
  */
 public class ShimmerLinearLayout extends LinearLayout {
-    private static final long SWEEP_MS = 1100;
-    private static final long REST_MS = 350;
+    private static final long SWEEP_MS = 900;
+    private static final long REST_MS = 200;
     private static final long PERIOD_MS = SWEEP_MS + REST_MS;
     /** Band width as a share of the window width. */
     private static final float BAND = 0.55f;

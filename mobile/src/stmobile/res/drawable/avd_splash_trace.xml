@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(launch): a hairline red outline traces the play, it fills in and a glint lights its top edge. 480 ms in all (LaunchSplash). -->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="240dp"
+            android:height="240dp"
+            android:viewportWidth="240"
+            android:viewportHeight="240">
+            <group android:pivotX="128" android:pivotY="120" android:translateX="-8" android:scaleX="0.72" android:scaleY="0.72">
+                <path android:name="outline" android:pathData="@string/splash_play_path" android:strokeColor="#FFFF453A"
+                    android:strokeWidth="2.4" android:strokeLineJoin="round" android:trimPathEnd="0" />
+                <path android:name="fill" android:pathData="@string/splash_play_path" android:fillColor="#FFFF453A" android:fillAlpha="0" />
+                <path android:name="glint" android:pathData="@string/splash_play_path" android:strokeAlpha="0"
+                    android:strokeWidth="2" android:strokeLineJoin="round">
+                    <aapt:attr name="android:strokeColor">
+                        <gradient android:type="linear" android:startX="96" android:startY="78" android:endX="132" android:endY="120"
+                            android:startColor="#FFFFFFFF" android:endColor="#00FFFFFF" />
+                    </aapt:attr>
+                </path>
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="outline">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="300"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="trimPathEnd"
+                android:valueFrom="0"
+                android:valueTo="1" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="fill">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="200"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="fillAlpha"
+                android:startOffset="220"
+                android:valueFrom="0"
+                android:valueTo="1" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="glint">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="180"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="strokeAlpha"
+                android:startOffset="300"
+                android:valueFrom="0"
+                android:valueTo="1" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

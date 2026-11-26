@@ -28,21 +28,17 @@
         app:layout_constraintWidth_percent="0.5"
         tools:visibility="visible" />
 
-    <!-- MEETUBE(seek pill): the count per tap, centred at 78% of the width (22% rewinding). -->
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/seek_pill_center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.78" />
-
+    <!-- MEETUBE(seek pill): the count per tap, on the time pill's row, pinned to the side it seeks
+         toward (YouTubeOverlay swaps the side). Pinned, not centred at 78%: on a long video the
+         time pill ("24:53 / 11:50:00") reached 78% and the two ran into each other (#358). -->
     <com.github.vkay94.dtpv3.youtube.views.SeekBurstPill
         android:id="@+id/seek_pill"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/seek_pill_center"
-        app:layout_constraintStart_toStartOf="@id/seek_pill_center"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

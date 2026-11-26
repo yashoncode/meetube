@@ -199,7 +199,7 @@
                 android:background="@drawable/bg_glass_pill"
                 android:clickable="true"
                 android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
+                android:foreground="@drawable/glass_press_pill"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="14dp">

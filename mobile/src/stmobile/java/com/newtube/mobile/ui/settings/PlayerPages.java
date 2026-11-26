@@ -68,6 +68,24 @@ final class PlayerPages {
         PlayerData playerData = PlayerData.instance(context);
         PlayerTweaksData tweaks = PlayerTweaksData.instance(context);
 
+        // MEETUBE(home autoplay): the centred Home card plays muted, as on YouTube. Off by default.
+        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_home_autoplay))
+                .option(context.getString(R.string.mobile_settings_home_autoplay_off),
+                        context.getString(R.string.mobile_settings_home_autoplay_off_desc),
+                        com.newtube.mobile.ui.browse.HomePreview.OFF)
+                .option(context.getString(R.string.mobile_settings_home_autoplay_wifi),
+                        context.getString(R.string.mobile_settings_home_autoplay_wifi_desc),
+                        com.newtube.mobile.ui.browse.HomePreview.WIFI)
+                .option(context.getString(R.string.mobile_settings_home_autoplay_always),
+                        context.getString(R.string.mobile_settings_home_autoplay_always_desc),
+                        com.newtube.mobile.ui.browse.HomePreview.ALWAYS)
+                .bind(() -> com.newtube.mobile.ui.browse.HomePreview.mode(context),
+                        mode -> com.newtube.mobile.ui.browse.HomePreview.setMode(context, mode)));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_preview_continue),
+                context.getString(R.string.mobile_settings_home_preview_continue_summary),
+                () -> com.newtube.mobile.ui.browse.HomePreview.continues(context),
+                on -> com.newtube.mobile.ui.browse.HomePreview.setContinues(context, on)));
+
         rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_video_ends))
                 .option(context.getString(R.string.mobile_settings_video_ends_next), PlayerConstants.PLAYBACK_MODE_ALL)
                 .option(context.getString(R.string.mobile_settings_video_ends_repeat), PlayerConstants.PLAYBACK_MODE_ONE)
@@ -144,24 +162,6 @@ final class PlayerPages {
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_audio_focus),
                 context.getString(R.string.mobile_settings_audio_focus_summary),
                 tweaks::isAudioFocusEnabled, tweaks::setAudioFocusEnabled));
-
-        // MEETUBE(home autoplay): the centred Home card plays muted, as on YouTube.
-        rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_home_autoplay))
-                .option(context.getString(R.string.mobile_settings_home_autoplay_wifi),
-                        context.getString(R.string.mobile_settings_home_autoplay_wifi_desc),
-                        com.newtube.mobile.ui.browse.HomePreview.WIFI)
-                .option(context.getString(R.string.mobile_settings_home_autoplay_always),
-                        context.getString(R.string.mobile_settings_home_autoplay_always_desc),
-                        com.newtube.mobile.ui.browse.HomePreview.ALWAYS)
-                .option(context.getString(R.string.mobile_settings_home_autoplay_off),
-                        context.getString(R.string.mobile_settings_home_autoplay_off_desc),
-                        com.newtube.mobile.ui.browse.HomePreview.OFF)
-                .bind(() -> com.newtube.mobile.ui.browse.HomePreview.mode(context),
-                        mode -> com.newtube.mobile.ui.browse.HomePreview.setMode(context, mode)));
-        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_home_preview_continue),
-                context.getString(R.string.mobile_settings_home_preview_continue_summary),
-                () -> com.newtube.mobile.ui.browse.HomePreview.continues(context),
-                on -> com.newtube.mobile.ui.browse.HomePreview.setContinues(context, on)));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_resume)));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_resume_short),

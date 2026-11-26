@@ -821,13 +821,13 @@ final class MusicApi {
         String sub3 = text(found.opt("secondSubtitle"));
         item.meta = sub2 != null && sub3 != null ? sub2 + " • " + sub3 : sub2 != null ? sub2 : sub3;
         // Its save (like) button: what it saves and whether it already is.
-        String raw = response.toString();
-        int like = raw.indexOf("\"likeButtonRenderer\"");
-        if (like >= 0) {
-            String near = raw.substring(like, Math.min(raw.length(), like + 1200));
-            java.util.regex.Matcher id = java.util.regex.Pattern.compile("\"playlistId\":\"([^\"]+)\"").matcher(near);
-            if (id.find()) item.saveId = id.group(1);
-            item.saved = near.contains("\"likeStatus\":\"LIKE\"");
+        // Found in the tree: the whole response as one string (a long playlist with all its pages)
+        // was 150 MB and ran MeeTune out of memory while the page spun.
+        JSONObject like = findKey(response, "likeButtonRenderer", 0);
+        if (like != null) {
+            Object id = path(like, "target", "playlistId");
+            if (id instanceof String) item.saveId = (String) id;
+            item.saved = "LIKE".equals(like.optString("likeStatus"));
         }
         Object thumbnail = path(found, "thumbnail", "musicThumbnailRenderer");
         if (thumbnail == null) thumbnail = path(found, "thumbnail", "croppedSquareThumbnailRenderer");
@@ -837,6 +837,29 @@ final class MusicApi {
         shelf.header = true;
         shelf.items.add(item);
         return shelf;
+    }
+
+    /** The first object under {@code key}, depth first in the response's own order. */
+    @Nullable
+    private static JSONObject findKey(Object node, String key, int depth) {
+        if (depth > 30) return null;
+        if (node instanceof JSONArray) {
+            JSONArray array = (JSONArray) node;
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject found = findKey(array.opt(i), key, depth + 1);
+                if (found != null) return found;
+            }
+        } else if (node instanceof JSONObject) {
+            JSONObject object = (JSONObject) node;
+            JSONObject hit = object.optJSONObject(key);
+            if (hit != null) return hit;
+            java.util.Iterator<String> keys = object.keys();
+            while (keys.hasNext()) {
+                JSONObject found = findKey(object.opt(keys.next()), key, depth + 1);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     @Nullable

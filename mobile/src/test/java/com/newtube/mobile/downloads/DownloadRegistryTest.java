@@ -19,8 +19,11 @@ import static org.junit.Assert.*;
 @Config(sdk = 28, manifest = Config.NONE, application = Application.class)
 @ConscryptMode(ConscryptMode.Mode.OFF)
 public class DownloadRegistryTest {
-    /** A download cut by a process death comes back paused with its progress, a paused one stays paused (issue #191). */
-    @Test public void interruptedAndPausedDownloadsLoadPausedWithTheirProgress() throws Exception {
+    /**
+     * A download cut by a process death goes back in the queue with its progress, so it resumes on its
+     * own (issue #300); a paused one stays paused (issue #191).
+     */
+    @Test public void interruptedDownloadsRequeueWithTheirProgressAndPausedStayPaused() throws Exception {
         Context context = RuntimeEnvironment.getApplication();
         DownloadItem running = item("running", DownloadItem.STATE_DOWNLOADING);
         DownloadItem paused = item("paused", DownloadItem.STATE_PAUSED);
@@ -32,11 +35,11 @@ public class DownloadRegistryTest {
 
         DownloadRegistry registry = DownloadRegistry.instance(context);
 
-        assertTrue(registry.find("running").isPaused());
+        assertEquals(DownloadItem.STATE_QUEUED, registry.find("running").state);
         assertEquals(40, registry.find("running").progressPercent());
         assertTrue(registry.find("paused").isPaused());
         assertTrue(registry.find("failed").isFailed());
-        assertNull(registry.nextQueued());
+        assertSame(registry.find("running"), registry.nextQueued());
         assertSame(registry.find("running"), registry.findActive("running-video"));
     }
 

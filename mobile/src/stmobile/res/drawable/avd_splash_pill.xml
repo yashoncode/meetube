@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(launch): a glass bead stretches into a pill and the red play appears inside it. 480 ms in all (LaunchSplash). -->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="240dp"
+            android:height="240dp"
+            android:viewportWidth="240"
+            android:viewportHeight="240">
+            <group android:name="pill" android:pivotX="120" android:pivotY="120" android:scaleX="0.58">
+                <path android:name="pill_path" android:pathData="M92,82 L148,82 A38,38 0 0,1 148,158 L92,158 A38,38 0 0,1 92,82 Z"
+                    android:fillAlpha="0" android:strokeAlpha="0" android:strokeWidth="1.2">
+                    <aapt:attr name="android:fillColor">
+                        <gradient android:type="linear" android:startX="54" android:startY="82" android:endX="186" android:endY="158"
+                            android:startColor="@color/splash_tile_top" android:endColor="@color/splash_tile_bottom" />
+                    </aapt:attr>
+                    <aapt:attr name="android:strokeColor">
+                        <gradient android:type="linear" android:startX="54" android:startY="82" android:endX="186" android:endY="158">
+                            <item android:color="@color/splash_rim_lit" android:offset="0" />
+                            <item android:color="@color/splash_rim_dim" android:offset="0.55" />
+                            <item android:color="@color/splash_rim_far" android:offset="1" />
+                        </gradient>
+                    </aapt:attr>
+                </path>
+            </group>
+            <group android:name="play" android:pivotX="128" android:pivotY="120" android:translateX="-8"
+                android:scaleX="0.46" android:scaleY="0.46">
+                <path android:name="play_path" android:pathData="@string/splash_play_path" android:fillAlpha="0"
+                    android:fillColor="#FFFF453A" />
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="pill">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="300"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="scaleX"
+                android:valueFrom="0.58"
+                android:valueTo="1" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="pill_path">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="90"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="fillAlpha"
+                android:valueFrom="0"
+                android:valueTo="1" />
+            <objectAnimator
+                android:duration="90"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="strokeAlpha"
+                android:valueFrom="0"
+                android:valueTo="1" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="play">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="220"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="scaleX"
+                android:startOffset="160"
+                android:valueFrom="0.276"
+                android:valueTo="0.46" />
+            <objectAnimator
+                android:duration="220"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="scaleY"
+                android:startOffset="160"
+                android:valueFrom="0.276"
+                android:valueTo="0.46" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="play_path">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="220"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="fillAlpha"
+                android:startOffset="160"
+                android:valueFrom="0"
+                android:valueTo="1" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

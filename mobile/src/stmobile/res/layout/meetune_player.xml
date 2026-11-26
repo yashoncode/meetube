@@ -78,6 +78,7 @@
     <!-- The queue page's way back to the player, where the handle is on the others. -->
     <ImageView
         android:id="@+id/meetune_player_queue_close"
+        android:theme="@style/ThemeOverlay.NewTube.PlayerChrome"
         android:layout_width="44dp"
         android:layout_height="40dp"
         android:layout_gravity="top|start"
@@ -87,7 +88,7 @@
         android:padding="8dp"
         android:rotation="90"
         android:src="@drawable/ic_chevron_right"
-        android:tint="@android:color/white"
+        android:tint="?android:attr/textColorPrimary"
         android:visibility="gone" />
 
     <!-- Lyrics: the song small at the top, the synced lines under it down to the controls (or the
@@ -161,6 +162,7 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="12dp"
                 app:glassCornerRadius="999dp"
+                app:glassOnGlass="true"
                 app:glassTint="@color/meetune_player_glass">
 
                 <ImageView
@@ -179,6 +181,7 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="14dp"
                 app:glassCornerRadius="999dp"
+                app:glassOnGlass="true"
                 app:glassTint="@color/meetune_player_glass">
 
                 <ImageView
@@ -216,6 +219,16 @@
                 android:paddingBottom="28dp" />
 
         </view>
+
+        <ViewStub
+            android:id="@+id/meetune_player_games_stub"
+            android:inflatedId="@+id/meetune_player_games_page"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginBottom="4dp"
+            android:layout="@layout/meetune_games_page" />
 
         <!-- Queue: the song small at the top as on Lyrics, then what plays now and next. -->
         <LinearLayout
@@ -367,7 +380,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="#B3FFFFFF"
-                    android:textSize="20sp" />
+                    android:textSize="16sp" />
 
                 <include
                     layout="@layout/meetune_karaoke_chip"
@@ -380,6 +393,7 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="12dp"
                 app:glassCornerRadius="999dp"
+                app:glassOnGlass="true"
                 app:glassTint="@color/meetune_player_glass">
 
                 <ImageView
@@ -398,6 +412,7 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="14dp"
                 app:glassCornerRadius="999dp"
+                app:glassOnGlass="true"
                 app:glassTint="@color/meetune_player_glass">
 
                 <ImageView
@@ -453,6 +468,7 @@
 
         <view
             class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$GlowSeek"
+                    android:background="@null"
             android:id="@+id/meetune_player_seek"
             android:layout_width="match_parent"
             android:layout_height="28dp"
@@ -590,6 +606,7 @@
 
                 <view
                     class="com.newtube.mobile.ui.playback.MeeTunePlayerSkin$GlowSeek"
+                    android:background="@null"
                     android:id="@+id/meetune_player_volume"
                     android:layout_width="match_parent"
                     android:layout_height="28dp"
@@ -607,6 +624,7 @@
                     android:alpha="0"
                     android:translationY="-36dp"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <TextView
@@ -643,6 +661,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             app:glassCornerRadius="999dp"
+            app:glassOnGlass="true"
             app:glassTint="#17FFFFFF">
 
             <LinearLayout
@@ -749,6 +768,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <ImageView
@@ -775,6 +795,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <ImageView
@@ -801,6 +822,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <ImageView
@@ -827,6 +849,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <ImageView

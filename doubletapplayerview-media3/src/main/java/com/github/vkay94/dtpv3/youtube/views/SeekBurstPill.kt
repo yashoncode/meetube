@@ -37,7 +37,6 @@ class SeekBurstPill @JvmOverloads constructor(context: Context, attrs: Attribute
         if (context.theme.resolveAttribute(android.R.attr.colorAccent, it, true)) it.data else Color.WHITE
     }
     private var side = 1
-    private var large = false
     private var tapAnimator: ValueAnimator? = null
     private var showAnimator: ValueAnimator? = null
     /** 0..1 since the last tap, for the sparks; 1 = none. */
@@ -71,24 +70,21 @@ class SeekBurstPill @JvmOverloads constructor(context: Context, attrs: Attribute
         })
         setWillNotDraw(false)
         visibility = INVISIBLE
-        size(false)
+        size()
     }
 
-    private fun size(large: Boolean) {
-        this.large = large
-        val iconPx = ((if (large) 20 else 16) * density).toInt()
+    /** The player's time pill's size (MobilePlayerPill): 14sp, 14/6dp padding, in every window. */
+    private fun size() {
+        val iconPx = (16 * density).toInt()
         icon.layoutParams = LayoutParams(iconPx, iconPx)
-        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (large) 16f else 13f)
-        text.setShadowLayer(3 * density, 0f, 0.5f * density, Color.argb(90, 0, 0, 0))
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
         (text.layoutParams as? LayoutParams)?.marginStart = (6 * density).toInt()
-        minimumHeight = ((if (large) 40 else 34) * density).toInt()
-        setPadding(((if (large) 12 else 10) * density).toInt(), 0, ((if (large) 15 else 13) * density).toInt(), 0)
+        setPadding((14 * density).toInt(), (6 * density).toInt(), (14 * density).toInt(), (6 * density).toInt())
     }
 
-    /** One tap: [first] = the burst starts (the pill springs in). [large] in fullscreen. */
-    fun tap(forward: Boolean, seconds: Int, first: Boolean, large: Boolean) {
+    /** One tap: [first] = the burst starts (the pill springs in). */
+    fun tap(forward: Boolean, seconds: Int, first: Boolean) {
         side = if (forward) 1 else -1
-        if (large != this.large) size(large)
         icon.setImageResource(if (forward) R.drawable.dtpv_ic_fast_forward else R.drawable.dtpv_ic_fast_rewind)
         text.text = (if (forward) "+" else "−") + seconds
         if (first || visibility != VISIBLE) {

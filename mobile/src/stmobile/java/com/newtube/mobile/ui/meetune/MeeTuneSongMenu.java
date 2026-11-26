@@ -134,7 +134,7 @@ public final class MeeTuneSongMenu {
             popup.dismiss();
             MusicApi.Item radio = copy(item);
             radio.playlistId = null; // MeeTune.video makes it the song's own radio (RDAMVM)
-            MeeTune.play(a, radio);
+            MeeTune.startRadio(a, radio);
         });
         row(content, R.drawable.ic_meetune_play_next, a.getString(R.string.meetune_play_next), null, () -> {
             popup.dismiss();

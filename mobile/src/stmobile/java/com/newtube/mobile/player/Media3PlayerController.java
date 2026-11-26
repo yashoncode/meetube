@@ -27,6 +27,7 @@ import com.liskovsoft.smartyoutubetv2.common.exoplayer.selector.TrackSelectorMan
 import com.liskovsoft.smartyoutubetv2.common.misc.NetPath;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
 import com.newtube.mobile.ui.common.UsageStats;
+import com.newtube.mobile.discord.DiscordPresence;
 import com.newtube.mobile.ui.meetune.MeeTune;
 
 import android.os.Handler;
@@ -545,6 +546,18 @@ public class Media3PlayerController implements Player.Listener {
 
     public void openUrlList(List<String> urlList) {
         mReadinessAnswer = null;
+        // MEETUBE(subtitles): a downloaded video's saved track rides along, shown from the start.
+        java.io.File subtitle = urlList != null && urlList.size() == 1 && !urlList.get(0).startsWith("http")
+                ? com.newtube.mobile.downloads.DownloadSubtitles.find(mContext, getVideoId()) : null;
+        if (subtitle != null) {
+            String language = com.newtube.mobile.downloads.DownloadSubtitles.languageOf(subtitle);
+            openMediaSource(mMediaSourceFactory.fromLocalWithSubtitles(urlList.get(0), subtitle, language), "progressive");
+            if (mTrackSelector != null) {
+                mTrackSelector.setParameters(mTrackSelector.buildUponParameters()
+                        .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false).setPreferredTextLanguage(language));
+            }
+            return;
+        }
         openMediaSource(mMediaSourceFactory.fromUrlList(urlList), "progressive");
     }
 
@@ -993,6 +1006,23 @@ public class Media3PlayerController implements Player.Listener {
         return duration != C.TIME_UNSET ? duration : -1;
     }
 
+    /**
+     * MEETUBE(live seek bar): where a live stream's playing target is right now, in the window's own
+     * time, or -1. The window's duration grows only at each manifest refresh (5 s), so a seek bar
+     * measured against it crept forward and snapped back every refresh; the clock moves on between.
+     */
+    public long getLiveEdgeMs() {
+        if (mPlayer == null || !mPlayer.isCurrentMediaItemLive()) return -1;
+        androidx.media3.common.Timeline timeline = mPlayer.getCurrentTimeline();
+        if (timeline.isEmpty()) return -1;
+        androidx.media3.common.Timeline.Window window =
+                timeline.getWindow(mPlayer.getCurrentMediaItemIndex(), new androidx.media3.common.Timeline.Window());
+        if (window.windowStartTimeMs == C.TIME_UNSET || window.elapsedRealtimeEpochOffsetMs == C.TIME_UNSET) return -1;
+        long target = window.liveConfiguration != null && window.liveConfiguration.targetOffsetMs != C.TIME_UNSET
+                ? window.liveConfiguration.targetOffsetMs : 0;
+        return window.getCurrentUnixTimeMs() - window.windowStartTimeMs - target;
+    }
+
     public void setPlayWhenReady(boolean play) {
         if (mPlayer == null) {
             return;
@@ -1243,6 +1273,7 @@ public class Media3PlayerController implements Player.Listener {
             mPlayer = null;
             if (sCurrent == this) sCurrent = null;
         }
+        DiscordPresence.update(mContext, this); // MEETUBE(discord): released, the card goes
         mHoldBase = null;
         mTempoTrim = 1f;
     }
@@ -1677,6 +1708,7 @@ public class Media3PlayerController implements Player.Listener {
 
             mEventListener.onVideoLoaded(getVideo());
             UsageStats.videoOpened(MeeTune.isMusic(getVideo())); // MEETUBE(stats)
+            DiscordPresence.update(mContext, this); // MEETUBE(discord): next song or video
 
             if (mOnVideoLoaded != null) {
                 mOnVideoLoaded.run();
@@ -1715,6 +1747,12 @@ public class Media3PlayerController implements Player.Listener {
             ramp(true, mFadeInMs, null);
         }
         UsageStats.playing(isPlaying, MeeTune.isMusic(getVideo())); // MEETUBE(stats): watch or listen time
+        DiscordPresence.update(mContext, this); // MEETUBE(discord): play shows the card, pause takes it down
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(androidx.media3.common.PlaybackParameters parameters) {
+        DiscordPresence.update(mContext, this); // MEETUBE(discord): speed is divided out of the card's times
     }
 
     @Override
@@ -1805,6 +1843,7 @@ public class Media3PlayerController implements Player.Listener {
                 mNextPreloader.onSeek();
             }
             mEventListener.onSeekEnd();
+            DiscordPresence.update(mContext, this); // MEETUBE(discord): new times for the card's bar
             // SmartTube 6331ce5: seek completion resets the buffering watchdog. Media3 may
             // already have emitted BUFFERING, with no further state transition until data arrives.
             // Re-arm only an actively playing seek; paused or already-ready seeks must stay idle.

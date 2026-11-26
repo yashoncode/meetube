@@ -108,12 +108,13 @@ public class MobileChannelUploadsActivity extends MobileActivity
     private final List<Video> mPlaylistVideos = new ArrayList<>();
     private static final int BULK_NONE = 0;
     private static final int BULK_SORT = 1;
-    private static final int BULK_DOWNLOAD = 2;
-    private static final int BULK_CONFIRM_DOWNLOAD = 3;
+    private static final int BULK_SELECT = 2;
     private static final Pattern PLAYLIST_COUNT = Pattern.compile("(?i)^\\s*([0-9][0-9,\\u00a0 ]*)\\s*(?:videos?)?\\s*$");
     private int mSort = PlaylistSort.MANUAL;
     private int mFilter = PlaylistHeaderAdapter.FILTER_ALL;
-    private PlaylistSelection mSelection;
+    private com.newtube.mobile.ui.common.ListSelection<Video> mSelection;
+    /** What the grid shows (filter + sort applied); submitList diffs async, so not the adapter's list. */
+    private List<Video> mShown = new ArrayList<>();
     private int mPendingSort;
     private int mBulkAction;
     private int mDownloadQuality;
@@ -799,7 +800,8 @@ public class MobileChannelUploadsActivity extends MobileActivity
             filtered = mVideos;
         }
         mHeaderAdapter.setFilter(mFilter, hasShorts);
-        mAdapter.submitList(PlaylistSort.apply(filtered, mSort));
+        mShown = PlaylistSort.apply(filtered, mSort);
+        mAdapter.submitList(mShown);
         Video first = null;
         for (Video video : mPlaylistVideos) {
             if (video.hasVideo()) {
@@ -883,26 +885,36 @@ public class MobileChannelUploadsActivity extends MobileActivity
         dialog.showDialog(getString(R.string.mobile_playlist_sort));
     }
 
-    /** MEETUBE(playlist page): confirm the full count, never just the currently visible page. */
+    /**
+     * MEETUBE(playlist page): Download loads every page, then opens the selection with every shown
+     * video ticked, so the whole list is one tap away and any video can be left out first.
+     */
     private void downloadAll() {
         if (playlistBusy() || !PlaylistHeaderAdapter.canDownload(mPresenter.getChannel())) {
             return;
         }
-        // MEETUBE(playlist page): the whole list, or pick the videos on the grid.
-        AppDialogPresenter dialog = AppDialogPresenter.instance(this);
-        dialog.appendSingleButton(UiOptionItem.from(getString(R.string.mobile_playlist_download_all), option -> {
-            dialog.closeDialog();
-            startDownloadAll();
-        }));
-        dialog.appendSingleButton(UiOptionItem.from(getString(R.string.mobile_playlist_download_select), option -> {
-            dialog.closeDialog();
-            if (mSelection == null) {
-                mSelection = new PlaylistSelection(findViewById(R.id.mobile_channel_uploads_root), mGrid, mAdapter,
-                        this::downloadSelected);
-            }
-            mSelection.start();
-        }));
-        dialog.showDialog(getString(R.string.mobile_playlist_download_all));
+        loadPlaylist(BULK_SELECT);
+    }
+
+    private void openSelection() {
+        if (mSelection == null) {
+            mSelection = new com.newtube.mobile.ui.common.ListSelection<>(findViewById(R.id.mobile_channel_uploads_root),
+                    findViewById(R.id.mobile_channel_uploads_glass), mGrid,
+                    new com.newtube.mobile.ui.common.ListSelection.Items<Video>() {
+                        @Override
+                        public Video at(RecyclerView.ViewHolder holder) {
+                            List<Video> shown = mAdapter.getCurrentList();
+                            int position = holder.getBindingAdapter() == mAdapter ? holder.getBindingAdapterPosition() : -1;
+                            return position >= 0 && position < shown.size() ? shown.get(position) : null;
+                        }
+
+                        @Override
+                        public List<Video> all() {
+                            return mAdapter.getCurrentList();
+                        }
+                    }).action(R.string.mobile_playlist_download_selected, R.drawable.ic_watch_download, true, this::downloadSelected);
+        }
+        mSelection.start(mShown);
     }
 
     private void downloadSelected(List<Video> videos) {
@@ -912,34 +924,6 @@ public class MobileChannelUploadsActivity extends MobileActivity
                 mDownloadQuality = quality;
                 queuePlaylistDownloads(videos);
             }
-        });
-    }
-
-    private void startDownloadAll() {
-        if (playlistBusy()) {
-            return;
-        }
-        int count = playlistCount();
-        if (count >= 0) {
-            confirmDownloadAll(count);
-        } else {
-            // MEETUBE(playlist page): some openers have no total; count every page before asking.
-            loadPlaylist(BULK_CONFIRM_DOWNLOAD);
-        }
-    }
-
-    private void confirmDownloadAll(int count) {
-        int generation = mPlaylistGeneration;
-        AppDialogUtil.showConfirmationDialog(this, getString(R.string.mobile_playlist_download_confirm, count), () -> {
-            if (generation != mPlaylistGeneration || mTornDown) {
-                return;
-            }
-            PlaylistDownloads.chooseQuality(this, quality -> {
-                if (generation == mPlaylistGeneration && !mTornDown) {
-                    mDownloadQuality = quality;
-                    loadPlaylist(BULK_DOWNLOAD);
-                }
-            });
         });
     }
 
@@ -1009,10 +993,8 @@ public class MobileChannelUploadsActivity extends MobileActivity
             submitVideos();
         }
         updatePlaylistBusy();
-        if (action == BULK_CONFIRM_DOWNLOAD) {
-            confirmDownloadAll(mPlaylistVideos.size());
-        } else if (action == BULK_DOWNLOAD) {
-            queuePlaylistDownloads(new ArrayList<>(mPlaylistVideos));
+        if (action == BULK_SELECT) {
+            openSelection();
         }
     }
 

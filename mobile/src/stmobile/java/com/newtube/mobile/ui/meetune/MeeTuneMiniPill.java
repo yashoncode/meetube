@@ -62,7 +62,9 @@ final class MeeTuneMiniPill {
             ExoPlayer player = MiniPlayerBridge.getPlayer();
             if (player == null || mPill.getVisibility() != View.VISIBLE || !mPill.isAttachedToWindow()) return;
             long duration = player.getDuration();
-            mRing.setLevel(duration > 0 ? player.getCurrentPosition() / (float) duration : 0f, player.isPlaying());
+            // Live: a full ring, as the player's bar (its window grows each refresh: a ring crept and snapped back).
+            float level = player.isCurrentMediaItemLive() ? 1f : duration > 0 ? player.getCurrentPosition() / (float) duration : 0f;
+            mRing.setLevel(level, player.isPlaying());
             mPill.postDelayed(this, 250);
         }
     };

@@ -114,15 +114,14 @@ public final class DownloadMenu {
     public static void delete(Context context, DownloadItem item) {
         DownloadStorage storage = new DownloadStorage(context);
         storage.delete(item.outputUri);
+        DownloadSubtitles.delete(context, item.videoId);
         if (item.thumbPath != null) {
             //noinspection ResultOfMethodCallIgnored
             new File(item.thumbPath).delete();
         }
         File parts = DownloadRegistry.partsDir(context);
-        //noinspection ResultOfMethodCallIgnored
-        new File(parts, item.id + ".video").delete();
-        //noinspection ResultOfMethodCallIgnored
-        new File(parts, item.id + ".audio").delete();
+        ParallelFetch.reset(new File(parts, item.id + ".video"));
+        ParallelFetch.reset(new File(parts, item.id + ".audio"));
         //noinspection ResultOfMethodCallIgnored
         DownloadOptions.audioIdFile(new File(parts, item.id + ".audio")).delete();
         DownloadRegistry.instance(context).remove(item);

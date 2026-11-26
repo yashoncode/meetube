@@ -214,6 +214,10 @@ public class Media3PlayerInitializer {
                         .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED)
                         .build())
                 .setMaxVideoSize(ceiling, ceiling)
+                // media3 1.10 limits Auto to the physical screen by default (a 1080-wide phone
+                // never got past 1080p, even under "Up to 4K"); the quality ceiling and
+                // VideoViewportCap already decide that.
+                .clearViewportSizeConstraints()
                 .setExceedVideoConstraintsIfNecessary(true));
 
         // MEETUBE(dolby): media3 keeps audio to what the output can play (stereo on a phone without

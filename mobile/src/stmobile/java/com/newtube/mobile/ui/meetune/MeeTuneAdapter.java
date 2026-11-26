@@ -41,7 +41,7 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         void save(MusicApi.Item head, ImageView icon);
 
         /** The head's More. */
-        void pageMenu(View anchor, MusicApi.Item head);
+        void pageMenu(View anchor, MusicApi.Item head, List<MusicApi.Item> songs);
 
         /** The head's find box changed. */
         void find(String query);
@@ -277,6 +277,12 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return mRows.size();
     }
 
+    /** The song at {@code position}, or null for any other row (a ticked row in a selection). */
+    @Nullable
+    MusicApi.Item songAt(int position) {
+        return position >= 0 && position < mRows.size() && mRows.get(position).type == SONG ? mRows.get(position).item : null;
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int type) {
@@ -298,7 +304,10 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 break;
             case HEADER:
                 view = inflater.inflate(R.layout.meetune_page_header, parent, false);
-                view.findViewById(R.id.meetune_hero).getLayoutParams().height = Math.round(parent.getWidth() * 0.9f);
+                fitHero(view.findViewById(R.id.meetune_hero), parent);
+                view.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+                    if (r - l != or - ol) v.post(() -> fitHero(v.findViewById(R.id.meetune_hero), parent)); // turned
+                });
                 break;
             case VIEW:
                 view = new android.widget.FrameLayout(parent.getContext());
@@ -420,6 +429,24 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
      * The page's head: its cover across the top (up under the bar, fading into the page), name,
      * artist, what it is, and its buttons.
      */
+    /**
+     * A phone upright: the cover across the top, 0.9 of the width tall. Wide (a tablet, landscape) that
+     * filled the screen, so it is a square cover in the middle at most 55% of the height, its edges melting into the page.
+     */
+    private static void fitHero(View hero, ViewGroup parent) {
+        int width = parent.getWidth();
+        int cap = Math.round(parent.getHeight() * 0.55f);
+        boolean wide = cap > 0 && width * 0.9f > cap;
+        ViewGroup.LayoutParams params = hero.getLayoutParams();
+        int w = wide ? Math.round(cap / 0.9f) : ViewGroup.LayoutParams.MATCH_PARENT;
+        int h = wide ? cap : Math.round(width * 0.9f);
+        ((com.newtube.mobile.ui.playback.MeeTunePlayerSkin.FadeImage) hero).setFeather(wide);
+        if (params.width == w && params.height == h) return;
+        params.width = w;
+        params.height = h;
+        hero.setLayoutParams(params);
+    }
+
     private void bindHead(View view, Row row) {
         MusicApi.Item head = row.item;
         ImageView hero = view.findViewById(R.id.meetune_hero);
@@ -456,7 +483,7 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         });
         view.findViewById(R.id.meetune_page_more).setOnClickListener(v -> {
             Motion.pop(v);
-            mHost.pageMenu(v, head);
+            mHost.pageMenu(v, head, row.siblings);
         });
         View findGlass = view.findViewById(R.id.meetune_find_glass);
         android.widget.EditText field = view.findViewById(R.id.meetune_find_field);
@@ -537,7 +564,9 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         if (card instanceof MaterialCardView) { // an artist round, the rest as the layout has them (rows are reused)
             MaterialCardView cover = (MaterialCardView) card;
             if (cover.getTag() == null) cover.setTag(cover.getRadius());
-            cover.setRadius(item.round ? card.getLayoutParams().width / 2f : (Float) cover.getTag());
+            // A grid tile is MATCH_PARENT wide (-1): its height is its side, or the radius went negative (square).
+            ViewGroup.LayoutParams lp = card.getLayoutParams();
+            cover.setRadius(item.round ? Math.max(lp.width, lp.height) / 2f : (Float) cover.getTag());
         }
         if (art != null) {
             android.graphics.drawable.Drawable cover = new MeeTuneCover(item.title);

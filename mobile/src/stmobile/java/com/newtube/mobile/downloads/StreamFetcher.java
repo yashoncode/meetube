@@ -19,7 +19,8 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * Fetches one googlevideo stream into a file, resumable, in bounded {@code Range} chunks.
+ * Fetches one googlevideo stream into a file, resumable, in bounded {@code Range} chunks: in
+ * parallel ({@link ParallelFetch}) when the length is known, one after another otherwise.
  *
  * <p>Chunks rather than one long GET for the same reason the player reads ranges: googlevideo
  * paces an unbounded transfer to roughly playback speed on most itags, while ranged reads are
@@ -56,10 +57,20 @@ public final class StreamFetcher {
 
     private final OkHttpClient mClient;
     private final String mUserAgent;
+    private int mMaxWorkers = 4;
 
     public StreamFetcher(String userAgent) {
-        mClient = MediaHttpClient.create(OkHttpManager.instance().getClient());
+        this(MediaHttpClient.create(OkHttpManager.instance().getClient()), userAgent);
+    }
+
+    StreamFetcher(OkHttpClient client, String userAgent) {
+        mClient = client;
         mUserAgent = userAgent;
+    }
+
+    /** Most connections one stream may use (ParallelFetch adapts below it). */
+    void setMaxWorkers(int maxWorkers) {
+        mMaxWorkers = Math.max(1, maxWorkers);
     }
 
     /**
@@ -78,6 +89,28 @@ public final class StreamFetcher {
      * {@code expectedLength} is then required: the file length to stop at.
      */
     long fetch(String url, File target, long expectedLength, long shift, Progress progress) throws IOException {
+        // A known length goes parallel (ParallelFetch); an unknown one, or a server that ignores
+        // ranges, comes here. A part with a chunk record has holes, so appending to it would corrupt it.
+        if (expectedLength > 0) {
+            try {
+                return new ParallelFetch(mClient, mUserAgent, url, target, expectedLength, shift, mMaxWorkers, progress).run();
+            } catch (ParallelFetch.NotRangeable e) {
+                if (shift != 0) {
+                    throw new IOException("range ignored on a part download");
+                }
+                Log.w(TAG, "parallel fetch refused (" + e.getMessage() + "), sequential " + target.getName());
+                ParallelFetch.reset(target);
+            }
+        } else if (ParallelFetch.sidecar(target).exists()) {
+            if (shift != 0) {
+                throw new IOException("stale part");
+            }
+            ParallelFetch.reset(target);
+        }
+        return fetchSequential(url, target, expectedLength, shift, progress);
+    }
+
+    private long fetchSequential(String url, File target, long expectedLength, long shift, Progress progress) throws IOException {
         long total = expectedLength;
         long position = target.exists() ? target.length() : 0;
         int attempt = 0;

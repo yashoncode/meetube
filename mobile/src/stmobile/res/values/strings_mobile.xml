@@ -84,7 +84,7 @@
     <string name="mobile_lyrics">Lyrics</string>
     <string name="mobile_lyrics_none">Lyrics aren\'t available for this song</string>
     <string name="mobile_lyrics_source">Source: %1$s</string>
-    <!-- MEETUBE(lyrics): the lyrics provider chooser (LyricsSheet), in BitChord's words -->
+    <!-- MEETUBE(lyrics): the lyrics provider chooser (LyricsSheet) -->
     <string name="mobile_lyrics_provider_description">Lyrics provider: %1$s</string>
     <string name="mobile_lyrics_provider_choose">Choose lyrics provider</string>
     <string name="mobile_lyrics_provider_current">Current provider</string>
@@ -115,6 +115,8 @@
     <string name="mobile_settings_player_buttons_center">Center</string>
     <string name="mobile_settings_player_buttons_fullscreen">Fullscreen actions</string>
     <string name="mobile_settings_player_prev_next">Previous and next</string>
+    <string name="mobile_settings_player_buttons_inline">Normal player</string>
+    <string name="mobile_settings_player_inline_pills">Speed and quality</string>
     <string name="mobile_player_lock">Screen lock</string>
     <string name="mobile_player_locked">Locked · tap to unlock</string>
     <string name="mobile_transcript">Transcript</string>
@@ -158,6 +160,19 @@
     <string name="mobile_card_style_rim_desc">The accent along the top edge only</string>
     <string name="mobile_card_style_dual">Dual light</string>
     <string name="mobile_card_style_dual_desc">An accent glow below and a white highlight above</string>
+    <string name="mobile_settings_launch_animation">Launch animation</string>
+    <string name="mobile_launch_glass_tile">Glass tile</string>
+    <string name="mobile_launch_glass_tile_desc">A glass tile with the play inside and a light sheen</string>
+    <string name="mobile_launch_glass_shadow">Glass shadow</string>
+    <string name="mobile_launch_glass_shadow_desc">The play with a glass copy sliding out behind it</string>
+    <string name="mobile_launch_trace">Trace</string>
+    <string name="mobile_launch_trace_desc">A thin outline draws the play, then it fills in</string>
+    <string name="mobile_launch_pill">Pill</string>
+    <string name="mobile_launch_pill_desc">A glass bead stretches into a pill around the play</string>
+    <string name="mobile_launch_ripple">Ripple</string>
+    <string name="mobile_launch_ripple_desc">The play pops and a glass ring ripples out</string>
+    <string name="mobile_launch_off">Off</string>
+    <string name="mobile_launch_off_desc">Opens straight to Home</string>
     <string name="mobile_hype_title">Hype this video</string>
     <string name="mobile_hype_points">Hype points</string>
     <string name="mobile_comments_title">Comments</string>
@@ -222,6 +237,9 @@
     <string name="mobile_dialog_unavailable">Not available on mobile yet.</string>
     <string name="mobile_back">Back</string>
     <string name="mobile_search_hint">Search for videos</string>
+    <string name="mobile_channel_search">Search this channel</string>
+    <string name="mobile_channel_search_hint">Search this channel</string>
+    <string name="mobile_channel_search_close">Close search</string>
     <string name="mobile_search_button">Search</string>
     <string name="mobile_search_voice">Voice search</string>
     <!-- The NW arrow on a suggestion row: puts the text into the field without searching. -->
@@ -787,4 +805,7 @@
     <string name="mobile_shorts_clean_off">Buttons are back. Long press to hide them</string>
     <string name="mobile_shorts_clean_tip">Tip: long press a Short to hide its buttons</string>
     <string name="mobile_player_most_replayed">Most replayed</string>
+    <string name="mobile_download_subtitles">Subtitles</string>
+    <string name="mobile_download_subtitles_off">Off</string>
+    <string name="mobile_download_subtitles_current">Chosen</string>
 </resources>

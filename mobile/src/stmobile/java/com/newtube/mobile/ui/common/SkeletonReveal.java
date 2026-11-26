@@ -71,7 +71,7 @@ public final class SkeletonReveal {
 
     private static void fade(View skeleton, Runnable onGone) {
         skeleton.animate().cancel();
-        skeleton.animate().alpha(0f).setDuration(Motion.FADE_IN_MS).setInterpolator(Motion.STANDARD)
+        skeleton.animate().alpha(0f).setDuration(100 /* short: two shapes half-shown at once read as a glitch */).setInterpolator(Motion.STANDARD)
                 .withEndAction(onGone).start();
     }
 

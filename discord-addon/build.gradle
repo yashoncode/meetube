@@ -1,0 +1,36 @@
+// MEETUBE(discord): the Discord status add-on. Never a dependency of :mobile; it is built to one dex,
+// published as a release asset and loaded at runtime (docs/discord-presence/README.md). OkHttp and
+// the Android framework come from the app, so both are compile-only and nothing is bundled.
+apply plugin: 'java-library'
+
+def sdk = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
+def androidJar = "$sdk/platforms/android-37.0/android.jar"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    compileOnly 'com.squareup.okhttp3:okhttp:' + okhttpVersion
+    compileOnly files(androidJar)
+}
+
+// ./gradlew :discord-addon:addonDex -> build/addon/discord-presence-1.dex
+tasks.register('addonDex', Exec) {
+    dependsOn tasks.named('jar')
+    def out = layout.buildDirectory.dir('addon').get().asFile
+    def jar = tasks.named('jar').get().archiveFile.get().asFile
+    def tools = new File("$sdk/build-tools").listFiles().findAll { it.isDirectory() }.sort { it.name }.last()
+    def d8 = new File(tools, System.getProperty('os.name').toLowerCase().contains('win') ? 'd8.bat' : 'd8')
+    doFirst {
+        project.delete(out)
+        out.mkdirs()
+    }
+    def args = [d8.absolutePath, '--release', '--min-api', '24', '--lib', androidJar, '--output', out.absolutePath]
+    configurations.compileClasspath.files.each { if (it.absolutePath != new File(androidJar).absolutePath) args += ['--classpath', it.absolutePath] }
+    commandLine(args + [jar.absolutePath])
+    doLast {
+        new File(out, 'classes.dex').renameTo(new File(out, 'discord-presence-1.dex'))
+    }
+}

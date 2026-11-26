@@ -80,7 +80,7 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_indian_counts_summary),
                 () -> CountStyle.isIndian(context), on -> CountStyle.setIndian(context, on)).needsRestart());
 
-        // MEETUBE(performance): every screen at the display's top refresh rate (BitChord's setting).
+        // MEETUBE(performance): every screen at the display's top refresh rate.
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_performance)));
         rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_high_refresh),
                 context.getString(R.string.mobile_settings_high_refresh_summary,
@@ -211,6 +211,18 @@ final class AppPages {
                 .option(context.getString(R.string.mobile_card_style_dual), context.getString(R.string.mobile_card_style_dual_desc), com.newtube.mobile.ui.common.AccentCard.DUAL_LIGHT)
                 .bind(() -> com.newtube.mobile.ui.common.AccentCard.style(context),
                         style -> com.newtube.mobile.ui.common.AccentCard.setStyle(context, style)));
+
+        // MEETUBE(launch): the animation played as the app opens.
+        rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_launch_animation))
+                .option(context.getString(R.string.mobile_launch_glass_tile), context.getString(R.string.mobile_launch_glass_tile_desc), R.drawable.avd_splash_glass, com.newtube.mobile.ui.common.LaunchSplash.GLASS_TILE)
+                .option(context.getString(R.string.mobile_launch_glass_shadow), context.getString(R.string.mobile_launch_glass_shadow_desc), R.drawable.avd_splash_shadow, com.newtube.mobile.ui.common.LaunchSplash.GLASS_SHADOW)
+                .option(context.getString(R.string.mobile_launch_trace), context.getString(R.string.mobile_launch_trace_desc), R.drawable.avd_splash_trace, com.newtube.mobile.ui.common.LaunchSplash.TRACE)
+                .option(context.getString(R.string.mobile_launch_pill), context.getString(R.string.mobile_launch_pill_desc), R.drawable.avd_splash_pill, com.newtube.mobile.ui.common.LaunchSplash.PILL)
+                .option(context.getString(R.string.mobile_launch_ripple), context.getString(R.string.mobile_launch_ripple_desc), R.drawable.avd_splash_ripple, com.newtube.mobile.ui.common.LaunchSplash.RIPPLE)
+                .option(context.getString(R.string.mobile_launch_off), context.getString(R.string.mobile_launch_off_desc), R.drawable.ic_nav_home_outline, com.newtube.mobile.ui.common.LaunchSplash.OFF)
+                .bind(() -> com.newtube.mobile.ui.common.LaunchSplash.style(context),
+                        style -> com.newtube.mobile.ui.common.LaunchSplash.setStyle(context, style)),
+                96, Tiles.SPLASH, Tiles.SPLASH, Tiles.SPLASH, Tiles.SPLASH, Tiles.SPLASH, Tiles.SPLASH));
 
         // MEETUBE(rgb glow): the light in the You page's top left, the accent's by default.
         rows.add(Tiles.of(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_you_glow))
@@ -543,6 +555,10 @@ final class AppPages {
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_center)));
         playerButton(context, rows, R.string.mobile_settings_player_prev_next, "mobile_player_previous", "mobile_player_next");
+
+        // The speed and quality pills outside fullscreen too; on by default.
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_inline)));
+        playerButton(context, rows, R.string.mobile_settings_player_inline_pills, "mobile_player_pills_inline");
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_fullscreen)));
         playerButton(context, rows, R.string.mobile_watch_like, "mobile_player_like");
@@ -878,6 +894,11 @@ final class AppPages {
                     MediaServiceManager.instance().enableHistory(state == GeneralData.HISTORY_AUTO || state == GeneralData.HISTORY_ENABLED);
                 }));
 
+        // The TV's "Hide Shorts from history", as the phone's own row (PhoneOnlyPrefs keeps it).
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_history_hide_shorts),
+                context.getString(R.string.mobile_settings_history_hide_shorts_summary),
+                () -> com.newtube.mobile.PhoneOnlyPrefs.hidesHistoryShorts(context),
+                hide -> com.newtube.mobile.PhoneOnlyPrefs.setHidesHistoryShorts(context, hide)));
         if (signedIn) {
             rows.add(SettingsRow.action(context.getString(R.string.mobile_settings_clear_watch_history),
                     context.getString(R.string.mobile_settings_clear_watch_history_summary),

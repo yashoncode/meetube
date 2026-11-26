@@ -30,8 +30,9 @@ import java.util.function.BooleanSupplier;
  * MEETUBE(home autoplay): YouTube's Home preview. When the feed settles, the card nearest the
  * middle of the screen plays muted right in its thumbnail, with a mute and a captions button on
  * it and a thin progress line, which a drag scrubs; scroll it away and it stops, the next centred card takes over.
- * Tapping the card still opens the video (the overlay only swallows its two buttons).
- * Settings > Customization > Home autoplay picks Off / Wi-Fi only / Always.
+ * Tapping the card still opens the video (the overlay only swallows its two buttons). Mixes,
+ * playlists and music videos preview their first video.
+ * Settings > Playback > Home autoplay picks Off (the default) / Wi-Fi only / Always.
  */
 public final class HomePreview implements HomePreviewPlayer.Callback {
     public static final int OFF = 0;
@@ -43,7 +44,7 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
     private static final float MIN_VISIBLE = 0.65f;
 
     public static int mode(Context context) {
-        return prefs(context).getInt("home_autoplay", WIFI);
+        return prefs(context).getInt("home_autoplay", OFF);
     }
 
     public static void setMode(Context context, int mode) {
@@ -106,7 +107,9 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
                 }
                 long left = mPlayer.remainingMs();
                 TextView badge = mHolder.badge();
-                if (left >= 0 && badge.getVisibility() == View.VISIBLE) { // the duration counts down, as on YouTube
+                // the duration counts down, as on YouTube; a mix's or playlist's badge ("Mix", "24 videos") stays
+                if (left >= 0 && badge.getVisibility() == View.VISIBLE
+                        && mBadgeText != null && mBadgeText.toString().trim().matches("[\\d:]+")) {
                     long s = (left + 999) / 1000;
                     badge.setText(s >= 3600 ? String.format(java.util.Locale.US, "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60)
                             : String.format(java.util.Locale.US, "%d:%02d", s / 60, s % 60));
@@ -264,8 +267,9 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
             }
             VideoCardAdapter.VideoViewHolder card = (VideoCardAdapter.VideoViewHolder) holder;
             Video video = card.video();
+            // Mixes, playlists and music videos play too: their card carries the first video's id.
             if (video == null || video.videoId == null || video.isLive || video.isUpcoming || video.isShorts
-                    || video.hasPlaylist() || visibleFraction(card) < MIN_VISIBLE) {
+                    || visibleFraction(card) < MIN_VISIBLE) {
                 continue;
             }
             card.thumbnailFrame().getGlobalVisibleRect(mRect);
@@ -278,8 +282,12 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         }
         if (best == null) {
             stop();
-        } else if (best != mHolder || !best.video().videoId.equals(mPlayer.videoId())) {
+        } else if (!best.video().videoId.equals(mPlayer.videoId())) {
             start(best);
+        } else if (best != mHolder) {
+            // the same video on another card (a song and its Mix): carry the preview over, don't restart it
+            detach();
+            attach(best);
         }
     }
 
@@ -294,13 +302,6 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
 
     private void start(VideoCardAdapter.VideoViewHolder card) {
         stop();
-        mHolder = card;
-        mBadgeText = card.badge().getText();
-        mBadgeBg = card.badge().getBackground();
-        GradientDrawable grey = new GradientDrawable(); // not the frosted thumbnail: the video's colours would show through
-        grey.setCornerRadius(dp(6));
-        grey.setColor(0x99383838);
-        card.badge().setBackground(grey);
         mTexture.setAlpha(0f);
         mProgress.setVisibility(View.GONE);
         mScrub.setVisibility(View.GONE);
@@ -309,9 +310,21 @@ public final class HomePreview implements HomePreviewPlayer.Callback {
         mProgress.getLayoutParams().height = dp(3);
         mMute.setVisibility(View.GONE);
         mCc.setVisibility(View.GONE);
-        ViewGroup frame = (ViewGroup) card.thumbnailFrame();
-        frame.addView(mOverlay, 1, new FrameLayout.LayoutParams(-1, -1)); // under the duration badge
+        attach(card);
         mPlayer.play(card.video().videoId);
+    }
+
+    /** Puts the preview's overlay on {@code card}'s thumbnail, under its duration badge. */
+    private void attach(VideoCardAdapter.VideoViewHolder card) {
+        mHolder = card;
+        mBadgeText = card.badge().getText();
+        mBadgeBg = card.badge().getBackground();
+        GradientDrawable grey = new GradientDrawable(); // not the frosted thumbnail: the video's colours would show through
+        grey.setCornerRadius(dp(6));
+        grey.setColor(0x99383838);
+        card.badge().setBackground(grey);
+        ViewGroup frame = (ViewGroup) card.thumbnailFrame();
+        frame.addView(mOverlay, 1, new FrameLayout.LayoutParams(-1, -1));
     }
 
     private void detach() {

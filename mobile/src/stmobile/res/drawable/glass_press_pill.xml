@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(glass press): a glass pill's own press (bg_glass_pill), lit edge to edge with its 23dp corners;
+     the row press (glass_press) is inset with 14dp corners and drew a box inside the pill. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android" android:enterFadeDuration="90" android:exitFadeDuration="380">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="23dp"/>
+            <solid android:color="@color/glass_press_fill"/>
+            <stroke android:width="0.5dp" android:color="@color/glass_press_rim"/>
+        </shape>
+    </item>
+    <item android:drawable="@android:color/transparent"/>
+</selector>

@@ -35,7 +35,7 @@ import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
  * didn't hold: the prefs classes save 10 s after a change, so its marker could outlive values that
  * were never saved, and it covered only the profile that was active.</p>
  */
-final class PhoneOnlyPrefs implements AppPrefs.ProfileChangeListener {
+public final class PhoneOnlyPrefs implements AppPrefs.ProfileChangeListener {
     private static final int UI_HIDE_TIMEOUT_SEC = 3;
     private static final long[] OFF_MENU_ITEMS = {MainUIData.MENU_ITEM_OPEN_COMMENTS, MainUIData.MENU_ITEM_TOGGLE_HISTORY,
             MainUIData.MENU_ITEM_SHARE_QR_LINK, MainUIData.MENU_ITEM_SELECT_ACCOUNT, MainUIData.MENU_ITEM_UPDATE_CHECK};
@@ -111,18 +111,37 @@ final class PhoneOnlyPrefs implements AppPrefs.ProfileChangeListener {
         }
 
         // History shows the Shorts you watched: the TV hid them by default, with no phone row to undo
-        // it, so a Shorts-only history (and the You page's History row) came back empty.
+        // it, so a Shorts-only history (and the You page's History row) came back empty. Now it is the
+        // phone's own row (History and privacy > Hide Shorts), off unless the user turned it on.
         com.liskovsoft.sharedutils.prefs.GlobalPreferences.instance(mContext); // MediaServiceData reads it
         com.liskovsoft.youtubeapi.service.internal.MediaServiceData data =
                 com.liskovsoft.youtubeapi.service.internal.MediaServiceData.instance();
-        if (data.isContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY)) {
-            data.setContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY, false);
+        boolean hideHistoryShorts = hidesHistoryShorts(mContext);
+        if (data.isContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY) != hideHistoryShorts) {
+            data.setContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY, hideHistoryShorts);
         }
         // MEETUBE(issue #328): the same TV default dropped every Short from Subscriptions, so its Shorts
         // pill showed a blank page. The All | Videos | Shorts pill is the phone's way to hide them.
         if (data.isContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_SUBSCRIPTIONS)) {
             data.setContentHidden(com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_SUBSCRIPTIONS, false);
         }
+    }
+
+    private static final String PREFS = "phone_only_prefs";
+    private static final String HIDE_HISTORY_SHORTS = "hide_history_shorts";
+
+    /** Settings > History and privacy > Hide Shorts: the Shorts you watched stay out of History. Off by default. */
+    public static boolean hidesHistoryShorts(Context context) {
+        return context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getBoolean(HIDE_HISTORY_SHORTS, false);
+    }
+
+    public static void setHidesHistoryShorts(Context context, boolean hide) {
+        context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                .putBoolean(HIDE_HISTORY_SHORTS, hide).apply();
+        com.liskovsoft.sharedutils.prefs.GlobalPreferences.instance(context.getApplicationContext());
+        com.liskovsoft.youtubeapi.service.internal.MediaServiceData.instance().setContentHidden(
+                com.liskovsoft.youtubeapi.service.internal.MediaServiceData.CONTENT_SHORTS_HISTORY, hide);
     }
 
     /**

@@ -19,4 +19,6 @@
     <exclude domain="root" path="app_webview/" />
     <exclude domain="sharedpref" path="youtube_web_signin.xml" />
     <exclude domain="sharedpref" path="AuthTokenCache.xml" />
+    <exclude domain="sharedpref" path="discord.xml" />
+    <exclude domain="file" path="discord/" />
 </full-backup-content>

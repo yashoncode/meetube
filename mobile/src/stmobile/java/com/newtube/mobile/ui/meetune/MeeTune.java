@@ -369,6 +369,15 @@ public final class MeeTune {
         PlaybackPresenter.instance(context).openVideo(video);
     }
 
+    /** Start radio: the song plays with its own radio as Up next, even when it is the song playing now. */
+    static void startRadio(Activity activity, MusicApi.Item item) {
+        if (item.videoId == null) return;
+        sFreshRadio = item.videoId;
+        boolean playing = item.videoId.equals(sVideoId);
+        play(activity, item);
+        if (playing) learn(activity, video(item)); // the player asks only when the song changes
+    }
+
     /** The song's menu's Play next ({@code next}) or Add to queue: MeeTube's playback queue, in the music look. */
     static void queue(Context context, MusicApi.Item item, boolean next) {
         if (item.videoId == null) return;
@@ -398,6 +407,8 @@ public final class MeeTune {
 
     /** Songs already met in a YouTube Music queue fetched for the player (their art and links are known). */
     private static final java.util.Set<String> RADIO = new java.util.HashSet<>();
+    /** The song Start radio was picked on, until its radio is fetched. */
+    @Nullable private static String sFreshRadio;
     /** The last queue fetched, in order. */
     private static final List<String> sBatch = new java.util.ArrayList<>();
     /** Songs played lately (newest last): never picked as next again, so a radio can't bounce A, B, A, B. */
@@ -454,6 +465,12 @@ public final class MeeTune {
         for (int i = 0; i < slots.length; i++) sBatch.set(slots[i], videoIds.get(i));
     }
 
+    /** Shuffle: the radio's songs after {@code id} in a new order (Up next shows it, and plays it). */
+    private static void shuffleAfter(String id) {
+        int at = sBatch.indexOf(id);
+        if (at >= 0 && at + 2 < sBatch.size()) java.util.Collections.shuffle(sBatch.subList(at + 1, sBatch.size()));
+    }
+
     /** Not in the last queue, or among its last three: time to ask for the songs after it. */
     private static boolean lastOfBatch(String id) {
         int at = sBatch.indexOf(id);
@@ -474,8 +491,10 @@ public final class MeeTune {
         boolean knowsSong = known != null && known.albumId != null && known.artistId != null;
         // A new queue only when this one runs out: another fetched mid-queue (for a song's album) is
         // that song's own radio, which leads back to the song before it.
-        boolean refill = lastOfBatch(id) || upNext(video).isEmpty(); // or all that is left has played
-        if (knowsSong && RADIO.contains(id) && !refill) return;
+        boolean fresh = id.equals(sFreshRadio); // Start radio: the song's own radio, wherever the queue was
+        if (fresh) sFreshRadio = null;
+        boolean refill = fresh || lastOfBatch(id) || upNext(video).isEmpty(); // or all that is left has played
+        if (!fresh && knowsSong && RADIO.contains(id) && !refill) return;
         String playlistId = video.playlistId;
         run(activity, () -> MusicApi.radio(activity, id, playlistId), (queue, error) -> {
             if (queue == null || queue.isEmpty()) return;
@@ -491,6 +510,7 @@ public final class MeeTune {
                 if (!ITEMS.containsKey(song.videoId)) ITEMS.put(song.videoId, song);
                 if (song.art != null && !ART.containsKey(song.videoId)) ART.put(song.videoId, song.art);
             }
+            if (refill && playMode(activity) == PLAY_MODES[1]) shuffleAfter(id);
             // The next songs' covers onto the phone now: a skip, however quick, finds its cover there.
             int ahead = 0;
             for (Video next : upNext(video)) {
@@ -611,7 +631,17 @@ public final class MeeTune {
             shelf.items.add(item);
         }
         List<MusicApi.Shelf> shelves = new java.util.ArrayList<>();
-        if (!shelf.items.isEmpty()) shelves.add(shelf);
+        if (!shelf.items.isEmpty()) {
+            // A playlist's head: Play, Shuffle and its menu (Select, Cancel all), the cover the newest song's.
+            MusicApi.Shelf head = new MusicApi.Shelf();
+            head.header = true;
+            MusicApi.Item top = new MusicApi.Item();
+            top.title = context.getString(R.string.meetune_downloads);
+            top.meta = context.getString(R.string.meetune_car_songs, shelf.items.size());
+            head.items.add(top);
+            shelves.add(head);
+            shelves.add(shelf);
+        }
         return shelves;
     }
 
@@ -842,7 +872,17 @@ public final class MeeTune {
             if (PLAY_MODES[i] == current) next = PLAY_MODES[(i + 1) % PLAY_MODES.length];
         }
         prefs(context).edit().putInt("play_mode", next).apply();
+        if (next == PLAY_MODES[1] && sVideoId != null) shuffleAfter(sVideoId);
         return next;
+    }
+
+    /** The player's blurred cover behind everything (its menu's Ambient blur), on unless switched off. */
+    public static boolean ambient(Context context) {
+        return prefs(context).getBoolean("ambient", true);
+    }
+
+    public static void setAmbient(Context context, boolean on) {
+        prefs(context).edit().putBoolean("ambient", on).apply();
     }
 
     /** MEETUBE(issue #265): songs' own playback speed, 1x unless picked; a video's speed never touches it. */

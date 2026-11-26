@@ -251,6 +251,8 @@
     <string name="mobile_settings_watch_history_off_shown">Don\'t save, keep showing</string>
     <string name="mobile_settings_watch_history_off_shown_desc">Stops saving what you watch; History keeps what it has</string>
     <string name="mobile_you_history_empty">No watch history</string>
+    <string name="mobile_settings_history_hide_shorts">Hide Shorts</string>
+    <string name="mobile_settings_history_hide_shorts_summary">Shorts you watched stay out of History and the You page</string>
     <string name="mobile_settings_clear_watch_history">Clear watch history</string>
     <string name="mobile_settings_clear_watch_history_summary">Deletes the videos you watched from your YouTube history</string>
     <string name="mobile_settings_clear_watch_history_confirm">Clear watch history?</string>
@@ -724,4 +726,33 @@
     <string name="mobile_settings_notify_channels_master">Channel notifications</string>
     <string name="mobile_settings_notify_channels_master_summary">Off: no channel notifies you. Every channel keeps its own bell setting for when it is back on</string>
     <string name="mobile_settings_notify_select_all">Select all</string>
+
+    <!-- MEETUBE(discord): Settings > Discord status -->
+    <string name="discord_status">Discord status</string>
+    <string name="discord_addon">Discord add-on</string>
+    <string name="discord_addon_get">Not downloaded. Tap to get it (%1$s)</string>
+    <string name="discord_addon_downloading">Downloading</string>
+    <string name="discord_addon_ready">Downloaded. Tap to remove</string>
+    <string name="discord_addon_failed">Could not download the Discord add-on</string>
+    <string name="discord_addon_remove_title">Remove the Discord add-on?</string>
+    <string name="discord_addon_remove_message">This signs you out of Discord and deletes the add-on.</string>
+    <string name="discord_addon_remove">Remove</string>
+    <string name="discord_account">Discord account</string>
+    <string name="discord_signed_out">Not signed in</string>
+    <string name="discord_signed_in">Signed in as %1$s</string>
+    <string name="discord_signed_in_plain">Signed in</string>
+    <string name="discord_signin_title">Sign in to Discord?</string>
+    <string name="discord_signin_warning">Discord has no official way for an app to set your status, so MeeTube signs in as you, the way the Discord app does. Your login stays encrypted on this phone and is sent only to Discord. Discord\'s rules do not allow this, and an account can be limited for it.</string>
+    <string name="discord_signin">Sign in</string>
+    <string name="discord_signin_failed">Could not sign in to Discord</string>
+    <string name="discord_signout_title">Sign out of Discord?</string>
+    <string name="discord_signout_message">Your status stops showing, and Discord is asked to end this login.</string>
+    <string name="discord_signout">Sign out</string>
+    <string name="discord_show_videos">Show videos</string>
+    <string name="discord_show_videos_summary">Watching MeeTube</string>
+    <string name="discord_show_music">Show music</string>
+    <string name="discord_show_music_summary">Listening to MeeTune</string>
+    <string name="discord_note">While something plays, your Discord status shows its title, the channel or artist and the time. It goes away when you pause.</string>
+    <string name="discord_button_watch">Watch on YouTube</string>
+    <string name="discord_button_listen">Listen on YouTube Music</string>
 </resources>

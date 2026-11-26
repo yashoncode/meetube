@@ -177,4 +177,12 @@
     <string name="meetune_download_already_here">Уже скачано. Найдите в «Библиотека» &gt; «Загрузки»</string>
     <string name="meetune_downloading">Скачивание %1$d%%</string>
     <string name="meetune_download_failed">Не удалось скачать</string>
+    <string name="meetune_download_all_queued">Скачивается песен: %1$d. Они будут в Библиотеке &gt; Загрузки</string>
+    <string name="meetune_download_all_skipped">Скачивается песен: %1$d. Недоступно: %2$d.</string>
+    <string name="meetune_select">Выбрать</string>
+    <string name="meetune_cancel_all">Отменить все</string>
+    <string name="meetune_downloads_paused">Приостановлено загрузок: %1$d</string>
+    <string name="meetune_downloads_resumed">Возобновлено загрузок: %1$d</string>
+    <string name="meetune_downloads_cancelled">Отменено загрузок: %1$d</string>
+    <string name="meetune_downloads_none_coming">Ничего не скачивается</string>
 </resources>

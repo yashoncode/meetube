@@ -388,6 +388,11 @@ final class MeeTuneSettings {
         card.addView(divider());
         tip(card, R.drawable.ic_player_queue, getString(R.string.meetune_spotify_import),
                 getString(R.string.meetune_spotify_import_summary), null, true, v -> MeeTuneLibrary.importSpotify(mActivity));
+        card.addView(divider());
+        // MEETUNE(discord): the same Settings page as MeeTube's; songs show as "Listening to MeeTune".
+        tip(card, R.drawable.ic_meetune_addon, getString(R.string.discord_status), getString(R.string.discord_show_music_summary),
+                null, true, v -> mActivity.startActivity(com.newtube.mobile.ui.settings.MobileSettingsActivity.intent(mActivity,
+                        com.newtube.mobile.ui.settings.SettingsPages.DISCORD)));
         note(R.string.meetune_addons_note);
     }
 

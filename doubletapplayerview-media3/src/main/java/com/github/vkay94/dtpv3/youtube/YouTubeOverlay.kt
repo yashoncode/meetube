@@ -477,7 +477,7 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
         if (!pillStyle) return
         val first = pillSeconds == 0
         pillSeconds += seekSeconds
-        seekPill.tap(forward, pillSeconds, first, width > height)
+        seekPill.tap(forward, pillSeconds, first)
         performListener?.onSeekTap(forward)
     }
 
@@ -494,7 +494,13 @@ class YouTubeOverlay(context: Context, private val attrs: AttributeSet?) :
                 connect(secondsView.id, ConstraintSet.START,
                     ConstraintSet.PARENT_ID, ConstraintSet.START)
             }
-            setGuidelinePercent(R.id.seek_pill_center, if (forward) 0.78f else 0.22f)
+            if (forward) {
+                clear(R.id.seek_pill, ConstraintSet.START)
+                connect(R.id.seek_pill, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END, (24 * resources.displayMetrics.density).toInt())
+            } else {
+                clear(R.id.seek_pill, ConstraintSet.END)
+                connect(R.id.seek_pill, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, (24 * resources.displayMetrics.density).toInt())
+            }
             secondsView.start()
             applyTo(rootLayout)
         }

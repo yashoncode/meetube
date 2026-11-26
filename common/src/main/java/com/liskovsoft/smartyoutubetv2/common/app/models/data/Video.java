@@ -129,6 +129,9 @@ public final class Video {
     public List<NotificationState> notificationStates;
     /** MEETUBE(issue #43): Home's Shorts row folded into one card - the shorts it holds; null on any other card. */
     public List<Video> shortsShelf;
+    /** MEETUBE(downloads): a shelf three tiles across the row; {@code shelfGridRow}: untitled, one row of a grid. */
+    public boolean shelfOfThree;
+    public boolean shelfGridRow;
 
     public Video() {
        // NOP

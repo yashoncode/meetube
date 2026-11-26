@@ -801,6 +801,11 @@ public class MobilePlaybackActivity extends MobileActivity
                 restored.pendingPosMs = savedMs >= 5_000 ? savedMs : 0;
                 NetPath.log("playback-activity restore=process-death video=" + restored.videoId
                         + " posMs=" + restored.pendingPosMs);
+                // MEETUNE(restore-song): MeeTune's song marks live in memory and died with the process;
+                // unmarked, the song came back as a MeeTube video in MeeTube's mini player.
+                if (savedInstanceState.getBoolean(STATE_MUSIC)) {
+                    com.newtube.mobile.ui.meetune.MeeTune.keep(restored);
+                }
                 mPresenter.onNewVideo(restored); // loads now, or pends until the engine initializes
                 return;
             }
@@ -833,6 +838,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private static final String STATE_VIDEO = "meetube.playback.video";
     private static final String STATE_POSITION_MS = "meetube.playback.positionMs";
+    private static final String STATE_MUSIC = "meetube.playback.music";
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
@@ -842,6 +848,7 @@ public class MobilePlaybackActivity extends MobileActivity
         if (video != null && video.hasVideo() && !video.isLocal()) {
             outState.putString(STATE_VIDEO, video.toString());
             outState.putLong(STATE_POSITION_MS, getPositionMs());
+            outState.putBoolean(STATE_MUSIC, com.newtube.mobile.ui.meetune.MeeTune.isMusic(video));
         }
     }
 
@@ -1036,7 +1043,8 @@ public class MobilePlaybackActivity extends MobileActivity
         int pillTint = ContextCompat.getColor(this, R.color.meetube_toast_glass);
         for (View pill : new View[] {mZoomHintView, mTopPill, mLevelPill, mNoticeView,
                 findViewById(R.id.mobile_player_scrub_chapter), findViewById(R.id.mobile_player_chapter_pill),
-                mSkipSegmentPill, mSeekTime}) {
+                mSkipSegmentPill, mSeekTime,
+                mYouTubeOverlay != null ? mYouTubeOverlay.findViewById(com.github.vkay94.dtpv3.R.id.seek_pill) : null}) {
             if (pill != null) {
                 com.newtube.mobile.ui.common.GlassDrawable.apply(pill,
                         findViewById(R.id.mobile_player_glass), 0, pillTint);
@@ -2515,7 +2523,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 // Keep those frames behind the selected video's thumbnail until the new load wins.
                 armStillForReady();
             }
-            startOpenMorph(launch.sourceBounds, 300);
+            startOpenMorph(launch.sourceBounds, launch.frame, 300);
             // A docked card elsewhere on the host (another video was tapped): it goes once the
             // player's first frame is up.
             FrameGate.afterNextFrame(mContainer, HOST_CARD_FOLD_WAIT_MS,
@@ -3348,9 +3356,10 @@ public class MobilePlaybackActivity extends MobileActivity
         Insets bars = Build.VERSION.SDK_INT >= 30 ? insets.getInsetsIgnoringVisibility(
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout())
                 : super.contentInsets(insets);
-        // MEETUNE(status bar): the song's blurred cover runs up under the status bar (the skin keeps
-        // its handle clear of it); the watch page under the skin is hidden meanwhile.
-        return mMeeTune != null && mMeeTune.isShown() ? Insets.of(bars.left, 0, bars.right, bars.bottom) : bars;
+        // MEETUNE(status bar): the song's blurred cover runs up under the status bar and down under the
+        // gesture bar (the skin keeps its handle and controls clear of them); the watch page under the
+        // skin is hidden meanwhile.
+        return mMeeTune != null && mMeeTune.isShown() ? Insets.of(bars.left, 0, bars.right, 0) : bars;
     }
 
     /**
@@ -3473,8 +3482,10 @@ public class MobilePlaybackActivity extends MobileActivity
             mActionsToggle.setContentDescription(getString(actions
                     ? R.string.mobile_player_hide_actions : R.string.mobile_player_show_actions));
         }
-        // MEETUBE(issue #271): MeeTube's fullscreen only (not songs, Shorts or a locked player).
-        boolean pills = !inline && !mLockedChrome && !meeTuneSong() && !isShortsMode();
+        // MEETUBE(issue #271): fullscreen, and the normal player unless Customize > Player buttons
+        // turns it off there (not songs, Shorts or a locked player).
+        boolean pills = (!inline || WatchLook.isShown(this, "mobile_player_pills_inline"))
+                && !mLockedChrome && !meeTuneSong() && !isShortsMode();
         mSpeedPill.setVisibility(pills && WatchLook.isShown(this, "mobile_player_speed_pill") ? View.VISIBLE : View.GONE);
         mQualityPill.setVisibility(pills && WatchLook.isShown(this, "mobile_player_quality_pill") ? View.VISIBLE : View.GONE);
         updateFullscreenPills();
@@ -4167,6 +4178,9 @@ public class MobilePlaybackActivity extends MobileActivity
             mMeeTune = new MeeTunePlayerSkin(findViewById(R.id.mobile_player_container), meeTuneControls());
         }
         mMeeTune.bind(item);
+        // Back from the video's full screen: the song player keeps the status bar (it stayed hidden).
+        setPortraitFull(false);
+        if (!isLandscape()) applySystemBarsForOrientation(Configuration.ORIENTATION_PORTRAIT);
         mMeeTune.show();
         ViewCompat.requestApplyInsets(findViewById(android.R.id.content));
         if (com.newtube.mobile.ui.meetune.MeeTune.audioOnly(this) && !mAudioOnly) {
@@ -4263,6 +4277,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 }) : null;
         com.newtube.mobile.ui.meetune.MeeTuneSongMenu.showForPlayer(this, video,
                 () -> getOnBackPressedDispatcher().onBackPressed(), upgrade,
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_games,
+                        R.string.meetune_games, () -> mMeeTune.openGames(this)),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_sleep_timer,
                         R.string.mobile_player_sleep_timer, this::showSleepTimerSheet),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_speed,
@@ -4273,6 +4289,12 @@ public class MobilePlaybackActivity extends MobileActivity
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_video, R.string.meetune_canvas,
                         () -> com.newtube.mobile.ui.meetune.MeeTuneSongMenu.canvas(this, video, mMeeTune.canvasIsLoop(),
                                 () -> mMeeTune.reloadCanvas(video))),
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_ambient, R.string.meetune_ambient,
+                        () -> getString(com.newtube.mobile.ui.meetune.MeeTune.ambient(this) ? R.string.mobile_menu_on : R.string.mobile_menu_off),
+                        () -> {
+                            com.newtube.mobile.ui.meetune.MeeTune.setAmbient(this, !com.newtube.mobile.ui.meetune.MeeTune.ambient(this));
+                            mMeeTune.applyAmbient();
+                        }),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_mobile_tune, R.string.meetune_lyrics_offset,
                         () -> com.newtube.mobile.ui.meetune.MeeTuneSongMenu.lyricsOffset(this,
                                 mMeeTune::lyricsOffset, mMeeTune::setLyricsOffset)),
@@ -6586,9 +6608,13 @@ public class MobilePlaybackActivity extends MobileActivity
                 position = 0;
             }
 
+            // Live: a full bar at the edge and LIVE alone, no clock (its end moves with the clock, so the
+            // times kept counting and the dot kept sliding). Rewound into the DVR window it shows where.
+            boolean live = getVideo() != null && getVideo().isLive;
+            findViewById(R.id.mobile_player_time).setVisibility(live ? View.GONE : View.VISIBLE);
             mTimeBar.setDuration(duration);
-            mTimeBar.setPosition(position);
-            mTimeBar.setBufferedPosition(buffered);
+            mTimeBar.setPosition(live && duration - position <= LIVE_EDGE_THRESHOLD_MS ? duration : position);
+            mTimeBar.setBufferedPosition(live ? duration : buffered);
             if (mShorts != null) {
                 mShorts.setProgress(position, duration);
             }
@@ -6700,6 +6726,17 @@ public class MobilePlaybackActivity extends MobileActivity
                     && (mCastSessionManager == null || !mCastSessionManager.isConnected())
                     && getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
                 showControlsInternal(true);
+            }
+        }
+
+        @Override
+        public void onTimelineChanged(androidx.media3.common.Timeline timeline, int reason) {
+            // A song opened from MeeTune carries no live flag: the stream says so, so the video
+            // view shows LIVE and a still bar like any live video, not a clock that keeps counting.
+            Video video = getVideo();
+            if (video != null && !video.isLive && mPlayer != null && mPlayer.isCurrentMediaItemLive()) {
+                video.isLive = true;
+                updateSeekBarLine();
             }
         }
 
@@ -8125,7 +8162,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mSwipeDownRawX = downRawX;
         if (mMeeTune != null && mMeeTune.isShown()) { // MEETUNE: the music look only swipes down, to minimize
-            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag() && !mMeeTune.holdsSwipeDown()
+            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag() && !mMeeTune.holdsSwipeDown(downRawX, downRawY)
                     ? SWIPE_MINIMIZE : PlayerContainerLayout.SWIPE_NONE;
         }
         boolean vertical = direction == PlayerContainerLayout.UP || direction == PlayerContainerLayout.DOWN;
@@ -8791,7 +8828,7 @@ public class MobilePlaybackActivity extends MobileActivity
     }
 
     /** Start with the player hidden, reveal it exactly over the tapped card, then expand. */
-    private void startOpenMorph(Rect sourceBounds, long durationMs) {
+    private void startOpenMorph(Rect sourceBounds, @Nullable Bitmap frame, long durationMs) {
         if (mContainer == null || mVideoArea == null) {
             return;
         }
@@ -8804,6 +8841,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 return;
             }
             computeMorphTarget(sourceBounds);
+            if (mMeeTune != null && mMeeTune.isShown()) mMeeTune.openFrom(sourceBounds, frame); // MEETUNE: a song card's cover
             applyMorph(1f);
             mContainer.setVisibility(View.VISIBLE);
             mContainer.postOnAnimation(() -> animateMorph(0f, durationMs, Motion.EMPHASIZED, () -> {
@@ -8847,6 +8885,8 @@ public class MobilePlaybackActivity extends MobileActivity
             // (sound-only) video box it covered would fly to a card corner the pill is not at.
             mMeeTune.follow(f);
             mVideoArea.setAlpha(f > 0f ? 0f : 1f);
+            // Nor the video's page under it: fading by itself, it showed through the music page's.
+            contentAlpha = f > 0f ? 0f : 1f;
         }
         if (mWatchContent != null) {
             mWatchContent.setAlpha(contentAlpha);
@@ -9639,7 +9679,8 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** ...with {@code label} in place of the player's own position (the seek bar's drag). */
     private void showSeekTime(boolean show, @Nullable CharSequence label) {
-        if (mSeekTime == null || mProgressBar == null || (!show && !mSeekTimeShown)) {
+        if (mSeekTime == null || mProgressBar == null
+                || (!show && !mSeekTimeShown && mSeekTime.getVisibility() != View.VISIBLE)) {
             return;
         }
         mSeekTimeShown = show;
@@ -9668,6 +9709,12 @@ public class MobilePlaybackActivity extends MobileActivity
             mSeekTime.setVisibility(View.VISIBLE);
             mSeekTime.setAlpha(0f);
             androidx.core.view.OneShotPreDrawListener.add(mSeekTime, () -> {
+                if (!mSeekTimeShown) {
+                    // MEETUBE(issue #358): a hide came in before this frame (a quick flick seek).
+                    // Flying in now would cancel that hide, and a cancelled animation drops its
+                    // end action, so the pill stayed in the middle for good.
+                    return;
+                }
                 float[] corner = seekTimeCorner();
                 mSeekTime.setTranslationX(corner[0]);
                 mSeekTime.setTranslationY(corner[1]);
@@ -13457,6 +13504,12 @@ public class MobilePlaybackActivity extends MobileActivity
         if ((durationMs <= 0 || durationMs > Video.MAX_LIVE_DURATION_MS) && liveDurationMs != 0) {
             durationMs = liveDurationMs;
         }
+        // MEETUBE(live seek bar): the bar ends at the live edge, which moves on with the clock, so
+        // playing live keeps the dot at the end instead of a crawl and a snap back each refresh.
+        long edge = mExoPlayerController.getLiveEdgeMs();
+        if (edge > 0) {
+            durationMs = Math.max(edge, mExoPlayerController.getPositionMs());
+        }
 
         return durationMs;
     }
@@ -13586,12 +13639,17 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void setVolume(float volume) {
+        if (mShortsMuted) {
+            // Each new short restores the Player volume (restoreVolume): keep it for the unmute, stay silent.
+            mShortsVolumeBeforeMute = volume;
+            return;
+        }
         mExoPlayerController.setVolume(volume);
     }
 
     @Override
     public float getVolume() {
-        return mExoPlayerController.getVolume();
+        return mShortsMuted ? mShortsVolumeBeforeMute : mExoPlayerController.getVolume();
     }
 
     @Override

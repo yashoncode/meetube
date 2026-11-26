@@ -233,6 +233,8 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     static class ShortsShelfHolder extends RecyclerView.ViewHolder {
         private final TextView mTitle;
         private final VideoCardAdapter mTiles;
+        private final int[] mTileWidth;
+        private final int mEdge;
 
         ShortsShelfHolder(Context context, OnVideoClickListener clickListener,
                 @Nullable OnVideoLongClickListener longClickListener) {
@@ -256,15 +258,23 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mTitle.setCompoundDrawablePadding(Math.round(10 * density));
             root.addView(mTitle);
 
-            int tileWidth = Math.round(SHELF_TILE_WIDTH_DP * density);
+            int[] tileWidth = {Math.round(SHELF_TILE_WIDTH_DP * density)};
+            mTileWidth = tileWidth;
             // Search's Shorts card (rounded, title and views under it), not the Shorts tab's tile.
             mTiles = new VideoCardAdapter(clickListener, longClickListener) {
                 @NonNull
                 @Override
                 public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
                     RecyclerView.ViewHolder tile = super.onCreateViewHolder(parent, viewType);
-                    tile.itemView.getLayoutParams().width = tileWidth;
+                    tile.itemView.getLayoutParams().width = tileWidth[0];
                     return tile;
+                }
+
+                @Override
+                public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position,
+                        @NonNull java.util.List<Object> payloads) {
+                    holder.itemView.getLayoutParams().width = tileWidth[0]; // the shelf's own width (a reused holder)
+                    super.onBindViewHolder(holder, position, payloads);
                 }
             }.strip();
             RecyclerView strip = new RecyclerView(context);
@@ -272,6 +282,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             strip.setNestedScrollingEnabled(false);
             strip.setClipToPadding(false);
             int edge = Math.round(13 * density); // + a card's 3dp margin: in line with the title
+            mEdge = edge;
             strip.setPadding(edge, 0, edge, 0);
             strip.setAdapter(mTiles);
             root.addView(strip, new android.widget.LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -279,8 +290,17 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         }
 
         void bind(Video shelf) {
-            String title = shelf.getGroupTitle();
-            mTitle.setText(title != null && !title.trim().isEmpty() ? title : itemView.getContext().getString(R.string.header_shorts));
+            Context context = itemView.getContext();
+            float density = context.getResources().getDisplayMetrics().density;
+            // MEETUBE(downloads): three to a row, edge to edge; Home's keep their fixed width.
+            int row = itemView.getParent() instanceof View && ((View) itemView.getParent()).getWidth() > 0
+                    ? ((View) itemView.getParent()).getWidth() : context.getResources().getDisplayMetrics().widthPixels;
+            mTileWidth[0] = shelf.shelfOfThree ? (row - 2 * mEdge) / 3 : Math.round(SHELF_TILE_WIDTH_DP * density);
+            mTitle.setVisibility(shelf.shelfGridRow ? View.GONE : View.VISIBLE);
+            itemView.setPadding(0, shelf.shelfGridRow ? 0 : Math.round(8 * density), 0,
+                    Math.round((shelf.shelfGridRow ? 4 : 16) * density));
+            String title = shelf.shelfOfThree ? null : shelf.getGroupTitle();
+            mTitle.setText(title != null && !title.trim().isEmpty() ? title : context.getString(R.string.header_shorts));
             mTiles.submitList(new java.util.ArrayList<>(shelf.shortsShelf));
         }
     }
@@ -535,7 +555,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             }
             mAvatar.setContentDescription(video.getAuthor());
             if (collab == null) {
-                loadAvatar(context, video, mAvatar, video.channelId, video.getAuthor());
+                loadAvatar(context, video, mAvatar, video.channelId, leadName(video.getAuthor()));
             } else {
                 // The TV tile's channel id is the first collaborator's; the second is known by name.
                 loadAvatar(context, video, mAvatar, video.channelId, collab[0]);
@@ -572,7 +592,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             }
             String[] collab = collabNames(video.getAuthor());
             if (collab == null) {
-                prefetchAvatar(context, video.channelId, video.getAuthor());
+                prefetchAvatar(context, video.channelId, leadName(video.getAuthor()));
             } else {
                 prefetchAvatar(context, video.channelId, collab[0]);
                 prefetchAvatar(context, null, collab[1]);
@@ -620,6 +640,12 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 return null;
             }
             return new String[] {author.substring(0, at), author.substring(at + 5)};
+        }
+
+        /** "KSI and 2 more" is KSI's avatar: no channel is named the whole byline. */
+        static String leadName(String author) {
+            int at = author.indexOf(" and ");
+            return at > 0 && author.endsWith(" more") ? author.substring(0, at) : author;
         }
 
         /** MEETUBE(hyped): the card's place in a chart; 0 = none. */

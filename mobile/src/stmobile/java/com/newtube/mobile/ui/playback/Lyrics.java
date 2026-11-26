@@ -44,10 +44,9 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * MEETUBE(lyrics): a song's lyrics, found the way BitChord finds them (github.com/kushagrasinghx/BitChord,
- * LyricsRepository). YouTube Music names the recording - its own title, artists and length for this
+ * MEETUBE(lyrics): a song's lyrics. YouTube Music names the recording - its own title, artists and length for this
  * video - and lrc.red's search settles which recording that is (its ISRC and true length). Then every
- * source is asked at once and the answers are taken in BitChord's priority order, so a miss never
+ * source is asked at once and the answers are taken in a fixed priority order, so a miss never
  * costs a round trip of its own and a faster, lower source never pre-empts a better one: the first
  * timed answer wins, else the first plain one. The sources are in {@link LyricsSources}.
  *
@@ -56,7 +55,7 @@ import okhttp3.ResponseBody;
  * ahead of the singing.
  *
  * <p>What each source answered is kept with the song ({@link Song}), so the listener can switch to
- * another provider's lyrics, as in BitChord (LyricsSheet's provider chooser).
+ * another provider's lyrics (LyricsSheet's provider chooser).
  */
 final class Lyrics {
     private static final String LRCLIB = "https://lrclib.net/api/search?track_name=";
@@ -80,7 +79,7 @@ final class Lyrics {
             Pattern.CASE_INSENSITIVE);
 
     /**
-     * Every source by the name BitChord's chooser gives it, in the order {@link #find} asks them: the
+     * Every source by the name the chooser shows, in the order {@link #find} asks them: the
      * first nine raced, PaxSenix and Genius only when those miss. {@link #ask} goes by this index.
      */
     static final String[] PROVIDERS = {"lrc.red", "BiniLyrics", "BetterLyrics", "BetterLyrics Portato",
@@ -183,7 +182,7 @@ final class Lyrics {
         String lyricsId = track != null ? track.lyricsId : null;
         Song song = new Song(query, timedOk, lyricsId);
 
-        // BitChord's order, minus the sources that are gone or want a key (see LyricsSources)
+        // Priority order; sources that are gone or want a key are left out (see LyricsSources)
         List<Future<Lyrics>> racing = new ArrayList<>();
         for (int i = 0; i < PAXSENIX; i++) {
             int provider = i;
@@ -208,7 +207,7 @@ final class Lyrics {
                 }
             }
             // Asked only now, not raced: PaxSenix fetches Apple's 3 MB web player for a token, and
-            // Genius scrapes a page - BitChord too keeps Genius for when everything else missed.
+            // Genius scrapes a page, so Genius is kept for when everything else missed.
             if (timedOk || plain < 0) {
                 Lyrics apple = song.answer(PAXSENIX, await(POOL.submit(() -> ask(song, PAXSENIX))));
                 if (apple != null && (apple.times != null || plain < 0)) {

@@ -55,6 +55,7 @@ public final class SettingsPages {
     public static final String DEARROW = "dearrow";
     public static final String DOWNLOADS = "downloads";
     public static final String NOTIFICATIONS = "notifications";
+    public static final String DISCORD = "discord"; // MEETUBE(discord)
     public static final String BACKUP = "backup";
     public static final String STORAGE = "storage";
     public static final String BATTERY = "battery";
@@ -123,6 +124,8 @@ public final class SettingsPages {
                 return DownloadPages.downloads(context);
             case NOTIFICATIONS:
                 return NotificationPages.notifications(context);
+            case DISCORD:
+                return DiscordPages.discord(context);
             case BACKUP:
                 return AppPages.backup(context);
             case STORAGE:
@@ -163,6 +166,7 @@ public final class SettingsPages {
                 context.getString(R.string.mobile_settings_downloads_summary), DOWNLOADS));
         rows.add(SettingsRow.page(R.drawable.ic_about_notifications, context.getString(R.string.mobile_settings_notifications),
                 null, NOTIFICATIONS).summary(() -> NotificationPages.summary(context)));
+        rows.add(SettingsRow.page(R.drawable.ic_meetune_addon, context.getString(R.string.discord_status), null, DISCORD));
 
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_group_video)));
         rows.add(SettingsRow.page(R.drawable.ic_settings_playback, context.getString(R.string.mobile_settings_playback),

@@ -83,7 +83,9 @@ import com.newtube.mobile.ui.playback.SystemPipBridge;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 
 /**
@@ -444,6 +446,8 @@ public class MobileBrowseActivity extends MobileActivity
         mContentGrid = findViewById(R.id.mobile_content_grid);
         mContentSwipe = findViewById(R.id.mobile_content_swipe);
         mFeedSkeleton = findViewById(R.id.mobile_feed_skeleton);
+        // Its ghost thumbs are the real cards' 16:9, so the cards land exactly where they stood.
+        mFeedSkeleton.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> v.post(this::fitSkeletonThumbs));
         setupSwipeRefresh();
         mBottomNav = findViewById(R.id.mobile_bottom_nav);
         mYouPanel = findViewById(R.id.mobile_you_panel);
@@ -708,10 +712,61 @@ public class MobileBrowseActivity extends MobileActivity
         mFeedSkeleton.removeCallbacks(mSkeletonLeaveDeadline);
         mFeedSkeleton.postDelayed(mSkeletonLeaveDeadline, SKELETON_LEAVE_MAX_MS);
         int shows = mSkeletonShows;
-        SkeletonReveal.fadeOverCards(mFeedSkeleton, mContentGrid, () -> shows == mSkeletonShows, () -> {
+        holdReveal(shows, () -> SkeletonReveal.fadeOverCards(mFeedSkeleton, mContentGrid, () -> shows == mSkeletonShows, () -> {
             mFeedSkeleton.setVisibility(View.GONE);
             mFeedSkeleton.setAlpha(1f);
-        });
+        }));
+    }
+
+    private void fitSkeletonThumbs() {
+        if (mSkeletonRows) {
+            return; // List layout's rows have fixed thumbs, as its real rows do
+        }
+        ViewGroup skeleton = (ViewGroup) mFeedSkeleton;
+        for (int i = 0; i < skeleton.getChildCount(); i++) {
+            View card = skeleton.getChildAt(i);
+            View thumb = card instanceof ViewGroup ? ((ViewGroup) card).getChildAt(0) : null;
+            int height = card.getWidth() * 9 / 16;
+            if (thumb != null && height > 0 && thumb.getLayoutParams().height != height) {
+                thumb.getLayoutParams().height = height;
+                thumb.requestLayout();
+            }
+        }
+    }
+
+    /** The skeleton's leave waiting for DeArrow's first titles (holdReveal). */
+    @Nullable
+    private Runnable mRevealOnSync;
+
+    /**
+     * The first cards wait under the skeleton for their pictures and, with crowd titles on, for
+     * DeArrow's answer (both capped). Revealed at once, the cards came up with blank thumbnails and
+     * their titles changed ~150 ms later (vivo, cold start).
+     */
+    private void holdReveal(int shows, Runnable fade) {
+        boolean[] gone = {false};
+        Runnable go = () -> {
+            if (gone[0]) {
+                return;
+            }
+            gone[0] = true;
+            mRevealOnSync = null;
+            if (!isDestroyed() && shows == mSkeletonShows) {
+                fade.run();
+            }
+        };
+        boolean titles = com.liskovsoft.smartyoutubetv2.common.prefs.DeArrowData.instance(this).isReplaceTitlesEnabled();
+        int[] waits = {titles ? 2 : 1};
+        Runnable one = () -> {
+            if (--waits[0] == 0) {
+                go.run();
+            }
+        };
+        mRevealOnSync = titles ? one : null;
+        mFeedSkeleton.postDelayed(go, com.newtube.mobile.ui.common.FeedSwapWarmup.MAX_WAIT_MS + 100);
+        com.newtube.mobile.ui.common.FeedSwapWarmup.create(this).begin(
+                com.newtube.mobile.ui.common.FeedSwapWarmup.firstScreen(new ArrayList<>(mCurrentVideos), 3),
+                (warmed, total, timedOut) -> one.run());
     }
 
     /** Counts skeleton shows, so a reveal waiting for its cards yields to a newer load. */
@@ -987,10 +1042,25 @@ public class MobileBrowseActivity extends MobileActivity
         });
     }
 
-    /** MEETUBE(youtube mode): the docked bar runs under the gesture area and pads itself. */
+    /**
+     * The page runs under the gesture area: YouTube mode's docked bar pads itself, the floating
+     * pill and the Search bubble float that much higher (MEETUBE(gesture bar)).
+     */
     @Override
     protected boolean shouldInsetContentForNavigationBar() {
-        return !com.newtube.mobile.ui.common.YouTubeMode.isOn(this);
+        return false;
+    }
+
+    @Override
+    protected void onDrawUnderNavigationBar(int px) {
+        if (com.newtube.mobile.ui.common.YouTubeMode.isOn(this)) {
+            return;
+        }
+        liftBottom(findViewById(R.id.mobile_nav_glass), px, true);
+        liftBottom(findViewById(R.id.mobile_search_fab), px, true);
+        for (int id : new int[] {R.id.mobile_content_grid, R.id.mobile_error_container, R.id.mobile_you_content}) {
+            liftBottom(findViewById(id), px, false);
+        }
     }
 
     /**
@@ -2337,6 +2407,30 @@ public class MobileBrowseActivity extends MobileActivity
                 error -> android.util.Log.w("MobileBrowse", "You history: " + error));
     }
 
+    /**
+     * MEETUBE(issue #355): a video removed from history (its menu on the You page) leaves the row at
+     * once. It stayed until another tab, and came back from the cache on the next visit.
+     */
+    private void dropFromYouHistory(@Nullable List<Video> removed) {
+        if (removed == null || removed.isEmpty() || mYouHistoryAdapter == null) {
+            return;
+        }
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        for (Video video : removed) {
+            if (video != null && video.videoId != null) {
+                ids.add(video.videoId);
+            }
+        }
+        List<Video> shown = new ArrayList<>(mYouHistoryAdapter.getCurrentList());
+        if (shown.removeIf(video -> ids.contains(video.videoId))) {
+            showYouHistory(shown);
+        }
+        List<Video> cached = FeedCache.get(MediaGroup.TYPE_HISTORY);
+        if (cached != null && cached.removeIf(video -> ids.contains(video.videoId))) {
+            FeedCache.put(MediaGroup.TYPE_HISTORY, cached);
+        }
+    }
+
     private void showYouHistory(@Nullable List<Video> videos) {
         if (isDestroyed()) {
             return;
@@ -2945,8 +3039,10 @@ public class MobileBrowseActivity extends MobileActivity
 
         // MEETUBE(shorts): a short opens the vertical player with the tab's shorts as its queue,
         // so a swipe up plays the next one (and down the previous) - see ShortsOverlay.
-        List<Video> shelf = shelfOf(video);
-        if (shelf != null) {
+        List<Video> shelf = download != null ? null : shelfOf(video);
+        if (download != null && video.isLocal()) {
+            queueDownloads(video);
+        } else if (shelf != null) {
             ShortsFilter.queueAround(shelf, video); // MEETUBE(issue #43): Home pages add theirs (extendShortsQueue)
             com.newtube.mobile.ui.common.ShortsFeedTail.arm(); // MEETUBE(issue #227): then the Shorts feed, without end
         } else if (video.belongsToShorts() && video.hasVideo()) {
@@ -2978,6 +3074,43 @@ public class MobileBrowseActivity extends MobileActivity
         // videos (now mapped to MobilePlaybackActivity - see MobileMainApplication); channel/
         // playlist items are routed elsewhere by the same presenter, which is fine here too.
         mPresenter.onVideoItemClicked(video);
+    }
+
+    /**
+     * MEETUBE(downloads): a download plays on into the next one on the tab, from its file. Without a
+     * queue the next was YouTube's related video, known only once the online suggestions came in.
+     */
+    /** MEETUBE(downloads): the page's cards with the Shorts shelf opened out, one card per download. */
+    private List<Video> downloadCards() {
+        List<Video> cards = new ArrayList<>();
+        for (Video card : mCurrentVideos) {
+            if (card.shortsShelf != null) cards.addAll(card.shortsShelf);
+            else cards.add(card);
+        }
+        return cards;
+    }
+
+    private void queueDownloads(Video tapped) {
+        // A downloaded short plays in the Shorts player with the other downloaded shorts; a video
+        // with the other videos.
+        DownloadsBridge bridge = DownloadsBridge.instance(this);
+        boolean shorts = bridge.isShort(tapped);
+        List<Video> files = new ArrayList<>();
+        for (Video video : downloadCards()) {
+            if (video == tapped || (video.isLocal() && video.hasVideo() && bridge.isShort(video) == shorts)) {
+                if (shorts) {
+                    video.isShorts = true;
+                    video.markShorts();
+                }
+                files.add(video);
+            }
+        }
+        com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist playlist =
+                com.liskovsoft.smartyoutubetv2.common.app.models.data.Playlist.instance();
+        playlist.clear();
+        playlist.addAll(files);
+        playlist.setCurrent(tapped);
+        tapped.fromQueue = true;
     }
 
     /** MEETUBE(shorts): a new Shorts page joins the end of a Shorts queue that is playing. */
@@ -3109,7 +3242,7 @@ public class MobileBrowseActivity extends MobileActivity
 
     /** MEETUBE(feed segment): Subscriptions, or a channel pinned to You: they keep their Shorts, behind the pill. */
     private boolean isSegmentSection() {
-        if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS) {
+        if (mCurrentSectionId == MediaGroup.TYPE_SUBSCRIPTIONS || isDownloadsSectionShowing()) {
             return true;
         }
         BrowseSection section = findKnownSection(mCurrentSectionId);
@@ -3131,6 +3264,19 @@ public class MobileBrowseActivity extends MobileActivity
         List<Video> shown = new ArrayList<>(videos.size());
         int filter = mSegment != null && isSegmentSection() ? mSegment.filter() : ShortsSegment.ALL;
         for (Video video : videos) {
+            if (filter == ShortsSegment.SHORTS && video != null && video.shortsShelf != null && video.shelfOfThree) {
+                // MEETUBE(downloads): Shorts alone: the shelf opens out into rows of three, a grid.
+                List<Video> shorts = video.shortsShelf;
+                for (int i = 0; i < shorts.size(); i += 3) {
+                    Video row = shorts.get(i).copy();
+                    row.isShorts = true;
+                    row.shortsShelf = new ArrayList<>(shorts.subList(i, Math.min(shorts.size(), i + 3)));
+                    row.shelfOfThree = true;
+                    row.shelfGridRow = true;
+                    shown.add(row);
+                }
+                continue;
+            }
             boolean isShort = video != null && video.hasVideo() && ShortsFilter.isShort(video);
             if (filter == ShortsSegment.ALL || (filter == ShortsSegment.SHORTS) == isShort) {
                 shown.add(video);
@@ -3674,8 +3820,7 @@ public class MobileBrowseActivity extends MobileActivity
         for (BrowseSection section : mSections) {
             if (section.getId() == VideoDownloads.SECTION_ID) {
                 mPendingDownloadsOpen = false;
-                hideYouPanel();
-                onSectionChosen(VideoDownloads.SECTION_ID);
+                openFromYou(VideoDownloads.SECTION_ID); // a You sub-screen: back arrow and its title
                 return;
             }
         }
@@ -3695,11 +3840,18 @@ public class MobileBrowseActivity extends MobileActivity
             return;
         }
 
-        List<DownloadItem> items = DownloadRegistry.instance(this).itemsNewestFirst();
-        boolean sameSet = items.size() == mCurrentVideos.size();
+        List<DownloadItem> items = new ArrayList<>();
+        for (DownloadItem item : DownloadRegistry.instance(this).itemsNewestFirst()) {
+            if (!item.song) items.add(item); // MeeTune's songs are not on this page
+        }
+        Set<String> shown = new HashSet<>();
+        for (Video card : downloadCards()) {
+            shown.add(card.downloadId);
+        }
+        boolean sameSet = items.size() == shown.size();
         if (sameSet) {
             for (int i = 0; i < items.size(); i++) {
-                if (!items.get(i).id.equals(mCurrentVideos.get(i).downloadId)) {
+                if (!shown.contains(items.get(i).id)) {
                     sameSet = false;
                     break;
                 }
@@ -4572,6 +4724,9 @@ public class MobileBrowseActivity extends MobileActivity
         }
 
         runOnUiThread(() -> {
+            if (group.getAction() == VideoGroup.ACTION_REMOVE) {
+                dropFromYouHistory(group.getVideos()); // issue #355: the You page's row too, not only the grid
+            }
             if (mSubsChannel != null && group.getAction() != VideoGroup.ACTION_SYNC
                     && group.getAction() != VideoGroup.ACTION_REMOVE_AUTHOR) {
                 return; // MEETUBE(feed-strip): the all-channels feed; "All" brings it back
@@ -4586,6 +4741,10 @@ public class MobileBrowseActivity extends MobileActivity
             if (group.getAction() == VideoGroup.ACTION_SYNC) {
                 syncVideos(group.getVideos());
                 mAdapter.refreshItems(group.getVideos());
+                if (mRevealOnSync != null) {
+                    mFeedSkeleton.post(mRevealOnSync); // after the new titles are bound
+                    mRevealOnSync = null;
+                }
                 return;
             }
             if (mCurrentSectionId == MediaGroup.TYPE_TRENDING && !keepHyped(group)) {
@@ -4957,6 +5116,9 @@ public class MobileBrowseActivity extends MobileActivity
      * on Home). Fewer than two make no shelf; they stay out, like every other stray Short.
      */
     private List<Video> withShortsShelf(List<Video> videos) {
+        if (videos != null && isDownloadsSectionShowing()) {
+            return withDownloadedShortsShelf(videos);
+        }
         if (videos == null || !isHomeChip(mCurrentSectionId) || !HomeLayout.isShortsShelf(this)) {
             return videos;
         }
@@ -4993,6 +5155,39 @@ public class MobileBrowseActivity extends MobileActivity
         Video shelf = shorts.get(0).copy(); // equal to its first short: a reload finds the same card
         shelf.isShorts = true; // a disk snapshot (no shelf field) brings it back as a Short: left out
         shelf.shortsShelf = shorts;
+        result.add(at, shelf);
+        return result;
+    }
+
+    /**
+     * MEETUBE(downloads): the downloaded Shorts (portrait files, DownloadsBridge.isShort) fold into
+     * one shelf, three across, at the first one's place - even a single one.
+     * ponytail: a download finishing later joins as a card of its own until the tab reloads.
+     */
+    private List<Video> withDownloadedShortsShelf(List<Video> videos) {
+        DownloadsBridge bridge = DownloadsBridge.instance(this);
+        List<Video> shorts = new ArrayList<>();
+        int at = -1;
+        List<Video> result = new ArrayList<>(videos.size());
+        for (Video video : videos) {
+            if (video != null && video.isLocal() && bridge.isShort(video)) {
+                video.isShorts = true;
+                video.markShorts(); // plays in the Shorts player, drawn as a tile
+                if (at < 0) {
+                    at = result.size();
+                }
+                shorts.add(video);
+            } else {
+                result.add(video);
+            }
+        }
+        if (shorts.isEmpty()) {
+            return result;
+        }
+        Video shelf = shorts.get(0).copy();
+        shelf.isShorts = true;
+        shelf.shortsShelf = shorts;
+        shelf.shelfOfThree = true;
         result.add(at, shelf);
         return result;
     }
