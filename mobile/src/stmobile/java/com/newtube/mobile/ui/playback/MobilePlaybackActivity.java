@@ -13639,12 +13639,17 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void setVolume(float volume) {
+        if (mShortsMuted) {
+            // Each new short restores the Player volume (restoreVolume): keep it for the unmute, stay silent.
+            mShortsVolumeBeforeMute = volume;
+            return;
+        }
         mExoPlayerController.setVolume(volume);
     }
 
     @Override
     public float getVolume() {
-        return mExoPlayerController.getVolume();
+        return mShortsMuted ? mShortsVolumeBeforeMute : mExoPlayerController.getVolume();
     }
 
     @Override
