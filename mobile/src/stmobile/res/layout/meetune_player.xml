@@ -162,6 +162,7 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="12dp"
                 app:glassCornerRadius="999dp"
+                app:glassOnGlass="true"
                 app:glassTint="@color/meetune_player_glass">
 
                 <ImageView
@@ -180,6 +181,7 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="14dp"
                 app:glassCornerRadius="999dp"
+                app:glassOnGlass="true"
                 app:glassTint="@color/meetune_player_glass">
 
                 <ImageView
@@ -391,6 +393,7 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="12dp"
                 app:glassCornerRadius="999dp"
+                app:glassOnGlass="true"
                 app:glassTint="@color/meetune_player_glass">
 
                 <ImageView
@@ -409,6 +412,7 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="14dp"
                 app:glassCornerRadius="999dp"
+                app:glassOnGlass="true"
                 app:glassTint="@color/meetune_player_glass">
 
                 <ImageView
@@ -620,6 +624,7 @@
                     android:alpha="0"
                     android:translationY="-36dp"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <TextView
@@ -656,6 +661,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             app:glassCornerRadius="999dp"
+            app:glassOnGlass="true"
             app:glassTint="#17FFFFFF">
 
             <LinearLayout
@@ -762,6 +768,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <ImageView
@@ -788,6 +795,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <ImageView
@@ -814,6 +822,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <ImageView
@@ -840,6 +849,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     app:glassCornerRadius="999dp"
+                    app:glassOnGlass="true"
                     app:glassTint="@color/meetune_player_glass">
 
                     <ImageView
