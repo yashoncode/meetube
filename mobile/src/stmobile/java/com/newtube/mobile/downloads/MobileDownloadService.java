@@ -20,12 +20,17 @@ import androidx.core.content.ContextCompat;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.newtube.mobile.ui.browse.MobileBrowseActivity;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
 
 /**
- * Foreground service that drains the download queue one item at a time.
+ * Foreground service that drains the download queue, {@link #PARALLEL_ITEMS} items at a time.
  *
  * <p>Same lifecycle shape as the cast and playback services: started from the foreground when
  * a download is enqueued, promoted with a progress notification (type dataSync, the one
@@ -44,14 +49,22 @@ public final class MobileDownloadService extends Service {
     private static final String ACTION_PAUSE = "com.newtube.mobile.downloads.PAUSE";
     private static final String EXTRA_ITEM_ID = "item_id";
 
-    private final ExecutorService mWorker = Executors.newSingleThreadExecutor(r -> new Thread(r, "newtube-download"));
+    /**
+     * Items downloading at once. Each one's streams already share ParallelFetch's connection cap;
+     * a second and third item mostly overlap the per-item waits (/player, mux), which is what a
+     * batch of short songs is made of.
+     */
+    static final int PARALLEL_ITEMS = 3;
+
+    private final ExecutorService mWorker = Executors.newFixedThreadPool(PARALLEL_ITEMS, r -> new Thread(r, "newtube-download"));
     private DownloadRegistry mRegistry;
     private NotificationManager mNotifications;
     @Nullable private PowerManager.WakeLock mWakeLock;
-    private volatile boolean mDraining;
+    /** Drain loops running; guarded by mDrainLock. */
+    private int mDrainers;
     private volatile boolean mForeground;
-    /** The item the drain is running now, so a timeout can stop it. */
-    @Nullable private volatile DownloadItem mRunning;
+    /** The items the drains are running now, so a timeout can stop them and the notification list them. */
+    private final Set<DownloadItem> mRunning = Collections.newSetFromMap(new ConcurrentHashMap<>());
     /** Android 15+'s daily dataSync limit was reached: the drain stops and the queue waits for a resume. */
     private volatile boolean mTimedOut;
 
@@ -207,7 +220,7 @@ public final class MobileDownloadService extends Service {
                 cancel(this, item);
             }
             synchronized (mDrainLock) {
-                if (!mDraining) {
+                if (mDrainers == 0) {
                     stopForegroundCompat();
                     stopSelf();
                 }
@@ -221,18 +234,21 @@ public final class MobileDownloadService extends Service {
 
     private final Object mDrainLock = new Object();
 
+    /** Tops the drain loops up to {@link #PARALLEL_ITEMS}; a loop with nothing to claim ends itself. */
     private void drainIfIdle() {
         synchronized (mDrainLock) {
-            if (mDraining) {
-                return;
+            if (mDrainers == 0) {
+                acquireWakeLock();
             }
-            mDraining = true;
+            while (mDrainers < PARALLEL_ITEMS) {
+                mDrainers++;
+                mWorker.execute(this::drain);
+            }
         }
-        acquireWakeLock();
-        mWorker.execute(this::drain);
     }
 
     private void drain() {
+        boolean last = false;
         try {
             long[] lastCheck = {0};
             while (!mTimedOut) {
@@ -242,38 +258,41 @@ public final class MobileDownloadService extends Service {
                 }
                 DownloadItem running = mRegistry.claimNextQueued();
                 if (running == null) {
-                    synchronized (mDrainLock) {
-                        // Re-check under the lock: an enqueue that raced the empty check must not be
-                        // stranded behind a mDraining flag nobody resets.
-                        if (mRegistry.nextQueued() == null) {
-                            mDraining = false;
-                            break;
-                        }
-                    }
-                    continue;
+                    break;
                 }
-                mRunning = running;
+                mRunning.add(running);
                 updateProgressNotification(running);
                 boolean[] cut = {false};
                 new DownloadJob(this, running, mRegistry, item -> {
                     if (waitForWifi(this, item, lastCheck)) cut[0] = true;
                     updateProgressNotification(item);
                 }).run();
-                mRunning = null;
+                mRunning.remove(running);
                 if (mTimedOut || cut[0]) {
                     requeue(mRegistry, running);
                 }
                 if (running.isDone()) {
                     postDoneNotification(this, mNotifications, running);
                 }
+                updateProgressNotification(null);
             }
         } finally {
             synchronized (mDrainLock) {
-                mDraining = false;
+                mDrainers--;
+                // Re-check under the lock: an enqueue that raced this loop's empty claim must not be
+                // stranded with no loop left to take it (drainIfIdle saw this loop still counted).
+                if (mDrainers == 0 && !mTimedOut && mRegistry.nextQueued() != null && !AutoDownload.mustWait(this)) {
+                    mDrainers++;
+                    mWorker.execute(this::drain);
+                } else {
+                    last = mDrainers == 0;
+                }
             }
-            releaseWakeLock();
-            stopForegroundCompat();
-            stopSelf();
+            if (last) {
+                releaseWakeLock();
+                stopForegroundCompat();
+                stopSelf();
+            }
         }
     }
 
@@ -286,8 +305,7 @@ public final class MobileDownloadService extends Service {
     public void onTimeout(int startId, int fgsType) {
         Log.w(TAG, "dataSync time limit reached, handing the queue to a resume check");
         mTimedOut = true;
-        DownloadItem running = mRunning;
-        if (running != null) {
+        for (DownloadItem running : mRunning) {
             running.pauseRequested = true;
         }
         stopForegroundCompat();
@@ -325,11 +343,43 @@ public final class MobileDownloadService extends Service {
         }
     }
 
-    private void updateProgressNotification(DownloadItem item) {
+    /** One item: its own notification as before. Several: every one's line, and their combined bar. */
+    private void updateProgressNotification(@Nullable DownloadItem item) {
         if (!mForeground) {
             return;
         }
-        mNotifications.notify(NOTIFICATION_ID, buildProgressNotification(this, item));
+        List<DownloadItem> running = new ArrayList<>(mRunning);
+        if (running.size() <= 1) {
+            DownloadItem only = running.isEmpty() ? item : running.get(0);
+            if (only != null) {
+                mNotifications.notify(NOTIFICATION_ID, buildProgressNotification(this, only));
+            }
+            return;
+        }
+        long done = 0, total = 0;
+        boolean known = true;
+        NotificationCompat.InboxStyle lines = new NotificationCompat.InboxStyle();
+        for (DownloadItem one : running) {
+            lines.addLine(one.title + " · " + DownloadProgressText.of(this, one));
+            done += one.bytesDone;
+            total += one.bytesTotal;
+            known &= one.bytesTotal > 0 && one.state == DownloadItem.STATE_DOWNLOADING;
+        }
+        int percent = known ? (int) (done * 100 / Math.max(1, total)) : -1;
+        String first = running.get(0).title;
+        mNotifications.notify(NOTIFICATION_ID, new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_nav_downloads_fill)
+                .setContentIntent(openDownloadsIntent(this))
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setSilent(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+                .setContentTitle(getString(R.string.header_downloads))
+                .setContentText(first + " +" + (running.size() - 1))
+                .setStyle(lines)
+                .setProgress(100, Math.max(0, percent), percent < 0)
+                .build());
     }
 
     private static Notification buildProgressNotification(Context context, @Nullable DownloadItem item) {

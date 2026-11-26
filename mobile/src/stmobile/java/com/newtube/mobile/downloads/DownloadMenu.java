@@ -120,10 +120,8 @@ public final class DownloadMenu {
             new File(item.thumbPath).delete();
         }
         File parts = DownloadRegistry.partsDir(context);
-        //noinspection ResultOfMethodCallIgnored
-        new File(parts, item.id + ".video").delete();
-        //noinspection ResultOfMethodCallIgnored
-        new File(parts, item.id + ".audio").delete();
+        ParallelFetch.reset(new File(parts, item.id + ".video"));
+        ParallelFetch.reset(new File(parts, item.id + ".audio"));
         //noinspection ResultOfMethodCallIgnored
         DownloadOptions.audioIdFile(new File(parts, item.id + ".audio")).delete();
         DownloadRegistry.instance(context).remove(item);
