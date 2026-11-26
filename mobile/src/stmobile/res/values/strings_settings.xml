@@ -251,6 +251,8 @@
     <string name="mobile_settings_watch_history_off_shown">Don\'t save, keep showing</string>
     <string name="mobile_settings_watch_history_off_shown_desc">Stops saving what you watch; History keeps what it has</string>
     <string name="mobile_you_history_empty">No watch history</string>
+    <string name="mobile_settings_history_hide_shorts">Hide Shorts</string>
+    <string name="mobile_settings_history_hide_shorts_summary">Shorts you watched stay out of History and the You page</string>
     <string name="mobile_settings_clear_watch_history">Clear watch history</string>
     <string name="mobile_settings_clear_watch_history_summary">Deletes the videos you watched from your YouTube history</string>
     <string name="mobile_settings_clear_watch_history_confirm">Clear watch history?</string>

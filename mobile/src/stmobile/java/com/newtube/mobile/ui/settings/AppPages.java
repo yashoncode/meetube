@@ -894,6 +894,11 @@ final class AppPages {
                     MediaServiceManager.instance().enableHistory(state == GeneralData.HISTORY_AUTO || state == GeneralData.HISTORY_ENABLED);
                 }));
 
+        // The TV's "Hide Shorts from history", as the phone's own row (PhoneOnlyPrefs keeps it).
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_history_hide_shorts),
+                context.getString(R.string.mobile_settings_history_hide_shorts_summary),
+                () -> com.newtube.mobile.PhoneOnlyPrefs.hidesHistoryShorts(context),
+                hide -> com.newtube.mobile.PhoneOnlyPrefs.setHidesHistoryShorts(context, hide)));
         if (signedIn) {
             rows.add(SettingsRow.action(context.getString(R.string.mobile_settings_clear_watch_history),
                     context.getString(R.string.mobile_settings_clear_watch_history_summary),
