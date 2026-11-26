@@ -2392,6 +2392,30 @@ public class MobileBrowseActivity extends MobileActivity
                 error -> android.util.Log.w("MobileBrowse", "You history: " + error));
     }
 
+    /**
+     * MEETUBE(issue #355): a video removed from history (its menu on the You page) leaves the row at
+     * once. It stayed until another tab, and came back from the cache on the next visit.
+     */
+    private void dropFromYouHistory(@Nullable List<Video> removed) {
+        if (removed == null || removed.isEmpty() || mYouHistoryAdapter == null) {
+            return;
+        }
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        for (Video video : removed) {
+            if (video != null && video.videoId != null) {
+                ids.add(video.videoId);
+            }
+        }
+        List<Video> shown = new ArrayList<>(mYouHistoryAdapter.getCurrentList());
+        if (shown.removeIf(video -> ids.contains(video.videoId))) {
+            showYouHistory(shown);
+        }
+        List<Video> cached = FeedCache.get(MediaGroup.TYPE_HISTORY);
+        if (cached != null && cached.removeIf(video -> ids.contains(video.videoId))) {
+            FeedCache.put(MediaGroup.TYPE_HISTORY, cached);
+        }
+    }
+
     private void showYouHistory(@Nullable List<Video> videos) {
         if (isDestroyed()) {
             return;
@@ -4685,6 +4709,9 @@ public class MobileBrowseActivity extends MobileActivity
         }
 
         runOnUiThread(() -> {
+            if (group.getAction() == VideoGroup.ACTION_REMOVE) {
+                dropFromYouHistory(group.getVideos()); // issue #355: the You page's row too, not only the grid
+            }
             if (mSubsChannel != null && group.getAction() != VideoGroup.ACTION_SYNC
                     && group.getAction() != VideoGroup.ACTION_REMOVE_AUTHOR) {
                 return; // MEETUBE(feed-strip): the all-channels feed; "All" brings it back
