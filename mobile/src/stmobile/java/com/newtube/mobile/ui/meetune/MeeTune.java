@@ -631,7 +631,17 @@ public final class MeeTune {
             shelf.items.add(item);
         }
         List<MusicApi.Shelf> shelves = new java.util.ArrayList<>();
-        if (!shelf.items.isEmpty()) shelves.add(shelf);
+        if (!shelf.items.isEmpty()) {
+            // A playlist's head: Play, Shuffle and its menu (Select, Cancel all), the cover the newest song's.
+            MusicApi.Shelf head = new MusicApi.Shelf();
+            head.header = true;
+            MusicApi.Item top = new MusicApi.Item();
+            top.title = context.getString(R.string.meetune_downloads);
+            top.meta = context.getString(R.string.meetune_car_songs, shelf.items.size());
+            head.items.add(top);
+            shelves.add(head);
+            shelves.add(shelf);
+        }
         return shelves;
     }
 

@@ -3,6 +3,7 @@
      album/playlist/artist/mood opened from one); MeeTube's floating glass bar, with Home / Explore /
      Library / Search, switches them. Home's label goes back to MeeTube; its corner has Settings. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/meetune_root"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"

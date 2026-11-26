@@ -396,4 +396,12 @@
     <string name="meetune_car_note">The car plays at your Streaming quality. Say \"Hey Google, play my liked songs on MeeTune\" (or my downloads, my recents, my mix, or any song or artist).</string>
     <string name="meetune_car_show">Show MeeTune in Android Auto</string>
     <string name="meetune_car_show_summary">Android Auto hides apps that aren\'t from the Play Store until you allow them. Tap here to open its settings, scroll down and tap Version about 10 times, then open the three-dot menu, Developer settings, and turn on Unknown sources. Reconnect to the car and MeeTune shows with your other music apps.</string>
+    <string name="meetune_download_all_queued">Downloading %1$d songs. Find them in Library &gt; Downloads</string>
+    <string name="meetune_download_all_skipped">Downloading %1$d songs. %2$d unavailable.</string>
+    <string name="meetune_select">Select</string>
+    <string name="meetune_cancel_all">Cancel all</string>
+    <string name="meetune_downloads_paused">Paused %1$d downloads</string>
+    <string name="meetune_downloads_resumed">Resumed %1$d downloads</string>
+    <string name="meetune_downloads_cancelled">Cancelled %1$d downloads</string>
+    <string name="meetune_downloads_none_coming">Nothing is downloading</string>
 </resources>

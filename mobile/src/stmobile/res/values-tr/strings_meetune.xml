@@ -6,4 +6,12 @@
         <item quantity="one">%1$s · %2$d şarkı</item>
         <item quantity="other">%1$s · %2$d şarkı</item>
     </plurals>
+    <string name="meetune_download_all_queued">%1$d şarkı indiriliyor. Kitaplık &gt; İndirilenler bölümünde</string>
+    <string name="meetune_download_all_skipped">%1$d şarkı indiriliyor. %2$d şarkı kullanılamıyor.</string>
+    <string name="meetune_select">Seç</string>
+    <string name="meetune_cancel_all">Tümünü iptal et</string>
+    <string name="meetune_downloads_paused">%1$d indirme duraklatıldı</string>
+    <string name="meetune_downloads_resumed">%1$d indirme sürdürüldü</string>
+    <string name="meetune_downloads_cancelled">%1$d indirme iptal edildi</string>
+    <string name="meetune_downloads_none_coming">İndirilen bir şey yok</string>
 </resources>

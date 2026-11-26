@@ -4,7 +4,6 @@
     <string name="mobile_playlist_by_owner">от %1$s</string>
     <string name="mobile_playlist_type">Плейлист</string>
     <string name="mobile_playlist_download_all">Скачать всё</string>
-    <string name="mobile_playlist_download_confirm">Скачать %1$d видео?</string>
     <string name="mobile_playlist_download_quality">Качество загрузки для всех видео</string>
     <string name="mobile_playlist_download_best">Наилучшее доступное</string>
     <string name="mobile_playlist_download_queued">Добавлено в очередь: %1$d видео</string>
@@ -18,7 +17,6 @@
     <string name="mobile_playlist_filter_all">Все</string>
     <string name="mobile_playlist_filter_videos">Видео</string>
     <string name="mobile_playlist_filter_shorts">Shorts</string>
-    <string name="mobile_playlist_download_select">Выбрать видео</string>
     <string name="mobile_playlist_select_all">Выбрать все</string>
     <string name="mobile_playlist_selected">Выбрано: %1$d</string>
     <string name="mobile_playlist_download_selected">Скачать</string>

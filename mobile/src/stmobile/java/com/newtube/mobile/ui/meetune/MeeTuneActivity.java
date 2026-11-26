@@ -440,6 +440,10 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     }
 
     private void back() {
+        if (activeSelection() != null) {
+            activeSelection().stop();
+            return;
+        }
         if (mSuggestions.getVisibility() == View.VISIBLE) { // first Back puts the suggestions away
             closeSuggestions();
         } else if (!mStack.isEmpty()) {
@@ -462,6 +466,7 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     // ----------------------------------------------------------------------------- pages
 
     private void show(Page page, boolean reload) {
+        if (!reload && activeSelection() != null) activeSelection().stop(); // another page: not the picked rows
         if (mPill != null) mPill.unfold(); // a new page: the bar comes back
         boolean pushed = !mStack.isEmpty();
         mSwipe.setEnabled(!pushed && page.tab == HOME); // only Home pulls to refresh
@@ -1113,10 +1118,32 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
     }
 
     @Override
-    public void pageMenu(View anchor, MusicApi.Item head) {
+    public void pageMenu(View anchor, MusicApi.Item head, List<MusicApi.Item> songs) {
         android.widget.LinearLayout content = new android.widget.LinearLayout(this);
         android.widget.PopupWindow popup = glassPopup(content, 250);
         Page page = current();
+        if (MeeTune.DOWNLOADS.equals(page.browseId)) {
+            popupRow(content, getString(R.string.meetune_select), false, () -> {
+                popup.dismiss();
+                selection(true).start(java.util.Collections.emptyList());
+            });
+            popupRow(content, getString(R.string.meetune_cancel_all), false, () -> {
+                popup.dismiss();
+                cancelDownloads(pageSongIds());
+            });
+            popup.showAsDropDown(anchor, 0, MeeTuneAdapter.dp(this, 8), android.view.Gravity.END);
+            return;
+        }
+        if (!songs.isEmpty()) { // every song ticked; untick the ones to leave out
+            popupRow(content, getString(R.string.meetune_download), false, () -> {
+                popup.dismiss();
+                selection(false).start(pageSongIds());
+            });
+        }
+        if (page.browseId != null && page.browseId.startsWith("meetune:")) { // History, Cached: nothing to share
+            popup.showAsDropDown(anchor, 0, MeeTuneAdapter.dp(this, 8), android.view.Gravity.END);
+            return;
+        }
         popupRow(content, getString(R.string.mobile_watch_share), false, () -> {
             popup.dismiss();
             String link = head.saveId != null ? MusicApi.ORIGIN + "/playlist?list=" + head.saveId
@@ -1142,6 +1169,114 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
             });
         }
         popup.showAsDropDown(anchor, 0, MeeTuneAdapter.dp(this, 8), android.view.Gravity.END);
+    }
+
+    /** Tick-to-pick on a page's songs: a playlist's (Download) or Downloads' (Pause, Cancel). By video id. */
+    private com.newtube.mobile.ui.common.ListSelection<String> mSongPick;
+    private com.newtube.mobile.ui.common.ListSelection<String> mDownloadPick;
+
+    private com.newtube.mobile.ui.common.ListSelection<String> selection(boolean downloads) {
+        com.newtube.mobile.ui.common.ListSelection<String> pick = downloads ? mDownloadPick : mSongPick;
+        if (pick != null) return pick;
+        pick = new com.newtube.mobile.ui.common.ListSelection<>(findViewById(R.id.meetune_root), findViewById(R.id.meetune_blur), mList,
+                new com.newtube.mobile.ui.common.ListSelection.Items<String>() {
+                    @Override
+                    public String at(androidx.recyclerview.widget.RecyclerView.ViewHolder holder) {
+                        if (holder.getBindingAdapter() != mAdapter) return null;
+                        MusicApi.Item song = mAdapter.songAt(holder.getBindingAdapterPosition());
+                        return song != null && song.playable() ? song.videoId : null;
+                    }
+
+                    @Override
+                    public List<String> all() {
+                        return pageSongIds();
+                    }
+                });
+        pick.hiding(findViewById(R.id.meetune_nav_glass), findViewById(R.id.meetune_mini),
+                findViewById(R.id.meetune_mini_tab), findViewById(R.id.meetune_mini_search));
+        if (downloads) {
+            pick.action(R.string.mobile_download_action_pause, 0, false, this::pauseDownloads)
+                    .action(R.string.mobile_update_cancel, 0, true, this::cancelDownloads);
+            mDownloadPick = pick;
+        } else {
+            pick.action(R.string.mobile_playlist_download_selected, R.drawable.ic_watch_download, true, this::downloadSongs);
+            mSongPick = pick;
+        }
+        return pick;
+    }
+
+    /** The running selection, or null. */
+    @androidx.annotation.Nullable
+    private com.newtube.mobile.ui.common.ListSelection<String> activeSelection() {
+        if (mSongPick != null && mSongPick.isActive()) return mSongPick;
+        if (mDownloadPick != null && mDownloadPick.isActive()) return mDownloadPick;
+        return null;
+    }
+
+    private List<String> pageSongIds() {
+        List<String> ids = new java.util.ArrayList<>();
+        Page page = current();
+        if (page == null || page.rows == null) return ids;
+        for (MeeTuneAdapter.Row row : page.rows) {
+            if (row.type == MeeTuneAdapter.SONG && row.item != null && row.item.playable() && !ids.contains(row.item.videoId)) {
+                ids.add(row.item.videoId);
+            }
+        }
+        return ids;
+    }
+
+    private void downloadSongs(List<String> ids) {
+        List<com.liskovsoft.smartyoutubetv2.common.app.models.data.Video> videos = new java.util.ArrayList<>();
+        Page page = current();
+        if (page == null || page.rows == null) return;
+        java.util.Set<String> wanted = new java.util.HashSet<>(ids);
+        for (MeeTuneAdapter.Row row : page.rows) {
+            if (row.type == MeeTuneAdapter.SONG && row.item != null && wanted.remove(row.item.videoId)) {
+                videos.add(MeeTune.video(row.item));
+            }
+        }
+        com.newtube.mobile.downloads.PlaylistDownloads.enqueue(this, videos, MeeTune.downloadQuality(this), true, (queued, unavailable) -> {
+            if (isFinishing()) return;
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, unavailable == 0 ? getString(R.string.meetune_download_all_queued, queued)
+                    : getString(R.string.meetune_download_all_skipped, queued, unavailable), null, null);
+            downloadsChanged();
+        });
+    }
+
+    /** Pauses the picked songs still coming; when every one is paused already, resumes them instead. */
+    private void pauseDownloads(List<String> ids) {
+        List<com.newtube.mobile.downloads.DownloadItem> running = new java.util.ArrayList<>();
+        List<com.newtube.mobile.downloads.DownloadItem> paused = new java.util.ArrayList<>();
+        for (String id : ids) {
+            com.newtube.mobile.downloads.DownloadItem d = MeeTune.songDownload(this, id);
+            if (d == null) continue;
+            if (d.isActive()) running.add(d);
+            else if (d.state == com.newtube.mobile.downloads.DownloadItem.STATE_PAUSED) paused.add(d);
+        }
+        if (!running.isEmpty()) {
+            for (com.newtube.mobile.downloads.DownloadItem d : running) com.newtube.mobile.downloads.MobileDownloadService.pause(this, d);
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.meetune_downloads_paused, running.size()), null, null);
+        } else if (!paused.isEmpty()) {
+            for (com.newtube.mobile.downloads.DownloadItem d : paused) com.newtube.mobile.downloads.MobileDownloadService.resume(this, d);
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.meetune_downloads_resumed, paused.size()), null, null);
+        } else {
+            com.newtube.mobile.ui.common.MobileSnackbar.show(this, getString(R.string.meetune_downloads_none_coming), null, null);
+        }
+    }
+
+    /** Cancels the picked songs still coming (or paused, or failed); finished downloads stay. */
+    private void cancelDownloads(List<String> ids) {
+        int cancelled = 0;
+        for (String id : ids) {
+            com.newtube.mobile.downloads.DownloadItem d = MeeTune.songDownload(this, id);
+            if (d == null || d.isDone()) continue;
+            if (d.isActive()) com.newtube.mobile.downloads.MobileDownloadService.cancel(this, d);
+            else com.newtube.mobile.downloads.DownloadMenu.delete(this, d);
+            cancelled++;
+        }
+        com.newtube.mobile.ui.common.MobileSnackbar.show(this, cancelled > 0 ? getString(R.string.meetune_downloads_cancelled, cancelled)
+                : getString(R.string.meetune_downloads_none_coming), null, null);
+        downloadsChanged();
     }
 
     private final ActivityResultLauncher<Intent> mExport = registerForActivityResult(
@@ -1331,6 +1466,11 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     @Override
     public void open(MusicApi.Item item, List<MusicApi.Item> siblings) {
+        com.newtube.mobile.ui.common.ListSelection<String> pick = activeSelection();
+        if (pick != null) { // selecting: a tap ticks a song instead of playing it
+            if (item.kind == MusicApi.SONG && item.playable()) pick.toggle(item.videoId);
+            return;
+        }
         Haptics.click(mList);
         if (mSuggestions.getVisibility() == View.VISIBLE) closeSuggestions(); // a suggested song or artist picked
         if (item.playable()) {

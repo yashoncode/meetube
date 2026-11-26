@@ -41,7 +41,7 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         void save(MusicApi.Item head, ImageView icon);
 
         /** The head's More. */
-        void pageMenu(View anchor, MusicApi.Item head);
+        void pageMenu(View anchor, MusicApi.Item head, List<MusicApi.Item> songs);
 
         /** The head's find box changed. */
         void find(String query);
@@ -277,6 +277,12 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return mRows.size();
     }
 
+    /** The song at {@code position}, or null for any other row (a ticked row in a selection). */
+    @Nullable
+    MusicApi.Item songAt(int position) {
+        return position >= 0 && position < mRows.size() && mRows.get(position).type == SONG ? mRows.get(position).item : null;
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int type) {
@@ -456,7 +462,7 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         });
         view.findViewById(R.id.meetune_page_more).setOnClickListener(v -> {
             Motion.pop(v);
-            mHost.pageMenu(v, head);
+            mHost.pageMenu(v, head, row.siblings);
         });
         View findGlass = view.findViewById(R.id.meetune_find_glass);
         android.widget.EditText field = view.findViewById(R.id.meetune_find_field);

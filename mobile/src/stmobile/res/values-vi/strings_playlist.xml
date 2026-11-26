@@ -3,7 +3,6 @@
     <string name="mobile_playlist_by_owner">của %1$s</string>
     <string name="mobile_playlist_type">Danh sách phát</string>
     <string name="mobile_playlist_download_all">Tải xuống tất cả</string>
-    <string name="mobile_playlist_download_confirm">Tải xuống %1$d video?</string>
     <string name="mobile_playlist_download_quality">Chất lượng tải xuống cho tất cả video</string>
     <string name="mobile_playlist_download_best">Cao nhất hiện có</string>
     <string name="mobile_playlist_download_queued">Đã đưa %1$d video vào hàng chờ</string>
@@ -17,7 +16,6 @@
     <string name="mobile_playlist_filter_all">Tất cả</string>
     <string name="mobile_playlist_filter_videos">Video</string>
     <string name="mobile_playlist_filter_shorts">Shorts</string>
-    <string name="mobile_playlist_download_select">Chọn video</string>
     <string name="mobile_playlist_select_all">Chọn tất cả</string>
     <string name="mobile_playlist_selected">Đã chọn %1$d</string>
     <string name="mobile_playlist_download_selected">Tải xuống</string>

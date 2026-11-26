@@ -353,4 +353,12 @@
     <string name="meetune_cover_glow">Hiệu ứng phát sáng ảnh bìa</string>
     <string name="meetune_cover_glow_summary">Một vầng sáng nhẹ phía sau mỗi ảnh bìa. Tắt đi để cuộn mượt hơn</string>
     <string name="meetune_smooth_switch_hint">Chuyển bài có vẻ chậm? Hãy tắt Chuyển bài mượt mà trong Cài đặt MeeTune</string>
+    <string name="meetune_download_all_queued">Đang tải %1$d bài hát. Xem trong Thư viện &gt; Tải xuống</string>
+    <string name="meetune_download_all_skipped">Đang tải %1$d bài hát. %2$d bài không khả dụng.</string>
+    <string name="meetune_select">Chọn</string>
+    <string name="meetune_cancel_all">Hủy tất cả</string>
+    <string name="meetune_downloads_paused">Đã tạm dừng %1$d lượt tải</string>
+    <string name="meetune_downloads_resumed">Đã tiếp tục %1$d lượt tải</string>
+    <string name="meetune_downloads_cancelled">Đã hủy %1$d lượt tải</string>
+    <string name="meetune_downloads_none_coming">Không có gì đang tải</string>
 </resources>
