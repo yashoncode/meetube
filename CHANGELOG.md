@@ -10,6 +10,7 @@ Every MeeTube release, newest first.<br>
 
 | Version | Released | Highlights |
 | :-- | :-- | :-- |
+| [**3.6.4** Swag](#364-swag) | 2026-11-27 | Coolest |
 | [**3.6.1** Fury](#361-fury) | 2026-11-25 | Refinement |
 | [**3.6.0** Sakura](#360-sakura) | 2026-11-24 | Android Auto |
 | [**3.5.8** Amber](#358-amber) | 2026-11-21 | Karaoke |
@@ -52,6 +53,61 @@ Every MeeTube release, newest first.<br>
 | [**1.5.0**](#150) | 2026-10-07 | Shorts |
 | [**1.0.0**](#100) | 2026-10-07 | Floating Glass |
 
+
+## 3.6.4 Swag
+
+> **Coolest**<br>
+> 📅 2026-11-27 · closes #355, #358, #359 and #360
+
+### ✨ Highlights
+
+- **Downloads are way faster:** videos and songs download over several connections at once, up to 3 downloads run together, and joining the video and audio after 100% takes a second instead of most of a minute, 2K and 4K too.
+- **Pick what to download from a playlist:** Download ticks every video or song, untick the ones you don't want. MeeTune's Downloads can pause, resume or cancel the songs you pick, or cancel all.
+- **Games in the song player:** eight small games to play while a song runs, opened from the song menu, tinted with the cover's color, with the synced lyric line still under the board.
+- **Show what you play on Discord:** your Discord status can show what you watch on MeeTube and listen to on MeeTune, with the title, the time and a button that opens it. An optional add-on in Settings > Discord status, downloaded only when you turn it on.
+- **Search inside a channel:** tap the magnifier next to Posts and type a video name, the results show on the Videos tab.
+- **New launch animations:** a glass tile now plays as the app opens. Pick Glass shadow, Trace, Pill, Ripple or Off in Settings > Customize theme > Launch animation, each tile shows its animation.
+
+### 🎵 MeeTune
+
+- The song player works sideways, with the cover on the left and the song and controls on the right. On tablets the playlist cover no longer fills the whole screen.
+- Long playlists open again. A big playlist used to spin forever and then close the app.
+- Tapping a song card opens the player out of that card, its cover grows into the player's.
+- Swiping the song down from lyrics, queue or games is smooth, the page shrinks into a rounded card as it goes.
+- The cover no longer goes blank when you switch songs, and a song comes back as a song after the app is killed.
+- Live songs show a full bar with LIVE and a full ring on the mini players, and a live song switched to video looks like any live video.
+- The playing mark on covers is a small glass circle with three moving bars, and the next and previous arrows glide and spring back.
+- Player buttons are no longer solid white on phones older than Android 12 or with battery saver on (#360).
+- No black background after minimizing, Start radio and shuffle work, artist covers are round again and tapping the cover no longer minimizes the player.
+
+### New
+
+- Downloads can save subtitles too. Pick the language or turn them off in the download menu, they show up when the downloaded video plays.
+- Hide Shorts in History and privacy keeps the Shorts you watched out of History and the You page. Off by default.
+- Speed and quality buttons show on the normal player too, not just fullscreen. Turn them off in Customize > Player buttons.
+- Home autoplay plays mixes, playlists and music videos too. It sits at the top of Playback settings and is off by default now.
+
+### Changed
+
+- Up to 4K plays 4K now. Auto was stuck at the screen's size, so a 1080p phone never went past 1080p.
+- Shorts stay on what you like. After the Shorts from your Home run out, the feed goes on from them instead of switching to random ones (#359).
+- Home opens clean after a restart, with thumbnails and final titles from the start and a quicker loading shimmer.
+- Home, MeeTune and the MeeTune player run all the way down behind the gesture bar, with no black strip under the bottom bar.
+- The +10 pill on double tap matches the time pill and sits at the edge, so they don't overlap.
+- Downloading a part of a video finishes as fast as a whole one, and its sound no longer starts a moment late.
+
+### Fixed
+
+- The seek time no longer gets stuck in the middle of the video after a quick seek (#358).
+- A video removed from history on the You page goes away right away (#355).
+- Muting a short keeps the next shorts muted too.
+- A video with three or more channels shows the first channel's picture instead of a blank circle.
+- A live video in a playlist saved on the phone plays again instead of opening as a Mix.
+- The slider handles in Download a part no longer get cut off, and holding the sort pill lights the whole pill.
+
+### Thanks
+
+A big thank you to the MeeTube Community. Your reports, ideas and kind words shape every update, and this one is for you. In this release thanks to @AbhishekGanvir, @memesflawless-sudo and @aaalthaff for reporting. Come say hi at [t.me/meetubecommunity](https://t.me/meetubecommunity).
 
 ## 3.6.1 Fury
 

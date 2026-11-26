@@ -35,8 +35,12 @@ SKIP_SECTIONS = re.compile(r"still limited|behind the scenes|todav[ií]a limitad
 MAX_LINES_PER_VERSION = 6
 BRAND = re.compile(r"\bMee(?:Tune|Tube)\w*")  # MeeTune, MeeTuneMix, MeeTube: never translated
 # The last line of the newest version's notes in the update sheet and "What's new".
-SUPPORT_LINE = ("Like my work? Support MeeTube for longer and faster updates: sudo brew coffee in About. "
-                "Never forced, always appreciated ❤️")
+SUPPORT_LINES = {
+    "en": "If MeeTube makes your day a little better, please consider buying me a coffee (sudo brew coffee in About). "
+          "It keeps the updates coming. No pressure at all, thank you for being here ❤️",
+    "es": "Si MeeTube te alegra un poco el día, considera invitarme a un café (sudo brew coffee en Acerca de). "
+          "Así siguen llegando las actualizaciones. Sin ninguna presión, gracias por estar aquí ❤️",
+}
 
 
 def app_languages():
@@ -188,7 +192,13 @@ def main():
             if lines:
                 entry["changelog_" + key] = lines[:MAX_LINES_PER_VERSION]
         manifest[version] = entry
-    manifest[name]["changelog"].append(SUPPORT_LINE)
+    newest = manifest[name]
+    newest["changelog"].append(SUPPORT_LINES["en"])
+    for field in [f for f in newest if f.startswith("changelog_")]:
+        key = field[len("changelog_"):]
+        line = SUPPORT_LINES.get(key) or (translate([SUPPORT_LINES["en"]], app_languages()[key]) or [None])[0]
+        if line:
+            newest[field].append(line)
 
     pathlib.Path(args.out).write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

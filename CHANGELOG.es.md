@@ -1,5 +1,60 @@
 # Registro de cambios de MeeTube
 
+## 3.6.4 Swag
+
+> **La más genial**<br>
+> 📅 2026-11-27 · cierra #355, #358, #359 y #360
+
+### ✨ Lo más destacado
+
+- **Descargas mucho más rápidas:** los vídeos y las canciones se descargan por varias conexiones a la vez, hasta 3 descargas van juntas, y unir el vídeo y el audio después del 100% tarda un segundo en lugar de casi un minuto, también en 2K y 4K.
+- **Elige qué descargar de una lista:** Descargar marca cada vídeo o canción, desmarca los que no quieras. Las Descargas de MeeTune pueden pausar, reanudar o cancelar las canciones que elijas, o cancelarlas todas.
+- **Juegos en el reproductor de canciones:** ocho minijuegos para jugar mientras suena una canción, desde el menú de la canción, con los colores de la portada y la línea sincronizada de la letra debajo del tablero.
+- **Muestra en Discord lo que reproduces:** tu estado de Discord puede mostrar lo que ves en MeeTube y lo que escuchas en MeeTune, con el título, el tiempo y un botón para abrirlo. Es un complemento opcional en Ajustes > Estado de Discord, que solo se descarga cuando lo activas.
+- **Busca dentro de un canal:** toca la lupa junto a Publicaciones y escribe el nombre de un vídeo, los resultados aparecen en la pestaña Vídeos.
+- **Nuevas animaciones de inicio:** al abrir la app aparece un mosaico de cristal. Elige Sombra de cristal, Trazo, Píldora, Onda o Desactivada en Ajustes > Personalizar tema > Animación de inicio, cada mosaico muestra su animación.
+
+### 🎵 MeeTune
+
+- El reproductor de canciones funciona en horizontal, con la portada a la izquierda y la canción y los controles a la derecha. En tablets la portada de la lista ya no ocupa toda la pantalla.
+- Las listas largas vuelven a abrirse. Una lista grande se quedaba cargando y luego cerraba la app.
+- Al tocar la tarjeta de una canción, el reproductor sale de esa tarjeta y su portada crece hasta la del reproductor.
+- Deslizar la canción hacia abajo desde la letra, la cola o los juegos es fluido, la página se encoge en una tarjeta redondeada.
+- La portada ya no se queda en blanco al cambiar de canción, y una canción vuelve como canción después de que se cierre la app.
+- Las canciones en directo muestran una barra completa con EN DIRECTO y un anillo completo en los minirreproductores, y una canción en directo pasada a vídeo se ve como cualquier vídeo en directo.
+- La marca de reproducción en las portadas es un pequeño círculo de cristal con tres barras en movimiento, y las flechas de siguiente y anterior se deslizan y rebotan.
+- Los botones del reproductor ya no salen en blanco en móviles con Android anterior a 12 o con ahorro de batería (#360).
+- Sin fondo negro al minimizar, Iniciar radio y aleatorio funcionan, las portadas de artistas vuelven a ser redondas y tocar la portada ya no minimiza el reproductor.
+
+### Novedades
+
+- Las descargas también pueden guardar subtítulos. Elige el idioma o desactívalos en el menú de descarga, aparecen al reproducir el vídeo descargado.
+- Ocultar Shorts en Historial y privacidad deja los Shorts que viste fuera del Historial y de la página Tú. Desactivado por defecto.
+- Los botones de velocidad y calidad también aparecen en el reproductor normal, no solo en pantalla completa. Desactívalos en Personalizar > Botones del reproductor.
+- La reproducción automática de Inicio también reproduce mixes, listas y vídeos musicales. Está arriba en los ajustes de Reproducción y ahora viene desactivada.
+
+### Cambios
+
+- Hasta 4K ahora reproduce 4K. Automático se quedaba en el tamaño de la pantalla, así que un móvil 1080p nunca pasaba de 1080p.
+- Los Shorts siguen con lo que te gusta. Cuando se acaban los Shorts de tu Inicio, el feed continúa a partir de ellos en lugar de pasar a Shorts al azar (#359).
+- Inicio abre limpio después de reiniciar, con miniaturas y títulos definitivos desde el principio y una carga más rápida.
+- Inicio, MeeTune y el reproductor de MeeTune llegan hasta abajo detrás de la barra de gestos, sin franja negra bajo la barra inferior.
+- La píldora +10 del doble toque es igual que la del tiempo y está en el borde, así no se superponen.
+- Descargar una parte de un vídeo termina tan rápido como el vídeo entero, y su sonido ya no empieza con retraso.
+
+### Correcciones
+
+- El tiempo de búsqueda ya no se queda atascado en mitad del vídeo tras un salto rápido (#358).
+- Un vídeo quitado del historial en la página Tú desaparece al momento (#355).
+- Silenciar un Short mantiene silenciados los siguientes.
+- Un vídeo con tres o más canales muestra la foto del primer canal en lugar de un círculo vacío.
+- Un vídeo en directo de una lista guardada en el móvil vuelve a reproducirse en lugar de abrirse como Mix.
+- Los controles deslizantes de Descargar una parte ya no se cortan, y mantener pulsada la píldora de orden ilumina toda la píldora.
+
+### Gracias
+
+Un enorme gracias a la Comunidad de MeeTube. Vuestros reportes, ideas y palabras bonitas dan forma a cada actualización, y esta es para vosotros. En esta versión, gracias a @AbhishekGanvir, @memesflawless-sudo y @aaalthaff por reportar. Pasaos a saludar en [t.me/meetubecommunity](https://t.me/meetubecommunity).
+
 ## 2.9.6 — 2026-10-15 — Corrección
 
 ### Corregido
