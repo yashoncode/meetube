@@ -23,9 +23,13 @@ import java.util.List;
  * sample tables, a WebM gets one Tracks element for both tracks and clusters that interleave them.
  * The index goes first, so the gallery and players open the file without seeking to its end.
  *
+ * <p>A part of the video (issue #241) is cut the way {@link MediaMuxHelper} cuts it: from the video
+ * keyframe at or before the start (an MP4 sample, a WebM cluster) to the first one at or after the
+ * end, the audio from where that keyframe shows, everything shifted to start at zero.
+ *
  * <p>Everything is read and planned before a byte is written. Anything YouTube does not send
- * (two tracks in one part, a part that does not start at zero, an unknown-size cluster) throws
- * {@link Unsupported} at that stage, with the output untouched, and the caller muxes instead.
+ * (two tracks in one part, a whole part that does not start at zero, an unknown-size cluster)
+ * throws {@link Unsupported} at that stage, with the output untouched, and the caller muxes instead.
  */
 final class FastJoin {
     /** The parts are outside what this handles; nothing was written. */
@@ -43,14 +47,18 @@ final class FastJoin {
     private FastJoin() {
     }
 
-    /** @return the duration in ms */
-    static long join(@Nullable File video, @Nullable File audio, boolean webm, FileChannel out, Progress progress)
-            throws IOException {
+    /**
+     * @param clipStartUs with {@code clipEndUs > clipStartUs}, keeps only that part (stream time)
+     * @return the duration in ms
+     */
+    static long join(@Nullable File video, @Nullable File audio, boolean webm, long clipStartUs, long clipEndUs,
+                     FileChannel out, Progress progress) throws IOException {
         List<FileInputStream> streams = new ArrayList<>();
         try {
             FileChannel v = video != null ? open(video, streams) : null;
             FileChannel a = audio != null ? open(audio, streams) : null;
-            return webm ? Webm.join(v, a, out, progress) : Mp4.join(v, a, out, progress);
+            return webm ? Webm.join(v, a, clipStartUs, clipEndUs, out, progress)
+                    : Mp4.join(v, a, clipStartUs, clipEndUs, out, progress);
         } finally {
             for (FileInputStream stream : streams) {
                 try {
@@ -90,18 +98,23 @@ final class FastJoin {
             long trexDuration;
             long trexSize;
             long trexFlags;
-            final Ints sizes = new Ints();
-            final Ints durations = new Ints();
-            final Ints ctos = new Ints();
-            final Ints nonSync = new Ints(); // 1-based numbers of non-sync samples
+            int editEntries;
+            long mediaTime; // the one edit's media_time: the stream time shown at zero
+            Ints sizes = new Ints();
+            Ints durations = new Ints();
+            Ints ctos = new Ints();
+            Ints nonSync = new Ints(); // 1-based numbers of non-sync samples
             boolean anyCto;
             boolean signedCto;
-            long totalDuration;
-            final Longs runPos = new Longs();
-            final Longs runBytes = new Longs();
-            final Ints runCount = new Ints();
-            final Longs runDts = new Longs();
+            long firstDts; // the first fragment's decode time: not zero in a part of the video
+            long totalDuration; // the decode time after the last sample
+            Longs runPos = new Longs();
+            Longs runBytes = new Longs();
+            Ints runCount = new Ints();
+            Longs runDts = new Longs();
             long[] runOut;
+            boolean cut;
+            long cutEdit; // after a cut: the first sample's composition offset, shown at zero
 
             Track(FileChannel in) {
                 this.in = in;
@@ -110,19 +123,101 @@ final class FastJoin {
             int count() {
                 return sizes.size;
             }
+
+            /** Each sample's presentation time, with the edit applied (zero is where the stream shows). */
+            long[] presentation() throws Unsupported {
+                if (editEntries > 1 || mediaTime < 0) {
+                    throw new Unsupported("edit list with " + editEntries + " entries");
+                }
+                long[] times = new long[count()];
+                long dts = firstDts;
+                for (int i = 0; i < times.length; i++) {
+                    times[i] = dts + ctos.get(i) - mediaTime;
+                    dts += durations.get(i);
+                }
+                return times;
+            }
+
+            boolean sync(int i) {
+                return Arrays.binarySearch(nonSync.values, 0, nonSync.size, i + 1) < 0;
+            }
+
+            /** Keeps samples {@code from..to-1} (decode order), the runs split at the cut, and starts them at zero. */
+            void keep(int from, int to) {
+                Ints keptSizes = new Ints();
+                Ints keptDurations = new Ints();
+                Ints keptCtos = new Ints();
+                Ints keptNonSync = new Ints();
+                long[] dts = new long[count() + 1];
+                for (int i = 0; i < count(); i++) {
+                    dts[i + 1] = dts[i] + durations.get(i);
+                }
+                for (int i = from; i < to; i++) {
+                    keptSizes.add(sizes.get(i));
+                    keptDurations.add(durations.get(i));
+                    keptCtos.add(ctos.get(i));
+                    if (!sync(i)) {
+                        keptNonSync.add(i - from + 1);
+                    }
+                }
+                Longs pos = new Longs();
+                Longs bytes = new Longs();
+                Ints counts = new Ints();
+                Longs runStart = new Longs();
+                int first = 0;
+                for (int r = 0; r < runPos.size; r++) {
+                    int last = first + runCount.get(r);
+                    int a = Math.max(from, first);
+                    int b = Math.min(to, last);
+                    if (a < b) {
+                        long p = runPos.get(r);
+                        for (int i = first; i < a; i++) {
+                            p += sizes.get(i);
+                        }
+                        long length = 0;
+                        for (int i = a; i < b; i++) {
+                            length += sizes.get(i);
+                        }
+                        pos.add(p);
+                        bytes.add(length);
+                        counts.add(b - a);
+                        runStart.add(dts[a] - dts[from]);
+                    }
+                    first = last;
+                }
+                cutEdit = ctos.get(from);
+                sizes = keptSizes;
+                durations = keptDurations;
+                ctos = keptCtos;
+                nonSync = keptNonSync;
+                runPos = pos;
+                runBytes = bytes;
+                runCount = counts;
+                runDts = runStart;
+                firstDts = 0;
+                totalDuration = dts[to] - dts[from];
+                cut = true;
+            }
         }
 
-        static long join(@Nullable FileChannel video, @Nullable FileChannel audio, FileChannel out, Progress progress)
-                throws IOException {
-            List<Track> tracks = new ArrayList<>();
-            if (video != null) {
-                tracks.add(parse(video));
-            }
-            if (audio != null) {
-                tracks.add(parse(audio));
-            }
-            if (tracks.isEmpty()) {
+        static long join(@Nullable FileChannel video, @Nullable FileChannel audio, long clipStartUs, long clipEndUs,
+                         FileChannel out, Progress progress) throws IOException {
+            Track v = video != null ? parse(video) : null;
+            Track a = audio != null ? parse(audio) : null;
+            if (v == null && a == null) {
                 throw new Unsupported("no parts");
+            }
+            if (clipEndUs > clipStartUs) {
+                cut(v, a, clipStartUs, clipEndUs);
+            } else if ((v != null && v.firstDts != 0) || (a != null && a.firstDts != 0)) {
+                throw new Unsupported("part does not start at zero");
+            }
+            List<Track> tracks = new ArrayList<>();
+            if (v != null) {
+                tracks.add(v);
+            }
+            if (a != null) {
+                tracks.add(a);
             }
 
             // Runs in time order across tracks: the file interleaves them as YouTube cut them.
@@ -186,6 +281,71 @@ final class FastJoin {
                 durationMs = Math.max(durationMs, t.totalDuration * 1000 / t.timescale);
             }
             return durationMs;
+        }
+
+        /**
+         * The video from the keyframe at or before the start to the first one at or after the end,
+         * the audio from the sample nearest where that keyframe shows to where the video stops.
+         */
+        static void cut(@Nullable Track v, @Nullable Track a, long startUs, long endUs) throws Unsupported {
+            long baseUs = startUs;
+            long stopUs = endUs; // audio alone: the part's end
+            if (v != null) {
+                long[] times = v.presentation();
+                long start = startUs * v.timescale / 1_000_000;
+                long end = endUs * v.timescale / 1_000_000;
+                int n = times.length;
+                int from = -1;
+                for (int i = 0; i < n; i++) {
+                    if (v.sync(i) && (from < 0 || times[i] <= start)) {
+                        from = i;
+                    }
+                }
+                if (from < 0) {
+                    throw new Unsupported("no keyframe");
+                }
+                int to = n;
+                for (int i = from + 1; i < n; i++) {
+                    if (v.sync(i) && times[i] >= end) {
+                        to = i;
+                        break;
+                    }
+                }
+                for (int i = from; i < to; i++) {
+                    if (times[i] < times[from]) {
+                        throw new Unsupported("a frame shows before the keyframe it starts on");
+                    }
+                }
+                v.keep(from, to);
+                baseUs = times[from] * 1_000_000 / v.timescale;
+                // The audio stops where the video does: at the keyframe after the end, or its last frame.
+                stopUs = (to < n ? times[to] : times[from] + v.totalDuration) * 1_000_000 / v.timescale;
+            }
+            if (a != null) {
+                long[] times = a.presentation();
+                long base = baseUs * a.timescale / 1_000_000;
+                int n = times.length;
+                int from = 0;
+                while (from < n && times[from] < base) {
+                    from++;
+                }
+                // ponytail: nearest sample, off by up to half an audio frame (~11 ms); an empty edit if that ever shows.
+                if (from > 0 && (from == n || base - times[from - 1] < times[from] - base)) {
+                    from--;
+                }
+                if (from >= n) {
+                    throw new Unsupported("audio ends before the cut");
+                }
+                if (times[from] - base > a.durations.get(from)) {
+                    throw new Unsupported("audio starts after the cut"); // the muxer keeps the gap
+                }
+                long stop = stopUs * a.timescale / 1_000_000;
+                int to = from + 1;
+                while (to < n && times[to] < stop) {
+                    to++;
+                }
+                a.keep(from, to);
+            }
         }
 
         static Track parse(FileChannel in) throws IOException {
@@ -262,6 +422,14 @@ final class FastJoin {
             if (u32(trak, stsz + 16) != 0) {
                 throw new Unsupported("samples in the header: not fragmented");
             }
+            int elst = path(trak, EDTS, ELST);
+            if (elst >= 0) {
+                boolean v1 = trak[elst + 8] == 1;
+                t.editEntries = u32i(trak, elst + 12);
+                if (t.editEntries > 0) {
+                    t.mediaTime = v1 ? u64(trak, elst + 24) : u32i(trak, elst + 20);
+                }
+            }
             t.trackId = u32i(trak, tkhd + (trak[tkhd + 8] == 1 ? 28 : 20));
             t.timescale = u32(trak, mdhd + (trak[mdhd + 8] == 1 ? 28 : 20));
             if (t.timescale <= 0 || t.movieTimescale <= 0) {
@@ -309,9 +477,12 @@ final class FastJoin {
                         nextData = base;
                     } else if (type == TFDT) {
                         long decodeTime = b[c + 8] == 1 ? u64(b, c + 12) : u32(b, c + 12);
+                        if (t.count() == 0) {
+                            t.firstDts = t.totalDuration = decodeTime; // a part of the video starts mid-stream
+                        }
                         long gap = decodeTime - t.totalDuration;
                         if (gap != 0) {
-                            if (gap < 0 || t.count() == 0) {
+                            if (gap < 0) {
                                 throw new Unsupported("fragment out of step: " + decodeTime + " vs " + t.totalDuration);
                             }
                             // A hole: the previous sample lasts until this fragment starts.
@@ -443,7 +614,21 @@ final class FastJoin {
             long duration = t.totalDuration * movieTimescale / t.timescale;
             int edts = child(src, 0, EDTS);
             byte[] edtsOut = null;
-            if (edts >= 0) {
+            if (t.cut) {
+                // The source's edit spans the whole stream: one that shows the first kept sample at zero.
+                if (t.cutEdit != 0) {
+                    if (duration > 0xFFFFFFFFL || t.cutEdit < 0) {
+                        throw new Unsupported("cut edit out of range");
+                    }
+                    Buf e = new Buf();
+                    int eAt = e.open(EDTS);
+                    int lAt = e.full(ELST);
+                    e.u32(1).u32(duration).u32(t.cutEdit).u32(0x10000);
+                    e.close(lAt);
+                    e.close(eAt);
+                    edtsOut = e.toByteArray();
+                }
+            } else if (edts >= 0) {
                 edtsOut = Arrays.copyOfRange(src, edts, edts + size(src, edts));
                 int elst = child(edtsOut, 0, ELST);
                 if (elst >= 0) {
@@ -473,8 +658,13 @@ final class FastJoin {
                     putU32(tkhd, v1 ? 28 : 20, trackId);
                     putDuration(tkhd, v1 ? 36 : 28, v1, duration);
                     b.write(tkhd, 0, tkhd.length);
+                    if (t.cut && edtsOut != null) {
+                        b.write(edtsOut, 0, edtsOut.length);
+                    }
                 } else if (type == EDTS) {
-                    b.write(edtsOut, 0, edtsOut.length);
+                    if (!t.cut) {
+                        b.write(edtsOut, 0, edtsOut.length);
+                    }
                 } else if (type == MDIA) {
                     mdia(b, t, src, o, co64);
                 } else {
@@ -666,8 +856,11 @@ final class FastJoin {
             byte[] trackEntry;
             long timecodeScale = 1_000_000;
             double durationTicks;
+            int durationAt = -1; // where Info's Duration value sits in info, and its length
+            int durationLength;
             final Longs clusterTime = new Longs();
             final Ints clusterFirst = new Ints();
+            final Ints clusterKey = new Ints(); // 1 when the cluster starts on a keyframe
             final Longs blockStart = new Longs();
             final Longs blockLength = new Longs();
             final Longs blockTime = new Longs();
@@ -682,8 +875,8 @@ final class FastJoin {
             }
         }
 
-        static long join(@Nullable FileChannel video, @Nullable FileChannel audio, FileChannel out, Progress progress)
-                throws IOException {
+        static long join(@Nullable FileChannel video, @Nullable FileChannel audio, long clipStartUs, long clipEndUs,
+                         FileChannel out, Progress progress) throws IOException {
             if (video == null) {
                 throw new Unsupported("webm without video");
             }
@@ -696,16 +889,63 @@ final class FastJoin {
                 throw new Unsupported("timecode scales differ");
             }
 
+            // A cut keeps the clusters from the one starting on a keyframe at or before the start
+            // (YouTube starts one on every keyframe) to the first at or after the end, shifted by base.
+            int clusters = v.clusterTime.size;
+            int c0 = 0;
+            int c1 = clusters;
+            long base = 0;
+            long stop = Long.MAX_VALUE; // audio from here on is dropped: where the cut video ends
+            if (clipEndUs > clipStartUs) {
+                long start = clipStartUs * 1000 / v.timecodeScale;
+                long end = clipEndUs * 1000 / v.timecodeScale;
+                c0 = -1;
+                for (int c = 0; c < clusters; c++) {
+                    if (v.clusterKey.get(c) == 1 && (c0 < 0 || v.clusterTime.get(c) <= start)) {
+                        c0 = c;
+                    }
+                }
+                if (c0 < 0) {
+                    throw new Unsupported("no cluster starts on a keyframe");
+                }
+                for (int c = c0 + 1; c < clusters; c++) {
+                    if (v.clusterTime.get(c) >= end) {
+                        c1 = c;
+                        break;
+                    }
+                }
+                base = v.clusterTime.get(c0);
+                if (c1 < clusters) {
+                    stop = v.clusterTime.get(c1);
+                } else {
+                    // The end of the last frame: its time plus the spacing before it (VP9 has no B-frames).
+                    long last = Long.MIN_VALUE;
+                    long previous = Long.MIN_VALUE;
+                    for (int i = v.clusterFirst.get(clusters - 1); i < v.blocks(); i++) {
+                        long time = v.blockTime.get(i);
+                        if (time > last) {
+                            previous = last;
+                            last = time;
+                        } else if (time > previous && time < last) {
+                            previous = time;
+                        }
+                    }
+                    stop = previous != Long.MIN_VALUE ? 2 * last - previous : last + 1;
+                }
+            }
+
             // Output clusters are the video's: each keeps its timecode and blocks, and takes the
             // audio blocks up to the next one's, re-timed against it. Merged by time inside.
-            int clusters = v.clusterTime.size;
             int[] audioFirst = new int[clusters + 1];
             long[] clusterSize = new long[clusters];
             int ab = 0;
-            for (int c = 0; c < clusters; c++) {
+            while (a != null && ab < a.blocks() && a.blockTime.get(ab) < base) {
+                ab++;
+            }
+            for (int c = c0; c < c1; c++) {
                 audioFirst[c] = ab;
                 long tc = v.clusterTime.get(c);
-                long nextTc = c + 1 < clusters ? v.clusterTime.get(c + 1) : Long.MAX_VALUE;
+                long nextTc = c + 1 < c1 ? v.clusterTime.get(c + 1) : stop;
                 long size = 10; // Timecode, 8-byte value
                 int vEnd = c + 1 < clusters ? v.clusterFirst.get(c + 1) : v.blocks();
                 for (int i = v.clusterFirst.get(c); i < vEnd; i++) {
@@ -723,19 +963,32 @@ final class FastJoin {
                 }
                 clusterSize[c] = size;
             }
-            audioFirst[clusters] = ab;
+            audioFirst[c1] = ab;
+
+            byte[] info = v.info;
+            double ticks = Math.max(v.durationTicks, a != null ? a.durationTicks : 0);
+            if (clipEndUs > clipStartUs) {
+                ticks = Math.min(ticks, stop) - base;
+                if (v.durationAt >= 0) {
+                    info = info.clone();
+                    long bits = v.durationLength == 4 ? Float.floatToIntBits((float) ticks) : Double.doubleToLongBits(ticks);
+                    for (int i = 0; i < v.durationLength; i++) {
+                        info[v.durationAt + i] = (byte) (bits >>> (8 * (v.durationLength - 1 - i)));
+                    }
+                }
+            }
 
             byte[] tracks = tracks(v, a);
             int cuePointBytes = 27;
-            long cuesBytes = 12 + (long) cuePointBytes * clusters;
+            long cuesBytes = 12 + (long) cuePointBytes * (c1 - c0);
             int seekHeadBytes = 68;
             long infoPos = seekHeadBytes;
-            long tracksPos = infoPos + v.info.length;
+            long tracksPos = infoPos + info.length;
             long cuesPos = tracksPos + tracks.length;
             long clusterPos = cuesPos + cuesBytes;
             long segmentBytes = clusterPos;
-            for (long size : clusterSize) {
-                segmentBytes += 12 + size;
+            for (int c = c0; c < c1; c++) {
+                segmentBytes += 12 + clusterSize[c];
             }
 
             Buf head = new Buf();
@@ -746,13 +999,13 @@ final class FastJoin {
             seek(head, INFO, infoPos);
             seek(head, TRACKS, tracksPos);
             seek(head, CUES, cuesPos);
-            head.write(v.info, 0, v.info.length);
+            head.write(info, 0, info.length);
             head.write(tracks, 0, tracks.length);
             head.id(CUES).size8(cuesBytes - 12);
             long position = clusterPos;
-            for (int c = 0; c < clusters; c++) {
+            for (int c = c0; c < c1; c++) {
                 head.id(CUE_POINT).size1(25);
-                head.id(CUE_TIME).size1(8).u64(v.clusterTime.get(c));
+                head.id(CUE_TIME).size1(8).u64(v.clusterTime.get(c) - base);
                 head.id(CUE_TRACK_POSITIONS).size1(13);
                 head.id(CUE_TRACK).size1(1).u8(1);
                 head.id(CUE_CLUSTER_POSITION).size1(8).u64(position);
@@ -763,11 +1016,11 @@ final class FastJoin {
             long total = segmentBytes - clusterPos;
             long copied = 0;
             Buf pending = new Buf();
-            for (int c = 0; c < clusters; c++) {
+            for (int c = c0; c < c1; c++) {
                 long tc = v.clusterTime.get(c);
                 pending.reset();
                 pending.id(CLUSTER).size8(clusterSize[c]);
-                pending.id(TIMECODE).size1(8).u64(tc);
+                pending.id(TIMECODE).size1(8).u64(tc - base);
                 int vi = v.clusterFirst.get(c);
                 int vEnd = c + 1 < clusters ? v.clusterFirst.get(c + 1) : v.blocks();
                 int ai = audioFirst[c];
@@ -812,7 +1065,6 @@ final class FastJoin {
                 }
             }
 
-            double ticks = Math.max(v.durationTicks, a != null ? a.durationTicks : 0);
             return (long) (ticks * v.timecodeScale / 1_000_000);
         }
 
@@ -886,7 +1138,7 @@ final class FastJoin {
                     }
                     if (id == INFO) {
                         part.info = r.bytes(q, (int) (dataAt + dataSize - q));
-                        info(part, dataAt, dataAt + dataSize);
+                        info(part, q, dataAt, dataAt + dataSize);
                     } else {
                         tracks(part, dataAt, dataAt + dataSize);
                     }
@@ -901,7 +1153,7 @@ final class FastJoin {
             return part;
         }
 
-        static void info(Part part, long from, long to) throws IOException {
+        static void info(Part part, long infoStart, long from, long to) throws IOException {
             Reader r = part.in;
             for (long p = from; p < to; ) {
                 long id = r.id(p);
@@ -912,6 +1164,8 @@ final class FastJoin {
                 } else if (id == DURATION) {
                     long bits = r.uint(dataAt, (int) dataSize);
                     part.durationTicks = dataSize == 4 ? Float.intBitsToFloat((int) bits) : Double.longBitsToDouble(bits);
+                    part.durationAt = (int) (dataAt - infoStart);
+                    part.durationLength = (int) dataSize;
                 }
                 p = dataAt + dataSize;
             }
@@ -936,6 +1190,7 @@ final class FastJoin {
         static void cluster(Part part, long from, long to) throws IOException {
             Reader r = part.in;
             long tc = -1;
+            int key = -1;
             for (long p = from; p < to; ) {
                 long id = r.id(p);
                 long dataAt = r.headerEnd(p);
@@ -971,6 +1226,9 @@ final class FastJoin {
                         throw new Unsupported("block of another track");
                     }
                     short relative = (short) ((r.at(payload + 1) << 8) | r.at(payload + 2));
+                    if (key < 0) {
+                        key = id == SIMPLE_BLOCK && (r.at(payload + 3) & 0x80) != 0 && relative >= 0 ? 1 : 0;
+                    }
                     part.blockStart.add(p);
                     part.blockLength.add(dataAt + dataSize - p);
                     part.blockTime.add(tc + relative);
@@ -981,6 +1239,7 @@ final class FastJoin {
             if (tc < 0) {
                 throw new Unsupported("cluster without a timecode");
             }
+            part.clusterKey.add(Math.max(key, 0));
         }
     }
 

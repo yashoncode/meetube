@@ -229,8 +229,13 @@ final class DownloadJob {
 
     private void fetchPartsOnce(@Nullable File videoPart, @Nullable File audioPart) throws IOException {
         // Issue #241: a part of the video fetches only the fragments that cover it.
-        ClipRanges.Plan videoPlan = videoPart != null ? clipPlan(mItem.videoUrl, mItem.videoInit, mItem.videoIndex) : null;
-        ClipRanges.Plan audioPlan = audioPart != null ? clipPlan(mItem.audioUrl, mItem.audioInit, mItem.audioIndex) : null;
+        ClipRanges.Plan videoPlan = videoPart != null
+                ? clipPlan(mItem.videoUrl, mItem.videoInit, mItem.videoIndex, mItem.clipStartMs, mItem.clipEndMs) : null;
+        // The audio covers the video's fragments, not just the part: the cut starts on a keyframe up
+        // to a fragment early, and audio fragments start elsewhere, so a narrower plan began after it.
+        ClipRanges.Plan audioPlan = audioPart != null ? clipPlan(mItem.audioUrl, mItem.audioInit, mItem.audioIndex,
+                videoPlan != null ? videoPlan.startMs : mItem.clipStartMs,
+                videoPlan != null ? videoPlan.endMs : mItem.clipEndMs) : null;
         mVideoPartStartMs = videoPlan != null ? videoPlan.startMs : 0;
         mAudioPartStartMs = audioPlan != null ? audioPlan.startMs : 0;
         long videoLen = videoPlan != null ? videoPlan.fileLength() : mItem.videoLength;
@@ -326,8 +331,8 @@ final class DownloadJob {
      * progressive stream (no sidx), or an index that does not read.
      */
     @Nullable
-    private ClipRanges.Plan clipPlan(@Nullable String url, @Nullable String init, @Nullable String index)
-            throws IOException {
+    private ClipRanges.Plan clipPlan(@Nullable String url, @Nullable String init, @Nullable String index,
+                                     long startMs, long endMs) throws IOException {
         long[] initRange = ClipRanges.range(init);
         long[] indexRange = ClipRanges.range(index);
         if (!mItem.isClip() || url == null || initRange == null || indexRange == null
@@ -335,8 +340,7 @@ final class DownloadJob {
             return null;
         }
         byte[] head = mFetcher.fetchBytes(url, 0, indexRange[1]);
-        ClipRanges.Plan plan = ClipRanges.plan(head, (int) initRange[1], (int) indexRange[0],
-                mItem.clipStartMs, mItem.clipEndMs);
+        ClipRanges.Plan plan = ClipRanges.plan(head, (int) initRange[1], (int) indexRange[0], startMs, endMs);
         NetPath.log("download part-plan video=" + mItem.videoId + " ok=" + (plan != null)
                 + (plan != null ? " bytes=" + plan.fileLength() : ""));
         return plan;
@@ -487,9 +491,7 @@ final class DownloadJob {
         DownloadStorage.Target target = mStorage.create(fileName, mItem.isAudioOnly(), mimeOf(fileName));
         MediaMuxer muxer = null;
         try {
-            // A part of the video is cut on keyframes, which only the sample-by-sample muxer does.
-            long durationMs = mItem.isClip() || mVideoPartStartMs != 0 || mAudioPartStartMs != 0
-                    ? -1 : fastJoin(videoPart, audioPart, webm, target);
+            long durationMs = fastJoin(videoPart, audioPart, webm, target);
             if (durationMs < 0) {
                 muxer = mStorage.openMuxer(target, webm);
                 durationMs = MediaMuxHelper.mux(videoPart, audioPart, muxer,
@@ -530,7 +532,8 @@ final class DownloadJob {
                 ? new FileOutputStream(target.pfd.getFileDescriptor()) : new FileOutputStream(target.file);
         try {
             FileChannel out = stream.getChannel();
-            long durationMs = FastJoin.join(videoPart, audioPart, webm, out, (bytes, total) -> !mItem.cancelRequested);
+            long durationMs = FastJoin.join(videoPart, audioPart, webm, mItem.clipStartMs * 1000, mItem.clipEndMs * 1000,
+                    out, (bytes, total) -> !mItem.cancelRequested);
             out.force(false);
             return durationMs;
         } catch (FastJoin.Unsupported e) {
