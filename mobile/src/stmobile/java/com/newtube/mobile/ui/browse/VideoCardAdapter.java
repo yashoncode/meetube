@@ -555,7 +555,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             }
             mAvatar.setContentDescription(video.getAuthor());
             if (collab == null) {
-                loadAvatar(context, video, mAvatar, video.channelId, video.getAuthor());
+                loadAvatar(context, video, mAvatar, video.channelId, leadName(video.getAuthor()));
             } else {
                 // The TV tile's channel id is the first collaborator's; the second is known by name.
                 loadAvatar(context, video, mAvatar, video.channelId, collab[0]);
@@ -592,7 +592,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             }
             String[] collab = collabNames(video.getAuthor());
             if (collab == null) {
-                prefetchAvatar(context, video.channelId, video.getAuthor());
+                prefetchAvatar(context, video.channelId, leadName(video.getAuthor()));
             } else {
                 prefetchAvatar(context, video.channelId, collab[0]);
                 prefetchAvatar(context, null, collab[1]);
@@ -640,6 +640,12 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
                 return null;
             }
             return new String[] {author.substring(0, at), author.substring(at + 5)};
+        }
+
+        /** "KSI and 2 more" is KSI's avatar: no channel is named the whole byline. */
+        static String leadName(String author) {
+            int at = author.indexOf(" and ");
+            return at > 0 && author.endsWith(" more") ? author.substring(0, at) : author;
         }
 
         /** MEETUBE(hyped): the card's place in a chart; 0 = none. */
