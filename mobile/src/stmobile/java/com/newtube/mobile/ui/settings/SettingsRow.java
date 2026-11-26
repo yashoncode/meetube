@@ -321,6 +321,13 @@ public final class SettingsRow {
             return this;
         }
 
+        public Choice<T> option(CharSequence label, @Nullable CharSequence description, @DrawableRes int icon, T value) {
+            Option option = new Option(label, description, value);
+            option.icon = icon;
+            mOptions.add(option);
+            return this;
+        }
+
         public Choice<T> option(Context context, int labelRes, T value) {
             return option(context.getString(labelRes), value);
         }

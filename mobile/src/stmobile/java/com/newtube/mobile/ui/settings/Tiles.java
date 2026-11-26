@@ -109,6 +109,8 @@ final class Tiles {
     static final int YOU_GLOW_RGB = 48;
     // MEETUBE(youtube mode): a screen with a square-cornered video and the bar docked flat at its foot.
     static final int YOUTUBE_MODE = 49;
+    /** MEETUBE(launch): the option's own launch animation on the app's background; plays on show and on a tap. */
+    static final int SPLASH = 50;
 
     private static final float OFF_ALPHA = 0.55f;
 
@@ -224,8 +226,8 @@ final class Tiles {
 
             FrameLayout frame = new FrameLayout(context);
             ImageView picture = new ImageView(context);
-            boolean own = pictures[i] == ICON || pictures[i] == LOADER;
-            int picturePad = dp(context, own ? 14 : pictures[i] >= GLOW_WHITE ? 6 : 8);
+            boolean own = pictures[i] == ICON || pictures[i] == LOADER || pictures[i] == SPLASH;
+            int picturePad = dp(context, pictures[i] == SPLASH ? 0 : own ? 14 : pictures[i] >= GLOW_WHITE ? 6 : 8);
             picture.setPadding(picturePad, picturePad, picturePad, picturePad);
             picture.setScaleType(ImageView.ScaleType.FIT_CENTER);
             Drawable drawable = own ? ContextCompat.getDrawable(context, option.icon) : new Picture(context, pictures[i]);
@@ -237,6 +239,20 @@ final class Tiles {
                 picture.setBackground(new android.graphics.drawable.InsetDrawable(stage, dp(context, 6)));
                 if (drawable instanceof android.graphics.drawable.Animatable) {
                     ((android.graphics.drawable.Animatable) drawable).start();
+                }
+            }
+            if (pictures[i] == SPLASH) {
+                GradientDrawable stage = new GradientDrawable();
+                stage.setCornerRadius(dp(context, 12));
+                stage.setColor(ContextCompat.getColor(context, R.color.mobile_color_background));
+                picture.setBackground(new android.graphics.drawable.InsetDrawable(stage, dp(context, 4)));
+                if (drawable instanceof android.graphics.drawable.Animatable) {
+                    picture.post(((android.graphics.drawable.Animatable) drawable)::start);
+                } else { // Off: a plain icon, in the theme's text colour
+                    picture.setImageTintList(android.content.res.ColorStateList.valueOf(
+                            ContextCompat.getColor(context, R.color.mobile_color_on_surface_secondary)));
+                    int iconPad = dp(context, 30);
+                    picture.setPadding(iconPad, iconPad, iconPad, iconPad);
                 }
             }
             frame.addView(picture, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -279,6 +295,10 @@ final class Tiles {
             pressScale(tile, tile);
             tile.setOnClickListener(v -> {
                 bounce(frame);
+                if (pictures[which] == SPLASH && drawable instanceof android.graphics.drawable.Animatable) {
+                    ((android.graphics.drawable.Animatable) drawable).stop();
+                    ((android.graphics.drawable.Animatable) drawable).start();
+                }
                 if (which == row.currentIndex()) {
                     Haptics.tick(v);
                     return;

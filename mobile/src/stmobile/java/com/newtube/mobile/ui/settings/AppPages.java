@@ -212,6 +212,18 @@ final class AppPages {
                 .bind(() -> com.newtube.mobile.ui.common.AccentCard.style(context),
                         style -> com.newtube.mobile.ui.common.AccentCard.setStyle(context, style)));
 
+        // MEETUBE(launch): the animation played as the app opens.
+        rows.add(Tiles.of(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_launch_animation))
+                .option(context.getString(R.string.mobile_launch_glass_tile), context.getString(R.string.mobile_launch_glass_tile_desc), R.drawable.avd_splash_glass, com.newtube.mobile.ui.common.LaunchSplash.GLASS_TILE)
+                .option(context.getString(R.string.mobile_launch_glass_shadow), context.getString(R.string.mobile_launch_glass_shadow_desc), R.drawable.avd_splash_shadow, com.newtube.mobile.ui.common.LaunchSplash.GLASS_SHADOW)
+                .option(context.getString(R.string.mobile_launch_trace), context.getString(R.string.mobile_launch_trace_desc), R.drawable.avd_splash_trace, com.newtube.mobile.ui.common.LaunchSplash.TRACE)
+                .option(context.getString(R.string.mobile_launch_pill), context.getString(R.string.mobile_launch_pill_desc), R.drawable.avd_splash_pill, com.newtube.mobile.ui.common.LaunchSplash.PILL)
+                .option(context.getString(R.string.mobile_launch_ripple), context.getString(R.string.mobile_launch_ripple_desc), R.drawable.avd_splash_ripple, com.newtube.mobile.ui.common.LaunchSplash.RIPPLE)
+                .option(context.getString(R.string.mobile_launch_off), context.getString(R.string.mobile_launch_off_desc), R.drawable.ic_nav_home_outline, com.newtube.mobile.ui.common.LaunchSplash.OFF)
+                .bind(() -> com.newtube.mobile.ui.common.LaunchSplash.style(context),
+                        style -> com.newtube.mobile.ui.common.LaunchSplash.setStyle(context, style)),
+                96, Tiles.SPLASH, Tiles.SPLASH, Tiles.SPLASH, Tiles.SPLASH, Tiles.SPLASH, Tiles.SPLASH));
+
         // MEETUBE(rgb glow): the light in the You page's top left, the accent's by default.
         rows.add(Tiles.of(SettingsRow.<Boolean>choice(context.getString(R.string.mobile_settings_you_glow))
                 .option(context.getString(R.string.mobile_settings_tab_glow_accent),

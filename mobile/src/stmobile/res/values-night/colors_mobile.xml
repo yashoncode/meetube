@@ -63,8 +63,11 @@
     <!-- MEETUBE(glass): the frosted top bar - the page colour at ~75%. -->
     <color name="meetube_bar_tint">#B8000000</color>
     <color name="meetube_switch_off">#3A3A3F</color>
-    <color name="splash_mono">#FFFFFFFF</color>
-    <color name="splash_glass_start">#E6FFFFFF</color>
-    <color name="splash_glass_end">#59FFFFFF</color>
+    <color name="splash_tile_top">#29FFFFFF</color>
+    <color name="splash_tile_bottom">#08FFFFFF</color>
+    <color name="splash_rim_lit">#CCFFFFFF</color>
+    <color name="splash_rim_dim">#0FFFFFFF</color>
+    <color name="splash_rim_far">#52FFFFFF</color>
+    <color name="splash_sheen">#80FFFFFF</color>
     <color name="mobile_watch_fab_shadow">#FF000000</color>
 </resources>

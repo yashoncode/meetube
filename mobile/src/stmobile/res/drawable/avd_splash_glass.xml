@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MEETUBE(launch): the launch animation (LaunchSplash), the same for every app icon - a play symbol
-     pops in and turns to frosted glass, in black and white (splash_* colours: black on the light theme,
-     white on the dark): the solid symbol gives way to see-through glass, a milky frost, a rim and a top
-     gloss, and a light sheen sweeps across it. 800 ms in all, eased so the still splash flows into it. -->
+<!-- MEETUBE(launch): the launch animation (LaunchSplash), the same for every app icon - a rounded glass
+     tile settles in, the red play pops inside it and a light sheen crosses the glass. 480 ms in all. -->
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt">
     <aapt:attr name="android:drawable">
@@ -12,155 +10,156 @@
             android:viewportWidth="240"
             android:viewportHeight="240">
             <group
-                android:name="play"
+                android:name="tile_group"
                 android:pivotX="120"
                 android:pivotY="120"
-                android:scaleX="0.6"
-                android:scaleY="0.6">
+                android:scaleX="0.86"
+                android:scaleY="0.86">
                 <path
-                    android:name="solid"
-                    android:fillColor="@color/splash_mono"
-                    android:pathData="@string/splash_play_path" />
-                <path
-                    android:name="glass"
+                    android:name="tile"
                     android:fillAlpha="0"
-                    android:pathData="@string/splash_play_path">
+                    android:pathData="@string/splash_tile_path"
+                    android:strokeAlpha="0"
+                    android:strokeWidth="1.2">
                     <aapt:attr name="android:fillColor">
                         <gradient
-                            android:endColor="@color/splash_glass_end"
-                            android:endX="168"
-                            android:endY="162"
-                            android:startColor="@color/splash_glass_start"
-                            android:startX="96"
-                            android:startY="78"
+                            android:endColor="@color/splash_tile_bottom"
+                            android:endX="176"
+                            android:endY="176"
+                            android:startColor="@color/splash_tile_top"
+                            android:startX="64"
+                            android:startY="64"
                             android:type="linear" />
                     </aapt:attr>
+                    <aapt:attr name="android:strokeColor">
+                        <gradient
+                            android:endX="176"
+                            android:endY="176"
+                            android:startX="64"
+                            android:startY="64"
+                            android:type="linear">
+                            <item android:color="@color/splash_rim_lit" android:offset="0" />
+                            <item android:color="@color/splash_rim_dim" android:offset="0.55" />
+                            <item android:color="@color/splash_rim_far" android:offset="1" />
+                        </gradient>
+                    </aapt:attr>
                 </path>
+            </group>
+            <!-- The play symbol at half size, its optical centre (128,120) moved to the tile's centre. -->
+            <group
+                android:name="play"
+                android:pivotX="128"
+                android:pivotY="120"
+                android:scaleX="0.3"
+                android:scaleY="0.3"
+                android:translateX="-8">
                 <path
-                    android:name="frost"
+                    android:name="play_path"
                     android:fillAlpha="0"
-                    android:fillColor="#FFFFFFFF"
+                    android:fillColor="#FFFF453A"
                     android:pathData="@string/splash_play_path" />
-                <group android:name="inside">
-                    <clip-path android:pathData="@string/splash_play_path" />
-                    <path
-                        android:name="gloss"
-                        android:fillAlpha="0"
-                        android:pathData="M90,72 H170 V118 H90 Z">
+            </group>
+            <group android:name="glass">
+                <clip-path android:pathData="@string/splash_tile_path" />
+                <group android:name="sheen">
+                    <path android:pathData="M8.5,40 L38.5,40 L-7.4,200 L-37.4,200 Z">
                         <aapt:attr name="android:fillColor">
                             <gradient
-                                android:endColor="#00FFFFFF"
-                                android:endX="0"
-                                android:endY="118"
-                                android:startColor="#80FFFFFF"
-                                android:startX="0"
-                                android:startY="78"
-                                android:type="linear" />
+                                android:endX="38.5"
+                                android:endY="120"
+                                android:startX="-37.4"
+                                android:startY="120"
+                                android:type="linear">
+                                <item android:color="#00FFFFFF" android:offset="0" />
+                                <item android:color="@color/splash_sheen" android:offset="0.5" />
+                                <item android:color="#00FFFFFF" android:offset="1" />
+                            </gradient>
                         </aapt:attr>
                     </path>
-                    <group android:name="sheen">
-                        <path
-                            android:fillAlpha="0.5"
-                            android:fillColor="#FFFFFFFF"
-                            android:pathData="M60,60 L80,60 L56,180 L36,180 Z" />
-                    </group>
                 </group>
-                <path
-                    android:name="rim"
-                    android:pathData="@string/splash_play_path"
-                    android:strokeAlpha="0"
-                    android:strokeColor="@color/splash_mono"
-                    android:strokeLineJoin="round"
-                    android:strokeWidth="2" />
             </group>
         </vector>
     </aapt:attr>
 
-    <!-- 0-320 ms: the solid play symbol grows in. -->
-    <target android:name="play">
+    <!-- 0-280 ms: the tile settles in. -->
+    <target android:name="tile_group">
         <aapt:attr name="android:animation">
             <set>
                 <objectAnimator
-                    android:duration="320"
+                    android:duration="280"
                     android:interpolator="@android:interpolator/fast_out_slow_in"
                     android:propertyName="scaleX"
-                    android:valueFrom="0.6"
+                    android:valueFrom="0.86"
                     android:valueTo="1" />
                 <objectAnimator
-                    android:duration="320"
+                    android:duration="280"
                     android:interpolator="@android:interpolator/fast_out_slow_in"
                     android:propertyName="scaleY"
-                    android:valueFrom="0.6"
+                    android:valueFrom="0.86"
                     android:valueTo="1" />
             </set>
         </aapt:attr>
     </target>
-    <!-- 200-650 ms: the solid symbol melts into glass. -->
-    <target android:name="solid">
+    <target android:name="tile">
         <aapt:attr name="android:animation">
-            <objectAnimator
-                android:duration="450"
-                android:interpolator="@android:interpolator/fast_out_slow_in"
-                android:propertyName="fillAlpha"
-                android:startOffset="200"
-                android:valueFrom="1"
-                android:valueTo="0" />
+            <set>
+                <objectAnimator
+                    android:duration="280"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:propertyName="fillAlpha"
+                    android:valueFrom="0"
+                    android:valueTo="1" />
+                <objectAnimator
+                    android:duration="280"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:propertyName="strokeAlpha"
+                    android:valueFrom="0"
+                    android:valueTo="1" />
+            </set>
         </aapt:attr>
     </target>
-    <target android:name="glass">
+    <!-- 110-350 ms: the play pops in. -->
+    <target android:name="play">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="240"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:propertyName="scaleX"
+                    android:startOffset="110"
+                    android:valueFrom="0.3"
+                    android:valueTo="0.5" />
+                <objectAnimator
+                    android:duration="240"
+                    android:interpolator="@android:interpolator/fast_out_slow_in"
+                    android:propertyName="scaleY"
+                    android:startOffset="110"
+                    android:valueFrom="0.3"
+                    android:valueTo="0.5" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="play_path">
         <aapt:attr name="android:animation">
             <objectAnimator
-                android:duration="450"
+                android:duration="240"
                 android:interpolator="@android:interpolator/fast_out_slow_in"
                 android:propertyName="fillAlpha"
-                android:startOffset="200"
+                android:startOffset="110"
                 android:valueFrom="0"
                 android:valueTo="1" />
         </aapt:attr>
     </target>
-    <target android:name="frost">
-        <aapt:attr name="android:animation">
-            <objectAnimator
-                android:duration="450"
-                android:interpolator="@android:interpolator/fast_out_slow_in"
-                android:propertyName="fillAlpha"
-                android:startOffset="200"
-                android:valueFrom="0"
-                android:valueTo="0.16" />
-        </aapt:attr>
-    </target>
-    <target android:name="gloss">
-        <aapt:attr name="android:animation">
-            <objectAnimator
-                android:duration="450"
-                android:interpolator="@android:interpolator/fast_out_slow_in"
-                android:propertyName="fillAlpha"
-                android:startOffset="200"
-                android:valueFrom="0"
-                android:valueTo="1" />
-        </aapt:attr>
-    </target>
-    <target android:name="rim">
-        <aapt:attr name="android:animation">
-            <objectAnimator
-                android:duration="450"
-                android:interpolator="@android:interpolator/fast_out_slow_in"
-                android:propertyName="strokeAlpha"
-                android:startOffset="200"
-                android:valueFrom="0"
-                android:valueTo="0.9" />
-        </aapt:attr>
-    </target>
-    <!-- 300-800 ms: a sheen sweeps across the glass. -->
+    <!-- 160-480 ms: a sheen crosses the glass. -->
     <target android:name="sheen">
         <aapt:attr name="android:animation">
             <objectAnimator
-                android:duration="500"
+                android:duration="320"
                 android:interpolator="@android:interpolator/fast_out_slow_in"
                 android:propertyName="translateX"
-                android:startOffset="300"
+                android:startOffset="160"
                 android:valueFrom="0"
-                android:valueTo="140" />
+                android:valueTo="260" />
         </aapt:attr>
     </target>
 </animated-vector>

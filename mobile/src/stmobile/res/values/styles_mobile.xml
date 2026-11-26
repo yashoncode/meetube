@@ -155,6 +155,7 @@
     <string name="neon_ring_path" translatable="false">M12,4 A8,8 0 1,1 12,20 A8,8 0 1,1 12,4</string>
     <!-- The launch animation's play symbol (avd_splash_glass), round-cornered, centred in 240. -->
     <string name="splash_play_path" translatable="false">M96,88 L96,152 Q96,162 104.64,156.96 L159.36,125.04 Q168,120 159.36,114.96 L104.64,83.04 Q96,78 96,88 Z</string>
+    <string name="splash_tile_path" translatable="false">M96,64 L144,64 A32,32 0 0,1 176,96 L176,144 A32,32 0 0,1 144,176 L96,176 A32,32 0 0,1 64,144 L64,96 A32,32 0 0,1 96,64 Z</string>
 
     <style name="Widget.NewTube.Snackbar.Action" parent="Widget.MaterialComponents.Button.TextButton.Snackbar">
         <item name="android:textColor">@color/mobile_color_background</item>

@@ -110,11 +110,14 @@
     <color name="meetube_bar_tint">#C7FFFFFF</color>
     <color name="meetube_switch_off">#E3E3E8</color>
     <!-- MEETUBE(accent): the app's accent - switches and choice radios (a picker can come later). -->
-    <!-- MEETUBE(launch): the launch animation (avd_splash_glass) in the red accent (mobile_color_primary):
-         the solid play symbol, then its glass - deepest top-left, see-through bottom-right. White on night. -->
-    <color name="splash_mono">#FFFF453A</color>
-    <color name="splash_glass_start">#D9FF453A</color>
-    <color name="splash_glass_end">#59FF453A</color>
+    <!-- MEETUBE(launch): the launch animation (avd_splash_glass): a glass tile holding the red play.
+         Red-tinted glass on white, clear glass on night. -->
+    <color name="splash_tile_top">#1CFF453A</color>
+    <color name="splash_tile_bottom">#05FF453A</color>
+    <color name="splash_rim_lit">#99FF453A</color>
+    <color name="splash_rim_dim">#12FF453A</color>
+    <color name="splash_rim_far">#3DFF453A</color>
+    <color name="splash_sheen">#BFFFFFFF</color>
     <!-- MEETUBE(toasts): every message pill's glass and hairline - the app's (MobileSnackbar.style)
          and the player's over the video - one dark frost in both themes, white text. -->
     <color name="meetube_toast_glass">#A3303034</color>

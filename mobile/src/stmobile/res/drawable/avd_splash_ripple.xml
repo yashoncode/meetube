@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(launch): the red play pops and one glass ring ripples out from it and fades. 480 ms in all (LaunchSplash). -->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="240dp"
+            android:height="240dp"
+            android:viewportWidth="240"
+            android:viewportHeight="240">
+            <group android:name="wave" android:pivotX="120" android:pivotY="120" android:scaleX="0.75" android:scaleY="0.75">
+                <path android:name="wave_path" android:pathData="M68,120 a52,52 0 1,0 104,0 a52,52 0 1,0 -104,0"
+                    android:fillAlpha="0" android:strokeAlpha="0" android:strokeWidth="1.4">
+                    <aapt:attr name="android:fillColor">
+                        <gradient android:type="linear" android:startX="68" android:startY="68" android:endX="172" android:endY="172"
+                            android:startColor="@color/splash_tile_top" android:endColor="@color/splash_tile_bottom" />
+                    </aapt:attr>
+                    <aapt:attr name="android:strokeColor">
+                        <gradient android:type="linear" android:startX="68" android:startY="68" android:endX="172" android:endY="172">
+                            <item android:color="@color/splash_rim_lit" android:offset="0" />
+                            <item android:color="@color/splash_rim_dim" android:offset="0.55" />
+                            <item android:color="@color/splash_rim_far" android:offset="1" />
+                        </gradient>
+                    </aapt:attr>
+                </path>
+            </group>
+            <group android:name="play" android:pivotX="128" android:pivotY="120" android:translateX="-8"
+                android:scaleX="0.66" android:scaleY="0.66">
+                <path android:name="play_path" android:pathData="@string/splash_play_path" android:fillAlpha="0"
+                    android:fillColor="#FFFF453A" />
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="wave">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="440"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="scaleX"
+                android:startOffset="60"
+                android:valueFrom="0.75"
+                android:valueTo="1.55" />
+            <objectAnimator
+                android:duration="440"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="scaleY"
+                android:startOffset="60"
+                android:valueFrom="0.75"
+                android:valueTo="1.55" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="wave_path">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="440"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="fillAlpha"
+                android:startOffset="60"
+                android:valueFrom="0.9"
+                android:valueTo="0" />
+            <objectAnimator
+                android:duration="440"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="strokeAlpha"
+                android:startOffset="60"
+                android:valueFrom="0.9"
+                android:valueTo="0" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="play">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="240"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="scaleX"
+                android:valueFrom="0.396"
+                android:valueTo="0.66" />
+            <objectAnimator
+                android:duration="240"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="scaleY"
+                android:valueFrom="0.396"
+                android:valueTo="0.66" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="play_path">
+        <aapt:attr name="android:animation">
+            <set>
+            <objectAnimator
+                android:duration="240"
+                android:interpolator="@android:interpolator/fast_out_slow_in"
+                android:propertyName="fillAlpha"
+                android:valueFrom="0"
+                android:valueTo="1" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>
