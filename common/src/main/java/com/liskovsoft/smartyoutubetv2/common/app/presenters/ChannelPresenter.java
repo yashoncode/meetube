@@ -38,6 +38,7 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
     private Disposable mUpdateAction;
     private Disposable mScrollAction;
     private int mSortIdx;
+    private Disposable mSearchAction;
     private Disposable mSortAction;
     private Video mChannel;
     /** The running first-page load has put at least one item on screen. */
@@ -614,10 +615,29 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
         }
     }
 
+    /** MEETUBE(channel search): a search still loading never lands once the phone closed it. */
+    public void cancelSearch() {
+        if (RxHelper.isAnyActionRunning(mSearchAction)) {
+            RxHelper.disposeActions(mSearchAction);
+            LoadingManager.showLoading(getContext(), false);
+        }
+    }
+
     public boolean onSearchSubmit(String query) {
-        Observable<MediaGroup> search = getContentService().getChannelSearchObserve(getChannelId(), query);
-        Disposable result = search.subscribe(
+        return onSearchSubmit(getChannelId(), query, 112, null);
+    }
+
+    /**
+     * MEETUBE(channel search): the phone's search, by UC id; the results come as group {@code groupId}
+     * titled {@code title} (the phone passes its sort group's id, so the pill and paging just work).
+     */
+    public boolean onSearchSubmit(String channelId, String query, int groupId, String title) {
+        cancelSearch();
+        Observable<MediaGroup> search = getContentService().getChannelSearchObserve(channelId, query);
+        LoadingManager.showLoading(getContext(), true);
+        mSearchAction = search.subscribe(
                 items -> {
+                    LoadingManager.showLoading(getContext(), false);
                     if (getView() == null) {
                         return;
                     }
@@ -629,13 +649,22 @@ public class ChannelPresenter extends BasePresenter<ChannelView> implements Vide
                         return;
                     }
 
-                    update.setId(112);
+                    update.setId(groupId);
+                    if (title != null) {
+                        update.setTitle(title);
+                    }
                     update.setPosition(0);
                     update.setAction(VideoGroup.ACTION_REPLACE);
                     getView().update(update);
-                    getView().setPosition(1);
+                    if (title == null) {
+                        getView().setPosition(1); // the old row list; on the phone 1 is the Shorts tab
+                    }
                 },
-                error -> Log.e(TAG, "onSearchSubmit error: %s", error.getMessage())
+                error -> {
+                    Log.e(TAG, "onSearchSubmit error: %s", error.getMessage());
+                    LoadingManager.showLoading(getContext(), false);
+                    MessageHelpers.showMessage(getContext(), R.string.nothing_found);
+                }
         );
 
         return true;

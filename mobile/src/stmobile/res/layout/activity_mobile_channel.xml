@@ -150,6 +150,60 @@
             android:textStyle="bold"
             tools:text="Some Channel" />
 
+        <!-- MEETUBE(channel search): a magnifier pill; a tap grows it into a search field across
+             the bar (title and pills fade out), searching this channel's videos by name. -->
+        <LinearLayout
+            android:id="@+id/mobile_channel_search_box"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mobile_watch_pill_bg_touch"
+            android:clickable="true"
+            android:contentDescription="@string/mobile_channel_search"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp">
+
+            <ImageView
+                android:id="@+id/mobile_channel_search_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_mobile_search" />
+
+            <EditText
+                android:id="@+id/mobile_channel_search_field"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:defaultFocusHighlightEnabled="false"
+                android:hint="@string/mobile_channel_search_hint"
+                android:imeOptions="actionSearch|flagNoExtractUi"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:padding="0dp"
+                android:textColor="@color/mobile_color_on_surface"
+                android:textColorHint="@color/mobile_color_on_surface_secondary"
+                android:textCursorDrawable="@drawable/meetube_search_cursor"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/mobile_channel_search_close"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="-8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/mobile_channel_search_close"
+                android:padding="6dp"
+                android:src="@drawable/ic_sheet_close"
+                android:visibility="gone" />
+
+        </LinearLayout>
         <TextView
             android:id="@+id/mobile_channel_posts"
             android:layout_width="wrap_content"

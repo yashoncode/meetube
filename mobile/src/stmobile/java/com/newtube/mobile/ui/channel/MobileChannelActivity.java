@@ -114,6 +114,12 @@ public class MobileChannelActivity extends MobileActivity
     private static final int SORTED_GROUP_ID = 144;
     /** The tab the sort was asked from: the sorted videos replace its contents. */
     private int mSortTargetId = -1;
+    private View mSearchBox;
+    private android.widget.EditText mSearchField;
+    private boolean mSearchOpen;
+    /** MEETUBE(channel search): the searched tab as it was, put back when the search closes. */
+    @Nullable
+    private Section mSearchBackup;
     private MobileMiniPlayerController mMiniPlayer;
     private boolean mAnimateMiniFromPlayer;
     private SwipeRefreshLayout mSwipe;
@@ -179,6 +185,7 @@ public class MobileChannelActivity extends MobileActivity
                 mPresenter.onSearchSettingsClicked(sortChannelId()); // the Latest / Popular / Oldest picker
             }
         });
+        setupChannelSearch();
 
         mPresenter = ChannelPresenter.instance(this);
 
@@ -479,6 +486,141 @@ public class MobileChannelActivity extends MobileActivity
         String name = channel != null ? Helpers.firstNonNull(channel.getAuthor(), channel.getTitle()) : null;
         mTitleFromCard = name != null;
         mTitleView.setText(name != null ? name : getString(R.string.header_channels));
+    }
+
+    /**
+     * MEETUBE(channel search): the bar's magnifier pill grows into a search field (the title and
+     * pills fade out). YouTube's own search inside this channel fills the open tab like a sort;
+     * closing it (X or back) puts the tab back as it was.
+     */
+    private void setupChannelSearch() {
+        mSearchBox = findViewById(R.id.mobile_channel_search_box);
+        mSearchField = findViewById(R.id.mobile_channel_search_field);
+        mSearchBox.setOnClickListener(v -> setSearchOpen(true));
+        findViewById(R.id.mobile_channel_search_close).setOnClickListener(v -> setSearchOpen(false));
+        mSearchField.setOnEditorActionListener((v, action, event) -> {
+            if (event == null || event.getAction() == android.view.KeyEvent.ACTION_DOWN) { // Enter comes down and up
+                submitChannelSearch();
+            }
+            return true;
+        });
+        getOnBackPressedDispatcher().addCallback(this, mSearchBack);
+    }
+
+    private final androidx.activity.OnBackPressedCallback mSearchBack = new androidx.activity.OnBackPressedCallback(false) {
+        @Override
+        public void handleOnBackPressed() {
+            setSearchOpen(false);
+        }
+    };
+
+    private void setSearchOpen(boolean open) {
+        if (mSearchOpen == open) {
+            return;
+        }
+        mSearchOpen = open;
+        mSearchBack.setEnabled(open);
+        android.transition.TransitionSet morph = new android.transition.TransitionSet()
+                .addTransition(new android.transition.ChangeBounds())
+                .addTransition(new android.transition.Fade())
+                .setOrdering(android.transition.TransitionSet.ORDERING_TOGETHER)
+                .setDuration(340)
+                .setInterpolator(new androidx.interpolator.view.animation.FastOutSlowInInterpolator());
+        android.transition.TransitionManager.beginDelayedTransition(findViewById(R.id.mobile_channel_toolbar), morph);
+
+        int bar = open ? View.GONE : View.VISIBLE;
+        mTitleView.setVisibility(bar);
+        findViewById(R.id.mobile_channel_posts).setVisibility(bar);
+        Section active = mSections.get(mActiveSectionId);
+        findViewById(R.id.mobile_channel_sort).setVisibility(!open && active != null && !active.shorts ? View.VISIBLE : View.GONE);
+        mSearchField.setVisibility(open ? View.VISIBLE : View.GONE);
+        findViewById(R.id.mobile_channel_search_close).setVisibility(open ? View.VISIBLE : View.GONE);
+        mSearchBox.setClickable(!open);
+        android.widget.LinearLayout.LayoutParams lp = (android.widget.LinearLayout.LayoutParams) mSearchBox.getLayoutParams();
+        float dp = getResources().getDisplayMetrics().density;
+        lp.width = open ? 0 : android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+        lp.weight = open ? 1 : 0;
+        lp.setMarginEnd(Math.round((open ? 12 : 4) * dp));
+        mSearchBox.setLayoutParams(lp);
+
+        View icon = findViewById(R.id.mobile_channel_search_icon); // a little pop as it opens or closes
+        icon.setScaleX(0.5f);
+        icon.setScaleY(0.5f);
+        icon.animate().scaleX(1f).scaleY(1f).setDuration(380)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(3f)).start();
+
+        android.view.inputmethod.InputMethodManager ime =
+                (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (open) {
+            mSearchField.requestFocus();
+            mSearchField.postDelayed(() -> ime.showSoftInput(mSearchField, 0), 120);
+        } else {
+            ime.hideSoftInputFromWindow(mSearchField.getWindowToken(), 0);
+            mSearchField.setText(null);
+            mSearchField.clearFocus();
+            if (mPresenter != null) {
+                mPresenter.cancelSearch();
+            }
+            restoreSearchedTab();
+        }
+    }
+
+    private void submitChannelSearch() {
+        String query = mSearchField.getText().toString().trim();
+        String channelId = sortChannelId();
+        Section target = null; // the hits are videos: they land on the Videos tab (the first that isn't Shorts)
+        for (Section tab : mSections.values()) {
+            if (!tab.shorts) {
+                target = tab;
+                break;
+            }
+        }
+        if (query.isEmpty() || channelId == null || target == null || target.shorts || mPresenter == null) {
+            return;
+        }
+        ((android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(mSearchField.getWindowToken(), 0);
+        if (mSearchBackup != null && mSearchBackup.id != target.id) {
+            restoreSearchedTab();
+        }
+        if (mSearchBackup == null) { // the tab as it was, for closing the search
+            Section was = new Section(target.id, target.title);
+            was.videos.addAll(target.videos);
+            was.group = target.group;
+            was.sort = target.sort;
+            was.scroll = target.id == mActiveSectionId ? mLayoutManager.onSaveInstanceState() : target.scroll;
+            mSearchBackup = was;
+        }
+        mSortTargetId = target.id;
+        if (target.id != mActiveSectionId) {
+            for (int i = 0; i < mTabs.getTabCount(); i++) {
+                TabLayout.Tab tab = mTabs.getTabAt(i);
+                if (tab != null && tab.getTag() instanceof Integer && (Integer) tab.getTag() == target.id) {
+                    tab.select(); // to Videos now; the hits replace it when they come
+                    break;
+                }
+            }
+        }
+        // The header folds away, so the first hit sits right under the bar.
+        ((AppBarLayout) findViewById(R.id.mobile_channel_appbar)).setExpanded(false, true);
+        mPresenter.onSearchSubmit(channelId, query, SORTED_GROUP_ID, "“" + query + "”");
+    }
+
+    private void restoreSearchedTab() {
+        Section was = mSearchBackup;
+        mSearchBackup = null;
+        Section tab = was != null ? mSections.get(was.id) : null;
+        if (tab == null) {
+            return;
+        }
+        tab.videos.clear();
+        tab.videos.addAll(was.videos);
+        tab.group = was.group;
+        tab.sort = was.sort;
+        tab.scroll = was.scroll;
+        if (tab.id == mActiveSectionId) {
+            showActiveSection(true);
+        }
     }
 
     /** The channel's UC id: the presenter's, or (opened from an @handle link) its videos'. */
@@ -1099,14 +1241,19 @@ public class MobileChannelActivity extends MobileActivity
         sort.setText(active != null && active.sort != null ? active.sort : getString(R.string.mobile_channel_sort));
         // The sort's Latest / Popular / Oldest pages are the Videos tab's: on the Shorts tab they
         // were filtered down to Shorts, which left the tab empty.
-        sort.setVisibility(active != null && !active.shorts ? View.VISIBLE : View.GONE);
+        sort.setVisibility(active != null && !active.shorts && !mSearchOpen ? View.VISIBLE : View.GONE);
         if (restore) {
             mPendingScroll = active != null ? active.scroll : null;
         }
+        boolean top = restore && mPendingScroll == null;
         mAdapter.submitList(active != null ? new ArrayList<>(active.videos) : new ArrayList<>(), () -> {
             if (mPendingScroll != null) {
                 mLayoutManager.onRestoreInstanceState(mPendingScroll);
                 mPendingScroll = null;
+            } else if (top) {
+                // A new list (a sort, a search) starts at its first card: the diff otherwise keeps
+                // the old top card in place, leaving the grid in the middle of the new list.
+                mLayoutManager.scrollToPositionWithOffset(0, 0);
             }
             if (mPeekSwapPending) {
                 mPeekSwapPending = false;
@@ -1119,6 +1266,13 @@ public class MobileChannelActivity extends MobileActivity
         if (restore && mPendingScroll == null) {
             mGrid.scrollToPosition(0);
         }
+        // The picked tab in view: a sort or search result could leave the bar scrolled past it.
+        mTabs.post(() -> {
+            int selected = mTabs.getSelectedTabPosition();
+            if (selected >= 0) {
+                mTabs.setScrollPosition(selected, 0f, true);
+            }
+        });
     }
 
     // ---------------------------------------------------------------------------------
@@ -1249,6 +1403,7 @@ public class MobileChannelActivity extends MobileActivity
                     : ShortsFilter.isShortsSection(group.getTitle(), getString(R.string.header_shorts), group.getVideos());
             List<Video> shown = shortsTab ? shortsOf(group.getVideos())
                     : ShortsFilter.withoutShorts(group.getVideos()); // NEWTUBE(shorts)
+           
             if (id == SORTED_GROUP_ID && group.getAction() == VideoGroup.ACTION_REPLACE) {
                 Section target = mSections.get(mSortTargetId);
                 if (target != null && shown != null) {

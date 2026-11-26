@@ -224,6 +224,9 @@
     <string name="mobile_dialog_unavailable">Not available on mobile yet.</string>
     <string name="mobile_back">Back</string>
     <string name="mobile_search_hint">Search for videos</string>
+    <string name="mobile_channel_search">Search this channel</string>
+    <string name="mobile_channel_search_hint">Search this channel</string>
+    <string name="mobile_channel_search_close">Close search</string>
     <string name="mobile_search_button">Search</string>
     <string name="mobile_search_voice">Voice search</string>
     <!-- The NW arrow on a suggestion row: puts the text into the field without searching. -->
