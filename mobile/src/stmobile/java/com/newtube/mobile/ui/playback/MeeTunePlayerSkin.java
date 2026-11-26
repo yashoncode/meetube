@@ -2027,13 +2027,13 @@ public final class MeeTunePlayerSkin {
         MeeTune.flyToPill(f, mVideo, mControls.playing(), fly);
         if (!fly) {
             land();
-            mRoot.setTranslationY(f > 0f ? f * mRoot.getHeight() : 0f);
+            slide(f);
             return;
         }
         View text = (View) mTitle.getParent();
         if (!mFlying) {
             mFlying = true;
-            mRoot.setTranslationY(0f);
+            slide(0f);
             screenRect(mArt, mArtFrom);
             screenRect(text, mTextFrom);
             mTitle.setSelected(false); // the marquee back at the start, as the pill shows it
@@ -2048,7 +2048,9 @@ public final class MeeTunePlayerSkin {
         mArt.setScaleY(scale);
         mArt.setTranslationX((to.left - mArtFrom.left) * f);
         mArt.setTranslationY((to.top - mArtFrom.top) * f);
-        mArtCorner = 8 * density * clamped / scale;
+        // Card corners at once (a quarter of the way), easing to the pill's 8dp as it lands.
+        float corner = clamped < 0.25f ? 20 * clamped / 0.25f : 20 - 12 * (clamped - 0.25f) / 0.75f;
+        mArtCorner = corner * density / scale;
         mArt.invalidateOutline();
         ((FadeImage) mArt).setFade(1f - clamped); // its melting foot firms up into a tile
         float handoff = MeeTune.handoff(clamped); // the pill's own take over at the end
@@ -2090,7 +2092,11 @@ public final class MeeTunePlayerSkin {
             child.setTranslationX(72 * density * (1f - gone));
         }
         mRoot.findViewById(R.id.meetune_player_handle).setAlpha(gone);
-        float ground = Math.max(0f, 1f - 1.5f * f);
+        ground(Math.max(0f, 1f - 1.5f * f));
+    }
+
+    /** The page's backdrop (its colour and the blurred cover) at {@code ground}, 1 resting. */
+    private void ground(float ground) {
         mRoot.getBackground().mutate().setAlpha(Math.round(255 * ground));
         ViewGroup source = mRoot.findViewById(R.id.meetune_player_source);
         for (int i = 0; i < source.getChildCount(); i++) {
@@ -2180,8 +2186,51 @@ public final class MeeTunePlayerSkin {
     /** Back from the pill: the page that slid away comes back out of blur (any other resume: nothing). */
     void restore() {
         if (!isShown() || mRoot.getTranslationY() == 0f) return;
-        mRoot.setTranslationY(0f);
+        slide(0f);
         com.newtube.mobile.ui.common.Motion.frostIn(mRoot);
+    }
+
+    private boolean mSliding;
+    private float mSlideCorner;
+
+    /**
+     * Off the song's own page (lyrics, queue, games) there is no cover to fly: the page goes down
+     * after the finger, shrinking a little and fading, so it melts into the pill, not a slab sliding off.
+     */
+    private void slide(float f) {
+        if (f <= 0f) {
+            if (!mSliding) return;
+            mSliding = false;
+            mRoot.setTranslationY(0f);
+            mRoot.setScaleX(1f);
+            mRoot.setScaleY(1f);
+            mRoot.setAlpha(1f);
+            ground(1f);
+            mRoot.setClipToOutline(false);
+            mRoot.setOutlineProvider(android.view.ViewOutlineProvider.BACKGROUND);
+            return;
+        }
+        if (!mSliding) {
+            mRoot.setOutlineProvider(new android.view.ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, android.graphics.Outline outline) {
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), mSlideCorner);
+                }
+            });
+            mRoot.setClipToOutline(true);
+        }
+        mSliding = true;
+        // A card's rounded top as it goes, full in the first quarter.
+        mSlideCorner = 28 * mRoot.getResources().getDisplayMetrics().density * Math.min(1f, 4f * f);
+        mRoot.invalidateOutline();
+        ground(Math.max(0f, 1f - 3f * Math.min(1f, f))); // the backdrop first: no slab of it going down
+        float g = Math.min(1f, f);
+        mRoot.setPivotX(mRoot.getWidth() / 2f);
+        mRoot.setPivotY(0f);
+        mRoot.setTranslationY(f * mRoot.getHeight() * 0.6f);
+        mRoot.setScaleX(1f - 0.08f * g);
+        mRoot.setScaleY(1f - 0.08f * g);
+        mRoot.setAlpha(Math.max(0f, 1f - 1.4f * g));
     }
 
     /** The heart is YouTube Music's like (MeeTube's video like never takes for a song). */

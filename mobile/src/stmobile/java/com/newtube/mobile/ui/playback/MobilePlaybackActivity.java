@@ -8880,6 +8880,8 @@ public class MobilePlaybackActivity extends MobileActivity
             // (sound-only) video box it covered would fly to a card corner the pill is not at.
             mMeeTune.follow(f);
             mVideoArea.setAlpha(f > 0f ? 0f : 1f);
+            // Nor the video's page under it: fading by itself, it showed through the music page's.
+            contentAlpha = f > 0f ? 0f : 1f;
         }
         if (mWatchContent != null) {
             mWatchContent.setAlpha(contentAlpha);
