@@ -3480,8 +3480,10 @@ public class MobilePlaybackActivity extends MobileActivity
             mActionsToggle.setContentDescription(getString(actions
                     ? R.string.mobile_player_hide_actions : R.string.mobile_player_show_actions));
         }
-        // MEETUBE(issue #271): MeeTube's fullscreen only (not songs, Shorts or a locked player).
-        boolean pills = !inline && !mLockedChrome && !meeTuneSong() && !isShortsMode();
+        // MEETUBE(issue #271): fullscreen, and the normal player unless Customize > Player buttons
+        // turns it off there (not songs, Shorts or a locked player).
+        boolean pills = (!inline || WatchLook.isShown(this, "mobile_player_pills_inline"))
+                && !mLockedChrome && !meeTuneSong() && !isShortsMode();
         mSpeedPill.setVisibility(pills && WatchLook.isShown(this, "mobile_player_speed_pill") ? View.VISIBLE : View.GONE);
         mQualityPill.setVisibility(pills && WatchLook.isShown(this, "mobile_player_quality_pill") ? View.VISIBLE : View.GONE);
         updateFullscreenPills();

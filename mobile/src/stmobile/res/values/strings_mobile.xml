@@ -115,6 +115,8 @@
     <string name="mobile_settings_player_buttons_center">Center</string>
     <string name="mobile_settings_player_buttons_fullscreen">Fullscreen actions</string>
     <string name="mobile_settings_player_prev_next">Previous and next</string>
+    <string name="mobile_settings_player_buttons_inline">Normal player</string>
+    <string name="mobile_settings_player_inline_pills">Speed and quality</string>
     <string name="mobile_player_lock">Screen lock</string>
     <string name="mobile_player_locked">Locked · tap to unlock</string>
     <string name="mobile_transcript">Transcript</string>

@@ -544,6 +544,10 @@ final class AppPages {
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_center)));
         playerButton(context, rows, R.string.mobile_settings_player_prev_next, "mobile_player_previous", "mobile_player_next");
 
+        // The speed and quality pills outside fullscreen too; on by default.
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_inline)));
+        playerButton(context, rows, R.string.mobile_settings_player_inline_pills, "mobile_player_pills_inline");
+
         rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_player_buttons_fullscreen)));
         playerButton(context, rows, R.string.mobile_watch_like, "mobile_player_like");
         playerButton(context, rows, R.string.mobile_watch_dislike, "mobile_player_dislike");
