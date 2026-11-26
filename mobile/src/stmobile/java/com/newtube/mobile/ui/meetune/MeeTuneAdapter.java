@@ -304,7 +304,10 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 break;
             case HEADER:
                 view = inflater.inflate(R.layout.meetune_page_header, parent, false);
-                view.findViewById(R.id.meetune_hero).getLayoutParams().height = Math.round(parent.getWidth() * 0.9f);
+                fitHero(view.findViewById(R.id.meetune_hero), parent);
+                view.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+                    if (r - l != or - ol) v.post(() -> fitHero(v.findViewById(R.id.meetune_hero), parent)); // turned
+                });
                 break;
             case VIEW:
                 view = new android.widget.FrameLayout(parent.getContext());
@@ -426,6 +429,24 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
      * The page's head: its cover across the top (up under the bar, fading into the page), name,
      * artist, what it is, and its buttons.
      */
+    /**
+     * A phone upright: the cover across the top, 0.9 of the width tall. Wide (a tablet, landscape) that
+     * filled the screen, so it is a square cover in the middle at most 55% of the height, its edges melting into the page.
+     */
+    private static void fitHero(View hero, ViewGroup parent) {
+        int width = parent.getWidth();
+        int cap = Math.round(parent.getHeight() * 0.55f);
+        boolean wide = cap > 0 && width * 0.9f > cap;
+        ViewGroup.LayoutParams params = hero.getLayoutParams();
+        int w = wide ? Math.round(cap / 0.9f) : ViewGroup.LayoutParams.MATCH_PARENT;
+        int h = wide ? cap : Math.round(width * 0.9f);
+        ((com.newtube.mobile.ui.playback.MeeTunePlayerSkin.FadeImage) hero).setFeather(wide);
+        if (params.width == w && params.height == h) return;
+        params.width = w;
+        params.height = h;
+        hero.setLayoutParams(params);
+    }
+
     private void bindHead(View view, Row row) {
         MusicApi.Item head = row.item;
         ImageView hero = view.findViewById(R.id.meetune_hero);

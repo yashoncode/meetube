@@ -233,7 +233,7 @@ public final class MeeTunePlayerSkin {
         mArt.setOutlineProvider(new android.view.ViewOutlineProvider() { // round as it lands on the pill
             @Override
             public void getOutline(View view, android.graphics.Outline outline) {
-                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), mArtCorner);
+                outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), Math.max(mArtCorner, mArtRest));
             }
         });
         mArt.setClipToOutline(true);
@@ -274,6 +274,11 @@ public final class MeeTunePlayerSkin {
             padPageTop();
         });
         mControlsColumn.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> padPage());
+        mButtonRow = (View) mRoot.findViewById(R.id.meetune_player_queue).getParent().getParent().getParent();
+        mRoot.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            applyLand();
+            if (mLand) mRoot.post(this::fitArt); // the handle may have moved (status bar): the card stays under it
+        });
         mRoot.getViewTreeObserver().addOnPreDrawListener(() -> {
             footLyrics();
             return true;
@@ -1009,6 +1014,10 @@ public final class MeeTunePlayerSkin {
     private float mArtShape = 1f;
 
     private void fitArt() {
+        if (mLand) {
+            fitLandArt();
+            return;
+        }
         int width = mArt.getWidth();
         if (width == 0) return;
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mArt.getLayoutParams();
@@ -1021,6 +1030,110 @@ public final class MeeTunePlayerSkin {
             params.height = height;
             params.topMargin = top;
             mArt.setLayoutParams(params);
+        }
+    }
+
+    // ----------------------------------------------------------------------------- landscape
+
+    /** Turned sideways: the cover a card on the left, the song, its controls and lyrics, cast and queue on the right. */
+    private boolean mLand;
+    private int mLandWidth;
+    private float mArtRest;
+    private View mButtonRow;
+
+    private void applyLand() {
+        boolean land = mRoot.getResources().getConfiguration().orientation
+                == android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+        int width = mRoot.getWidth();
+        if (width == 0 || (land == mLand && (!land || width == mLandWidth))) return;
+        boolean turned = land != mLand;
+        mLand = land;
+        mLandWidth = width;
+        float dp = mRoot.getResources().getDisplayMetrics().density;
+        Insets bars = bars();
+        int half = width / 2;
+        if (turned) {
+            int gone = land ? View.GONE : View.VISIBLE;
+            ((View) mRoot.findViewById(R.id.meetune_player_mode).getParent().getParent()).setVisibility(gone);
+            mRoot.findViewById(R.id.meetune_player_focus).setVisibility(gone);
+            mRoot.findViewById(R.id.meetune_player_info).setVisibility(land || mFocus ? View.GONE : View.VISIBLE);
+            mRoot.findViewById(R.id.meetune_player_format_space).setVisibility(land || mMode != NORMAL ? View.GONE : View.INVISIBLE);
+            // smaller transport, so the column fits the short side
+            sizeView(mRoot.findViewById(R.id.meetune_player_previous), Math.round((land ? 64 : 96) * dp));
+            sizeView(mRoot.findViewById(R.id.meetune_player_next), Math.round((land ? 64 : 96) * dp));
+            sizeView(mPlay, Math.round((land ? 84 : 124) * dp));
+            for (int i = 0; i < ((ViewGroup) mButtonRow).getChildCount(); i++) { // the glass buttons a little smaller
+                sizeView(((ViewGroup) ((ViewGroup) mButtonRow).getChildAt(i)).getChildAt(0), Math.round((land ? 40 : 48) * dp));
+            }
+            // under the volume, spread across the right half; a little closer to it so a phone's short side holds it all
+            ((ViewGroup.MarginLayoutParams) mButtonRow.getLayoutParams()).topMargin = Math.round((land ? 10 : 16) * dp);
+            mButtonRow.requestLayout();
+            ((FadeImage) mArt).setFeather(!land);
+            ((FadeImage) mArt).setFade(land ? 0f : 1f);
+            mArtRest = land ? 20 * dp : 0f;
+            mArt.invalidateOutline();
+            if (!land) {
+                mRoot.findViewById(R.id.meetune_player_handle).setTranslationX(0f);
+                ViewGroup.MarginLayoutParams art = (ViewGroup.MarginLayoutParams) mArt.getLayoutParams();
+                art.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                art.leftMargin = 0;
+                mArt.setLayoutParams(art);
+            }
+        }
+        android.widget.FrameLayout.LayoutParams column = (android.widget.FrameLayout.LayoutParams) mControlsColumn.getLayoutParams();
+        column.width = land ? width - half - bars.right : ViewGroup.LayoutParams.MATCH_PARENT;
+        column.gravity = land ? android.view.Gravity.END | android.view.Gravity.CENTER_VERTICAL : android.view.Gravity.BOTTOM;
+        column.rightMargin = land ? bars.right : 0;
+        mControlsColumn.setLayoutParams(column);
+        android.widget.FrameLayout.LayoutParams page = (android.widget.FrameLayout.LayoutParams) mPage.getLayoutParams();
+        page.width = land ? half : ViewGroup.LayoutParams.MATCH_PARENT;
+        page.gravity = android.view.Gravity.START;
+        page.leftMargin = land ? bars.left : 0;
+        mPage.setLayoutParams(page);
+        mRoot.post(this::fitArt);
+        padPage();
+    }
+
+    private static void sizeView(View view, int size) {
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.width = size;
+        params.height = size;
+        view.setLayoutParams(params);
+    }
+
+    private Insets bars() {
+        android.view.WindowInsets window = mRoot.getRootWindowInsets();
+        if (window == null) return Insets.NONE;
+        WindowInsetsCompat compat = WindowInsetsCompat.toWindowInsetsCompat(window);
+        return Insets.max(compat.getInsets(WindowInsetsCompat.Type.systemBars()),
+                compat.getInsets(WindowInsetsCompat.Type.displayCutout()));
+    }
+
+    /** The card in the middle of the left half. */
+    private void fitLandArt() {
+        int width = mRoot.getWidth();
+        int height = mRoot.getHeight();
+        if (width == 0 || height == 0) return;
+        float dp = mRoot.getResources().getDisplayMetrics().density;
+        Insets bars = bars();
+        int left = bars.left;
+        int half = width / 2 - left;
+        // The handle over the card, not the screen's middle (it ran into the title on the right); the card under it.
+        View handle = mRoot.findViewById(R.id.meetune_player_handle);
+        int top = handle.getTop() + Math.round(handle.getTranslationY()) + handle.getHeight() + Math.round(14 * dp);
+        int bottom = bars.bottom + Math.round(12 * dp);
+        int side = Math.max(0, Math.min(height - top - bottom, half - Math.round(56 * dp)));
+        int artHeight = Math.round(side * mArtShape); // a wide video still whole
+        int y = top + Math.max(0, (height - top - bottom - artHeight) / 2);
+        int x = left + (half - side) / 2;
+        handle.setTranslationX(x + side / 2f - (handle.getLeft() + handle.getWidth() / 2f));
+        ViewGroup.MarginLayoutParams art = (ViewGroup.MarginLayoutParams) mArt.getLayoutParams();
+        if (art.width != side || art.height != artHeight || art.leftMargin != x || art.topMargin != y) {
+            art.width = side;
+            art.height = artHeight;
+            art.leftMargin = x;
+            art.topMargin = y;
+            mArt.setLayoutParams(art);
         }
     }
 
@@ -1492,7 +1605,7 @@ public final class MeeTunePlayerSkin {
             fade(mArt, !lyrics);
             fade(mPage, lyrics);
             mTitleRow.setVisibility(lyrics ? View.GONE : View.VISIBLE);
-            mRoot.findViewById(R.id.meetune_player_format_space).setVisibility(lyrics ? View.GONE : View.INVISIBLE); // the title row's spacer
+            mRoot.findViewById(R.id.meetune_player_format_space).setVisibility(lyrics || mLand ? View.GONE : View.INVISIBLE); // the title row's spacer
         }
         int pad = mLyricsButton.getPaddingLeft(); // setBackground swaps in the drawable's padding: keep the icon's 12dp
         mLyricsButton.setBackground(lyrics && !subpage
@@ -1832,7 +1945,7 @@ public final class MeeTunePlayerSkin {
                 new android.transition.AutoTransition().setOrdering(android.transition.TransitionSet.ORDERING_TOGETHER)
                         .setDuration(360).setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD));
         mRoot.findViewById(R.id.meetune_player_volume_row).setVisibility(on ? View.GONE : View.VISIBLE);
-        mRoot.findViewById(R.id.meetune_player_info).setVisibility(on ? View.GONE : View.VISIBLE);
+        mRoot.findViewById(R.id.meetune_player_info).setVisibility(on || mLand ? View.GONE : View.VISIBLE);
         mRoot.findViewById(R.id.meetune_player_focus).animate().rotation(on ? 180f : 0f).setDuration(360)
                 .setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD).start();
         // On the lyrics page that is all: the column shrinks and the lines take its room (padPage).
@@ -1868,7 +1981,7 @@ public final class MeeTunePlayerSkin {
 
     private void padPage() {
         int bottom = mControlsColumn.getPaddingBottom();
-        int under = mMode == FULL ? 0 : mControlsColumn.getHeight() - bottom;
+        int under = mMode == FULL || mLand ? 0 : mControlsColumn.getHeight() - bottom; // landscape: the controls are beside the lines
         int lines = Math.round(28 * mRoot.getResources().getDisplayMetrics().density) + under;
         // Read now, in the layout: by the post a focus transition has put the column back at its old
         // bounds to animate them, and the board kept that stale height (the seek bar sat on it).
@@ -1876,7 +1989,7 @@ public final class MeeTunePlayerSkin {
         mPage.post(() -> {
             // Games need the whole board in reach, above the controls; it grows into the room the
             // folded volume leaves, sliding with the column (setFocus). The scrolling pages fade under them.
-            int pageBottom = mMode == GAMES ? column : bottom;
+            int pageBottom = mLand ? bars().bottom : mMode == GAMES ? column : bottom;
             boolean sliding = mGamesPad != null && mGamesPad.isRunning();
             if (sliding && mGamesPadTo == pageBottom) {
                 // its own frames lay out again; let it run
@@ -1904,7 +2017,12 @@ public final class MeeTunePlayerSkin {
     /** Every frame: the lines fade out where the controls' top is now, even mid-slide. */
     private void footLyrics() {
         if (mPage.getVisibility() != View.VISIBLE) return;
-        int foot = mMode == FULL ? -1 : mControlsColumn.getTop() + Math.round(mControlsColumn.getTranslationY())
+        if (mLand) { // the controls are beside the lines, not over them
+            ((LyricsScroll) mLyricsScroll).setFoot(-1);
+            ((QueueList) mQueueList).setFoot(-1);
+            return;
+        }
+        int foot =mMode == FULL ? -1 : mControlsColumn.getTop() + Math.round(mControlsColumn.getTranslationY())
                 - mPage.getTop() - mLyricsScroll.getTop();
         ((LyricsScroll) mLyricsScroll).setFoot(foot);
         ((QueueList) mQueueList).setFoot(mMode == FULL ? -1 : mControlsColumn.getTop() + Math.round(mControlsColumn.getTranslationY())
@@ -2028,6 +2146,8 @@ public final class MeeTunePlayerSkin {
         View text = (View) mTitle.getParent();
         if (!mFlying) {
             mFlying = true;
+            // The name flies out of its column (landscape: the right half), which cut it off at the middle.
+            ((ViewGroup) mRoot).setClipChildren(false);
             slide(0f);
             screenRect(mArt, mArtFrom);
             screenRect(text, mTextFrom);
@@ -2116,13 +2236,14 @@ public final class MeeTunePlayerSkin {
     private void land() {
         if (!mFlying) return;
         mFlying = false;
+        ((ViewGroup) mRoot).setClipChildren(true);
         mArt.setScaleX(1f);
         mArt.setScaleY(1f);
         mArt.setTranslationX(0f);
         mArt.setTranslationY(0f);
         mArtCorner = 0f;
         mArt.invalidateOutline();
-        ((FadeImage) mArt).setFade(1f);
+        ((FadeImage) mArt).setFade(mLand ? 0f : 1f);
         mArt.setAlpha(1f);
         View text = (View) mTitle.getParent();
         text.setAlpha(1f);
@@ -2571,7 +2692,7 @@ public final class MeeTunePlayerSkin {
         private final Shader[] mEdges = new Shader[4];
 
         /** The music player's cover: every edge of the picture melts into the ambient, never a hard line. */
-        void setFeather(boolean feather) {
+        public void setFeather(boolean feather) {
             mFeather = feather;
             mEdge.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
             invalidate();
