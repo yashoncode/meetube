@@ -4273,6 +4273,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 }) : null;
         com.newtube.mobile.ui.meetune.MeeTuneSongMenu.showForPlayer(this, video,
                 () -> getOnBackPressedDispatcher().onBackPressed(), upgrade,
+                new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_meetune_games,
+                        R.string.meetune_games, () -> mMeeTune.openGames(this)),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_sleep_timer,
                         R.string.mobile_player_sleep_timer, this::showSleepTimerSheet),
                 new com.newtube.mobile.ui.meetune.MeeTuneSongMenu.Row(R.drawable.ic_player_speed,
@@ -8156,7 +8158,7 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         mSwipeDownRawX = downRawX;
         if (mMeeTune != null && mMeeTune.isShown()) { // MEETUNE: the music look only swipes down, to minimize
-            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag() && !mMeeTune.holdsSwipeDown()
+            return direction == PlayerContainerLayout.DOWN && canStartDismissDrag() && !mMeeTune.holdsSwipeDown(downRawX, downRawY)
                     ? SWIPE_MINIMIZE : PlayerContainerLayout.SWIPE_NONE;
         }
         boolean vertical = direction == PlayerContainerLayout.UP || direction == PlayerContainerLayout.DOWN;

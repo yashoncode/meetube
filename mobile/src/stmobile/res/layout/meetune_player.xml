@@ -78,6 +78,7 @@
     <!-- The queue page's way back to the player, where the handle is on the others. -->
     <ImageView
         android:id="@+id/meetune_player_queue_close"
+        android:theme="@style/ThemeOverlay.NewTube.PlayerChrome"
         android:layout_width="44dp"
         android:layout_height="40dp"
         android:layout_gravity="top|start"
@@ -87,7 +88,7 @@
         android:padding="8dp"
         android:rotation="90"
         android:src="@drawable/ic_chevron_right"
-        android:tint="@android:color/white"
+        android:tint="?android:attr/textColorPrimary"
         android:visibility="gone" />
 
     <!-- Lyrics: the song small at the top, the synced lines under it down to the controls (or the
@@ -216,6 +217,16 @@
                 android:paddingBottom="28dp" />
 
         </view>
+
+        <ViewStub
+            android:id="@+id/meetune_player_games_stub"
+            android:inflatedId="@+id/meetune_player_games_page"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginBottom="4dp"
+            android:layout="@layout/meetune_games_page" />
 
         <!-- Queue: the song small at the top as on Lyrics, then what plays now and next. -->
         <LinearLayout

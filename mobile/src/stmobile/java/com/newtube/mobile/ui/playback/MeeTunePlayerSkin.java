@@ -23,10 +23,14 @@ import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.media3.common.Format;
 import androidx.media3.common.MimeTypes;
 
@@ -38,6 +42,7 @@ import com.newtube.mobile.ui.common.GlassView;
 import com.newtube.mobile.ui.common.GlowProgressBar;
 import com.newtube.mobile.ui.common.Haptics;
 import com.newtube.mobile.ui.meetune.MeeTune;
+import com.newtube.mobile.ui.meetune.games.GamesPage;
 
 import java.util.List;
 import java.util.Locale;
@@ -107,6 +112,13 @@ public final class MeeTunePlayerSkin {
     private static final int LYRICS = 1; // the lyrics over the controls
     private static final int FULL = 2; // the lyrics, the whole page
     private static final int QUEUE = 3; // what plays now and next, over the bar
+    private static final int GAMES = 4;
+    @Nullable private GamesPage mGamesPage;
+    private final OnBackPressedCallback mGamesBack = new OnBackPressedCallback(false) {
+        @Override public void handleOnBackPressed() {
+            backFromGames();
+        }
+    };
     private static final long LEAD_MS = 300; // as LyricsSheet: a line lights as it starts
     private static final long HANDS_OFF_MS = 4_000;
     private int mMode = NORMAL;
@@ -197,7 +209,10 @@ public final class MeeTunePlayerSkin {
         mQueueList.setAdapter(mQueue);
         mQueueList.setItemAnimator(null); // the dragged row moves by itself; a refresh never cross-fades
         mQueueDrag.attachToRecyclerView(mQueueList);
-        mQueueClose.setOnClickListener(v -> setMode(NORMAL));
+        mQueueClose.setOnClickListener(v -> {
+            if (mMode == GAMES) backFromGames();
+            else setMode(NORMAL);
+        });
         mQueueSearch.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
@@ -256,10 +271,7 @@ public final class MeeTunePlayerSkin {
             int below = Math.max(0, top - (at[1] - Math.round(mRoot.getTranslationY())));
             handle.setTranslationY(below);
             mQueueClose.setTranslationY(below);
-            int pageTop = below + Math.round((mMode == QUEUE ? 46 : 36) * context.getResources().getDisplayMetrics().density);
-            if (mPage.getPaddingTop() != pageTop) {
-                mPage.setPadding(0, pageTop, 0, mPage.getPaddingBottom());
-            }
+            padPageTop();
         });
         mControlsColumn.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> padPage());
         mRoot.getViewTreeObserver().addOnPreDrawListener(() -> {
@@ -297,7 +309,18 @@ public final class MeeTunePlayerSkin {
                 mControls.more();
             }
         });
-        mLineRow.setOnClickListener(v -> setMode(LYRICS));
+        mLineRow.setOnClickListener(v -> {
+            if (!mGamesHint) {
+                setMode(LYRICS);
+                return;
+            }
+            endGamesHint();
+            Context host = v.getContext();
+            while (host instanceof android.content.ContextWrapper && !(host instanceof ComponentActivity)) {
+                host = ((android.content.ContextWrapper) host).getBaseContext();
+            }
+            if (host instanceof ComponentActivity) openGames((ComponentActivity) host);
+        });
         mRoot.findViewById(R.id.meetune_player_focus).setOnClickListener(v -> setFocus(!mFocus));
         mLyricLines.setOnClickListener(v -> setMode(mMode == FULL ? LYRICS : FULL)); // a tap: the whole page, and back
         mLyricsScroll.setOnTouchListener((v, event) -> {
@@ -1068,6 +1091,7 @@ public final class MeeTunePlayerSkin {
         ((EqBars) mRoot.findViewById(R.id.meetune_player_eq)).setColor(accent);
         mAccent = accent;
         if (mQueueBars != null) mQueueBars.setColor(accent);
+        if (mGamesPage != null) mGamesPage.setAccent(accent);
         tintInfoPill(accent);
         Float at = SWUNG.get(mArt);
         if (at != null && Math.abs(at) >= 0.99f) { // it left: come in from the other side
@@ -1184,6 +1208,7 @@ public final class MeeTunePlayerSkin {
         mLine.setText(null);
         mLine.setAlpha(0f);
         ((ViewGroup) mLineRow).getChildAt(1).setAlpha(0f);
+        mGamesHint = false;
         mLyricsHeld = true;
         mLyricsHeldAt = android.os.SystemClock.uptimeMillis();
         mLyrics = null;
@@ -1297,6 +1322,29 @@ public final class MeeTunePlayerSkin {
         if (lyricsLoading()) showLine(context.getString(R.string.meetune_lyrics_coming));
         else showLine(""); // the sung line (if timed) comes in on the next follow
         followLyrics(mControls.position());
+        if (mLyricsAsked && (mLyrics == null || mLyrics.lines.isEmpty()) && mMode == NORMAL) offerGames();
+    }
+
+    private boolean mGamesHint;
+    @Nullable private String mGamesHintFor;
+
+    /** No lyrics to read: for 6 s the line over the bar offers the games instead (once a song). */
+    private void offerGames() {
+        String id = mVideoId;
+        if (id == null || id.equals(mGamesHintFor)) return;
+        mGamesHintFor = id;
+        mGamesHint = true;
+        mLineRow.setVisibility(View.VISIBLE);
+        showLine(mRoot.getContext().getString(R.string.meetune_games_offer));
+        mLineRow.postDelayed(() -> {
+            if (mGamesHint && id.equals(mVideoId)) endGamesHint();
+        }, 6000);
+    }
+
+    private void endGamesHint() {
+        if (!mGamesHint) return;
+        mGamesHint = false;
+        showLine(""); // fades out; the empty row stays, as INVISIBLE would, so nothing moves
     }
 
     private boolean lyricsLoading() {
@@ -1305,7 +1353,9 @@ public final class MeeTunePlayerSkin {
 
     /** The sung line's row keeps its room on the normal page, lyrics or not, so the title and bar never move. */
     private int lineRowVisibility(int mode) {
-        if (mode == QUEUE) return timed() ? View.VISIBLE : View.GONE; // the sung line over the bar, as on the queue's foot
+        // Games: its room always (two lines, fixed), so the board is one size whatever the song is.
+        if (mode == GAMES) return timed() ? View.VISIBLE : View.INVISIBLE;
+        if (mode == QUEUE) return timed() ? View.VISIBLE : View.GONE;
         return mode != NORMAL ? View.GONE : timed() || lyricsLoading() ? View.VISIBLE : View.INVISIBLE;
     }
 
@@ -1390,6 +1440,41 @@ public final class MeeTunePlayerSkin {
         }
     }
 
+    void openGames(ComponentActivity activity) {
+        if (!isShown()) return;
+        if (mGamesPage == null) {
+            android.view.ViewStub stub = mRoot.findViewById(R.id.meetune_player_games_stub);
+            mGamesPage = (GamesPage) stub.inflate();
+            mGamesPage.setAccent(mAccent);
+            mGamesPage.setOnSelectionChanged(this::updateCloseLabel);
+            mGamesPage.setOnBack(this::backFromGames);
+            activity.getOnBackPressedDispatcher().addCallback(activity, mGamesBack);
+            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+                @Override public void onPause(LifecycleOwner owner) {
+                    mGamesPage.pauseGame();
+                }
+            });
+        }
+        setMode(GAMES);
+    }
+
+    private void backFromGames() {
+        if (mGamesPage.hasGame()) mGamesPage.closeGame();
+        else setMode(NORMAL);
+    }
+
+    private void updateCloseLabel() {
+        int label = mMode != GAMES ? R.string.meetune_queue_close : mGamesPage.hasGame()
+                ? R.string.meetune_games_return_picker : R.string.meetune_games_return_song;
+        mQueueClose.setContentDescription(mRoot.getResources().getString(label));
+    }
+
+    private void padPageTop() {
+        int height = mMode == QUEUE || mMode == GAMES ? 46 : 36;
+        int top = Math.round(mQueueClose.getTranslationY() + height * mRoot.getResources().getDisplayMetrics().density);
+        if (mPage.getPaddingTop() != top) mPage.setPadding(0, top, 0, mPage.getPaddingBottom());
+    }
+
     /**
      * NORMAL: the big art and the song over the controls. LYRICS: the song moves up small with its
      * star and More, the lines between it and the controls. FULL: the lines take the whole page
@@ -1399,11 +1484,16 @@ public final class MeeTunePlayerSkin {
         if (mode == mMode) return;
         int from = mMode;
         boolean queue = mode == QUEUE;
-        if ((mode != NORMAL) != (from != NORMAL) || queue != (from == QUEUE)) {
+        boolean games = mode == GAMES;
+        boolean subpage = queue || games;
+        boolean wasSubpage = from == QUEUE || from == GAMES;
+        if ((mode != NORMAL) != (from != NORMAL) || subpage != wasSubpage) {
             setFocus(false); // each page's focus lays out differently: undo it in the old one
         }
         mMode = mode;
-        boolean lyrics = mode != NORMAL; // the small song at the top: lyrics or queue under it
+        mGamesBack.setEnabled(games);
+        if (from == GAMES) mGamesPage.closeGame();
+        boolean lyrics = mode != NORMAL;
         if (lyrics != (from != NORMAL)) {
             fade(mArt, !lyrics);
             fade(mPage, lyrics);
@@ -1411,18 +1501,21 @@ public final class MeeTunePlayerSkin {
             mRoot.findViewById(R.id.meetune_player_format_space).setVisibility(lyrics ? View.GONE : View.INVISIBLE); // the title row's spacer
         }
         int pad = mLyricsButton.getPaddingLeft(); // setBackground swaps in the drawable's padding: keep the icon's 12dp
-        mLyricsButton.setBackground(lyrics && !queue
+        mLyricsButton.setBackground(lyrics && !subpage
                 ? androidx.core.content.ContextCompat.getDrawable(mRoot.getContext(), R.drawable.meetune_lyrics_on)
                 : mLyricsButtonBg);
         mLyricsButton.setPadding(pad, pad, pad, pad);
-        if (queue != (from == QUEUE) || from == NORMAL) {
-            // The queue page: the list in the lyrics' place, the controls under it as on Lyrics.
-            mLyricsScroll.setVisibility(queue ? View.GONE : View.VISIBLE);
+        if (subpage || wasSubpage || from == NORMAL) {
+            mLyricsScroll.setVisibility(subpage ? View.GONE : View.VISIBLE);
             mQueuePage.setVisibility(queue ? View.VISIBLE : View.GONE);
-            mRoot.findViewById(R.id.meetune_player_handle).setVisibility(queue ? View.GONE : View.VISIBLE);
-            mQueueClose.setVisibility(queue ? View.VISIBLE : View.GONE);
+            if (mGamesPage != null) mGamesPage.setVisibility(games ? View.VISIBLE : View.GONE);
+            mRoot.findViewById(R.id.meetune_player_handle).setVisibility(subpage ? View.GONE : View.VISIBLE);
+            mQueueClose.setVisibility(subpage ? View.VISIBLE : View.GONE);
+            updateCloseLabel();
+            // Games keep the whole controls, volume and pill, and no toggle: the board is one size
+            // throughout, ending right at them (hidden volume left a gap, shown it shrank the board).
+            setFocus(queue);
             if (queue) {
-                setFocus(true); // the queue opens minimized: no volume, no song pill (the focus arrow brings them back)
                 mQueueKey = null;
                 refreshQueue();
                 mQueueList.scrollToPosition(0);
@@ -1433,8 +1526,8 @@ public final class MeeTunePlayerSkin {
                         mRoot.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 if (keyboard != null) keyboard.hideSoftInputFromWindow(mQueueSearch.getWindowToken(), 0);
             }
-            if (lyrics) com.newtube.mobile.ui.common.Motion.frostIn(queue ? mQueuePage : mLyricsScroll);
-            mRoot.requestLayout(); // the page's top makes room for the queue's chevron
+            if (lyrics) com.newtube.mobile.ui.common.Motion.frostIn(games ? mGamesPage : queue ? mQueuePage : mLyricsScroll);
+            padPageTop();
         }
         mLineRow.setVisibility(lineRowVisibility(mode));
         boolean full = mode == FULL;
@@ -1776,12 +1869,35 @@ public final class MeeTunePlayerSkin {
      * The lines run down to the page's foot, under the controls (faded out at their top, footLyrics),
      * and can scroll up clear of them.
      */
+    @Nullable private android.animation.ValueAnimator mGamesPad;
+    private int mGamesPadTo;
+
     private void padPage() {
         int bottom = mControlsColumn.getPaddingBottom();
         int under = mMode == FULL ? 0 : mControlsColumn.getHeight() - bottom;
         int lines = Math.round(28 * mRoot.getResources().getDisplayMetrics().density) + under;
+        // Read now, in the layout: by the post a focus transition has put the column back at its old
+        // bounds to animate them, and the board kept that stale height (the seek bar sat on it).
+        int column = mControlsColumn.getHeight();
         mPage.post(() -> {
-            if (mPage.getPaddingBottom() != bottom) mPage.setPadding(0, mPage.getPaddingTop(), 0, bottom);
+            // Games need the whole board in reach, above the controls; it grows into the room the
+            // folded volume leaves, sliding with the column (setFocus). The scrolling pages fade under them.
+            int pageBottom = mMode == GAMES ? column : bottom;
+            boolean sliding = mGamesPad != null && mGamesPad.isRunning();
+            if (sliding && mGamesPadTo == pageBottom) {
+                // its own frames lay out again; let it run
+            } else if (mPage.getPaddingBottom() != pageBottom) {
+                if (sliding) mGamesPad.cancel();
+                if (mMode == GAMES && mPage.isShown()) {
+                    mGamesPadTo = pageBottom;
+                    mGamesPad = android.animation.ValueAnimator.ofInt(mPage.getPaddingBottom(), pageBottom).setDuration(360);
+                    mGamesPad.setInterpolator(com.newtube.mobile.ui.common.Motion.STANDARD);
+                    mGamesPad.addUpdateListener(a -> mPage.setPadding(0, mPage.getPaddingTop(), 0, (int) a.getAnimatedValue()));
+                    mGamesPad.start();
+                } else {
+                    mPage.setPadding(0, mPage.getPaddingTop(), 0, pageBottom);
+                }
+            }
             if (mQueueList.getPaddingBottom() != lines) { // the list runs under the controls too, faded at their top
                 mQueueList.setPadding(0, mQueueList.getPaddingTop(), 0, lines);
             }
@@ -2026,7 +2142,15 @@ public final class MeeTunePlayerSkin {
     }
 
     /** The queue scrolled down: a swipe down scrolls it back, it doesn't minimize the player. */
-    boolean holdsSwipeDown() {
+    /** A swipe from (rawX, rawY) is the page's own: a game's board plays swipes, a scrolled queue scrolls back. */
+    boolean holdsSwipeDown(float rawX, float rawY) {
+        if (mMode == GAMES) {
+            if (mGamesPage == null || !mGamesPage.hasGame()) return false;
+            View field = mGamesPage.findViewById(R.id.game_field);
+            int[] at = new int[2];
+            field.getLocationOnScreen(at);
+            return rawX >= at[0] && rawX < at[0] + field.getWidth() && rawY >= at[1] && rawY < at[1] + field.getHeight();
+        }
         return mMode == QUEUE && mQueueList.canScrollVertically(-1);
     }
 
@@ -2041,6 +2165,7 @@ public final class MeeTunePlayerSkin {
     }
 
     void hide() {
+        if (mMode == GAMES) setMode(NORMAL);
         mRoot.removeCallbacks(mTick);
         // Unseen: the clip lets its video decoder go (phones have few; MeeTube's player may need one).
         if (mCanvasPlayer != null && mCanvas.getVisibility() == View.VISIBLE) {
