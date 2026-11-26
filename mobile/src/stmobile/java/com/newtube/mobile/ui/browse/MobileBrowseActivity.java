@@ -444,6 +444,8 @@ public class MobileBrowseActivity extends MobileActivity
         mContentGrid = findViewById(R.id.mobile_content_grid);
         mContentSwipe = findViewById(R.id.mobile_content_swipe);
         mFeedSkeleton = findViewById(R.id.mobile_feed_skeleton);
+        // Its ghost thumbs are the real cards' 16:9, so the cards land exactly where they stood.
+        mFeedSkeleton.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> v.post(this::fitSkeletonThumbs));
         setupSwipeRefresh();
         mBottomNav = findViewById(R.id.mobile_bottom_nav);
         mYouPanel = findViewById(R.id.mobile_you_panel);
@@ -708,10 +710,61 @@ public class MobileBrowseActivity extends MobileActivity
         mFeedSkeleton.removeCallbacks(mSkeletonLeaveDeadline);
         mFeedSkeleton.postDelayed(mSkeletonLeaveDeadline, SKELETON_LEAVE_MAX_MS);
         int shows = mSkeletonShows;
-        SkeletonReveal.fadeOverCards(mFeedSkeleton, mContentGrid, () -> shows == mSkeletonShows, () -> {
+        holdReveal(shows, () -> SkeletonReveal.fadeOverCards(mFeedSkeleton, mContentGrid, () -> shows == mSkeletonShows, () -> {
             mFeedSkeleton.setVisibility(View.GONE);
             mFeedSkeleton.setAlpha(1f);
-        });
+        }));
+    }
+
+    private void fitSkeletonThumbs() {
+        if (mSkeletonRows) {
+            return; // List layout's rows have fixed thumbs, as its real rows do
+        }
+        ViewGroup skeleton = (ViewGroup) mFeedSkeleton;
+        for (int i = 0; i < skeleton.getChildCount(); i++) {
+            View card = skeleton.getChildAt(i);
+            View thumb = card instanceof ViewGroup ? ((ViewGroup) card).getChildAt(0) : null;
+            int height = card.getWidth() * 9 / 16;
+            if (thumb != null && height > 0 && thumb.getLayoutParams().height != height) {
+                thumb.getLayoutParams().height = height;
+                thumb.requestLayout();
+            }
+        }
+    }
+
+    /** The skeleton's leave waiting for DeArrow's first titles (holdReveal). */
+    @Nullable
+    private Runnable mRevealOnSync;
+
+    /**
+     * The first cards wait under the skeleton for their pictures and, with crowd titles on, for
+     * DeArrow's answer (both capped). Revealed at once, the cards came up with blank thumbnails and
+     * their titles changed ~150 ms later (vivo, cold start).
+     */
+    private void holdReveal(int shows, Runnable fade) {
+        boolean[] gone = {false};
+        Runnable go = () -> {
+            if (gone[0]) {
+                return;
+            }
+            gone[0] = true;
+            mRevealOnSync = null;
+            if (!isDestroyed() && shows == mSkeletonShows) {
+                fade.run();
+            }
+        };
+        boolean titles = com.liskovsoft.smartyoutubetv2.common.prefs.DeArrowData.instance(this).isReplaceTitlesEnabled();
+        int[] waits = {titles ? 2 : 1};
+        Runnable one = () -> {
+            if (--waits[0] == 0) {
+                go.run();
+            }
+        };
+        mRevealOnSync = titles ? one : null;
+        mFeedSkeleton.postDelayed(go, com.newtube.mobile.ui.common.FeedSwapWarmup.MAX_WAIT_MS + 100);
+        com.newtube.mobile.ui.common.FeedSwapWarmup.create(this).begin(
+                com.newtube.mobile.ui.common.FeedSwapWarmup.firstScreen(new ArrayList<>(mCurrentVideos), 3),
+                (warmed, total, timedOut) -> one.run());
     }
 
     /** Counts skeleton shows, so a reveal waiting for its cards yields to a newer load. */
@@ -4586,6 +4639,10 @@ public class MobileBrowseActivity extends MobileActivity
             if (group.getAction() == VideoGroup.ACTION_SYNC) {
                 syncVideos(group.getVideos());
                 mAdapter.refreshItems(group.getVideos());
+                if (mRevealOnSync != null) {
+                    mFeedSkeleton.post(mRevealOnSync); // after the new titles are bound
+                    mRevealOnSync = null;
+                }
                 return;
             }
             if (mCurrentSectionId == MediaGroup.TYPE_TRENDING && !keepHyped(group)) {
