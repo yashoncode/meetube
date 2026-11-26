@@ -1043,7 +1043,8 @@ public class MobilePlaybackActivity extends MobileActivity
         int pillTint = ContextCompat.getColor(this, R.color.meetube_toast_glass);
         for (View pill : new View[] {mZoomHintView, mTopPill, mLevelPill, mNoticeView,
                 findViewById(R.id.mobile_player_scrub_chapter), findViewById(R.id.mobile_player_chapter_pill),
-                mSkipSegmentPill, mSeekTime}) {
+                mSkipSegmentPill, mSeekTime,
+                mYouTubeOverlay != null ? mYouTubeOverlay.findViewById(com.github.vkay94.dtpv3.R.id.seek_pill) : null}) {
             if (pill != null) {
                 com.newtube.mobile.ui.common.GlassDrawable.apply(pill,
                         findViewById(R.id.mobile_player_glass), 0, pillTint);
@@ -9677,7 +9678,8 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** ...with {@code label} in place of the player's own position (the seek bar's drag). */
     private void showSeekTime(boolean show, @Nullable CharSequence label) {
-        if (mSeekTime == null || mProgressBar == null || (!show && !mSeekTimeShown)) {
+        if (mSeekTime == null || mProgressBar == null
+                || (!show && !mSeekTimeShown && mSeekTime.getVisibility() != View.VISIBLE)) {
             return;
         }
         mSeekTimeShown = show;
@@ -9706,6 +9708,12 @@ public class MobilePlaybackActivity extends MobileActivity
             mSeekTime.setVisibility(View.VISIBLE);
             mSeekTime.setAlpha(0f);
             androidx.core.view.OneShotPreDrawListener.add(mSeekTime, () -> {
+                if (!mSeekTimeShown) {
+                    // MEETUBE(issue #358): a hide came in before this frame (a quick flick seek).
+                    // Flying in now would cancel that hide, and a cancelled animation drops its
+                    // end action, so the pill stayed in the middle for good.
+                    return;
+                }
                 float[] corner = seekTimeCorner();
                 mSeekTime.setTranslationX(corner[0]);
                 mSeekTime.setTranslationY(corner[1]);
