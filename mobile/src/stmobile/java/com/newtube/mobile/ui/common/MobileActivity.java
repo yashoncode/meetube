@@ -222,8 +222,11 @@ public abstract class MobileActivity extends MotherActivity {
         ViewCompat.setOnApplyWindowInsetsListener(content, (view, windowInsets) -> {
             if (shouldInsetContentForSystemBars()) {
                 Insets insets = contentInsets(windowInsets);
-                view.setPadding(insets.left, insets.top, insets.right,
-                        shouldInsetContentForNavigationBar() ? insets.bottom : 0);
+                boolean under = !shouldInsetContentForNavigationBar();
+                view.setPadding(insets.left, insets.top, insets.right, under ? 0 : insets.bottom);
+                if (under) {
+                    onDrawUnderNavigationBar(insets.bottom);
+                }
             } else {
                 view.setPadding(0, 0, 0, 0);
             }
@@ -249,6 +252,38 @@ public abstract class MobileActivity extends MotherActivity {
      */
     protected boolean shouldInsetContentForNavigationBar() {
         return true;
+    }
+
+    /**
+     * MEETUBE(gesture bar): the page runs under the gesture area ({@code px} tall); a screen with a
+     * floating bar lifts the bar and pads its lists by that much, or the strip there stays black.
+     */
+    protected void onDrawUnderNavigationBar(int px) {
+    }
+
+    /** Sets a margin or padding of {@code base} + {@code px}, {@code base} read once (tagged on the view). */
+    protected static void liftBottom(@androidx.annotation.Nullable View view, int px, boolean margin) {
+        if (view == null) {
+            return;
+        }
+        Object tag = view.getTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_bottom_base);
+        int base;
+        if (tag instanceof Integer) {
+            base = (Integer) tag;
+        } else {
+            base = margin ? ((android.view.ViewGroup.MarginLayoutParams) view.getLayoutParams()).bottomMargin
+                    : view.getPaddingBottom();
+            view.setTag(com.liskovsoft.smartyoutubetv2.tv.R.id.mobile_bottom_base, base);
+        }
+        if (margin) {
+            android.view.ViewGroup.MarginLayoutParams lp = (android.view.ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            if (lp.bottomMargin != base + px) {
+                lp.bottomMargin = base + px;
+                view.setLayoutParams(lp);
+            }
+        } else {
+            view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), view.getPaddingRight(), base + px);
+        }
     }
 
     /**

@@ -1718,7 +1718,18 @@ public class MeeTuneActivity extends MobileActivity implements MiniPlayerBridge.
 
     @Override
     protected boolean shouldInsetContentForNavigationBar() {
-        return !com.newtube.mobile.ui.common.YouTubeMode.isOn(this); // OG Mode: the bar docks to the edge
+        return false; // OG Mode: the bar docks to the edge; the floating pill rides above the gesture area
+    }
+
+    /** MEETUBE(gesture bar): the pill (the mini pill and its circles follow it) and the lists' ends. */
+    @Override
+    protected void onDrawUnderNavigationBar(int px) {
+        if (mYouTubeBar) {
+            return;
+        }
+        liftBottom(findViewById(R.id.meetune_nav_glass), px, true);
+        liftBottom(mList, px, false);
+        liftBottom(findViewById(R.id.meetune_suggestions), px, false);
     }
 
     // ----------------------------------------------------------------------------- mini card

@@ -1042,10 +1042,25 @@ public class MobileBrowseActivity extends MobileActivity
         });
     }
 
-    /** MEETUBE(youtube mode): the docked bar runs under the gesture area and pads itself. */
+    /**
+     * The page runs under the gesture area: YouTube mode's docked bar pads itself, the floating
+     * pill and the Search bubble float that much higher (MEETUBE(gesture bar)).
+     */
     @Override
     protected boolean shouldInsetContentForNavigationBar() {
-        return !com.newtube.mobile.ui.common.YouTubeMode.isOn(this);
+        return false;
+    }
+
+    @Override
+    protected void onDrawUnderNavigationBar(int px) {
+        if (com.newtube.mobile.ui.common.YouTubeMode.isOn(this)) {
+            return;
+        }
+        liftBottom(findViewById(R.id.mobile_nav_glass), px, true);
+        liftBottom(findViewById(R.id.mobile_search_fab), px, true);
+        for (int id : new int[] {R.id.mobile_content_grid, R.id.mobile_error_container, R.id.mobile_you_content}) {
+            liftBottom(findViewById(id), px, false);
+        }
     }
 
     /**

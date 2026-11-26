@@ -3356,9 +3356,10 @@ public class MobilePlaybackActivity extends MobileActivity
         Insets bars = Build.VERSION.SDK_INT >= 30 ? insets.getInsetsIgnoringVisibility(
                 WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout())
                 : super.contentInsets(insets);
-        // MEETUNE(status bar): the song's blurred cover runs up under the status bar (the skin keeps
-        // its handle clear of it); the watch page under the skin is hidden meanwhile.
-        return mMeeTune != null && mMeeTune.isShown() ? Insets.of(bars.left, 0, bars.right, bars.bottom) : bars;
+        // MEETUNE(status bar): the song's blurred cover runs up under the status bar and down under the
+        // gesture bar (the skin keeps its handle and controls clear of them); the watch page under the
+        // skin is hidden meanwhile.
+        return mMeeTune != null && mMeeTune.isShown() ? Insets.of(bars.left, 0, bars.right, 0) : bars;
     }
 
     /**
