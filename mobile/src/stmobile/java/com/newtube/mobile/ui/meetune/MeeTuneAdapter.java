@@ -543,7 +543,9 @@ final class MeeTuneAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         if (card instanceof MaterialCardView) { // an artist round, the rest as the layout has them (rows are reused)
             MaterialCardView cover = (MaterialCardView) card;
             if (cover.getTag() == null) cover.setTag(cover.getRadius());
-            cover.setRadius(item.round ? card.getLayoutParams().width / 2f : (Float) cover.getTag());
+            // A grid tile is MATCH_PARENT wide (-1): its height is its side, or the radius went negative (square).
+            ViewGroup.LayoutParams lp = card.getLayoutParams();
+            cover.setRadius(item.round ? Math.max(lp.width, lp.height) / 2f : (Float) cover.getTag());
         }
         if (art != null) {
             android.graphics.drawable.Drawable cover = new MeeTuneCover(item.title);
