@@ -1,3 +1,5 @@
+<div align="center">
+
 # Nhật ký thay đổi MeeTube
 
 Tổng hợp mọi phiên bản MeeTube, sắp xếp từ mới nhất.<br>
