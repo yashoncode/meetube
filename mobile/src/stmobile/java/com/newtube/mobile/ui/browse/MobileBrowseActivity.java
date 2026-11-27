@@ -984,16 +984,19 @@ public class MobileBrowseActivity extends MobileActivity
 
     @Override
     public int getMiniCardBottomOffsetPx() {
-        // MEETUBE(glass): the card sits 10dp above the floating nav pill, which floats 12dp up; the
-        // morph adds its own 12dp margin, so: pill + 12 + 10 - 12.
+        // MEETUBE(glass): the card sits 10dp above the nav pill, which sits its bottom margin up
+        // (12dp floating, 0 docked in YouTube mode, plus the gesture bar that
+        // onDrawUnderNavigationBar adds); the morph adds its own 12dp margin, so: pill + margin + 10 - 12.
+        // A fixed 12dp margin left the gesture bar out: the swipe-down landed that low and jumped up.
         float density = getResources().getDisplayMetrics().density;
         View pill = findViewById(R.id.mobile_nav_glass);
         int pillPx = pill != null && pill.getHeight() > 0 ? pill.getHeight() : Math.round(68 * density);
+        int pillMargin = pill != null && pill.getLayoutParams() instanceof android.view.ViewGroup.MarginLayoutParams
+                ? ((android.view.ViewGroup.MarginLayoutParams) pill.getLayoutParams()).bottomMargin
+                : Math.round(12 * density);
         // MEETUBE(issue #125): lower by the card's home offset while a scroll has the nav away.
         float homeY = mMiniSwipe != null ? mMiniSwipe.homeY() : 0f;
-        // MEETUBE(youtube mode): a docked bar has no 12dp under it to take back.
-        int docked = com.newtube.mobile.ui.common.YouTubeMode.isOn(this) ? Math.round(12 * density) : 0;
-        return Math.max(0, pillPx - docked + Math.round(10 * density - homeY));
+        return Math.max(0, pillPx + pillMargin + Math.round(-2 * density - homeY));
     }
 
     /**
