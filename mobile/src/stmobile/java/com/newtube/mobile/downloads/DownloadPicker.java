@@ -49,6 +49,8 @@ public final class DownloadPicker {
     @Nullable private static Disposable sFetch;
     /** MEETUBE(subtitles): the tracks of the video the dialog is for (one dialog at a time, like sFetch). */
     @Nullable private static List<com.liskovsoft.mediaserviceinterfaces.data.MediaSubtitle> sSubtitles;
+    /** MEETUBE(issue #371): that video's description, saved when a download starts. */
+    @Nullable private static String sDescription;
 
     private DownloadPicker() {
     }
@@ -101,6 +103,7 @@ public final class DownloadPicker {
 
         List<DownloadOption> options = DownloadOptions.build(info.getAdaptiveFormats(), info.getUrlFormats());
         sSubtitles = info.getSubtitles();
+        sDescription = info.getDescription();
         if (options.isEmpty()) {
             MobileSnackbar.show(context, R.string.mobile_download_unavailable);
             return;
@@ -362,6 +365,7 @@ public final class DownloadPicker {
                     author, thumb, option);
             item.song = true;
             MobileDownloadService.enqueue(context, item);
+            DownloadDescription.save(context, video.videoId, sDescription);
             MobileSnackbar.show(context, AutoDownload.mustWait(context)
                     ? R.string.mobile_download_wifi_wait : R.string.meetune_download_started);
             return;
@@ -379,6 +383,7 @@ public final class DownloadPicker {
         item.clipStartMs = clipStartMs;
         item.clipEndMs = clipEndMs;
         MobileDownloadService.enqueue(context, item);
+        DownloadDescription.save(context, video.videoId, sDescription);
         if (clipEndMs <= clipStartMs && !option.isAudioOnly()) { // a part's times wouldn't match the track
             DownloadSubtitles.save(context, video.videoId, DownloadSubtitles.pick(context, sSubtitles));
         }

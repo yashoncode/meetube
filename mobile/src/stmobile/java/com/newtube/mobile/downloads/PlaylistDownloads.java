@@ -104,6 +104,7 @@ public final class PlaylistDownloads {
                                     title != null ? title : video.videoId, author, thumb, option);
                             item.song = song;
                             MobileDownloadService.enqueue(app, item);
+                            DownloadDescription.save(app, video.videoId, info.getDescription());
                             queued++;
                         }
                     }

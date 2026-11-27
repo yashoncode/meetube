@@ -109,6 +109,7 @@ public final class AutoDownloadWorker extends Worker {
                 registry.add(DownloadItem.create(videoId, title != null ? title : videoId,
                         item.getAuthor() != null ? item.getAuthor() : info.getAuthor(),
                         "https://i.ytimg.com/vi/" + videoId + "/hqdefault.jpg", option));
+                DownloadDescription.save(getApplicationContext(), videoId, info.getDescription());
             } catch (Exception e) {
                 seen.remove(videoId); // try again at the next check
                 Log.w(TAG, videoId + ": " + e);

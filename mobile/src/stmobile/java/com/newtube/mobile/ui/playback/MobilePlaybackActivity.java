@@ -11789,6 +11789,9 @@ public class MobilePlaybackActivity extends MobileActivity
             Utils.postDelayed(mReleaseWatchMetadata, WATCH_METADATA_TIMEOUT_MS);
             clearSuggestions();
             resetWatchHeader();
+            if (TextUtils.isEmpty(item.description)) { // MEETUBE(issue #371): a download's, offline too
+                item.description = com.newtube.mobile.downloads.DownloadDescription.read(this, item.videoId);
+            }
             // A new video closes the comments panel and forgets the old video's comments.
             Utils.removeCallbacks(mPrefetchComments);
             if (mCommentsPanel != null) {
