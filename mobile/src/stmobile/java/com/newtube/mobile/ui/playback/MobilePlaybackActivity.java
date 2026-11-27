@@ -387,6 +387,13 @@ public class MobilePlaybackActivity extends MobileActivity
     // Comments + live chat entries. Keys come from the loaded metadata. Comments open the panel
     // over the watch page (CommentsPanel); live chat opens its bottom sheet.
     private View mWatchCommentsEntry;
+    /** MEETUBE: the comments row is put away for the tablet's column panel; its own visibility meanwhile. */
+    private boolean mCommentsEntryHidden;
+    private int mCommentsEntryWas = View.VISIBLE;
+    /** MEETUBE: the live chat card covers a tablet's Up next column; its row is put away meanwhile. */
+    private boolean mChatInColumn;
+    private boolean mChatEntryWanted;
+    private int mChatColumnPx;
     private TextView mWatchCommentsCount;
     private CommentsPanel mCommentsPanel;
     // MEETUBE(lyrics-panel): portrait side panels share the comments panel's frame and motion.
@@ -1286,7 +1293,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     return; // comments still loading (or off for this short)
                 }
                 mShorts.setCommentsOpen(true);
-                if (isLandscape()) { // #57: beside the short, as beside a fullscreen video
+                if (isSideways()) { // #57: beside the short, as beside a fullscreen video
                     setCommentsSide(true);
                     OneShotPreDrawListener.add(mWatchRoot, MobilePlaybackActivity.this::onCommentsEntryClicked);
                     return;
@@ -1697,7 +1704,6 @@ public class MobilePlaybackActivity extends MobileActivity
         long touchPrefetchMs = com.newtube.mobile.player.SwitchExperiments.touchPrefetchStillMs();
         mRelatedAdapter = new RelatedVideoAdapter(this::onRelatedClicked,
                 touchPrefetchMs > 0 ? this::onRelatedPressed : null, touchPrefetchMs);
-        mWatchRelated.setLayoutManager(new LinearLayoutManager(this));
         mWatchRelated.setNestedScrollingEnabled(false);
         mWatchRelated.setHasFixedSize(false);
         // NEWTUBE(watch-jump): no add/remove fade. The rows' first frame was an alpha-0 fade-in
@@ -1705,7 +1711,8 @@ public class MobilePlaybackActivity extends MobileActivity
         // dozen rows while the video starts) that empty frame stayed up ~1 s.
         mWatchRelated.setItemAnimator(null);
         // MEETUBE(list layout, issue #92): Up next has its own Video layout setting (Customize).
-        mRelatedAdapter.setCards(!com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this, com.newtube.mobile.ui.browse.HomeLayout.PAGE_UP_NEXT));
+        mWatchRelated.setLayoutManager(new LinearLayoutManager(this));
+        placeRelated(); // the card/row layout and the tablet grid
         mWatchRelated.setAdapter(mRelatedAdapter);
 
         // Queue list: same row layout and same click routing as Up next, but it scrolls INSIDE the
@@ -1979,6 +1986,53 @@ public class MobilePlaybackActivity extends MobileActivity
      * fullscreen, Shorts, the vertical fullscreen, PiP) puts it back. Returns the column's width;
      * {@code width} is the window's, 0 to put the column away.
      */
+    /** MEETUBE(issue #230): the Up next column is up (applyWatchSide). */
+    private boolean mSideApplied;
+
+    /**
+     * Up next (the page's last views, label to list, moved as a block): in the tablet's column, or
+     * on the page. With the comments or the live chat in the column it comes under the video as a grid of
+     * small cards, in the room their row left.
+     */
+    private void placeRelated() {
+        if (mWatchRelatedLabel == null || mWatchContent == null) {
+            return;
+        }
+        boolean underVideo = mSideApplied && (mCommentsEntryHidden || mChatInColumn);
+        ViewGroup to = mSideApplied && !underVideo ? findViewById(R.id.mobile_watch_side_content) : (ViewGroup) mWatchContent;
+        ViewGroup from = (ViewGroup) mWatchRelatedLabel.getParent();
+        if (from != to && from != null && to != null) {
+            int start = from.indexOfChild(mWatchRelatedLabel);
+            while (start >= 0 && from.getChildCount() > start) {
+                View view = from.getChildAt(start);
+                from.removeViewAt(start);
+                to.addView(view);
+            }
+        }
+        if (mRelatedAdapter != null && mWatchRelated != null) {
+            // Under the video: a grid of small cards; elsewhere the Up next layout setting, and
+            // cards across a whole tablet page are a grid too, not one 800 dp card per row.
+            boolean cards = underVideo || !com.newtube.mobile.ui.browse.HomeLayout.isVideoList(this,
+                    com.newtube.mobile.ui.browse.HomeLayout.PAGE_UP_NEXT);
+            mRelatedAdapter.setCards(cards);
+            mWatchRelated.setLayoutManager(underVideo || cards && !mSideApplied && isTablet()
+                    ? new androidx.recyclerview.widget.GridLayoutManager(this, 3)
+                    : new LinearLayoutManager(this));
+            mRelatedAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void roundCorners(View view, boolean on) {
+        float radius = dp(16);
+        view.setOutlineProvider(on ? new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View v, android.graphics.Outline outline) {
+                outline.setRoundRect(0, 0, v.getWidth(), v.getHeight(), radius);
+            }
+        } : android.view.ViewOutlineProvider.BACKGROUND);
+        view.setClipToOutline(on);
+    }
+
     private int applyWatchSide(int width) {
         if (mWatchSide == null || mWatchContent == null || mWatchRelatedLabel == null) {
             return 0;
@@ -1988,17 +2042,12 @@ public class MobilePlaybackActivity extends MobileActivity
                 && !isTallMode() && !mIsInPip && !mPipEnterPending && (mShorts == null || !mShorts.isActive());
         int columnWidth = side ? Math.max(dp(320), Math.round(width * 0.34f)) : 0;
         ViewGroup column = findViewById(R.id.mobile_watch_side_content);
-        boolean moved = mWatchRelatedLabel.getParent() == column;
-        if (side != moved) {
-            ViewGroup from = side ? (ViewGroup) mWatchContent : column;
-            ViewGroup to = side ? column : (ViewGroup) mWatchContent;
-            // The related views are the page's last ones, label to list: they move as a block.
-            int start = from.indexOfChild(mWatchRelatedLabel);
-            while (start >= 0 && from.getChildCount() > start) {
-                View view = from.getChildAt(start);
-                from.removeViewAt(start);
-                to.addView(view);
-            }
+        if (side != mSideApplied) {
+            mSideApplied = side;
+            placeRelated();
+            // MEETUBE: on a tablet the page and the Up next column are two rounded cards.
+            roundCorners(mWatchRoot, side);
+            roundCorners(mWatchSide, side);
             // The panels open over the whole column, not in the strip under the video.
             ViewGroup area = findViewById(R.id.mobile_watch_area);
             for (int id : new int[] {R.id.mobile_comments_panel, R.id.mobile_description_panel,
@@ -2016,13 +2065,15 @@ public class MobilePlaybackActivity extends MobileActivity
         }
         ViewGroup.LayoutParams columnLp = mWatchSide.getLayoutParams();
         ViewGroup.MarginLayoutParams rootLp = (ViewGroup.MarginLayoutParams) mWatchRoot.getLayoutParams();
-        if (columnLp.width != columnWidth || rootLp.getMarginEnd() != columnWidth) {
+        // The live chat card is wider than the column: the page stops at the card, not under it.
+        int rootEnd = side && mChatInColumn ? Math.max(columnWidth, mChatColumnPx) : columnWidth;
+        if (columnLp.width != columnWidth || rootLp.getMarginEnd() != rootEnd) {
             columnLp.width = columnWidth;
             mWatchSide.setLayoutParams(columnLp);
-            rootLp.setMarginEnd(columnWidth);
+            rootLp.setMarginEnd(rootEnd);
             mWatchRoot.setLayoutParams(rootLp);
         }
-        return columnWidth;
+        return rootEnd; // the page's width is what is left
     }
 
     /**
@@ -2055,7 +2106,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** The comments column beside the fullscreen video, or the video alone again. */
     private void setCommentsSide(boolean side) {
-        if (mCommentsSide != side && (!side || isLandscape())) {
+        if (mCommentsSide != side && (!side || isSideways())) {
             mCommentsSide = side;
             // MEETUBE(issue #214): the picture glides aside as the panel comes up (and back as it
             // goes), as it does for the description card, instead of jumping first.
@@ -2073,7 +2124,8 @@ public class MobilePlaybackActivity extends MobileActivity
                 frame.setTranslationX(0f);
                 frame.setTranslationY(0f);
             }
-            applyWatchLayoutForOrientation(Configuration.ORIENTATION_LANDSCAPE);
+            // A tablet's sideways page goes back to its own layout when the comments close.
+            applyWatchLayoutForOrientation(side ? Configuration.ORIENTATION_LANDSCAPE : layoutOrientation());
             setResizeMode(PlayerData.instance(this).getResizeMode()); // fit beside the comments
             if (frame != null && oldW > 0f) {
                 float w = oldW, cx = oldCx, cy = oldCy;
@@ -3801,8 +3853,10 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mVideoArea == null || width <= 0) {
             return;
         }
-        if (mPortraitExitOwnsBox) {
-            return; // the swipe out of the vertical fullscreen sizes it
+        if (mPortraitExitOwnsBox || mCommentsSide) {
+            // the swipe out of the vertical fullscreen sizes it; beside the comments (a sideways
+            // tablet's page counts as portrait) the box is the row's, not a page box
+            return;
         }
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mVideoArea.getLayoutParams();
         int height = isTallMode() ? LinearLayout.LayoutParams.MATCH_PARENT : inlineBoxHeight(width);
@@ -3940,6 +3994,15 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private boolean isLandscape() {
         return layoutOrientation() == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    /**
+     * MEETUBE: the window is sideways, page layout or not: a tablet turned sideways keeps the page
+     * (naturalLayout), yet its Shorts comments and live chat belong in a column on the right.
+     */
+    private boolean isSideways() {
+        return isLandscape() || isTablet()
+                && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 
     // ---------------------------------------------------------------------------------
@@ -11487,7 +11550,8 @@ public class MobilePlaybackActivity extends MobileActivity
      * which only shows once there are comments: the row's reserved space means nothing there.
      */
     private void setCommentsEntryVisibility(int visibility) {
-        mWatchCommentsEntry.setVisibility(visibility);
+        mCommentsEntryWas = visibility;
+        mWatchCommentsEntry.setVisibility(mCommentsEntryHidden ? View.GONE : visibility);
         if (mPlayerComments != null) {
             mPlayerComments.setVisibility(mCommentsKey != null ? View.VISIBLE : View.GONE);
         }
@@ -11741,12 +11805,22 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable
     @Override
     public View getChatVideoArea() {
-        return isLandscape() ? null : mVideoArea;
+        return isSideways() ? null : mVideoArea;
     }
 
     @Override
     public void setChatColumn(int widthPx) {
-        int margin = isLandscape() ? widthPx : 0;
+        boolean inColumn = widthPx > 0 && !isLandscape() && isWatchSideShown();
+        if (inColumn != mChatInColumn || inColumn && widthPx != mChatColumnPx) {
+            mChatInColumn = inColumn;
+            mChatColumnPx = widthPx;
+            applyWatchLayoutForOrientation(layoutOrientation()); // the page's end margin
+            if (mWatchChatEntry != null) {
+                mWatchChatEntry.setVisibility(mChatEntryWanted && !inColumn ? View.VISIBLE : View.GONE);
+            }
+            placeRelated(); // Up next fills the page while the chat covers the column
+        }
+        int margin = isLandscape() ? widthPx : 0; // a tablet's page: the card covers Up next, the video stays
         if (mChatMargin != margin) {
             boolean wasSide = mChatSide;
             mChatSide = margin > 0;
@@ -11771,8 +11845,9 @@ public class MobilePlaybackActivity extends MobileActivity
     /** The page's live chat row and its button on the fullscreen pill (issue #32) show together. */
     private void setChatEntryVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
+        mChatEntryWanted = visible;
         if (mWatchChatEntry != null) {
-            mWatchChatEntry.setVisibility(visibility);
+            mWatchChatEntry.setVisibility(mChatInColumn ? View.GONE : visibility);
         }
         if (mPlayerChat != null) {
             mPlayerChat.setVisibility(visibility);
@@ -12330,6 +12405,19 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private void updateSidePanelsShown(boolean commentsShown) {
         boolean shown = openSidePanel() != null;
+        // MEETUBE: a tablet's comments open in the Up next column; the page's comments row would
+        // show them twice. Gone while they are open there, back when they close.
+        boolean hideEntry = commentsShown && isWatchSideShown();
+        if (mWatchCommentsEntry != null && hideEntry != mCommentsEntryHidden) {
+            mCommentsEntryHidden = hideEntry;
+            if (hideEntry) {
+                mCommentsEntryWas = mWatchCommentsEntry.getVisibility();
+                mWatchCommentsEntry.setVisibility(View.GONE);
+            } else {
+                mWatchCommentsEntry.setVisibility(mCommentsEntryWas);
+            }
+            placeRelated(); // Up next fills the page while the comments have the column
+        }
         if (mSidePanelBackCallback != null) {
             mSidePanelBackCallback.setEnabled(shown);
         }

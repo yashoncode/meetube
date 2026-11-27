@@ -108,6 +108,12 @@ public class RelatedVideoAdapter extends ListAdapter<Video, RelatedVideoAdapter.
         }
     };
 
+    /** The layout switches at runtime (tablet side column vs under the video): no reusing the other one's rows. */
+    @Override
+    public int getItemViewType(int position) {
+        return mCards ? 1 : 0;
+    }
+
     @NonNull
     @Override
     public RelatedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
