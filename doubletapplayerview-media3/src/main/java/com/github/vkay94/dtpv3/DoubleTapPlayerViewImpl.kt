@@ -43,6 +43,9 @@ open class DoubleTapPlayerViewImpl @JvmOverloads constructor(
      */
     var isInstantSingleTap = false
 
+    /** MEETUBE(issue #368): where the instant single tap just handled landed, for the click listener. */
+    var lastTapX = 0f
+
     fun interface DoubleTapBeganListener {
         fun onDoubleTapBegan(posX: Float)
     }
@@ -281,6 +284,7 @@ open class DoubleTapPlayerViewImpl @JvmOverloads constructor(
                 return true
             }
             if (rootView.isInstantSingleTap) {
+                rootView.lastTapX = e.x
                 return rootView.performClick()
             }
             return super.onSingleTapUp(e)

@@ -1454,6 +1454,15 @@ public class MobilePlaybackActivity extends MobileActivity
                 return;
             }
             boolean reveal = !mControlsVisible;
+            // MEETUBE(issue #368): a tap on a seek side may be a double-tap seek's first tap; the
+            // controls wait out the rest of the double-tap window there, so a seek never flashes them.
+            mVideoArea.removeCallbacks(mDelayedReveal);
+            mRevealPending = reveal && mPlayer != null
+                    && doubleTapSeekForward(mPlayer, mPlayerView.getLastTapX()) != null;
+            if (mRevealPending) {
+                mVideoArea.postDelayed(mDelayedReveal, 200);
+                return;
+            }
             toggleControls();
             mInstantRevealAt = reveal ? android.os.SystemClock.uptimeMillis() : 0L;
         });
@@ -1501,6 +1510,11 @@ public class MobilePlaybackActivity extends MobileActivity
             if (isShortsMode()) {
                 mVideoArea.removeCallbacks(mShortsSingleTap);
                 likeShort();
+                return;
+            }
+            if (mRevealPending) { // the first tap did nothing yet: drop its reveal, the pair is a double tap
+                mRevealPending = false;
+                mVideoArea.removeCallbacks(mDelayedReveal);
                 return;
             }
             if (mPlayer != null && doubleTapSeekForward(mPlayer, posX) != null) {
@@ -8692,6 +8706,14 @@ public class MobilePlaybackActivity extends MobileActivity
      */
     /** NEWTUBE(motion): when a tap on the video last revealed the controls (0 = it hid them). */
     private long mInstantRevealAt;
+    /** MEETUBE(issue #368): a seek-side tap's reveal, held for the rest of the double-tap window. */
+    private boolean mRevealPending;
+    private final Runnable mDelayedReveal = () -> {
+        mRevealPending = false;
+        if (!mControlsVisible) {
+            toggleControls();
+        }
+    };
     /** NEWTUBE(motion): finger travel for the whole drag (dragTravelFor); set when a drag begins. */
     private float mDragTravelPx = 1f;
     /**
