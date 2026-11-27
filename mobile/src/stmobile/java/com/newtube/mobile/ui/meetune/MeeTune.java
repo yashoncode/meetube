@@ -93,6 +93,23 @@ public final class MeeTune {
     private MeeTune() {
     }
 
+    /** Settings' Add to Home screen (issue #378): the launcher asks the user to place MeeTune's icon. */
+    static void pinShortcut(Activity activity) {
+        if (!com.newtube.mobile.ui.common.AppShortcuts.pinMeeTune(activity)) {
+            // a launcher that can't pin one: the icon's own menu still has it
+            com.newtube.mobile.ui.common.MobileSnackbar.show(activity, R.string.meetune_home_shortcut_summary);
+        }
+    }
+
+    /** MeeTune's home screen icon (issue #378): straight on top of Home, without the blur from MeeTube. */
+    public static void openFromShortcut(Activity home) {
+        sHome = null;
+        prefetch(home);
+        pausePlaying(false);
+        home.startActivity(new Intent(home, MeeTuneActivity.class));
+        home.overridePendingTransition(0, 0);
+    }
+
     /** MeeTube to MeeTune: MeeTube blurs and dims away, MeeTune comes in out of the blur. */
     public static void open(Activity from) {
         sHome = null; // a new Home each time MeeTune opens, never the last one again

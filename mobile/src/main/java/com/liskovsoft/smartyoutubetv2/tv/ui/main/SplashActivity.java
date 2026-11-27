@@ -18,6 +18,7 @@ public class SplashActivity extends MotherActivity implements SplashView {
         com.liskovsoft.smartyoutubetv2.common.misc.NetPath.log(
                 "splash onCreate data=" + (getIntent() != null ? getIntent().getDataString() : null));
         mNewIntent = getIntent();
+        com.newtube.mobile.ui.common.AppShortcuts.fromIntent(mNewIntent); // issue #378
 
         if (restorePictureInPictureIfLauncherIntent(mNewIntent)) {
             finish();
@@ -38,6 +39,7 @@ public class SplashActivity extends MotherActivity implements SplashView {
         com.liskovsoft.smartyoutubetv2.common.misc.NetPath.log(
                 "splash onNewIntent data=" + (intent != null ? intent.getDataString() : null));
         mNewIntent = intent;
+        com.newtube.mobile.ui.common.AppShortcuts.fromIntent(intent); // issue #378
 
         if (restorePictureInPictureIfLauncherIntent(intent)) {
             finish();

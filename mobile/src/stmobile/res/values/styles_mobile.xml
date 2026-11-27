@@ -831,4 +831,30 @@
         <item name="android:fontFamily">?attr/appFontMedium</item>
         <item name="android:textSize">15sp</item>
     </style>
+
+    <!-- MEETUBE(widget): Quick actions' tiles (widget_quick_actions). -->
+    <style name="WidgetTile">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_widget_tile</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="WidgetTileIcon">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:tint">@color/mobile_color_on_surface</item>
+    </style>
+
+    <style name="WidgetTileLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/mobile_color_on_surface</item>
+        <item name="android:textSize">12sp</item>
+    </style>
 </resources>

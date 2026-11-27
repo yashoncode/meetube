@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MEETUBE(widget): Quick actions (QuickActionsWidget): Search and Voice, then four places to open. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget_now_playing"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/widget_search"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/bg_widget_search"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@mipmap/app_icon" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/widget_search_hint"
+                android:textColor="@color/mobile_color_on_surface_secondary"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/widget_voice"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_widget_search"
+            android:contentDescription="@string/widget_voice"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_mobile_mic"
+            android:tint="@color/mobile_color_on_surface" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/widget_home"
+            style="@style/WidgetTile">
+
+            <ImageView
+                style="@style/WidgetTileIcon"
+                android:src="@drawable/ic_nav_home_outline" />
+
+            <TextView
+                style="@style/WidgetTileLabel"
+                android:text="@string/header_home" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_shorts"
+            style="@style/WidgetTile"
+            android:layout_marginStart="6dp">
+
+            <ImageView
+                style="@style/WidgetTileIcon"
+                android:src="@drawable/ic_nav_shorts_outline" />
+
+            <TextView
+                style="@style/WidgetTileLabel"
+                android:text="@string/header_shorts" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_subscriptions"
+            style="@style/WidgetTile"
+            android:layout_marginStart="6dp">
+
+            <ImageView
+                style="@style/WidgetTileIcon"
+                android:src="@drawable/ic_nav_subscriptions_outline" />
+
+            <TextView
+                style="@style/WidgetTileLabel"
+                android:text="@string/header_subscriptions" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_meetune"
+            style="@style/WidgetTile"
+            android:layout_marginStart="6dp">
+
+            <ImageView
+                style="@style/WidgetTileIcon"
+                android:src="@drawable/ic_meetune"
+                android:tint="@null" />
+
+            <TextView
+                style="@style/WidgetTileLabel"
+                android:text="@string/meetune_name" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

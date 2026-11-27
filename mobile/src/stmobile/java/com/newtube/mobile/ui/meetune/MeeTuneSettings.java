@@ -665,6 +665,9 @@ final class MeeTuneSettings {
         // MEETUNE(issue #264): Home's "Listen again" as Speed dial; off keeps Home as it was.
         row(card, 0, getString(R.string.meetune_speed_dial), getString(R.string.meetune_speed_dial_summary),
                 MeeTune.speedDial(mActivity), false, v -> MeeTune.setSpeedDial(mActivity, !MeeTune.speedDial(mActivity)));
+        // MEETUNE(issue #378): MeeTune's own icon on the home screen.
+        tip(card, 0, getString(R.string.meetune_home_shortcut),
+                getString(R.string.meetune_home_shortcut_summary), null, true, v -> MeeTune.pinShortcut(mActivity));
         row(card, 0, getString(R.string.meetune_cover_glow), getString(R.string.meetune_cover_glow_summary),
                 MeeTune.coverGlow(mActivity), false, v -> MeeTune.setCoverGlow(mActivity, !MeeTune.coverGlow(mActivity)));
         // MeeTube's High performance mode (one setting for both): the display's top refresh rate.

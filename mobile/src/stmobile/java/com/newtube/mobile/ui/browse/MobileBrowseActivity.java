@@ -390,6 +390,7 @@ public class MobileBrowseActivity extends MobileActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         com.newtube.mobile.ui.common.ShortsSeen.load(this); // MEETUBE(shorts): before the feed is filtered
+        com.newtube.mobile.ui.common.AppShortcuts.publish(this); // MEETUBE(issue #378): the app icon's menu
 
         // Transitions: same task as the player now (singleTop + reorder, see the manifest note).
         // During interactive minimize this already-rendered Activity remains visible through the
@@ -3837,6 +3838,36 @@ public class MobileBrowseActivity extends MobileActivity
 
     private final DownloadRegistry.Listener mDownloadsListener = this::onDownloadsChanged;
 
+    /** MEETUBE(issue #378): an entry of the app icon's menu (AppShortcuts), opened from Home. */
+    private void openShortcut(@Nullable String target) {
+        if (target == null) return;
+        switch (target) {
+            case com.newtube.mobile.ui.common.AppShortcuts.MEETUNE:
+                com.newtube.mobile.ui.meetune.MeeTune.openFromShortcut(this);
+                break;
+            case com.newtube.mobile.ui.common.AppShortcuts.SEARCH:
+                SearchPresenter.instance(this).startSearch(null);
+                break;
+            case com.newtube.mobile.ui.common.AppShortcuts.VOICE:
+                SearchPresenter.instance(this).startVoice();
+                break;
+            case com.newtube.mobile.ui.common.AppShortcuts.HOME:
+            case com.newtube.mobile.ui.common.AppShortcuts.SHORTS:
+            case com.newtube.mobile.ui.common.AppShortcuts.SUBSCRIPTIONS:
+                int section = com.newtube.mobile.ui.common.AppShortcuts.SHORTS.equals(target) ? MediaGroup.TYPE_SHORTS
+                        : com.newtube.mobile.ui.common.AppShortcuts.HOME.equals(target) ? MediaGroup.TYPE_HOME
+                        : MediaGroup.TYPE_SUBSCRIPTIONS;
+                mBottomNav.post(() -> { // after onResume's tab rebuild
+                    if (mBottomNav.getMenu().findItem(toMenuItemId(section)) != null) {
+                        mBottomNav.setSelectedItemId(toMenuItemId(section));
+                    } else {
+                        openFromYou(section); // a tab moved into You (Settings > Tabs)
+                    }
+                });
+                break;
+        }
+    }
+
     private void handleOpenDownloads(Intent intent) {
         if (intent == null || !ACTION_OPEN_DOWNLOADS.equals(intent.getAction())) {
             return;
@@ -4149,6 +4180,7 @@ public class MobileBrowseActivity extends MobileActivity
         mPreview.schedule();
         mTopBar.syncMark(this);
         syncMeeTuneHint(); // MEETUNE
+        openShortcut(com.newtube.mobile.ui.common.AppShortcuts.take()); // MEETUBE(issue #378)
         mBottomNav.setLabelVisibilityMode(NavTabs.showLabels(this) // MEETUBE(nav labels)
                 ? BottomNavigationView.LABEL_VISIBILITY_LABELED : BottomNavigationView.LABEL_VISIBILITY_UNLABELED);
         // MEETUBE(search place): Search in the top bar or the bottom one, as Settings > Tabs says.

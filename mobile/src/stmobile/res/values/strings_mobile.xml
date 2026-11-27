@@ -808,4 +808,15 @@
     <string name="mobile_download_subtitles">Subtitles</string>
     <string name="mobile_download_subtitles_off">Off</string>
     <string name="mobile_download_subtitles_current">Chosen</string>
+    <!-- MEETUBE(widget): the home screen's Now playing. -->
+    <string name="mobile_widget_now_playing">Now playing</string>
+    <string name="widget_now_playing_desc">What is playing, with its controls</string>
+    <string name="widget_nothing_playing">Nothing playing. Tap to open</string>
+    <string name="widget_previous">Previous</string>
+    <string name="widget_play_pause">Play or pause</string>
+    <string name="widget_next">Next</string>
+    <string name="mobile_widget_quick_actions">Quick actions</string>
+    <string name="widget_quick_actions_desc">The fastest way to search and open MeeTube</string>
+    <string name="widget_search_hint">Search MeeTube</string>
+    <string name="widget_voice">Voice search</string>
 </resources>

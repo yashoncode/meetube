@@ -110,6 +110,8 @@ public class MobilePlaybackService extends Service {
     private final NotificationArtwork<Bitmap> mArtwork = new NotificationArtwork<>();
     // Held so it can be cleared from Glide on release (avoids the leaked SIZE_ORIGINAL target).
     private CustomTarget<Bitmap> mArtTarget;
+    /** The notification's tap: the home screen widget opens the same screen. */
+    @Nullable private PendingIntent mContentIntent;
 
     public class LocalBinder extends Binder {
         public MobilePlaybackService getService() {
@@ -369,6 +371,8 @@ public class MobilePlaybackService extends Service {
             }
         });
         mMediaSession.setActive(true);
+        mContentIntent = contentIntent;
+        NowPlayingWidget.sSession = mMediaSession; // MEETUBE(widget)
 
         // Media3 batches callbacks into one event set. Sync once for that set, rather than rebuilding
         // and sending identical metadata/album-art parcels for each callback during an open or seek.
@@ -513,6 +517,8 @@ public class MobilePlaybackService extends Service {
         }
         mSessionSyncListener = null;
         if (mMediaSession != null) {
+            NowPlayingWidget.sSession = null; // MEETUBE(widget)
+            NowPlayingWidget.idle(getApplicationContext());
             mMediaSession.setActive(false);
             mMediaSession.release();
             mMediaSession = null;
@@ -573,6 +579,18 @@ public class MobilePlaybackService extends Service {
                 .setBufferedPosition(mPlayer.getBufferedPosition())
                 .build());
         mMediaSession.setMetadata(buildMetadata());
+        syncWidget(sessionState == PlaybackStateCompat.STATE_PLAYING
+                || sessionState == PlaybackStateCompat.STATE_BUFFERING && mPlayer.getPlayWhenReady());
+    }
+
+    /** MEETUBE(widget): the home screen's Now playing follows the lock screen's. */
+    private void syncWidget(boolean playing) {
+        Video video = mPresenter != null ? mPresenter.getVideo() : null;
+        if (video == null) {
+            return;
+        }
+        NowPlayingWidget.show(getApplicationContext(), Helpers.toString(video.getTitleFull()), video.getAuthor(),
+                mArtwork.get(artworkUrl(video)), playing, mContentIntent);
     }
 
     private MediaMetadataCompat buildMetadata() {
@@ -653,6 +671,7 @@ public class MobilePlaybackService extends Service {
                     // now, with the same video identity check used by the notification cache.
                     if (mMediaSession != null) {
                         mMediaSession.setMetadata(buildMetadata());
+                        syncWidget(mPlayer != null && mPlayer.getPlayWhenReady());
                     }
                 }
             }

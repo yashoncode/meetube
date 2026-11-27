@@ -352,6 +352,30 @@
             android:name="com.newtube.mobile.ui.playback.MobilePlaybackService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+        <!-- MEETUBE(widget): Quick actions (QuickActionsWidget), like the app icon's menu. -->
+        <receiver
+            android:name="com.newtube.mobile.ui.common.QuickActionsWidget"
+            android:label="@string/mobile_widget_quick_actions"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quick_actions_info" />
+        </receiver>
+        <!-- MEETUBE(widget): the home screen's Now playing (NowPlayingWidget). -->
+        <receiver
+            android:name="com.newtube.mobile.ui.playback.NowPlayingWidget"
+            android:label="@string/mobile_widget_now_playing"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_now_playing_info" />
+        </receiver>
 
         <!--
           Cast-session foreground service (casting wave). While a Lounge session is active the

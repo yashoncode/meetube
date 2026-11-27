@@ -125,4 +125,6 @@
     <!-- MEETUNE --><color name="meetune_accent">#FF2D55</color>
     <!-- MEETUNE: the music player's glass buttons, white glass over the art in both themes. -->
     <color name="meetune_player_glass">#29FFFFFF</color>
+    <!-- MEETUBE(widget): Quick actions' search bar and tiles. -->
+    <color name="mobile_color_widget_tile">#0F000000</color>
 </resources>

@@ -70,4 +70,5 @@
     <color name="splash_rim_far">#52FFFFFF</color>
     <color name="splash_sheen">#80FFFFFF</color>
     <color name="mobile_watch_fab_shadow">#FF000000</color>
+    <color name="mobile_color_widget_tile">#1FFFFFFF</color>
 </resources>
