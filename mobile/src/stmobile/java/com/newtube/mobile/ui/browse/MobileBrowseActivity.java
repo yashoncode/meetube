@@ -1417,6 +1417,10 @@ public class MobileBrowseActivity extends MobileActivity
 
         mContentGrid.setLayoutManager(mLayoutManager);
         mSegment = new ShortsSegment(filter -> {
+            if (mSubsChannel != null && mHomeChip == null) {
+                loadSubsChannel(mSubsChannel); // a strip channel's Shorts come from its Shorts tab, the rest from uploads
+                return;
+            }
             submitGrid();
             mContentGrid.scrollToPosition(0);
         });
@@ -3602,6 +3606,32 @@ public class MobileBrowseActivity extends MobileActivity
     private void loadSubsChannel(Video channel) {
         resetFilteredFeed(channel);
         Video target = channel;
+        if (mHomeChip == null && mSegment != null && isSegmentSection() && mSegment.filter() == ShortsSegment.SHORTS) {
+            // The uploads feed holds no Shorts: the channel's Shorts tab, found as its page finds it.
+            com.liskovsoft.mediaserviceinterfaces.ContentService content =
+                    com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService();
+            mSubsAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
+                    target.mediaItem != null ? content.getChannelObserve(target.mediaItem) : content.getChannelObserve(target.channelId),
+                    groups -> runOnUiThread(() -> {
+                        for (MediaGroup group : groups) {
+                            if (group != null && com.newtube.mobile.ui.common.ShortsFilter.isShortsSection(group.getTitle(),
+                                    getString(R.string.header_shorts), VideoGroup.from(group).getVideos())) {
+                                onSubsChannelPage(target, group);
+                                return;
+                            }
+                        }
+                        if (mSubsChannel == target) {
+                            setSkeletonVisible(false);
+                        }
+                    }),
+                    error -> runOnUiThread(() -> {
+                        if (mSubsChannel == target) {
+                            setSkeletonVisible(false);
+                            android.util.Log.w("MobileBrowse", "Channel Shorts: " + error);
+                        }
+                    }));
+            return;
+        }
         mSubsAction = com.liskovsoft.sharedutils.rx.RxHelper.execute(
                 target.mediaItem != null
                         ? com.liskovsoft.youtubeapi.service.YouTubeServiceManager.instance().getContentService().getGroupObserve(target.mediaItem)
@@ -5006,10 +5036,16 @@ public class MobileBrowseActivity extends MobileActivity
         if (list.size() < 12 && list.size() < loaded && loaded != mSegmentPagedAt && loaded < 400
                 && mPresenter != null) {
             mSegmentPagedAt = loaded;
-            // MEETUBE(issue #328): Subscriptions is a shelf section, paged by onScrollNearEnd
-            // (onScrollEnd returns early there), so Shorts stayed blank. Both, as the scroll listener.
-            mPresenter.onScrollNearEnd(loaded);
-            mPresenter.onScrollEnd(mCurrentVideos.get(loaded - 1));
+            if (mSubsChannel != null) {
+                // One channel from the strip pages itself (as maybeTriggerPagination): the presenter
+                // would page all of Subscriptions behind it, and the channel's Shorts stayed blank.
+                loadSubsChannelPage();
+            } else {
+                // MEETUBE(issue #328): Subscriptions is a shelf section, paged by onScrollNearEnd
+                // (onScrollEnd returns early there), so Shorts stayed blank. Both, as the scroll listener.
+                mPresenter.onScrollNearEnd(loaded);
+                mPresenter.onScrollEnd(mCurrentVideos.get(loaded - 1));
+            }
         }
         if (mParkedItemAnimator == null && !mSectionSwapPending) {
             mAdapter.submitList(list);
